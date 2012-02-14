@@ -146,13 +146,10 @@ public class RegisterServiceProvisioningEngine implements AdminCommand {
                             serviceProvisioningEngine.getProperty().add(prop);
                         }
                     }
-                    serviceProvisioningEngines.getServiceProvisioningEngines().add(serviceProvisioningEngine);
-
                     if (defaultService) {
                         if (force) {
                             for (final ServiceProvisioningEngine spe : serviceProvisioningEngines.getServiceProvisioningEngines()) {
                                 if (spe.getDefault() && type.equalsIgnoreCase(spe.getType())) {
-
                                     Transaction t = Transaction.getTransaction(serviceProvisioningEngines);
                                     ServiceProvisioningEngine spe_w = t.enroll(spe);
                                     spe_w.setDefault(false);
@@ -161,6 +158,7 @@ public class RegisterServiceProvisioningEngine implements AdminCommand {
                             }
                         }
                     }
+                    serviceProvisioningEngines.getServiceProvisioningEngines().add(serviceProvisioningEngine);
 
                     return serviceProvisioningEngines;
                 }
