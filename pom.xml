@@ -159,7 +159,7 @@
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.exclude></findbugs.exclude>
-        <findbugs.version>2.3.2</findbugs.version>
+        <findbugs.version>2.4.0</findbugs.version>
         <btrace.version>1.0.5</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <v3-docs.version>4.0-b05</v3-docs.version>
@@ -578,7 +578,6 @@
                 <configuration>
                     <skip>${findbugs.skip}</skip>
                     <threshold>${findbugs.threshold}</threshold>
-                    <findbugsXmlOutput>true</findbugsXmlOutput>
                     <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
                     <excludeFilterFile>
                         exclude-common.xml,${findbugs.exclude}
