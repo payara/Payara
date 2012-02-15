@@ -61,7 +61,7 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Scoped;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.*;

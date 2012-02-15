@@ -60,6 +60,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.sniffer.WarDetector;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PreDestroy;
 import org.xml.sax.SAXParseException;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
@@ -81,8 +82,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.inject.Inject;
-import javax.inject.Named;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 @Service(name=EarDetector.ARCHIVE_TYPE)
@@ -100,7 +99,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     @Inject
     DasConfig dasConfig;
 
-    @Inject @Named(EarDetector.ARCHIVE_TYPE)
+    @Inject(name = EarDetector.ARCHIVE_TYPE)
     ArchiveDetector detector;
 
     private static final String EAR_LIB = "ear_lib";

@@ -45,7 +45,7 @@ import org.glassfish.apf.factory.Factory;
 import org.glassfish.apf.impl.AnnotationProcessorImpl;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.hk2.Services;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;

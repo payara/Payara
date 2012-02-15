@@ -48,7 +48,7 @@ import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;

@@ -55,7 +55,7 @@ import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.config.serverbeans.ServerTags;
-import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
@@ -64,10 +64,6 @@ import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.List;
 import java.net.URL;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
 
 /**
  * Convenient superclass for JavaEE Deployer implementations.
@@ -85,10 +81,8 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
     @Inject
     protected Habitat habitat;
 
-    @Inject @Named("application_undeploy") @Optional
+    @Inject(name="application_undeploy", optional=true)
     protected ApplicationVisitor undeploymentVisitor=null;
-
-    @Inject Provider<JAXRPCCodeGenFacade> jaxrpcCodeGenFacadeProvider;
 
     private static final String APPLICATION_TYPE = "Application-Type";
 
@@ -212,7 +206,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
              //Fix for issue 16015 
             BundleDescriptor bundleDesc = dc.getModuleMetaData(BundleDescriptor.class);
             if (bundleDesc.hasWebServiceClients())     {
-                JAXRPCCodeGenFacade jaxrpcCodeGenFacade = jaxrpcCodeGenFacadeProvider.get();
+                JAXRPCCodeGenFacade jaxrpcCodeGenFacade = habitat.getByContract(JAXRPCCodeGenFacade.class);
                 if (jaxrpcCodeGenFacade != null) {
                     jaxrpcCodeGenFacade.run(habitat,dc,getModuleClassPath(dc), true) ;
                 }

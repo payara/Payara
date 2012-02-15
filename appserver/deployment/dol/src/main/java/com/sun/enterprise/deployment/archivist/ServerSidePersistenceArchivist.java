@@ -44,7 +44,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Inject;
 
 
 /**
