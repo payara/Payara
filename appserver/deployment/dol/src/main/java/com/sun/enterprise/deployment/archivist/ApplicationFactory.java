@@ -53,7 +53,7 @@ import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;

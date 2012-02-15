@@ -56,7 +56,7 @@ import java.util.logging.Level;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.xml.sax.SAXParseException;
 

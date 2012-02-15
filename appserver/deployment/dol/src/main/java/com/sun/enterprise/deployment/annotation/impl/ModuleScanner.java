@@ -54,7 +54,7 @@ import org.glassfish.apf.Scanner;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.JavaEEScanner;
 import org.glassfish.hk2.classmodel.reflect.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 

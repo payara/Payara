@@ -50,7 +50,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;

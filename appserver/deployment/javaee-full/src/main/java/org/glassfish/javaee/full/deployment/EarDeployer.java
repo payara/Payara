@@ -54,7 +54,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
@@ -86,9 +86,6 @@ public class EarDeployer implements Deployer {
 //            org.glassfish.appclient.client.AppClientGroupFacade.class;
 // Currently using a string instead of a Class constant to avoid a circular
 // dependency.  
-    @Inject
-    Habitat habitat;
-
     @Inject
     Deployment deployment;
 

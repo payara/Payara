@@ -57,7 +57,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

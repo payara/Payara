@@ -64,8 +64,9 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.*;
 import org.glassfish.hk2.classmodel.reflect.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;
@@ -158,7 +159,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     @Inject
     ArchiveFactory archiveFactory;
 
-    @Inject(optional = true)
+    @Inject @Optional
     ExtensionsArchivist[] extensionsArchivists;
 
     /**

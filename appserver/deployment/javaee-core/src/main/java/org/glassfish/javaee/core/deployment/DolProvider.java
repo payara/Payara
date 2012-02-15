@@ -47,7 +47,6 @@ import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PreDestroy;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -97,6 +96,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 /**
  * ApplicationMetada
  */
@@ -133,6 +135,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
     @Inject
     ServerEnvironment env;
+
+    @Inject
+    Provider<ClassLoaderHierarchy> clhProvider;
 
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
@@ -320,7 +325,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             }
 
             context.setPhase(DeploymentContextImpl.Phase.PREPARE);
-            ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
+            ClassLoaderHierarchy clh = clhProvider.get();
             context.createDeploymentClassLoader(clh, archiveHandler);
             cl = context.getClassLoader();
             deployment.getDeployableTypes(context);
