@@ -235,6 +235,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 Set<ServiceReference> implicitServiceRefs = svcPlugin.getServiceReferences(appName, archive, context);
                 for (ServiceReference sr : implicitServiceRefs) {
                     sr.setRequestingPlugin(svcPlugin);
+                    sr.setMatchingPlugin(getMatchingPlugin(sr, installedPlugins, pluginsToHandleSDs));
                     logger.log(Level.FINEST, localStrings.getString("serviceReference",sr));
                     appServiceMetadata.addServiceReference(sr);
                     //if the service-ref refers a service-name, retrieve the service-description of the service
@@ -304,39 +305,10 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                             }
                         }
 
-                        List<ServicePlugin> pluginsList = new ArrayList<ServicePlugin>();
-                        for (ServicePlugin plugin : installedPlugins) {
-                            if (plugin.isReferenceTypeSupported(sr.getType())) {
-                                pluginsList.add(plugin);
-                            }
+                        ServicePlugin matchingPlugin = getMatchingPlugin(sr, installedPlugins, pluginsToHandleSDs);
+                        if(matchingPlugin == null){
+                            continue;
                         }
-                        ServicePlugin matchingPlugin = null;
-                        if (pluginsList.size() == 1) {
-                            matchingPlugin = pluginsList.get(0);
-                        } else if (pluginsList.size() == 0) {
-                            if(!sr.isOptional()){
-                                throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
-                            }else{
-                                logger.log(Level.INFO, "Unable to find a plugin to handle " +
-                                        "'optional' service-reference ["+sr+"] requirement");
-                                continue;
-                            }
-                        } else {
-                            matchingPlugin = orchestrator.getDefaultPluginForServiceRef(sr.getType());
-                        }
-
-                        if (matchingPlugin == null) {
-                            //we could not find a matching plugin as there is no default plugin.
-                            //get a plugin that handles this service-ref
-                            Collection<ServicePlugin> plugins = pluginsToHandleSDs.values();
-                            for (ServicePlugin plugin : plugins) {
-                                if (plugin.isReferenceTypeSupported(sr.getType())) {
-                                    matchingPlugin = plugin;
-                                    break;
-                                }
-                            }
-                        }
-
 
                         ServiceDescription matchingSDForServiceRef = null;
 
@@ -380,6 +352,55 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         } catch (Exception e) {
             throw new PaaSDeploymentException(e);
         }
+    }
+
+    /**
+     * returns the matching plugin for this service-reference.
+     * @param sr service-reference
+     * @param installedPlugins installed plugins in the system
+     * @param pluginsToHandleSDs plugins that handle SD map.
+     * @return MatchingPlugin, will be null if service-reference is optional and no matching plugin is found.
+     * @throws PaaSDeploymentException when no matching plugin is found and service-reference is not optional
+     */
+    private ServicePlugin getMatchingPlugin(ServiceReference sr,
+            Set<ServicePlugin> installedPlugins, Map<ServiceDescription,
+                    ServicePlugin> pluginsToHandleSDs) throws PaaSDeploymentException {
+        
+        ServicePlugin matchingPlugin = null;
+
+        List<ServicePlugin> pluginsList = new ArrayList<ServicePlugin>();
+        for (ServicePlugin plugin : installedPlugins) {
+            if (plugin.isReferenceTypeSupported(sr.getType())) {
+                pluginsList.add(plugin);
+            }
+        }
+        if (pluginsList.size() == 1) {
+            matchingPlugin = pluginsList.get(0);
+        } else if (pluginsList.size() == 0) {
+            if (!sr.isOptional()) {
+                throw new PaaSDeploymentException("No service-provisioning-engine available to handle service-ref [ " + sr + " ]");
+            } else {
+                logger.log(Level.INFO, "Unable to find a plugin to handle "
+                        + "'optional' service-reference [" + sr + "] requirement");
+                return matchingPlugin;
+            }
+        } else {
+            matchingPlugin = orchestrator.getDefaultPluginForServiceRef(sr.getType());
+        }
+        
+        if (matchingPlugin == null) {
+            //we could not find a matching plugin as there is no default plugin.
+            //get a plugin that handles this service-ref
+            Collection<ServicePlugin> plugins = pluginsToHandleSDs.values();
+            for (ServicePlugin plugin : plugins) {
+                if (plugin.isReferenceTypeSupported(sr.getType())) {
+                    matchingPlugin = plugin;
+                    break;
+                }
+            }
+        }
+        
+        return matchingPlugin;
     }
 
     private void setPluginForSD(ServiceOrchestratorImpl orchestrator, Map<ServiceDescription, ServicePlugin> pluginsToHandleSDs,
@@ -464,4 +485,5 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
         }
         return false;
     }
+    
 }

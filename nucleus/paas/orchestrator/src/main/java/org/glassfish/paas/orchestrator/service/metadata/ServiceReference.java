@@ -82,6 +82,9 @@ public class ServiceReference {
 
     //Plugin that requested this service-reference.
     private ServicePlugin requestingPlugin;
+    
+    //Plugin that macthes this service-reference.
+    private ServicePlugin matchingPlugin;
 
     public ServiceReference() {}
     
@@ -175,6 +178,8 @@ public class ServiceReference {
             return false;
         if (requestingPlugin != null ? !requestingPlugin.equals(that.requestingPlugin) : that.requestingPlugin != null)
             return false;
+        if (matchingPlugin != null ? !matchingPlugin.equals(that.matchingPlugin) : that.matchingPlugin != null)
+            return false;
         if (serviceName != null ? !serviceName.equals(that.serviceName) : that.serviceName != null) return false;
 
         return true;
@@ -188,6 +193,17 @@ public class ServiceReference {
         result = 31 * result + (properties != null ? properties.hashCode() : 0);
         result = 31 * result + (optional ? 1 : 0);
         result = 31 * result + (requestingPlugin != null ? requestingPlugin.hashCode() : 0);
+        result = 31 * result + (matchingPlugin != null ? matchingPlugin.hashCode() : 0);
         return result;
     }
+
+    public void setMatchingPlugin(ServicePlugin matchingPlugin) {
+        this.matchingPlugin = matchingPlugin;
+    }
+
+    @XmlTransient
+    public ServicePlugin getMatchingPlugin() {
+        return matchingPlugin;
+    }
+    
 }

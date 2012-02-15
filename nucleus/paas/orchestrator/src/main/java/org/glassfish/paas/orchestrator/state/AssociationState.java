@@ -71,16 +71,17 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                 orchestrator.getServicesForAssociation(appName);
         List<ServiceAssociationRecord> associatedServicesList = new ArrayList<ServiceAssociationRecord>();
         try{
-            for (Service serviceProvider : servicesForAssociation) {
-
-                ServiceDescription sd = serviceProvider.getServiceDescription();
-                Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-                for(ServiceReference serviceRef : appSRs){
+            Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+            for(ServiceReference serviceRef : appSRs){
+                
+                for (Service serviceProvider : servicesForAssociation) {
+                    ServiceDescription sd = serviceProvider.getServiceDescription();
                     Map<ServiceReference, ServiceDescription> srToSDMap = appInfoRegistry.getSRToSDMap(appName);
                     for(Map.Entry<ServiceReference, ServiceDescription> entry : srToSDMap.entrySet()){
                         ServiceReference ref = entry.getKey();
                         if(ref.equals(serviceRef) && sd.equals(entry.getValue())){
                             ServicePlugin requestingPlugin = ref.getRequestingPlugin();
+                            ServicePlugin matchingPlugin = ref.getMatchingPlugin();
                             Collection<Service> serviceConsumers =
                                         orchestrator.getServicesManagedByPlugin(requestingPlugin, servicesForAssociation);
                             for (Service serviceConsumer : serviceConsumers) {
@@ -90,6 +91,9 @@ public abstract class AssociationState extends AbstractPaaSDeploymentState {
                                     requestingPlugin.associateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment, context);
                                     associatedServicesList.add(
                                         new ServiceAssociationRecord(serviceProvider, serviceConsumer, serviceRef, requestingPlugin));
+                                    matchingPlugin.associateServices(serviceConsumer, serviceRef, serviceProvider, preDeployment, context);
+                                    associatedServicesList.add(
+                                        new ServiceAssociationRecord(serviceProvider, serviceConsumer, serviceRef, matchingPlugin));
                                 } catch (Exception e) {
                                     Object args1[]= new Object[]{serviceConsumer.getName(),serviceProvider.getName(),serviceRef};
                                     logger.log(Level.WARNING,localStrings.getString("failure.while.associating.service",args1),e);

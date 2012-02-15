@@ -223,6 +223,13 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     public void associateServices(Service serviceConsumer,
                                   ServiceReference svcRef, Service serviceProvider,
                                   boolean beforeDeployment, PaaSDeploymentContext dc) {
+
+ 	// with associateServices/dissocateServices being called bi-directionally,
+        // make sure that the service-consumer is RDBMS type.
+        if(!RDBMS_ServiceType.equals(serviceConsumer.getServiceType().toString())){
+            return;
+        }
+
         //Skip during post deploy phase
         if(!beforeDeployment) {
             return;
@@ -335,6 +342,13 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     public void dissociateServices(Service serviceConsumer,
                                    ServiceReference svcRef, Service serviceProvider,
                                    boolean beforeUndeploy, PaaSDeploymentContext dc) {
+
+        // with associateServices/dissocateServices being called bi-directionally,
+        // make sure that the service-consumer is RDBMS type.
+        if(!RDBMS_ServiceType.equals(serviceConsumer.getServiceType().toString())){
+            return;
+        }
+
         //post undeployment phase - skip it
         if(!beforeUndeploy) {
             return;

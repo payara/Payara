@@ -71,28 +71,28 @@ public abstract class DissociationState extends AbstractPaaSDeploymentState {
         boolean failed = false;
         Exception failureCause = null;
 
-        for (Service serviceProvider : allServices) {
-        ServiceDescription sd = serviceProvider.getServiceDescription();
-            Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
-            for(ServiceReference serviceRef : appSRs){
-                Map<ServiceReference, ServiceDescription> srToSDMap = appInfoRegistry.getSRToSDMap(appName);
-                for(Map.Entry<ServiceReference, ServiceDescription> entry : srToSDMap.entrySet()){
+        Set<ServiceReference> appSRs = appServiceMetadata.getServiceReferences();
+        for (ServiceReference serviceRef : appSRs) {
+            Map<ServiceReference, ServiceDescription> srToSDMap = appInfoRegistry.getSRToSDMap(appName);
+            for (Service serviceProvider : allServices) {
+                ServiceDescription sd = serviceProvider.getServiceDescription();
+                for (Map.Entry<ServiceReference, ServiceDescription> entry : srToSDMap.entrySet()) {
                     ServiceReference ref = entry.getKey();
-                    if(ref.equals(serviceRef) && sd.equals(entry.getValue())){
+                    if (ref.equals(serviceRef) && sd.equals(entry.getValue())) {
                         ServicePlugin requestingPlugin = ref.getRequestingPlugin();
+                        ServicePlugin matchingPlugin = ref.getMatchingPlugin();
                         Collection<Service> serviceConsumers =
-                                    orchestrator.getServicesManagedByPlugin(requestingPlugin, allServices);
+                                orchestrator.getServicesManagedByPlugin(requestingPlugin, allServices);
                         for (Service serviceConsumer : serviceConsumers) {
                             try {
-                                Object args[]=new Object[]{serviceProvider,serviceRef,requestingPlugin};
-                                logger.log(Level.INFO, "dissociate.provisionedservice",args);
-                                requestingPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider,
-                                        beforeUndeploy, context);
+                                Object args[] = new Object[]{serviceProvider, serviceRef, requestingPlugin};
+                                logger.log(Level.INFO, "dissociate.provisionedservice", args);
+                                matchingPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
+                                requestingPlugin.dissociateServices(serviceConsumer, serviceRef, serviceProvider, beforeUndeploy, context);
                             } catch (Exception e) {
-                                    //TODO need to handle exception or continue ?
-
-                                   failed = true;
-                                   failureCause = e;
+                                //TODO need to handle exception or continue ?
+                                failed = true;
+                                failureCause = e;
                             }
                         }
                     }

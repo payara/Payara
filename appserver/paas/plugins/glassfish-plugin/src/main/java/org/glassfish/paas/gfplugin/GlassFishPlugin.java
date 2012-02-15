@@ -594,10 +594,10 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         if (beforeUndeploy) {
             //if (serviceConsumer instanceof GlassFishProvisionedService) {
                // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
-                    GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
-                    String serviceName = gfps.getServiceDescription().getName();
+                //    GlassFishProvisionedService gfps = (GlassFishProvisionedService) serviceConsumer;
+                 //   String serviceName = gfps.getServiceDescription().getName();
                     //String clusterName = gfServiceUtil.getClusterName(serviceName, gfps.getServiceDescription().getAppName());
-                    String clusterName = serviceName;
+                  //  String clusterName = serviceName;
 
                     /*if (dc != null) { //TODO remove once "deploy-service" is made obselete
                         UndeployCommandParameters ucp = dc.getCommandParameters(UndeployCommandParameters.class);
