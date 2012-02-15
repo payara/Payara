@@ -50,8 +50,8 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Inject;
-
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static com.sun.enterprise.util.StringUtils.ok;
 
@@ -76,8 +76,11 @@ import java.util.logging.Level;
 @AnnotationHandlerFor(Resource.class)
 public class ResourceHandler extends AbstractResourceHandler {
 
+    @Inject
+    private Habitat habitat;
+
     @Inject 
-    private Habitat habitat; 
+    private Provider<WSDolSupport> wSDolSupportProvider;
 
     // Map of all @Resource types that map to env-entries and their
     // corresponding types.  
@@ -292,7 +295,7 @@ public class ResourceHandler extends AbstractResourceHandler {
         Class webServiceContext = null;
         try {
 
-            WSDolSupport support  = habitat.getComponent(WSDolSupport.class);
+            WSDolSupport support  = wSDolSupportProvider.get(); 
             if (support!=null) {
                 webServiceContext = support.getType("javax.xml.ws.WebServiceContext");
             }

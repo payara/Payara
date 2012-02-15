@@ -44,7 +44,8 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -72,7 +73,7 @@ public class ArchivistFactory implements ContractProvider, PostConstruct {
     @Inject
     CompositeArchivist[] compositeArchivists;
 
-    @Inject(optional = true)
+    @Inject @Optional
     ExtensionsArchivist[] extensionsArchivists;
 
     @Inject

@@ -45,7 +45,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.apf.impl.HandlerProcessingResultImpl;
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -66,7 +68,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
             new LocalStringManagerImpl(AbstractHandler.class);
     protected Logger logger = AnnotationUtils.getLogger();
 
-    @Inject(name="EJB", optional=true)
+    @Inject @Named("EJB") @Optional
     protected AnnotationTypesProvider ejbProvider;
 
     @Override

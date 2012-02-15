@@ -59,7 +59,7 @@ import com.sun.hk2.component.Holder;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -69,6 +69,9 @@ import org.xml.sax.SAXParseException;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * This class is responsible for handling application archive files
@@ -82,12 +85,12 @@ public class ApplicationArchivist extends Archivist<Application>
     implements CompositeArchivist {
 
     @Inject
-    Holder<ArchivistFactory> archivistFactory;
+    Provider<ArchivistFactory> archivistFactory;
 
     @Inject
     Habitat habitat;
 
-    @Inject(optional = true)
+    @Inject @Optional
     ExtensionsArchivist[] extensionsArchivists; 
 
     /**
