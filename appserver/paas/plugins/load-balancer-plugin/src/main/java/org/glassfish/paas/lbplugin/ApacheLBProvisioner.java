@@ -151,13 +151,24 @@ public class ApacheLBProvisioner implements LBProvisioner{
                 createAjpListenerPerInstance(clusterName, commandRunner, habitat);
             }
         }
-        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome);
+        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome, appName,
+                (domainName != null ? domainName : Constants.NULL_DOMAIN_NAME));
     }
 
     private void reconfigureApache(Habitat habitat, VirtualMachine virtualMachine,
-            String serviceName, String glassfishHome) throws IOException, ComponentException, InterruptedException {
+            String serviceName, String glassfishHome, String appName, String domainName)
+            throws IOException, ComponentException, InterruptedException {
         AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
-        String output = virtualMachine.executeOn(new String[]{associateServerScript, serviceName + "-lb-config", tokenMgr.createToken(30L * 60L * 1000L), glassfishHome});
+        String[] args = null;
+        //If app name is null, it is reassociate scenario
+        if (appName != null) {
+            args = new String[]{associateServerScript, serviceName + "-lb-config",
+                tokenMgr.createToken(30L * 60L * 1000L), glassfishHome, appName, domainName};
+        } else {
+            args = new String[]{associateServerScript, serviceName + "-lb-config",
+                tokenMgr.createToken(30L * 60L * 1000L), glassfishHome};
+        }
+        String output = virtualMachine.executeOn(args);
         LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
         //Doing hard reconfig  on windows till a solution is found for graceful reconfig
         if(useWindowsConfig()){
@@ -268,7 +279,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
         }
         LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-ref succeeded");
 
-        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome);
+        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome, appName, Constants.NULL_DOMAIN_NAME);
 
         if (isLast) {
             params.clear();

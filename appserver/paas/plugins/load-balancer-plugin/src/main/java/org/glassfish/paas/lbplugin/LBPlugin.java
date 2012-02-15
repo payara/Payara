@@ -41,6 +41,7 @@ package org.glassfish.paas.lbplugin;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -131,7 +132,7 @@ public class LBPlugin implements ServicePlugin {
 
     @Override
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
-        HashSet<ServiceReference> serviceReferences = new HashSet<ServiceReference>();
+        LinkedHashSet<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
         //LB will optionally associate with DNS service if present
         //Since association is bidirectional, this ref will ensure DNS service will associate with LB
         ServiceReference dnsServiceReference = 
@@ -288,22 +289,20 @@ public class LBPlugin implements ServicePlugin {
         
         String appDomainName = dc.getDeploymentContext().getTransientAppMetaData
                 (APPLICATION_DOMAIN_NAME, String.class);
-        callAssociateService(serviceConsumer, serviceProvider, false, appDomainName);
+        callAssociateService(serviceConsumer, serviceProvider, false, dc.getAppName(), appDomainName);
         
     }
 
     private void callAssociateService(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
-            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig, String appDomainName) {
+            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig, String appName, String appDomainName) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
         ArrayList<String> params;
         String[] parameters;
         params = new ArrayList<String>();
-        if (serviceDescription.getAppName() != null) {
-            params.add("--appname");
-            params.add(serviceDescription.getAppName());
-        }
+        params.add("--appname");
+        params.add(appName);
         params.add("--reconfig="+isReconfig);
         params.add("--clustername");
         params.add(serviceProvider.getServiceDescription().getName());
@@ -484,10 +483,8 @@ public class LBPlugin implements ServicePlugin {
         ArrayList<String> params;
         String[] parameters;
         params = new ArrayList<String>();
-        if (serviceDescription.getAppName() != null) {
-            params.add("--appname");
-            params.add(serviceDescription.getAppName());
-        }
+        params.add("--appname");
+        params.add(dc.getAppName());
         params.add("--clustername");
         params.add(serviceProvider.getServiceDescription().getName());
         params.add("--virtualcluster");
@@ -544,7 +541,7 @@ public class LBPlugin implements ServicePlugin {
             org.glassfish.paas.orchestrator.service.spi.Service oldServiceProvider,
             org.glassfish.paas.orchestrator.service.spi.Service newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
-        callAssociateService(serviceConsumer, newServiceProvider, true, null);
+        callAssociateService(serviceConsumer, newServiceProvider, true, null, null);
         return true;
     }
     
