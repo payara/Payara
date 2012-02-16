@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -126,6 +126,7 @@ public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTe
      * asadmin create-iiop-listener --listeneraddress localhost
      * --iiopport 4440 listener
      * list-iiop-listeners
+     * delete-iiop-listener listener
      */
     @Test
     public void testExecuteSuccessListListener() {
@@ -146,29 +147,29 @@ public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTe
         }
         assertTrue(listStr.contains("listener"));
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+        parameters = new ParameterMap();
+        parameters.set("listener_id", "listener");
+        DeleteIiopListener deleteCommand = services.byType(DeleteIiopListener.class).get();
+        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport()).parameters(parameters).execute(deleteCommand);               
+        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());    
     }
 
     /**
      * Test of execute method, of class ListIiopListener.
-     * delete-iiop-listener listener
      * list-iiop-listeners
      */
     @Test
-    public void testExecuteSuccessListNoListener() {
-        parameters.set("listener_id", "listener");
-        DeleteIiopListener deleteCommand = services.byType(DeleteIiopListener.class).get();
-        cr.getCommandInvocation("delete-iiop-listener", context.getActionReport()).parameters(parameters).execute(deleteCommand);               
-        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+    public void testExecuteSuccessListNoListener() {       
         parameters = new ParameterMap();
         ListIiopListeners listCommand = services.byType(ListIiopListeners.class).get();
-        cr.getCommandInvocation("list-iiop-listeners", context.getActionReport()).parameters(parameters).execute(listCommand);               
+        cr.getCommandInvocation("list-iiop-listeners", context.getActionReport()).parameters(parameters).execute(listCommand);    
+        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
-        assertEquals(origNum - 1, list.size());
+        assertEquals(origNum, list.size());
         List<String> listStr = new ArrayList<String>();
         for (MessagePart mp : list) {
             listStr.add(mp.getMessage());
         }
         assertFalse(listStr.contains("listener"));
-        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
     }
 }
