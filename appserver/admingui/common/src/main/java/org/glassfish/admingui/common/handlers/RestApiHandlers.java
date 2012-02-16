@@ -314,30 +314,29 @@ public class RestApiHandlers {
                     @HandlerInput(name = "endpoint", type = String.class, required = true),
                     @HandlerInput(name = "selectedRows", type = List.class, required = true),
                     @HandlerInput(name = "id", type = String.class, defaultValue = "name"),
-                    @HandlerInput(name = "target", type = String.class, defaultValue = "server"),
-                    @HandlerInput(name = "cascade", type = String.class)
+                    @HandlerInput(name = "target", type = String.class, required = true)
             })
     public static void deleteConfigCascade(HandlerContext handlerCtx) {
-        try {
-            Map<String, Object> payload = new HashMap<String, Object>();
-            String endpoint = (String) handlerCtx.getInputValue("endpoint");
+            
+            List<Map> selectedRows = (List<Map>) handlerCtx.getInputValue("selectedRows");
             String id = (String) handlerCtx.getInputValue("id");
-            String target = (String) handlerCtx.getInputValue("target");
-            String cascade = (String) handlerCtx.getInputValue("cascade");
-            if (cascade != null) {
-                payload.put("cascade", cascade);
-            }
+            String prefix = (String) handlerCtx.getInputValue("endpoint");
 
-            for (Map oneRow : (List<Map>) handlerCtx.getInputValue("selectedRows")) {
-                RestResponse response = delete(endpoint + "/" +
-                        URLEncoder.encode((String) oneRow.get(id), "UTF-8") + "?target=" + target, payload);
-                if (!response.isSuccess()) {
-                    GuiUtil.handleError(handlerCtx, "Unable to delete the resource " + (String) oneRow.get(id));
+            Map<String, Object> payload = new HashMap<String, Object>();
+            payload.put("target", (String) handlerCtx.getInputValue("target"));
+
+            for ( Map oneRow : selectedRows) {
+                try{
+                    String endpoint = prefix + "/" + oneRow.get(id);
+                    RestUtil.restRequest(endpoint, payload, "DELETE",null, false);
+                }catch (Exception ex){
+                    GuiUtil.getLogger().severe(
+                            GuiUtil.getCommonMessage("LOG_NODE_ACTION_ERROR", new Object[]{prefix + "/" + oneRow.get(id), "DELETE" , "null"}));
+                    GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
+                    return;
                 }
+                continue;
             }
-        } catch (Exception ex) {
-            GuiUtil.handleException(handlerCtx, ex);
-        }
     }
 
     /*
