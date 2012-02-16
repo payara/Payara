@@ -76,6 +76,6 @@ public interface LBProvisioner {
 
     public void initialize();
 
-    public void configureLB(VirtualMachine vm, String domainName, LBServiceConfiguration configuration) throws Exception;
+    public void configureLB(String serviceName,VirtualMachine vm, String domainName, LBServiceConfiguration configuration) throws Exception;
 
 }

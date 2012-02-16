@@ -129,7 +129,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     }
 
     @Override
-    public void configureLB(VirtualMachine virtualMachine, String domainName, LBServiceConfiguration configuration) throws Exception{
+    public void configureLB(String serviceName,VirtualMachine virtualMachine, String domainName, LBServiceConfiguration configuration) throws Exception{
         String[] command = null;
         command = new String[]{configureServerScript,
                     configuration.getHttpPort(),

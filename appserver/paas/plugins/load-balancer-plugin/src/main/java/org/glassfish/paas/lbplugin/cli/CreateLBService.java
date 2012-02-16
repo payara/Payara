@@ -232,7 +232,7 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
                         serviceConfigurations);
 
                 LBProvisionerFactory.getInstance().getLBProvisioner()
-                        .configureLB(vm, domainName, configuration);
+                        .configureLB(serviceName,vm, domainName, configuration);
 
 
 
