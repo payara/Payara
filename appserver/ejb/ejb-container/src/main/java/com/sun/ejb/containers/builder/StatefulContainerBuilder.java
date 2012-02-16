@@ -84,7 +84,9 @@ import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -120,16 +122,16 @@ public class StatefulContainerBuilder
     @Inject
     private EJBServerConfigLookup ejbConfigLookup;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional = true)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
     private AvailabilityService availabilityService;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private EjbContainerAvailability ejbAvailability;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainerConfig;
 
-    @Inject(optional = true)
+    @Inject @Optional
     GMSAdapterService gmsAdapterService;
     
     private LruSessionCache sessionCache;

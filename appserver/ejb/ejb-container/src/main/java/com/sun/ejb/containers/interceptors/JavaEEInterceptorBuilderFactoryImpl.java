@@ -46,7 +46,7 @@ import com.sun.enterprise.container.common.spi.InterceptorInvoker;
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.EjbOptionalIntfGenerator;
 import com.sun.ejb.containers.OptionalLocalInterfaceProvider;

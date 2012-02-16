@@ -53,7 +53,8 @@ import com.sun.enterprise.config.serverbeans.*;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
@@ -87,16 +88,16 @@ public final class EJBServerConfigLookup {
 
     private static final String REPLICATED_TYPE = "replicated";
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     AvailabilityService availabilityService;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainer;
 
     @Inject
     Applications applications;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     /**

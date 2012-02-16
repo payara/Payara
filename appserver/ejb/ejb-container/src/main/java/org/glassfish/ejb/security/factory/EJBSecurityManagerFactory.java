@@ -61,7 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;

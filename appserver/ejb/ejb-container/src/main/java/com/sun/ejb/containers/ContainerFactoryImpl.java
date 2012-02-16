@@ -55,7 +55,8 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -69,7 +70,7 @@ public final class ContainerFactoryImpl implements ContainerFactory {
     @Inject
     private Services services;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
     
     private static final Logger _logger = 

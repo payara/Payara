@@ -44,7 +44,7 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 
 import org.glassfish.hk2.Services;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.NamingException;

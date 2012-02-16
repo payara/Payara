@@ -51,7 +51,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.component.Habitat;
 

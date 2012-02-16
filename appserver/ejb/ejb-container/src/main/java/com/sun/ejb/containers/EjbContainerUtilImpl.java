@@ -80,7 +80,9 @@ import org.glassfish.persistence.common.DatabaseConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
@@ -89,6 +91,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Provider;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -172,7 +175,7 @@ public class EjbContainerUtilImpl
     @Inject
     private JavaEETransactionManager txMgr;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainer;
 
     @Inject
@@ -181,7 +184,7 @@ public class EjbContainerUtilImpl
     @Inject
     private ServerEnvironmentImpl env;
 
-    @Inject(optional=true)
+    @Inject @Optional
     private Agent callFlowAgent;
 
     @Inject //Note:- Not specific to any ejb descriptor
@@ -198,6 +201,15 @@ public class EjbContainerUtilImpl
 
     @Inject
     Domain domain;
+
+    @Inject
+    Provider<CMPDeployer> cmpDeployerProvider;
+
+    @Inject
+    Provider<Deployment> deploymentProvider;
+    
+    @Inject
+    Provider<DistributedEJBTimerService> distributedEJBTimerServiceProvider;
 
     private  static EjbContainerUtil _me;
 
@@ -324,7 +336,7 @@ public class EjbContainerUtilImpl
                 // Do postprocessing if everything is OK
                 if (_ejbTimerService != null) {
                     // load DistributedEJBTimerService 
-                    services.forContract(DistributedEJBTimerService.class).get();
+                    distributedEJBTimerServiceProvider.get();
                     if (_ejbTimersCleanup) {
                         _ejbTimerService.destroyAllTimers(0L);
                     } else if (target == null) {
@@ -494,7 +506,7 @@ public class EjbContainerUtilImpl
     }
 
     public boolean isEJBLite() {
-        return (services.forContract(CMPDeployer.class).get() == null);
+        return (cmpDeployerProvider.get() == null);
     }
 
     public boolean isEmbeddedServer() {
@@ -511,7 +523,7 @@ public class EjbContainerUtilImpl
     
     private void deployEJBTimerService(String target) {
         synchronized (lock) {
-            Deployment deployment = services.forContract(Deployment.class).get();
+            Deployment deployment = deploymentProvider.get();
             boolean isRegistered = deployment.isRegistered(EjbContainerUtil.TIMER_SERVICE_APP_NAME);
 
             if (isRegistered) {

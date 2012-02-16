@@ -49,7 +49,8 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.ejb.EjbJarDetector;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.xml.stream.XMLStreamException;
@@ -69,7 +70,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 @Service(name = EjbJarDetector.ARCHIVE_TYPE)
 public class EjbJarHandler extends AbstractArchiveHandler {
-    @Inject(name = EjbJarDetector.ARCHIVE_TYPE)
+    @Inject @Named(EjbJarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
     @Override

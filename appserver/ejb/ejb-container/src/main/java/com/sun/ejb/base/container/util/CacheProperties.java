@@ -50,7 +50,8 @@ import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.concurrent.TimeUnit;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
@@ -74,7 +75,7 @@ public class CacheProperties {
 
     private String victimSelectionPolicy;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     EjbContainer ejbContainer;
 
     public CacheProperties() {

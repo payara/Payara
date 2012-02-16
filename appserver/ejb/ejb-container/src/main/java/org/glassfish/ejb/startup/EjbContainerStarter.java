@@ -42,7 +42,7 @@ package org.glassfish.ejb.startup;
 
 import com.sun.ejb.containers.EjbContainerUtil;
 import org.glassfish.api.container.Container;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;

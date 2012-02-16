@@ -51,8 +51,9 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.io.EjbDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.EjbRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFEjbRuntimeDDFile;
-import com.sun.hk2.component.Holder;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -66,7 +67,7 @@ public class EjbInWarArchivist
         extends ExtensionsArchivist {
 
     @Inject
-    Holder<EjbInWarScanner> scanner;
+    Provider<EjbInWarScanner> scanner;
 
     
     /**

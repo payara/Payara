@@ -89,7 +89,9 @@ import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.internal.data.ApplicationInfo;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -141,6 +143,15 @@ public class EjbDeployer
                 new LocalStringManagerImpl(EjbDeployer.class);
 
     private final EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
+
+    @Inject
+    Provider<RegisteredComponentInvocationHandler> registeredComponentInvocationHandlerProvider;
+    
+    @Inject
+    Provider<CMPService> cmpServiceProvider;
+    
+    @Inject
+    Provider<CMPDeployer> cmpDeployerProvider;
 
     /**
      * Constructor
@@ -250,7 +261,7 @@ public class EjbDeployer
         ejbBundle.setClassLoader(dc.getClassLoader());
 
         if (ejbBundle.containsCMPEntity()) {
-            CMPService cmpService = habitat.forContract(CMPService.class).get();
+            CMPService cmpService = cmpServiceProvider.get();
             if (cmpService == null) {
                 throw new RuntimeException("CMP Module is not available");
             } else if (!cmpService.isReady()) {
@@ -643,7 +654,7 @@ public class EjbDeployer
     private void initCMPDeployer() {
         if (cmpDeployer == null) {
             synchronized(lock) {
-                cmpDeployer = habitat.forContract(CMPDeployer.class).get();
+                cmpDeployer = cmpDeployerProvider.get();
             }
         }
     }
