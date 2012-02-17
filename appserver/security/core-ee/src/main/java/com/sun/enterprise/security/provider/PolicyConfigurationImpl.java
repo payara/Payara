@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -755,14 +755,14 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 		String urlKey = null;
 		while (true) {
 		    urlKey = PROVIDER_URL+(++i);
-		    value = java.security.Security.getProperty(urlKey);
+		    value = getSecurityProperty(urlKey);
 		    if (value == null || value.equals("")) {
 			break;
 		    }
 		}
 
-		try {
-		    java.security.Security.setProperty(urlKey,policyUrlValue);
+		try { 
+                        setSecurityProperty(urlKey, policyUrlValue);
 
 		    if (fileChanged(false)) {
 			excludedPermissions = loadExcludedPolicy();
@@ -784,7 +784,7 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 		} finally {
 		    // can't setProperty back to null, workaround is to 
 		    // use empty string
-		    java.security.Security.setProperty(urlKey,"");
+		    setSecurityProperty(urlKey, "");
 		}
 	    }
 	}
@@ -1423,7 +1423,36 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 
 	return result;
     }
+    
+    private void setSecurityProperty(final String key, final String value) {
+        if (System.getSecurityManager() == null) {
+            java.security.Security.setProperty(key, value);
+        } else {
+            java.security.AccessController.doPrivileged(
+                    new java.security.PrivilegedAction() {
 
+                        public java.lang.Object run() {
+                            java.security.Security.setProperty(key, value);
+                            return null;
+                        }
+                    });
+        }
+    }
+
+    private String getSecurityProperty(final String key) {
+        if (System.getSecurityManager() == null) {
+            return java.security.Security.getProperty(key);
+        } else {
+            return java.security.AccessController.doPrivileged(
+                    new java.security.PrivilegedAction<String>() {
+
+                        public String run() {
+                            return java.security.Security.getProperty(key);
+
+                        }
+                    });
+        }
+    }
 }
 
 
