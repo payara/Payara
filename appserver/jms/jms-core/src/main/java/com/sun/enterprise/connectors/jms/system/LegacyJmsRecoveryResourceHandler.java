@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,8 @@ import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
@@ -60,8 +62,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.resources.config.ExternalJndiResource;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Recovery Handler for JMS Resources
@@ -70,14 +70,11 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler {
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService txService;
 
     @Inject
     private Resources resources;
-
-    @Inject
-    private Habitat connectorRuntimeHabitat;
 
     static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
     static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";

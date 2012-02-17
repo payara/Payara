@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,6 @@ import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.*;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
@@ -77,6 +76,10 @@ import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import javax.resource.spi.*;
 import org.glassfish.api.admin.ServerEnvironment;
 
@@ -92,8 +95,6 @@ import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.component.PostConstruct;
@@ -113,8 +114,6 @@ import org.jvnet.hk2.component.PostConstruct;
  */
 @Service
 @Scoped(Singleton.class)
-
-
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
     static Logger _logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class,  LogDomains.JMS_LOGGER);
@@ -257,16 +256,31 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private File mqPassFile = null;
 
     @Inject
-    Habitat habitat;
-
-    @Inject
     private ConnectorRuntime connectorRuntime;
 
     @Inject
     private GlassfishNamingManager nm;
 
-  //  @Inject
-    //private  JMSConfigListener jmsConfigListener; 
+    @Inject
+    private Provider<JMSConfigListener> jmsConfigListenerProvider;
+    
+    @Inject
+    private Provider<ServerEnvironmentImpl> serverEnvironmentImplProvider;
+    
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<AdminService> adminServiceProvider;
+    
+    @Inject
+    private Provider<Servers> serversProvider;
+    
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<JmsService> jmsServiceProvider;
+    
+    @Inject
+    private Provider<ServerContext> serverContextProvider;
+    
+    @Inject
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
     
     /**
      * Constructor for an active Jms Adapter.
@@ -296,7 +310,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                    // Upgrade jms resource adapter, if necessary before starting
                    // the RA.
            try {
-    		       JMSConfigListener jmsConfigListener=habitat.getComponent(JMSConfigListener.class);
+    		       JMSConfigListener jmsConfigListener=jmsConfigListenerProvider.get();
                    jmsConfigListener.setActiveResourceAdapter(this);
                    JmsRaUtil raUtil = new JmsRaUtil();
                    raUtil.upgradeIfNecessary();
@@ -2150,24 +2164,23 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private ServerEnvironmentImpl getServerEnvironment(){
-        return habitat.getComponent(ServerEnvironmentImpl.class);
+        return serverEnvironmentImplProvider.get();
     }
 
     private AdminService getAdminService() {
-        return habitat.getComponent(AdminService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        return adminServiceProvider.get();
     }
 
     private Servers getServers(){
-        return habitat.getComponent(Servers.class);
+        return serversProvider.get();
     }
 
     private JmsService getJmsService(){
-        return habitat.getComponent(JmsService.class,
-                ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        return jmsServiceProvider.get();
     }
 
     private ServerContext getServerContext(){
-        return habitat.getComponent(ServerContext.class);
+        return serverContextProvider.get();
     }
 
     //methods from LazyServiceIntializer
@@ -2179,7 +2192,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
          try {
              String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
              String loc = ConnectorsUtil.getSystemModuleLocation(module);
-             ConnectorRuntime connectorRuntime = habitat.getComponent(ConnectorRuntime.class);
+             ConnectorRuntime connectorRuntime = connectorRuntimeProvider.get();
              connectorRuntime.createActiveResourceAdapter(loc, module, null);
              return true;
                } catch (ConnectorRuntimeException e) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,18 +44,18 @@ import java.util.*;
 import java.util.logging.*;
 import java.beans.PropertyChangeEvent;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.config.types.Property;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
@@ -68,7 +68,7 @@ public class JMSConfigListener implements ConfigListener{
     // Injecting @Configured type triggers the corresponding change
     // events to be sent to this instance
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private JmsService jmsservice;
    
     @Inject

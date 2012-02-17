@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,9 +45,7 @@ package com.sun.enterprise.connectors.jms.system;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Habitat;
 //import org.jvnet.hk2.config.ConfigSupport;
 //import org.jvnet.hk2.config.SingleConfigCode;
 //import org.jvnet.hk2.config.TransactionFailure;
@@ -64,6 +62,11 @@ import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 
 import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
 import org.glassfish.api.admin.ServerEnvironment;
 //import com.sun.enterprise.config.serverbeans.MonitoringService;
 
@@ -85,14 +88,20 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     private final static String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
     private final static String JMS_DEFAULT_HOST="localhost";
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     
     @Inject
     private GrizzlyService grizzlyService;
     
     @Inject
-    Habitat habitat;
+    private Provider<JMSConfigListener> jmsConfigListenerProvider;
+    
+    @Inject
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
+    
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<JmsService> jmsServiceProvider;
 
     public void postConstruct()
     {
@@ -113,13 +122,13 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     }
     private void configureConfigListener(){
         //do a lookup of the config listener to get it started
-        habitat.getComponent(JMSConfigListener.class);
+        jmsConfigListenerProvider.get();
     }
     public void initializeBroker () throws ConnectorRuntimeException
     {
             String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
             String loc = ConnectorsUtil.getSystemModuleLocation(module);
-            ConnectorRuntime connectorRuntime = habitat.getComponent(ConnectorRuntime.class);
+            ConnectorRuntime connectorRuntime = connectorRuntimeProvider.get();
             connectorRuntime.createActiveResourceAdapter(loc, module, null);
     }
     private boolean eagerStartupRequired(){
@@ -200,7 +209,6 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     }    
 
     private JmsService getJmsService() {
-            return habitat.getComponent(JmsService.class,
-                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            return jmsServiceProvider.get();
         }
 }
