@@ -323,6 +323,13 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                         } else {
                             //get the default SD for the plugin.
                             matchingSDForServiceRef = matchingPlugin.getDefaultServiceDescription(appName, sr);
+                            if(matchingSDForServiceRef == null){
+                                if(sr.isOptional()){
+                                    continue;
+                                }else{
+                                    throw new PaaSDeploymentException("unable to get service-description for service-reference ["+sr+"]");
+                                }
+                            }
                             matchingSDForServiceRef.setPlugin(matchingPlugin);
                             matchingSDForServiceRef.setServiceScope(ServiceScope.APPLICATION);
                             appServiceMetadata.addServiceDescription(matchingSDForServiceRef);
