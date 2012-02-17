@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -284,7 +284,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
                     if (queryString != null) {
                         // Use default as a last resort
                         String queryStringEncoding =
-                            Constants.DEFAULT_CHARACTER_ENCODING;
+                            org.glassfish.grizzly.http.util.Constants.DEFAULT_HTTP_CHARACTER_ENCODING;
                 
                         /*String uriEncoding = null;
                         boolean useBodyEncodingForURI = false;

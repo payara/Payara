@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -192,7 +192,7 @@ public class GrizzlyProxy implements NetworkProxy {
             httpAdapter.getMapper().register(contextRoot, vsServers, endpointService, container);
         }
     }
-
+    
     /**
      * Removes the context-root from our list of endpoints.
      */
@@ -204,6 +204,26 @@ public class GrizzlyProxy implements NetworkProxy {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void registerEndpoint(final Endpoint endpoint) {
+        final HttpAdapter httpAdapter = grizzlyListener.getAdapter(HttpAdapter.class);
+        if (httpAdapter != null) {
+            httpAdapter.getMapper().register(endpoint);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unregisterEndpoint(final Endpoint endpoint) throws EndpointRegistrationException {
+        unregisterEndpoint(endpoint.getContextRoot(), endpoint.getContainer());
+    }
+
+    
     @Override
     public Future<Result<Thread>> start() throws IOException {
         final FutureImpl<Result<Thread>> future = UnsafeFutureImpl.<Result<Thread>>create();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -550,6 +550,22 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     }
 
     /**
+     * Registers a new endpoint for the given context root at the given port
+     * number.
+     */
+//    @Override
+    public void registerEndpoint(final Endpoint endpoint) throws EndpointRegistrationException {
+        final InetAddress address = endpoint.getAddress();
+        final int port = endpoint.getPort();
+        
+        for (NetworkProxy proxy : proxies) {
+            if (proxy.getPort() == port && proxy.getAddress().equals(address)) {
+                proxy.registerEndpoint(endpoint);
+            }
+        }
+    }
+
+    /**
      * Removes the context-root from our list of endpoints.
      */
     @Override
@@ -597,11 +613,8 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     }
 
     private void registerAdapter(org.glassfish.api.container.Adapter a) throws EndpointRegistrationException {
-        int port            = a.getListenPort();
-        InetAddress address = a.getListenAddress();
-        List<String> vs     = a.getVirtualServers();
-        String cr           = a.getContextRoot();
-        registerEndpoint(cr, address, port, vs, a.getHttpService(), null);
+        Endpoint endpoint = Endpoint.createEndpoint(a);
+        registerEndpoint(endpoint);
     }
 
     // get the ports from the http listeners that are associated with 

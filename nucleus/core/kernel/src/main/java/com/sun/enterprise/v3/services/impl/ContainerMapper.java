@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -422,9 +422,9 @@ public class ContainerMapper extends StaticHttpHandler {
          * have already been registered with the mapper by the connector's
          * MapperListener, in response to a JMX event
          */
-        if ("org.apache.catalina.connector.CoyoteAdapter".equals(httpService.getClass().getName())) {
-            return;
-        }
+//        if ("org.apache.catalina.connector.CoyoteAdapter".equals(httpService.getClass().getName())) {
+//            return;
+//        }
 
         mapMultipleAdapter = true;
 //        String ctx = getContextPath(contextRoot);
@@ -491,6 +491,52 @@ public class ContainerMapper extends StaticHttpHandler {
         }
     }
 
+    public void register(final Endpoint endpoint) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER endpoint: {1}", endpoint);
+        }
+        /*
+         * In the case of CoyoteAdapter, return, because the context will
+         * have already been registered with the mapper by the connector's
+         * MapperListener, in response to a JMX event
+         */
+//        if ("org.apache.catalina.connector.CoyoteAdapter".equals(
+//                endpoint.getEndpointHandler().getClass().getName())) {
+//            return;
+//        }
+
+        mapMultipleAdapter = true;
+//        String ctx = getContextPath(contextRoot);
+//        String wrapper = getWrapperPath(ctx, contextRoot);
+        final String contextRoot = endpoint.getContextRoot();
+        final Collection<String> vs = endpoint.getVirtualServers();
+        
+        ContextRootInfo c = new ContextRootInfo(new ContextRootInfo.Holder() {
+            @Override
+            public HttpHandler getHttpHandler() {
+                return endpoint.getEndpointHandler();
+            }
+
+            @Override
+            public Object getContainer() {
+                return endpoint.getContainer();
+            }
+        });
+        
+        for (String host : vs) {
+            mapper.addContext(host, contextRoot, c, new String[0], null);
+            /*
+            if (adapter instanceof StaticResourcesAdapter) {
+            mapper.addWrapper(host, ctx, wrapper, c);
+            }
+             */
+        }
+    }
+
+    public void unregister(final Endpoint endpoint) {
+        unregister(endpoint.getContextRoot());
+    }
+    
     private static final class AfterServiceListenerImpl implements AfterServiceListener {
 
         @Override

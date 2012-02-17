@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,8 +64,20 @@ public interface EndpointMapper<E> {
     
     
     /**
-     * Removes the contex-root from our list of endpoints.
+     * Removes the context-root from our list of endpoints.
      */
     public void unregisterEndpoint(String contextRoot, ApplicationContainer app) throws EndpointRegistrationException;
+
+    /**
+     * Registers a new endpoint (proxy implementation) defined by the passed
+     * {@link Endpoint} object.
+     * @param endpoint {@link Endpoint}
+     */
+    public void registerEndpoint(Endpoint endpoint) throws EndpointRegistrationException;
     
+    /**
+     * Removes the {@link Endpoint} from our list of endpoints.
+     * @param endpoint {@link Endpoint}
+     */
+    public void unregisterEndpoint(Endpoint endpoint) throws EndpointRegistrationException;
 }
