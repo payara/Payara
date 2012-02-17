@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 

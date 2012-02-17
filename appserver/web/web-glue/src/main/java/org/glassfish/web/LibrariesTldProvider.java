@@ -43,7 +43,7 @@ package org.glassfish.web;
 import com.sun.enterprise.util.net.JarURIPattern;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.web.TldProvider;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;

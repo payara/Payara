@@ -49,7 +49,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.web.config.serverbeans.WebModuleConfig;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 
 /**
  * Superclass of all web module config-related commands.

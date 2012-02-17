@@ -80,7 +80,8 @@ import org.glassfish.embeddable.web.config.WebContainerConfig;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -111,13 +112,13 @@ public class WebContainerImpl implements WebContainer {
     @Inject
     Habitat habitat;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HttpService httpService;
 
     private static Logger log =
             Logger.getLogger(WebContainerImpl.class.getName());
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     NetworkConfig networkConfig;
 
     @Inject

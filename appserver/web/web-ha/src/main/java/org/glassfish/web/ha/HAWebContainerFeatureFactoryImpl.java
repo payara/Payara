@@ -47,7 +47,7 @@ import com.sun.enterprise.web.SSOFactory;
 import org.glassfish.hk2.Services;
 import org.glassfish.web.ha.authenticator.HASSOFactory;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**

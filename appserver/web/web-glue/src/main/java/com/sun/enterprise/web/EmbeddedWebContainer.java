@@ -51,7 +51,7 @@ import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Embedded;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.Services;

@@ -49,7 +49,8 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.web.config.serverbeans.*;
 import org.glassfish.web.config.serverbeans.WebContainer;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -67,7 +68,7 @@ public class ServerConfigLookup {
             ServerConfigLookup.class, LogDomains.WEB_LOGGER);
 
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config configBean;
 
     @Inject

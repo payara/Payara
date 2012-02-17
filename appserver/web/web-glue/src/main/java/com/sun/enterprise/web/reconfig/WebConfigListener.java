@@ -52,7 +52,9 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.web.config.serverbeans.ManagerProperties;
 import org.glassfish.web.config.serverbeans.WebContainerAvailability;
 import org.apache.catalina.LifecycleException;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
@@ -74,13 +76,13 @@ import org.glassfish.grizzly.http.server.util.Mapper;
  */
 public class WebConfigListener implements ConfigListener, MapperUpdateListener {
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public HttpService httpService;
     
-    @Inject(optional=true)
+    @Inject @Optional
     public ManagerProperties managerProperties;
 
-    @Inject(optional=true)
+    @Inject @Optional
     public List<Property> property;
     
     private WebContainer container;

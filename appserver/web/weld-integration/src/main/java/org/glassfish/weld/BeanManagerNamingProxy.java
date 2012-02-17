@@ -48,7 +48,7 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;

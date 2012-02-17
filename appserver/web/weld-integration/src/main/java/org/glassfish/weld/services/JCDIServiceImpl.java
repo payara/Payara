@@ -63,7 +63,7 @@ import org.glassfish.weld.WeldDeployer;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.api.WeldManager;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.JCDIService;

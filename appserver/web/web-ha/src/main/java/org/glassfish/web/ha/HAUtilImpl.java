@@ -46,7 +46,9 @@ import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.security.common.HAUtil;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -59,10 +61,10 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 public class HAUtilImpl implements HAUtil {
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
     
-    @Inject(optional=true)
+    @Inject @Optional
     private GMSAdapterService gmsAdapterService;
 
     public String getClusterName() {

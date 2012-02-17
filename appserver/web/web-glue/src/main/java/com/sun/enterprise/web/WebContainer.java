@@ -98,7 +98,9 @@ import org.glassfish.web.admin.monitor.*;
 import org.glassfish.web.config.serverbeans.*;
 import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -183,7 +185,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject
     Configs configs;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private DasConfig dasConfig;
 
     @Inject
@@ -204,7 +206,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject
     private JavaEEIOUtils javaEEIOUtils;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private JCDIService jcdiService;
 
     @Inject
@@ -213,10 +215,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject
     CommandRunner runner;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Server server;
 
     @Inject

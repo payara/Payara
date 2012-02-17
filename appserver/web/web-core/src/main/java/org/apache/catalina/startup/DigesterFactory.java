@@ -61,7 +61,9 @@ package org.apache.catalina.startup;
 import com.sun.logging.LogDomains;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.RuleSet;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXNotRecognizedException;
@@ -82,7 +84,9 @@ public class DigesterFactory {
     /**
      * Used to resolve DTDs and XML Schemas of JavaEE.
      */
-    @Inject(optional=true,name="web")
+    @Inject
+    @Named("web")
+    @Optional
     EntityResolver entityResolver;
 
     /**

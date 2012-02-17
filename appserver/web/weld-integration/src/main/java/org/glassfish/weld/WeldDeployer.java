@@ -82,7 +82,7 @@ import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.PostConstruct;

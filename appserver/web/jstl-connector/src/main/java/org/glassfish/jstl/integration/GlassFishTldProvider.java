@@ -45,7 +45,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.web.TldProvider;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;

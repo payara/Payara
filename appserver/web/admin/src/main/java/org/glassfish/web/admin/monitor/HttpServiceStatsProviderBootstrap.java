@@ -54,7 +54,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -70,7 +71,7 @@ import org.jvnet.hk2.config.ConfigurationException;
 @Scoped(Singleton.class)
 public class HttpServiceStatsProviderBootstrap implements PostConstruct {
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
     private static final Logger logger = LogDomains.getLogger(

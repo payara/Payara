@@ -42,7 +42,7 @@ package org.glassfish.web.embed.impl;
 
 import org.apache.catalina.startup.Constants;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;

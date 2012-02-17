@@ -44,7 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Formatter;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -56,7 +57,7 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service
 public class FileLoggerHandlerFactory implements PostConstruct {
 
-    @Inject(optional=true)
+    @Inject @Optional
     private Formatter logFormatter;
 
     private static ConcurrentMap<String, FileLoggerHandler> map =

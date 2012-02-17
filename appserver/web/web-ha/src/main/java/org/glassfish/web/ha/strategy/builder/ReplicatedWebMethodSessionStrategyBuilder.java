@@ -50,7 +50,7 @@ import org.apache.catalina.core.StandardContext;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.web.ha.session.management.*;
 import org.glassfish.web.valve.GlassFishValve;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;

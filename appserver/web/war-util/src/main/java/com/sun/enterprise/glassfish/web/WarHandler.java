@@ -48,7 +48,8 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.xml.stream.XMLStreamException;
@@ -73,7 +74,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 @Service(name= WarDetector.ARCHIVE_TYPE)
 public class WarHandler extends AbstractArchiveHandler {
-    @Inject(name = WarDetector.ARCHIVE_TYPE)
+    @Inject @Named(WarDetector.ARCHIVE_TYPE)
     ArchiveDetector detector;
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
