@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.config.*;
+import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -136,24 +137,30 @@ public class ListServices implements AdminCommand {
                                 if (service.getType().equalsIgnoreCase(type)) {
                                     if (scope != null) {
                                         if (scope.equals(getServiceScope(service))) {
-                                            matchedServices.add(service);
+                                            //matchedServices.add(service);
+                                            matchedServices.addAll(getServiceConfigurations(service));
+                                            break;
                                         }
                                     } else {
-                                        matchedServices.add(service);
+                                        //matchedServices.add(service);
+                                        matchedServices.addAll(getServiceConfigurations(service));
                                         break;
                                     }
                                 }
                             } else {
                                 if (scope != null) {
                                     if (scope.equals(getServiceScope(service))) {
-                                        matchedServices.add(service);
+                                        //matchedServices.add(service);
+                                        matchedServices.addAll(getServiceConfigurations(service));
                                         break;
                                     } else {
-                                        matchedServices.add(service);
+                                        //matchedServices.add(service);
+                                        matchedServices.addAll(getServiceConfigurations(service));
                                         break;
                                     }
                                 }else{
-                                     matchedServices.add(service);
+                                     //matchedServices.add(service);
+                                    matchedServices.addAll(getServiceConfigurations(service));
                                     break;
                                 }
                             }
@@ -416,6 +423,29 @@ public class ListServices implements AdminCommand {
         report.setExtraProperties(extraProperties);
         ActionReport.ExitCode ec = ActionReport.ExitCode.SUCCESS;
         report.setActionExitCode(ec);
+    }
+
+    /**
+     *   This method takes the Service object and fetches all the corresponding provisioned services, including child services,
+     *   if any.
+     *
+     * @param service - Service object whose Provisioned service(s) is requested for.
+     * @return  List<Service>  - List of the provisioned services (which includes child services of the provisioned services, if any)
+     */
+    private List<Service> getServiceConfigurations(Service service){
+        List<Service> services=new ArrayList<Service>();
+        services.add(service);
+        ServiceInfo parentServiceInfo=serviceUtil.getServiceInfo(service.getServiceName(),null);
+        Set<ServiceInfo> serviceInfoSet=parentServiceInfo.getChildServices();
+        Service svc;
+        for(ServiceInfo serviceInfo:serviceInfoSet){
+            svc=serviceUtil.getService(serviceInfo.getServiceName(),null);
+            if(svc!=null){
+                services.add(svc);
+            }
+
+        }
+        return services;
     }
 
     private String getServiceScope(Service service) {
