@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,11 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
-import org.glassfish.elasticity.metric.TabularMetricAttribute;
-import org.glassfish.elasticity.metric.TabularMetricEntry;
+
 import org.glassfish.elasticity.util.TabularMetricHolder;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
+import javax.inject.Inject;
+
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -55,9 +55,7 @@ import org.glassfish.flashlight.datatree.TreeNode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.external.statistics.CountStatistic;
 
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-import java.util.Map;
 
 
 /**
@@ -78,7 +76,7 @@ public class ProcessingTimeMetricHolder
     TreeNode rootNode = null;
     
     @Inject
-    Habitat habitat;
+    Services services;
     
     @Inject
     ServerEnvironment serverEnv;
@@ -88,7 +86,7 @@ public class ProcessingTimeMetricHolder
         this.table = new TabularMetricHolder<ProcessingTimeStat>("processingTime", ProcessingTimeStat.class);
         this.attributes = new MetricAttribute[] {new InstanceAttribute(), table};
         this.instanceName = serverEnv.getInstanceName();
-        MonitoringRuntimeDataRegistry monitoringRegistry =habitat.getComponent(MonitoringRuntimeDataRegistry.class);
+        MonitoringRuntimeDataRegistry monitoringRegistry = services.forContract(MonitoringRuntimeDataRegistry.class).get();
         rootNode = monitoringRegistry.get(this.instanceName);
     }
 

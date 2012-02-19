@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,16 +43,10 @@ import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.container.AlertContextImpl;
-import org.glassfish.elasticity.engine.message.ElasticMessage;
 import org.glassfish.elasticity.expression.*;
 import org.glassfish.elasticity.util.NotEnoughMetricDataException;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.hk2.Services;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,10 +63,10 @@ public class ExpressionBasedAlert<C extends AlertConfig>
 
     private C config;
 
-    private Habitat habitat;
+    private Services services;
 
-    public void initialize(Habitat habitat, C config) {
-        this.habitat = habitat;
+    public void initialize(Services services, C config) {
+        this.services = services;
         this.config = config;
     }
 
@@ -82,7 +76,7 @@ public class ExpressionBasedAlert<C extends AlertConfig>
                 + ctx.getElasticService().getName());
 
         AlertContextImpl ctxImpl = (AlertContextImpl) ctx;
-        ElasticExpressionEvaluator evaluator = new ElasticExpressionEvaluator(habitat, ctxImpl);
+        ElasticExpressionEvaluator evaluator = new ElasticExpressionEvaluator(services, ctxImpl);
         AlertState result = AlertState.NO_DATA;
         try {
             ExpressionParser parser = new ExpressionParser(config.getExpression());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +39,18 @@
  */
 package org.glassfish.elasticity.engine.container;
 
-import java.util.concurrent.TimeUnit;
 
 import org.glassfish.api.Startup;
-import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
-import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
 import org.glassfish.hk2.PostConstruct;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
@@ -65,9 +63,9 @@ public class ElasticEngine
         implements Startup, PostConstruct {
 
     @Inject
-    Habitat habitat;
+    Services services;
 
-    @Inject(optional = true)
+    @Inject @Optional
     ElasticServices elasticServices;
 
     @Inject
@@ -104,7 +102,7 @@ public class ElasticEngine
 
     public void startElasticService(ElasticService service) {
         if (service.getEnabled()) {
-            ElasticServiceContainer container = habitat.getComponent(ElasticServiceContainer.class);
+            ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
             container.initialize(service);
             elasticServiceManager.addElasticServiceContainer(service.getName(), container);
             container.startContainer();

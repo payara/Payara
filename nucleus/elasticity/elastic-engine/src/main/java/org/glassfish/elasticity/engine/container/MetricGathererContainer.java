@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,11 @@ import org.glassfish.api.Startup;
 import org.glassfish.elasticity.api.MetricGatherer;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import javax.inject.Inject;
 
-import javax.annotation.PostConstruct;
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Service;
+
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +62,7 @@ public class MetricGathererContainer
     private static final int MAX_DATA_HOLD_TIME_IN_SECONDS = 2 * 60 * 60 * 1000;
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private EngineUtil engineUtil;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,7 +87,7 @@ import org.glassfish.api.admin.RestEndpoints;
 public class CreateElasticServiceCommand implements AdminCommand  {
  
 	@Inject
-	Habitat habitat;
+	Services services;
 	
   @Inject
   Domain domain;

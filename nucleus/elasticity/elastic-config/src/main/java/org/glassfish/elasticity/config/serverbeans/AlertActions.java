@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,36 +39,8 @@
  */
 package org.glassfish.elasticity.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
-import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.util.net.NetUtils;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.config.support.*;
-import static org.glassfish.config.support.Constants.*;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.Injectable;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.ReferenceContainer;
-
-import javax.validation.OverridesAttribute;
-import javax.validation.Payload;
-import java.beans.PropertyVetoException;
-import java.io.File;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by IntelliJ IDEA.

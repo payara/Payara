@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package org.glassfish.elasticity.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.*;
 import java.util.List;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -49,7 +48,8 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import java.beans.PropertyVetoException;
@@ -102,7 +102,7 @@ public interface ElasticServices extends DomainExtension {
         @Inject
         Domain domain;
 
-        @Inject(optional = true)
+        @Inject @Optional
         ElasticServices elasticServices = null;
 
         @Override

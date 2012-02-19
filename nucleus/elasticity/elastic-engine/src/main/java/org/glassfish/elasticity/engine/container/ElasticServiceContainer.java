@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,12 @@ import org.glassfish.elasticity.engine.util.ExpressionBasedAlert;
 import org.glassfish.elasticity.group.gms.GroupServiceProvider;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.concurrent.*;
@@ -67,12 +69,12 @@ import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 public class ElasticServiceContainer {
 
     @Inject
-    private Habitat habitat;
+    private Services services;
 
     @Inject
     private ElasticEngineThreadPool threadPool;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private GMSAdapterService gmsAdapterService;
 
     @Inject
@@ -134,8 +136,8 @@ public class ElasticServiceContainer {
         return maxSize.get();
     }
 
-    public Habitat getHabitat() {
-        return habitat;
+    public Services getServices() {
+        return services;
     }
 
     public MessageProcessor getMessageProcessor() {
@@ -233,7 +235,7 @@ public class ElasticServiceContainer {
             long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
             String alertName = alertConfig.getName();
             ExpressionBasedAlert<AlertConfig> alert = new ExpressionBasedAlert<AlertConfig>();
-            alert.initialize(habitat, alertConfig);
+            alert.initialize(services, alertConfig);
             AlertContextImpl alertCtx = new AlertContextImpl(this, alertConfig, alert);
             ScheduledFuture<?> future =
                     threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);

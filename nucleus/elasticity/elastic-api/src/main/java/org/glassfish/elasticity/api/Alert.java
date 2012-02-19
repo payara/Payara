@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,10 @@
  */
 package org.glassfish.elasticity.api;
 
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Contract;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * An Alert typically uses some metrics and determines if the Alert's state.
@@ -62,7 +62,7 @@ public interface Alert<C extends AlertConfig> {
 	 *
 	 * @param config
 	 */
-	public void initialize(Habitat h, C config);
+	public void initialize(Services h, C config);
 	
 	/**
 	 * Execute this rule and return the state of this rule
