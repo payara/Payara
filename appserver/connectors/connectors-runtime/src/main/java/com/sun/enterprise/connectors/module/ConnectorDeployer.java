@@ -69,7 +69,6 @@ import org.glassfish.internal.api.ConnectorClassFinder;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
 import org.glassfish.resources.listener.ResourceManager;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
@@ -77,6 +76,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
 import javax.validation.*;
 import javax.validation.bootstrap.GenericBootstrap;
 import java.io.*;

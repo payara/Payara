@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,12 +57,12 @@ import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.naming.ResourceNamingService;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.component.Habitat;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
 import java.util.*;
@@ -78,7 +78,13 @@ import java.util.logging.Level;
 public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
     @Inject
-    private Habitat habitat;
+    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+
+    @Inject
+    private Provider<DataSourceDefinitionProxy> dataSourceDefinitionProxyProvider;
+
+    @Inject
+    private Provider<ResourceNamingService> resourceNamingServiceProvider;
 
     private static Logger _logger = LogDomains.getLogger(DataSourceDefinitionDeployer.class, LogDomains.RSR_LOGGER);
 
@@ -130,7 +136,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
 
     private ResourceDeployer getDeployer(Object resource) {
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 
     private DataSourceProperty convertProperty(String name, String value) {
@@ -257,8 +263,8 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         // when there are multiple PUs eg: one PU in each of war, ejb-jar. Make sure that
         // DSD is bound to JNDI only when it is not already deployed.
         if(!dsd.isDeployed()){
-            DataSourceDefinitionProxy proxy = habitat.getComponent(DataSourceDefinitionProxy.class);
-            ResourceNamingService resourceNamingService = habitat.getComponent(ResourceNamingService.class);
+            DataSourceDefinitionProxy proxy = dataSourceDefinitionProxyProvider.get();
+            ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
             proxy.setDescriptor(dsd);
 
             //String appName = application.getAppName();

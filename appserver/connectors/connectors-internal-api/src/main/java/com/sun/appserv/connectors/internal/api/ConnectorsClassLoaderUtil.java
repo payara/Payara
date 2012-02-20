@@ -48,7 +48,6 @@ import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
 
@@ -67,6 +66,8 @@ import java.util.ArrayList;
 import com.sun.enterprise.loader.ASURLClassLoader;
 import com.sun.logging.LogDomains;
 import java.util.Locale;
+
+import javax.inject.Inject;
 
 
 /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,9 @@ import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.resource.spi.ManagedConnectionFactory;
@@ -70,8 +73,6 @@ import java.security.Principal;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Recovery Handler for Jdbc Resources
@@ -81,7 +82,8 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService txService;
 
     @Inject
@@ -91,7 +93,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
     private Applications applications;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     private ResourcesUtil resourcesUtil = null;
 
@@ -176,7 +178,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
         }
 
         //TODO V3 done so as to initialize connectors-runtime before loading jdbc-resources. need a better way ?
-        ConnectorRuntime crt = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class);
+        ConnectorRuntime crt = connectorRuntimeProvider.get();
         
         List<JdbcConnectionPool> jdbcPools = new ArrayList<JdbcConnectionPool>();
 

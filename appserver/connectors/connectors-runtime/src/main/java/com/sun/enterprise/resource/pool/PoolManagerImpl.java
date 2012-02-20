@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,13 +58,13 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ComponentInvocationHandler;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.RetryableUnavailableException;
 import javax.transaction.Transaction;
@@ -95,7 +95,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
     private static Logger _logger = null;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     private ConnectorRuntime runtime;
 
@@ -351,7 +351,7 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
 
     private ConnectorRuntime getConnectorRuntime() {
         if(runtime == null){
-            runtime = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class, null);
+            runtime = connectorRuntimeProvider.get();
         }
         return runtime;
     }

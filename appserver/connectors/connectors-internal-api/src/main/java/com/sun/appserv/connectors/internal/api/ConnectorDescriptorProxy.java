@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,10 @@ package com.sun.appserv.connectors.internal.api;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -59,7 +59,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
 public class ConnectorDescriptorProxy implements NamingObjectProxy.InitializationNamingObjectProxy{
     @Inject
-    protected Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     private ConnectorDescriptor desc;
     private String rarName;
@@ -82,7 +82,7 @@ public class ConnectorDescriptorProxy implements NamingObjectProxy.Initializatio
     }
 
     protected ConnectorRuntime getConnectorRuntime() {
-        return connectorRuntimeHabitat.getComponent(ConnectorRuntime.class, null);
+        return connectorRuntimeProvider.get();
     }
 
     public Object create(Context ic) throws NamingException {

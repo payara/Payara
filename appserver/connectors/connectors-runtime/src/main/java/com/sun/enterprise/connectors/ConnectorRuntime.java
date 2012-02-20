@@ -52,6 +52,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URI;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
@@ -105,7 +108,6 @@ import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.api.ConnectorClassLoaderService;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
@@ -151,13 +153,47 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private ComponentEnvManager componentEnvManager;
 
     @Inject
-    private Habitat wmf;
+    private Provider<JavaEETransactionManager> javaEETransactionManagerProvider;
 
     @Inject
-    private Habitat allResources;
+    private Provider<WorkManagerFactory> workManagerFactoryProvider;
 
     @Inject
-    private Habitat deployerHabitat;
+    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+
+    @Inject
+    private Provider<ApplicationRegistry> applicationRegistryProvider;
+
+    @Inject
+    private Provider<ApplicationArchivist> applicationArchivistProvider;
+
+    @Inject
+    private Provider<FileArchive> fileArchiveProvider;
+
+    @Inject
+    private Provider<SecurityRoleMapperFactory> securityRoleMapperFactoryProvider;
+
+    @Inject
+    private Provider<SecurityServicesUtil> securityServicesUtilProvider;
+
+    @Inject
+    private Provider<ContainerCallbackHandler> containerCallbackHandlerProvider;
+
+    @Inject
+    private Provider<ArchivistFactory> archivistFactoryProvider;
+
+    @Inject
+    private Provider<WorkContextHandler> workContextHandlerProvider;
+
+    @Inject
+    private Provider<DataSourceDefinitionDeployer> dataSourceDefinitionDeployerProvider;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<org.glassfish.connectors.config.ConnectorService> connectorServiceProvider;
+
+    @Inject
+    private Provider<Applications> applicationsProvider;
 
     @Inject
     private ClassLoaderHierarchy clh;
@@ -169,14 +205,23 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private ActiveRAFactory activeRAFactory;
 
     @Inject
-    private Habitat applications;
+    private Provider<ConnectionPoolProbeProviderUtil> connectionPoolProbeProviderUtilProvider;
 
     @Inject
-    private Habitat habitat;
+    private Provider<MonitoringBootstrap> monitoringBootstrapProvider;
+
+    @Inject
+    private Provider<PoolMonitoringLevelListener> poolMonitoringLevelListenerProvider;
+
+    @Inject
+    private Provider<Domain> domainProvider;
+
+    @Inject
+    private Provider<ResourceManager> resourceManagerProvider;
 
     @Inject
     private ProcessEnvironment processEnvironment;
-    
+
     @Inject
     private DriverLoader driverLoader;
 
@@ -213,7 +258,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         }
         return _runtime;
     }
-    
+
     /**
      * Private constructor. It is private as it follows singleton pattern.
      */
@@ -222,13 +267,13 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public ConnectionPoolProbeProviderUtil getProbeProviderUtil(){
-        return habitat.getComponent(ConnectionPoolProbeProviderUtil.class);
+        return connectionPoolProbeProviderUtilProvider.get();
     }
 
     public ResourceNamingService getResourceNamingService(){
         return resourceNamingService;
     }
-    
+
     /**
      * Returns the execution environment.
      *
@@ -241,7 +286,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public MonitoringBootstrap getMonitoringBootstrap(){
-        return habitat.getComponent(MonitoringBootstrap.class);
+        return monitoringBootstrapProvider.get();
     }
 
     /**
@@ -458,7 +503,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
                         resourceInfo.getApplicationName(), resourceInfo.getModuleName());
                 resourceInfo = tmpInfo;
             }
-            
+
             result = connectorResourceAdmService.lookup(resourceInfo);
         }catch(NamingException ne){
             if(force && isDAS()){
@@ -822,7 +867,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         adminObjectAdminService = (ConnectorAdminObjectAdminServiceImpl)
                 ConnectorAdminServicesFactory.getService(ConnectorConstants.AOR);
         configParserAdmService = new ConnectorConfigurationParserServiceImpl();
-        jdbcAdminService = (JdbcAdminServiceImpl) 
+        jdbcAdminService = (JdbcAdminServiceImpl)
                 ConnectorAdminServicesFactory.getService(ConnectorConstants.JDBC);
 
         initializeEnvironment(processEnvironment);
@@ -830,7 +875,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
             getProbeProviderUtil().registerProbeProvider();
         }
         if(isServer() || isEmbedded()){
-            poolMonitoringLevelListener = habitat.getComponent(PoolMonitoringLevelListener.class);
+            poolMonitoringLevelListener = poolMonitoringLevelListenerProvider.get();
         }
 
     }
@@ -924,10 +969,10 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * {@inheritDoc}
      */
     public void cleanUpResourcesAndShutdownAllActiveRAs(){
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = domainProvider.get();
         if(domain != null){
             Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
-            habitat.getComponent(ResourceManager.class).undeployResources(resources);
+            resourceManagerProvider.get().undeployResources(resources);
         }
         poolManager.killFreeConnectionsInPools();
         resourceAdapterAdmService.stopAllActiveResourceAdapters();
@@ -953,7 +998,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public Timer getTimer() {
-        return ConnectorTimerProxy.getProxy();        
+        return ConnectorTimerProxy.getProxy();
     }
 
     /**
@@ -1040,7 +1085,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public JavaEETransactionManager getTransactionManager() {
         if (transactionManager == null) {
-            transactionManager = habitat.getComponent(JavaEETransactionManager.class);
+            transactionManager = javaEETransactionManagerProvider.get();
         }
         return transactionManager;
     }
@@ -1106,7 +1151,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public WorkManager getWorkManagerProxy(String poolId, String moduleName, ClassLoader rarCL)
             throws ConnectorRuntimeException {
-        return habitat.getComponent(WorkManagerFactory.class).getWorkManagerProxy(poolId, moduleName, rarCL);
+        return workManagerFactoryProvider.get().getWorkManagerProxy(poolId, moduleName, rarCL);
     }
 
     /**
@@ -1120,13 +1165,13 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public void removeWorkManagerProxy(String moduleName) {
-        habitat.getComponent(WorkManagerFactory.class).removeWorkManager(moduleName);
+        workManagerFactoryProvider.get().removeWorkManager(moduleName);
     }
 
     public void addAdminObject(String appName, String connectorName, ResourceInfo resourceInfo,
                                String adminObjectType, String adminObjectClassName, Properties props)
             throws ConnectorRuntimeException {
-        adminObjectAdminService.addAdminObject(appName, connectorName, resourceInfo, adminObjectType, 
+        adminObjectAdminService.addAdminObject(appName, connectorName, resourceInfo, adminObjectType,
                 adminObjectClassName, props);
     }
 
@@ -1154,7 +1199,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public ResourceDeployer getResourceDeployer(Object resource){
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 
     /** Add the resource adapter configuration to the connector registry
@@ -1214,29 +1259,29 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public Applications getApplications() {
-        return applications.getComponent(Applications.class);
+        return applicationsProvider.get();
     }
 
     public ApplicationRegistry getAppRegistry() {
-        return habitat.getComponent(ApplicationRegistry.class);
+        return applicationRegistryProvider.get();
     }
 
     public ApplicationArchivist getApplicationArchivist(){
-        return habitat.getComponent(ApplicationArchivist.class);
+        return applicationArchivistProvider.get();
     }
 
     public FileArchive getFileArchive(){
-        return habitat.getComponent(FileArchive.class);
+        return fileArchiveProvider.get();
     }
 
     public Domain getDomain() {
-        return habitat.getComponent(Domain.class);
+        return domainProvider.get();
     }
 
     public ServerEnvironment getServerEnvironment() {
         return env;
     }
-    
+
     public void createActiveResourceAdapterForEmbeddedRar(String rarModuleName) throws ConnectorRuntimeException {
         connectorService.createActiveResourceAdapterForEmbeddedRar(rarModuleName);
     }
@@ -1260,7 +1305,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public SecurityRoleMapperFactory getSecurityRoleMapperFactory() {
-        return habitat.getComponent(SecurityRoleMapperFactory.class);
+        return securityRoleMapperFactoryProvider.get();
     }
 
     /**
@@ -1268,13 +1313,13 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public CallbackHandler getCallbackHandler(){
         //TODO V3 hack to make sure that SecurityServicesUtil is initialized before ContainerCallbackHander
-        habitat.getComponent(SecurityServicesUtil.class);
-        return habitat.getComponent(ContainerCallbackHandler.class);
+        securityServicesUtilProvider.get();
+        return containerCallbackHandlerProvider.get();
     }
 
     public ConnectorArchivist getConnectorArchvist() throws ConnectorRuntimeException {
         try{
-            ArchivistFactory archivistFactory = habitat.getComponent(ArchivistFactory.class);
+            ArchivistFactory archivistFactory = archivistFactoryProvider.get();
             return (ConnectorArchivist)archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.rarType());
         }catch(IOException ioe){
             _logger.log(Level.WARNING, "unable to get Connector Archivist : ", ioe);
@@ -1285,7 +1330,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public WorkContextHandler getWorkContextHandler(){
-        return habitat.getComponent(WorkContextHandler.class);
+        return workContextHandlerProvider.get();
     }
 
 
@@ -1308,14 +1353,14 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * {@inheritDoc}
      */
     public void registerDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
-        habitat.getComponent(DataSourceDefinitionDeployer.class).registerDataSourceDefinitions(application);
+        dataSourceDefinitionDeployerProvider.get().registerDataSourceDefinitions(application);
     }
 
     /**
      * {@inheritDoc}
      */
     public void unRegisterDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
-        habitat.getComponent(DataSourceDefinitionDeployer.class).unRegisterDataSourceDefinitions(application);
+        dataSourceDefinitionDeployerProvider.get().unRegisterDataSourceDefinitions(application);
     }
 
     /**
@@ -1391,9 +1436,9 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     private Resources getResources(){
         if(globalResources == null){
-            globalResources = habitat.getComponent(Domain.class).getResources();
+            globalResources = domainProvider.get().getResources();
         }
-        return globalResources; 
+        return globalResources;
     }
 
     /**
@@ -1401,8 +1446,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public long getShutdownTimeout() {
         return ConnectorsUtil.getShutdownTimeout(
-                habitat.getComponent(org.glassfish.connectors.config.ConnectorService.class,
-                    ServerEnvironment.DEFAULT_INSTANCE_NAME));
+                connectorServiceProvider.get());
     }
 
     /**
@@ -1427,13 +1471,13 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
 
     /**
-     * Get Validation table names list for the database that the jdbc 
+     * Get Validation table names list for the database that the jdbc
      * connection pool refers to. This is used for connection validation.
      * @param poolInfo
      * @return all validation table names.
      * @throws javax.resource.ResourceException
      * @throws javax.naming.NamingException
-     */        
+     */
     public Set<String> getValidationTableNames(PoolInfo poolInfo) throws ResourceException {
         return jdbcAdminService.getValidationTableNames(poolInfo);
     }
@@ -1443,14 +1487,14 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * connection pool refers to. This is used for custom connection validation.
      * @param className class name
      * @return all validation class names.
-     */        
+     */
     public Set<String> getValidationClassNames(String className) {
         return jdbcAdminService.getValidationClassNames(className);
     }
-    
+
     /**
      * Get jdbc driver implementation class names list for the dbVendor and
-     * resource type supplied. 
+     * resource type supplied.
      * @param dbVendor
      * @param resType
      * @return all jdbc driver implementation class names
@@ -1480,19 +1524,19 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * @return ConnectorBeanValidator
      */
     public ConnectorJavaBeanValidator getConnectorBeanValidator(){
-        return connectorBeanValidator;    
+        return connectorBeanValidator;
     }
 
     /**
-     * Check if ping is on during pool creation. 
-     * 
+     * Check if ping is on during pool creation.
+     *
      * @param poolInfo
      * @return
      */
     public boolean getPingDuringPoolCreation(PoolInfo poolInfo) {
         return ConnectorsUtil.getPingDuringPoolCreation(poolInfo, getResources(poolInfo));
     }
-    
+
     /**
      * Get jdbc database vendor names list.
      * @return set of common database vendor names
@@ -1526,6 +1570,6 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public ResourceManager getGlobalResourceManager(){
-        return habitat.getComponent(ResourceManager.class);
+        return resourceManagerProvider.get();
     }
 }

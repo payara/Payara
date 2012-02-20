@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,16 +50,17 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.api.ResourceStatus;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static org.glassfish.connectors.admin.cli.CLIConstants.CCP.*;
 import static org.glassfish.connectors.admin.cli.CLIConstants.*;
@@ -158,7 +159,7 @@ public class CreateConnectorConnectionPool implements AdminCommand {
     private Domain domain;
 
     @Inject
-    private Habitat habitat;
+    private Provider<ConnectorConnectionPoolManager> connectorConnectionPoolManagerProvider;
 
     @Inject
     private CommandRunner commandRunner;
@@ -201,7 +202,7 @@ public class CreateConnectorConnectionPool implements AdminCommand {
         ResourceStatus rs;
 
         try {
-            ConnectorConnectionPoolManager connPoolMgr = habitat.getComponent(ConnectorConnectionPoolManager.class);
+            ConnectorConnectionPoolManager connPoolMgr = connectorConnectionPoolManagerProvider.get();
             rs = connPoolMgr.create(domain.getResources(), attrList, properties, target);
         } catch(Exception e) {
             Logger.getLogger(CreateConnectorConnectionPool.class.getName()).log(Level.SEVERE,

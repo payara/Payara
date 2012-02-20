@@ -52,7 +52,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.connectors.config.BackendPrincipal;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.SecurityMap;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -67,6 +66,8 @@ import java.util.Collection;
 import java.util.List;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
+
+import javax.inject.Inject;
 
 /**
  * Update Connector SecurityMap command

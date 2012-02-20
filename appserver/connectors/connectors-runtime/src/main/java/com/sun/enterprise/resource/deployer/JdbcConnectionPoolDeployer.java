@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.Singleton;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
@@ -74,6 +74,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 /**
  * Handles Jdbc connection pool events in the server instance. When user adds a
@@ -96,7 +98,8 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
     @Inject
     private ConnectorRuntime runtime;
 
-    @Inject(optional=true) //we need it only in server mode
+    @Inject
+    @Optional //we need it only in server mode
     private Domain domain;
 
     static private StringManager sm = StringManager.getManager(

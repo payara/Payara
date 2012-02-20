@@ -50,7 +50,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.connectors.config.GroupMap;
 import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -61,6 +60,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 import java.beans.PropertyVetoException;
 import java.util.*;
 import org.glassfish.api.admin.*;
+
+import javax.inject.Inject;
 
 /**
  * Update Connector Work Security Map command

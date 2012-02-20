@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,10 @@
 package com.sun.enterprise.resource.pool.monitor;
 
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Utility class to create providers for monitoring purposes.
@@ -58,7 +58,7 @@ public class ConnectionPoolProbeProviderUtil {
     private ConnectionPoolProbeProvider jdbcProbeProvider = null;
     
     @Inject 
-    private Habitat habitat;
+    private Provider<ConnectionPoolStatsProviderBootstrap> connectionPoolStatsProviderBootstrapProvider;
     
     public void registerProbeProvider() {
         if(ConnectorRuntime.getRuntime().isServer()) {
@@ -91,7 +91,7 @@ public class ConnectionPoolProbeProviderUtil {
     }
 
     public ConnectionPoolStatsProviderBootstrap getConnPoolBootstrap() {
-        return habitat.getComponent(ConnectionPoolStatsProviderBootstrap.class);
+        return connectionPoolStatsProviderBootstrapProvider.get();
     }
     /**
      * Get probe provider for connector connection pool related events

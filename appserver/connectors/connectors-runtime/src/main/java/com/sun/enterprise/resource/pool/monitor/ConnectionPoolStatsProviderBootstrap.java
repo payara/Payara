@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,17 +56,18 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Bootstrap operations of stats provider objects are done by this class.
@@ -95,8 +96,11 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
     private PoolManager poolManager;
 
     @Inject
-    private Habitat habitat;
-    
+    private Provider<Domain> domainProvider;
+
+    @Inject
+    private Provider<ConnectionPoolProbeProviderUtil> connectionPoolProbeProviderUtilProvider;
+
     //List of all jdbc pool stats providers that are created and stored.
     private List<JdbcConnPoolStatsProvider> jdbcStatsProviders = null;
     
@@ -163,11 +167,11 @@ public class ConnectionPoolStatsProviderBootstrap implements PostConstruct,
     }
 
     public Resources getResources(){
-        return habitat.getComponent(Domain.class).getResources();
+        return domainProvider.get().getResources();
     }
 
     public ConnectionPoolProbeProviderUtil getProbeProviderUtil(){
-        return habitat.getComponent(ConnectionPoolProbeProviderUtil.class);
+        return connectionPoolProbeProviderUtilProvider.get();
     }
 
     /**

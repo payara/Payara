@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,13 +58,14 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.listener.ResourceManagerLifecycleListener;
 import org.glassfish.resources.util.ResourceUtil;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.*;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
@@ -87,7 +88,16 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     private GlassfishNamingManager namingMgr;
 
     @Inject
-    private Habitat habitat;
+    private Provider<ConnectorDescriptorProxy> connectorDescriptorProxyProvider;
+
+    @Inject
+    private Provider<CommandRunner> commandRunnerProvider;
+
+    @Inject
+    private Provider<ActionReport> actionReportProvider;
+
+    @Inject
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     @Inject
     private Domain domain;
@@ -118,7 +128,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     private void bindConnectorDescriptorProxies(String rarName) {
         //these proxies are needed as appclient container may lookup descriptors
         String jndiName = ConnectorsUtil.getReservePrefixedJNDINameForDescriptor(rarName);
-        ConnectorDescriptorProxy proxy = habitat.getComponent(ConnectorDescriptorProxy.class);
+        ConnectorDescriptorProxy proxy = connectorDescriptorProxyProvider.get();
         proxy.setJndiName(jndiName);
         proxy.setRarName(rarName);
         try {
@@ -131,7 +141,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
 
     private ConnectorRuntime getConnectorRuntime() {
         if(runtime == null){
-            runtime = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class, null);
+            runtime = connectorRuntimeProvider.get();
         }
         return runtime;
     }
@@ -253,8 +263,8 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
                             }
                             if(ping){
                                 PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
-                                CommandRunner commandRunner = habitat.getComponent(CommandRunner.class);
-                                ActionReport report = habitat.getComponent(ActionReport.class);
+                                CommandRunner commandRunner = commandRunnerProvider.get();
+                                ActionReport report = actionReportProvider.get();
                                 CommandRunner.CommandInvocation invocation =
                                         commandRunner.getCommandInvocation("ping-connection-pool", report);
                                 ParameterMap params = new ParameterMap();

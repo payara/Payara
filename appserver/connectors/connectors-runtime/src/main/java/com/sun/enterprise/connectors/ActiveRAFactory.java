@@ -44,6 +44,7 @@ import com.sun.appserv.connectors.internal.api.*;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.logging.LogDomains;
 
+import javax.inject.Inject;
 import javax.resource.spi.ResourceAdapter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,7 +53,6 @@ import java.util.Collection;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.component.Habitat;
 

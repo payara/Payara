@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.resource.recovery;
 
+import javax.inject.Inject;
 import javax.transaction.xa.XAResource;
 import java.util.Set;
 import java.util.List;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import com.sun.enterprise.transaction.spi.RecoveryResourceListener;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;

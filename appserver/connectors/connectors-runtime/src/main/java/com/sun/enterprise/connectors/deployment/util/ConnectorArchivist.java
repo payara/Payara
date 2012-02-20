@@ -50,12 +50,13 @@ import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.ConnectorRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.io.IOException;
+
+import javax.inject.Inject;
 
 /**
  * This class is responsible for handling J2EE Connector archive files.

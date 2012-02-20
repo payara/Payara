@@ -41,9 +41,7 @@
 package com.sun.appserv.connectors.internal.api;
 
 import org.glassfish.internal.api.*;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -52,6 +50,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sun.logging.LogDomains;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * We support two policies:
@@ -77,7 +78,7 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
     private AppSpecificConnectorClassLoaderUtil appsSpecificCCLUtil;
 
     @Inject
-    Habitat habitat;
+    private Provider<ClassLoaderHierarchy> classLoaderHierarchyProvider;
 
     private Logger logger = LogDomains.getLogger(ConnectorClassLoaderServiceImpl.class, LogDomains.RSR_LOGGER);
 
@@ -133,7 +134,7 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
     }
 
     private ClassLoader getCommonClassLoader(){
-        return habitat.getComponent(ClassLoaderHierarchy.class).getCommonClassLoader();
+        return classLoaderHierarchyProvider.get().getCommonClassLoader();
     }
 
     private DelegatingClassLoader createConnectorClassLoaderForApplication(String appName){

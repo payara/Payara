@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,11 +62,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.resource.spi.ActivationSpec;
 import javax.transaction.xa.XAResource;
 
@@ -86,7 +86,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
     private ApplicationRegistry appsRegistry;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
     
 
     private static Logger _logger = LogDomains.getLogger(InboundRecoveryHandler.class, LogDomains.RSR_LOGGER);
@@ -142,7 +142,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
             }
 
             //TODO V3 done so as to initialize connectors-runtime before loading inbound active RA. need a better way ?
-            ConnectorRuntime cr = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class);
+            ConnectorRuntime cr = connectorRuntimeProvider.get();
             ConnectorRegistry creg = ConnectorRegistry.getInstance();
 
             // for each RA (key in the map) get the list (value) of MDB Descriptors
@@ -302,7 +302,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
 
     private void createActiveResourceAdapter(String rarModuleName) throws ConnectorRuntimeException {
 
-        ConnectorRuntime cr = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class);
+        ConnectorRuntime cr = connectorRuntimeProvider.get();
         ConnectorRegistry creg = ConnectorRegistry.getInstance();
 
         if (creg.isRegistered(rarModuleName))

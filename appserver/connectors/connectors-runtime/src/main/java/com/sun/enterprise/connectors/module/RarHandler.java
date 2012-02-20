@@ -49,7 +49,6 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
@@ -59,6 +58,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Archive handler for resource-adapters
@@ -72,7 +73,10 @@ public class RarHandler extends AbstractArchiveHandler {
 
     @Inject
     private ConnectorsClassLoaderUtil loader;
-    @Inject(name = RarDetector.ARCHIVE_TYPE) private ArchiveDetector detector;
+
+    @Inject
+    @Named(RarDetector.ARCHIVE_TYPE)
+    private ArchiveDetector detector;
 
     private Logger _logger = LogDomains.getLogger(RarHandler.class, LogDomains.RSR_LOGGER);
 

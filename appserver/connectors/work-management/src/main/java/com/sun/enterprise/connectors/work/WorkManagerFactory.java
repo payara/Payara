@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,11 +45,11 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.resource.spi.work.WorkManager;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -91,7 +91,7 @@ public final class WorkManagerFactory implements com.sun.appserv.connectors.inte
     protected static final Map<String, WorkManager> workManagers;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     private ConnectorRuntime runtime;
 
@@ -201,7 +201,7 @@ public final class WorkManagerFactory implements com.sun.appserv.connectors.inte
 
     private ConnectorRuntime getConnectorRuntime() {
         if(runtime == null){
-            runtime = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class);
+            runtime = connectorRuntimeProvider.get();
         }
         return runtime;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.api.ConnectorClassFinder;
@@ -65,6 +63,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 @Service
 public class AppSpecificConnectorClassLoaderUtil {
@@ -73,7 +74,17 @@ public class AppSpecificConnectorClassLoaderUtil {
     private ApplicationRegistry appRegistry;
 
     @Inject
-    private Habitat habitat;
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Provider<ConnectorService> connectorServiceProvider;
+
+    @Inject
+    private Provider<ConnectorsClassLoaderUtil> connectorsClassLoaderUtilProvider;
+
+    @Inject
+    private Provider<Domain> domainProvider;
+
+    @Inject
+    private Provider<Applications> applicationsProvider;
 
     private static final Logger _logger =
             LogDomains.getLogger(AppSpecificConnectorClassLoaderUtil.class, LogDomains.RSR_LOGGER);
@@ -419,8 +430,7 @@ public class AppSpecificConnectorClassLoaderUtil {
 
     public boolean useGlobalConnectorClassLoader() {
         boolean flag = false;
-        ConnectorService connectorService = habitat.getComponent(ConnectorService.class,
-                ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        ConnectorService connectorService = connectorServiceProvider.get();
         //it is possible that connector-service is not yet defined in domain.xml
         if(connectorService != null){
             String classLoadingPolicy = connectorService.getClassLoadingPolicy();
@@ -435,8 +445,7 @@ public class AppSpecificConnectorClassLoaderUtil {
     public Collection<String> getRequiredResourceAdapters(String appName) {
         List<String> requiredRars = new ArrayList<String>();
         if (appName != null) {
-            ConnectorService connectorService = habitat.getComponent(ConnectorService.class,
-                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            ConnectorService connectorService = connectorServiceProvider.get();
             //it is possible that connector-service is not yet defined in domain.xml
 
             if (connectorService != null) {
@@ -457,14 +466,14 @@ public class AppSpecificConnectorClassLoaderUtil {
     }
 
     private ConnectorsClassLoaderUtil getConnectorsClassLoaderUtil() {
-        return habitat.getComponent(ConnectorsClassLoaderUtil.class);
+        return connectorsClassLoaderUtilProvider.get();
     }
 
     private Resources getResources() {
-        return habitat.getComponent(Domain.class).getResources();
+        return domainProvider.get().getResources();
     }
 
     private Applications getApplications() {
-        return habitat.getComponent(Applications.class);
+        return applicationsProvider.get();
     }
 }

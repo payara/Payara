@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,9 @@ import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
@@ -76,9 +79,7 @@ import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Startup;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * Recovery handler for connector resources
@@ -98,13 +99,14 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
     private ConnectorsClassLoaderUtil cclUtil;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     @Inject
-    private Habitat connectorResourceDeployerHabitat;
+    private Provider<ConnectorResourceDeployer> connectorResourceDeployerProvider;
 
     @Inject
-    private Habitat applicationLoaderServiceHabitat;
+    @Named("ApplicationLoaderService")
+    private Provider<Startup> startupProvider;
 
     private ResourcesUtil resourcesUtil = null;
     
@@ -200,7 +202,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
     }
 
     private ConnectorResourceDeployer getConnectorResourceDeployer() {
-        return connectorResourceDeployerHabitat.getComponent(ConnectorResourceDeployer.class);
+        return connectorResourceDeployerProvider.get();
     }
 
     /**
@@ -215,10 +217,10 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
         }
 
         //TODO V3 done so as to initialize connectors-runtime before loading connector-resources. need a better way ?
-        ConnectorRuntime crt = connectorRuntimeHabitat.getComponent(ConnectorRuntime.class);
+        ConnectorRuntime crt = connectorRuntimeProvider.get();
 
         //TODO V3 done so as to load all connector-modules. need to load only connector-modules instead of all apps
-        applicationLoaderServiceHabitat.getComponent(Startup.class,"ApplicationLoaderService");
+        startupProvider.get();
 
         List<ConnectorConnectionPool> connPools = new ArrayList<ConnectorConnectionPool>();
         for (Resource resource : connectorResources) {
