@@ -541,7 +541,7 @@ public class WebModule extends PwcWebModule implements Context {
             if (wbd != null) {
                 servletContext.setAttribute(
                         Constants.IS_DISTRIBUTABLE_ATTRIBUTE,
-                        Boolean.valueOf(wbd.isDistributable()));
+                        wbd.isDistributable());
             }
             servletContext.setAttribute(
                     Constants.ENABLE_HA_ATTRIBUTE,
