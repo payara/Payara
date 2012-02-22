@@ -39,20 +39,16 @@
  */
 package org.glassfish.paas.mq;
 
-import java.io.File;
-import java.util.*;
-import java.util.logging.Level;
-
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.javaee.core.deployment.JavaEEDeploymentUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.javaee.core.deployment.DolProvider;
+import org.glassfish.javaee.core.deployment.JavaEEDeploymentUtils;
 import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
 import org.glassfish.paas.mq.logger.MQServicePluginLogger;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
@@ -60,8 +56,12 @@ import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.MQServiceType;
-import org.glassfish.paas.orchestrator.service.metadata.*;
+import org.glassfish.paas.orchestrator.service.metadata.Property;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.BasicProvisionedService;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -72,7 +72,9 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
-import org.glassfish.paas.orchestrator.service.spi.Service;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
 
 import static org.glassfish.paas.mq.Constants.*;
 
@@ -115,7 +117,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     public Set getServiceReferences(String appName, ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         Set<ServiceReference> serviceReferences = new LinkedHashSet<ServiceReference>();
 
-        if(discoverServiceReferences(cloudArchive).size() > 0){
+        if (discoverServiceReferences(cloudArchive).size() > 0) {
             serviceReferences.add(new ServiceReference(cloudArchive.getName(), JAVAEE_SERVICE_REFERENCE, null));
         }
         return serviceReferences;
@@ -196,9 +198,9 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         return implicitServiceDescriptions;
     }
 
-    private boolean isDuplicate(ServiceReference serviceReference, Set<ServiceReference> serviceReferences){
-        for(ServiceReference sr : serviceReferences){
-            if(sr.getName().equals(serviceReference.getName()) && sr.getType().equals(serviceReference.getType())){
+    private boolean isDuplicate(ServiceReference serviceReference, Set<ServiceReference> serviceReferences) {
+        for (ServiceReference sr : serviceReferences) {
+            if (sr.getName().equals(serviceReference.getName()) && sr.getType().equals(serviceReference.getType())) {
                 return true;
             }
         }
@@ -214,7 +216,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 ResourceReferenceDescriptor resRefDesc = (ResourceReferenceDescriptor) resourceRef;
                 if (serviceReferenceTypes.contains(resRefDesc.getType())) {
                     ServiceReference serviceRef = new ServiceReference(resRefDesc.getJndiName(), resRefDesc.getType(), null);
-                    if(!isDuplicate(serviceRef, serviceReferences)){
+                    if (!isDuplicate(serviceRef, serviceReferences)) {
                         serviceReferences.add(serviceRef);
                     }
                 }
@@ -225,7 +227,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 JmsDestinationReferenceDescriptor jmsDestRefDesc = (JmsDestinationReferenceDescriptor) jmsDestRef;
                 if (serviceReferenceTypes.contains(jmsDestRefDesc.getRefType())) {
                     ServiceReference serviceRef = new ServiceReference(jmsDestRefDesc.getJndiName(), jmsDestRefDesc.getRefType(), null);
-                    if(!isDuplicate(serviceRef, serviceReferences)){
+                    if (!isDuplicate(serviceRef, serviceReferences)) {
                         serviceReferences.add(serviceRef);
                     }
                 }
@@ -235,7 +237,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
                 MessageDestinationReferenceDescriptor msgDestnRefDesc = (MessageDestinationReferenceDescriptor) jmsDestRef;
                 if (serviceReferenceTypes.contains(msgDestnRefDesc.getDestinationType())) {
                     ServiceReference serviceRef = new ServiceReference(msgDestnRefDesc.getJndiName(), msgDestnRefDesc.getDestinationType(), null);
-                    if(!isDuplicate(serviceRef, serviceReferences)){
+                    if (!isDuplicate(serviceRef, serviceReferences)) {
                         serviceReferences.add(serviceRef);
                     }
                 }
@@ -243,7 +245,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         }
     }
 
-    public void executeCommand(VirtualMachine virtualMachine, String ... args){
+    public void executeCommand(VirtualMachine virtualMachine, String... args) {
 
         List<String> commandArgs = Arrays.asList(args);
 
@@ -251,12 +253,12 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
             String output = virtualMachine.executeOn(args);
             MQServicePluginLogger.getLogger().log(Level.FINEST, ("Command [" + commandArgs.toString() + "] output : " + output));
         } catch (Exception e) {
-            MQServicePluginLogger.getLogger().log(Level.WARNING, "Unable to execute command ["+commandArgs.toString()+"]", e);
+            MQServicePluginLogger.getLogger().log(Level.WARNING, "Unable to execute command [" + commandArgs.toString() + "]", e);
         }
     }
 
 
-    public void startMQ(final VirtualMachine virtualMachine){
+    public void startMQ(final VirtualMachine virtualMachine) {
         if (virtualMachine.getMachine() == null) {
             //native mode, taken care by NativeTemplateCustomizer
             return;
@@ -267,28 +269,28 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
         try {
 
-        Thread myThread = new Thread(){
-            public void run(){
-                try{
-                    String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
-                    String[] args = {installDir + File.separator + "mq" +
-                            File.separator + "bin" + File.separator + "imqbrokerd", "-passfile", fileName,
-                            "-port", Constants.MQ_PORT, "-force", "-name", Constants.MQ_BROKER_NAME};
-                    executeCommand(virtualMachine, args);
-                }catch(Exception e){
-                    e.printStackTrace();
-                }finally{
-                    executeCommand(virtualMachine, "rm " + fileName);
+            Thread myThread = new Thread() {
+                public void run() {
+                    try {
+                        String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+                        String[] args = {installDir + File.separator + "mq" +
+                                File.separator + "bin" + File.separator + "imqbrokerd", "-passfile", fileName,
+                                "-port", Constants.MQ_PORT, "-force", "-name", Constants.MQ_BROKER_NAME};
+                        executeCommand(virtualMachine, args);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        executeCommand(virtualMachine, "rm " + fileName);
+                    }
                 }
-            }
-        };
+            };
             myThread.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void stopMQ(VirtualMachine virtualMachine){
+    public void stopMQ(VirtualMachine virtualMachine) {
 
         if (virtualMachine.getMachine() == null) {
             //native mode, taken care by NativeTemplateCustomizer
@@ -299,8 +301,8 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
         String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
         String[] args = {installDir + File.separator + "mq" +
-                File.separator + "bin" + File.separator + "imqcmd", "shutdown","bkr", "-u", "admin", "-f", "-passfile", fileName,
-                "-b", "localhost:"+Constants.MQ_PORT};
+                File.separator + "bin" + File.separator + "imqcmd", "shutdown", "bkr", "-u", "admin", "-f", "-passfile", fileName,
+                "-b", "localhost:" + Constants.MQ_PORT};
         executeCommand(virtualMachine, args);
         executeCommand(virtualMachine, "rm " + fileName);
     }
@@ -415,29 +417,32 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (beforeUndeploy) {
             return;
         }
+        if (serviceConsumer.getServiceType().toString().equalsIgnoreCase("MQ") &&
+                serviceProvider.getServiceType().toString().equalsIgnoreCase("JavaEE") &&
+                serviceReference.getType().equalsIgnoreCase("JavaEE")) {
+            ReadableArchive archive = dc.getDeploymentContext().getSource();
+            Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
-        ReadableArchive archive = dc.getDeploymentContext().getSource();
-        Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
+            if (serviceReferences.size() > 0) {
+                for (ServiceReference svcRef : serviceReferences) {
+                    CommandRunner commandRunner = getCommandRunner(serviceProvider);
+                    String target = serviceProvider.getServiceDescription().getName();
 
-        if (serviceReferences.size() > 0) {
-            for (ServiceReference svcRef : serviceReferences) {
-                CommandRunner commandRunner = getCommandRunner(serviceProvider);
-                String target = serviceProvider.getServiceDescription().getName();
+                    if (svcRef.getType().equals(QUEUE) ||
+                            svcRef.getType().equals(TOPIC) ||
+                            svcRef.getType().equals(QCF) ||
+                            svcRef.getType().equals(TCF)) {
+                        ArrayList<String> params = new ArrayList<String>();
+                        params.add("--target=" + target);
+                        params.add(svcRef.getName()); //resource-name
 
-                if (svcRef.getType().equals(QUEUE) ||
-                        svcRef.getType().equals(TOPIC) ||
-                        svcRef.getType().equals(QCF) ||
-                        svcRef.getType().equals(TCF)) {
-                    ArrayList<String> params = new ArrayList<String>();
-                    params.add("--target=" + target);
-                    params.add(svcRef.getName()); //resource-name
+                        String[] parameters = new String[params.size()];
+                        parameters = params.toArray(parameters);
 
-                    String[] parameters = new String[params.size()];
-                    parameters = params.toArray(parameters);
+                        deleteResource(commandRunner, parameters);
 
-                    deleteResource(commandRunner, parameters);
-
-                    resetJMSService(commandRunner, serviceConsumer, serviceProvider);
+                        resetJMSService(commandRunner, serviceConsumer, serviceProvider);
+                    }
                 }
             }
         }
@@ -449,42 +454,45 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (!beforeDeployment) {
             return;
         }
+        if (serviceConsumer.getServiceType().toString().equalsIgnoreCase("MQ") &&
+                serviceProvider.getServiceType().toString().equalsIgnoreCase("JavaEE") &&
+                serviceReference.getType().equalsIgnoreCase("JavaEE")) {
+            ReadableArchive archive = dc.getDeploymentContext().getSource();
+            Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
-        ReadableArchive archive = dc.getDeploymentContext().getSource();
-        Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
+            if (serviceReferences.size() > 0) {
+                for (ServiceReference svcRef : serviceReferences) {
 
-        if (serviceReferences.size() > 0) {
-            for (ServiceReference svcRef : serviceReferences) {
+                    CommandRunner commandRunner = getCommandRunner(serviceProvider);
+                    String target = serviceProvider.getServiceDescription().getName();
 
-                CommandRunner commandRunner = getCommandRunner(serviceProvider);
-                String target = serviceProvider.getServiceDescription().getName();
+                    configureJMSService(commandRunner, serviceConsumer, serviceProvider);
 
-                configureJMSService(commandRunner, serviceConsumer, serviceProvider);
+                    if (svcRef.getType().equals(QUEUE) ||
+                            svcRef.getType().equals(TOPIC)) {
+                        ArrayList<String> params = new ArrayList<String>();
+                        params.add("--restype=" + svcRef.getType());
+                        params.add("--target=" + target);
+                        String destinationName = svcRef.getName().replaceAll("/", "_");
+                        params.add("--property=" + "imqDestinationName=" + destinationName + ":" + "Name=" + destinationName);
+                        params.add(svcRef.getName()); //resource-name
 
-                if (svcRef.getType().equals(QUEUE) ||
-                        svcRef.getType().equals(TOPIC)) {
-                    ArrayList<String> params = new ArrayList<String>();
-                    params.add("--restype=" + svcRef.getType());
-                    params.add("--target=" + target);
-                    String destinationName = svcRef.getName().replaceAll("/", "_");
-                    params.add("--property=" + "imqDestinationName=" + destinationName + ":" + "Name=" + destinationName);
-                    params.add(svcRef.getName()); //resource-name
+                        String[] parameters = new String[params.size()];
+                        parameters = params.toArray(parameters);
 
-                    String[] parameters = new String[params.size()];
-                    parameters = params.toArray(parameters);
+                        createResource(commandRunner, parameters);
+                    } else if (svcRef.getType().equals(QCF) ||
+                            svcRef.getType().equals(TCF)) {
+                        ArrayList<String> params = new ArrayList<String>();
+                        params.add("--restype=" + svcRef.getType());
+                        params.add("--target=" + target);
+                        params.add(svcRef.getName()); //resource-name
 
-                    createResource(commandRunner, parameters);
-                } else if (svcRef.getType().equals(QCF) ||
-                        svcRef.getType().equals(TCF)) {
-                    ArrayList<String> params = new ArrayList<String>();
-                    params.add("--restype=" + svcRef.getType());
-                    params.add("--target=" + target);
-                    params.add(svcRef.getName()); //resource-name
+                        String[] parameters = new String[params.size()];
+                        parameters = params.toArray(parameters);
 
-                    String[] parameters = new String[params.size()];
-                    parameters = params.toArray(parameters);
-
-                    createResource(commandRunner, parameters);
+                        createResource(commandRunner, parameters);
+                    }
                 }
             }
         }
@@ -496,11 +504,11 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
         boolean hasNoJmsResources = hasNoJmsResources(commandRunner, clusterName);
 
-        if(hasNoJmsResources){
-            String serviceTypeSetCommand = "configs.config."+clusterName+"-config.jms-service.type=EMBEDDED";
-            String defaultJMSHost = "configs.config."+clusterName+"-config.jms-service.jms-host.default_JMS_host.host="+"localhost";
+        if (hasNoJmsResources) {
+            String serviceTypeSetCommand = "configs.config." + clusterName + "-config.jms-service.type=EMBEDDED";
+            String defaultJMSHost = "configs.config." + clusterName + "-config.jms-service.jms-host.default_JMS_host.host=" + "localhost";
             //${JMS_PROVIDER_PORT} cannot be set due to constraint violation in JMS Host (not allowing the property is a bug)
-            String defaultJMSPort = "configs.config."+clusterName+"-config.jms-service.jms-host.default_JMS_host.port=" + "'${JMS_PROVIDER_PORT}'";
+            String defaultJMSPort = "configs.config." + clusterName + "-config.jms-service.jms-host.default_JMS_host.port=" + "'${JMS_PROVIDER_PORT}'";
 
             executeSetCommand(commandRunner, serviceTypeSetCommand);
             executeSetCommand(commandRunner, defaultJMSHost);
@@ -509,11 +517,11 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     }
 
     private boolean hasNoJmsResources(CommandRunner commandRunner, String clusterName) {
-        CommandResult result = commandRunner.run("list-jms-resources",clusterName);
+        CommandResult result = commandRunner.run("list-jms-resources", clusterName);
         MQServicePluginLogger.getLogger().log(Level.FINEST, "list-jms-resources output : " + result.getOutput());
 
         boolean noJmsResourcesFound = false;
-        if(result.getOutput().contains("Nothing to list")){
+        if (result.getOutput().contains("Nothing to list")) {
             noJmsResourcesFound = true;
         }
         return noJmsResourcesFound;
@@ -524,16 +532,16 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
         String clusterName = serviceProvider.getName();
 
-        CommandResult result = commandRunner.run("list-jms-resources",clusterName);
+        CommandResult result = commandRunner.run("list-jms-resources", clusterName);
         MQServicePluginLogger.getLogger().log(Level.FINEST, "list-jms-resources output : " + result.getOutput());
 
         boolean hasNoJmsResources = hasNoJmsResources(commandRunner, clusterName);
 
-        if(hasNoJmsResources){
+        if (hasNoJmsResources) {
             String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
-            String serviceTypeSetCommand = "configs.config."+clusterName+"-config.jms-service.type=REMOTE";
-            String defaultJMSHost = "configs.config."+clusterName+"-config.jms-service.jms-host.default_JMS_host.host="+ipAddress;
-            String defaultJMSPort = "configs.config."+clusterName+"-config.jms-service.jms-host.default_JMS_host.port=" + Constants.MQ_PORT;
+            String serviceTypeSetCommand = "configs.config." + clusterName + "-config.jms-service.type=REMOTE";
+            String defaultJMSHost = "configs.config." + clusterName + "-config.jms-service.jms-host.default_JMS_host.host=" + ipAddress;
+            String defaultJMSPort = "configs.config." + clusterName + "-config.jms-service.jms-host.default_JMS_host.port=" + Constants.MQ_PORT;
 
             executeSetCommand(commandRunner, serviceTypeSetCommand);
             executeSetCommand(commandRunner, defaultJMSHost);
@@ -544,7 +552,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
     private void executeSetCommand(CommandRunner commandRunner, String command) {
         CommandResult result = commandRunner.run("set", command);
         if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
-            MQServicePluginLogger.getLogger().log(Level.WARNING, "failed to execute command [ set "+command+" ] : "
+            MQServicePluginLogger.getLogger().log(Level.WARNING, "failed to execute command [ set " + command + " ] : "
                     + result.getOutput(), result.getFailureCause());
             throw new RuntimeException(result.getFailureCause());
         }
