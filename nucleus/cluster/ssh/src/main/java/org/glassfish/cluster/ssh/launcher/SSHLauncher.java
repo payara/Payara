@@ -765,7 +765,9 @@ public class SSHLauncher {
                 ioe.printStackTrace();
             }
         } finally {
-            c.close();
+            if ( c!= null) {
+                c.close();
+            }
         }
         return status;
     }

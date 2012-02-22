@@ -157,10 +157,11 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     @Override
     protected List<String> getPasswords() {
         List list = new ArrayList<String>();
-        list.add("AS_ADMIN_SSHPASSWORD=" + nodeUtils.sshL.expandPasswordAlias(remotePassword));
+        NodeUtils nUtils = new NodeUtils(habitat, logger);
+        list.add("AS_ADMIN_SSHPASSWORD=" + nUtils.sshL.expandPasswordAlias(remotePassword));
 
         if (sshkeypassphrase != null) {
-            list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nodeUtils.sshL.expandPasswordAlias(sshkeypassphrase));
+            list.add("AS_ADMIN_SSHKEYPASSPHRASE=" + nUtils.sshL.expandPasswordAlias(sshkeypassphrase));
         }
         return list;
     }
