@@ -111,20 +111,6 @@
                                   of Felix even while using GlassFish -->
                              <artifactItem>
                                <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.shell</artifactId>
-                               <version>1.4.1</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.shell.tui</artifactId>
-                               <version>1.4.1</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
                                <artifactId>org.apache.felix.shell.remote</artifactId>
                                <version>1.1.2</version>
                                <type>jar</type>
