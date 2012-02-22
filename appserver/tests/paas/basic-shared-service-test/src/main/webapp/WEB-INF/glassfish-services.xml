@@ -41,15 +41,7 @@
   -->
 
 <glassfish-services>
-<!--service-description name="basic-shared-service" init-type="lazy">
-  <characteristics>
-    <characteristic name="service-type" value="JavaEE"/>
-  </characteristics>
-  <configurations>
-    <configuration name="min.clustersize" value="2"/>
-    <configuration name="max.clustersize" value="4"/>
-  </configurations>
-</service-description-->
+
 <service-reference name="javaee-ref" service-name="my-shared-gf-service"/>
 
 <service-reference name="db-ref" service-name="my-shared-db-service"/>
