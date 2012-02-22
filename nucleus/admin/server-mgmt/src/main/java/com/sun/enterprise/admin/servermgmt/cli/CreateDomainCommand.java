@@ -56,6 +56,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
+import java.beans.PropertyVetoException;
 import java.io.Console;
 import java.io.File;
 import java.util.*;
@@ -77,6 +78,10 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigCode;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  *  This is a local command that creates a domain.
@@ -792,6 +797,8 @@ public final class CreateDomainCommand extends CLICommand {
         glassFishProperties.setConfigFileReadOnly(false);
         glassFishProperties.setProperty(StartupContext.STARTUP_MODULESTARTUP_NAME,
                                         "DomainCreation");
+        glassFishProperties.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY,
+                domDir.getAbsolutePath());
         glassFishProperties.setProperty("-domain", domainConfig.getDomainName());
  
         GlassFish glassfish = runtime.newGlassFish(glassFishProperties);
@@ -827,7 +834,19 @@ public final class CreateDomainCommand extends CLICommand {
             logger.info(strings.get("InvokeInitializer",
                                                 inhabitant.getClass()));
             Container newContainerConfig = inhabitant.getInitialConfig(ctx);
-            config.getContainers().add(newContainerConfig);
+            try {
+                ConfigSupport.apply((new ConfigCode() {
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
+                        ((Config)objects[0]).getContainers().add((Container)objects[1]);
+                        return Boolean.TRUE;
+                    }
+                }), new ConfigBeanProxy[] { config, newContainerConfig });
+            } catch(TransactionFailure e) {
+                logger.severe(strings.get("InitializerTransactionFailure",
+                        inhabitant.getClass()));
+            }
         }
         glassfish.dispose();
     }
