@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,10 +52,11 @@ import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.container.Container;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;
+
+import javax.inject.Inject;
 
 /**
  * Security container service
