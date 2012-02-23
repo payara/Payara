@@ -106,9 +106,6 @@
                                <outputDirectory>${felix.outdir}/bin</outputDirectory>
                                <destFileName>felix.jar</destFileName>
                              </artifactItem>
-                             <!-- We bundle Felix Shell bundles so that
-                                  user can use them to utilize the full power
-                                  of Felix even while using GlassFish -->
                              <artifactItem>
                                <groupId>org.apache.felix</groupId>
                                <artifactId>org.apache.felix.shell.remote</artifactId>
