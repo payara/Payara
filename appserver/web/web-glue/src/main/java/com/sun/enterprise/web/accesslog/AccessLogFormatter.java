@@ -138,7 +138,7 @@ public abstract class AccessLogFormatter {
     /**
      * This method returns a Date object that is accurate to within one
      * second.  If a writerThread calls this method to get a Date and it's been
-     * less than 5 second since a new Date was created, this method
+     * less than 1 second since a new Date was created, this method
      * simply gives out the same Date again so that the system doesn't
      * spend time creating Date objects unnecessarily.
      */
@@ -146,7 +146,7 @@ public abstract class AccessLogFormatter {
 
         // Only create a new Date once per second, max.
         long systime = System.currentTimeMillis();
-        if ((systime - currentDate.getTime()) > 5000) {
+        if ((systime - currentDate.getTime()) > 1000) {
             currentDate = new Date(systime);
         }
 
