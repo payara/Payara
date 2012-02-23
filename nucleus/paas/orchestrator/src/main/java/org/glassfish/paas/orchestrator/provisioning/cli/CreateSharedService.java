@@ -45,25 +45,19 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
-import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -76,7 +70,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -288,8 +281,6 @@ public class CreateSharedService implements AdminCommand {
                         sharedService.setConfigurations(configs);
                     }
 
-                    param.getServices().add(sharedService);
-
                     //while creating a shared service created if --defaultservice=true and --force=true,
                     // any other existing default shared service,if any, is set as non-default service.
                     if (defaultService && force) {
@@ -297,7 +288,7 @@ public class CreateSharedService implements AdminCommand {
                         for (Service service : services.getServices()) {
                             if (service instanceof SharedService) {
                                 SharedService existingSharedService = (SharedService) service;
-                                if (existingSharedService.getDefault() && serviceType.equalsIgnoreCase(existingSharedService.getType()) && !existingSharedService.getServiceName().equalsIgnoreCase(serviceName)) {
+                                if (existingSharedService.getDefault() && serviceType.equalsIgnoreCase(existingSharedService.getType())) {
                                     Transaction transaction = Transaction.getTransaction(param);
                                     SharedService wShService = transaction.enroll(existingSharedService);
                                     wShService.setDefault(false);
@@ -307,6 +298,7 @@ public class CreateSharedService implements AdminCommand {
                         }
 
                     }
+                    param.getServices().add(sharedService);
                     return sharedService;
                 }
             }, services) == null) {

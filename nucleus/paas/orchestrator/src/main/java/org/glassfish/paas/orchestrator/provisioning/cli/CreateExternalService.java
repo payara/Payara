@@ -46,16 +46,14 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.paas.orchestrator.config.Configuration;
-import org.glassfish.paas.orchestrator.config.Configurations;
-import org.glassfish.paas.orchestrator.config.ExternalService;
-import org.glassfish.paas.orchestrator.config.Services;
+import org.glassfish.paas.orchestrator.config.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -69,28 +67,28 @@ import java.util.Properties;
 @Service(name = "create-external-service")
 @Scoped(PerLookup.class)
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value={CommandTarget.DAS})
+@TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "create-external-service", description = "Create an external service")
 })
 public class CreateExternalService implements AdminCommand {
 
-    @Param(name="defaultService", defaultValue = "false", optional = true)
+    @Param(name = "defaultService", defaultValue = "false", optional = true)
     private Boolean defaultService;
 
-    @Param(name="force", defaultValue = "false", optional = true)
+    @Param(name = "force", defaultValue = "false", optional = true)
     private Boolean force;
 
-    @Param(name="servicetype", optional = false)
+    @Param(name = "servicetype", optional = false)
     private String serviceType;
 
-    @Param(name="property", optional=true, separator=':')
+    @Param(name = "property", optional = true, separator = ':')
     private Properties properties;
 
     @Param(name = "configuration", optional = true, separator = ':')
     private Properties configuration;
 
-    @Param(name="servicename", primary = true)
+    @Param(name = "servicename", primary = true)
     private String serviceName;
 
     @Inject
@@ -106,23 +104,19 @@ public class CreateExternalService implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         Services services = serviceUtil.getServices();
-        if(defaultService){
-            if(force){
-                //TODO unset default=true in any other external service that already exists.
-            }else{
-
-                for(org.glassfish.paas.orchestrator.config.Service service : services.getServices()){
-                    if(service instanceof ExternalService){
-                        if(((ExternalService) service).getDefault()){
-                            report.setMessage("An external service named ["+service.getServiceName()+"] is already marked as default service, " +
-                                    "use --force=true to override the same");
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            return;
-                        }
+        if (defaultService && !force) {
+            for (org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+                if (service instanceof ExternalService) {
+                    if (((ExternalService) service).getDefault() && service.getType().equalsIgnoreCase(serviceType)) {
+                        report.setMessage("An external service named [" + service.getServiceName() + "] is already marked as default service, " +
+                                "use --force=true to override the same");
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
                     }
                 }
             }
         }
+
 
         try {
             if (ConfigSupport.apply(new SingleConfigCode<Services>() {
@@ -137,8 +131,8 @@ public class CreateExternalService implements AdminCommand {
                                 = externalService.createChild(Configurations.class);
                         for (Map.Entry e : configuration.entrySet()) {
                             Configuration config = configs.createChild(Configuration.class);
-                            config.setName((String)e.getKey());
-                            config.setValue((String)e.getValue());
+                            config.setName((String) e.getKey());
+                            config.setValue((String) e.getValue());
                             configs.getConfiguration().add(config);
                         }
                         externalService.setConfigurations(configs);
@@ -146,8 +140,8 @@ public class CreateExternalService implements AdminCommand {
                         //TODO list-services can show them.
                         for (Map.Entry e : configuration.entrySet()) {
                             Property prop = externalService.createChild(Property.class);
-                            prop.setName((String)e.getKey());
-                            prop.setValue((String)e.getValue());
+                            prop.setName((String) e.getKey());
+                            prop.setValue((String) e.getValue());
                             externalService.getProperty().add(prop);
                         }
                     }
@@ -160,13 +154,30 @@ public class CreateExternalService implements AdminCommand {
                             externalService.getProperty().add(prop);
                         }
                     }
+                    //while creating an external service created if --defaultservice=true and --force=true,
+                    // any other existing default external service,if any, is set as non-default service.
+                    if (defaultService && force) {
+                        Services services = domain.getExtensionByType(Services.class);
+                        for (org.glassfish.paas.orchestrator.config.Service service : services.getServices()) {
+                            if (service instanceof ExternalService) {
+                                ExternalService existingExternalService = (ExternalService) service;
+                                if (existingExternalService.getDefault() && serviceType.equalsIgnoreCase(existingExternalService.getType())) {
+                                    Transaction transaction = Transaction.getTransaction(param);
+                                    ExternalService wExtService = transaction.enroll(existingExternalService);
+                                    wExtService.setDefault(false);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     param.getServices().add(externalService);
                     return externalService;
                 }
             }, services) == null) {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("Unable to create external service");
-            }else{
+            } else {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
         } catch (TransactionFailure transactionFailure) {
