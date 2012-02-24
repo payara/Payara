@@ -58,6 +58,7 @@ import java.util.ArrayList;
 
 import java.security.PrivilegedAction;
 import java.security.AccessController;
+import javax.inject.Provider;
 import javax.security.auth.Subject;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLSession;
@@ -142,15 +143,22 @@ public final class SecurityMechanismSelector implements PostConstruct {
     // A reference to POAProtocolMgr will be obtained dynamically
     // and set if not null. So set it to null here.
     private  ProtocolManager protocolMgr = null;
-    private SSLUtils sslUtils = null;
+
+    @Inject
+    private SSLUtils sslUtils;
+
     private GlassFishORBHelper orbHelper;
 
     //private CompoundSecMech mechanism = null;
     private ORB orb = null;
     private CSIV2TaggedComponentInfo ctc = null;
-    private InvocationManager invMgr = null;
+
+    @Inject
+    private InvocationManager invMgr;
+
     @Inject
     private Habitat habitat;
+
     @Inject
     private ProcessEnvironment processEnv;
     /**
@@ -162,8 +170,6 @@ public final class SecurityMechanismSelector implements PostConstruct {
     public void postConstruct() {
         try {
             orbHelper = Lookups.getGlassFishORBHelper(habitat);
-            sslUtils = habitat.getComponent(SSLUtils.class);
-            invMgr = habitat.getComponent(InvocationManager.class);
 	    // Initialize client security config
 	    String s = 
 		(orbHelper.getCSIv2Props()).getProperty(GlassFishORBHelper.ORB_SSL_CLIENT_REQUIRED);

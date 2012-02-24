@@ -69,7 +69,6 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.api.invocation.RegisteredComponentInvocationHandler;
@@ -77,6 +76,8 @@ import org.glassfish.internal.data.ModuleInfo;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 /**
  * Security Deployer which generate and clean the security policies
@@ -88,8 +89,23 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     private static final Logger _logger = LogDomains.getLogger(SecurityDeployer.class, LogDomains.SECURITY_LOGGER);
     @Inject
     private ServerContext serverContext;
+
     @Inject
-    private Habitat habitat;
+    @Named("webSecurityCIH")
+    private Provider<RegisteredComponentInvocationHandler> registeredComponentInvocationHandlerProvider;
+
+    @Inject
+    private Provider<Events> eventsProvider;
+
+    @Inject
+    private Provider<HAUtil> haUtilProvider;
+
+    @Inject
+    private Provider<AppCNonceCacheMap> appCNonceCacheMapProvider;
+
+    @Inject
+    private Provider<CNonceCacheFactory> cNonceCacheFactoryProvider;
+
     @Inject
     private WebSecurityManagerFactory wsmf;
 
@@ -128,7 +144,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 commitEjbs(app);
                 if (webDesc != null && !webDesc.isEmpty()) {
                     //Register the WebSecurityComponentInvocationHandler
-                    RegisteredComponentInvocationHandler handler = habitat.getComponent(RegisteredComponentInvocationHandler.class, "webSecurityCIH");
+                    RegisteredComponentInvocationHandler handler = registeredComponentInvocationHandlerProvider.get();
                     if (handler != null) {
                         handler.register();
                     }
@@ -415,7 +431,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
 
     public void postConstruct() {
         listener = new AppDeployEventListener();
-        Events events = habitat.getByContract(Events.class);
+        Events events = eventsProvider.get();
         events.register(listener);
     }
 
@@ -425,7 +441,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         //eagerly injecting them.
         synchronized (this) {
             if (haUtil == null) {
-                haUtil = habitat.getComponent(HAUtil.class);
+                haUtil = haUtilProvider.get();
             }
         }
         
@@ -433,10 +449,10 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
             haEnabled = true;
             synchronized (this) {
                 if (appCnonceMap == null) {
-                    appCnonceMap = habitat.getComponent(AppCNonceCacheMap.class);
+                    appCnonceMap = appCNonceCacheMapProvider.get();
                 }
                 if (cnonceCacheFactory == null) {
-                    cnonceCacheFactory = habitat.getComponent(CNonceCacheFactory.class);
+                    cnonceCacheFactory = cNonceCacheFactoryProvider.get();
                 }
             }
         }
