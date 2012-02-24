@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -355,15 +355,17 @@ public class RemoteAdminCommand {
         // first, make sure we have the command model
         getCommandModel();
 
-        // XXX : This is to take care of camel case from ReST calls which do not go through usual CLI path
-        // XXX : This is not clean; this should be handled the same way it is handled for incoming CLI commands
+        // XXX : This is to take care of camel case from ReST calls that
+	// do not go through usual CLI path
+        // XXX : This is not clean; this should be handled the same way
+	// it is handled for incoming CLI commands
         options = new ParameterMap();
-        for(Map.Entry<String, List<String>> o : opts.entrySet()) {
+        for (Map.Entry<String, List<String>> o : opts.entrySet()) {
             String key = o.getKey();
             List<String> value = o.getValue();
-            options.set(key.toLowerCase(), value);
+            options.set(key.toLowerCase(Locale.ENGLISH), value);
         }
-        operands = options.get("DEFAULT".toLowerCase());
+        operands = options.get("default");	// "DEFAULT".toLowerCase()
 
         try {
             initializeDoUpload();
@@ -382,11 +384,13 @@ public class RemoteAdminCommand {
                 }
                 String paramName = opt.getName();
                 // XXX - no multi-value support
-                String paramValue = options.getOne(paramName.toLowerCase());
-                if(paramValue == null) {
+                String paramValue =
+		    options.getOne(paramName.toLowerCase(Locale.ENGLISH));
+                if (paramValue == null) {
                     // is it an alias ?
-                    if(opt.isParamId(paramName)) {
-                        paramValue = options.getOne(opt.getParam().alias().toLowerCase());
+                    if (opt.isParamId(paramName)) {
+                        paramValue = options.getOne(
+			    opt.getParam().alias().toLowerCase(Locale.ENGLISH));
                     }
                 }
                 if (paramValue == null) // perhaps it's set in the environment?
@@ -1073,7 +1077,8 @@ public class RemoteAdminCommand {
         } catch (RemoteSuccessException rse) {
             // save results
             output = rse.getMessage();
-            attrs = rrm.getMainAtts();
+	    assert rrm != null;
+	    attrs = rrm.getMainAtts();
             return;
         } catch (RemoteException rfe) {
             // XXX - gross

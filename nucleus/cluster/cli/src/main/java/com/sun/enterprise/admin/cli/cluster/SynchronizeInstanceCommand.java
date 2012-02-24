@@ -447,19 +447,25 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 Strings.get("Sync.cantCreateDirectory", dir));
         long modtime = archive.lastModified();
         ZipFile zf = new ZipFile(archive);
-        Enumeration<? extends ZipEntry> e = zf.entries();
-        while (e.hasMoreElements()) {
-            ZipEntry ze = e.nextElement();
-            File entry = new File(dir, ze.getName());
-            if (ze.isDirectory()) {
-                if (!entry.mkdir())
-                    logger.warning(
-                        Strings.get("Sync.cantCreateDirectory", dir));
-            } else {
-                FileUtils.copy(zf.getInputStream(ze),
-                                new FileOutputStream(entry), 0);
-            }
-        }
+	try {
+	    Enumeration<? extends ZipEntry> e = zf.entries();
+	    while (e.hasMoreElements()) {
+		ZipEntry ze = e.nextElement();
+		File entry = new File(dir, ze.getName());
+		if (ze.isDirectory()) {
+		    if (!entry.mkdir())
+			logger.warning(
+			    Strings.get("Sync.cantCreateDirectory", dir));
+		} else {
+		    FileUtils.copy(zf.getInputStream(ze),
+				    new FileOutputStream(entry), 0);
+		}
+	    }
+	} finally {
+	    try {
+		zf.close();
+	    } catch (IOException ex) { }
+	}
         if (!dir.setLastModified(modtime))
             logger.warning(
                 Strings.get("Sync.cantSetModTime", dir));
