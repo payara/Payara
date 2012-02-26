@@ -57,7 +57,6 @@ import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 /**
  * Security container service
@@ -74,12 +73,6 @@ public class SecurityContainer implements Container, PostConstruct{
 
     @Inject
     private Habitat habitat;
-
-    @Inject
-    private Provider<ClassLoaderHierarchy> classLoaderHierarchyProvider;
-
-    @Inject
-    private Provider<WebSecurityManagerFactory> webSecurityManagerFactoryProvider;
 
     static {
         initRoleMapperFactory();
@@ -118,13 +111,14 @@ public class SecurityContainer implements Container, PostConstruct{
         try {
             //TODO: workaround here. Once fixed in V3 we should be able to use
             //Context ClassLoader instead.
-            ClassLoaderHierarchy hierarchy = classLoaderHierarchyProvider.get();
+            ClassLoaderHierarchy hierarchy =
+                            habitat.getComponent(ClassLoaderHierarchy.class);
             ClassLoader tcc = hierarchy.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(tcc);
             
             policyLoader.loadPolicy();
             
-            WebSecurityManagerFactory wsmf = webSecurityManagerFactoryProvider.get();
+            WebSecurityManagerFactory wsmf =habitat.getComponent(WebSecurityManagerFactory.class);
             // this should create all permissions
             wsmf.createManager(wbd,true,serverContext);
             // for an application the securityRoleMapper should already be

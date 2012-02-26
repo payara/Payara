@@ -59,8 +59,6 @@ import java.util.logging.Logger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.inject.Named;
-import javax.inject.Provider;
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
 import javax.security.auth.message.AuthStatus;
@@ -118,6 +116,7 @@ import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 import com.sun.enterprise.security.auth.login.DigestCredentials;
 import com.sun.enterprise.security.auth.digest.api.Key;
 import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
+import org.jvnet.hk2.component.Habitat;
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
 import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
 import com.sun.enterprise.security.auth.digest.impl.NestedDigestAlgoParamImpl;
@@ -187,8 +186,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     /**
      * The factory used for creating <code>WebSecurityManager</code> object.
      */
-    @Inject
-    protected WebSecurityManagerFactory webSecurityManagerFactory;
+    protected WebSecurityManagerFactory webSecurityManagerFactory = null;
             
     protected boolean isCurrentURIincluded = false;
     //private ArrayList roles = null;
@@ -220,18 +218,9 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     @Inject
     private ServerContext serverContext;
-
-    @Inject
-    private Provider<AppCNonceCacheMap> appCNonceCacheMapProvider;
-
-    @Inject
-    private Provider<CNonceCacheFactory> cNonceCacheFactoryProvider;
-
-    @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private NetworkConfig networkConfig;
-
-
+    @Inject 
+    private Habitat habitat;
+    
     private CNonceCacheFactory cNonceCacheFactory;
     private CNonceCache cnonces;
     private AppCNonceCacheMap haCNonceCacheMap;
@@ -440,7 +429,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 String appName = webDesc.getApplication().getAppName();
                 synchronized (this) {
                     if (this.haCNonceCacheMap == null) {
-                        this.haCNonceCacheMap = appCNonceCacheMapProvider.get();
+                        this.haCNonceCacheMap = habitat.getComponent(AppCNonceCacheMap.class);
                     }
                     if (this.haCNonceCacheMap != null) {
                         //get the initialized HA CNonceCache
@@ -449,7 +438,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
                     if (cnonces == null) {
                         if (this.cNonceCacheFactory == null) {
-                            this.cNonceCacheFactory = cNonceCacheFactoryProvider.get();
+                            this.cNonceCacheFactory = habitat.getComponent(CNonceCacheFactory.class);
                         }
                         //create a Non-HA CNonce Cache
                         cnonces =
@@ -1843,6 +1832,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     public void postConstruct() {
-        nwListeners = networkConfig.getNetworkListeners();
+        webSecurityManagerFactory = habitat.getComponent(WebSecurityManagerFactory.class);
+        nwListeners = habitat.getComponent(NetworkConfig.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getNetworkListeners();
     }
 }

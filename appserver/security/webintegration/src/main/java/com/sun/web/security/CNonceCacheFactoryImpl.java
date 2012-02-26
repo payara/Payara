@@ -44,18 +44,18 @@ package com.sun.web.security;
 import com.sun.enterprise.security.CNonceCacheFactory;
 import org.glassfish.security.common.CNonceCache;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-
+import com.sun.enterprise.security.AppCNonceCacheMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 
 /**
  *
@@ -66,13 +66,7 @@ import javax.inject.Provider;
 public class CNonceCacheFactoryImpl implements CNonceCacheFactory, PostConstruct {
 
     @Inject
-    @Named("HA-CNonceCache")
-    private Provider<CNonceCache> cHANonceCacheProvider;
-
-    @Inject
-    @Named("CNonceCache")
-    private Provider<CNonceCache> cNonceCacheProvider;
-
+    private Habitat habitat;
 
     @Inject()
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -109,11 +103,11 @@ public class CNonceCacheFactoryImpl implements CNonceCacheFactory, PostConstruct
         CNonceCache  cache = null;
         Map<String, String> map = new HashMap<String, String>();
         if (haEnabled) {
-            cache = cHANonceCacheProvider.get();
+            cache = habitat.getComponent(CNonceCache.class, "HA-CNonceCache");
             map.put(CLUSTER_NAME_PROP, clusterName);
             map.put(INSTANCE_NAME_PROP, instanceName);
         } else {
-            cache = cNonceCacheProvider.get();
+            cache = habitat.getComponent(CNonceCache.class, "CNonceCache");
         }
         if (cache != null) {
             cache.init(cnonceCacheSize, storeName, nonceValidity, map);
