@@ -48,6 +48,7 @@
     <name>PaaS samples</name>
     <packaging>pom</packaging>
     <modules>
+        <module>lazy-shared-service-test</module>
         <module>basic</module>
         <module>service_metadata</module>
         <module>basic-db</module>
@@ -60,11 +61,12 @@
         <module>basic-shared-service-test</module>
         <module>external-and-shared-service</module>
         <module>ext-shared-service-enable-disable-test</module>
-	<module>multiple-spe-test</module>
-	<module>basic-db-with-resources-xml</module>
-	<module>basic-db-teardown-sql</module>
-	<module>basic-service-discovery</module>
-	<module>javaee_shared_service</module>
+        <module>multiple-spe-test</module>
+        <module>basic-db-with-resources-xml</module>
+        <module>basic-db-teardown-sql</module>
+        <module>basic-service-discovery</module>
+        <module>javaee_shared_service</module>
+
     </modules>
     <reporting>
         <plugins>
@@ -97,13 +99,21 @@
                         </reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/external-and-shared-service/target/surefire-reports
                         </reportsDirectory>
-                        <reportsDirectory>${env.PAAS_TESTS_HOME}/ext-shared-service-enable-disable-test/target/surefire-reports
+                        <reportsDirectory>
+                            ${env.PAAS_TESTS_HOME}/ext-shared-service-enable-disable-test/target/surefire-reports
                         </reportsDirectory>
-                        <reportsDirectory>${env.PAAS_TESTS_HOME}/multiple-spe-test/target/surefire-reports</reportsDirectory>
-			            <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-with-resources-xml/target/surefire-reports</reportsDirectory>
-                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-teardown-sql/target/surefire-reports</reportsDirectory>
-                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-service-discovery/target/surefire-reports</reportsDirectory>
-                        <reportsDirectory>${env.PAAS_TESTS_HOME}/javaee_shared_service/target/surefire-reports</reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/multiple-spe-test/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-with-resources-xml/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-db-teardown-sql/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/basic-service-discovery/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/javaee_shared_service/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/lazy-shared-service-test/target/surefire-reports
+                        </reportsDirectory>
                     </reportsDirectories>
                 </configuration>
             </plugin>
