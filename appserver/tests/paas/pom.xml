@@ -48,7 +48,6 @@
     <name>PaaS samples</name>
     <packaging>pom</packaging>
     <modules>
-        <module>lazy-shared-service-test</module>
         <module>basic</module>
         <module>service_metadata</module>
         <module>basic-db</module>
@@ -66,6 +65,7 @@
         <module>basic-db-teardown-sql</module>
         <module>basic-service-discovery</module>
         <module>javaee_shared_service</module>
+        <module>lazy-shared-service-test</module>
 
     </modules>
     <reporting>
