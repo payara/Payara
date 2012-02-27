@@ -228,7 +228,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int bootstrapSecureAdminFiles() throws CommandException {
         RemoteCommand rc = new RemoteCommand("_bootstrap-secure-admin", this.programOpts, this.env);
         rc.setFileOutputDirectory(instanceDir);
-        logger.finest("Download root for bootstrapping: " + instanceDir.getAbsolutePath());
         final int result = rc.execute(new String[] {"_bootstrap-secure-admin"});
         return result;
     }

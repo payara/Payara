@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -825,7 +825,6 @@ public class CommandRunnerImpl implements CommandRunner {
         Set<CommandTarget> targetTypesAllowed = new HashSet<CommandTarget>();
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
-        ActionReport.ExitCode afterReplicationSupplementalReturn = ActionReport.ExitCode.SUCCESS;
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
         // lets not even look Supplemental command and such. A small optimization
@@ -1115,7 +1114,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             + " was blocked.  The domain was suspended by a "
                             + "user on:" + lockTime;
 
-                    if (lockMsg != null && lockMsg != "") {
+                    if (lockMsg != null && !lockMsg.isEmpty()) {
                         logMsg += " Reason: " + lockMsg;
                     }
 
@@ -1124,7 +1123,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             "The command was blocked.  The domain was suspended by "
                             + "a user on {0}.", lockTime);
 
-                    if (lockMsg != null && lockMsg != "") {
+                    if (lockMsg != null && !lockMsg.isEmpty()) {
                         msg += " "
                                 + adminStrings.getLocalString("lock.reason", "Reason:")
                                 + " " + lockMsg;
@@ -1194,7 +1193,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                 report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
                                     "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
-                            afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                            ActionReport.ExitCode afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
                                     Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
                             if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                                 report.setActionExitCode(afterReplicationSupplementalReturn);
