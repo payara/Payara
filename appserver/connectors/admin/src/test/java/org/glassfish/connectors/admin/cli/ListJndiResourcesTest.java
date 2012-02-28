@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,6 +101,7 @@ public class ListJndiResourcesTest extends ConfigApiTest {
      * Test of execute method, of class ListJndiResources.
      * list-jndi-resources
      */
+
     @Test
     public void testExecuteSuccessListOriginal() {
         org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
@@ -114,21 +115,16 @@ public class ListJndiResourcesTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
     }
 
-    /**
+/**
      * Test of execute method, of class ListJndiResources.
      * create-jndi-resource ---restype=topic --factoryclass=javax.naming.spi.ObjectFactory --jndilookupname=sample_jndi
      * resource
      * list-jndi-resources
      */
+
     @Test
     public void testExecuteSuccessListResource() {
-        parameters.set("restype", "topic");
-        parameters.set("jndilookupname", "sample_jndi");
-        parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
-        parameters.set("jndi_name", "resource");
-        org.glassfish.resources.admin.cli.CreateJndiResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
-        cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
-        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+        createJndiResource();
         parameters = new ParameterMap();
         org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
@@ -140,8 +136,29 @@ public class ListJndiResourcesTest extends ConfigApiTest {
         }
         assertTrue(listStr.contains("resource"));
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+
+        deleteJndiResource();
     }
 
+
+    private void createJndiResource() {
+        parameters = new ParameterMap();
+        parameters.set("restype", "topic");
+        parameters.set("jndilookupname", "sample_jndi");
+        parameters.set("factoryclass", "javax.naming.spi.ObjectFactory");
+        parameters.set("jndi_name", "resource");
+        org.glassfish.resources.admin.cli.CreateJndiResource createCommand = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
+        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+    }
+
+    private void deleteJndiResource() {
+        parameters = new ParameterMap();
+        parameters.set("jndi_name", "resource");
+        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
+        cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+    }
     /**
      * Test of execute method, of class ListJndiResource.
      * delete-jndi-resource resource
@@ -149,14 +166,29 @@ public class ListJndiResourcesTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessListNoResource() {
-        parameters.set("jndi_name", "resource");
-        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
-        cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
-        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+
+        createJndiResource();
+
         parameters = new ParameterMap();
         org.glassfish.resources.admin.cli.ListJndiResources listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
+        assertEquals(origNum + 1, list.size());
+        origNum = origNum + 1; //as we newly created a resource after test "setup".
+
+
+        deleteJndiResource();
+
+        ParameterMap parameters = new ParameterMap();
+        listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
+        context = new AdminCommandContext(
+                LogDomains.getLogger(ListCustomResourcesTest.class, LogDomains.ADMIN_LOGGER),
+                new PropsFileActionReporter());
+        cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
+
+        list = context.getActionReport().getTopMessagePart().getChildren();
+
         if ((origNum - 1) == 0) {
             //Nothing to list.
         } else {
