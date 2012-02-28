@@ -55,6 +55,7 @@ import org.glassfish.deployment.common.*;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.component.Habitat;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -62,6 +63,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Objects of this type encapsulate the data and behaviour of a J2EE
@@ -141,6 +143,9 @@ public class Application extends BundleDescriptor
 
     // realm associated with this application
     private String realm;
+    
+    @Inject
+    private SecurityRoleMapperFactory securityRoleMapperFactory;
 
     /**
      * A flag to store the resolved keepstate value for the current application.
@@ -191,9 +196,7 @@ public class Application extends BundleDescriptor
     private boolean loadedFromApplicationXml = true;
 
     //private List<Resource> resourceList = null;
-
-    private final Habitat habitat;
-
+    
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
 
@@ -205,11 +208,12 @@ public class Application extends BundleDescriptor
     private Set<WLModuleDescriptor> wlModules =
             new HashSet<WLModuleDescriptor>();
 
-    public Application(Habitat habitat) {
+    private static final Habitat habitat = Globals.getDefaultHabitat();
+    
+    private Application() {
         super("", localStrings.getLocalString(
                 "enterprise.deployment.application.description",
                 "Application description"));
-        this.habitat = habitat;
     }
 
     // Create logger object per Java SDK 1.4 to log messages
@@ -230,19 +234,20 @@ public class Application extends BundleDescriptor
         return modules.isEmpty();
     }
 
-    /**
+	/**
      * Creates a new application to hold a standalone module
      *
      * @param name      the application name
      * @param newModule the standalone module descriptor
      * @return the application
      */
-    public static Application createApplication(Habitat habitat, String name, ModuleDescriptor<BundleDescriptor> newModule) {
-
+    public static Application createVirtualApplication(String name, ModuleDescriptor<BundleDescriptor> newModule) {
+    	
         // create a new empty application
-        Application application = new Application(habitat);
+        Application application = habitat.getComponent(Application.class); // new Application();
+        
         application.setVirtual(true);
-        if (name == null && newModule.getDescriptor() != null) {
+        if (name == null && newModule != null && newModule.getDescriptor() != null) {
             name = newModule.getDescriptor().getDisplayName();
 
         }
@@ -254,14 +259,21 @@ public class Application extends BundleDescriptor
         }
 
         // add the module to it
-        newModule.setStandalone(true);
-        newModule.setArchiveUri(untaggedName);
-        if (newModule.getDescriptor() != null) {
-            newModule.getDescriptor().setApplication(application);
-        }
-        application.addModule(newModule);
-
+		if (newModule != null) {
+			newModule.setStandalone(true);
+			newModule.setArchiveUri(untaggedName);
+			if (newModule.getDescriptor() != null) {
+				newModule.getDescriptor().setApplication(application);
+			}
+			application.addModule(newModule);
+		}
+        
         return application;
+    }
+    
+    public static Application createApplication() {
+        // create a new empty application
+        return habitat.getComponent(Application.class); // new Application();
     }
 
     /**
@@ -623,15 +635,14 @@ public class Application extends BundleDescriptor
         }
 
         if (roleMapper != null) {
-            SecurityRoleMapperFactory factory = habitat.getComponent(SecurityRoleMapperFactory.class);
-            if (factory == null) {
+            if (securityRoleMapperFactory == null) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "enterprise.deployment.norolemapperfactorydefine",
                         "This application has no role mapper factory defined"));
             }
-            factory.removeRoleMapper(getName());
+            securityRoleMapperFactory.removeRoleMapper(getName());
             roleMapper.setName(appId);
-            factory.setRoleMapper(appId, roleMapper);
+            securityRoleMapperFactory.setRoleMapper(appId, roleMapper);
         }
 
         this.registrationName = appId;
@@ -1431,11 +1442,10 @@ public class Application extends BundleDescriptor
      */
     public SecurityRoleMapper getRoleMapper() {
         if (this.roleMapper == null) {
-            SecurityRoleMapperFactory factory = habitat.getComponent(SecurityRoleMapperFactory.class);
-            if (factory == null) {
+            if (securityRoleMapperFactory == null) {
                 _logger.log(Level.FINE, "SecurityRoleMapperFactory NOT set.");
             } else {
-                this.roleMapper = factory.getRoleMapper(this.getName());
+                this.roleMapper = securityRoleMapperFactory.getRoleMapper(this.getName());
             }
         }
         return this.roleMapper;

@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.Collection;
 import org.glassfish.deployment.common.ModuleDescriptor;
+
 import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -65,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+
 
 /**
  * This class is responsible for loading and saving XML elements
@@ -224,9 +226,8 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     * @return the descriptor instance to associate with this XMLNode
     */    
     public Application getDescriptor() {
-        if (descriptor==null) {
-
-            descriptor = new Application(Globals.getDefaultHabitat());
+        if (descriptor==null) {        	
+            descriptor = Application.createApplication();
         }
         return descriptor;
     }

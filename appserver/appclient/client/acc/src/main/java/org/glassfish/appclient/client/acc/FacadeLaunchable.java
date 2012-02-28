@@ -309,7 +309,8 @@ public class FacadeLaunchable implements Launchable {
 
 //            acDesc = LaunchableUtil.openWithAnnoProcessingAndTempLoader(
 //                    arch, loader, facadeClientRA, clientRA);
-            Application.createApplication(habitat, null, acDesc.getModuleDescriptor());
+            
+            Application.createVirtualApplication(null, acDesc.getModuleDescriptor());
 
             final Manifest facadeMF = combinedRA.getManifest();
             final Attributes mainAttrs = facadeMF.getMainAttributes();

@@ -57,10 +57,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -91,10 +92,7 @@ public abstract class AppClientInfo {
     
     /** logger */
     protected Logger _logger;
-
-    @Inject
-    protected Habitat habitat;
-
+    
 //    /** abstract representation of the storage location */
 //    private ReadableArchive appClientArchive = null;
 
@@ -288,11 +286,12 @@ public abstract class AppClientInfo {
             appClient = outer.getAppClient();
         }
 
+        //TODO: This method does not appear to be used -- can it be deleted?
         public Application getApplication(Habitat habitat) {
+        	
             Application application = appClient.getApplication();
             if (application == null) {
-                application = Application.createApplication(
-                        habitat,
+                application = Application.createVirtualApplication(
                         appClient.getModuleID(),
                         appClient.getModuleDescriptor());
             }

@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -92,7 +93,7 @@ public class ApplicationArchivist extends Archivist<Application>
 
     @Inject @Optional
     ExtensionsArchivist[] extensionsArchivists; 
-
+    
     /**
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
@@ -211,7 +212,7 @@ public class ApplicationArchivist extends Archivist<Application>
      */
     @Override
     public Application getDefaultBundleDescriptor() {
-        return new Application(habitat);
+        return Application.createApplication();
     }
     
     /**
@@ -311,7 +312,7 @@ public class ApplicationArchivist extends Archivist<Application>
             appRoot = appRoot.substring(0, appRoot.length() - 1);
         }
 
-        Application app = new Application(habitat);
+        Application app = Application.createApplication();
         app.setLoadedFromApplicationXml(false);
         app.setVirtual(false);
 

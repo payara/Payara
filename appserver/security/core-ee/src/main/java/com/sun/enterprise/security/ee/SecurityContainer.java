@@ -70,7 +70,7 @@ public class SecurityContainer implements Container, PostConstruct{
     
     @Inject
     private ServerContext serverContext;
-
+    
     @Inject
     private Habitat habitat;
 
@@ -98,7 +98,7 @@ public class SecurityContainer implements Container, PostConstruct{
     public void postConstruct() {
         //Generate Policy for the Dummy Module
         WebBundleDescriptor wbd = new WebBundleDescriptor();
-        Application application = new Application(habitat);
+        Application application = Application.createApplication();
         application.setVirtual(true);
         application.setName(DEFAULT_WEB_MODULE_NAME);
         application.setRegistrationName(DEFAULT_WEB_MODULE_NAME);

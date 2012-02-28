@@ -107,7 +107,7 @@ public class
             archivist.setDescriptor(acDesc);
             archivist.setAnnotationProcessingRequested(true);
             acDesc = acArchivist.open(tempArchive);
-            Application.createApplication(habitat, null, acDesc.getModuleDescriptor());
+            Application.createVirtualApplication(null, acDesc.getModuleDescriptor());
             acDesc.getApplication().setAppName(appNameFromMainClass(mainClass));
             this.classLoader = loader;
         }

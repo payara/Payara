@@ -44,6 +44,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
@@ -54,8 +55,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;
 
 import java.io.File;
@@ -76,9 +78,6 @@ public class ApplicationFactory implements ContractProvider {
 
     @Inject
     ArchiveFactory archiveFactory;
-
-    @Inject
-    Habitat habitat;
 
     @Inject
     ArchivistFactory archivistFactory;
@@ -179,7 +178,7 @@ public class ApplicationFactory implements ContractProvider {
             }
             ModuleDescriptor newModule = archivist.createModuleDescriptor(aBundle);
             newModule.setArchiveUri(in.getURI().getSchemeSpecificPart());
-            application = Application.createApplication(habitat,appName,newModule);
+            application = Application.createVirtualApplication(appName,newModule);
         }
 
         // now read the runtime deployment descriptor
@@ -222,8 +221,7 @@ public class ApplicationFactory implements ContractProvider {
             ModuleDescriptor newModule = archivist.createModuleDescriptor(aBundle);
             newModule.setArchiveUri(archive.getURI().getSchemeSpecificPart());
             String moduleName = newModule.getModuleName();
-            application = Application.createApplication(habitat, moduleName, 
-                newModule);
+            application = Application.createVirtualApplication(moduleName, newModule);
         }
         return application;
     }

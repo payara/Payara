@@ -638,7 +638,7 @@ public class VirtualServer extends StandardHost
             loader.start();            
             wmInfo.setAppClassLoader(loader);
             if ( wbd.getApplication() == null ) {
-                Application application = new Application((Habitat) Globals.getDefaultServices());
+                Application application = Application.createApplication();
                 application.setVirtual(true);
                 application.setName(Constants.DEFAULT_WEB_MODULE_NAME);
                 wbd.setApplication(application);

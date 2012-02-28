@@ -43,15 +43,17 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deployment.Application;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
@@ -60,9 +62,7 @@ import java.io.IOException;
 @Service
 @Scoped(PerLookup.class)
 public class WLApplicationArchivist extends ExtensionsArchivist {
-    @Inject
-    private Habitat habitat;
-
+    
     @Override                                                  
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
         return null;
@@ -84,7 +84,7 @@ public class WLApplicationArchivist extends ExtensionsArchivist {
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new Application(habitat);
+        return Application.createApplication();
     }
 
     @Override

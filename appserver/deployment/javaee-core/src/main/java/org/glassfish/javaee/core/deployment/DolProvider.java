@@ -47,7 +47,6 @@ import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PreDestroy;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.ApplicationMetaDataProvider;
@@ -57,7 +56,6 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
-import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.ActionReport;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.DeploymentProperties;
@@ -122,9 +120,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     protected ApplicationArchivist applicationArchivist;
 
     @Inject
-    Habitat habitat;
-
-    @Inject
     Domain domain;
 
     @Inject
@@ -138,7 +133,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
     @Inject
     Provider<ClassLoaderHierarchy> clhProvider;
-
+    
     private static String WRITEOUT_XML = System.getProperty(
         "writeout.xml");
 
@@ -165,7 +160,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         if (archivist == null) {
             // if no JavaEE medata was found in the archive, we return 
             // an empty Application object
-            return new Application(habitat);
+            return Application.createApplication();
         }
         archivist.setAnnotationProcessingRequested(true);
         String xmlValidationLevel = dasConfig.getDeployXmlValidation();

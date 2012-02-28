@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.ModuleDescriptor;
+
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.IOException;
 import java.net.URI;
@@ -79,8 +80,6 @@ public class UndeployedLaunchable implements Launchable {
     private final ReadableArchive clientRA;
 
     private ClassLoader classLoader = null;
-    private final Habitat habitat;
-
 
     static UndeployedLaunchable newUndeployedLaunchable(
             final Habitat habitat,
@@ -193,7 +192,6 @@ public class UndeployedLaunchable implements Launchable {
     private UndeployedLaunchable(final Habitat habitat,
             final ReadableArchive clientRA,
             final String callerSuppliedMainClass) throws IOException, SAXParseException {
-        this.habitat = habitat;
         this.callerSuppliedMainClassName = callerSuppliedMainClass;
         this.clientRA = clientRA;
     }
@@ -256,7 +254,8 @@ public class UndeployedLaunchable implements Launchable {
                     
             _archivist.setAnnotationProcessingRequested(true);
             acDesc = _archivist.open(clientRA);
-            Application.createApplication(habitat, null, acDesc.getModuleDescriptor());
+            
+            Application.createVirtualApplication(null, acDesc.getModuleDescriptor());
             acDesc.getApplication().setAppName(getDefaultApplicationName(clientRA));
         }
         return acDesc;
