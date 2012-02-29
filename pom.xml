@@ -45,9 +45,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>pom</artifactId>
-        <version>8</version>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>1</version>
     </parent>
     
     <groupId>org.glassfish</groupId>
@@ -140,10 +140,12 @@
 
         <javax-persistence-api.version>2.0.3</javax-persistence-api.version>
         <eclipselink.version>2.3.0</eclipselink.version>
-        <dbschema.version>RELEASE60</dbschema.version>
+        <!-- repackage of org.netbeans.modules:org-netbeans-modules-dbschema RELEASE60 artifact-->
+        <dbschema.version>3.1.1</dbschema.version>
         <!-- osgi version string must start with a number. Manually mapping above dbschema.version to osgi.version here -->
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
-        <schema2beans.version>RELEASE55</schema2beans.version>
+        <!-- repackage of org.netbeans.apisorg-netbeans-modules-schema2beans RELEASE55 artifact -->
+        <schema2beans.version>3.1.1</schema2beans.version>
         <!-- osgi version string must start with a number. Manually mapping above schema2beans.version to osgi.version here -->
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         <antlr.version>2.7.6</antlr.version>
@@ -345,6 +347,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version> 2.0.2 </version>
+                    <configuration>
+                       <source>1.6</source>
+                       <target>1.6</target>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -757,18 +763,6 @@
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-config</artifactId>
                 <version>${grizzly.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.netbeans.modules</groupId>
-                <artifactId>org-netbeans-modules-dbschema</artifactId>
-                <version>${dbschema.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-netbeans-modules-schema2beans</artifactId>
-                <version>${schema2beans.version}</version>
             </dependency>
 
             <dependency>
@@ -1412,6 +1406,16 @@
                 <artifactId>websocket-osgi</artifactId>
                 <version>${websocket.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.external</groupId>
+                <artifactId>dbschema-repackaged</artifactId>
+                <version>${dbschema.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.external</groupId>
+                <artifactId>schema2beans-repackaged</artifactId>
+                <version>${schema2beans.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
@@ -1426,4 +1430,6 @@
             <optional>true</optional>
       </dependency>
     </dependencies>
+
+
 </project>

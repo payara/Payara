@@ -55,18 +55,6 @@
   <name>Strip JavaEE Implementation classes</name>
   <version>4.0-SNAPSHOT</version>
 
-  <repositories>
-        <!-- first hits nexus repo for any artifact request, then falls to the next repo in the list / order -->
-        <repository>
-            <id>glassfish-repo-archive</id>
-            <name>Nexus repository collection for Glassfish</name>
-            <url>http://maven.glassfish.org/content/groups/glassfish</url>
-            <snapshots>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-  </repositories>
-  
   <build>
     <outputDirectory>target/tmp</outputDirectory>
     <plugins>

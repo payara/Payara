@@ -112,16 +112,4 @@
             </dependencies>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>glassfish-releases</id>
-            <url>http://download.java.net/maven/glassfish</url>
-        </repository>
-        <repository>
-            <id>glassfish-maven2</id>
-            <url>http://download.java.net/maven/2</url>
-        </repository>
-    </repositories>
-
 </project>

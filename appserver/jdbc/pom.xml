@@ -78,11 +78,6 @@
                 <artifactId>maven-glassfishbuild-extension</artifactId>
                 <version>${glassfishbuild.version}</version>
             </extension>
-            <extension>
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.8</version>
-            </extension>
         </extensions>
     </build>
 

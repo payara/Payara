@@ -97,7 +97,6 @@
       <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>dbschema-repackaged</artifactId>
-            <version>${project.version}</version>
         </dependency>
         </dependencies>
 </project>

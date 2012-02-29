@@ -16,7 +16,7 @@
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.hk2>1.6.19</version.hk2>
+        <version.hk2>1.6.35</version.hk2>
         <version.javaee>6.0</version.javaee>
         <version.jsf>2.1</version.jsf>
         <version.junit>4.8.2</version.junit>
@@ -24,29 +24,6 @@
         <version.osgi>4.2.0</version.osgi>
         <version.trinidad>2.0.2-glassfish-2</version.trinidad>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>new-java.net</id>
-            <name>New Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/glassfish</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>old-java.net</id>
-            <name>Old Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/glassfish</url>
-            <layout>default</layout>
-        </pluginRepository>
-    </pluginRepositories>
 
     <modules>
         <module>plugin-system</module>

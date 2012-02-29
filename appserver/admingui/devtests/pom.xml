@@ -59,13 +59,6 @@
     <name>Admin Console Dev Tests</name>
     <description>This module contains the dev tests for the admin console</description>
 
-    <repositories>
-        <repository>
-            <id>GlassFish Nexus</id>
-            <url>http://maven.glassfish.org/content/groups/glassfish</url>
-        </repository>
-    </repositories>
-
     <developers>
         <!-- See parent POM -->
     </developers>

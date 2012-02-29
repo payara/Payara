@@ -60,15 +60,7 @@
     </scm>
 
     <modules>
-	      <module>annotations</module>
-	      <module>apt</module>
+      <module>annotations</module>
+      <module>apt</module>
     </modules>
-    
-    <repositories>  
-        <repository>
-            <id>glassfish-repository</id>
-            <name>Java.net Repository for Glassfish</name>
-            <url>http://download.java.net/maven/glassfish</url>
-        </repository>    
-    </repositories>
 </project>

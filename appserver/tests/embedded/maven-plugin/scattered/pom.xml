@@ -78,15 +78,7 @@
       </executions>
     </plugin>
   </plugins>
- 
-  <extensions>
-    <extension>
-      <groupId>org.jvnet.wagon-svn</groupId>
-      <artifactId>wagon-svn</artifactId>
-      <version>1.8</version>
-    </extension>
-  </extensions>
-  </build>
+   </build>
 
   <dependencies>
     <dependency>
@@ -100,17 +92,6 @@
       <version>2.0</version>
     </dependency>
   </dependencies>
-
-    <repositories>
-        <repository>
-            <id>glassfish-releases</id>
-            <url>http://download.java.net/maven/glassfish</url>
-        </repository>
-        <repository>
-            <id>glassfish-maven2</id>
-            <url>http://download.java.net/maven/2</url>
-        </repository>
-    </repositories>
 
 </project>
 

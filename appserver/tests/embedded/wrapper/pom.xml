@@ -49,17 +49,6 @@
     <version>4.0-SNAPSHOT</version>
     <name>Embedded GlassFish Wrapper</name>
 
-    <repositories>
-        <repository>
-            <id>glassfish-repo-archive</id>
-            <name>Nexus repository collection for Glassfish</name>
-            <url>http://maven.glassfish.org/content/groups/glassfish</url>
-            <snapshots>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.glassfish.common</groupId>

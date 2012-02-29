@@ -103,8 +103,6 @@
         <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>schema2beans-repackaged</artifactId>
-            <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 </project>

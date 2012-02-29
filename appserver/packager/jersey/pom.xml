@@ -135,13 +135,5 @@
 	    </build>
         </profile>
    </profiles>        
-    <repositories>  
-        <repository>
-            <id>m2-repository</id>
-            <name>Java.net Repository for Glassfish</name>
-            <url>http://download.java.net/maven/2</url>
-        </repository>    
-    </repositories>
-
 </project>
 
