@@ -217,19 +217,34 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessListNoBob() {
-        // Delete JDBC Resource bob
+        // Create JDBC Resource bob
         assertTrue(resources!=null);
         
         //Get an instance of the CreateJdbcResource command
-        deleteCommand = habitat.getComponent(DeleteJdbcResource.class);
-        assertTrue(deleteCommand!=null);
-
-        parameters.add("DEFAULT", "bob");
+        createCommand = habitat.getComponent(CreateJdbcResource.class);
+        assertTrue(createCommand!=null);
+        
+        parameters.add("connectionpoolid", "DerbyPool");
+        parameters.add("DEFAULT", "bob2");
         
         context = new AdminCommandContext(
                 LogDomains.getLogger(ListJdbcResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
 
+        cr.getCommandInvocation("create-jdbc-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
+        
+        assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
+        
+        // Delete JDBC Resource bob
+        //assertTrue(resources!=null);
+        
+        //Get an instance of the CreateJdbcResource command
+        deleteCommand = habitat.getComponent(DeleteJdbcResource.class);
+        assertTrue(deleteCommand!=null);
+        
+        parameters = new ParameterMap();
+        parameters.add("DEFAULT", "bob2");
+        
         cr.getCommandInvocation("delete-jdbc-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
 
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -247,13 +262,20 @@ public class ListJdbcResourcesTest extends ConfigApiTest {
 
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         
-        assertEquals(origNum - 1, list.size());
+        int numResources = 0;
+        for (Resource resource : resources.getResources()) {
+            if (resource instanceof JdbcResource) {
+                numResources = numResources + 1;
+            }
+        }    
+        
+        assertEquals(numResources, list.size());
         
         List<String> listStr = new java.util.ArrayList();
         for (MessagePart mp : list) {
             listStr.add(mp.getMessage());
         }  
-        assertFalse(listStr.contains("bob"));
+        assertFalse(listStr.contains("bob2"));
         
         // Check the exit code is SUCCESS
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
