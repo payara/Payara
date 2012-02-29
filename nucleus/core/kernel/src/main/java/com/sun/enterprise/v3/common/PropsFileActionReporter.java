@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,11 +63,7 @@ public class PropsFileActionReporter extends ActionReporter {
 
     @Override
     public void setMessage(String message) {
-        if (message != null) {
-            message = message.replace("\n", EOL_MARKER);
-            message = message.replace(System.getProperty("line.separator"), EOL_MARKER);
-        }
-        super.setMessage(message);
+        super.setMessage(encodeEOL(message));
     }
 
     @Override
@@ -98,7 +94,7 @@ public class PropsFileActionReporter extends ActionReporter {
                 String key = fixKey(entry.getKey().toString());
                 keys = (keys == null ? key : keys + ";" + key);
                 attr.putValue(key + "_name", entry.getKey().toString());
-                attr.putValue(key + "_value", entry.getValue().toString());
+                attr.putValue(key + "_value", encodeEOL(entry.getValue().toString()));
             }
 
             attr.putValue("keys", keys);
@@ -222,6 +218,12 @@ public class PropsFileActionReporter extends ActionReporter {
 
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
+    }
+    private static String encodeEOL(String m) {
+        if (m != null) {
+            m = m.replace("\n", EOL_MARKER).replace(System.getProperty("line.separator"), EOL_MARKER);
+        }
+        return m;
     }
     private boolean useMainChildrenAttr = false;
     private Set<String> fixedNames = new TreeSet<String>();
