@@ -43,7 +43,7 @@ package com.sun.enterprise.registration.glassfish;
 import java.util.logging.Level;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import java.util.logging.Logger;
 import java.util.Timer;
