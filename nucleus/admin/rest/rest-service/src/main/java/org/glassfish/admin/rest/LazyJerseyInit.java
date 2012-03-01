@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,15 +42,9 @@ package org.glassfish.admin.rest;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jersey.api.container.ContainerFactory;
 import com.sun.jersey.api.container.filter.CsrfProtectionFilter;
-import com.sun.jersey.api.core.ResourceConfig;
-import org.glassfish.admin.rest.resources.StatusGenerator;
-import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.container.EndpointRegistrationException;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.DefaultResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,14 +55,20 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
-import org.glassfish.admin.rest.generator.client.ClientGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
+import org.glassfish.admin.rest.generator.client.ClientGenerator;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.ReloadResource;
+import org.glassfish.admin.rest.resources.StatusGenerator;
+import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
+import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
