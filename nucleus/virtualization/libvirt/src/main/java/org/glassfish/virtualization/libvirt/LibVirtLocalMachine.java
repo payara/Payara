@@ -75,6 +75,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 
 /**
  * Abstraction for this machine, assumptions are being made that this java process runs with
@@ -102,6 +103,9 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domainConfig;
+    
+    @Inject
+    ClassLoaderHierarchy clh;
 
     public static LibVirtLocalMachine from(Injector injector,  LibVirtServerPool group, MachineConfig config) {
         return injector.inject(new LibVirtLocalMachine(group, config));
@@ -453,7 +457,6 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
         System.out.println("I would use " + uuid + " id with mac " + macAddress);
 
-
         LibVirtVirtualMachine vm=null;
         try {
             Domain domain = connection().domainDefineXML(getConfig(xmlConfig));
@@ -467,8 +470,8 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
             vm = new LibVirtVirtualMachine(vmConfig,
                     template.getConfig().getUser(), this, domain, volumes);
-            domains.put(name, vm);
-            cluster.add(vm);
+                domains.put(name, vm);
+                cluster.add(vm);
 
             ListenableFutureImpl<AllocationPhase, VirtualMachine> future =
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
@@ -494,9 +497,11 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
     }
 
     private Element loadConfigFile(File xml) {
+        ClassLoader tcc = Thread.currentThread().getContextClassLoader();
         try {
           // first of all we request out
           // DOM-implementation:
+          Thread.currentThread().setContextClassLoader(clh.getCommonClassLoader());
           DocumentBuilderFactory factory =
             DocumentBuilderFactory.newInstance();
           // then we have to create document-loader:
@@ -521,6 +526,8 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
           // DOM-implementation is not available
           // or cannot be instantiated:
           handleError(ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(tcc);
         }
         return null;
     }
@@ -546,8 +553,11 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
 
     private void write(Node doc, Result result) throws TransformerException {
         // Write the DOM document to the file
+        ClassLoader tcc = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(clh.getCommonClassLoader());
         Transformer xformer = TransformerFactory.newInstance().newTransformer();
         xformer.transform(new DOMSource(doc), result);
+        Thread.currentThread().setContextClassLoader(tcc);
     }
 
     private void handleError(Throwable e) {

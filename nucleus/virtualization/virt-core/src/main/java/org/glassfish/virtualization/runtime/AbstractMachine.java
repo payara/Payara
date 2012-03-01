@@ -288,7 +288,7 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
     }
 
 
-    protected List<StorageVol> prepare(final TemplateInstance templateInstance, final String name, final VirtualCluster cluster)
+    protected synchronized List<StorageVol> prepare(final TemplateInstance templateInstance, final String name, final VirtualCluster cluster)
 
             throws VirtException, IOException {
 
