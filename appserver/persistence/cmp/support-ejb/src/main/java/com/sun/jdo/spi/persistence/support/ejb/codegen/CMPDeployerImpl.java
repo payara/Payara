@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.*;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -66,8 +68,8 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 
 import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
 
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.ejb.spi.CMPDeployer;
@@ -86,11 +88,8 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 @Service
 public class CMPDeployerImpl implements CMPDeployer {
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional=true)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
     private JavaConfig javaConfig;
-
-    @Inject
-    private Habitat habitat;
 
     /**
      * Generates the concrete impls for all CMPs in the application.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
@@ -80,9 +80,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
 
     @Inject
     private ConnectorRuntime connectorRuntime;
-
-    @Inject
-    private Habitat habitat;
 
     @Inject
     private ServerEnvironmentImpl serverEnvironment;
