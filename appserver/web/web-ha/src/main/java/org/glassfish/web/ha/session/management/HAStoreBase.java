@@ -49,6 +49,7 @@ package org.glassfish.web.ha.session.management;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -137,7 +138,7 @@ public abstract class HAStoreBase extends StoreBase {
         Container container = manager.getContainer();
         StringBuffer sb = new StringBuffer(50);
         sb.append(this.getClusterId());
-        ArrayList list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         while (container != null) {
             if(container.getName() != null) {
                 list.add(":" + container.getName());

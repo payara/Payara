@@ -52,6 +52,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -386,9 +387,9 @@ public class ReplicationAttributeStore extends ReplicationStore {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationAttributeStore>>postSaveUpdate");                       
         }
-        ArrayList addedAttrs = modAttrSession.getAddedAttributes();
-        ArrayList modifiedAttrs = modAttrSession.getModifiedAttributes();
-        ArrayList deletedAttrs = modAttrSession.getDeletedAttributes();
+        List<String> addedAttrs = modAttrSession.getAddedAttributes();
+        List<String> modifiedAttrs = modAttrSession.getModifiedAttributes();
+        List<String> deletedAttrs = modAttrSession.getDeletedAttributes();
         printAttrList("ADDED", addedAttrs);
         printAttrList("MODIFIED", modifiedAttrs);
         printAttrList("DELETED", deletedAttrs);
@@ -398,9 +399,9 @@ public class ReplicationAttributeStore extends ReplicationStore {
         
     }
     
-    private void postProcessSetAttrStates(ModifiedAttributeHASession modAttrSession, ArrayList attrsList) {
+    private void postProcessSetAttrStates(ModifiedAttributeHASession modAttrSession, List<String> attrsList) {
         for(int i=0; i<attrsList.size(); i++) {
-            String nextStateName = (String)attrsList.get(i);
+            String nextStateName = attrsList.get(i);
             modAttrSession.setAttributeStatePersistent(nextStateName, true);
             modAttrSession.setAttributeStateDirty(nextStateName, false);
         }
@@ -420,10 +421,10 @@ public class ReplicationAttributeStore extends ReplicationStore {
             _logger.fine("ReplicationAttributeStore>>createCompositeMetadata:trunkState=" + trunkState);                       
         }         
        
-        ArrayList entries = new ArrayList();
-        ArrayList addedAttrs = modAttrSession.getAddedAttributes();
-        ArrayList modifiedAttrs = modAttrSession.getModifiedAttributes();
-        ArrayList deletedAttrs = modAttrSession.getDeletedAttributes();
+        List<SessionAttributeMetadata> entries = new ArrayList<SessionAttributeMetadata>();
+        List<String> addedAttrs = modAttrSession.getAddedAttributes();
+        List<String> modifiedAttrs = modAttrSession.getModifiedAttributes();
+        List<String> deletedAttrs = modAttrSession.getDeletedAttributes();
         printAttrList("ADDED", addedAttrs);
         printAttrList("MODIFIED", modifiedAttrs);
         printAttrList("DELETED", deletedAttrs);
@@ -432,7 +433,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
                 SessionAttributeMetadata.Operation.ADD, addedAttrs);
         addToEntries(modAttrSession, entries, 
                 SessionAttributeMetadata.Operation.UPDATE, modifiedAttrs);
-        entries = addToEntries(modAttrSession, entries, 
+        addToEntries(modAttrSession, entries,
                 SessionAttributeMetadata.Operation.DELETE, deletedAttrs);
 
         CompositeMetadata result 
@@ -443,24 +444,25 @@ public class ReplicationAttributeStore extends ReplicationStore {
         return result;
     }
     
-    private void printAttrList(String attrListType, ArrayList attrList) {
+    private void printAttrList(String attrListType, List<String> attrList) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("AttributeType = " + attrListType);
             String nextAttrName = null;
             for(int i=0; i<attrList.size(); i++) {
-                nextAttrName = (String)attrList.get(i);
+                nextAttrName = attrList.get(i);
                 _logger.fine("attribute[" + i + "]=" + nextAttrName);
             }
         }
     }
     
-    private ArrayList addToEntries(ModifiedAttributeHASession modAttrSession,
-            ArrayList entries, SessionAttributeMetadata.Operation op, ArrayList attrList) {
+    private void addToEntries(ModifiedAttributeHASession modAttrSession,
+            List<SessionAttributeMetadata> entries, SessionAttributeMetadata.Operation op,
+            List<String> attrList) {
         String nextAttrName = null;
         Object nextAttrValue = null;
         byte[] nextValue = null;
         for(int i=0; i<attrList.size(); i++) {
-            nextAttrName = (String)attrList.get(i);
+            nextAttrName = attrList.get(i);
             nextAttrValue = ((StandardSession) modAttrSession).getAttribute(nextAttrName);
             nextValue = null;
             try {
@@ -469,8 +471,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
             SessionAttributeMetadata nextAttrMetadata
                 = new SessionAttributeMetadata(nextAttrName, op, nextValue);
             entries.add(nextAttrMetadata);
-        } 
-        return entries;
+        }
     }
     
     /**

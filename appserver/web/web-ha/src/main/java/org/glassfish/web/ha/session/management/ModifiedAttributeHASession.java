@@ -66,30 +66,25 @@ public class ModifiedAttributeHASession extends BaseHASession {
     
     private static final Logger _logger = LogDomains.getLogger(ModifiedAttributeHASession.class,  LogDomains.WEB_LOGGER);
 
-    private transient HashMap _attributeStates = new HashMap();
+    private transient Map<String, SessionAttributeState> _attributeStates = new HashMap<String, SessionAttributeState>();
     private transient boolean _dirtyFlag = false;
     
     
     /** Creates a new instance of ModifiedAttributeHASession */
     public ModifiedAttributeHASession(Manager manager) {
         super(manager);
-        _attributeStates = new HashMap();
     }
     
     /**
      * return an ArrayList of Strings
      * whose elements are the names of the deleted attributes
      */      
-    public ArrayList getDeletedAttributes() {
+    public List<String> getDeletedAttributes() {
         
-        ArrayList resultList = new ArrayList();
-        Set entries = _attributeStates.entrySet();
-        Iterator it = entries.iterator();
-        while(it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            SessionAttributeState nextAttrState =
-                (SessionAttributeState) entry.getValue();
-            String nextAttrName = (String) entry.getKey();
+        List<String> resultList = new ArrayList<String>();
+        for (Map.Entry<String, SessionAttributeState> entry : _attributeStates.entrySet()) {
+            SessionAttributeState nextAttrState = entry.getValue();
+            String nextAttrName = entry.getKey();
             if(nextAttrState.isDeleted() && nextAttrState.isPersistent()) {
                 resultList.add(nextAttrName);
             }
@@ -102,15 +97,11 @@ public class ModifiedAttributeHASession extends BaseHASession {
      * whose elements are the names of the modified attributes
      * attributes must dirty, persistent and not deleted
      */      
-    public ArrayList getModifiedAttributes() {
-        ArrayList resultList = new ArrayList();
-        Set entries = _attributeStates.entrySet();
-        Iterator it = entries.iterator();
-        while(it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            SessionAttributeState nextAttrState =
-                (SessionAttributeState) entry.getValue();
-            String nextAttrName = (String) entry.getKey();
+    public List<String> getModifiedAttributes() {
+        List<String> resultList = new ArrayList<String>();
+        for (Map.Entry<String, SessionAttributeState> entry : _attributeStates.entrySet()) {
+            SessionAttributeState nextAttrState = entry.getValue();
+            String nextAttrName = entry.getKey();
             if(nextAttrState.isDirty() 
                     && nextAttrState.isPersistent() 
                     && (!nextAttrState.isDeleted())) {
@@ -124,15 +115,11 @@ public class ModifiedAttributeHASession extends BaseHASession {
      * return an ArrayList of Strings
      * whose elements are the names of the added attributes
      */        
-    public ArrayList getAddedAttributes() {
-        ArrayList resultList = new ArrayList();
-        Set entries = _attributeStates.entrySet();
-        Iterator it = entries.iterator();
-        while(it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            SessionAttributeState nextAttrState =
-                (SessionAttributeState) entry.getValue();
-            String nextAttrName = (String) entry.getKey();
+    public List<String> getAddedAttributes() {
+        List<String> resultList = new ArrayList<String>();
+        for (Map.Entry<String, SessionAttributeState> entry : _attributeStates.entrySet()) {
+            SessionAttributeState nextAttrState = entry.getValue();
+            String nextAttrName = entry.getKey();
             if(!nextAttrState.isPersistent() && !nextAttrState.isDirty()) {
                 resultList.add(nextAttrName);
             }
@@ -144,15 +131,11 @@ public class ModifiedAttributeHASession extends BaseHASession {
      * return an ArrayList of Strings
      * whose elements are the names of the added attributes
      */        
-    public ArrayList getAddedAttributesPrevious() {
-        ArrayList resultList = new ArrayList();
-        Set entries = _attributeStates.entrySet();
-        Iterator it = entries.iterator();
-        while(it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            SessionAttributeState nextAttrState =
-                (SessionAttributeState) entry.getValue();
-            String nextAttrName = (String) entry.getKey();
+    public List<String> getAddedAttributesPrevious() {
+        List<String> resultList = new ArrayList<String>();
+        for (Map.Entry<String, SessionAttributeState> entry : _attributeStates.entrySet()) {
+            SessionAttributeState nextAttrState = entry.getValue();
+            String nextAttrName = entry.getKey();
             if(!nextAttrState.isPersistent()) {
                 resultList.add(nextAttrName);
             }
@@ -165,7 +148,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
      */     
     void clearAttributeStates() {
         if(_attributeStates == null) {
-            _attributeStates = new HashMap();
+            _attributeStates = new HashMap<String, SessionAttributeState>();
         }
         _attributeStates.clear();
     }
@@ -184,9 +167,9 @@ public class ModifiedAttributeHASession extends BaseHASession {
      */      
     void resetAttributeState() {
         clearAttributeStates();
-        Enumeration attrNames = getAttributeNames();
+        Enumeration<String> attrNames = getAttributeNames();
         while(attrNames.hasMoreElements()) {
-            String nextAttrName = (String) attrNames.nextElement();
+            String nextAttrName = attrNames.nextElement();
             SessionAttributeState nextAttrState =
                 SessionAttributeState.createPersistentAttribute();
             _attributeStates.put(nextAttrName, nextAttrState);
@@ -262,7 +245,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
      * @param attributeName
      */       
     SessionAttributeState getAttributeState(String attributeName) {
-        return (SessionAttributeState)_attributeStates.get(attributeName);
+        return _attributeStates.get(attributeName);
     }
    
     /**
@@ -273,7 +256,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
      */     
     void setAttributeStatePersistent(String attributeName, boolean persistent) {
 
-        SessionAttributeState attrState = (SessionAttributeState) _attributeStates.get(attributeName);
+        SessionAttributeState attrState = _attributeStates.get(attributeName);
         if (attrState == null) {
                 attrState = new SessionAttributeState();
                 attrState.setPersistent(persistent);
@@ -291,7 +274,7 @@ public class ModifiedAttributeHASession extends BaseHASession {
      */     
     void setAttributeStateDirty(String attributeName, boolean dirty) {
 
-        SessionAttributeState attrState = (SessionAttributeState) _attributeStates.get(attributeName);
+        SessionAttributeState attrState = _attributeStates.get(attributeName);
         if (attrState == null) {
                 attrState = new SessionAttributeState();
                 attrState.setDirty(dirty);
@@ -325,9 +308,9 @@ public class ModifiedAttributeHASession extends BaseHASession {
     }
     
     /* Private Helper method to be used in HAAttributeStore only */ 
-    Enumeration privateGetAttributeList() {
+    Enumeration<String> privateGetAttributeList() {
 
-        return (new Enumerator(new ArrayList(attributes.keySet())));
+        return (new Enumerator<String>(new ArrayList<String>(attributes.keySet())));
 
     }
 }
