@@ -618,6 +618,31 @@ public class WebappLoader
 
     }
 
+    private static synchronized void initStreamHandlerFactory() {
+        // Register a stream handler factory for the JNDI protocol
+        URLStreamHandlerFactory streamHandlerFactory =
+            new DirContextURLStreamHandlerFactory();
+
+        synchronized (WebappLoader.class) {
+            if (first) {
+                first = false;
+                try {
+                    URL.setURLStreamHandlerFactory(streamHandlerFactory);
+                } catch (Exception e) {
+                    // Log and continue anyway, this is not critical
+                    log.log(Level.SEVERE,
+                            "Error registering jndi stream handler", e);
+                } catch (Throwable t) {
+                    // This is likely a dual registration
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("Dual registration of jndi stream handler: " +
+                            t.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Start this component, initializing our associated class loader.
      *
@@ -641,26 +666,7 @@ public class WebappLoader
             return;
         }
         // Register a stream handler factory for the JNDI protocol
-        URLStreamHandlerFactory streamHandlerFactory =
-            new DirContextURLStreamHandlerFactory();
-        synchronized (WebappLoader.class) {
-            if (first) {
-                first = false;
-                try {
-                    URL.setURLStreamHandlerFactory(streamHandlerFactory);
-                } catch (Exception e) {
-                    // Log and continue anyway, this is not critical
-                    log.log(Level.SEVERE,
-                            "Error registering jndi stream handler", e);
-                } catch (Throwable t) {
-                    // This is likely a dual registration
-                    if (log.isLoggable(Level.FINE)) {
-                        log.fine("Dual registration of jndi stream handler: " +
-                            t.getMessage());
-                    }
-                }
-            }
-        }
+        initStreamHandlerFactory();
 
         // Construct a class loader based on our current repositories list
         try {
