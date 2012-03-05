@@ -79,16 +79,15 @@ public class ListPersistenceTypesCommand implements AdminCommand {
     @Pattern(regexp = "(ejb|web)")
     private String containerType = "";
 
-    private ActionReport report;
     private Logger logger;
     private static final String EOL = "\n";
     private static final String SEPARATOR=EOL;
 
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
+        ActionReport report = context.getActionReport();
         logger = context.getLogger();
-        if (!checkEnvAndParams()) {
+        if (!checkEnvAndParams(report)) {
             return;
         }
         if (logger.isLoggable(Level.FINE)){
@@ -121,20 +120,20 @@ public class ListPersistenceTypesCommand implements AdminCommand {
     }
 
     // return false for any failures
-    private boolean checkEnvAndParams() {
+    private boolean checkEnvAndParams(ActionReport report) {
         if (containerType == null) {
-            return fail(Strings.get("list.persistence.types.null.parameter"));
+            return fail(report, Strings.get("list.persistence.types.null.parameter"));
 
         }
         if (!containerType.equals("ejb") && !containerType.equals("web")) {
-            return fail(Strings.get("list.persistence.types.invalid.parameter", containerType));
+            return fail(report, Strings.get("list.persistence.types.invalid.parameter", containerType));
         }
 
         // ok to go
         return true;
     }
 
-    private boolean fail(String s) {
+    private boolean fail(ActionReport report, String s) {
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         report.setMessage(s);
         return false;
