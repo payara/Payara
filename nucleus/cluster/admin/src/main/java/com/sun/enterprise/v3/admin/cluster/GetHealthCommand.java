@@ -99,18 +99,15 @@ public class GetHealthCommand implements AdminCommand {
     @I18n("get.health.cluster.name")
     private String clusterName;
 
-    private ActionReport report;
-    private Logger logger;
-    private GMSAdapter gmsAdapter;
 
     @Override
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
-        logger = context.getLogger();
+        ActionReport report = context.getActionReport();
+        Logger logger = context.getLogger();
         logger.log(Level.INFO, Strings.get("get.health.called", clusterName));
 
         // output will be handled within this method
-        if (!checkEnvAndParams()) {
+        if (!checkEnvAndParams(logger, report)) {
             return;
         }
 
@@ -121,28 +118,28 @@ public class GetHealthCommand implements AdminCommand {
          * should be redundant. If the GMSAdapter exists for the cluster,
          * we can use GMS.
          */
-        gmsAdapter = gmsAdapterService.getGMSAdapterByName(clusterName);
+        GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapterByName(clusterName);
         if (gmsAdapter != null) {
-            getHealthWithGMS();
+            getHealthWithGMS(logger, report, gmsAdapter);
         } else {
             // if someone wants to implement the non-gms case, here's where
-            setFail(Strings.get("get.health.noGMS", clusterName));
+            setFail(logger, report, Strings.get("get.health.noGMS", clusterName));
         }
 
     }
 
     // return false for any failures
-    private boolean checkEnvAndParams() {
+    private boolean checkEnvAndParams(Logger logger, ActionReport report) {
 
         // first check that we're the DAS
         if (!env.isDas()) {
-            return setFail(Strings.get("get.health.onlyRunsOnDas"));
+            return setFail(logger, report, Strings.get("get.health.onlyRunsOnDas"));
         }
 
         // check that cluster exists
         Cluster cluster = domain.getClusterNamed(clusterName);
         if (cluster == null) {
-            return setFail(Strings.get("get.health.noCluster", clusterName));
+            return setFail(logger, report, Strings.get("get.health.noCluster", clusterName));
         }
 
         // ok to go
@@ -153,11 +150,11 @@ public class GetHealthCommand implements AdminCommand {
      * Simply get the HealthHistory object from GMSAdapter and output
      * the information.
      */
-    private void getHealthWithGMS() {
+    private void getHealthWithGMS(Logger logger, ActionReport report, GMSAdapter gmsAdapter) {
         StringBuilder result = new StringBuilder();
         HealthHistory history = gmsAdapter.getHealthHistory();
         if (history == null) {
-            setFail(Strings.get("get.health.noHistoryError"));
+            setFail(logger, report, Strings.get("get.health.noHistoryError"));
             return;
         }
 
@@ -204,7 +201,7 @@ public class GetHealthCommand implements AdminCommand {
     }
 
     // come fail away, come fail away, come fail away with me....
-    private boolean setFail(String message) {
+    private boolean setFail(Logger logger, ActionReport report, String message) {
         logger.log(Level.WARNING, message);
         report.setMessage(message);
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
