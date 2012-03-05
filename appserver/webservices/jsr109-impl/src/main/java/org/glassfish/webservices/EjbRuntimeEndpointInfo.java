@@ -204,7 +204,7 @@ public class EjbRuntimeEndpointInfo {
                         if(endpoint.getWebService().hasWsdlFile()) {
 
                             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-                            ApplicationRegistry appRegistry = wscImpl.getHabitat().getByType(ApplicationRegistry.class);
+                            ApplicationRegistry appRegistry = wscImpl.getApplicationRegistry();
                             ApplicationInfo appInfo = appRegistry.get(endpoint.getBundleDescriptor().getApplication().getRegistrationName());
                             URI deployedDir =appInfo.getSource().getURI();
 

@@ -41,18 +41,25 @@
 package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Inject;
+import org.glassfish.api.container.Adapter;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.config.serverbeans.Config;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -71,32 +78,33 @@ public class WebServiceContractImpl implements WebServicesContract{
     @Inject
     private ModulesRegistry modulesRegistry;
 
-
-    @Inject
-    private Habitat habitat;
-
-
     @Inject
     private InvocationManager invManager;
 
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
+    private Provider<Config> configProvider;
 
+    @Inject @Optional
+	private Provider<ApplicationRegistry> applicationRegistryProvider;
 
+    @Inject @Optional
+	private Adapter[] adapters;
+
+    @Inject @Optional
+	private Provider<InjectionManager> injectionManagerProvider;
+    
     private  static WebServiceContractImpl wscImpl;
 
     private Logger logger = LogDomains.getLogger(this.getClass(),LogDomains.WEBSERVICES_LOGGER);
-    
+
     public ComponentEnvManager getComponentEnvManager() {
         return compEnvManager;  
     }
 
     public Config getConfig() {
-        return habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        return configProvider.get();
     }
-    
-    public Habitat getHabitat() {
-        return habitat;
-    }
-
+  
     public InvocationManager getInvocationManager() {
             return invManager;
     }
@@ -119,4 +127,20 @@ public class WebServiceContractImpl implements WebServicesContract{
     public Logger getLogger() {
         return logger;
     }
+
+	public ApplicationRegistry getApplicationRegistry() {
+		return applicationRegistryProvider.get();
+	}
+
+	public ServerEnvironment getServerEnvironment() {
+		return env;
+	}
+
+	public Adapter[] getAdapters() {
+		return (adapters != null)?adapters:new Adapter[0];
+	}
+
+	public InjectionManager getInjectionManager() {
+		return injectionManagerProvider.get();
+	}
 }

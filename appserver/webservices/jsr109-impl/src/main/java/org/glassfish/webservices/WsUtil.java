@@ -140,13 +140,11 @@ public class WsUtil {
         "schemaIncludeLocationParam";    
 
     private Config config = null;
-    private Habitat habitat = null;
     private HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
     private List<NetworkListener> networkListeners = null;
 
     public WsUtil() {
         config = WebServiceContractImpl.getInstance().getConfig();
-        habitat = WebServiceContractImpl.getInstance().getHabitat();
     }
 
     // @@@ These are jaxrpc-implementation specific MessageContextProperties
@@ -686,7 +684,7 @@ public class WsUtil {
                                             // so in this case
                                             //resolve from application path
                                             WebServiceContractImpl wscImpl  = WebServiceContractImpl.getInstance();
-                                            ServerEnvironment se = wscImpl.getHabitat().getByContract(ServerEnvironment.class);
+                                            ServerEnvironment se = wscImpl.getServerEnvironment();
 
                                             File appFile = new File(se.getApplicationRepositoryPath(),serviceRef.getBundleDescriptor().getApplication().getAppName());
                                             if (appFile.exists()) {
@@ -1467,7 +1465,7 @@ public class WsUtil {
             List<Integer> adminPorts = new ArrayList<Integer>();
 
             for (org.glassfish.api.container.Adapter subAdapter :
-                    habitat.getAllByContract(org.glassfish.api.container.Adapter.class)) {
+            	WebServiceContractImpl.getInstance().getAdapters()) {
                 if (subAdapter instanceof AdminAdapter) {
                     AdminAdapter aa = (AdminAdapter) subAdapter;
                     adminPorts.add(aa.getListenPort());
@@ -2094,7 +2092,7 @@ public class WsUtil {
             try {
                 
                 WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-                InjectionManager injManager = wscImpl.getHabitat().getByContract(InjectionManager.class);
+                InjectionManager injManager = wscImpl.getInjectionManager(); 
                 injManager.injectInstance(handler);
             } catch(InjectionException e) {
                 logger.severe("Handler " + h.getHandlerClass() + 

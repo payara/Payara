@@ -75,8 +75,7 @@ public final class InstanceResolverImpl<T> extends InstanceResolver<T> {
     private WSWebServiceContext wsc;
     private WSEndpoint endpoint;
 
-    private final InjectionManager injManager = WebServiceContractImpl.getInstance()
-                .getHabitat().getByContract(InjectionManager.class);
+    private final InjectionManager injManager = WebServiceContractImpl.getInstance().getInjectionManager();
 
     public  InstanceResolverImpl(@NotNull Class<T> clasz) {
         this.classtobeResolved = clasz;

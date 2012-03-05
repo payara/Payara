@@ -79,7 +79,9 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.webservices.WebServiceDeploymentListener;
 import org.glassfish.webservices.WebServicesDeployer;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -115,9 +117,9 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     JavaEETransactionManager txManager;    
     @Inject
     GMSAdapterService gmsAdapterService;
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional = true)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
     private AvailabilityService availabilityService;
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService secService;
 
     @Override

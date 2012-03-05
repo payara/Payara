@@ -66,7 +66,7 @@ import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.internal.api.JAXRPCCodeGenFacade;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

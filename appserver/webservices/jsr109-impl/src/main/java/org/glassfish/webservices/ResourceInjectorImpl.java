@@ -89,7 +89,7 @@ public class ResourceInjectorImpl extends ResourceInjector {
             // Set proper component context
             invMgr.preInvoke(inv);
             // Injection first
-            InjectionManager injManager = WebServiceContractImpl.getInstance().getHabitat().getByContract(InjectionManager.class);
+            InjectionManager injManager = WebServiceContractImpl.getInstance().getInjectionManager();
             injManager.injectInstance(instance);
 
             // Set webservice context here

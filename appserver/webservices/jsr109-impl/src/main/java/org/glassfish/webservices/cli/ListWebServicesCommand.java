@@ -51,14 +51,15 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.webservices.WebServicesContainer;
 import org.glassfish.webservices.deployment.DeployedEndpointData;
 import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Map;
 import java.util.Properties;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -87,8 +88,8 @@ endpointname <endpointname>]]]
         })
 })
 public class ListWebServicesCommand implements AdminCommand {
-    @Inject
-    private Habitat habitat;
+    @Inject @Optional
+    private Provider<WebServicesContainer> containerProvider;
 
     @Param(optional=true, alias="applicationname")
     String appName;
@@ -103,7 +104,7 @@ public class ListWebServicesCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        WebServicesContainer container = habitat.getComponent(WebServicesContainer.class);
+        WebServicesContainer container = containerProvider.get();
         if (container == null) {
             return;
         }

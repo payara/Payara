@@ -40,7 +40,7 @@
 
 package org.glassfish.webservices;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.component.PostConstruct;
