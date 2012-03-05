@@ -585,9 +585,9 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>org.glassfish.main</groupId>
+                        <groupId>org.glassfish.findbugs</groupId>
                         <artifactId>findbugs</artifactId>
-                        <version>${project.version}</version>
+                        <version>1.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
