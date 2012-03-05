@@ -238,12 +238,6 @@
             <id>release-phase1</id>
             <modules>
                 <!--
-                    The resource provided by the findbugs module is needed
-                    before running "mvn findbugs:findbugs".  To ensure that,
-                    we build it in this separate phase.
-                -->
-                <module>findbugs</module>
-                <!--
                     The resource provided by the copyright module is needed
                     before running "mvn glassfish-copyright:copyright".
                     To ensure that, we build it in this separate phase.
