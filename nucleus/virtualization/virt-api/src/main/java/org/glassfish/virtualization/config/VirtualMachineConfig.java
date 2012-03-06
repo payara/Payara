@@ -91,7 +91,7 @@ public interface VirtualMachineConfig extends Named, ConfigBeanProxy, VirtualMac
                Lock lock=null;
                try {
 
-                   lock = adminCommandLock.getLock(CommandLock.LockType.EXCLUSIVE);
+                   lock = adminCommandLock.getLock(CommandLock.LockType.SHARED);
                    lock.lock();
                    return (VirtualMachineConfig) ConfigSupport.apply(new SingleConfigCode<Cluster>() {
                        @Override
