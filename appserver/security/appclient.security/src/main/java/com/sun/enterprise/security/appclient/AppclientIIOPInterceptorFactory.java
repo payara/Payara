@@ -52,7 +52,6 @@ import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
 import org.omg.IOP.Codec;
@@ -80,8 +79,7 @@ public class AppclientIIOPInterceptorFactory implements IIOPInterceptorFactory {
     private ClientRequestInterceptor creq;
     @Inject
     private ProcessEnvironment penv;
-    @Inject 
-    private Habitat habitat;
+
     private AlternateSecurityInterceptorFactory altSecFactory;
     
     // are we supposed to add the interceptor and then return or just return an instance ?.
@@ -125,7 +123,7 @@ public class AppclientIIOPInterceptorFactory implements IIOPInterceptorFactory {
     private synchronized ClientRequestInterceptor getClientInterceptorInstance(Codec codec) {
         if (creq == null) {
             creq = new SecClientRequestInterceptor(
-                "SecClientRequestInterceptor", codec, habitat);
+                "SecClientRequestInterceptor", codec);
         }
         return creq;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,60 +42,127 @@ package com.sun.enterprise.iiop.security;
 
 import java.lang.ref.WeakReference;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * This class is a local utility class to provide for hk2 lookups during runtime.
  * @author Sudarsan Sridhar
  */
-class Lookups {
+public class Lookups {
+
+    @Inject
+    private Provider<SecurityMechanismSelector> securityMechanismSelectorProvider;
+    
+    @Inject
+    private Provider<GlassFishORBHelper> glassFishORBHelperProvider;
+
+    @Inject
+    private Provider<SecurityContextUtil> securityContextUtilProvider;
+
+    @Inject
+    private Provider<GMSAdapterService> gmsAdapterServiceProvider;
+
+    /**
+     * Static singleton {@link Habitat} instance.
+     */
+    private static final Habitat habitat = Globals.getDefaultHabitat();
+
+    /**
+     * Static singleton {@link Lookups} instance.  Note that this is assigned lazily and may
+     * remain null if the {@link Habitat} can not be obtained.
+     */
+    private static Lookups singleton;
 
     private static WeakReference<SecurityMechanismSelector> sms = new WeakReference<SecurityMechanismSelector>(null);
     private static WeakReference<GlassFishORBHelper> orb = new WeakReference<GlassFishORBHelper>(null);
     private static WeakReference<SecurityContextUtil> sc = new WeakReference<SecurityContextUtil>(null);
-    
-    
 
-    static SecurityMechanismSelector getSecurityMechanismSelector(Habitat habitat) {
+
+    private Lookups() {
+    }
+
+    /**
+     * Check to see if the singleton {@link Lookups} reference has been assigned. If null,
+     * then attempt to obtain and assign the singleton {@link Lookups} instance.
+     *
+     * @return true if the singleton instance has been successfully assigned; false otherwise
+     */
+    private static synchronized boolean checkSingleton(){
+        if (singleton == null && habitat != null) {
+            // Obtaining the singleton through the habitat will cause the injections to occur.
+            singleton = habitat.getComponent(Lookups.class);
+        }
+        return singleton != null;
+    }
+
+    /**
+     * Get the {@link SecurityMechanismSelector}.
+     *
+     * @return the {@link SecurityMechanismSelector}; null if not available
+     */
+    static SecurityMechanismSelector getSecurityMechanismSelector() {
         if (sms.get() != null) {
             return sms.get();
         }
-        return _getSecurityMechanismSelector(habitat);
+        return _getSecurityMechanismSelector();
     }
 
-    private static synchronized SecurityMechanismSelector _getSecurityMechanismSelector(Habitat habitat) {
-        if (sms.get() == null) {
-            sms = new WeakReference<SecurityMechanismSelector>(habitat.getComponent(SecurityMechanismSelector.class));
+    private static synchronized SecurityMechanismSelector _getSecurityMechanismSelector() {
+        if (sms.get() == null && checkSingleton()) {
+            sms = new WeakReference<SecurityMechanismSelector>(singleton.securityMechanismSelectorProvider.get());
         }
         return sms.get();
     }
 
-    static GlassFishORBHelper getGlassFishORBHelper(Habitat habitat) {
+    /**
+     * Get the {@link GlassFishORBHelper}.
+     *
+     * @return the {@link GlassFishORBHelper}; null if not available
+     */
+    static GlassFishORBHelper getGlassFishORBHelper() {
         if (orb.get() != null) {
             return orb.get();
         }
-        return _getGlassFishORBHelper(habitat);
+        return _getGlassFishORBHelper();
     }
 
-    private static synchronized GlassFishORBHelper _getGlassFishORBHelper(Habitat habitat) {
-        if (orb.get() == null) {
-            orb = new WeakReference<GlassFishORBHelper>(habitat.getComponent(GlassFishORBHelper.class));
+    private static synchronized GlassFishORBHelper _getGlassFishORBHelper() {
+        if (orb.get() == null && checkSingleton()) {
+            orb = new WeakReference<GlassFishORBHelper>(singleton.glassFishORBHelperProvider.get());
         }
         return orb.get();
     }
 
-    static SecurityContextUtil getSecurityContextUtil(Habitat habitat) {
+    /**
+     * Get the {@link SecurityContextUtil}.
+     *
+     * @return the {@link SecurityContextUtil}; null if not available
+     */
+    static SecurityContextUtil getSecurityContextUtil() {
         if (sc.get() != null) {
             return sc.get();
         }
-        return _getSecurityContextUtil(habitat);
+        return _getSecurityContextUtil();
     }
 
-    private static synchronized SecurityContextUtil _getSecurityContextUtil(Habitat habitat) {
-        if (sc.get() == null) {
-            sc = new WeakReference<SecurityContextUtil>(habitat.getComponent(SecurityContextUtil.class));
+    private static synchronized SecurityContextUtil _getSecurityContextUtil() {
+        if (sc.get() == null && checkSingleton()) {
+            sc = new WeakReference<SecurityContextUtil>(singleton.securityContextUtilProvider.get());
         }
         return sc.get();
+    }
+
+    /**
+     * Get the {@link GMSAdapterService}.
+     *
+     * @return the {@link GMSAdapterService}; null if not available
+     */
+    static GMSAdapterService getGMSAdapterService() {
+        return checkSingleton() ? singleton.gmsAdapterServiceProvider.get() : null;
     }
 }

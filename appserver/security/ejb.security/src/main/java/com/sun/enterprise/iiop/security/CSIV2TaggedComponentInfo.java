@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,8 +95,8 @@ import org.omg.CORBA.INV_POLICY;
 import org.omg.PortableInterceptor.IORInfo;
 
 import org.glassfish.enterprise.iiop.impl.CSIv2Policy;
-import org.jvnet.hk2.component.Habitat;
-/** 
+
+/**
  * This is the class that manages the CSIV2 tagged component information
  * in the IORs.
  * Note: For supporting FLOB in a cluster/EE mode we need to register the CSIV2TaggedComponentHandlerImpl
@@ -132,13 +132,13 @@ public final class CSIV2TaggedComponentInfo
     private GlassFishORBHelper orbHelper;
     
     
-    public CSIV2TaggedComponentInfo(ORB orb, Habitat habitat) {
+    public CSIV2TaggedComponentInfo(ORB orb) {
 	this.orb = orb;	
-        orbHelper = Lookups.getGlassFishORBHelper(habitat);
+        orbHelper = Lookups.getGlassFishORBHelper();
     }
 
-    public CSIV2TaggedComponentInfo(ORB orb, int sslMutualAuthPort , Habitat habitat) {
-	this( orb, habitat ) ;
+    public CSIV2TaggedComponentInfo(ORB orb, int sslMutualAuthPort) {
+	this( orb ) ;
 	this.sslMutualAuthPort = sslMutualAuthPort ;
     }
 

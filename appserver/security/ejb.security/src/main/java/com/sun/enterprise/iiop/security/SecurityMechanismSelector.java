@@ -58,7 +58,6 @@ import java.util.ArrayList;
 
 import java.security.PrivilegedAction;
 import java.security.AccessController;
-import javax.inject.Provider;
 import javax.security.auth.Subject;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLSession;
@@ -100,7 +99,6 @@ import org.glassfish.enterprise.iiop.api.ProtocolManager;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.invocation.InvocationManager ;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
@@ -157,9 +155,6 @@ public final class SecurityMechanismSelector implements PostConstruct {
     private InvocationManager invMgr;
 
     @Inject
-    private Habitat habitat;
-
-    @Inject
     private ProcessEnvironment processEnv;
     /**
      * Read the client and server preferences from the config files.
@@ -169,7 +164,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
     
     public void postConstruct() {
         try {
-            orbHelper = Lookups.getGlassFishORBHelper(habitat);
+            orbHelper = Lookups.getGlassFishORBHelper();
 	    // Initialize client security config
 	    String s = 
 		(orbHelper.getCSIv2Props()).getProperty(GlassFishORBHelper.ORB_SSL_CLIENT_REQUIRED);
@@ -340,7 +335,7 @@ public final class SecurityMechanismSelector implements PostConstruct {
     
     public synchronized CSIV2TaggedComponentInfo getCtc() {
         if (ctc == null) {
-           this.ctc = new CSIV2TaggedComponentInfo(orbHelper.getORB(), habitat); 
+           this.ctc = new CSIV2TaggedComponentInfo(orbHelper.getORB());
         }
         return ctc;
     }

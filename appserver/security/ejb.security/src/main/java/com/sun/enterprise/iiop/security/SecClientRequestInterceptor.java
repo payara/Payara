@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,6 @@ import java.security.PrivilegedAction;
 import java.security.cert.X509Certificate;
 
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.*;
 import org.omg.PortableInterceptor.*;
 import org.omg.IOP.*;
@@ -101,8 +100,7 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
     //private SecurityService secsvc;
     private GlassFishORBHelper orbHelper;
     private SecurityContextUtil secContextUtil;
-    private Habitat habitat;
-    
+
     /** 
      *  Hard code the value of 15 for SecurityAttributeService until
      *  it is defined in IOP.idl.
@@ -110,13 +108,12 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
      */
     protected static final int SECURITY_ATTRIBUTE_SERVICE_ID = 15;
    
-    public SecClientRequestInterceptor(String name, Codec codec, Habitat habitat) {
+    public SecClientRequestInterceptor(String name, Codec codec) {
 	this.name   = name;
         this.codec  = codec;
         this.prname = name + "::";
-        this.habitat = habitat;
-        orbHelper = Lookups.getGlassFishORBHelper(habitat);
-        secContextUtil = Lookups.getSecurityContextUtil(habitat);
+        orbHelper = Lookups.getGlassFishORBHelper();
+        secContextUtil = Lookups.getSecurityContextUtil();
     }
 
     public String name() {
@@ -302,7 +299,7 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
 
             try {
                 
-                SecurityMechanismSelector sms = Lookups.getSecurityMechanismSelector(habitat);
+                SecurityMechanismSelector sms = Lookups.getSecurityMechanismSelector();
                 ConnectionContext cc = sms.getClientConnectionContext();
                 CompoundSecMech mech = cc.getMechanism();
 

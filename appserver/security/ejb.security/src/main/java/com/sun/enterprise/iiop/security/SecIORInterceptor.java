@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,6 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.enterprise.iiop.util.IIOPUtils;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
-import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
 
 
@@ -73,17 +72,14 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
     private Codec codec;
     private GMSAdapterService gmsAdapterService;
     private GMSAdapter gmsAdapter;
-    private Habitat habitat;
 
     //private GlassFishORBHelper helper = null;
     private ORB orb;
     
-    public SecIORInterceptor(Codec c, Habitat habitat, ORB orb) {
+    public SecIORInterceptor(Codec c, ORB orb) {
         codec = c;
-        this.habitat = habitat;
-        //helper = habitat.getComponent(GlassFishORBHelper.class);
         this.orb = orb;
-        this.gmsAdapterService = habitat.getComponent( GMSAdapterService.class ) ;
+        this.gmsAdapterService = Lookups.getGMSAdapterService();
         if (this.gmsAdapterService==null) {
             this.gmsAdapter = null ;
         } else {
@@ -156,7 +152,7 @@ public class SecIORInterceptor extends org.omg.CORBA.LocalObject
 	}
 
 	CSIV2TaggedComponentInfo ctc = new CSIV2TaggedComponentInfo( orb,
-	    sslMutualAuthPort, habitat );
+	    sslMutualAuthPort);
         desc = ctc.getEjbDescriptor(iorInfo);
 
 	// Create CSIv2 tagged component

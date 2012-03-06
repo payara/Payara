@@ -47,7 +47,6 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 import org.omg.CORBA.ORB;
 import org.omg.IOP.Codec;
@@ -80,8 +79,7 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
     
     @Inject
     private ProcessEnvironment penv;
-    @Inject
-    private Habitat habitat;
+
     private AlternateSecurityInterceptorFactory altSecFactory;
     
     // are we supposed to add the interceptor and then return or just return an instance ?.
@@ -145,7 +143,7 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
     private synchronized ClientRequestInterceptor getClientInterceptorInstance(Codec codec) {
         if (creq == null) {
             creq = new SecClientRequestInterceptor(
-                "SecClientRequestInterceptor", codec, habitat);
+                "SecClientRequestInterceptor", codec);
         }
         return creq;
     }
@@ -153,14 +151,14 @@ public class SecurityIIOPInterceptorFactory implements IIOPInterceptorFactory{
      private synchronized ServerRequestInterceptor getServerInterceptorInstance(Codec codec) {
         if (sreq == null) {
             sreq = new SecServerRequestInterceptor(
-                    "SecServerRequestInterceptor", codec, habitat);
+                    "SecServerRequestInterceptor", codec);
         }
         return sreq;
     }
 
     private synchronized IORInterceptor getSecIORInterceptorInstance(Codec codec, ORB orb) {
         if (sior == null) {
-            sior = new SecIORInterceptor(codec, habitat, orb);
+            sior = new SecIORInterceptor(codec, orb);
         }
         return sior;
     }

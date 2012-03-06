@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,7 +79,6 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.logging.*;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.jvnet.hk2.component.Habitat;
 
 /*
  * Security server request interceptor 
@@ -123,13 +122,13 @@ public class SecServerRequestInterceptor
     private SecurityMechanismSelector smSelector = null;
     //Not required
     //  SecurityService secsvc = null;       // Security Service
-    public SecServerRequestInterceptor(String name, Codec codec, Habitat habitat) {
+    public SecServerRequestInterceptor(String name, Codec codec) {
         this.name    = name;
         this.codec   = codec;
         this.prname  = name + "::";
-        secContextUtil = Lookups.getSecurityContextUtil(habitat);
-        orbHelper = Lookups.getGlassFishORBHelper(habitat);
-        smSelector = Lookups.getSecurityMechanismSelector(habitat);
+        secContextUtil = Lookups.getSecurityContextUtil();
+        orbHelper = Lookups.getGlassFishORBHelper();
+        smSelector = Lookups.getSecurityMechanismSelector();
     }
 
     public String name() {
