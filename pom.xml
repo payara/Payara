@@ -138,8 +138,8 @@
         <jaxb.version>2.2.3-1</jaxb.version>
         <jaxrpc.api.version>1.1-b01</jaxrpc.api.version>
 
-        <javax-persistence-api.version>2.0.3</javax-persistence-api.version>
-        <eclipselink.version>2.3.0</eclipselink.version>
+        <javax-persistence-api.version>2.0.4.v201112200901</javax-persistence-api.version>
+        <eclipselink.version>2.3.2</eclipselink.version>
         <!-- repackage of org.netbeans.modules:org-netbeans-modules-dbschema RELEASE60 artifact-->
         <dbschema.version>3.1.1</dbschema.version>
         <!-- osgi version string must start with a number. Manually mapping above dbschema.version to osgi.version here -->
