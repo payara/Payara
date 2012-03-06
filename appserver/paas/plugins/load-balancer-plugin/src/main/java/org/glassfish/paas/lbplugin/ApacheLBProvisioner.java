@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,21 +46,27 @@ import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.logging.Level;
-import org.glassfish.common.util.admin.AuthTokenManager;
+
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.VirtualizationType;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
+import org.glassfish.paas.lbplugin.util.ApacheLBUtility;
 
 /**
  *
@@ -69,24 +75,22 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class ApacheLBProvisioner implements LBProvisioner{
 
+    @Inject
+    ServerEnvironment serverEnvironment;
+
     private static final String DEFAULT_APACHE_INSTALL_DIR = "/u01/glassfish/lb/install";
-    private static final String DEFAULT_SCRIPTS_DIR = "/u01/glassfish/lb/scripts";
-    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME = "/associateServer.sh";
-    private static final String CONFIGURE_SERVER_SCRIPT_NAME = "/configureServer.sh";
     private static final String APACHECTL_SCRIPT_NAME = "/bin/apachectl";
+    private static final String LB_CONFIG_DIRECTORY = "load-balancer";
+    private static final String CONFIGURATION_FILE_NAME = "configuration.properties";
+
 
     private static final String DEFAULT_APACHE_INSTALL_DIR_WINDOWS = "c:\\glassfish\\lb\\install";
-    private static final String DEFAULT_SCRIPTS_DIR_WINDOWS = "c:\\glassfish\\lb\\scripts";
-    private static final String ASSOCIATE_SERVERS_SCRIPT_NAME_WINDOWS = "\\associateServer.bat";
-    private static final String CONFIGURE_SERVER_SCRIPT_NAME_WINDOWS = "\\configureServer.bat";
     private static final String APACHECTL_SCRIPT_NAME_WINDOWS = "\\bin\\httpd.exe";
 
     private String apacheInstallDir;
     private String apachectl;
-    private String scriptsDir;
-    private String associateServerScript;
-    private String configureServerScript;
-
+    private String apacheConfDir;
+    
     private static final String AJP_LISTENER_NAME = "ajp-listener-1";
     private static final String AJP_LISTENER_PORT = "AJP_LISTENER_PORT";
     private static final int DEFAULT_AJP_LISTENER_PORT = 28009;
@@ -100,12 +104,10 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public void initialize() {
         if(useWindowsConfig()){
-            setInstallDir(DEFAULT_APACHE_INSTALL_DIR_WINDOWS);
-            setScriptsDir(DEFAULT_SCRIPTS_DIR_WINDOWS);
-        } else {
-            setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
-            setScriptsDir(DEFAULT_SCRIPTS_DIR);
-        }
+	    setInstallDir(DEFAULT_APACHE_INSTALL_DIR_WINDOWS);
+	} else {
+	    setInstallDir(DEFAULT_APACHE_INSTALL_DIR);
+	}
     }
 
     @Override
@@ -130,14 +132,15 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
     @Override
     public void configureLB(String serviceName,VirtualMachine virtualMachine, String domainName, LBServiceConfiguration configuration) throws Exception{
-        String[] command = null;
-        command = new String[]{configureServerScript,
-                    configuration.getHttpPort(),
-                    (configuration.isSslEnabled() ? configuration.getHttpsPort() : "-1"),
-                    (domainName != null ? domainName : Constants.NULL_DOMAIN_NAME)};
-        String output = virtualMachine.executeOn(command);
-        LBPluginLogger.getLogger().log(Level.INFO,"Output of configure apache server command : " + output);
-        
+           
+	createLbDirectory();
+	if(configuration.isSslEnabled()){
+            getApacheLBUtility().configureLBWithSSL(domainName,configuration.getHttpsPort(),configuration.getHttpPort(),virtualMachine);
+        }else{
+            getApacheLBUtility().configureLBWithoutSSL(domainName,configuration.getHttpPort(),virtualMachine);
+        }
+	createAppDomainConfigProperties(serviceName,configuration,domainName);
+        LBPluginLogger.getLogger().log(Level.INFO,"LB configuration done successfuly"); 
     }
 
     @Override
@@ -146,30 +149,44 @@ public class ApacheLBProvisioner implements LBProvisioner{
             Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception{
         if(!isReconfig){
             createApacheConfig(clusterName, commandRunner, habitat, serviceName, isFirst);
-        } else {
+	} else {
             if(isNativeMode()){
                 createAjpListenerPerInstance(clusterName, commandRunner, habitat);
-            }
+	    }
+	}
+	      
+	Properties appDomainConfigProps = getApacheLBUtility()
+		.readPropertiesFile(
+			serverEnvironment.getConfigDirPath() + File.separator
+				+ LB_CONFIG_DIRECTORY + File.separator
+				+ serviceName + "_" + CONFIGURATION_FILE_NAME);
+        if (appName != null && domainName != null) {
+
+            appDomainConfigProps.setProperty("app." + appName + ".domain-name",
+    		domainName);
+        } else if (appName != null) {
+            appDomainConfigProps.remove("app." + appName + ".domain-name");
         }
-        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome, appName,
-                (domainName != null ? domainName : Constants.NULL_DOMAIN_NAME));
+        
+	createNewWorkerPropertiesFile(commandRunner, serviceName);
+	reconfigureApache(virtualMachine, serviceName, glassfishHome, appName,
+		domainName, appDomainConfigProps);
+	File tempworkerFile = new File(System.getProperty("user.dir")
+		+ File.separator + "worker.properties");
+	virtualMachine.upload(tempworkerFile, new File(apacheConfDir));
+	persistPropertiesFile(serviceName,appDomainConfigProps);
+
+	tempworkerFile.delete();
+
+	getApacheLBUtility().restartApacheGracefully(virtualMachine);
     }
 
-    private void reconfigureApache(Habitat habitat, VirtualMachine virtualMachine,
-            String serviceName, String glassfishHome, String appName, String domainName)
+    private void reconfigureApache(VirtualMachine virtualMachine,
+            String serviceName, String glassfishHome, String appName,
+            String domainName, Properties appDomainConfigProps)
             throws IOException, ComponentException, InterruptedException {
-        AuthTokenManager tokenMgr = habitat.getComponent(AuthTokenManager.class);
-        String[] args = null;
-        //If app name is null, it is reassociate scenario
-        if (appName != null) {
-            args = new String[]{associateServerScript, serviceName + "-lb-config",
-                tokenMgr.createToken(30L * 60L * 1000L), glassfishHome, appName, domainName};
-        } else {
-            args = new String[]{associateServerScript, serviceName + "-lb-config",
-                tokenMgr.createToken(30L * 60L * 1000L), glassfishHome};
-        }
-        String output = virtualMachine.executeOn(args);
-        LBPluginLogger.getLogger().log(Level.INFO, "Output of associate apache servers command : " + output);
+        
+	getApacheLBUtility().associateServer(appName, domainName,virtualMachine,appDomainConfigProps);
         //Doing hard reconfig  on windows till a solution is found for graceful reconfig
         if(useWindowsConfig()){
             restartHttpdProcess();
@@ -255,6 +272,78 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
     }
     
+    /* Create worker.properties file in apache config directory */
+    private void createNewWorkerPropertiesFile(CommandRunner commandRunner,
+	    String serviceName) throws Exception {
+
+	ArrayList params = new ArrayList();
+	CommandResult result = null;
+	params.clear();
+	params.add("--config");
+	params.add(serviceName + "-lb-config");
+	params.add("--type");
+	params.add("apache");
+	params.add("--retrievefile=false");
+	params.add(System.getProperty("user.dir")+File.separator+ "worker.properties");
+	result = commandRunner.run("export-http-lb-config",
+		(String[]) params.toArray(new String[params.size()]));
+	if (result.getExitStatus().equals(CommandResult.ExitStatus.FAILURE)) {
+	    LBPluginLogger.getLogger().log(Level.INFO,
+		    "export-http-lb-config failed");
+	    throw new Exception("export-http-lb-config failed.");
+	}
+	LBPluginLogger.getLogger().log(Level.INFO,
+		"export-http-lb-config succeeded");
+
+    }
+    
+   
+    /* Create a Config properties file to store http ports and domain name */
+    private void createAppDomainConfigProperties(String serviceName,LBServiceConfiguration configuration, String domainName)
+	    throws IOException {
+
+	Properties configProps = new Properties();
+	configProps.setProperty("http-port", configuration.getHttpPort());
+	configProps.setProperty("https-port", configuration.getHttpsPort());
+	if (configuration.isSslEnabled()) {
+	    configProps.setProperty("SSL", "true");
+	} else {
+	    configProps.setProperty("SSL", "false");
+	}
+	if (domainName != null) {
+	    configProps.setProperty("LB.domain-name", domainName);
+	}
+	persistPropertiesFile(serviceName,configProps);
+
+    }
+
+    /* Store the Application Domain Config Properties File */
+    private void persistPropertiesFile(String serviceName,Properties propFile) throws IOException {
+	File appDomainConfigFile = new File(serverEnvironment.getConfigDirPath()
+		+ File.separator +LB_CONFIG_DIRECTORY + File.separator + serviceName + "_" + CONFIGURATION_FILE_NAME);
+
+	FileOutputStream fout = new FileOutputStream(appDomainConfigFile);
+	propFile.store(fout, "Application Domain Names");
+	fout.close();
+
+    }
+    
+    /*Create LB directory to store config properties file*/
+    public void createLbDirectory() {
+	File lbDirectory = new File(serverEnvironment.getConfigDirPath()
+		+ File.separator + LB_CONFIG_DIRECTORY);
+	if (!lbDirectory.exists()) {
+	    boolean lbDirectoryCreated = new File(
+		    serverEnvironment.getConfigDirPath() + File.separator
+			    + LB_CONFIG_DIRECTORY).mkdir();
+	    if (!lbDirectoryCreated) {
+		String msg = "load-balancer directory does not exist. Cannot create load-balancer";
+		throw new RuntimeException(msg);
+	    }
+	}
+    }
+
+          
     @Override
     public void dissociateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,
@@ -278,9 +367,22 @@ public class ApacheLBProvisioner implements LBProvisioner{
             throw new RuntimeException("delete-http-lb-ref failed.");
         }
         LBPluginLogger.getLogger().log(Level.INFO, "delete-http-lb-ref succeeded");
-
-        reconfigureApache(habitat, virtualMachine, serviceName, glassfishHome, appName, Constants.NULL_DOMAIN_NAME);
-
+       
+	Properties configProps = getApacheLBUtility().readPropertiesFile(
+		serverEnvironment.getConfigDirPath() + File.separator
+			+ LB_CONFIG_DIRECTORY + File.separator + serviceName
+			+ "_" + CONFIGURATION_FILE_NAME);
+               
+	createNewWorkerPropertiesFile(commandRunner, serviceName);
+	reconfigureApache(virtualMachine, serviceName, glassfishHome, appName,
+		null, configProps);
+	configProps.remove("app." + appName + ".domain-name");
+	persistPropertiesFile(serviceName,configProps);
+	File tempWorkFile = new File(System.getProperty("user.dir")
+		+ File.separator + "worker.properties");
+	virtualMachine.upload(tempWorkFile, new File(apacheConfDir));
+	getApacheLBUtility().restartApacheGracefully(virtualMachine);
+	tempWorkFile.delete();
         if (isLast) {
             params.clear();
             params.add(serviceName + "-lb-config");
@@ -304,21 +406,16 @@ public class ApacheLBProvisioner implements LBProvisioner{
         apacheInstallDir =  installDir;
         if(useWindowsConfig()){
             apachectl = apacheInstallDir + APACHECTL_SCRIPT_NAME_WINDOWS;
+            apacheConfDir = apacheInstallDir + "\\conf";
         } else {
             apachectl = apacheInstallDir + APACHECTL_SCRIPT_NAME;
+            apacheConfDir = apacheInstallDir + "/conf";
         }
     }
 
     @Override
     public void setScriptsDir(String scriptsDir) {
-        this.scriptsDir = scriptsDir;
-        if(useWindowsConfig()){
-            associateServerScript = this.scriptsDir + ASSOCIATE_SERVERS_SCRIPT_NAME_WINDOWS;
-            configureServerScript = this.scriptsDir + CONFIGURE_SERVER_SCRIPT_NAME_WINDOWS;
-        } else {
-            associateServerScript = this.scriptsDir + ASSOCIATE_SERVERS_SCRIPT_NAME;
-            configureServerScript = this.scriptsDir + CONFIGURE_SERVER_SCRIPT_NAME;
-        }
+        //No operation
     }
 
     @Override
@@ -392,6 +489,10 @@ public class ApacheLBProvisioner implements LBProvisioner{
                 LBPluginLogger.getLogger().log(Level.INFO, "create-system-properties succeeded for instance " + server.getName());
             }
         }
+    }
+
+    private ApacheLBUtility getApacheLBUtility() {
+        return new ApacheLBUtility(apacheInstallDir, apacheConfDir, apachectl, useWindowsConfig());
     }
 
     class HttpdThread extends Thread{
