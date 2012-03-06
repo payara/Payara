@@ -359,6 +359,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     private SecurityService securityService = null;
 
+    private HttpServiceStatsProviderBootstrap httpStatsProviderBootstrap = null;
+
     private WebStatsProviderBootstrap webStatsProviderBootstrap = null;
 
     private InjectionManager injectionMgr;
@@ -386,7 +388,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         invocationMgr = habitat.getByContract(InvocationManager.class);
         tldProviders = habitat.getAllByContract(TldProvider.class);
 
-        //createMonitoringConfig();
         createStatsProviders();
 
         setJspFactory();
@@ -674,7 +675,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public SessionProbeProvider getSessionProbeProvider() {
         return sessionProbeProvider;
     }
-
 
     /**
      * Gets the probe provider for request/response related events.
@@ -1195,7 +1195,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         if (startAccessLog
                 && vs.isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
             vs.addValve((GlassFishValve) accessLogValve);
-            vs.addHttpProbes(false);
         }
 
         if (_logger.isLoggable(Level.FINEST)) {
@@ -1287,6 +1286,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         configureHostPortNumbers(vs, httpListeners);
         vs.configureCatalinaProperties();
         vs.configureAuthRealm(securityService);
+        vs.addHttpProbes(globalAccessLoggingEnabled);
     }
 
 
@@ -3340,7 +3340,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
      * Request/Response related events.
      */
     private void createStatsProviders() {
-        HttpServiceStatsProviderBootstrap httpStatsProviderBootstrap =
+        httpStatsProviderBootstrap =
                 habitat.getByType(HttpServiceStatsProviderBootstrap.class);
         webStatsProviderBootstrap =
                 habitat.getByType(WebStatsProviderBootstrap.class);

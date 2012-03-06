@@ -54,6 +54,7 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.jvnet.hk2.component.PostConstruct;
@@ -251,6 +252,8 @@ public class HttpServiceStatsProvider implements PostConstruct {
     @ManagedAttribute(id="maxbytetransmissionrate")
     @Description(MAX_BYTE_TRANSMISSION_RATE_DESCRIPTION)
     public CountStatistic getMaxByteTransmissionRate() {
+        // TODO The maximum rate at which data was transmitted over which server-defined interval
+        maxByteTransmissionRate.setCount(countBytesTransmitted.getCount()/requestProcessTime.getTotalTime());
         return maxByteTransmissionRate;
     }
 
@@ -269,6 +272,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
     @ManagedAttribute(id="ratebytestransmitted")
     @Description(RATE_BYTES_TRANSMITTED_DESCRIPTION)
     public CountStatistic getRateBytesTransmitted() {
+        rateBytesTransmitted.setCount(countBytesTransmitted.getCount()/requestProcessTime.getTotalTime());
         return rateBytesTransmitted;
     }
 
@@ -362,6 +366,20 @@ public class HttpServiceStatsProvider implements PostConstruct {
         return this.countOther.getStatistic();
     }
 
+    @ProbeListener("glassfish:web:http-service:dataReceivedEvent")
+    public void dataReceivedEvent(
+        @ProbeParam("buffer") Buffer buffer) {
+        countBytesReceived.increment(buffer.remaining());
+        countBytesTransmitted.increment(buffer.remaining());
+
+    }
+
+    @ProbeListener("glassfish:web:http-service:dataSentEvent")
+    public void dataSentEvent(
+        @ProbeParam("buffer") Buffer buffer) {
+        countBytesTransmitted.increment(buffer.remaining());
+    }
+
     @ProbeListener("glassfish:web:http-service:requestStartEvent")
     public void requestStartEvent(
             @ProbeParam("appName") String appName,
@@ -419,7 +437,6 @@ public class HttpServiceStatsProvider implements PostConstruct {
             @ProbeParam("address") String address) {
         for (String listener : networkListeners) {
             if (listener.equals(listenerName)) {
-                individualData.get().setEntryTime(System.currentTimeMillis());
                 countOpenConnections.increment();
             }
             NetworkListener networkListener = networkConfig.getNetworkListener(listenerName);

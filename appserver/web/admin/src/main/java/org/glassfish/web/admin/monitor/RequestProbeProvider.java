@@ -41,6 +41,7 @@
 package org.glassfish.web.admin.monitor;
 
 import org.glassfish.external.probe.provider.annotations.*;
+import org.glassfish.grizzly.Buffer;
 
 /**
  * Provider interface for HTTP request/response related probes.
@@ -68,4 +69,13 @@ public class RequestProbeProvider {
         @ProbeParam("statusCode") int statusCode,
         @ProbeParam("method") String method,
         @ProbeParam("uri") String uri) {}
+
+    @Probe(name="dataReceivedEvent")
+    public void dataReceivedEvent(
+        @ProbeParam("buffer") Buffer buffer) {}
+
+    @Probe(name="dataSentEvent")
+    public void dataSentEvent(
+        @ProbeParam("buffer") Buffer buffer) {}
+
 }

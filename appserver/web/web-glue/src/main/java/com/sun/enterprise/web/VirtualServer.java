@@ -110,6 +110,7 @@ import org.glassfish.grizzly.http.HttpResponsePacket;
 import org.glassfish.grizzly.http.TransferEncoding;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
+import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
 import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
@@ -296,6 +297,8 @@ public class VirtualServer extends StandardHost
     private ArchiveFactory factory = null;
 
     private ActionReport report = null;
+
+    private HttpProbeImpl httpProbe = null;
 
     // ------------------------------------------------------------- Properties
 
@@ -1627,7 +1630,7 @@ public class VirtualServer extends StandardHost
         }
     }
 
-    void addHttpProbes(boolean disable) {
+    void addHttpProbes(boolean globalAccessLoggingEnabled) {
 
         List<String> listenerList = StringUtils.parseStringList(
                 vsBean.getNetworkListeners(), ",");
@@ -1653,91 +1656,18 @@ public class VirtualServer extends StandardHost
                 List<HttpCodecFilter> codecFilters =
                         grizzlyListener.getFilters(HttpCodecFilter.class);
                 if (codecFilters == null || codecFilters.isEmpty()) {
-                    _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                    _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
                 } else {
                     for (HttpCodecFilter codecFilter : codecFilters) {
-                        if (disable) {
-                            codecFilter.getMonitoringConfig().clearProbes();
-                        } else {
-                            if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
-
-                                    codecFilter.getMonitoringConfig().addProbes(new HttpProbe() {
-                                        @Override
-                                        public void onDataReceivedEvent(Connection connection, Buffer buffer) {
-                                        }
-                                        @Override
-                                        public void onDataSentEvent(Connection connection, Buffer buffer) {
-                                        }
-                                        @Override
-                                        public void onHeaderParseEvent(Connection connection, HttpHeader header, int size) {
-                                        }
-                                        @Override
-                                        public void onHeaderSerializeEvent(Connection connection, HttpHeader header, Buffer buffer) {
-                                        }
-                                        @Override
-                                        public void onContentChunkParseEvent(Connection connection, HttpContent content) {
-                                        }
-                                        @Override
-                                        public void onContentChunkSerializeEvent(Connection connection, HttpContent content) {
-                                        }
-                                        @Override
-                                        public void onContentEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
-                                        }
-                                        @Override
-                                        public void onContentEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
-                                        }
-                                        @Override
-                                        public void onTransferEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
-                                        }
-                                        @Override
-                                        public void onTransferEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
-                                        }
-                                        @Override
-                                        public void onErrorEvent(Connection connection, HttpPacket packet, Throwable error) {
-
-                                            if (packet instanceof HttpRequestPacket) {
-
-                                                final HttpRequestPacket requestPacket = (HttpRequestPacket) packet;
-                                                final HttpResponsePacket responsePacket = requestPacket.getResponse();
-
-                                                // 400 should be hardcoded since the response status isn't available for bad requests
-                                                responsePacket.setStatus(HttpStatus.BAD_REQUEST_400);
-
-                                                org.glassfish.grizzly.http.server.Request request = org.glassfish.grizzly.http.server.Request.create();
-                                                org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
-
-                                                request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
-                                                response.initialize(request, responsePacket, FilterChainContext.create(connection), null);
-
-                                                Response res = new Response();
-                                                res.setCoyoteResponse(response);
-
-                                                WebConnector connector = webContainer.getConnectorMap().get(listener.getName());
-                                                if (connector != null) {
-                                                    Request req = new Request();
-                                                    req.setCoyoteRequest(request);
-                                                    req.setConnector(connector);
-                                                    try {
-                                                        accessLogValve.postInvoke(req, res);
-                                                    } catch (IOException ex) {
-                                                        _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure", ex);
-                                                    }
-                                                } else {
-                                                    _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
-                                                }
-                                            } else {
-                                                _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
-                                            }
-                                        }
-                                    });
-                            }
+                        if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
+                            httpProbe = new HttpProbeImpl(listener, isAccessLoggingEnabled(globalAccessLoggingEnabled));
+                            codecFilter.getMonitoringConfig().addProbes(httpProbe);
                         }
                     }
                 }
             } else {
-                _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
             }
-
         }
     }
 
@@ -1789,7 +1719,7 @@ public class VirtualServer extends StandardHost
                 webcontainerFeatureFactory);
             if (restart) {
                 accessLogValve.start();
-                addHttpProbes(false);
+                httpProbe.enableAccessLogging();
             }
         } catch (LifecycleException le) {
             _logger.log(Level.SEVERE,
@@ -1819,13 +1749,13 @@ public class VirtualServer extends StandardHost
                     accessLogValve.stop();
                 }
                 accessLogValve.start();
+                httpProbe.enableAccessLogging();
             } catch (LifecycleException le) {
                 _logger.log(Level.SEVERE,
                             "pewebcontainer.accesslog.reconfigure",
                             le);
             }
         }
-        addHttpProbes(false);
     }
 
     /**
@@ -1834,7 +1764,7 @@ public class VirtualServer extends StandardHost
      */
     void disableAccessLogging() {
         removeValve(accessLogValve);
-        addHttpProbes(true);
+        httpProbe.disableAccessLogging();
     }
 
     /**
@@ -2549,4 +2479,120 @@ public class VirtualServer extends StandardHost
         }
     }
 
+
+
+
+    // ---------------------------------------------------------- Nested Classes
+
+
+    private final class HttpProbeImpl implements HttpProbe {
+
+        RequestProbeProvider requestProbeProvider = webContainer.getRequestProbeProvider();
+        boolean accessLoggingEnabled = false;
+        NetworkListener listener = null;
+
+        public HttpProbeImpl(NetworkListener listener, boolean accessLoggingEnabled)  {
+            this.listener = listener;
+            this.accessLoggingEnabled = accessLoggingEnabled;
+        }
+
+        public void enableAccessLogging() {
+            Thread.currentThread().dumpStack();
+            accessLoggingEnabled = true;
+        }
+
+        public void disableAccessLogging() {
+            Thread.currentThread().dumpStack();
+            accessLoggingEnabled = false;
+        }
+
+        @Override
+        public void onDataReceivedEvent(Connection connection, Buffer buffer) {
+            if (requestProbeProvider != null) {
+                requestProbeProvider.dataReceivedEvent(buffer);
+            }
+        }
+
+        @Override
+        public void onDataSentEvent(Connection connection, Buffer buffer) {
+            if (requestProbeProvider != null) {
+                requestProbeProvider.dataSentEvent(buffer);
+            }
+        }
+
+        @Override
+        public void onHeaderParseEvent(Connection connection, HttpHeader header, int size) {
+        }
+
+        @Override
+        public void onHeaderSerializeEvent(Connection connection, HttpHeader header, Buffer buffer) {
+        }
+
+        @Override
+        public void onContentChunkParseEvent(Connection connection, HttpContent content) {
+        }
+
+        @Override
+        public void onContentChunkSerializeEvent(Connection connection, HttpContent content) {
+        }
+
+        @Override
+        public void onContentEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
+        }
+
+        @Override
+        public void onContentEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
+        }
+
+        @Override
+        public void onTransferEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
+        }
+
+        @Override
+        public void onTransferEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
+        }
+
+        @Override
+        public void onErrorEvent(Connection connection, HttpPacket packet, Throwable error) {
+            if (accessLoggingEnabled) {
+                if (packet instanceof HttpRequestPacket) {
+
+                    final HttpRequestPacket requestPacket = (HttpRequestPacket) packet;
+                    final HttpResponsePacket responsePacket = requestPacket.getResponse();
+
+                    // 400 should be hardcoded since the response status isn't available for bad requests
+                    responsePacket.setStatus(HttpStatus.BAD_REQUEST_400);
+
+                    org.glassfish.grizzly.http.server.Request request = org.glassfish.grizzly.http.server.Request.create();
+                    org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
+
+                    request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
+                    response.initialize(request, responsePacket, FilterChainContext.create(connection), null);
+
+                    Response res = new Response();
+                    res.setCoyoteResponse(response);
+
+                    WebConnector connector = webContainer.getConnectorMap().get(listener.getName());
+                    if (connector != null) {
+                        Request req = new Request();
+                        req.setCoyoteRequest(request);
+                        req.setConnector(connector);
+                        try {
+                            accessLogValve.postInvoke(req, res);
+                        } catch (IOException ex) {
+                            _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure", ex);
+                        }
+                    } else {
+                        _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                    }
+                } else {
+                    _logger.log(Level.SEVERE, "pewebcontainer.accesslog.reconfigure");
+                }
+            }
+        }
+
+    }
+
 }
+
+
