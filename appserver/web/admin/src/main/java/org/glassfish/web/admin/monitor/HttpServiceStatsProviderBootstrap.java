@@ -101,7 +101,7 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
                     "http-service",
                     PluginPoint.SERVER,
                     "http-service/" + vs.getId() + "/request",
-                    new HttpServiceStatsProvider(vs.getId(), vs.getNetworkListeners()));
+                    new HttpServiceStatsProvider(vs.getId(), vs.getNetworkListeners(), config.getNetworkConfig()));
         }
     }
 }

@@ -1226,7 +1226,7 @@ public class PECoyoteConnector extends Connector {
                 appName, hostName,
                 request.getServerName(), request.getServerPort(), 
                 request.getContextPath(), request.getServletPath(),
-                statusCode);
+                statusCode, request.getMethod(), request.getRequestURI());
         }
     };
 

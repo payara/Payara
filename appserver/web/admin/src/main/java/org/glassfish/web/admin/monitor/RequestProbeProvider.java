@@ -65,5 +65,7 @@ public class RequestProbeProvider {
         @ProbeParam("serverPort") int serverPort,
         @ProbeParam("contextPath") String contextPath,
         @ProbeParam("servletPath") String servletPath,
-        @ProbeParam("statusCode") int statusCode) {}
+        @ProbeParam("statusCode") int statusCode,
+        @ProbeParam("method") String method,
+        @ProbeParam("uri") String uri) {}
 }

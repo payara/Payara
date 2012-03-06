@@ -54,6 +54,8 @@ import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.jvnet.hk2.component.PostConstruct;
 
 /**
@@ -66,6 +68,8 @@ import org.jvnet.hk2.component.PostConstruct;
 @ManagedObject
 @Description( "Web Container HTTP Service Statistics" )
 public class HttpServiceStatsProvider implements PostConstruct {
+
+    private NetworkConfig networkConfig;
 
     private static final Logger logger = Logger.getLogger(
         HttpServiceStatsProvider.class.getName());
@@ -197,9 +201,10 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     };
 
-    public HttpServiceStatsProvider(String vsName, String listeners) {
+    public HttpServiceStatsProvider(String vsName, String listeners, NetworkConfig networkConfig) {
         this.virtualServerName = vsName;
         this.networkListeners = listeners == null ? new String[0] : listeners.split(",");
+        this.networkConfig = networkConfig;
     }
 
     public void postConstruct() {
@@ -384,7 +389,9 @@ public class HttpServiceStatsProvider implements PostConstruct {
             @ProbeParam("serverPort") int serverPort,
             @ProbeParam("contextPath") String contextPath,
             @ProbeParam("servletPath") String servletPath,
-            @ProbeParam("statusCode") int statusCode) {
+            @ProbeParam("statusCode") int statusCode,
+            @ProbeParam("method") String method,
+            @ProbeParam("uri") String uri) {
         if ((hostName != null) && (hostName.equals(virtualServerName))) {
             TimeStatData tsd = individualData.get();
             tsd.setExitTime(System.currentTimeMillis());
@@ -400,6 +407,8 @@ public class HttpServiceStatsProvider implements PostConstruct {
                     tsd.getTotalTime());
             }
         }
+        this.method.setCurrent(method);
+        this.uri.setCurrent(uri);
     }
 
     // ---------------- Connection related listeners -----------
@@ -412,6 +421,11 @@ public class HttpServiceStatsProvider implements PostConstruct {
             if (listener.equals(listenerName)) {
                 individualData.get().setEntryTime(System.currentTimeMillis());
                 countOpenConnections.increment();
+            }
+            NetworkListener networkListener = networkConfig.getNetworkListener(listenerName);
+            if (networkListener != null) {
+                maxOpenConnections.setCount(
+                        Integer.valueOf(networkListener.findProtocol().getHttp().getMaxConnections()));
             }
         }
         if (logger.isLoggable(Level.FINEST)) {
