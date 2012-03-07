@@ -61,6 +61,7 @@ import com.sun.logging.LogDomains;
 import org.jvnet.hk2.config.ObservableBean;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Resource manager to bind various application or module scoped resources during
@@ -77,10 +78,7 @@ public class ApplicationScopedResourcesManager implements PostStartup, PostConst
     private ResourcesBinder resourcesBinder;
 
     @Inject
-    private Habitat deployerHabitat;
-
-    @Inject
-    private Habitat habitat;
+    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
     private ClassLoaderHierarchy clh;
@@ -284,7 +282,7 @@ public class ApplicationScopedResourcesManager implements PostStartup, PostConst
      * @return ResourceDeployer
      */
     private ResourceDeployer getResourceDeployer(Object resource){
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 
     private void  debug(String message){

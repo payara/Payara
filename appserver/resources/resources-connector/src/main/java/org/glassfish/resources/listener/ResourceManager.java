@@ -66,6 +66,7 @@ import com.sun.logging.LogDomains;
 import org.jvnet.hk2.config.ObservableBean;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Resource manager to bind various resources during start-up, create/update/delete of resource/pool
@@ -88,10 +89,10 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
     private BindableResourcesHelper bindableResourcesHelper;
 
     @Inject
-    private Habitat deployerHabitat;
-
+    private Provider<ResourceManagerLifecycleListener>[] resourceManagerLifecycleListenerProviders;
+    
     @Inject
-    private Habitat habitat;
+    private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
     private GlassfishNamingManager namingMgr;
@@ -114,11 +115,9 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
     }
 
     private void notifyListeners(ResourceManagerLifecycleListener.EVENT event) {
-        Collection<ResourceManagerLifecycleListener> listeners = habitat.getAllByContract(ResourceManagerLifecycleListener.class);
-        if(listeners != null){
-            for(ResourceManagerLifecycleListener listener : listeners){
-                listener.resourceManagerLifecycleEvent(event);
-            }
+        for (int i = 0; i < resourceManagerLifecycleListenerProviders.length; i++) {
+            ResourceManagerLifecycleListener listener = resourceManagerLifecycleListenerProviders[i].get();
+            listener.resourceManagerLifecycleEvent(event);
         }
     }
 
@@ -509,6 +508,6 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
      * @return ResourceDeployer
      */
     private ResourceDeployer getResourceDeployer(Object resource){
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 }

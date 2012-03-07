@@ -42,12 +42,12 @@ package org.glassfish.resources.admin.cli;
 
 import org.glassfish.api.I18n;
 import org.glassfish.resources.api.Resource;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  *
@@ -61,13 +61,15 @@ import javax.inject.Inject;
 public class ResourceFactory {
 
     @Inject
-    private Habitat habitat;
+    private Provider<ResourceManager>[] resourceManagers;
 
-    public org.glassfish.resources.admin.cli.ResourceManager getResourceManager(Resource resource) {
+    public ResourceManager getResourceManager(Resource resource) {
         String resourceType = resource.getType();
 
-        org.glassfish.resources.admin.cli.ResourceManager resourceManager = null;
-        for (org.glassfish.resources.admin.cli.ResourceManager rm : habitat.getAllByContract(org.glassfish.resources.admin.cli.ResourceManager.class)) {
+        ResourceManager resourceManager = null;
+
+        for (int i = 0; i < resourceManagers.length; i++) {
+            ResourceManager rm = resourceManagers[i].get();
             if ((rm.getResourceType()).equals(resourceType)) {
                 resourceManager = rm;
                 break;

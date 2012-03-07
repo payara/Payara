@@ -68,12 +68,12 @@ import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 
 import org.glassfish.api.event.EventListener;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.resource.ResourceException;
 import java.io.File;
 import java.io.IOException;
@@ -102,12 +102,15 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
 
     @Inject
     private ServerContext context;
+    
+    @Inject
+    private Provider<ResourcesApplication> resourcesApplicationProvider;
 
     @Inject
     private static ApplicationRegistry appRegistry;
 
     @Inject
-    private static Habitat habitat;
+    private static Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
     @Inject
     private static ResourcesBinder resourcesBinder;
@@ -153,7 +156,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     public ResourcesApplication load(ResourcesContainer container, DeploymentContext context) {
         super.load(container, context);
         debug("App-Scoped-Resources ResourcesDeployer.load()");
-        ResourcesApplication application = habitat.getComponent(ResourcesApplication.class);
+        ResourcesApplication application = resourcesApplicationProvider.get();
         application.setApplicationName(getAppNameFromDeployCmdParams(context));
         return application;
     }
@@ -686,7 +689,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @return ResourceDeployer
      */
     private static ResourceDeployer getResourceDeployer(Object resource){
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 
     /**

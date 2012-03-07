@@ -43,10 +43,10 @@ package org.glassfish.resources.api;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.resources.naming.ResourceNamingService;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -68,7 +68,7 @@ public class ResourcesBinder {
     private Logger logger;
 
     @Inject
-    private Habitat genericResourceProxy;
+    private Provider<ResourceProxy> resourceProxyProvider;
 
     @Inject
     private ResourceNamingService resourceNamingService;
@@ -94,7 +94,7 @@ public class ResourcesBinder {
      * @throws NamingException
      */
     private void bindResource(org.glassfish.resources.api.ResourceInfo resourceInfo, Resource resource) throws NamingException {
-        ResourceProxy proxy = genericResourceProxy.getComponent(ResourceProxy.class);
+        ResourceProxy proxy = resourceProxyProvider.get();
         proxy.setResource(resource);
         proxy.setResourceInfo(resourceInfo);
         resourceNamingService.publishObject(resourceInfo, proxy, true);

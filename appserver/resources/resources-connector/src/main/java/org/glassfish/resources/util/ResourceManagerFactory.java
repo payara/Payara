@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,14 +43,13 @@ package org.glassfish.resources.util;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 
 import java.lang.reflect.Proxy;
-
-import javax.inject.Inject;
 
 /**
  * @author Jagadish Ramu

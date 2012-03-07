@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.HashSet;
@@ -52,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * @author Jagadish Ramu
@@ -62,7 +62,7 @@ public class ResourceUtil {
     private static final String DOMAIN = "domain";
 
     @Inject
-    private Habitat habitat;
+    private Provider<Target> targetProvider;
 
     @Inject
     private Domain domain;
@@ -95,7 +95,7 @@ public class ResourceUtil {
                     cluster.createResourceRef(enabled, jndiName);
 
                     // create new ResourceRef for all instances of Cluster
-                    Target tgt = habitat.getComponent(Target.class);
+                    Target tgt = targetProvider.get();
                     List<Server> instances = tgt.getInstances(target);
                     for (Server svr : instances) {
                         if (!svr.isResourceRefExists(jndiName)) {
@@ -197,7 +197,7 @@ public class ResourceUtil {
                     cluster.deleteResourceRef(jndiName);
 
                     // delete ResourceRef for all instances of Cluster
-                    Target tgt = habitat.getComponent(Target.class);
+                    Target tgt = targetProvider.get();
                     List<Server> instances = tgt.getInstances(target);
                     for (Server svr : instances) {
                         if (svr.isResourceRefExists(jndiName)) {

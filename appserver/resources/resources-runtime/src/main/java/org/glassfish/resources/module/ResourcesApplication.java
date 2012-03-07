@@ -49,7 +49,6 @@ import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
 
 import java.util.logging.Logger;
 
@@ -67,9 +66,6 @@ public class ResourcesApplication implements ApplicationContainer{
 
     @Inject
     private Applications applications;
-
-    @Inject
-    private Habitat habitat;
 
     private Resources resources ;
 
