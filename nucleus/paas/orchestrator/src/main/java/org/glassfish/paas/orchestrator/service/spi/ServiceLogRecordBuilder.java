@@ -167,9 +167,9 @@ public class ServiceLogRecordBuilder {
      */
     private ServiceLogRecord parse(String line) {
         ServiceLogRecord record = new ServiceLogRecord(level, "");
-        if (startSequence != null || !startSequence.trim().equals(""))
+        if (startSequence != null && !startSequence.trim().equals(""))
             line = line.substring(startSequence.length());
-        if (endSequence != null || !endSequence.trim().equals(""))
+        if (endSequence != null && !endSequence.trim().equals(""))
             line = line.substring(0, line.indexOf(endSequence));
 
         StringTokenizer tokenizer = new StringTokenizer(line, delimiter);
@@ -360,9 +360,9 @@ public class ServiceLogRecordBuilder {
     }
 
 
-    public static void main(String args[]) {
+    /*public static void main(String args[]) {
         ServiceLogRecordBuilder serviceLogRecordBuilder = new ServiceLogRecordBuilder();
-        /*serviceLogRecordBuilder.setLogFile(new File("/home/naman/Desktop/server.log"));
+        *//*serviceLogRecordBuilder.setLogFile(new File("/home/naman/Desktop/server.log"));
         serviceLogRecordBuilder.setStartSequence("[#|");
         serviceLogRecordBuilder.setEndSequence("|#]");
         serviceLogRecordBuilder.setDelimiter("|");
@@ -372,7 +372,7 @@ public class ServiceLogRecordBuilder {
         String[] myPara = {serviceLogRecordBuilder.DATETIME, serviceLogRecordBuilder.LEVEL, serviceLogRecordBuilder.OTHER,
                 serviceLogRecordBuilder.LOGGERNAME, serviceLogRecordBuilder.OTHER, serviceLogRecordBuilder.MESSAGE};
 
-        serviceLogRecordBuilder.setParameters(myPara);*/
+        serviceLogRecordBuilder.setParameters(myPara);*//*
 
         serviceLogRecordBuilder.setLogFile(new File("/home/naman/Desktop/error_log"));
         serviceLogRecordBuilder.setStartSequence("[");
@@ -389,7 +389,7 @@ public class ServiceLogRecordBuilder {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
-    }
+    }*/
 
 
 }
