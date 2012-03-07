@@ -46,4 +46,4 @@ The corresponding init.sql files are used by the service provisioning engine to 
 
 Also a service.properties file is included in the application archive that maps the init.sql files with the respective databases and also provides mapping between the service names and database names.
 
-Please refer ../README.txt for more generic guidelines.
+Please refer ../../README.txt for more generic guidelines.
