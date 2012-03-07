@@ -1719,7 +1719,8 @@ public class VirtualServer extends StandardHost
                 webcontainerFeatureFactory);
             if (restart) {
                 accessLogValve.start();
-                httpProbe.enableAccessLogging();
+                if (httpProbe != null)
+                    httpProbe.enableAccessLogging();
             }
         } catch (LifecycleException le) {
             _logger.log(Level.SEVERE,
@@ -1749,7 +1750,8 @@ public class VirtualServer extends StandardHost
                     accessLogValve.stop();
                 }
                 accessLogValve.start();
-                httpProbe.enableAccessLogging();
+                if (httpProbe != null)
+                    httpProbe.enableAccessLogging();
             } catch (LifecycleException le) {
                 _logger.log(Level.SEVERE,
                             "pewebcontainer.accesslog.reconfigure",
@@ -1764,7 +1766,8 @@ public class VirtualServer extends StandardHost
      */
     void disableAccessLogging() {
         removeValve(accessLogValve);
-        httpProbe.disableAccessLogging();
+        if (httpProbe != null)
+            httpProbe.disableAccessLogging();
     }
 
     /**
@@ -2497,12 +2500,10 @@ public class VirtualServer extends StandardHost
         }
 
         public void enableAccessLogging() {
-            Thread.currentThread().dumpStack();
             accessLoggingEnabled = true;
         }
 
         public void disableAccessLogging() {
-            Thread.currentThread().dumpStack();
             accessLoggingEnabled = false;
         }
 
