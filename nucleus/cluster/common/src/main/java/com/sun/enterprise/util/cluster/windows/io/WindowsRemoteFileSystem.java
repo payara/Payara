@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.util.cluster.windows.io;
 
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
@@ -55,9 +54,25 @@ public class WindowsRemoteFileSystem {
     private final NtlmPasswordAuthentication authorization;
 
     public WindowsRemoteFileSystem(WindowsCredentials cr) {
-        host = getIP(cr.getHost());
-        authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
+        // if host and domain are the same we can use the IP address of the host
+        // otherwise use the domain name.
+        boolean useDomain;
+        String hostName = cr.getHost();
+        String domain = cr.getDomain();
+
+        if(!domain.equals(hostName))
+            useDomain=true;
+        else
+            useDomain = false;
+
+        host = getIP(hostName);
+
+        if(useDomain)
+            authorization = new NtlmPasswordAuthentication(domain, cr.getUser(), cr.getPassword());
+        else
+            authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
     }
+
     public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) {
         host = getIP(hostname);
         authorization = auth;
@@ -85,7 +100,8 @@ public class WindowsRemoteFileSystem {
     private String getIP(String hostname) {
         try {
             return InetAddress.getByName(hostname).getHostAddress();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return hostname;
         }
     }
