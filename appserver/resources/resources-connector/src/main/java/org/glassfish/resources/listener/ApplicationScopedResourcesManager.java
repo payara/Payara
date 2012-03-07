@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import org.glassfish.internal.api.*;
@@ -61,6 +60,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.config.ObservableBean;
 
+import javax.inject.Inject;
 
 /**
  * Resource manager to bind various application or module scoped resources during

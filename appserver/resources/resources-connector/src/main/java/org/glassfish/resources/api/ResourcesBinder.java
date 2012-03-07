@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,10 @@ package org.glassfish.resources.api;
 import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.resources.naming.ResourceNamingService;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
+import javax.inject.Inject;
 import javax.naming.NamingException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
