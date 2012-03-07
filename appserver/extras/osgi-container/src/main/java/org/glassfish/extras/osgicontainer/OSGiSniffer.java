@@ -44,8 +44,9 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.deployment.GenericCompositeSniffer;
 import org.glassfish.internal.deployment.GenericSniffer;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
 
 /**
  * Sniffer for OSGi bundles

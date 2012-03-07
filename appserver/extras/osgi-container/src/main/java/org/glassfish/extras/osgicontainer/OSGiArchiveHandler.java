@@ -45,7 +45,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.deployment.GenericHandler;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.Singleton;
@@ -64,6 +63,8 @@ import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.common_impl.DefaultModuleDefinition;
 import com.sun.enterprise.util.io.FileUtils;
 
+import javax.inject.Inject;
+
 /**
  * Archive Handler for OSGi modules.
  *
@@ -73,7 +74,8 @@ import com.sun.enterprise.util.io.FileUtils;
 @Scoped(Singleton.class)
 public class OSGiArchiveHandler extends GenericHandler implements CompositeHandler {
 
-    @Inject private OSGiArchiveDetector detector;
+    @Inject
+    private OSGiArchiveDetector detector;
 
     public String getArchiveType() {
         return OSGiArchiveDetector.OSGI_ARCHIVE_TYPE;
