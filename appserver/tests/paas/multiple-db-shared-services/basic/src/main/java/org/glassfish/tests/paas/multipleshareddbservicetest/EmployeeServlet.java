@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.tests.paas.multipleappscopedservicetest;
+package org.glassfish.tests.paas.multipleshareddbservicetest;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -84,7 +84,7 @@ public final class EmployeeServlet extends HttpServlet {
 
         writer.println("<html>");
         writer.println("<head>");
-        writer.println("<title>Multiple App Scoped DB Service Test</title>");
+        writer.println("<title>Multiple Shared DB Service Test</title>");
         writer.println("</head>");
         writer.println("<body bgcolor=white>");
 
@@ -94,7 +94,7 @@ public final class EmployeeServlet extends HttpServlet {
         writer.println("<img height=\"200\" width=\"200\" src=\"images/numbers.jpg\">");
         writer.println("</td>");
         writer.println("<td>");
-        writer.println("<h1>Multiple Application Scoped DB Service PaaS Application</h1>");
+        writer.println("<h1>Multiple Shared DB Service PaaS Application</h1>");
         writer.println("</td>");
         writer.println("</tr>");
         writer.println("</table>");

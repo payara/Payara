@@ -91,7 +91,7 @@ public final class EmployeeServlet extends HttpServlet {
         writer.println("<table border=\"0\">");
         writer.println("<tr>");
         writer.println("<td>");
-        writer.println("<img height=\"200\" width=\"200\" src=\"images/Coffee.jpg\">");
+        writer.println("<img height=\"200\" width=\"200\" src=\"images/numbers.jpg\">");
         writer.println("</td>");
         writer.println("<td>");
         writer.println("<h1>Multiple Shared DB Service PaaS Application</h1>");
