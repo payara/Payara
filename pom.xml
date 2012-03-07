@@ -286,7 +286,6 @@
             <modules>
                 <module>nucleus</module>
                 <module>appserver</module>
-                <module>findbugs</module>
                 <module>copyright</module>
             </modules>
         </profile>
