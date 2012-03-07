@@ -58,6 +58,7 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
 import org.glassfish.virtualization.spi.AllocationStrategy;
+import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.SQLExec;
@@ -65,6 +66,7 @@ import org.apache.tools.ant.types.Path;
 import org.jvnet.hk2.annotations.Inject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -92,7 +94,37 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      * {@inheritDoc}
      */
     public boolean handles(ServiceDescription serviceDescription) {
+        Properties indexes = getIndexes();
+        indexes.setProperty(SERVICE_TYPE_INDEX, RDBMS_ServiceType);
+        if(serviceDescription.getServiceType().equals(RDBMS_ServiceType)) {
+            TemplateInstance templateInstance = findTemplate(serviceDescription);
+            if (templateInstance != null) {
+                Properties templateIndexes = getIndexes(templateInstance);
+                if (!indexes.contains(VIRTUALIZATION_TYPE)) {
+                    templateIndexes.remove(VIRTUALIZATION_TYPE);
+                }
+                //TODO: Support for product-version
+                boolean equal = equals(templateIndexes, indexes);
+                if (equal) {
+                    return true;
+                }
+            }
+        }
         return false;
+    }
+
+    public abstract Properties getIndexes();
+
+    boolean equals(Properties m1, Properties m2) {
+        if (m1.size() != m2.size()) {
+            return false;
+        }
+        for(String key : m1.stringPropertyNames()) {
+            if (!m1.getProperty(key).equalsIgnoreCase(m2.getProperty(key))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -235,6 +267,12 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
             return;
         }
         final DeploymentContext context = dc.getDeploymentContext();
+        boolean databaseCreated = false;
+        boolean databaseInitialized = false;
+        String databaseName = null;
+        if(context == null) {
+            return;
+        }
         try {
             Boolean isDatabaseInitialized = context.getTransientAppMetaData(
                     getClass().getName() + DB_INITIALIZED, Boolean.class);
@@ -242,52 +280,59 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
 
                 final ReadableArchive readableArchive = context.getSource();
                 String initSqlFile = null;
-                String databaseName = null;
-                String servicePropertiesFile = null;
-                String ipAddress = serviceConsumer.getServiceProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+                String ipAddress = serviceProvider.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
                 //Create Custom database
-                servicePropertiesFile = getServicePropertiesFileName(dc, readableArchive);
+                String servicePropertiesFile = getServicePropertiesFileName(dc, readableArchive);
 
                 if (new File(servicePropertiesFile).exists()) {
                     //Get the database name from this file
-                    Properties properties = new Properties();
-                    try {
-                        InputStream inputStream = readableArchive.getEntry(servicePropertiesFile);
-                        if (inputStream != null) {
-                            properties.load(readableArchive.getEntry(servicePropertiesFile));
-                        }
-                    } catch (IOException e) {
-
-                    }
+                    Properties properties = getProperties(servicePropertiesFile);
                     databaseName = properties.getProperty(DATABASE_NAME_SVC_CONFIG);
                     if (databaseName != null && databaseName.trim().length() > 0) {
                         setDatabaseName(databaseName);
                         createDatabase(getServiceProperties(ipAddress));
+                        databaseCreated = true;
                     }
                 }
 
                 //Execute Init SQL
                 initSqlFile = getInitSQLFileName(readableArchive, dc);
                 if (new File(initSqlFile).exists()) {
-                    setDatabaseName(serviceConsumer.getServiceProperties().getProperty(DATABASENAME));
+                    setDatabaseName(serviceProvider.getServiceProperties().getProperty(DATABASENAME));
                     executeInitSql(getServiceProperties(ipAddress), initSqlFile);
+                    databaseInitialized = true;
                 }
             }
         } finally {
             //Since associateServices are called multiple times, this ensures that
             //the custom db name creation and init sql execution are executed just once.
-            context.addTransientAppMetaData(getClass().getName()+DB_INITIALIZED, true);
+            if (databaseCreated || databaseInitialized) {
+                context.addTransientAppMetaData(getClass().getName() + DB_INITIALIZED, true);
+            }
         }
+    }
+
+    private Properties getProperties(String servicePropertiesFile) {
+        Properties properties = new Properties();
+        try {
+            InputStream inputStream = new FileInputStream(servicePropertiesFile);
+            if (inputStream != null) {
+                properties.load(inputStream);
+            }
+        } catch (IOException e) {
+
+        }
+        return properties;
     }
 
     private String getServicePropertiesFileName(PaaSDeploymentContext dc, ReadableArchive readableArchive) {
         String servicePropertiesFile;
         if (DeploymentUtils.isWebArchive(readableArchive)) {
             servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                    "WEB-INF" + File.separator + "service.properties";
+                    "WEB-INF" + File.separator + SERVICE_PROPERTIES;
         } else {
             servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                    "META-INF" + File.separator + "service.properties";
+                    "META-INF" + File.separator + SERVICE_PROPERTIES;
         }
         return servicePropertiesFile;
     }
@@ -296,10 +341,10 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         String initSqlFile;
         if (DeploymentUtils.isWebArchive(cloudArchive)) {
             initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                    "WEB-INF" + File.separator + "init.sql";
+                    "WEB-INF" + File.separator + INITSQL_SVC_CONFIG;
         } else {
             initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
-                    "META-INF" + File.separator + "init.sql";
+                    "META-INF" + File.separator + INITSQL_SVC_CONFIG;
         }
         return initSqlFile;
     }
@@ -313,6 +358,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         Properties properties = provisionedService.getProperties();
         properties.putAll(getServiceProperties(
                 properties.getProperty(VIRTUAL_MACHINE_IP_ADDRESS)));
+        properties.putAll(serviceInfo.getProperties());
         return provisionedService;
     }
 

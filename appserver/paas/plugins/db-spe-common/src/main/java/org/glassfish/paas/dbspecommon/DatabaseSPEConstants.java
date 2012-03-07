@@ -54,6 +54,9 @@ public interface DatabaseSPEConstants {
 
     static final String DATABASE_NAME_SVC_CONFIG = "database.name";
 
+    static final String INITSQL_SVC_CONFIG = "init.sql";
+
+    static final String SERVICE_PROPERTIES = "service.properties";
     /**
      * Service Characteristics related properties
      */
@@ -64,6 +67,13 @@ public interface DatabaseSPEConstants {
     static final String RESOURCE_TYPE = "resourcetype";
 
     static final String SERVICE_INIT_TYPE_LAZY = "lazy";
+
+    /**
+     * Template index related constants
+     */
+    static final String SERVICE_TYPE_INDEX = "ServiceType";
+
+    static final String VIRTUALIZATION_TYPE = "VirtualizationType";
 
     /**
      * Provisioned service related constants

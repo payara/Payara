@@ -66,6 +66,13 @@ public class MySQLDBPlugin  extends DatabaseSPEBase {
     private static Logger logger = LogDomains.getLogger(MySQLDBPlugin.class, LogDomains.PAAS_LOGGER);
     private static final String MYSQL_DRIVER_CLASSNAME = "com.mysql.jdbc.Driver";
 
+    @Override
+    public Properties getIndexes() {
+        Properties indexes = new Properties();
+        indexes.setProperty("product-vendor", "MySQL") ;
+        return indexes;
+    }
+
     public String getDefaultServiceName() {
         return "default-mysql-db-service";
     }

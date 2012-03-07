@@ -54,6 +54,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
+import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.AllocationConstraints;
@@ -251,9 +252,8 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
 
     // Get the ID of the template matching the service characteristics
     private String findTemplate(ServiceCharacteristics sc) {
-        String templateId = null;
         if (sc != null && templateRepository != null) {
-            // find the right template for the service characterstics specified.
+            // find the right template for the service characteristics specified.
             SearchCriteria searchCriteria = new SimpleSearchCriteria();
             searchCriteria.and(new ServiceType(sc.getCharacteristic("service-type")));
             for (Property characteristic : sc.getServiceCharacteristics()) {
@@ -264,19 +264,14 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             }
             Collection<TemplateInstance> matchingTemplates =
                     templateRepository.get(searchCriteria);
-            if (!matchingTemplates.isEmpty()) {
-                // TODO :: for now let us pick the first matching templates
-                TemplateInstance matchingTemplate = matchingTemplates.iterator().next();
-                if (matchingTemplates.size() > 1) {
-                    logger.log(Level.WARNING, "multiple.matching.templates",
-                            new Object[]{matchingTemplates, matchingTemplate});
+            for(TemplateInstance matchingTemplate : matchingTemplates) {
+                if(matchingTemplate.getConfig().getIndexes().size()-1 == sc.all().size()) {
+                    return matchingTemplate.getConfig().getName();
                 }
-                templateId = matchingTemplate.getConfig().getName();
-            } else {
-                logger.log(Level.WARNING, "template.matching.failed", sc);
             }
         }
-        return templateId;
+        logger.log(Level.WARNING, "template.matching.failed", sc);
+        return null;
     }
 
     private PhasedFuture<AllocationPhase, VirtualMachine> createVM(
@@ -346,4 +341,19 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         return listeners;
     }
 
+    public Properties getIndexes(TemplateInstance templateInstance) {
+        Properties indexes = new Properties();
+        List<TemplateIndex> templateIndexes = templateInstance.getConfig().getIndexes();
+        for(TemplateIndex ti : templateIndexes) {
+            indexes.setProperty(ti.getType(), ti.getValue());
+        }
+        return indexes;
+    }
+
+    public TemplateInstance findTemplate(ServiceDescription serviceDescription) {
+        TemplateIdentifier ti = serviceDescription.getTemplateIdentifier();
+        ServiceCharacteristics sc = serviceDescription.getServiceCharacteristics();
+        String templateId = ti != null ? ti.getId() : findTemplate(sc);
+        return templateId != null? templateRepository.byName(templateId) : null;
+    }
 }

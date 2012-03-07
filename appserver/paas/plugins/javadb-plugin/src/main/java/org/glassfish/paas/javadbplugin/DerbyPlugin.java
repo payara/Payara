@@ -72,6 +72,11 @@ public class DerbyPlugin extends DatabaseSPEBase {
                     (OS.isWindows() ? ".bat" : "")); // {0} must be install root.
     private static final String DERBY_DRIVER_CLASSNAME = "org.apache.derby.jdbc.ClientDriver";
 
+    @Override
+    public Properties getIndexes() {
+        return new Properties();
+    }
+
     public String getDefaultServiceName() {
         return "default-derby-db-service";
     }

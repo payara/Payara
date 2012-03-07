@@ -43,6 +43,7 @@ package org.glassfish.paas.orchestrator.service.metadata;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author bhavanishankar@java.net
@@ -67,6 +68,14 @@ public class ServiceCharacteristics {
     @XmlElement(name="characteristic")
     public List<Property> getServiceCharacteristics() {
         return serviceCharacteristics;
+    }
+
+    public Properties all() {
+        Properties props = new Properties();
+        for (Property characteristic : getServiceCharacteristics()) {
+            props.setProperty(characteristic.getName(), characteristic.getValue());
+        }
+        return props;
     }
 
     public void setServiceCharacteristics(List<Property> serviceCharacteristics) {
