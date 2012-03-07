@@ -196,7 +196,10 @@ public class RequestStatsProvider {
             @ProbeParam("serverPort") int serverPort,
             @ProbeParam("contextPath") String contextPath,
             @ProbeParam("servletPath") String servletPath,
-            @ProbeParam("statusCode") int statusCode) {
+            @ProbeParam("statusCode") int statusCode,
+            @ProbeParam("method") String method,
+            @ProbeParam("uri") String uri) {
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(
                 "[TM]requestEndEvent Unprocessed received - virtual-server = " +
