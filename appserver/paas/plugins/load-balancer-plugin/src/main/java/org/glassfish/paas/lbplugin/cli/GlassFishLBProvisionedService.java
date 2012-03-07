@@ -48,13 +48,11 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecordBuilder;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 import java.util.logging.Level;
 
 
@@ -107,7 +105,29 @@ public class GlassFishLBProvisionedService implements ProvisionedService {
     }
 
     public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, Date since) {
+
         throw new UnsupportedOperationException("Not yet implemented");
+
+        /*Map<Service, List<ServiceLogRecord>> serviceListMap = new HashMap<Service, List<ServiceLogRecord>>();
+        ServiceLogRecordBuilder serviceLogRecordBuilder = new ServiceLogRecordBuilder();
+        serviceLogRecordBuilder.setLogFile(new File("/home/naman/Desktop/error_log"));
+        serviceLogRecordBuilder.setStartSequence("[");
+        serviceLogRecordBuilder.setEndSequence("]");
+        serviceLogRecordBuilder.setLevel(Level.INFO);
+        serviceLogRecordBuilder.setDateFormatter("EEE MMM d HH:mm:ss yyyy");
+        serviceLogRecordBuilder.setLB(true);
+        String[] myPara = {serviceLogRecordBuilder.DATETIME, serviceLogRecordBuilder.LEVEL, serviceLogRecordBuilder.MESSAGE};
+        serviceLogRecordBuilder.setParameters(myPara);
+
+        try {
+            List<ServiceLogRecord> records = serviceLogRecordBuilder.build();
+            serviceListMap.put(this,records);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.UnsupportedOperationException("Not yet implemented");
+        }
+
+        return  serviceListMap;*/
+
     }
 
     public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, long count) {

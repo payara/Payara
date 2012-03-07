@@ -43,11 +43,16 @@ package org.glassfish.paas.gfplugin;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.Service;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecordBuilder;
+import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 import org.glassfish.paas.spe.common.BasicProvisionedService;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * @author bhavanishankar@java.net
@@ -94,4 +99,33 @@ public class GlassFishProvisionedService extends BasicProvisionedService {
         statusMapping.put(GlassFish.Status.INIT, ServiceStatus.STOPPED);
         statusMapping.put(GlassFish.Status.DISPOSED, ServiceStatus.UNKNOWN);
      }
+
+    /*@Override
+    public Map<org.glassfish.paas.orchestrator.service.spi.Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, Date since) {
+
+        Map<Service, List<ServiceLogRecord>> serviceListMap = new HashMap<Service, List<ServiceLogRecord>>();
+        File logFile = new File("/home/naman/Desktop/server.log");
+
+        ServiceLogRecordBuilder serviceLogRecordBuilder = new ServiceLogRecordBuilder();
+        serviceLogRecordBuilder.setLogFile(logFile);
+        serviceLogRecordBuilder.setStartSequence("[#|");
+        serviceLogRecordBuilder.setEndSequence("|#]");
+        serviceLogRecordBuilder.setDelimiter("|");
+        serviceLogRecordBuilder.setLevel(Level.INFO);
+        serviceLogRecordBuilder.setDateFormatter("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        String[] myPara = {serviceLogRecordBuilder.DATETIME, serviceLogRecordBuilder.LEVEL, serviceLogRecordBuilder.OTHER,
+                serviceLogRecordBuilder.LOGGERNAME, serviceLogRecordBuilder.OTHER, serviceLogRecordBuilder.MESSAGE};
+
+        serviceLogRecordBuilder.setParameters(myPara);
+
+        try {
+            List<ServiceLogRecord> records = serviceLogRecordBuilder.build();
+            serviceListMap.put(this,records);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        return  serviceListMap;
+    }*/
 }
