@@ -2834,12 +2834,14 @@ public class StandardContext
      * descriptor
      */
     private void addListener(String className, boolean isProgrammatic) {
+        EventListener listener = null;
         try {
-            addListener(loadListener(getClassLoader(), className),
-                        isProgrammatic);
-        } catch (Throwable t) {
+            listener = loadListener(getClassLoader(), className);
+        } catch(Throwable t) {
             throw new IllegalArgumentException(t);
         }
+
+        addListener(listener, isProgrammatic);
     }
 
     /**
@@ -2923,11 +2925,14 @@ public class StandardContext
      */
     @Override
     public void addListener(Class <? extends EventListener> listenerClass) {
+        EventListener listener = null;
         try {
-            addListener(createListenerInstance(listenerClass));
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(t);
-        }
+            listener = createListenerInstance(listenerClass);
+        } catch(Throwable t) {
+             throw new IllegalArgumentException(t);
+        }    
+        
+        addListener(listener);
     }
 
     /**
