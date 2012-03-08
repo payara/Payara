@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.loadbalancer.config.LoadBalancer;
 import org.glassfish.loadbalancer.config.LoadBalancers;
 
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -57,6 +56,8 @@ import java.util.List;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+
+import javax.inject.Inject;
 
 /**
  *
