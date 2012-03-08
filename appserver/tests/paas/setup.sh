@@ -111,6 +111,7 @@ setup_kvm ()
     $A start-domain --debug
     $A create-ims-config-libvirt kvm
     $A set virtualizations.libvirt-virtualization.kvm.template-cache-size=0
+    $A create-jvm-options -Dorg.glassfish.paas.orchestrator.parallel-provisioning=true
     $A restart-domain --debug
     $A create-server-pool --virtualization kvm --subnet 192.168.122.0/24 --portName "virbr0" cloud
 
@@ -165,6 +166,7 @@ setup_ovm ()
     log "Configuring OVM...."
     $A start-domain domain1
     $A set configs.config.server-config.network-config.protocols.protocol.admin-listener.http.request-timeout-seconds=-1
+    $A create-jvm-options -Dorg.glassfish.paas.orchestrator.parallel-provisioning=true
 
     $A create-ims-config-ovm --connectionstring $CONNECTION_STRING  ovm
     $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm pool2
@@ -175,9 +177,9 @@ setup_ovm ()
     do
         case $s in
             "jee") log "Creating template for jee service..."
-                    touch $templates_dir/GLASSFISH_TINY.tgz
-                    $A create-template --files $templates_dir/GLASSFISH_TINY.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM GLASSFISH_TINY_JAN18
-                    $A create-template-user --virtualization ovm --template GLASSFISH_TINY_JAN18 glassfish
+                    touch $templates_dir/glassfish.tgz
+                    $A create-template --files $templates_dir/glassfish.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM glassfish
+                    $A create-template-user --virtualization ovm --template glassfish glassfish
                     ;;
           "oracle") log "Creating template for oracle service..."
                     touch $templates_dir/ORACLEDB.tgz
@@ -199,6 +201,8 @@ setup_ovm ()
         esac
     done
     IFS=$IFS_TMP
+
+    $A stop-domain
     log "Successfully configured OVM...."
 }
 
