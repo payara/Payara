@@ -168,7 +168,6 @@ public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
 
     //START OF 6364900
     public void postRequestDispatcherProcess(ServletRequest request, ServletResponse response) {
-        Context context = (Context)this.getContainer();
         Session sess = this.getSession(request);
         
         if(sess != null) {         
