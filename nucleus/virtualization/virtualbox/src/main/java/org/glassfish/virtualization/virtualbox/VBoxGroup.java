@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,12 @@
  */
 package org.glassfish.virtualization.virtualbox;
 
-import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.config.serverbeans.Server;
-import org.glassfish.api.ActionReport;
-import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.runtime.VMTemplate;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -58,7 +52,6 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -356,7 +349,6 @@ class VBoxGroup implements PhysicalServerPool, ConfigListener {
 
         final Machine targetMachine = machine;
         allocationCount.incrementAndGet();
-        final String suffix = allocationCount.toString();
 
         // so far, if some of the virtual machines allocation failed, we don't handle it.
         // we could : revert the entire allocation or continue more allocation until the desire number

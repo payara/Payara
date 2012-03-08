@@ -94,7 +94,6 @@ public class VirtualCluster {
                 @Override
                 public Object run(ConfigBeanProxy... params) throws PropertyVetoException, TransactionFailure {
                     Cluster wCluster = (Cluster) params[0];
-                    ServerPoolConfig wServerPoolConfig = (ServerPoolConfig) params[1];
                     VirtualMachineConfig vmConfig = config.getExtensionsByTypeAndName(VirtualMachineConfig.class, vm.getName());
                     if (vmConfig!=null) {
                         wCluster.getExtensions().remove(vmConfig);

@@ -311,7 +311,6 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
                     addStoragePool("glassfishInstances", 136112211968L));
 
         List<StorageVol> volumes = new ArrayList<StorageVol>();
-        File custFile = null;
         Future<StorageVol> diskFuture=null;
         final String diskLocation = config.getDisksLocation();
         final Machine target = this;
@@ -356,8 +355,6 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
                     ex.printStackTrace();
                 }
             }
-            if (custFile.exists())
-                assert custFile.delete();
 
             throw new VirtException(e);
         }

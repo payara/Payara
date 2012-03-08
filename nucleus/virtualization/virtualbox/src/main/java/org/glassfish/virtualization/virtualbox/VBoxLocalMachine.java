@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -64,7 +63,6 @@ import org.jvnet.hk2.component.PostConstruct;
 
 
 import java.util.logging.Level;
-import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
@@ -87,7 +85,6 @@ import org.virtualbox_4_1.ISession;
 import org.virtualbox_4_1.IStorageController;
 import org.virtualbox_4_1.IVirtualBox;
 import org.virtualbox_4_1.LockType;
-import org.virtualbox_4_1.StorageBus;
 import org.virtualbox_4_1.NetworkAdapterType;
 //import org.virtualbox_4_1.StorageControllerType;
 import org.virtualbox_4_1.NetworkAttachmentType;
@@ -178,8 +175,7 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
             List<IMachine> machs = mgr.getVBox().getMachines();
             for (IMachine m : machs) {
                 try {
-                    String domainName = m.getName();                    
-                    String type = m.getOSTypeId();                    
+                    String domainName = m.getName();                                        
                     if (!domains.containsKey(domainName)) {
                         for (Cluster cluster : domain.getClusters().getCluster()) {
                             for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
@@ -335,7 +331,6 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
             IMedium im = vbox.openMedium(VDITemplate.getAbsolutePath(), DeviceType.HardDisk, AccessMode.ReadWrite, true);
             IProgress prog = im.cloneTo(newm, im.getVariant(), null);
             prog.waitForCompletion(-1);
-            IStorageController isctrl = iap.addStorageController("SATA Controller", StorageBus.SATA);
             INetworkAdapter inadap = iap.getNetworkAdapter(0L);
             inadap.setEnabled(Boolean.FALSE);
             inadap.setAdapterType(NetworkAdapterType.I82540EM);
@@ -368,7 +363,6 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
             //   inadap.setHostInterface("vboxnet0");
             inadap.setEnabled(Boolean.TRUE);
 
-            IStorageController dvdctrl = iap.addStorageController("IDE Controller", StorageBus.IDE);
             File ISOFile = createISOCustomization(template, cluster, name, diskLocation);
 
             //open the cust ISO image for this VM
