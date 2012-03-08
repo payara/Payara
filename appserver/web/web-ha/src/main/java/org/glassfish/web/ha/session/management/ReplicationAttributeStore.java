@@ -317,13 +317,12 @@ public class ReplicationAttributeStore extends ReplicationStore {
                     _session = readSession(manager, ois);
                 } 
                 finally {
-                    if (ois != null) {
-                        try {
-                            ois.close();
-                            bis = null;
-                        }
-                        catch (IOException e) {
-                        }
+
+                    try {
+                        ois.close();
+                        bis = null;
+                    }
+                    catch (IOException e) {
                     }
                 }
             }
@@ -567,14 +566,14 @@ public class ReplicationAttributeStore extends ReplicationStore {
                     attributeValue = ois.readObject();
                 } 
                 finally {
-                    if (ois != null) {
-                        try {
-                            ois.close();
-                            bis = null;
-                        }
-                        catch (IOException e) {
-                        }
+
+                    try {
+                        ois.close();
+                        bis = null;
                     }
+                    catch (IOException e) {
+                    }
+
                 }
             }
         }
@@ -703,13 +702,11 @@ public class ReplicationAttributeStore extends ReplicationStore {
                     }
                 } 
                 finally {
-                    if (ois != null) {
-                        try {
-                            ois.close();
-                            bis = null;
-                        }
-                        catch (IOException e) {
-                        }
+                    try {
+                        ois.close();
+                        bis = null;
+                    }
+                    catch (IOException e) {
                     }
                 }
             }
