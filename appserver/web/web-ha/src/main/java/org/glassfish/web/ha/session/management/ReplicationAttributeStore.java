@@ -778,6 +778,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
     
 
 
+/*
     private byte[] serializeStatesCollection(Collection entries) {
         byte[] result = null;
         try {
@@ -793,7 +794,8 @@ public class ReplicationAttributeStore extends ReplicationStore {
         } catch (IOException ex) {} 
         return result;
     }    
-    
+*/
+
 
     private Collection deserializeStatesCollection(byte[] entriesState) {
         Collection result = new ArrayList();
@@ -805,6 +807,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
         return result;
     } 
     
+/*
     private Collection deserializeStatesCollectionPrevious(byte[] entriesState) {
         Collection result = new ArrayList();
         try {
@@ -814,5 +817,6 @@ public class ReplicationAttributeStore extends ReplicationStore {
         } catch (IOException ex2) {}        
         return result;
     }     
-    
+*/
+
 }
