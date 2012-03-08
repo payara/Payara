@@ -70,7 +70,7 @@
     <build>       
         <plugins>
             <plugin>
-                <groupId>com.sun.enterprise</groupId>
+                <groupId>org.glassfish.hk2</groupId>
                 <artifactId>consolidatedbundle-maven-plugin</artifactId>
                 <executions>
                     <execution>
