@@ -224,19 +224,9 @@ public class StartInstanceCommand implements AdminCommand {
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
         Server dasServer =
                 servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
-        String dasHost = dasServer.getAdminHost();
-        String dasPort = Integer.toString(dasServer.getAdminPort());
 
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
-
-        /*
-        command.add("--host");
-        command.add(dasHost);
-        command.add("--port");
-        command.add(dasPort);
-         *
-         */
 
         command.add("start-local-instance");
 

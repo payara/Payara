@@ -102,7 +102,6 @@ public class DeleteInstanceCommand implements AdminCommand {
     private AdminCommandContext ctx;
     private String instanceHost;
     private Node theNode = null;
-    private StringBuilder humanVersionOfCommand = new StringBuilder();
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -203,18 +202,9 @@ public class DeleteInstanceCommand implements AdminCommand {
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
         Server dasServer =
                 servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
-        String dasHost = dasServer.getAdminHost();
-        String dasPort = Integer.toString(dasServer.getAdminPort());
 
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
-
-        /*
-        command.add("--host");
-        command.add(dasHost);
-        command.add("--port");
-        command.add(dasPort);
-         */
 
         command.add("_delete-instance-filesystem");
 

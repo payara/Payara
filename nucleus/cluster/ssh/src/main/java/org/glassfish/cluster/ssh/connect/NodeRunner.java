@@ -61,7 +61,6 @@ public class NodeRunner {
     private Logger logger;
     private String lastCommandRun = null;
     private int commandStatus;
-    private SSHLauncher sshL = null;
     private final AuthTokenManager authTokenManager;
 
     public NodeRunner(Habitat habitat, Logger logger) {
