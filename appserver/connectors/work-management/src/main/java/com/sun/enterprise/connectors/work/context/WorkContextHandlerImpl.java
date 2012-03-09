@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.connectors.work.context;
 
+import com.sun.appserv.connectors.internal.api.WorkContextHandler;
 import com.sun.enterprise.connectors.work.WorkCoordinator;
 import com.sun.enterprise.connectors.work.OneWork;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -72,7 +73,7 @@ import java.io.Serializable;
  */
 @Service
 @Scoped(PerLookup.class)
-public class WorkContextHandler implements com.sun.appserv.connectors.internal.api.WorkContextHandler {
+public class WorkContextHandlerImpl implements WorkContextHandler {
 
     private static final List<Class<? extends WorkContext>> containerSupportedContexts =
             new ArrayList<Class<? extends WorkContext>>();
@@ -94,10 +95,10 @@ public class WorkContextHandler implements com.sun.appserv.connectors.internal.a
         containerSupportedContexts.add(CustomWorkContext_D.class);
     }
 
-    public WorkContextHandler(){
+    public WorkContextHandlerImpl(){
     }
 
-    public WorkContextHandler(ConnectorRuntime runtime, String raName, ClassLoader cl) {
+    public WorkContextHandlerImpl(ConnectorRuntime runtime, String raName, ClassLoader cl) {
         this.runtime = runtime;
         this.rarCL = cl;
     }
@@ -465,6 +466,7 @@ public class WorkContextHandler implements com.sun.appserv.connectors.internal.a
      * @param raName resource-adapter name
      * @return security-map
      */
+/*
     private Map getSecurityWorkContextMap(String raName) {
         HashMap eisASMap = new HashMap();
 
@@ -499,6 +501,7 @@ public class WorkContextHandler implements com.sun.appserv.connectors.internal.a
         }
         return null;
     }
+*/
 
     /**
      * Given a resource-adapter name, get all its work-context-map

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@ import com.sun.logging.LogDomains;
 import javax.resource.spi.work.Work;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.sun.enterprise.connectors.work.context.WorkContextHandler;
+import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 
 /**
  * Represents one piece of work that will be submitted to the workqueue.
@@ -58,7 +58,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
     private final Work work;
     private final WorkCoordinator coordinator;
     private long nqTime;
-    private WorkContextHandler contextHandler;
+    private WorkContextHandlerImpl contextHandler;
     private static final Logger logger =
             LogDomains.getLogger(OneWork.class, LogDomains.RSR_LOGGER);
     private StringManager localStrings =
@@ -77,7 +77,7 @@ public final class OneWork implements com.sun.corba.ee.spi.threadpool.Work {
      * @param work Actual work submitted by Resource adapter.
      * @param coordinator <code>WorkCoordinator</code> object.
      */
-    OneWork (Work work, WorkCoordinator coordinator, WorkContextHandler contextHandler, ClassLoader tcc) {
+    OneWork (Work work, WorkCoordinator coordinator, WorkContextHandlerImpl contextHandler, ClassLoader tcc) {
         this.work = work;
         this.coordinator = coordinator;
         this.contextHandler = contextHandler;

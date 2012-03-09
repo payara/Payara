@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,7 @@ package com.sun.enterprise.connectors.work;
 
 import com.sun.corba.ee.spi.threadpool.WorkQueue;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import com.sun.enterprise.connectors.work.context.WorkContextHandler;
+import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -95,7 +95,7 @@ public final class WorkCoordinator {
     private ConnectorRuntime runtime;
     private String raName = null;
 
-    private WorkContextHandler contextHandler;
+    private WorkContextHandlerImpl contextHandler;
 
     /**
      * Constructs a coordinator
@@ -113,7 +113,7 @@ public final class WorkCoordinator {
                            WorkQueue queue,
                            WorkListener listener, WorkManagementProbeProvider probeProvider,
                            ConnectorRuntime runtime, String raName,
-                           WorkContextHandler handler) {
+                           WorkContextHandlerImpl handler) {
 
         this.work = work;
         this.timeout = timeout;
@@ -454,7 +454,7 @@ public final class WorkCoordinator {
 
     public static ExecutionContext getExecutionContext(ExecutionContext ec, Work work) {
         if (ec == null) {
-            return WorkContextHandler.getExecutionContext(work);
+            return WorkContextHandlerImpl.getExecutionContext(work);
         }
         return ec;
     }

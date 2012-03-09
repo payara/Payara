@@ -42,6 +42,7 @@ package com.sun.enterprise.connectors.work;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.WorkManagerFactory;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
@@ -59,14 +60,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * WorkManagerFactory allows other customized WorkManager implementation
+ * WorkManagerFactoryImpl allows other customized WorkManager implementation
  * to be plugged into the server.  The name of the customized
  * implementation class for the WorkManager has to be specified as
  * a system property "workmanager.class".
  * <p/>
  * It is assumed that the implementation for WorkManager also provides
  * a public method called "getInstance" that returns a WorkManager object.
- * This frees the WorkManagerFactory from deciding whether WorkManager
+ * This frees the WorkManagerFactoryImpl from deciding whether WorkManager
  * is implemented as a Singleton in the server.
  * <p/>
  *
@@ -75,7 +76,7 @@ import java.util.logging.Logger;
 
 @Service
 @Scoped(Singleton.class)
-public final class WorkManagerFactory implements com.sun.appserv.connectors.internal.api.WorkManagerFactory {
+public final class WorkManagerFactoryImpl implements WorkManagerFactory {
 
     private static final String DEFAULT =
             "com.sun.enterprise.connectors.work.CommonWorkManager";
@@ -83,12 +84,12 @@ public final class WorkManagerFactory implements com.sun.appserv.connectors.inte
     private static final String WORK_MANAGER_CLASS = "workmanager.class";
 
     private static final Logger logger =
-            LogDomains.getLogger(WorkManagerFactory.class, LogDomains.RSR_LOGGER);
+            LogDomains.getLogger(WorkManagerFactoryImpl.class, LogDomains.RSR_LOGGER);
 
     private static final StringManager localStrings =
-            StringManager.getManager(WorkManagerFactory.class);
+            StringManager.getManager(WorkManagerFactoryImpl.class);
 
-    protected static final Map<String, WorkManager> workManagers;
+    private static final Map<String, WorkManager> workManagers;
 
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
@@ -99,10 +100,10 @@ public final class WorkManagerFactory implements com.sun.appserv.connectors.inte
         workManagers = Collections.synchronizedMap(new HashMap<String, WorkManager>());
     }
 
-    public WorkManagerFactory() {
+    public WorkManagerFactoryImpl() {
     }
 
-    private static Logger _logger = LogDomains.getLogger(WorkManagerFactory.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(WorkManagerFactoryImpl.class, LogDomains.RSR_LOGGER);
 
     /**
      * This is called by the constructor of BootstrapContextImpl

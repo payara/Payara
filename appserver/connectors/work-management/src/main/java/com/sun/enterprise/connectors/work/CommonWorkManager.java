@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@ import com.sun.corba.ee.spi.threadpool.ThreadPool;
 import com.sun.corba.ee.spi.threadpool.NoSuchThreadPoolException;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementProbeProvider;
 import com.sun.enterprise.connectors.work.monitor.WorkManagementStatsProvider;
-import com.sun.enterprise.connectors.work.context.WorkContextHandler;
+import com.sun.enterprise.connectors.work.context.WorkContextHandlerImpl;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 
@@ -206,7 +206,7 @@ public final class CommonWorkManager implements WorkManager {
     public void doWork(Work work, long startTimeout,
                        ExecutionContext execContext, WorkListener workListener)
             throws WorkException {
-        WorkContextHandler contextHandler = createWorkContextHandler();
+        WorkContextHandlerImpl contextHandler = createWorkContextHandler();
         validateWork(work, WorkCoordinator.getExecutionContext(execContext, work), contextHandler);
 
         if (logger.isLoggable(Level.FINEST)) {
@@ -261,7 +261,7 @@ public final class CommonWorkManager implements WorkManager {
                           ExecutionContext execContext, WorkListener workListener)
             throws WorkException {
 
-        WorkContextHandler contextHandler = createWorkContextHandler();
+        WorkContextHandlerImpl contextHandler = createWorkContextHandler();
         validateWork(work, WorkCoordinator.getExecutionContext(execContext, work), contextHandler);
 
         if (logger.isLoggable(Level.FINEST)) {
@@ -295,8 +295,8 @@ public final class CommonWorkManager implements WorkManager {
      * prvides work-context-handler to handle the submitted work-contexts
      * @return work-context-handler
      */
-    private WorkContextHandler createWorkContextHandler() {
-        WorkContextHandler contextHandler = new WorkContextHandler(runtime, raName, rarClassLoader);
+    private WorkContextHandlerImpl createWorkContextHandler() {
+        WorkContextHandlerImpl contextHandler = new WorkContextHandlerImpl(runtime, raName, rarClassLoader);
         return contextHandler;
     }
 
@@ -327,7 +327,7 @@ public final class CommonWorkManager implements WorkManager {
                              ExecutionContext execContext, WorkListener workListener)
             throws WorkException {
 
-        WorkContextHandler contextHandler = createWorkContextHandler();
+        WorkContextHandlerImpl contextHandler = createWorkContextHandler();
         validateWork(work, WorkCoordinator.getExecutionContext(execContext, work), contextHandler);
         if (logger.isLoggable(Level.FINEST)) {
             String msg = "scheduleWork for [" + work.toString() + "] START";
@@ -360,7 +360,7 @@ public final class CommonWorkManager implements WorkManager {
      * @throws WorkCompletedException when work processing fails
      * @throws WorkRejectedException when work cannot be processed
      */
-    private void validateWork(Work workToBeValidated, ExecutionContext context, WorkContextHandler contextHandler)
+    private void validateWork(Work workToBeValidated, ExecutionContext context, WorkContextHandlerImpl contextHandler)
             throws WorkCompletedException, WorkRejectedException {
         contextHandler.validateWork(workToBeValidated, context);
     }
