@@ -150,7 +150,7 @@
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         <antlr.version>2.7.6</antlr.version>
         <mq.version>4.6-003-1</mq.version>
-        <javadb.version>10.6.2.1</javadb.version>
+        <javadb.version>10.8.1.2</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.4.Final</weld.version>
         <jersey.version>1.11</jersey.version>
