@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.connectors.module;
 
+import com.sun.appserv.connectors.internal.api.ConnectorClassFinder;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
@@ -65,7 +66,6 @@ import org.glassfish.internal.api.Target;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.ConnectorClassFinder;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
 import org.glassfish.resources.listener.ResourceManager;

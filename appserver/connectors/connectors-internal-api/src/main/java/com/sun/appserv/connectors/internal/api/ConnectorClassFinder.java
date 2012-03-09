@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2010,2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.internal.api;
+package com.sun.appserv.connectors.internal.api;
 
 import com.sun.enterprise.loader.ASURLClassLoader;
+import org.glassfish.internal.api.DelegatingClassLoader;
 
 /**
  * connector-class-finder to provide a class from its .rar

@@ -40,7 +40,6 @@
 
 package com.sun.appserv.connectors.internal.api;
 
-import org.glassfish.internal.api.ConnectorClassFinder;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.api.admin.*;

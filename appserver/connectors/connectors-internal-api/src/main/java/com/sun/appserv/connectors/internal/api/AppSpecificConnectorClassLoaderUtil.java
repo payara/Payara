@@ -48,7 +48,6 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.api.ConnectorClassFinder;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.Application;
