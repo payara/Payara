@@ -272,7 +272,12 @@ public class DeploymentHandler {
                 payload.put("properties", sb.toString());
              }
 
-             payload.put("target", "domain");
+             List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
+             if ( (targetList == null) || targetList.size() != 1){
+                payload.put("target", "domain");
+             }else{
+                payload.put("target",  targetList.get(0));
+	     }
              String prefix = (String) GuiUtil.getSessionValue("REST_URL");
              RestUtil.restRequest(prefix +  "/applications/application", payload, "POST", null, true);
          } catch (Exception ex) {
