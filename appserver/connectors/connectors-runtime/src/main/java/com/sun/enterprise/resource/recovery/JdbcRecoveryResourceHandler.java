@@ -168,6 +168,9 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
      */
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
 
+        //Done so as to initialize connectors-runtime before loading jdbc-resources. need a better way ?
+        ConnectorRuntime crt = connectorRuntimeProvider.get();
+
         Collection<JdbcResource> jdbcResources = getAllJdbcResources();
 
         if (jdbcResources == null || jdbcResources.size() == 0) {
@@ -177,9 +180,6 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
             return;
         }
 
-        //TODO V3 done so as to initialize connectors-runtime before loading jdbc-resources. need a better way ?
-        ConnectorRuntime crt = connectorRuntimeProvider.get();
-        
         List<JdbcConnectionPool> jdbcPools = new ArrayList<JdbcConnectionPool>();
 
         for (Resource resource : jdbcResources) {

@@ -210,17 +210,17 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
      */
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
 
+        //Done so as to initialize connectors-runtime before loading connector-resources. need a better way ?
+        ConnectorRuntime crt = connectorRuntimeProvider.get();
+
+        //Done so as to load all connector-modules. need to load only connector-modules instead of all apps
+        startupProvider.get();
+
         Collection<ConnectorResource> connectorResources = getAllConnectorResources();
 
         if (connectorResources == null || connectorResources.size() == 0) {
             return;
         }
-
-        //TODO V3 done so as to initialize connectors-runtime before loading connector-resources. need a better way ?
-        ConnectorRuntime crt = connectorRuntimeProvider.get();
-
-        //TODO V3 done so as to load all connector-modules. need to load only connector-modules instead of all apps
-        startupProvider.get();
 
         List<ConnectorConnectionPool> connPools = new ArrayList<ConnectorConnectionPool>();
         for (Resource resource : connectorResources) {

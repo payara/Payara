@@ -120,6 +120,9 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
             // List of CMT enabled MDB descriptors on the application server instance.
             List<EjbDescriptor> xaEnabledMDBList = new ArrayList<EjbDescriptor>();
 
+            //Done so as to initialize connectors-runtime before loading inbound active RA. need a better way ?
+            ConnectorRuntime cr = connectorRuntimeProvider.get();
+
             for (Application application : applications) {
                 Vector ejbDescVec = getEjbDescriptors(application, appsRegistry);
                 for (int j = 0; j < ejbDescVec.size(); j++) {
@@ -141,8 +144,6 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
                 return;
             }
 
-            //TODO V3 done so as to initialize connectors-runtime before loading inbound active RA. need a better way ?
-            ConnectorRuntime cr = connectorRuntimeProvider.get();
             ConnectorRegistry creg = ConnectorRegistry.getInstance();
 
             // for each RA (key in the map) get the list (value) of MDB Descriptors
