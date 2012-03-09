@@ -81,8 +81,6 @@ public class HttpServiceStatsProvider implements PostConstruct {
             "Longest response time for a request; not a cumulative value, but the largest response time from among the response times";
     private static final String PROCESSING_TIME_DESCRIPTION =
             "Average request processing time";
-    private static final String REQUEST_COUNT_DESCRIPTION =
-            "Cumulative number of requests processed so far";
     private static final String COUNT_BYTES_RECEIVED_DESCRIPTION =
             "The number of bytes received";
     private static final String COUNT_BYTES_TRANSMITTED_DESCRIPTION =
@@ -91,14 +89,10 @@ public class HttpServiceStatsProvider implements PostConstruct {
             "The number of open connections";
     private static final String COUNT_REQUESTS_DESCRIPTION =
             "The number of requests received";
-    private static final String MAX_BYTE_TRANSMISSION_RATE_DESCRIPTION =
-            "The maximum rate at which data was transmitted over some server-defined interval";
     private static final String MAX_OPEN_CONNECTIONS_DESCRIPTION =
             "The maximum number of open connections";
     private static final String METHOD_DESCRIPTION =
             "The method of the last request serviced";
-    private static final String RATE_BYTES_TRANSMITTED_DESCRIPTION =
-            "The rate (in bytes per second) at which data was transmitted over some server-defined interval";
     private static final String URI_DESCRIPTION =
             "The URI of the last request serviced";
     private static final String COUNT_200_DESCRIPTION =
@@ -142,14 +136,10 @@ public class HttpServiceStatsProvider implements PostConstruct {
             StatisticImpl.UNIT_COUNT, COUNT_OPEN_CONNECTIONS_DESCRIPTION);
     private CountStatisticImpl countRequests = new CountStatisticImpl("CountRequests",
             StatisticImpl.UNIT_COUNT, COUNT_REQUESTS_DESCRIPTION);
-    private CountStatisticImpl maxByteTransmissionRate = new CountStatisticImpl("MaxByteTransmissionRate",
-            StatisticImpl.UNIT_COUNT, MAX_BYTE_TRANSMISSION_RATE_DESCRIPTION);
     private CountStatisticImpl maxOpenConnections = new CountStatisticImpl("MaxOpenConnections",
             StatisticImpl.UNIT_COUNT, MAX_OPEN_CONNECTIONS_DESCRIPTION);
     private StringStatisticImpl method = new StringStatisticImpl("Method",
             "String", METHOD_DESCRIPTION);
-    private CountStatisticImpl rateBytesTransmitted = new CountStatisticImpl("RateBytesTransmitted",
-            StatisticImpl.UNIT_COUNT, RATE_BYTES_TRANSMITTED_DESCRIPTION);
     private StringStatisticImpl uri = new StringStatisticImpl("Uri",
             "String", URI_DESCRIPTION);
 
@@ -249,14 +239,6 @@ public class HttpServiceStatsProvider implements PostConstruct {
         return countRequests;
     }
 
-    @ManagedAttribute(id="maxbytetransmissionrate")
-    @Description(MAX_BYTE_TRANSMISSION_RATE_DESCRIPTION)
-    public CountStatistic getMaxByteTransmissionRate() {
-        // TODO The maximum rate at which data was transmitted over which server-defined interval
-        maxByteTransmissionRate.setCount(countBytesTransmitted.getCount()/requestProcessTime.getTotalTime());
-        return maxByteTransmissionRate;
-    }
-
     @ManagedAttribute(id="maxopenconnections")
     @Description(MAX_OPEN_CONNECTIONS_DESCRIPTION)
     public CountStatistic getMaxOpenConnections() {
@@ -267,13 +249,6 @@ public class HttpServiceStatsProvider implements PostConstruct {
     @Description(METHOD_DESCRIPTION)
     public StringStatistic getMethod() {
         return method;
-    }
-
-    @ManagedAttribute(id="ratebytestransmitted")
-    @Description(RATE_BYTES_TRANSMITTED_DESCRIPTION)
-    public CountStatistic getRateBytesTransmitted() {
-        rateBytesTransmitted.setCount(countBytesTransmitted.getCount()/requestProcessTime.getTotalTime());
-        return rateBytesTransmitted;
     }
 
     @ManagedAttribute(id="uri")
@@ -548,10 +523,8 @@ public class HttpServiceStatsProvider implements PostConstruct {
         this.countBytesTransmitted.reset();
         this.countOpenConnections.reset();
         this.countRequests.reset();
-        this.maxByteTransmissionRate.reset();
         this.maxOpenConnections.reset();
         this.method.reset();
-        this.rateBytesTransmitted.reset();
         this.uri.reset();
     }
 }
