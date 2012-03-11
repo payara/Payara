@@ -80,12 +80,11 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Nodes.class,
-        opType=RestEndpoint.OpType.GET,
-        path="validate-dcom",
-        description="Validate DCOM")
+    @RestEndpoint(configBean = Nodes.class,
+    opType = RestEndpoint.OpType.GET,
+    path = "validate-dcom",
+    description = "Validate DCOM")
 })
-
 public class ValidateDcom implements AdminCommand {
     @Param(name = "windowsuser", shortName = "w", optional = true, defaultValue = "${user.name}")
     private String user;
@@ -117,6 +116,7 @@ public class ValidateDcom implements AdminCommand {
         try {
             // try/finally is least messy way of making sure partial success news
             // is delivered back to caller
+
             if (!init(context))
                 return;
 
@@ -142,7 +142,7 @@ public class ValidateDcom implements AdminCommand {
                 return;
         }
         finally {
-            if(report.getActionExitCode() != ActionReport.ExitCode.SUCCESS || verbose)
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS || verbose)
                 report.setMessage(out.toString());
         }
     }
@@ -168,7 +168,14 @@ public class ValidateDcom implements AdminCommand {
             windowsdomain = host;
 
         creds = new WindowsCredentials(host, windowsdomain, user, password);
-        wrfs = new WindowsRemoteFileSystem(creds);
+        try {
+            wrfs = new WindowsRemoteFileSystem(creds);
+        }
+        catch (WindowsException ex) {
+            // probably the j-interop-repackagted.jar is missing
+            setError(ex.getMessage());
+            return false;
+        }
         scriptFullPath = testdir + "\\" + SCRIPT_NAME;
         return true;
     }

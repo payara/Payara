@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,9 @@
  */
 package com.sun.enterprise.util.cluster.windows.io;
 
+import com.sun.enterprise.util.cluster.windows.SharedStrings;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
+import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.net.*;
 import jcifs.smb.NtlmPasswordAuthentication;
 
@@ -53,34 +55,47 @@ public class WindowsRemoteFileSystem {
     private final String host;
     private final NtlmPasswordAuthentication authorization;
 
-    public WindowsRemoteFileSystem(WindowsCredentials cr) {
+    public WindowsRemoteFileSystem(WindowsCredentials cr) throws WindowsException {
         // if host and domain are the same we can use the IP address of the host
         // otherwise use the domain name.
         boolean useDomain;
         String hostName = cr.getHost();
         String domain = cr.getDomain();
 
-        if(!domain.equals(hostName))
-            useDomain=true;
+        if (!domain.equals(hostName))
+            useDomain = true;
         else
             useDomain = false;
 
         host = getIP(hostName);
 
-        if(useDomain)
-            authorization = new NtlmPasswordAuthentication(domain, cr.getUser(), cr.getPassword());
-        else
-            authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
+        try {
+            if (useDomain)
+                authorization = new NtlmPasswordAuthentication(domain, cr.getUser(), cr.getPassword());
+            else
+                authorization = new NtlmPasswordAuthentication(host, cr.getUser(), cr.getPassword());
+        }
+        catch (NoClassDefFoundError err) {
+            throw new WindowsException(SharedStrings.get("missing_jinterop"));
+        }
     }
 
-    public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) {
+    public WindowsRemoteFileSystem(String hostname, NtlmPasswordAuthentication auth) throws WindowsException {
         host = getIP(hostname);
         authorization = auth;
+
+        if (auth == null)
+            throw new WindowsException(SharedStrings.get("missing_jinterop"));
     }
 
-    public WindowsRemoteFileSystem(String hostname, String username, String password) {
+    public WindowsRemoteFileSystem(String hostname, String username, String password) throws WindowsException {
         host = getIP(hostname);
-        authorization = new NtlmPasswordAuthentication(host, username, password);
+        try {
+            authorization = new NtlmPasswordAuthentication(host, username, password);
+        }
+        catch (NoClassDefFoundError err) {
+            throw new WindowsException(SharedStrings.get("missing_jinterop"));
+        }
     }
 
     /**

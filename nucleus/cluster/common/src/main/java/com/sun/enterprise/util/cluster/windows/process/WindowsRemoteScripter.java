@@ -39,15 +39,11 @@
  */
 package com.sun.enterprise.util.cluster.windows.process;
 
-import java.util.*;
+import com.sun.enterprise.util.cluster.windows.SharedStrings;
+import java.util.Collection;
 import java.util.logging.Level;
 import org.jinterop.dcom.common.JISystem;
-import org.jinterop.dcom.core.IJIComObject;
-import org.jinterop.dcom.core.JIComServer;
-import org.jinterop.dcom.core.JIProgId;
-import org.jinterop.dcom.core.JISession;
-import org.jinterop.dcom.core.JIString;
-import org.jinterop.dcom.core.JIVariant;
+import org.jinterop.dcom.core.*;
 import org.jinterop.dcom.impls.JIObjectFactory;
 import org.jinterop.dcom.impls.automation.IJIDispatch;
 
@@ -139,6 +135,9 @@ public class WindowsRemoteScripter {
             }
 
             return sb.toString();
+        }
+        catch (NoClassDefFoundError err) {
+            throw new WindowsException(SharedStrings.get("missing_jinterop"));
         }
         catch (Exception e) {
             // do NOT allow j-interop exceptions to leak

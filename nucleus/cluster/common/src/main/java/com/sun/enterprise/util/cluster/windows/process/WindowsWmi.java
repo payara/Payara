@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.util.cluster.windows.process;
 
+import com.sun.enterprise.util.cluster.windows.SharedStrings;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -110,6 +111,9 @@ public class WindowsWmi {
             setCount();
             setInfo();
             killme();
+        }
+        catch (NoClassDefFoundError err) {
+            throw new WindowsException(SharedStrings.get("missing_jinterop"));
         }
         catch (Exception e) {
             dispatch = null;
