@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -37,11 +37,19 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-GF_HOME=${GF_HOME:-$S1AS_HOME}
-echo "Your GlassFish is at $GF_HOME"
-$GF_HOME/bin/asadmin start-domain
-$GF_HOME/bin/asadmin create-ims-config-native
-$GF_HOME/bin/asadmin create-template --indexes ServiceType=LB,VirtualizationType=Native LBNative
-$GF_HOME/bin/asadmin create-template --indexes ServiceType=MQ,VirtualizationType=Native MQNative
-$GF_HOME/bin/asadmin stop-domain
- 
+
+1. This is a simple MQ Shared Service test.The main intent of the test is to check if an MQ shared service is created and used properly.
+
+
+The test basically aims at testing the register-service-provisioning-engine command.
+The test does the following:
+    i.  Creates a shared service of type mq.
+    ii. Deploys an app which has a reference to this shared service.
+        - the app should be able to access the MQ service.
+
+
+
+2. The context root for this application is "/web"
+
+
+Please refer ../README.txt for more generic guidelines.

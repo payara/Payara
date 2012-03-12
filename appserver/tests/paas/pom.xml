@@ -66,6 +66,7 @@
         <module>basic-service-discovery</module>
         <module>javaee_shared_service</module>
         <module>lazy-shared-service-test</module>
+        <module>mq-shared-service-test</module>
 
     </modules>
     <reporting>
@@ -113,6 +114,8 @@
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/javaee_shared_service/target/surefire-reports
                         </reportsDirectory>
                         <reportsDirectory>${env.PAAS_TESTS_HOME}/lazy-shared-service-test/target/surefire-reports
+                        </reportsDirectory>
+                        <reportsDirectory>${env.PAAS_TESTS_HOME}/mq-shared-service-test/target/surefire-reports
                         </reportsDirectory>
                     </reportsDirectories>
                 </configuration>
