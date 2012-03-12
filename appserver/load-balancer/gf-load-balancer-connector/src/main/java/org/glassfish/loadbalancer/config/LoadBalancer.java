@@ -58,13 +58,13 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.*;
 import org.jvnet.hk2.config.*;
 
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.ActionReport;
 
-import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 /**
  *
