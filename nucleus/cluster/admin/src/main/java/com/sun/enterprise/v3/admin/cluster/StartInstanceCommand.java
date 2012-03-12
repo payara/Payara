@@ -114,7 +114,6 @@ public class StartInstanceCommand implements AdminCommand {
 
     private Logger logger;
 
-    private AdminCommandContext ctx;
     private Node   node;
     private String noderef;
     private String nodedir;
@@ -151,9 +150,8 @@ public class StartInstanceCommand implements AdminCommand {
     }
 
     @Override
-    public void execute(AdminCommandContext context) {
-        logger = context.getLogger();
-        this.ctx=context;
+    public void execute(AdminCommandContext ctx) {
+        logger = ctx.getLogger();
         ActionReport report = ctx.getActionReport();
         String msg = "";
         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -201,7 +199,7 @@ public class StartInstanceCommand implements AdminCommand {
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         if(env.isDas()) {
-            startInstance();
+            startInstance(ctx);
         } else {
             msg = Strings.get("start.instance.notAnInstanceOrDas",
                     env.getRuntimeType().toString());
@@ -212,7 +210,7 @@ public class StartInstanceCommand implements AdminCommand {
 
         if (report.getActionExitCode() == ActionReport.ExitCode.SUCCESS) {
             // Make sure instance is really up
-            String s = pollForLife();
+            String s = pollForLife(instance);
             if (s != null) {
                 report.setMessage(s);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -220,11 +218,8 @@ public class StartInstanceCommand implements AdminCommand {
         }
     }
 
-    private void startInstance() {
+    private void startInstance(AdminCommandContext ctx) {
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-        Server dasServer =
-                servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
-
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
 
@@ -282,7 +277,7 @@ public class StartInstanceCommand implements AdminCommand {
     }
 
     // return null means A-OK
-    private String pollForLife() {
+    private String pollForLife(Server instance) {
         int counter = 0;  // 120 seconds
 
         while (++counter < 240) {

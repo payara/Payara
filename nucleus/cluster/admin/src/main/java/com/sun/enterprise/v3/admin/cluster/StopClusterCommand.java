@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,9 +67,6 @@ public class StopClusterCommand implements AdminCommand {
 
     @Param(optional=false, primary=true)
     private String clusterName;
-
-    @Param(optional=true, obsolete=true)
-    private boolean autohadboverride = false;
 
     @Param(optional=true, defaultValue="false")
     private boolean kill = false;

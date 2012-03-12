@@ -99,15 +99,13 @@ public class DeleteInstanceCommand implements AdminCommand {
     private String noderef;
     private String nodedir;
     private Logger logger;    
-    private AdminCommandContext ctx;
     private String instanceHost;
     private Node theNode = null;
 
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        ctx = context;
-        logger = context.logger;
+    public void execute(AdminCommandContext ctx) {
+        ActionReport report = ctx.getActionReport();
+        logger = ctx.logger;
         String msg = "";
         boolean  fsfailure = false;
         boolean  configfailure = false;
@@ -152,8 +150,8 @@ public class DeleteInstanceCommand implements AdminCommand {
 
         if (!fsfailure) {
             nodedir = theNode.getNodeDirAbsolute();
-            deleteInstanceFilesystem(context);
-            report = context.getActionReport();
+            deleteInstanceFilesystem(ctx);
+            report = ctx.getActionReport();
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 fsfailure = true;
             }
@@ -197,12 +195,9 @@ public class DeleteInstanceCommand implements AdminCommand {
         }
     }
 
-    public void deleteInstanceFilesystem(AdminCommandContext context) {
+    private void deleteInstanceFilesystem(AdminCommandContext ctx) {
 
         NodeUtils nodeUtils = new NodeUtils(habitat, logger);
-        Server dasServer =
-                servers.getServer(SystemPropertyConstants.DAS_SERVER_NAME);
-
         ArrayList<String> command = new ArrayList<String>();
         String humanCommand = null;
 
