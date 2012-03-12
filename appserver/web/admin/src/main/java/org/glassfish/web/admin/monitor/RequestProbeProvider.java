@@ -72,10 +72,10 @@ public class RequestProbeProvider {
 
     @Probe(name="dataReceivedEvent")
     public void dataReceivedEvent(
-        @ProbeParam("buffer") Buffer buffer) {}
+        @ProbeParam("size") int size) {}
 
     @Probe(name="dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("buffer") Buffer buffer) {}
+        @ProbeParam("size") int size) {}
 
 }

@@ -97,6 +97,7 @@ import org.glassfish.embeddable.web.WebListener;
 import org.glassfish.embeddable.web.config.VirtualServerConfig;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.Connection;
+import org.glassfish.grizzly.ConnectionProbe;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.http.ContentEncoding;
@@ -123,7 +124,6 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
 
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
@@ -1630,7 +1630,7 @@ public class VirtualServer extends StandardHost
         }
     }
 
-    void addHttpProbes(boolean globalAccessLoggingEnabled) {
+    void addProbes(boolean globalAccessLoggingEnabled) {
 
         List<String> listenerList = StringUtils.parseStringList(
                 vsBean.getNetworkListeners(), ",");
@@ -1665,6 +1665,25 @@ public class VirtualServer extends StandardHost
                         }
                     }
                 }
+                grizzlyListener.getTransport().getConnectionMonitoringConfig().addProbes(new ConnectionProbe.Adapter() {
+
+                    RequestProbeProvider requestProbeProvider = webContainer.getRequestProbeProvider();
+
+                    @Override
+                    public void onReadEvent(Connection connection, Buffer data, int size) {
+                        if (requestProbeProvider != null) {
+                            requestProbeProvider.dataReceivedEvent(size);
+                        }
+                    }
+
+                    @Override
+                    public void onWriteEvent(Connection connection, Buffer data, int size) {
+                        if (requestProbeProvider != null) {
+                            requestProbeProvider.dataSentEvent(size);
+                        }
+                    }
+                });
+
             } else {
                 _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
             }
@@ -2490,7 +2509,6 @@ public class VirtualServer extends StandardHost
 
     private final class HttpProbeImpl implements HttpProbe {
 
-        RequestProbeProvider requestProbeProvider = webContainer.getRequestProbeProvider();
         boolean accessLoggingEnabled = false;
         NetworkListener listener = null;
 
@@ -2509,16 +2527,10 @@ public class VirtualServer extends StandardHost
 
         @Override
         public void onDataReceivedEvent(Connection connection, Buffer buffer) {
-            if (requestProbeProvider != null) {
-                requestProbeProvider.dataReceivedEvent(buffer);
-            }
         }
 
         @Override
         public void onDataSentEvent(Connection connection, Buffer buffer) {
-            if (requestProbeProvider != null) {
-                requestProbeProvider.dataSentEvent(buffer);
-            }
         }
 
         @Override
