@@ -77,7 +77,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
+//    @Test
     public void deployCodiApp() throws URISyntaxException, MalformedURLException, IOException {
         try {
             final String appName = "testApp" + generateRandomString();
