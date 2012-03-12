@@ -109,6 +109,7 @@
 	    <classifier>ips</classifier>
             <type>zip</type>    
        </dependency>
+<!--
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-demo</artifactId>
@@ -130,6 +131,7 @@
 	    <classifier>ips</classifier>
             <type>zip</type>    
        </dependency>
+-->
        <dependency>
       	    <groupId>org.glassfish.l10n</groupId>
             <artifactId>l10n-distribution</artifactId>
