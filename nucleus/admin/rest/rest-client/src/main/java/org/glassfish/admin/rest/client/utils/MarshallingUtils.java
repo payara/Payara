@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,8 +90,8 @@ public class MarshallingUtils {
         InputStream input = null;
         try {
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setProperty(XMLInputFactory.IS_VALIDATING, true);
-            inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+            System.out.println("hi");
+            inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             input = new ByteArrayInputStream(xml.trim().getBytes("UTF-8"));
             XMLStreamReader parser = inputFactory.createXMLStreamReader(input);
             while (parser.hasNext()) {
@@ -113,7 +113,9 @@ public class MarshallingUtils {
             throw new RuntimeException(ex);
         } finally {
             try {
-                input.close();
+                if (input != null) {
+                    input.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
