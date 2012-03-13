@@ -196,6 +196,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             String msg = localStrings.getLocalString("rest.adapter.server.exception", 
                     "An error occurred while processing the request. Please see the server logs for details.");
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
+            LogHelper.getDefaultLogger().log(Level.INFO, msg, e);
         }
     }
     
@@ -327,8 +328,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     if ((context != null) && (!"".equals(context))) {
-                        Set<Class<?>> classes = getResourcesConfig();
-                        adapter = lazyJerseyInterface.exposeContext(classes, sc, habitat);
+                        adapter = getLazyJersey().exposeContext(getResourcesConfig(), sc, habitat);
                         logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                     }
                 }

@@ -99,7 +99,7 @@ public class LazyJerseyInit implements LazyJerseyInterface {
      * @throws EndpointRegistrationException
      */
     @Override
-    public HttpHandler exposeContext(Set classes, ServerContext sc, Habitat habitat)
+    public HttpHandler exposeContext(Set<Class<?>> classes, ServerContext sc, Habitat habitat)
             throws EndpointRegistrationException {
 
         HttpHandler httpHandler = null;
@@ -222,85 +222,4 @@ public class LazyJerseyInit implements LazyJerseyInterface {
         return type;
     }
 
-    @Override
-    public Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat) {
-        final Set<Class<?>> r = new HashSet<Class<?>>();
-        r.add(org.glassfish.admin.rest.resources.MonitoringResource.class);
-
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
-
-        return r;
-    }
-
-    @Override
-    public Set<Class<?>> getResourcesConfigForManagement(Habitat habitat) {
-        Class domainResourceClass = null;//org.glassfish.admin.rest.resources.generated.DomainResource.class;
-
-        generateASM(habitat);
-        try {
-            domainResourceClass = Class.forName("org.glassfish.admin.rest.resources.generatedASM.DomainResource");
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LazyJerseyInit.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        final Set<Class<?>> r = new HashSet<Class<?>>();
-
-        // uncomment if you need to run the generator:
-        r.add(GeneratorResource.class);
-        r.add(StatusGenerator.class);
-        r.add(ClientGenerator.class);
-        //r.add(ActionReportResource.class);
-
-        r.add(domainResourceClass);
-//        r.add(DomainResource.class);
-        r.add(ManagementProxyResource.class);
-        r.add(org.glassfish.admin.rest.resources.SessionsResource.class); 
-
-        //TODO this needs to be added to all rest adapters that want to be secured. Decide on it after the discussion to unify RestAdapter is concluded
-        r.add(org.glassfish.admin.rest.resources.StaticResource.class);
-
-        //body readers, not in META-INF/services anymore
-        r.add(org.glassfish.admin.rest.readers.FormReader.class);
-        r.add(org.glassfish.admin.rest.readers.ParameterMapFormReader.class);
-        r.add(org.glassfish.admin.rest.readers.JsonHashMapProvider.class);
-        r.add(org.glassfish.admin.rest.readers.JsonPropertyListReader.class);
-        r.add(org.glassfish.admin.rest.readers.JsonParameterMapProvider.class);
-
-        r.add(org.glassfish.admin.rest.readers.XmlHashMapProvider.class);
-        r.add(org.glassfish.admin.rest.readers.XmlPropertyListReader.class);
-
-        //body writers
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
-        r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
-
-
-        r.add(org.glassfish.admin.rest.provider.FormWriter.class);
-
-        r.add(org.glassfish.admin.rest.provider.GetResultListHtmlProvider.class);
-        r.add(org.glassfish.admin.rest.provider.GetResultListJsonProvider.class);
-        r.add(org.glassfish.admin.rest.provider.GetResultListXmlProvider.class);
-
-        r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
-        r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
-
-        return r;
-    }
-
-    private void generateASM(Habitat habitat) {
-        try {
-            Domain entity = habitat.getComponent(Domain.class);
-            Dom dom = Dom.unwrap(entity);
-            DomDocument document = dom.document;
-            ConfigModel rootModel = dom.document.getRoot().model;
-
-            ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
-            resourcesGenerator.generateSingle(rootModel, document);
-            resourcesGenerator.endGeneration();
-        } catch (Exception ex) {
-            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 }

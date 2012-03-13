@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest.generator;
 
 import org.jvnet.hk2.component.Habitat;
@@ -47,19 +46,26 @@ import org.jvnet.hk2.component.Habitat;
  */
 public class ASMResourcesGenerator extends ResourcesGeneratorBase {
 
+    protected final String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
+    protected final String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
 
     public ASMResourcesGenerator(Habitat habitat) {
-        super (habitat);
+        super(habitat);
     }
-    
+
     @Override
     public ClassWriter getClassWriter(String className, String baseClassName, String resourcePath) {
-        ClassWriter writer = new ASMClassWriter( habitat,className, baseClassName, resourcePath);
-        return writer;
+        try {
+            Class.forName(GENERATED_PACKAGE + "." + className);
+            return null;
+        } catch (ClassNotFoundException ex) {
+            ClassWriter writer = new ASMClassWriter(habitat, GENERATED_PATH, className, baseClassName, resourcePath);
+            return writer;
+        }
     }
 
     @Override
     public String endGeneration() {
-        return  "Code Generation done at  ";
+        return "Code Generation done at  ";
     }
 }

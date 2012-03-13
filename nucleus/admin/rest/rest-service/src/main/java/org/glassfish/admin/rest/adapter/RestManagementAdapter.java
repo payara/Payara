@@ -39,9 +39,24 @@
  */
 package org.glassfish.admin.rest.adapter;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.admin.rest.LazyJerseyInit;
+import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
+import org.glassfish.admin.rest.generator.ResourcesGenerator;
+import org.glassfish.admin.rest.generator.client.ClientGenerator;
+import org.glassfish.admin.rest.resources.GeneratorResource;
+import org.glassfish.admin.rest.resources.StatusGenerator;
+import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 
 /**
  * Adapter for REST management interface
@@ -57,6 +72,72 @@ public class RestManagementAdapter extends RestAdapter {
 
     @Override
     protected Set<Class<?>> getResourcesConfig() {
-         return getLazyJersey().getResourcesConfigForManagement(habitat);
+//         return getLazyJersey().getResourcesConfigForManagement(habitat);
+        Class domainResourceClass = null;//org.glassfish.admin.rest.resources.generated.DomainResource.class;
+
+        generateASM(habitat);
+        try {
+            domainResourceClass = Class.forName("org.glassfish.admin.rest.resources.generatedASM.DomainResource");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(LazyJerseyInit.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        final Set<Class<?>> r = new HashSet<Class<?>>();
+
+        // uncomment if you need to run the generator:
+        r.add(GeneratorResource.class);
+        r.add(StatusGenerator.class);
+        r.add(ClientGenerator.class);
+        //r.add(ActionReportResource.class);
+
+        r.add(domainResourceClass);
+//        r.add(DomainResource.class);
+        r.add(ManagementProxyResource.class);
+        r.add(org.glassfish.admin.rest.resources.SessionsResource.class); 
+
+        //TODO this needs to be added to all rest adapters that want to be secured. Decide on it after the discussion to unify RestAdapter is concluded
+        r.add(org.glassfish.admin.rest.resources.StaticResource.class);
+
+        //body readers, not in META-INF/services anymore
+        r.add(org.glassfish.admin.rest.readers.FormReader.class);
+        r.add(org.glassfish.admin.rest.readers.ParameterMapFormReader.class);
+        r.add(org.glassfish.admin.rest.readers.JsonHashMapProvider.class);
+        r.add(org.glassfish.admin.rest.readers.JsonPropertyListReader.class);
+        r.add(org.glassfish.admin.rest.readers.JsonParameterMapProvider.class);
+
+        r.add(org.glassfish.admin.rest.readers.XmlHashMapProvider.class);
+        r.add(org.glassfish.admin.rest.readers.XmlPropertyListReader.class);
+
+        //body writers
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
+
+
+        r.add(org.glassfish.admin.rest.provider.FormWriter.class);
+
+        r.add(org.glassfish.admin.rest.provider.GetResultListHtmlProvider.class);
+        r.add(org.glassfish.admin.rest.provider.GetResultListJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.GetResultListXmlProvider.class);
+
+        r.add(org.glassfish.admin.rest.provider.OptionsResultJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.OptionsResultXmlProvider.class);
+
+        return r;
+    }
+
+    private void generateASM(Habitat habitat) {
+        try {
+            Domain entity = habitat.getComponent(Domain.class);
+            Dom dom = Dom.unwrap(entity);
+            DomDocument document = dom.document;
+            ConfigModel rootModel = dom.document.getRoot().model;
+
+            ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
+            resourcesGenerator.generateSingle(rootModel, document);
+            resourcesGenerator.endGeneration();
+        } catch (Exception ex) {
+            Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

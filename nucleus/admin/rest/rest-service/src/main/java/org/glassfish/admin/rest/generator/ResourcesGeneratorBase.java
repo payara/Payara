@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.DomDocument;
  */
 public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
-    private Set<String> alreadyGenerated = new HashSet<String>();
+    private static Set<String> alreadyGenerated = new HashSet<String>();
     Habitat habitat;
 
     public ResourcesGeneratorBase(Habitat habitat) {
@@ -90,54 +90,56 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
         }
 
         ClassWriter classWriter = getClassWriter(className, baseClassName, resourcePath);
+        
+        if (classWriter != null) {
+            generateCommandResources(beanName, classWriter);
 
-        generateCommandResources(beanName, classWriter);
+            generateGetDeleteCommandMethod(beanName, classWriter);
 
-        generateGetDeleteCommandMethod(beanName, classWriter);
+            generateCustomResourceMapping(beanName, classWriter);
 
-        generateCustomResourceMapping(beanName, classWriter);
+            for (String elementName : model.getElementNames()) {
+                ConfigModel.Property childElement = model.getElement(elementName);
+                if (elementName.equals("*")) {
+                    ConfigModel.Node node = (ConfigModel.Node) childElement;
+                    ConfigModel childModel = node.getModel();
+                    List<ConfigModel> subChildConfigModels = ResourceUtil.getRealChildConfigModels(childModel, domDocument);
+                    for (ConfigModel subChildConfigModel : subChildConfigModels) {
+                        if (ResourceUtil.isOnlyATag(childModel) || ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty() || hasSingletonAnnotation(subChildConfigModel)) {
+                            String childResourceClassName = getClassName(ResourceUtil.getUnqualifiedTypeName(subChildConfigModel.targetTypeName));
+                            String childPath = subChildConfigModel.getTagName();
+                            classWriter.createGetChildResource(childPath, childResourceClassName);
+                            generateSingle(subChildConfigModel, domDocument);
+                        } else {
+                            processNonLeafChildConfigModel(subChildConfigModel, childElement, domDocument, classWriter);
 
-        for (String elementName : model.getElementNames()) {
-            ConfigModel.Property childElement = model.getElement(elementName);
-            if (elementName.equals("*")) {
-                ConfigModel.Node node = (ConfigModel.Node) childElement;
-                ConfigModel childModel = node.getModel();
-                List<ConfigModel> subChildConfigModels = ResourceUtil.getRealChildConfigModels(childModel, domDocument);
-                for (ConfigModel subChildConfigModel : subChildConfigModels) {
-                    if (ResourceUtil.isOnlyATag(childModel) || ResourceUtil.isOnlyATag(subChildConfigModel) || subChildConfigModel.getAttributeNames().isEmpty() || hasSingletonAnnotation(subChildConfigModel)) {
-                        String childResourceClassName = getClassName(ResourceUtil.getUnqualifiedTypeName(subChildConfigModel.targetTypeName));
-                        String childPath = subChildConfigModel.getTagName();
-                        classWriter.createGetChildResource(childPath, childResourceClassName);
-                        generateSingle(subChildConfigModel, domDocument);
-                    } else {
-                        processNonLeafChildConfigModel(subChildConfigModel, childElement, domDocument, classWriter);
-
+                        }
                     }
-                }
-            } else if (childElement.isLeaf()) {
-                if (childElement.isCollection()) {
-                    //handle the CollectionLeaf config objects.
-                    //JVM Options is an example of CollectionLeaf object.
-                    String childResourceBeanName = getBeanName(elementName);
-                    String childResourceClassName = getClassName(childResourceBeanName);
-                    classWriter.createGetChildResource(elementName, childResourceClassName);
+                } else if (childElement.isLeaf()) {
+                    if (childElement.isCollection()) {
+                        //handle the CollectionLeaf config objects.
+                        //JVM Options is an example of CollectionLeaf object.
+                        String childResourceBeanName = getBeanName(elementName);
+                        String childResourceClassName = getClassName(childResourceBeanName);
+                        classWriter.createGetChildResource(elementName, childResourceClassName);
 
-                    //create resource class
-                    generateCollectionLeafResource(childResourceBeanName);
-                } else {
-                    String childResourceBeanName = getBeanName(elementName);
-                    String childResourceClassName = getClassName(childResourceBeanName);
-                    classWriter.createGetChildResource(elementName, childResourceClassName);
+                        //create resource class
+                        generateCollectionLeafResource(childResourceBeanName);
+                    } else {
+                        String childResourceBeanName = getBeanName(elementName);
+                        String childResourceClassName = getClassName(childResourceBeanName);
+                        classWriter.createGetChildResource(elementName, childResourceClassName);
 
-                    //create resource class
-                    generateLeafResource(childResourceBeanName);
+                        //create resource class
+                        generateLeafResource(childResourceBeanName);
+                    }
+                } else {  // => !childElement.isLeaf()
+                    processNonLeafChildElement(elementName, childElement, domDocument, classWriter);
                 }
-            } else {  // => !childElement.isLeaf()
-                processNonLeafChildElement(elementName, childElement, domDocument, classWriter);
             }
-        }
 
-        classWriter.done();
+            classWriter.done();
+        }
     }
 
     public void generateList(ConfigModel model, DomDocument domDocument) {
@@ -153,17 +155,18 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         ClassWriter classWriter = getClassWriter(className, "TemplateListOfResource", null);
 
-        String keyAttributeName = getKeyAttributeName(model);
-        String childResourceClassName = getClassName(beanName);
-        classWriter.createGetChildResourceForListResources(keyAttributeName, childResourceClassName);
-        generateCommandResources("List" + beanName, classWriter);
+        if (classWriter != null) {
+            String keyAttributeName = getKeyAttributeName(model);
+            String childResourceClassName = getClassName(beanName);
+            classWriter.createGetChildResourceForListResources(keyAttributeName, childResourceClassName);
+            generateCommandResources("List" + beanName, classWriter);
 
-        generateGetPostCommandMethod("List" + beanName, classWriter);
+            generateGetPostCommandMethod("List" + beanName, classWriter);
 
-        classWriter.done();
+            classWriter.done();
 
-        generateSingle(model, domDocument);
-
+            generateSingle(model, domDocument);
+        }
     }
 
     /*
@@ -181,27 +184,28 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         ClassWriter classWriter = getClassWriter(className, "CollectionLeafResource", null);
 
-        CollectionLeafMetaData metaData = configBeanToCollectionLeafMetaData.get(beanName);
+        if (classWriter != null) {
+            CollectionLeafMetaData metaData = configBeanToCollectionLeafMetaData.get(beanName);
 
-        if (metaData != null) {
-            if (metaData.postCommandName != null) {
-                if (ResourceUtil.commandIsPresent(habitat, metaData.postCommandName)) {//and the command exits
-                    classWriter.createGetPostCommandForCollectionLeafResource(metaData.postCommandName);
+            if (metaData != null) {
+                if (metaData.postCommandName != null) {
+                    if (ResourceUtil.commandIsPresent(habitat, metaData.postCommandName)) {//and the command exits
+                        classWriter.createGetPostCommandForCollectionLeafResource(metaData.postCommandName);
+                    }
                 }
+
+                if (metaData.deleteCommandName != null) {
+                    if (ResourceUtil.commandIsPresent(habitat, metaData.deleteCommandName)) {//and the command exits
+                        classWriter.createGetDeleteCommandForCollectionLeafResource(metaData.deleteCommandName);
+                    }
+                }
+
+                //display name method
+                classWriter.createGetDisplayNameForCollectionLeafResource(metaData.displayName);
             }
 
-            if (metaData.deleteCommandName != null) {
-                if (ResourceUtil.commandIsPresent(habitat, metaData.deleteCommandName)) {//and the command exits
-                    classWriter.createGetDeleteCommandForCollectionLeafResource(metaData.deleteCommandName);
-                }
-            }
-
-            //display name method
-            classWriter.createGetDisplayNameForCollectionLeafResource(metaData.displayName);
+            classWriter.done();
         }
-
-        classWriter.done();
-
     }
 
     private void generateLeafResource(String beanName) {
@@ -213,8 +217,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         ClassWriter classWriter = getClassWriter(className, "LeafResource", null);
 
-        classWriter.done();
-
+        if (classWriter != null) {
+            classWriter.done();
+        }
     }
 
     private void processNonLeafChildElement(String elementName, ConfigModel.Property childElement, DomDocument domDocument, ClassWriter classWriter) {
@@ -321,6 +326,11 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     private void generateCommandResourceClass(String parentBeanName, CommandResourceMetaData metaData) {
 
         String commandResourceClassName = getClassName(parentBeanName + getBeanName(metaData.resourcePath));
+        
+        if (alreadyGenerated(commandResourceClassName)) {
+            return;
+        }
+
         String commandName = metaData.command;
         String commandDisplayName = metaData.resourcePath;
         String httpMethod = metaData.httpMethod;
@@ -337,20 +347,22 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             throw new GeneratorException("Invalid httpMethod specified: " + httpMethod);
         }
 
-        ClassWriter writer = getClassWriter(commandResourceClassName, baseClassName, null);
+        ClassWriter classWriter = getClassWriter(commandResourceClassName, baseClassName, null);
 
-        boolean isLinkedToParent = false;
-        if (metaData.commandParams != null) {
-            for (CommandResourceMetaData.ParameterMetaData parameterMetaData : metaData.commandParams) {
-                if (Constants.VAR_PARENT.equals(parameterMetaData.value)) {
-                    isLinkedToParent = true;
+        if (classWriter != null) {
+            boolean isLinkedToParent = false;
+            if (metaData.commandParams != null) {
+                for (CommandResourceMetaData.ParameterMetaData parameterMetaData : metaData.commandParams) {
+                    if (Constants.VAR_PARENT.equals(parameterMetaData.value)) {
+                        isLinkedToParent = true;
+                    }
                 }
             }
-        }
 
-        writer.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod,
-                isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
-        writer.done();
+            classWriter.createCommandResourceConstructor(commandResourceClassName, commandName, httpMethod,
+                    isLinkedToParent, metaData.commandParams, commandDisplayName, commandAction);
+            classWriter.done();
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,12 +60,12 @@ public interface LazyJerseyInterface {
      * @return the correct GrizzlyAdapter
      * @throws EndpointRegistrationException
      */
-    HttpHandler exposeContext(Set classes, ServerContext sc, Habitat habitat)
+    HttpHandler exposeContext(Set<Class<?>> classes, ServerContext sc, Habitat habitat)
             throws EndpointRegistrationException;
 
     void reportError(Request req, Response res, int statusCode, String msg);
 
-    Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat);
-
-    Set<Class<?>> getResourcesConfigForManagement(Habitat habitat);
+//    Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat);
+//
+//    Set<Class<?>> getResourcesConfigForManagement(Habitat habitat);
 }

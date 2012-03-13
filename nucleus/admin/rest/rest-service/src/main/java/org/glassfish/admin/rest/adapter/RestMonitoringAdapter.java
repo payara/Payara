@@ -39,9 +39,11 @@
  */
 package org.glassfish.admin.rest.adapter;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * Adapter for REST monitoring interface
@@ -58,6 +60,16 @@ public class RestMonitoringAdapter extends RestAdapter {
 
     @Override
     protected Set<Class<?>> getResourcesConfig() {
-        return getLazyJersey().getResourcesConfigForMonitoring(habitat);
+//        return getLazyJersey().getResourcesConfigForMonitoring(habitat);
+//    @Override
+//    public Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat) {
+        final Set<Class<?>> r = new HashSet<Class<?>>();
+        r.add(org.glassfish.admin.rest.resources.MonitoringResource.class);
+
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
+        r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
+
+        return r;
     }
 }
