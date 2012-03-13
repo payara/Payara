@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,79 +38,16 @@
  * holder.
  */
 
-package org.glassfish.admin.rest;
 
-import java.util.logging.Logger;
+package org.glassfish.admin.restconnector;
 
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-
-import org.glassfish.api.Startup;
-import org.glassfish.internal.api.LocalPassword;
-import org.glassfish.internal.api.RestInterfaceUID;
-import org.glassfish.server.ServerEnvironmentImpl;
-
+import org.glassfish.grizzly.http.server.HttpHandler;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * @author Ludovic Champenois ludo@dev.java.net
- * @author Rajeshwar Patil
+ * @author Sanjeeb.Sahoo@Sun.COM
  */
-@Service
-public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID {
-
-    @Inject
-    private static Habitat habitat;
-
-    @Inject
-    com.sun.enterprise.config.serverbeans.Domain domain;
-
-    @Inject
-    org.glassfish.flashlight.MonitoringRuntimeDataRegistry monitoringRegistry;
-
-    @Inject
-    ServerEnvironmentImpl env;
-
-    @Inject
-    LocalPassword localPassword;
-
-
-    public final static Logger logger =
-            LogDomains.getLogger(RestService.class, LogDomains.ADMIN_LOGGER);
-    public final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(RestService.class);
-
-    @Override
-    public void postConstruct() {
-        //events.register(this);
-    //    logger.fine(localStrings.getLocalString("rest.service.initialization",
-    //            "Initializing REST interface support"));
-
-    }
-
-    @Override
-    public void preDestroy() {
-    }
-
-
-    @Override
-    public String getUID() {
-        if (_uid == null) {
-            _uid = localPassword.getLocalPassword();
-        }
-        return _uid;
-    }
-
-
-    public static String getRestUID() {
-        return _uid;
-    }
-
-
-    private static String _uid;
+@Contract
+public interface ProxiedRestAdapter {
+    HttpHandler getHttpService();
 }

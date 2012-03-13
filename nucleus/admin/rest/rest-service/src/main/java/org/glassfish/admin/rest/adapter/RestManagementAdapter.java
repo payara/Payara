@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,17 @@
 package org.glassfish.admin.rest.adapter;
 
 import java.util.Set;
+import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * Adapter for REST management interface
  * @author Rajeshwar Patil , Ludovic Champenois
  */
-@Service
+@Service(name= Constants.REST_MANAGEMENT_ADAPTER)
 public class RestManagementAdapter extends RestAdapter {
-    private static final String CONTEXT = "/management";
+    private static final String CONTEXT = Constants.REST_MANAGEMENT_CONTEXT_ROOT;
 
-    @Override
     public String getContextRoot() {
         return CONTEXT;
     }

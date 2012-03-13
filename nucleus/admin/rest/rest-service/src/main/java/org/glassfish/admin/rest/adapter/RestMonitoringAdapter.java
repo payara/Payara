@@ -40,6 +40,7 @@
 package org.glassfish.admin.rest.adapter;
 
 import java.util.Set;
+import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -47,11 +48,10 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Rajeshwar Patil, Ludovic Champenois
  */
-@Service
+@Service(name=Constants.REST_MONITORING_ADAPTER)
 public class RestMonitoringAdapter extends RestAdapter {
-    public static final String CONTEXT = "/monitoring";
+    public static final String CONTEXT = Constants.REST_MONITORING_CONTEXT_ROOT;
 
-    @Override
     public String getContextRoot() {
         return CONTEXT;
     }

@@ -68,9 +68,9 @@ import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
@@ -78,7 +78,6 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
-import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
@@ -88,7 +87,7 @@ import org.jvnet.hk2.component.PostConstruct;
  * Adapter for REST interface
  * @author Rajeshwar Patil, Ludovic Champenois
  */
-public abstract class RestAdapter extends HttpHandler implements Adapter, PostStartup, PostConstruct {
+public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdapter, PostConstruct {
     protected static final String COOKIE_REST_TOKEN = "gfresttoken";
     protected static final String COOKIE_GF_REST_UID = "gfrestuid";
     protected static final String HEADER_ACCEPT = "Accept";
@@ -131,6 +130,8 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
         epd = new AdminEndpointDecider(config, logger);
         latch.countDown();
     }
+
+    protected abstract String getContextRoot();
 
     @Override
     public HttpHandler getHttpService() {
@@ -203,7 +204,7 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
      * @return Access as determined by authentication process.
      *         If authentication succeeds against local password or rest token FULL access is granted
      *         else the access is as returned by admin authenticator
-     * @see ResourceUtil.authenticateViaAdminRealm(Habitat, Request)
+     * @see ResourceUtil#authenticateViaAdminRealm
      *
      */
     private AdminAccessController.Access authenticate(Request req) throws LoginException, IOException {
@@ -257,38 +258,6 @@ public abstract class RestAdapter extends HttpHandler implements Adapter, PostSt
             }
         }
         return authenticated;
-    }
-
-    /**
-     * Checks whether this adapter has been registered as a network endpoint.
-     */
-    @Override
-    public boolean isRegistered() {
-        return isRegistered;
-    }
-
-    /**
-     * Marks this adapter as having been registered or unregistered as a
-     * network endpoint
-     */
-    @Override
-    public void setRegistered(boolean isRegistered) {
-        this.isRegistered = isRegistered;
-    }
-
-    @Override
-    public int getListenPort() {
-        return epd.getListenPort();
-    }
-
-    @Override
-    public InetAddress getListenAddress() {
-        return epd.getListenAddress();
-    }
-
-    @Override
-    public List<String> getVirtualServers() {
-        return epd.getAsadminHosts();
     }
 
     private String getAcceptedMimeType(Request req) {

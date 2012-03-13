@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,79 +38,50 @@
  * holder.
  */
 
-package org.glassfish.admin.rest;
 
-import java.util.logging.Logger;
+package org.glassfish.admin.restconnector;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Adapter;
+import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-
-import org.glassfish.api.Startup;
-import org.glassfish.internal.api.LocalPassword;
-import org.glassfish.internal.api.RestInterfaceUID;
-import org.glassfish.server.ServerEnvironmentImpl;
-
 
 /**
- * @author Ludovic Champenois ludo@dev.java.net
- * @author Rajeshwar Patil
+ * Implementation of {@link Adapter} for rest based management.
+ * It extends from {@link AbstractProxyRestAdapter} that uses a handle-body idiom. The handle
+ * implements methods that are metadata/configuration based. The body implements methods that require REST subsystem.
+ *
+ * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID {
+public class ProxyRestManagementAdapter extends AbstractProxyRestAdapter implements Adapter {
 
     @Inject
-    private static Habitat habitat;
+    Services services;
 
-    @Inject
-    com.sun.enterprise.config.serverbeans.Domain domain;
-
-    @Inject
-    org.glassfish.flashlight.MonitoringRuntimeDataRegistry monitoringRegistry;
-
-    @Inject
-    ServerEnvironmentImpl env;
-
-    @Inject
-    LocalPassword localPassword;
-
-
-    public final static Logger logger =
-            LogDomains.getLogger(RestService.class, LogDomains.ADMIN_LOGGER);
-    public final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(RestService.class);
-
-    @Override
-    public void postConstruct() {
-        //events.register(this);
-    //    logger.fine(localStrings.getLocalString("rest.service.initialization",
-    //            "Initializing REST interface support"));
-
-    }
-
-    @Override
-    public void preDestroy() {
-    }
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
 
     @Override
-    public String getUID() {
-        if (_uid == null) {
-            _uid = localPassword.getLocalPassword();
-        }
-        return _uid;
+    protected Services getServices() {
+        return services;
     }
 
-
-    public static String getRestUID() {
-        return _uid;
+    @Override
+    protected Config getConfig() {
+        return config;
     }
 
+    @Override
+    protected String getName() {
+        return Constants.REST_MANAGEMENT_ADAPTER;
+    }
 
-    private static String _uid;
+    @Override
+    public String getContextRoot() {
+        return Constants.REST_MANAGEMENT_CONTEXT_ROOT;
+    }
 }
