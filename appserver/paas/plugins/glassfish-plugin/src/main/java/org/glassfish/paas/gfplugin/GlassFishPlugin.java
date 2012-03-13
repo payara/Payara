@@ -636,7 +636,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             try {
                 File archive = new File(cloudArchive.getURI());
                 logger.info("Deploying " + archive + " using GlassFish plugin");
-                VirtualMachine vm = (VirtualMachine) service.getServiceProperties().get("vm");
+                VirtualMachine vm = gfps.getVM();
                 vm.upload(archive, new File("/tmp"));
                 gfps.getProvisionedGlassFish().getCommandRunner().run("deploy",
                         "--cluster=" + gfps.getServiceDescription().getVirtualClusterName(),

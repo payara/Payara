@@ -50,8 +50,7 @@ import org.glassfish.paas.gfplugin.cli.ProvisionerUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.virtualization.runtime.VirtualClusters;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.paas.spe.common.BasicProvisionedService;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -73,24 +72,13 @@ public class DASProvisioner implements GlassFishPluginConstants {
     @Inject
     private ProvisionerUtil provisionerUtil;
 
-    @Inject(optional = true)
-    private VirtualClusters virtualClusters;
-
     // Convert the serviceNode to a GlassFish DAS node.
     public GlassFishProvisionedService provision(ProvisionedService serviceNode) {
 
         String serviceName = serviceNode.getName();
         String clusterName = serviceNode.getServiceDescription().getVirtualClusterName();
 
-        VirtualCluster virtualCluster = null;
-
-        try {
-            virtualCluster = virtualClusters.byName(clusterName);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        String vmId = serviceNode.getServiceProperties().getProperty("vm-id");
-        VirtualMachine vm = virtualCluster.vmByName(vmId);
+        VirtualMachine vm = ((BasicProvisionedService)serviceNode).getVM();
 
         ServiceDescription serviceDescription = serviceNode.getServiceDescription();
 

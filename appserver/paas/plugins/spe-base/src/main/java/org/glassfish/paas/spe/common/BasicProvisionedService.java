@@ -48,6 +48,9 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
+import org.glassfish.virtualization.runtime.VirtualClusters;
+import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualMachine;
 
 import java.util.Collection;
 import java.util.Date;
@@ -130,6 +133,26 @@ public class BasicProvisionedService implements ProvisionedService {
 
     public Properties getProperties() {
         return serviceProperties;
+    }
+
+    /**
+     * Get the virtual machine on which this servicenode is running.
+     *
+     * @return underlying virtual machine on which this servicenode is running.
+     */
+    public VirtualMachine getVM() {
+        VirtualClusters virtualClusters = Globals.getDefaultHabitat().
+                getByType(VirtualClusters.class);
+        String clusterName = getServiceDescription().getVirtualClusterName();
+        VirtualCluster virtualCluster = null;
+        try {
+            virtualCluster = virtualClusters.byName(clusterName);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        String vmId = getServiceProperties().getProperty("vm-id");
+        VirtualMachine vm = virtualCluster.vmByName(vmId);
+        return vm;
     }
 
     public Map<Service, List<ServiceLogRecord>> collectLogs(ServiceLogType type, Level level, Date since) {

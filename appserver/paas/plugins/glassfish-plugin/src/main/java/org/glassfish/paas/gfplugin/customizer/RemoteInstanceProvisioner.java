@@ -45,6 +45,7 @@ import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.spe.common.BasicProvisionedService;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -61,7 +62,10 @@ public class RemoteInstanceProvisioner implements GlassFishPluginConstants {
 
     public void provision(GlassFishProvisionedService das, ProvisionedService... instances) {
 
-        String passwordFile = createPasswordFile();
+        String sshUser = das.getVM().getConfig().getTemplate().
+                getUser().getName(); // sshUser = template-user.
+        String sshPassword = sshUser; // TODO :: Assuming template user as the password always? Check with IMS team for right way to get ssh user/password of the VM.
+        String passwordFile = createPasswordFile(sshPassword);
 
         CommandRunner cr = null;
 
@@ -72,20 +76,20 @@ public class RemoteInstanceProvisioner implements GlassFishPluginConstants {
         }
 
         for (ProvisionedService instance : instances) {
-            VirtualMachine vm = ((VirtualMachine) instance.getServiceProperties().get("vm"));
+            VirtualMachine vm = ((BasicProvisionedService)instance).getVM();
 
             // setup-ssh
             cr.run(SETUP_SSH,
                     "--interactive=false",
                     "--passwordfile=" + passwordFile,
-                    "--sshuser=cloud", // TODO :: get the user from the template
+                    "--sshuser=" + sshUser,
                     "--generatekey=true",
                     vm.getAddress().getHostAddress());
 
             // create-node-ssh
             cr.run(CREATE_NODE_SSH,
                     "--nodehost=" + vm.getAddress().getHostAddress(),
-                    "--sshuser=cloud",
+                    "--sshuser=" + sshUser,
                     "--installdir=" + vm.getProperty(VirtualMachine.PropertyName.INSTALL_DIR),
                     getNodeName(vm));
 
@@ -130,13 +134,13 @@ public class RemoteInstanceProvisioner implements GlassFishPluginConstants {
         return INSTANCE_NAME_FORMAT.format(args).toString();
     }
 
-    private String createPasswordFile() {
+    private String createPasswordFile(String sshPassword) {
         FileWriter fw = null;
         try {
             File passFile = File.createTempFile("asadmin", "passwd");
             passFile.deleteOnExit();
             fw = new FileWriter(passFile);
-            fw.write("AS_ADMIN_SSHPASSWORD=cloud\n"); // TODO :: get the password from the template
+            fw.write("AS_ADMIN_SSHPASSWORD=" + sshPassword + "\n");
             fw.flush();
             fw.close();
             return passFile.getAbsolutePath();
