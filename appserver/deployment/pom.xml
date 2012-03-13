@@ -63,5 +63,9 @@
         <module>javaee-full</module>
         <module>javax.enterprise.deploy</module>
         <module>jsr88-jar</module>
+        <module>javaee-core-l10n</module>
+        <module>dol-l10n</module>
+        <module>javaee-full-l10n</module>
+        <module>client-l10n</module>
     </modules>
 </project>
