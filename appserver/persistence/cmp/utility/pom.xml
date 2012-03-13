@@ -66,19 +66,6 @@
         </developer>
     </developers>
     <build>
-        <plugins>
-          <plugin>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2-maven-plugin</artifactId>
-            <configuration>
-              <archive>
-                <manifestEntries>
-                  <Class-Path>cmp-l10n.jar</Class-Path>
-                </manifestEntries>
-              </archive>
-            </configuration>
-          </plugin>
-        </plugins>
         <resources>
             <resource>
                 <directory>src/main/java</directory>
