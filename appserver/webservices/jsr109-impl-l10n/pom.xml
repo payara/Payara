@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,23 +45,47 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.webservices</groupId>
+        <artifactId>webservices</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.webservices</groupId>
-    <artifactId>webservices</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Web Services related modules</name>  
-    <modules>
-        <module>metro-fragments</module>
-        <module>metro-glue</module>
-    	<module>connector</module>
-        <module>jsr109-impl</module>
-        <module>soap-tcp</module>
-        <module>webservices-scripts</module>
-        <module>jsr109-impl-l10n</module>
-    </modules>
-</project>
 
+    <artifactId>jsr109-impl-l10n</artifactId>
+    <packaging>hk2-jar</packaging>
+    <name>JSR-109 implementation to deploy Metro Localization</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package />
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
+</project>
