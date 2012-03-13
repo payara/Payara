@@ -107,7 +107,6 @@
                     <archive>
 		        <manifestEntries>
                            <probe-provider-class-names>org.glassfish.web.admin.monitor.WebModuleProbeProvider,org.glassfish.web.admin.monitor.RequestProbeProvider,org.glassfish.web.admin.monitor.JspProbeProvider,org.glassfish.web.admin.monitor.ServletProbeProvider,org.glassfish.web.admin.monitor.SessionProbeProvider</probe-provider-class-names>
-                           <Class-Path>common-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
