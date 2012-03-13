@@ -62,5 +62,8 @@
         <module>mbeanserver</module>
     	<module>scattered-archive-api</module>
     	<module>amx-core</module>
+    	<module>common-util-l10n</module>
+    	<module>internal-api-l10n</module>
+    	<module>glassfish-api-l10n</module>
     </modules>
 </project>

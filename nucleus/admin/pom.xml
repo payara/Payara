@@ -61,5 +61,11 @@
         <module>launcher</module>
         <module>monitor</module>
         <module>rest</module>
+        <module>launcher-l10n</module>
+        <module>monitor-l10n</module>
+        <module>config-api-l10n</module>
+        <module>cli-l10n</module>
+        <module>server-mgmt-l10n</module>
+        <module>util-l10n</module>
     </modules>
 </project>

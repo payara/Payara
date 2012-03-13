@@ -82,11 +82,6 @@
                     <excludes>
                         <exclude>**/ha/spi/*.java</exclude>
                     </excludes>
-                    <archive>
-                        <manifestEntries>
-                            <Class-Path>common-l10n.jar</Class-Path>
-                        </manifestEntries>
-                    </archive>
                 </configuration>
             </plugin>
         </plugins>

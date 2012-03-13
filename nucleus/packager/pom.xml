@@ -92,6 +92,10 @@
 	<module>nucleus-management</module>
 	<module>nucleus-jersey</module>	
         <module>nucleus-virtualization</module>	
+        <module>nucleus-cluster-l10n</module>	
+        <module>nucleus-common-l10n</module>	
+        <module>nucleus-l10n</module>	
+        <module>nucleus-management-l10n</module>	
     </modules>
 
     <build>

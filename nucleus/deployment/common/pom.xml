@@ -94,7 +94,6 @@
                    <archive>
                        <manifestEntries>
                            <probe-provider-class-names>org.glassfish.deployment.monitor.DeploymentLifecycleProbeProvider</probe-provider-class-names>
-                           <Class-Path>common-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>            

@@ -58,5 +58,6 @@
         <module>agent</module>
         <module>flashlight-extra-jdk-packages</module>
         <module>framework</module>
+        <module>framework-l10n</module>
     </modules>
 </project>

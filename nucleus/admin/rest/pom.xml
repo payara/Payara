@@ -87,6 +87,7 @@
     <modules>
         <module>rest-client</module>
         <module>rest-service</module>
+        <module>rest-service-l10n</module>
     </modules>
     <build>
         <plugins>

@@ -118,7 +118,6 @@
                     <archive>
                         <manifestEntries>
                             <probe-provider-class-names>com.sun.enterprise.v3.services.impl.monitor.probes.ThreadPoolProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.FileCacheProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.KeepAliveProbeProvider,com.sun.enterprise.v3.services.impl.monitor.probes.ConnectionQueueProbeProvider</probe-provider-class-names>
-                            <Class-Path>kernel-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>

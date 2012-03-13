@@ -95,17 +95,6 @@
                      </execution>
                   </executions>
              </plugin>
-             <plugin>
-               <groupId>org.glassfish.hk2</groupId>
-               <artifactId>hk2-maven-plugin</artifactId>
-               <configuration>
-                 <archive>
-                   <manifestEntries>
-                     <Class-Path>cluster-l10n.jar</Class-Path>
-                   </manifestEntries>
-                 </archive>
-               </configuration>
-             </plugin>
         </plugins>
     </build>
     
