@@ -42,7 +42,6 @@ package org.glassfish.extras.grizzly;
 
 import org.glassfish.grizzly.http.server.util.IntrospectionUtils;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -52,6 +51,8 @@ import org.glassfish.extras.grizzly.GrizzlyModuleDescriptor.GrizzlyProperty;
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.logging.Level;
+
+import javax.inject.Inject;
 
 import com.sun.logging.LogDomains;
 import java.util.ArrayList;
