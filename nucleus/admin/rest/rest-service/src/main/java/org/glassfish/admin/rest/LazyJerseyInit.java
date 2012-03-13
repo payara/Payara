@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jersey.api.container.ContainerFactory;
 import com.sun.jersey.api.container.filter.CsrfProtectionFilter;
 import com.sun.jersey.api.container.filter.LoggingFilter;
@@ -49,22 +48,14 @@ import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.adapter.Reloader;
-import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
-import org.glassfish.admin.rest.generator.ResourcesGenerator;
-import org.glassfish.admin.rest.generator.client.ClientGenerator;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
-import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.ReloadResource;
-import org.glassfish.admin.rest.resources.StatusGenerator;
-import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
@@ -74,9 +65,6 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
 
 /**
  *
@@ -186,14 +174,11 @@ public class LazyJerseyInit implements LazyJerseyInterface {
     private static String getAcceptedMimeType(Request req) {
         String type = null;
         String requestURI = req.getRequestURI();
-        Set<String> acceptableTypes = new HashSet<String>() {
-
-            {
+        Set<String> acceptableTypes = new HashSet<String>() {{
                 add("html");
                 add("xml");
                 add("json");
-            }
-        };
+            }};
 
         // first we look at the command extension (ie list-applications.[json | html | mf]
         if (requestURI.indexOf('.') != -1) {

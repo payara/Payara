@@ -47,9 +47,7 @@ import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
@@ -177,23 +175,23 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     reportError(req, res, status, msg);
                 }
             } else { // !latch.await(...)
-                String msg = localStrings.getLocalString("rest.adapter.server.wait", 
-                        "Server cannot process this command at this time, please wait");
-                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg);
+                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
+                        localStrings.getLocalString("rest.adapter.server.wait",
+                        "Server cannot process this command at this time, please wait"));
             }
-        } catch(InterruptedException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.wait", 
-                        "Server cannot process this command at this time, please wait");
-                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
-        } catch(IOException e) {
-                String msg = localStrings.getLocalString("rest.adapter.server.ioexception", 
-                        "REST: IO Exception "+e.getLocalizedMessage());
-                reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
-        } catch(LoginException e) {
-            String msg = localStrings.getLocalString("rest.adapter.auth.error", "Error authenticating");
-            reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED, msg); //authentication error
+        } catch (InterruptedException e) {
+            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
+                    localStrings.getLocalString("rest.adapter.server.wait",
+                    "Server cannot process this command at this time, please wait")); //service unavailable
+        } catch (IOException e) {
+            reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE,
+                    localStrings.getLocalString("rest.adapter.server.ioexception",
+                    "REST: IO Exception " + e.getLocalizedMessage())); //service unavailable
+        } catch (LoginException e) {
+            reportError(req, res, HttpURLConnection.HTTP_UNAUTHORIZED,
+                    localStrings.getLocalString("rest.adapter.auth.error", "Error authenticating")); //authentication error
         } catch (Exception e) {
-            String msg = localStrings.getLocalString("rest.adapter.server.exception", 
+            String msg = localStrings.getLocalString("rest.adapter.server.exception",
                     "An error occurred while processing the request. Please see the server logs for details.");
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
             LogHelper.getDefaultLogger().log(Level.INFO, msg, e);
@@ -210,10 +208,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
      */
     private AdminAccessController.Access authenticate(Request req) throws LoginException, IOException {
         AdminAccessController.Access access = AdminAccessController.Access.FULL;
-        boolean authenticated = authenticateViaLocalPassword(req);
-        if (!authenticated) {
-            authenticated = authenticateViaRestToken(req);
-            if (!authenticated) {
+        if (!authenticateViaLocalPassword(req)) {
+            if (!authenticateViaRestToken(req)) {
                 access = ResourceUtil.authenticateViaAdminRealm(habitat, req, req.getRemoteHost());
             }
         }

@@ -52,11 +52,10 @@ import org.jvnet.hk2.component.Habitat;
  * @author ludo
  */
 public interface LazyJerseyInterface {
-
     /**
      * Called via introspection in the RestAdapter service() method only when the GrizzlyAdapter is not initialized
      * @param classes set of Jersey Resources classes
-     * @param sc the current ServerContext, needed to find the correct classpath
+     * @param sc the current ServerContext, needed to find the correct ClassPath
      * @return the correct GrizzlyAdapter
      * @throws EndpointRegistrationException
      */
@@ -64,8 +63,4 @@ public interface LazyJerseyInterface {
             throws EndpointRegistrationException;
 
     void reportError(Request req, Response res, int statusCode, String msg);
-
-//    Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat);
-//
-//    Set<Class<?>> getResourcesConfigForManagement(Habitat habitat);
 }

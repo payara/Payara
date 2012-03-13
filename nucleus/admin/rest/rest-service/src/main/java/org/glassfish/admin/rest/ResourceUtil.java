@@ -73,7 +73,6 @@ import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.payload.PayloadImpl;
 import static org.glassfish.admin.rest.Util.eleminateHypen;
 import static org.glassfish.admin.rest.Util.getHtml;
-import static org.glassfish.admin.rest.Util.getParentName;
 import static org.glassfish.admin.rest.Util.localStrings;
 import static org.glassfish.admin.rest.Util.methodNameFromDtdName;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
@@ -115,7 +114,6 @@ import org.jvnet.hk2.config.DomDocument;
 public class ResourceUtil {
 
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
-    private static final String QUERY_PARAMETERS = "queryParameters";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
     // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make 
@@ -225,7 +223,8 @@ public class ResourceUtil {
      * @param habitat the habitat
      * @return ActionReport object with command execute status details.
      */
-    public static RestActionReporter runCommand(String commandName, Map<String, String> parameters, Habitat habitat, String resultType) {
+    public static RestActionReporter runCommand(String commandName, Map<String, String> parameters, 
+            Habitat habitat, String resultType) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             p.set(entry.getKey(), entry.getValue());
@@ -302,7 +301,7 @@ public class ResourceUtil {
     /**
      * Constructs and returns the resource method meta-data.
      *
-     * @param command the command assocaited with the resource method
+     * @param command the command associated with the resource method
      * @param commandParamsToSkip the command parameters for which not to
      * include the meta-data.
      * @param habitat the habitat
@@ -381,7 +380,8 @@ public class ResourceUtil {
 
         Class<? extends ConfigBeanProxy> configBeanProxy = null;
         try {
-            configBeanProxy = (Class<? extends ConfigBeanProxy>) configBeanModel.classLoaderHolder.get().loadClass(configBeanModel.targetTypeName);
+            configBeanProxy = (Class<? extends ConfigBeanProxy>) configBeanModel.classLoaderHolder.get()
+                    .loadClass(configBeanModel.targetTypeName);
 
             Set<String> attributeNames = configBeanModel.getAttributeNames();
             for (String attributeName : attributeNames) {
@@ -522,11 +522,7 @@ public class ResourceUtil {
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Habitat habitat, Logger logger) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
-        CommandModel cm = cr.getModel(commandName, logger);
-        Collection<CommandModel.ParamModel> params = cm.getParameters();
-        //print(params);
-        return params;
+        return habitat.getComponent(CommandRunner.class).getModel(commandName, logger).getParameters();
     }
 
     /**
@@ -543,8 +539,7 @@ public class ResourceUtil {
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Collection<String> commandParamsToSkip,
             Habitat habitat, Logger logger) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
-        CommandModel cm = cr.getModel(commandName, logger);
+        CommandModel cm = habitat.getComponent(CommandRunner.class).getModel(commandName, logger);
         Collection<String> parameterNames = cm.getParametersNames();
 
         ArrayList<CommandModel.ParamModel> metaData = new ArrayList<CommandModel.ParamModel>();
@@ -868,9 +863,8 @@ public class ResourceUtil {
      * elements and attributes @return true if this model is deprecated
      */
     static public boolean isDeprecated(ConfigModel model) {
-        Class<? extends ConfigBeanProxy> cbp = null;
         try {
-            cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
+            Class<? extends ConfigBeanProxy> cbp = (Class<? extends ConfigBeanProxy>) model.classLoaderHolder.get().loadClass(model.targetTypeName);
             Deprecated dep = cbp.getAnnotation(Deprecated.class);
             return dep != null;
         } catch (ClassNotFoundException e) {
@@ -882,9 +876,8 @@ public class ResourceUtil {
 
     public static Map<String, String> getResourceLinks(Dom dom, UriInfo uriInfo, boolean canShowDeprecated) {
         Map<String, String> links = new TreeMap<String, String>();
-        Set<String> elementNames = dom.model.getElementNames();
 
-        for (String elementName : elementNames) { //for each element
+        for (String elementName : dom.model.getElementNames()) { //for each element
             if (elementName.equals("*")) {
                 ConfigModel.Node node = (ConfigModel.Node) dom.model.getElement(elementName);
                 ConfigModel childModel = node.getModel();
