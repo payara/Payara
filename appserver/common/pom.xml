@@ -63,5 +63,8 @@
         <module>annotation-framework</module>
         <module>container-common</module>
         <module>glassfish-naming</module>
+        <module>annotation-framework-l10n</module>
+        <module>container-common-l10n</module>
+        <module>glassfish-naming-l10n</module>
     </modules>
 </project>

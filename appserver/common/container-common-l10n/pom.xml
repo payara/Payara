@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,60 +42,60 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.common</groupId>
         <artifactId>common</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <artifactId>annotation-framework</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>container-common-l10n</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>GlassFish Java EE Annotation Framework</name>
+    <name>Container Common Localization</name>
 
     <developers>
         <developer>
-            <id>dochez</id>
-            <name>Jerome Dochez</name>
-            <url>http://blogs.sun.com/dochez</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>hzhang_jn</id>
-            <name>Hong Zhang</name>
-            <url>http://blogs.sun.com/misty</url>
+            <name>Georges Murr</name>
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
     </developers>
+
     <build>
-    	<sourceDirectory>src/main/java</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package />
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
         <resources>
             <resource>
-                <directory>src/main/java/org/glassfish/apf</directory>
-                <includes>
-                    <include>skip-annotation-class-list</include>
-                </includes>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
             </resource>
         </resources>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 </project>
