@@ -142,7 +142,6 @@
                     <archive>
                         <manifestEntries>
                             <probe-provider-class-names>com.sun.enterprise.security.auth.realm.RealmsProbeProvider,com.sun.enterprise.security.WebSecurityDeployerProbeProvider,com.sun.enterprise.security.EjbSecurityPolicyProbeProvider</probe-provider-class-names>
-                                <Class-Path>common-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
