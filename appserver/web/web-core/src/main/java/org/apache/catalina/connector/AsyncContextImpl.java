@@ -476,42 +476,44 @@ class AsyncContextImpl implements AsyncContext {
      * Notifies all AsyncListeners of the given async event type
      */
     void notifyAsyncListeners(AsyncEventType asyncEventType, Throwable t) {
+        LinkedList<AsyncListenerContext> clone;
         synchronized(asyncListenerContexts) {
             if (asyncListenerContexts.isEmpty()) {
                 return;
             }
-            LinkedList<AsyncListenerContext> clone =
+            clone =
                 new LinkedList<AsyncListenerContext>(asyncListenerContexts);
             if (asyncEventType.equals(AsyncEventType.START_ASYNC)) {
                 asyncListenerContexts.clear();
             }
-            for (AsyncListenerContext asyncListenerContext : clone) {
-                AsyncListener asyncListener =
-                    asyncListenerContext.getAsyncListener();
-                AsyncEvent asyncEvent = new AsyncEvent(
-                    this, asyncListenerContext.getRequest(),
-                    asyncListenerContext.getResponse(), t);
-                try {
-                    switch (asyncEventType) {
-                    case COMPLETE:
-                        asyncListener.onComplete(asyncEvent);
-                        break;
-                    case TIMEOUT:
-                        asyncListener.onTimeout(asyncEvent);
-                        break;
-                    case ERROR:
-                        asyncListener.onError(asyncEvent);
-                        break;
-                    case START_ASYNC:
-                        asyncListener.onStartAsync(asyncEvent);
-                        break;
-                    default: // not possible
-                        break;
-                    }
-                } catch (IOException ioe) {
-                    log.log(Level.WARNING, "Error invoking AsyncListener",
-                            ioe);
+        }
+        for (AsyncListenerContext asyncListenerContext : clone) {
+            AsyncListener asyncListener =
+                asyncListenerContext.getAsyncListener();
+            AsyncEvent asyncEvent = new AsyncEvent(
+                this, asyncListenerContext.getRequest(),
+                asyncListenerContext.getResponse(), t);
+            try {
+                switch (asyncEventType) {
+                case COMPLETE:
+                    asyncListener.onComplete(asyncEvent);
+                    break;
+                case TIMEOUT:
+                    asyncListener.onTimeout(asyncEvent);
+                    break;
+                case ERROR:
+                    asyncListener.onError(asyncEvent);
+                    break;
+                case START_ASYNC:
+                    asyncListener.onStartAsync(asyncEvent);
+                    break;
+                default: // not possible
+                    break;
                 }
+            } catch (IOException ioe) {
+                log.log(Level.WARNING,
+                        STRING_MANAGER.getString("async.listenerInvocationError"),
+                        ioe);
             }
         }
     }
