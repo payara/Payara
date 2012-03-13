@@ -105,7 +105,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                               <Class-Path>config-api.jar internal-api.jar config-types.jar grizzly-config.jar common-l10n.jar</Class-Path>
+                               <Class-Path>config-api.jar internal-api.jar config-types.jar grizzly-config.jar cli-optional-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
