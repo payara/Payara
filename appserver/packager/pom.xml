@@ -131,6 +131,27 @@
         <module>glassfish-osgi-incorporation</module>
         <module>glassfish-osgi-feature-pack</module>
 	<module>glassfish-ant-tasks</module>
+        <module>glassfish-cluster-l10n</module>
+        <module>glassfish-cmp-l10n</module>
+        <module>glassfish-common-full-l10n</module>
+        <module>glassfish-common-l10n</module>
+        <module>glassfish-ejb-l10n</module>
+        <module>glassfish-ejb-lite-l10n</module>
+        <module>glassfish-gui-l10n</module>
+        <module>glassfish-jca-l10n</module>
+        <module>glassfish-jdbc-l10n</module>
+        <module>glassfish-jms-l10n</module>
+        <module>glassfish-jpa-l10n</module>
+        <module>glassfish-jta-l10n</module>
+        <module>glassfish-jts-l10n</module>
+        <module>glassfish-nucleus-l10n</module>
+        <module>glassfish-verifier-l10n</module>
+        <module>glassfish-web-l10n</module>
+        <module>metro-l10n</module>
+        <module>glassfish-management-l10n</module>
+        <module>glassfish-common-web-l10n</module>
+        <module>glassfish-osgi-gui-l10n</module>
+        <module>glassfish-registration-l10n</module>
     </modules>
 
     <build>
