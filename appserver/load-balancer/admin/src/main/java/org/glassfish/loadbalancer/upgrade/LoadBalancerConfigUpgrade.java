@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.loadbalancer.config.LoadBalancer;
 import org.glassfish.loadbalancer.config.LoadBalancers;
 
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -57,6 +56,8 @@ import java.util.List;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+
+import javax.inject.Inject;
 
 /**
  *
