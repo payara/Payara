@@ -56,5 +56,6 @@
     <modules>
         <module>javamail-connector</module>
         <module>javamail-runtime</module>
+        <module>javamail-connector-l10n</module>
   </modules>
 </project>
