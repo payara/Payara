@@ -124,6 +124,20 @@
         -->
         <module>war</module>
         <module>dist-fragment</module>
+        <module>updatecenter-l10n</module>
+        <module>full-l10n</module>
+        <module>common-l10n</module>
+        <module>corba-l10n</module>
+        <module>jts-l10n</module>
+        <module>community-theme-l10n</module>
+        <module>web-l10n</module>
+        <module>jms-plugin-l10n</module>
+        <module>jdbc-l10n</module>
+        <module>ejb-l10n</module>
+        <module>cluster-l10n</module>
+        <module>jca-l10n</module>
+        <module>ejb-lite-l10n</module>
+        <module>core-l10n</module>
     </modules>
 
     <build>
