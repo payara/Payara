@@ -184,6 +184,11 @@
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
         </dependency>    
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.dnsplugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
        
         <!-- HA API  -->
         <dependency>
