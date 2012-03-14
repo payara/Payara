@@ -139,7 +139,6 @@ public class DescriptorArchivist {
 
             archivist.setDescriptor(application);
             archivist.writeRuntimeDeploymentDescriptors(out); 
-            archivist.writeWLRuntimeDeploymentDescriptors(out); 
             if (application.isLoadedFromApplicationXml()) {   
                 archivist.copyStandardDeploymentDescriptors(in, out); 
             } else {

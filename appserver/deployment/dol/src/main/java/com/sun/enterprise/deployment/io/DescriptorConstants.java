@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,10 +56,10 @@ public interface DescriptorConstants {
     /** Prefix used for S1AS Cmp xmls */
     String S1AS_CMP_PREFIX = "sun-cmp-";
 
-    String WL = "weblogic";
+    String WLS = "weblogic";
 
     /** Prefix used for WebLogic xmls */
-    String WL_PREFIX = "weblogic-";
+    String WLS_PREFIX = "weblogic-";
 
     /** Prefix used for GF xmls */
     String GF_PREFIX = "glassfish-";
@@ -123,20 +123,20 @@ public interface DescriptorConstants {
     String S1AS_RAR_JAR_ENTRY = "META-INF/" + S1AS_PREFIX + "ra.xml";
 
     /** The name of the deployment descriptor entry inside the ear. */
-    String WL_APPLICATION_JAR_ENTRY = "META-INF/" + WL_PREFIX + 
+    String WLS_APPLICATION_JAR_ENTRY = "META-INF/" + WLS_PREFIX + 
         "application.xml";
 
     /** The name of the WebLogic deployment descriptor entry in web jar. */
-    String WL_WEB_JAR_ENTRY = "WEB-INF/" + "weblogic.xml";
+    String WLS_WEB_JAR_ENTRY = "WEB-INF/" + "weblogic.xml";
 
     /** The name of the WebLogic deployment descriptor entry in the ejb jar. */
-    String WL_EJB_JAR_ENTRY = "META-INF/" + WL_PREFIX + "ejb-jar.xml";
+    String WLS_EJB_JAR_ENTRY = "META-INF/" + WLS_PREFIX + "ejb-jar.xml";
 
     /** The name of the WebLogic deployment descriptor entry in the rar */
-    String WL_RAR_JAR_ENTRY = "META-INF/"+ WL_PREFIX + "ra.xml";
+    String WLS_RAR_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "ra.xml";
 
     /** The name of the weblogic deployment descriptor entry in the client jar. */
-    String WL_APP_CLIENT_JAR_ENTRY = "META-INF/"+ WL_PREFIX + "application-client.xml";
+    String WLS_APP_CLIENT_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "application-client.xml";
 
     /** The name of the glassfish deployment descriptor entry inside the ear. */
     String GF_APPLICATION_JAR_ENTRY = "META-INF/" + GF_PREFIX +

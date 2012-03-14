@@ -38,63 +38,42 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+package com.sun.enterprise.deployment.io.runtime;
 
+import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.Application;
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.node.RootXMLNode;
+import com.sun.enterprise.deployment.node.runtime.application.WLApplicationRuntimeNode;
 
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import javax.inject.Inject;
-import javax.inject.Provider;
-
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
-import org.xml.sax.SAXParseException;
-
-import java.io.IOException;
-
-@Service
-@Scoped(PerLookup.class)
-public class WLApplicationArchivist extends ExtensionsArchivist {
+/**
+ * This class is responsible for handling the XML configuration information
+ * for the WebLogic Application Container
+ *
+ */
+public class WLSApplicationRuntimeDDFile extends 
+        ConfigurationDeploymentDescriptorFile {  
+   
+    /**
+     * @return the location of the DeploymentDescriptor file for a
+     * particular type of J2EE Archive
+     */
+    public String getDeploymentDescriptorPath() {
+        return DescriptorConstants.WLS_APPLICATION_JAR_ENTRY;        
+    }
     
-    @Override                                                  
-    public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
+    /**
+     * @return a RootXMLNode responsible for handling the deployment
+     * descriptors associated with this J2EE module
+     *
+     * @param the descriptor for which we need the node
+     */
+    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
+   
+        if (descriptor instanceof Application) {
+            return new WLApplicationRuntimeNode((Application) descriptor);
+        }
         return null;
     }
-
-    @Override
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLApplicationRuntimeDDFile();
-    }
-
-    @Override
-    public boolean supportsModuleType(ArchiveType moduleType) {
-        return moduleType != null && org.glassfish.deployment.common.DeploymentUtils.earType().equals(moduleType);
-    }
-
-    @Override
-    public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
-        return descriptor;
-    }
-
-    public RootDeploymentDescriptor getDefaultDescriptor() {
-        return Application.createApplication();
-    }
-
-    @Override
-    public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFApplicationRuntimeDDFile();
-    }
-
-    @Override
-    public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new ApplicationRuntimeDDFile();
-    }
 }
-

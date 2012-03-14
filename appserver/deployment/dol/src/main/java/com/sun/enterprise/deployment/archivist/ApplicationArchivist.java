@@ -51,7 +51,7 @@ import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WLApplicationRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WLSApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -627,7 +627,7 @@ public class ApplicationArchivist extends Archivist<Application>
                     is = appArchive.getEntry("sun-" + aModule.getAlternateDescriptor());
                     if (is!=null) {
                         DeploymentDescriptorFile confDD = 
-                            newArchivist.getConfigurationDDFile();
+                            newArchivist.getSunConfigurationDDFile();
                         confDD.setXMLValidation(
                             newArchivist.getRuntimeXMLValidation());
                         confDD.setXMLValidationLevel(
@@ -742,10 +742,11 @@ public class ApplicationArchivist extends Archivist<Application>
                 
                 if (md.getAlternateDescriptor()!=null) {
                     // we are using alternate deployment descriptors
+                    // TODO: need to fix this to consider wls/gf case
                     is = archive.getEntry("sun-" + md.getAlternateDescriptor());
                     if (is!=null) {
                         DeploymentDescriptorFile confDD =
-                            archivist.getConfigurationDDFile();
+                            archivist.getSunConfigurationDDFile();
                         confDD.setXMLValidation(
                             archivist.getRuntimeXMLValidation());
                         confDD.setXMLValidationLevel(
@@ -771,50 +772,6 @@ public class ApplicationArchivist extends Archivist<Application>
         super.readRuntimeDeploymentDescriptor(archive,  descriptor);
     }
 
-    /**
-     * Read the runtime deployment descriptors (can contained in one or 
-     * many file) from a deployment plan archive,  set the corresponding 
-     * information in the passed descriptor.
-     */
-    @Override
-    public void readRuntimeDDFromDeploymentPlan(
-            ReadableArchive planArchive, Application descriptor)
-        throws IOException, SAXParseException {
-
-        if (planArchive == null) {
-            return;
-        }
-
-        // list of entries in the deployment plan
-        Vector dpEntries = new Vector();
-        for (Enumeration e = planArchive.entries(); e.hasMoreElements();) {
-            dpEntries.add(e.nextElement());
-        }
-
-        //runtime deployment descriptor for the sub modules
-        for (ModuleDescriptor moduleDesc : descriptor.getModules()) {
-            Archivist subArchivist = archivistFactory.get().getPrivateArchivistFor(moduleDesc.getModuleType());
-            String archiveUri = moduleDesc.getArchiveUri();
-            String runtimeDDPath = subArchivist.getRuntimeDeploymentDescriptorPath();
-
-            if (runtimeDDPath!=null) {
-                String mangledName;
-                // the runtime deployment descriptor from the deployment file
-                mangledName = archiveUri + "." 
-                    + runtimeDDPath.substring(runtimeDDPath.lastIndexOf('/')+1);
-                DOLUtils.getDefaultLogger().fine("mangledName is " + mangledName);
-
-                if (dpEntries.contains(mangledName)) {
-                    subArchivist.readRuntimeDDFromDeploymentPlan(
-                        mangledName, planArchive, moduleDesc.getDescriptor());
-                }
-            }
-        }
-
-        //for sun-application.xml
-        super.readRuntimeDDFromDeploymentPlan(planArchive, descriptor);
-    }
-    
     /**
      * validates the DOL Objects associated with this archivist, usually
      * it requires that a class loader being set on this archivist or passed
@@ -845,10 +802,10 @@ public class ApplicationArchivist extends Archivist<Application>
     
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the configuration deployment descriptors
+     * handling the glassfish configuration deployment descriptors
      */
     @Override
-    public DeploymentDescriptorFile getConfigurationDDFile() {
+    public DeploymentDescriptorFile getGFConfigurationDDFile() {
         return new GFApplicationRuntimeDDFile();
     }   
 
@@ -866,8 +823,8 @@ public class ApplicationArchivist extends Archivist<Application>
      * handling the WL configuration deployment descriptors
      */
     @Override
-    public DeploymentDescriptorFile getWLConfigurationDDFile() {
-        return new WLApplicationRuntimeDDFile();
+    public DeploymentDescriptorFile getWLSConfigurationDDFile() {
+        return new WLSApplicationRuntimeDDFile();
     }
     
     /**

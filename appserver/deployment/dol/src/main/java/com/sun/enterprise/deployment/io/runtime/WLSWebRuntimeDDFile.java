@@ -38,59 +38,42 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+package com.sun.enterprise.deployment.io.runtime;
 
+import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.WLWebRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WebRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFWebRuntimeDDFile;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
-import org.xml.sax.SAXParseException;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.node.RootXMLNode;
+import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
 
-import java.io.IOException;
-
-@Service
-@Scoped(PerLookup.class)
-public class WLWebArchivist extends ExtensionsArchivist {
-
-    @Override                                                  
-    public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
+/**
+ * This class is responsible for handling the XML configuration information
+ * for the WebLogic Web Container
+ *
+ */
+public class WLSWebRuntimeDDFile extends 
+        ConfigurationDeploymentDescriptorFile {  
+   
+    /**
+     * @return the location of the DeploymentDescriptor file for a
+     * particular type of J2EE Archive
+     */
+    public String getDeploymentDescriptorPath() {
+        return DescriptorConstants.WLS_WEB_JAR_ENTRY;        
+    }
+    
+    /**
+     * @return a RootXMLNode responsible for handling the deployment
+     * descriptors associated with this J2EE module
+     *
+     * @param the descriptor for which we need the node
+     */
+    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
+   
+        if (descriptor instanceof WebBundleDescriptor) {
+            return new WLWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+        }
         return null;
     }
-
-    @Override
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLWebRuntimeDDFile();
-    }
-
-    @Override
-    public boolean supportsModuleType(ArchiveType moduleType) {
-        return moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType());
-    }
-
-    @Override
-    public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor) throws IOException, SAXParseException {
-        return descriptor;
-    }
-
-    public RootDeploymentDescriptor getDefaultDescriptor() {
-        return new WebBundleDescriptor();
-    }
-
-    @Override
-    public DeploymentDescriptorFile getGFCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFWebRuntimeDDFile();
-    }
-
-    @Override
-    public DeploymentDescriptorFile getSunCounterPartConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WebRuntimeDDFile();
-    }
 }
-

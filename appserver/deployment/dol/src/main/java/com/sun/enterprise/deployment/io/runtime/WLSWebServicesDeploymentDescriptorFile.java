@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,40 +40,50 @@
 
 package com.sun.enterprise.deployment.io.runtime;
 
-import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.ws.WLDescriptorConstants;
+import com.sun.enterprise.deployment.node.ws.WLWebServicesDescriptorNode;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+
+import java.util.Vector;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the WebLogic Web Container
+ * This class is responsible for handling the WebLogic webservices deployment descriptor.
+ * This file weblogic-webservices.xml complements JSR-109 defined webservices.xml
+ * to define extra configuration.
  *
+ * @author Rama Pulavarthi
  */
-public class WLWebRuntimeDDFile extends 
-        ConfigurationDeploymentDescriptorFile {  
-   
-    /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
-     */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.WL_WEB_JAR_ENTRY;        
+public class WLSWebServicesDeploymentDescriptorFile extends DeploymentDescriptorFile {
+    private String descriptorPath;
+
+    public WLSWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {
+        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ?
+                WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY : WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY;
     }
-    
-    /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
-     *
-     * @param the descriptor for which we need the node
-     */
+
+    @Override
+    public String getDeploymentDescriptorPath() {
+        return descriptorPath;
+    }
+
+    public static Vector getAllDescriptorPaths() {
+        Vector allDescPaths = new Vector();
+        allDescPaths.add(WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY);
+        allDescPaths.add(WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY);
+
+        return allDescPaths;
+    }
+
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new WLWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+        if (descriptor instanceof WebServicesDescriptor) {
+            return new WLWebServicesDescriptorNode((WebServicesDescriptor) descriptor);
         }
         return null;
     }
+
 }

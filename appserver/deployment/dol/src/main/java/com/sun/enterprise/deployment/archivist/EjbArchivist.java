@@ -118,10 +118,10 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the configuration deployment descriptors
+     * handling the glassfish configuration deployment descriptors
      */
     @Override
-    public DeploymentDescriptorFile getConfigurationDDFile() {
+    public DeploymentDescriptorFile getGFConfigurationDDFile() {
         return new GFEjbRuntimeDDFile();
     }
 

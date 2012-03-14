@@ -53,7 +53,7 @@ import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.io.WebDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.WebRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WLWebRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WLSWebRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFWebRuntimeDDFile;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.logging.LogDomains;
@@ -151,10 +151,10 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the configuration deployment descriptors
+     * handling the glassfish configuration deployment descriptors
      */
     @Override
-    public DeploymentDescriptorFile getConfigurationDDFile() {
+    public DeploymentDescriptorFile getGFConfigurationDDFile() {
         return new GFWebRuntimeDDFile();
     }
 
@@ -169,11 +169,11 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the WL configuration deployment descriptors
+     * handling the WLS configuration deployment descriptors
      */
     @Override
-    public DeploymentDescriptorFile getWLConfigurationDDFile() {
-        return new WLWebRuntimeDDFile();
+    public DeploymentDescriptorFile getWLSConfigurationDDFile() {
+        return new WLSWebRuntimeDDFile();
     }
 
     /**

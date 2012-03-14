@@ -51,7 +51,7 @@ import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_D
 import static   com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
 import static   com.sun.enterprise.deployment.io.DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY;
 import com.sun.enterprise.deployment.util.*;
-import com.sun.enterprise.deployment.io.runtime.WLWebServicesDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.runtime.WLSWebServicesDeploymentDescriptorFile;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
@@ -671,7 +671,6 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
             final boolean warnIfMultipleDDs)
             throws IOException, SAXParseException {
 
-
         String ddFileEntryName = getRuntimeDeploymentDescriptorPath();
         // if we are not supposed to handle runtime info, just pass
         if (!isHandlingRuntimeInfo() || ddFileEntryName == null) {
@@ -679,47 +678,79 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         }
 
         InputStream is = null;
-        InputStream is2 = null;
+        InputStream gfIs = null;
+        InputStream sunIs = null;
         try {
             // apply the runtime settings if any
             is = archive.getEntry(ddFileEntryName);
-            DeploymentDescriptorFile confDD = getConfigurationDDFile();
-            if (archive.getURI() != null) {
-                confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
+            DeploymentDescriptorFile confDD = getWLSConfigurationDDFile();
+
+            DeploymentDescriptorFile gfConfDD = getGFConfigurationDDFile();
+            if (gfConfDD != null) {
+                gfIs = archive.getEntry(gfConfDD.getDeploymentDescriptorPath());
             }
 
             DeploymentDescriptorFile sunConfDD = getSunConfigurationDDFile();
             if (sunConfDD != null) {
-                is2 = archive.getEntry(sunConfDD.getDeploymentDescriptorPath());
+                sunIs = archive.getEntry(sunConfDD.getDeploymentDescriptorPath());
             }
 
+            // use WLS DD if it exists, then the GF DD, then the Sun DD
             if (is != null && confDD != null) {
-                if (is2 != null && warnIfMultipleDDs) {
-                    logger.log(Level.WARNING, "gf.counterpart.configdd.exists",
+                if (gfIs != null && warnIfMultipleDDs) {
+                    logger.log(Level.WARNING, "wls.counterpart.configdd.exists",
+                        new Object[] {
+                        gfConfDD.getDeploymentDescriptorPath(),
+                        archive.getURI().getSchemeSpecificPart(),
+                        ddFileEntryName});
+                }
+                if (sunIs != null && warnIfMultipleDDs) {
+                    logger.log(Level.WARNING, "wls.counterpart.configdd.exists",
                         new Object[] {
                         sunConfDD.getDeploymentDescriptorPath(),
                         archive.getURI().getSchemeSpecificPart(),
                         ddFileEntryName});
                 }
+                if (archive.getURI() != null) {
+                    confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
+                }
                 confDD.setXMLValidation(getRuntimeXMLValidation());
                 confDD.setXMLValidationLevel(runtimeValidationLevel);
                 confDD.read(descriptor, is);
             } else {
-                // try to read from the legacy sun deployment descriptor
-                if (is2 != null && sunConfDD != null) {
-                    logger.log(Level.FINE, "sun.configdd.deprecate",
-                        new Object[] { 
-                        sunConfDD.getDeploymentDescriptorPath(),
-                        archive.getURI().getSchemeSpecificPart(),
-                        ddFileEntryName});
-
-                    if (archive.getURI() != null) {
-                        sunConfDD.setErrorReportingString(
+                if (gfIs != null) {
+                     if (sunIs != null && warnIfMultipleDDs) {
+                         logger.log(Level.WARNING, 
+                         "gf.counterpart.configdd.exists",
+                         new Object[] {
+                         sunConfDD.getDeploymentDescriptorPath(),
+                         archive.getURI().getSchemeSpecificPart(),
+                         gfConfDD.getDeploymentDescriptorPath()});
+                     }
+                     if (archive.getURI() != null) {
+                        gfConfDD.setErrorReportingString(
                             archive.getURI().getSchemeSpecificPart());
+                     }
+                     gfConfDD.setXMLValidation(getRuntimeXMLValidation());
+                     gfConfDD.setXMLValidationLevel(runtimeValidationLevel);
+                     gfConfDD.read(descriptor, gfIs);
+                } else {
+                    if (sunIs != null && sunConfDD != null) {
+                    // try to read from the legacy sun deployment descriptor
+                        logger.log(Level.FINE, "sun.configdd.deprecate",
+                            new Object[] { 
+                            sunConfDD.getDeploymentDescriptorPath(),
+                            archive.getURI().getSchemeSpecificPart(),
+                            gfConfDD.getDeploymentDescriptorPath()});
+
+                        if (archive.getURI() != null) {
+                            sunConfDD.setErrorReportingString(
+                                archive.getURI().getSchemeSpecificPart());
+                        }
+                        sunConfDD.setXMLValidation(getRuntimeXMLValidation());
+                        sunConfDD.setXMLValidationLevel(runtimeValidationLevel);
+                        sunConfDD.read(descriptor, sunIs);
                     }
-                    sunConfDD.setXMLValidation(getRuntimeXMLValidation());
-                    sunConfDD.setXMLValidationLevel(runtimeValidationLevel);
-                    sunConfDD.read(descriptor, is2);
                 }
             }
         } finally {
@@ -729,72 +760,20 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
                 } catch (IOException ioe) {
                 }
             }
-            if (is2 != null) {
+            if (gfIs != null) {
                 try {
-                    is2.close();
+                    gfIs.close();
+                } catch (IOException ioe) {
+                }
+            }
+            if (sunIs != null) {
+                try {
+                    sunIs.close();
                 } catch (IOException ioe) {
                 }
             }
         }
     }
-
-    /**
-     * Read the runtime deployment descriptors (can contained in one or
-     * many file) from a deployment plan archive,  set the corresponding
-     * information in the passed descriptor.
-     */
-    public void readRuntimeDDFromDeploymentPlan(
-            ReadableArchive planArchive, T descriptor)
-            throws IOException, SAXParseException {
-
-        // if we are not supposed to handle runtime info, just pass
-        String runtimeDDPath = getRuntimeDeploymentDescriptorPath();
-        if (runtimeDDPath == null || planArchive == null) {
-            return;
-        }
-
-        // list of entries in the deployment plan
-        Vector dpEntries = new Vector();
-        for (Enumeration e = planArchive.entries(); e.hasMoreElements();) {
-            dpEntries.add(e.nextElement());
-        }
-
-        String entry = runtimeDDPath.substring(runtimeDDPath.lastIndexOf('/') + 1);
-        if (dpEntries.contains(entry)) {
-            readRuntimeDDFromDeploymentPlan(entry, planArchive, descriptor);
-        }
-    }
-
-    /**
-     * Read the runtime deployment descriptors (can contained in one or
-     * many file) from a deployment plan archive,  set the corresponding
-     * information in the passed descriptor.
-     */
-    protected void readRuntimeDDFromDeploymentPlan(
-            String entry, ReadableArchive planArchive, T descriptor)
-            throws IOException, SAXParseException {
-
-        InputStream is = null;
-        try {
-            is = planArchive.getEntry(entry);
-            DeploymentDescriptorFile confDD = getConfigurationDDFile();
-            if (is != null && confDD != null) {
-                if (planArchive.getURI() != null) {
-                    confDD.setErrorReportingString(planArchive.getURI().getSchemeSpecificPart());
-                }
-                confDD.setXMLValidation(getXMLValidation());
-                confDD.read(descriptor, is);
-            }
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) {
-                }
-            }
-        }
-    }
-
 
     /*
      * write the J2EE module represented by this instance to a new 
@@ -979,47 +958,34 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
 
         // Runtime DDs
         if (isHandlingRuntimeInfo()) {
-            DeploymentDescriptorFile confDD = getConfigurationDDFile();
+            DeploymentDescriptorFile confDD = getWLSConfigurationDDFile();
             if (confDD != null) {
                 OutputStream os = out.putNextEntry(getRuntimeDeploymentDescriptorPath());
                 confDD.write(desc, os);
                 out.closeEntry();
             }
 
-                // Legacy Sun Runtime DDs
-                DeploymentDescriptorFile sunConfDD = getSunConfigurationDDFile();
-                if (sunConfDD != null) {
-                    OutputStream os = out.putNextEntry(
-                            sunConfDD.getDeploymentDescriptorPath());
-                    sunConfDD.write(desc, os);
-                    out.closeEntry();
-                }
-            }
-        }
-
-    /**
-     * writes the WL runtime deployment descriptors to an abstract archive
-     *
-     * @param out output archive
-     */
-    public void writeWLRuntimeDeploymentDescriptors(WritableArchive out) throws IOException {
-
-        T desc = getDescriptor();
-
-        // Runtime DDs
-        if (isHandlingRuntimeInfo()) {
-            DeploymentDescriptorFile confDD = getWLConfigurationDDFile();
-            if (confDD != null) {
+                // GlassFish DDs
+            DeploymentDescriptorFile gfConfDD = getGFConfigurationDDFile();
+            if (gfConfDD != null) {
                 OutputStream os = out.putNextEntry(
-                        confDD.getDeploymentDescriptorPath());
-                confDD.write(desc, os);
+                        gfConfDD.getDeploymentDescriptorPath());
+                gfConfDD.write(desc, os);
                 out.closeEntry();
             }
-        }
 
-        // only bundle descriptor can have web services
-        if (desc instanceof BundleDescriptor) {
-            writeWLWebServicesDescriptors((BundleDescriptor) desc, out);
+            // Legacy Sun Runtime DDs
+            DeploymentDescriptorFile sunConfDD = getSunConfigurationDDFile();
+            if (sunConfDD != null) {
+                OutputStream os = out.putNextEntry(
+                        sunConfDD.getDeploymentDescriptorPath());
+                sunConfDD.write(desc, os);
+                out.closeEntry();
+            }
+
+            if (desc instanceof BundleDescriptor) {
+                writeRuntimeWebServicesDescriptors((BundleDescriptor) desc, out);
+            }
         }
     }
 
@@ -1030,7 +996,6 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
      */
     protected void writeExtraDeploymentDescriptors(WritableArchive out) throws IOException {
         writeRuntimeDeploymentDescriptors(out);
-        writeWLRuntimeDeploymentDescriptors(out);
     }
 
     /**
@@ -1072,14 +1037,14 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     }
 
     /**
-     * Write weblogic web services related descriptors
+     * Write runtime web services related descriptors
      * @param desc the module descriptor
      * @param out the output archive
      */
-    private void writeWLWebServicesDescriptors(BundleDescriptor desc, WritableArchive out)
+    private void writeRuntimeWebServicesDescriptors(BundleDescriptor desc, WritableArchive out)
             throws IOException {
         if (desc.hasWebServices()) {
-            DeploymentDescriptorFile webServicesDD = new WLWebServicesDeploymentDescriptorFile(desc.getWebServices());
+            DeploymentDescriptorFile webServicesDD = new WLSWebServicesDeploymentDescriptorFile(desc.getWebServices());
             OutputStream os = out.putNextEntry(webServicesDD.getDeploymentDescriptorPath());
             webServicesDD.write(desc.getWebServices(), os);
             out.closeEntry();
@@ -1196,13 +1161,30 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public abstract DeploymentDescriptorFile getConfigurationDDFile();
+    public DeploymentDescriptorFile getConfigurationDDFile() {
+        DeploymentDescriptorFile ddFile = getWLSConfigurationDDFile();
+        if (ddFile == null) {
+            ddFile = getGFConfigurationDDFile();
+        }
+        if (ddFile == null) {
+            ddFile = getSunConfigurationDDFile();
+        }
+        return ddFile;
+    }
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the WL configuration deployment descriptors
+     *         handling the WLS configuration deployment descriptors
      */
-    public DeploymentDescriptorFile getWLConfigurationDDFile() {
+    public DeploymentDescriptorFile getWLSConfigurationDDFile() {
+        return null;
+    }
+
+    /**
+     * @return if exists the DeploymentDescriptorFile responsible for
+     *         handling the glassfish configuration deployment descriptors
+     */
+    public DeploymentDescriptorFile getGFConfigurationDDFile() {
         return null;
     }
 
