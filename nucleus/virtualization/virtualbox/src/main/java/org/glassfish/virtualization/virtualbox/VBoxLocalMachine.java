@@ -61,7 +61,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.inject.Injector;
 import org.jvnet.hk2.component.PostConstruct;
 
-
 import java.util.logging.Level;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
@@ -74,21 +73,7 @@ import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 
-import org.virtualbox_4_1.AccessMode;
-import org.virtualbox_4_1.DeviceType;
-import org.virtualbox_4_1.IHostNetworkInterface;
-import org.virtualbox_4_1.IMachine;
-import org.virtualbox_4_1.IMedium;
-import org.virtualbox_4_1.INetworkAdapter;
-import org.virtualbox_4_1.IProgress;
-import org.virtualbox_4_1.ISession;
-import org.virtualbox_4_1.IStorageController;
-import org.virtualbox_4_1.IVirtualBox;
-import org.virtualbox_4_1.LockType;
-import org.virtualbox_4_1.NetworkAdapterType;
-//import org.virtualbox_4_1.StorageControllerType;
-import org.virtualbox_4_1.NetworkAttachmentType;
-import org.virtualbox_4_1.VirtualBoxManager;
+import org.virtualbox_4_1.*;
 
 /**
  * Abstraction for this machine, assumptions are being made that this java process runs with
@@ -256,9 +241,6 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
             }
         });
 
-
-
-
         File machineDisks = absolutize(new File(virtualizations.getDisksLocation(), serverPool.getName()));
         machineDisks = new File(machineDisks, getName());
         if (!machineDisks.exists()) {
@@ -268,9 +250,6 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
         }
 
         createVboxVDIMachine(template.getConfig(), cluster, diskLocation, name);
-
-
-
 
         try {
             //       Domain domain = connection().domainDefineXML(getConfig(vmConfig));
@@ -310,7 +289,7 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
 
             List<IStorageController> lsc = iap.getStorageControllers();
             for (IStorageController aaa : lsc) {
-                System.out.println("storage controler " + aaa.getName());
+                System.out.println("storage controller " + aaa.getName());
             }
             iap.getUSBController().setEnabled(false);
             iap.setMemorySize(512L);
@@ -331,6 +310,7 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
             IMedium im = vbox.openMedium(VDITemplate.getAbsolutePath(), DeviceType.HardDisk, AccessMode.ReadWrite, true);
             IProgress prog = im.cloneTo(newm, im.getVariant(), null);
             prog.waitForCompletion(-1);
+            iap.addStorageController("SCSI Controller", StorageBus.SCSI);
             INetworkAdapter inadap = iap.getNetworkAdapter(0L);
             inadap.setEnabled(Boolean.FALSE);
             inadap.setAdapterType(NetworkAdapterType.I82540EM);
@@ -361,8 +341,10 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
                 }
             inadap.setBridgedInterface(goodPortName);
             //   inadap.setHostInterface("vboxnet0");
+            inadap.setMACAddress(null);
             inadap.setEnabled(Boolean.TRUE);
 
+            iap.addStorageController("IDE Controller", StorageBus.IDE);
             File ISOFile = createISOCustomization(template, cluster, name, diskLocation);
 
             //open the cust ISO image for this VM
@@ -379,8 +361,9 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
                 newMachine.lockMachine(session, LockType.Write);
                 IMedium im2 = vbox.openMedium(path, DeviceType.HardDisk, AccessMode.ReadWrite, true);
 
-                session.getMachine().attachDevice("SATA Controller", 0, 0, DeviceType.HardDisk, im2);
-                session.getMachine().attachDevice("IDE Controller", 0, 0, DeviceType.DVD, cdrommedium);
+                session.getMachine().attachDevice("SCSI Controller", 0, 0, DeviceType.HardDisk, im2);
+                //second param 1 represents IDE secondary master
+                session.getMachine().attachDevice("IDE Controller", 1, 0, DeviceType.DVD, cdrommedium);
                 session.getMachine().saveSettings();
             } finally {
                 session.unlockMachine();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ import java.beans.PropertyVetoException;
 /**
  * Creates the default virtual box configuration.
  */
-@Service(name = "create-ims-service-virtualbox")
+@Service(name = "create-ims-config-virtualbox")
 @Scoped(PerLookup.class)
 public class CreateVirtualBoxVirtualization implements AdminCommand {
 
@@ -88,7 +88,7 @@ public class CreateVirtualBoxVirtualization implements AdminCommand {
         if (context.getActionReport().hasFailures()) return;
 
         Virtualizations virts = domain.getExtensionByType(Virtualizations.class);
-        if (virts.byName("libvirt")!=null) {
+        if (virts.byName("virtualbox")!=null) {
             context.getActionReport().failure(RuntimeContext.logger,
                     "VirtualBox virtualization already configured");
             return;
