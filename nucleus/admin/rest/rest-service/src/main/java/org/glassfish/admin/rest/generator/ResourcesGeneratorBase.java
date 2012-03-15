@@ -46,7 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;

@@ -44,9 +44,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.jersey.api.core.ResourceContext;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.Util;
+import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -64,7 +64,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.glassfish.admin.rest.Util.eleminateHypen;
+import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 
 /**
  * @author Ludovic Champenois ludo@java.net

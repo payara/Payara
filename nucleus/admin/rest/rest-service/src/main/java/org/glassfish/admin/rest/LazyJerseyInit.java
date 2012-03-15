@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest;
 
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import com.sun.jersey.api.container.ContainerFactory;
 import com.sun.jersey.api.container.filter.CsrfProtectionFilter;
 import com.sun.jersey.api.container.filter.LoggingFilter;

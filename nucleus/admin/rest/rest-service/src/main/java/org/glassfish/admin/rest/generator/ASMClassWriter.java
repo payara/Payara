@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;

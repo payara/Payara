@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest;
+package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -70,19 +70,18 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.glassfish.admin.payload.PayloadImpl;
-import static org.glassfish.admin.rest.Util.eleminateHypen;
-import static org.glassfish.admin.rest.Util.getHtml;
-import static org.glassfish.admin.rest.Util.localStrings;
-import static org.glassfish.admin.rest.Util.methodNameFromDtdName;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.provider.ParameterMetaData;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
 import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.utils.ConfigModelComparator;
-import org.glassfish.admin.rest.utils.DomConfigurator;
+import org.glassfish.admin.rest.RestConfig;
+import org.glassfish.admin.rest.Constants;
+import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
+import static org.glassfish.admin.rest.utils.Util.getHtml;
+import static org.glassfish.admin.rest.utils.Util.localStrings;
+import static org.glassfish.admin.rest.utils.Util.methodNameFromDtdName;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -236,11 +235,13 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName, ParameterMap parameters, Habitat habitat, String resultType) {
         CommandRunner cr = habitat.getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
-        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
+//        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
 
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
 
-        commandInvocation.outbound(outbound).parameters(parameters).execute();
+        commandInvocation
+//                .outbound(outbound)
+                .parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
 
         /*

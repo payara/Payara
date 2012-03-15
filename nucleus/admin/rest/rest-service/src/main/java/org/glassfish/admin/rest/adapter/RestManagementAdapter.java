@@ -62,16 +62,17 @@ import org.jvnet.hk2.config.DomDocument;
  * Adapter for REST management interface
  * @author Rajeshwar Patil , Ludovic Champenois
  */
-@Service(name= Constants.REST_MANAGEMENT_ADAPTER)
+@Service(name=Constants.REST_MANAGEMENT_ADAPTER)
 public class RestManagementAdapter extends RestAdapter {
     private static final String CONTEXT = Constants.REST_MANAGEMENT_CONTEXT_ROOT;
 
+    @Override
     public String getContextRoot() {
         return CONTEXT;
     }
 
     @Override
-    protected Set<Class<?>> getResourcesConfig() {
+    protected Set<Class<?>> getResourceClasses() {
 //         return getLazyJersey().getResourcesConfigForManagement(habitat);
         Class domainResourceClass = null;//org.glassfish.admin.rest.resources.generated.DomainResource.class;
 

@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.generator.client;
 
-import org.glassfish.admin.rest.Util;
+import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.jvnet.hk2.config.ConfigModel;

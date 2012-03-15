@@ -59,7 +59,7 @@ import javax.inject.Named;
 import javax.security.auth.login.LoginException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.LazyJerseyInterface;
-import org.glassfish.admin.rest.ResourceUtil;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
@@ -114,7 +114,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Inject
     private SessionManager sessionManager;
 
-    protected abstract Set<Class<?>> getResourcesConfig();
     private volatile LazyJerseyInterface lazyJerseyInterface =null;
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile HttpHandler adapter = null;
@@ -132,6 +131,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     }
 
     protected abstract String getContextRoot();
+    protected abstract Set<Class<?>> getResourceClasses();
 
     @Override
     public HttpHandler getHttpService() {
@@ -326,7 +326,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     if ((context != null) && (!"".equals(context))) {
-                        adapter = getLazyJersey().exposeContext(getResourcesConfig(), sc, habitat);
+                        adapter = getLazyJersey().exposeContext(getResourceClasses(), sc, habitat);
                         logger.log(Level.INFO, "rest.rest_interface_initialized", context);
                     }
                 }

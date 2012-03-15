@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.rest;
 
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Map;

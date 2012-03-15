@@ -59,7 +59,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import org.glassfish.admin.rest.Util;
+import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
