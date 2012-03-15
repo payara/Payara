@@ -523,4 +523,8 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
     public void destroy()
     {
     }
+    
+    protected GlassFishORBHelper getORBHelper() {
+        return this.orbHelper;
+    }
 }

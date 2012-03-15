@@ -886,12 +886,17 @@ public class GFServerConfigProvider implements AuthConfigProvider {
 	/**
 	 * Get the authentication context identifier corresponding to the
 	 * request and response objects encapsulated in messageInfo.
+         * 
+         * See method AuthMessagePolicy. getHttpServletPolicies() 
+         * for more details on why this method returns
+         * the String's "true" or "false" for AuthContextID.
 	 *
 	 * @param messageInfo a contextual Object that encapsulates the
 	 *          client request and server response objects.
 	 *
 	 * @return the authentication context identifier corresponding to the 
 	 *          encapsulated request and response objects, or null.
+         * 
 	 *
 	 * @throws IllegalArgumentException if the type of the message
 	 * objects incorporated in messageInfo are not compatible with
