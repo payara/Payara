@@ -264,6 +264,11 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
             }
             Collection<TemplateInstance> matchingTemplates =
                     templateRepository.get(searchCriteria);
+            // if only one template is found, return it.
+            if (matchingTemplates.size() == 1) {
+                return matchingTemplates.iterator().next().getConfig().getName();
+            }
+            // if there are multiple matching templates, find the most appropriate one.
             for(TemplateInstance matchingTemplate : matchingTemplates) {
                 if(matchingTemplate.getConfig().getIndexes().size()-1 == sc.all().size()) {
                     return matchingTemplate.getConfig().getName();

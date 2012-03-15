@@ -177,6 +177,9 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
 
             List<Property> properties = new ArrayList<Property>();
             properties.add(new Property(SERVICE_TYPE, RDBMS_ServiceType));
+            for(String key : getIndexes().stringPropertyNames()) {
+                properties.add(new Property(key, getIndexes().getProperty(key)));
+            }
 
             String initSqlFile = "";
             String databaseName = "";
