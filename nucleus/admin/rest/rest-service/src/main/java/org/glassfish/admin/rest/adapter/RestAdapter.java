@@ -149,8 +149,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Override
     public void service(Request req, Response res) {
-        LogHelper.getDefaultLogger().finer("Rest adapter !");
-        LogHelper.getDefaultLogger().log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
+        logger.log(Level.FINER, "Received resource request: {0}", req.getRequestURI());
 
         try {
             res.setCharacterEncoding(Constants.ENCODING);
@@ -210,7 +209,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             String msg = localStrings.getLocalString("rest.adapter.server.exception",
                     "An error occurred while processing the request. Please see the server logs for details.");
             reportError(req, res, HttpURLConnection.HTTP_UNAVAILABLE, msg); //service unavailable
-            LogHelper.getDefaultLogger().log(Level.INFO, msg, e);
+            logger.log(Level.INFO, msg, e);
         }
     }
     

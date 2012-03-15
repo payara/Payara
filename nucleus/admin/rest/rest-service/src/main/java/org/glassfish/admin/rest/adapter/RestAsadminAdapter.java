@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,19 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.admin.rest.adapter;
 
-package org.glassfish.admin.restconnector;
+import java.util.HashSet;
+import java.util.Set;
+import org.glassfish.admin.rest.resources.admin.AdminResource;
+import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
+import org.glassfish.admin.rest.readers.ParameterMapFormReader;
+import org.glassfish.admin.restconnector.Constants;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * @author Sanjeeb.Sahoo@Sun.COM
+ *
+ * @author jdlee
  */
-public final class Constants {
-    private Constants(){}
+@Service(name=Constants.REST_ADMIN_ADAPTER)
+public class RestAsadminAdapter extends RestAdapter {
+    public static final String CONTEXT = Constants.REST_ADMIN_CONTEXT_ROOT;
+    
+    @Override
+    protected Set<Class<?>> getResourceClasses() {
+        final Set<Class<?>> r = new HashSet<Class<?>>();
+        r.add(AdminResource.class);
+        r.add(ParameterMapFormReader.class);
+        r.add(ActionReportResultJsonProvider.class);
+        
+        return r;
+    }
 
-    public static final String REST_ADMIN_ADAPTER      = "RestAdminAdapter";
-    public static final String REST_MANAGEMENT_ADAPTER = "RestManagementAdapter";
-    public static final String REST_MONITORING_ADAPTER = "RestMonitoringAdapter";
-    public static final String REST_ADMIN_CONTEXT_ROOT = "/admin";
-    public static final String REST_MANAGEMENT_CONTEXT_ROOT = "/management";
-    public static final String REST_MONITORING_CONTEXT_ROOT = "/monitoring";
+    @Override
+    protected String getContextRoot() {
+        return CONTEXT;
+    }
+    
 }

@@ -53,9 +53,7 @@ import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
 
 /**
  * Adapter for REST management interface
@@ -85,7 +83,7 @@ public class RestManagementAdapter extends RestAdapter {
         final Set<Class<?>> r = new HashSet<Class<?>>();
 
         // uncomment if you need to run the generator:
-        r.add(GeneratorResource.class);
+//        r.add(GeneratorResource.class);
         r.add(StatusGenerator.class);
         r.add(ClientGenerator.class);
         //r.add(ActionReportResource.class);
@@ -130,11 +128,9 @@ public class RestManagementAdapter extends RestAdapter {
         try {
             Domain entity = habitat.getComponent(Domain.class);
             Dom dom = Dom.unwrap(entity);
-            DomDocument document = dom.document;
-            ConfigModel rootModel = dom.document.getRoot().model;
 
             ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
-            resourcesGenerator.generateSingle(rootModel, document);
+            resourcesGenerator.generateSingle(dom.document.getRoot().model, dom.document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
             Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);

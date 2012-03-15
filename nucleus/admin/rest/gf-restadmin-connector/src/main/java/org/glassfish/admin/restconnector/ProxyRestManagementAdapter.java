@@ -37,8 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-
 package org.glassfish.admin.restconnector;
 
 import com.sun.enterprise.config.serverbeans.Config;

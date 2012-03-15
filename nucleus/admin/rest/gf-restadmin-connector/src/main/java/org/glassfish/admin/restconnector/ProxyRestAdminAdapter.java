@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,19 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.restconnector;
 
-/**
- * @author Sanjeeb.Sahoo@Sun.COM
- */
-public final class Constants {
-    private Constants(){}
+import com.sun.enterprise.config.serverbeans.Config;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.container.Adapter;
+import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Service;
 
-    public static final String REST_ADMIN_ADAPTER      = "RestAdminAdapter";
-    public static final String REST_MANAGEMENT_ADAPTER = "RestManagementAdapter";
-    public static final String REST_MONITORING_ADAPTER = "RestMonitoringAdapter";
-    public static final String REST_ADMIN_CONTEXT_ROOT = "/admin";
-    public static final String REST_MANAGEMENT_CONTEXT_ROOT = "/management";
-    public static final String REST_MONITORING_CONTEXT_ROOT = "/monitoring";
+/**
+ *
+ * @author jdlee
+ */
+@Service
+public class ProxyRestAdminAdapter extends AbstractProxyRestAdapter implements Adapter {
+
+    @Inject
+    Services services;
+
+    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
+
+
+    @Override
+    protected Services getServices() {
+        return services;
+    }
+
+    @Override
+    protected Config getConfig() {
+        return config;
+    }
+
+    @Override
+    protected String getName() {
+        return Constants.REST_ADMIN_ADAPTER;
+    }
+
+    @Override
+    public String getContextRoot() {
+        return Constants.REST_ADMIN_CONTEXT_ROOT;
+    }
 }
