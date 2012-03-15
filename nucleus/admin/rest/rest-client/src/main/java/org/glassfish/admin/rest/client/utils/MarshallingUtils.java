@@ -90,7 +90,6 @@ public class MarshallingUtils {
         InputStream input = null;
         try {
             XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-            System.out.println("hi");
             inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             input = new ByteArrayInputStream(xml.trim().getBytes("UTF-8"));
             XMLStreamReader parser = inputFactory.createXMLStreamReader(input);
