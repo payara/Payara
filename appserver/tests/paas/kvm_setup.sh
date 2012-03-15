@@ -53,7 +53,7 @@ $GF_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --g
 $GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/glassfish.img,$TEMPLATES_DIR/glassfish.xml --indexes ServiceType=Database,VirtualizationType=libvirt javadb
 $S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template javadb cloud
 
-#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/MySQL.img,$TEMPLATES_DIR/MySQL.xml --indexes ServiceType=Database,VirtualizationType=libvirt MySQL
+#$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/MySQL.img,$TEMPLATES_DIR/MySQL.xml --indexes ServiceType=Database,VirtualizationType=libvirt,product-vendor=MySQL MySQL
 #$S1AS_HOME/bin/asadmin create-template-user --virtualization kvm --userid 1000 --groupid 1000 --template MySQL mysqluser
 
 #$GF_HOME/bin/asadmin create-template --virtualization kvm --files $TEMPLATES_DIR/oracledb.img,$TEMPLATES_DIR/oracledb.xml --indexes ServiceType=Database,VirtualizationType=libvirt oracledb
