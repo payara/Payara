@@ -95,27 +95,24 @@ public class ApacheLBUtility {
 	List<String> contextRoots = extractContextRootMap();
 
 	if (domainName != null) {
-	    if (appDomainConfigProperties.getProperty("SSL").equalsIgnoreCase(
+            createVirtualServerEntryPerAppDomain(appName, domainName,
+                    httpPort, contextRoots);
+            if (appDomainConfigProperties.getProperty("SSL").equalsIgnoreCase(
 		    "true")) {
 		disableVhostsInSSLConf(virtualMachine);
 		createVirtualServerEntryPerAppDomain(appName, domainName,
 			httpsPort, contextRoots);
-	    } else {
-		createVirtualServerEntryPerAppDomain(appName, domainName,
-			httpPort, contextRoots);
 	    }
-
 	} else if (appDomainConfigProperties.getProperty("LB.domain-name") != null) {
+            createVirtualServerEntryForLBDomain(
+                    appDomainConfigProperties.getProperty("LB.domain-name"),
+                    httpPort, contextRoots);
 	    if (appDomainConfigProperties.getProperty("SSL").equalsIgnoreCase(
 		    "true")) {
 		disableVhostsInSSLConf(virtualMachine);
 		createVirtualServerEntryForLBDomain(
 			appDomainConfigProperties.getProperty("LB.domain-name"),
 			httpsPort, contextRoots);
-	    } else {
-		createVirtualServerEntryForLBDomain(
-			appDomainConfigProperties.getProperty("LB.domain-name"),
-			httpPort, contextRoots);
 	    }
 	} else {
 	    storeContextRootMappings(contextRoots);
@@ -358,7 +355,7 @@ public class ApacheLBUtility {
 	    throws IOException {
 	String contextRoot = null;
 	FileWriter vhostsConf = new FileWriter(System.getProperty("user.dir")
-		+ fileSep + GLASSFISH_VHOSTS_CONF);
+		+ fileSep + GLASSFISH_VHOSTS_CONF, true);
 	BufferedWriter out = new BufferedWriter(vhostsConf);
 
 	out.write("NameVirtualHost *:" + httpPort);
@@ -378,6 +375,8 @@ public class ApacheLBUtility {
 		    + contextRoot.substring(contextRoot.indexOf(" ") + 1));
 	    out.newLine();
 	    out.write("</VirtualHost>");
+            out.newLine();
+	    out.newLine();
 	}
 	out.close();
 	vhostsConf.close();
