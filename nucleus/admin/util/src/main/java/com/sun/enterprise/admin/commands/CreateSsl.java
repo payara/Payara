@@ -60,7 +60,6 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -68,6 +67,9 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Create Ssl Command
@@ -129,7 +131,8 @@ public class CreateSsl implements AdminCommand {
     String target;
     @Param(name = "listener_id", primary = true, optional = true)
     public String listenerId;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public Config config;
     @Inject
     Domain domain;

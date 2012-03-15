@@ -43,10 +43,11 @@ package org.glassfish.config.support;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+
+import javax.inject.Inject;
 
 /**
  * Resolver based on type + name.

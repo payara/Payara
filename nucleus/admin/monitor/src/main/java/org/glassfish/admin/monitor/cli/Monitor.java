@@ -41,7 +41,6 @@
 package org.glassfish.admin.monitor.cli;
 
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Inject;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.ActionReport;
@@ -51,6 +50,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import javax.inject.Inject;
 import java.util.Iterator;
 
 /**

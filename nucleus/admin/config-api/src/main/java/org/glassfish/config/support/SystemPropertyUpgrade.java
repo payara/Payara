@@ -47,12 +47,15 @@ import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.*;
 import static com.sun.enterprise.config.util.PortConstants.*;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.SingleConfigCode;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Upgrade service to add the new 3.1 system properties to the config elements
@@ -82,7 +85,9 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
      * or config can be saved. This is because GMS changed attribute
      * names from v2 to 3.1. (Issue 15195.)
      */
-    @Inject(name="gmsupgrade", optional=true)
+    @Inject
+    @Named("gmsupgrade")
+    @Optional
     ConfigurationUpgrade precondition = null;
 
     private String PREFIX = "2";

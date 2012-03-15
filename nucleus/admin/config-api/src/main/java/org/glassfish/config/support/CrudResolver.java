@@ -40,12 +40,14 @@
 
 package org.glassfish.config.support;
 
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.glassfish.api.admin.AdminCommandContext;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.annotation.Annotation;
 
 /**
@@ -72,7 +74,9 @@ public interface CrudResolver {
     @Service
     public static final class DefaultResolver implements CrudResolver {
         
-        @Inject(name="type", optional=true)
+        @Inject
+        @Named("type")
+        @Optional
         CrudResolver defaultResolver=null;
 
         @Override

@@ -42,7 +42,6 @@ package org.glassfish.admin.rest;
 
 import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
@@ -55,6 +54,8 @@ import org.glassfish.api.Startup;
 import org.glassfish.internal.api.LocalPassword;
 import org.glassfish.internal.api.RestInterfaceUID;
 import org.glassfish.server.ServerEnvironmentImpl;
+
+import javax.inject.Inject;
 
 
 /**

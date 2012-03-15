@@ -56,12 +56,12 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationCleanup;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
 
+import javax.inject.Inject;
 import javax.xml.stream.XMLInputFactory;
 import java.io.File;
 import java.io.IOException;

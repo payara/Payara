@@ -43,7 +43,6 @@ import java.beans.PropertyVetoException;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.CreationDecorator;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
@@ -52,6 +51,8 @@ import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import javax.inject.Inject;
 
 @Configured
 /**

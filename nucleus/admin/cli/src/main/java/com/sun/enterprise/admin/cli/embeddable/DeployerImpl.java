@@ -49,12 +49,12 @@ import org.glassfish.api.admin.Payload;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
 import org.jvnet.hk2.annotations.ContractProvided;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;

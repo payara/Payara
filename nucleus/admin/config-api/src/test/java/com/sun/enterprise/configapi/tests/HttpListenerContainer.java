@@ -45,10 +45,12 @@ import java.beans.PropertyChangeEvent;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Simple container code that is interested in getting notification of injected model changes
@@ -58,7 +60,8 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 @Service
 public class HttpListenerContainer implements ConfigListener {
 
-    @Inject(name="http-listener-1")
+    @Inject
+    @Named("http-listener-1")
     NetworkListener httpListener;
 
     volatile boolean received=false;

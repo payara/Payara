@@ -46,11 +46,12 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.api.admin.*;
+
+import javax.inject.Inject;
 
 /**
  * returns the list of targets

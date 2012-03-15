@@ -47,7 +47,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.common.util.admin.GenericCommandModel;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
@@ -55,6 +54,7 @@ import org.jvnet.hk2.component.InjectionManager;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 
+import javax.inject.Inject;
 import java.util.List;
 
 /**

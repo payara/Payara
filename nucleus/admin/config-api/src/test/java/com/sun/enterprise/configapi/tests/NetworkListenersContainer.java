@@ -44,13 +44,14 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
 
 /**
  * Fake container for http service configuration

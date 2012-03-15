@@ -58,7 +58,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 
-import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
@@ -102,6 +102,9 @@ import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.config.Transactions;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  *
  * @author abbagani
@@ -124,7 +127,9 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     @Inject
     ServerEnvironment serverEnv;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional=true)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
     MonitoringService monitoringService = null;
     @Inject
     private org.glassfish.flashlight.provider.ProbeRegistry probeRegistry;

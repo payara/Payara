@@ -54,6 +54,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.security.auth.login.LoginException;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.LazyJerseyInterface;
@@ -77,7 +79,6 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -98,7 +99,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Inject
     protected Habitat habitat;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
 
     private CountDownLatch latch = new CountDownLatch(1);

@@ -45,13 +45,15 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.admin.rest.RestConfig;
 import org.glassfish.api.admin.*;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Remote asadmin command: get-rest-config
@@ -71,7 +73,8 @@ import org.glassfish.api.admin.*;
 })
 public class GetRestConfig implements AdminCommand {
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
     private Habitat habitat;

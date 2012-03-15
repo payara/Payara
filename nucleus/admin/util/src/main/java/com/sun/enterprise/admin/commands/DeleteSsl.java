@@ -53,7 +53,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -62,6 +61,8 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.beans.PropertyVetoException;
 
 /**
@@ -95,7 +96,8 @@ public class DeleteSsl implements AdminCommand {
     @Inject
     NetworkListeners networkListeners;
     
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     public Config config;
     
     @Inject
