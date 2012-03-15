@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.admin.rest.LazyJerseyInit;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
 import org.glassfish.admin.rest.generator.client.ClientGenerator;
@@ -80,7 +79,7 @@ public class RestManagementAdapter extends RestAdapter {
         try {
             domainResourceClass = Class.forName("org.glassfish.admin.rest.resources.generatedASM.DomainResource");
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(LazyJerseyInit.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(RestManagementAdapter.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         final Set<Class<?>> r = new HashSet<Class<?>>();

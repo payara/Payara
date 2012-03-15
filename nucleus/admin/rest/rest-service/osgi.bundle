@@ -40,7 +40,6 @@
 
 -exportcontents: \
                         org.glassfish.admin.rest
-Import-Package: !org.glassfish.admin.rest.client.*, *
 DynamicImport-Package: \
                         org.glassfish.flashlight, \
                         org.glassfish.flashlight.datatree
