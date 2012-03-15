@@ -549,11 +549,6 @@ public abstract class BaseContainer
 
                     hasAsynchronousInvocations = sd.hasAsynchronousMethods();
 
-                    if( hasAsynchronousInvocations ) {
-                        assertFullProfile("defines asynchronous session bean methods");
-                    }
-
-
                 }
 
                 if ( ejbDescriptor.isRemoteInterfacesSupported() ||
@@ -709,7 +704,7 @@ public abstract class BaseContainer
             
             if ( ejbDescriptor.isTimedObject() ) {
 
-                assertFullProfile("uses the EJB Timer Service");
+                warnIfNotFullProfile("use of persistent EJB Timer Service");
 
                 MethodDescriptor ejbTimeoutMethodDesc = 
                     ejbDescriptor.getEjbTimeoutMethod();
@@ -1109,6 +1104,12 @@ public abstract class BaseContainer
                     "ejb.assert_full_profile", 
                     "Invalid application.  EJB {0} {1}. This feature is not part of the EJB 3.1 Lite API",
                     ejbDescriptor.getName(), description));
+        }
+    }
+
+    private void warnIfNotFullProfile(String description) {
+        if( ejbContainerUtilImpl.isEJBLite() ) {
+            _logger.log(Level.WARNING, "ejb.warn_feature_requires_full_profile", description);
         }
     }
 
