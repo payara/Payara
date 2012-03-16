@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.servlet.ServletHandler;
 
 /**
  * This class implements the ApplicationContainer and will be used
@@ -78,7 +79,7 @@ public class WebServicesApplication implements ApplicationContainer {
 
     private ArrayList<EjbEndpoint> ejbendpoints;
 
-    private HttpHandler httpHandler;
+    private ServletHandler httpHandler;
 
     private final RequestDispatcher dispatcher;
 
@@ -116,6 +117,7 @@ public class WebServicesApplication implements ApplicationContainer {
             while(iter.hasNext()) {
                 ejbendpoint = iter.next();
                 String contextRoot = ejbendpoint.contextRoot;
+                httpHandler.setContextPath(contextRoot);
                 WebServerInfo wsi = new WsUtil().getWebServerInfoForDAS();
                 URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
                 dispatcher.registerEndpoint(contextRoot, httpHandler, this);

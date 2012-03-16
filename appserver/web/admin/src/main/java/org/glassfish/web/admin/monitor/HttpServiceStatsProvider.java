@@ -349,7 +349,7 @@ public class HttpServiceStatsProvider implements PostConstruct {
 
     @ProbeListener("glassfish:web:http-service:dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("size") int size) {
+        @ProbeParam("size") long size) {
         countBytesTransmitted.increment(size);
     }
 
