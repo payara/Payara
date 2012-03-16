@@ -76,6 +76,6 @@ public class RequestProbeProvider {
 
     @Probe(name="dataSentEvent")
     public void dataSentEvent(
-        @ProbeParam("size") long size) {}
+        @ProbeParam("size") int size) {}
 
 }

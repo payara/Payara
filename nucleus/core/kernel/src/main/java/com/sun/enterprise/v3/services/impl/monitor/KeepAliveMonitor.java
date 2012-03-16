@@ -73,10 +73,9 @@ public class KeepAliveMonitor implements KeepAliveProbe {
         connection.addCloseListener(new Connection.CloseListener() {
 
             @Override
-            public void onClosed(final Connection connection, Connection.CloseType closeType) throws IOException {
+            public void onClosed(final Connection connection) throws IOException {
                 grizzlyMonitoring.getKeepAliveProbeProvider().decrementCountConnectionsEvent(monitoringId);
             }
-
         });
     }
 

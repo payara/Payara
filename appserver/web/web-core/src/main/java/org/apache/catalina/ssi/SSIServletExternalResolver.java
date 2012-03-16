@@ -76,7 +76,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
-import org.glassfish.grizzly.http.util.Constants;
+import org.glassfish.grizzly.http.server.Constants;
 import org.glassfish.grizzly.utils.Charsets;
 
 /**
@@ -581,7 +581,7 @@ public class SSIServletExternalResolver implements SSIExternalResolver {
             // if a truly empty file
             //were included, but not sure how else to tell.
             if (retVal.equals("") && !req.getMethod().equalsIgnoreCase(
-                    "HEAD")) {
+                    Constants.HEAD)) {
                 throw new IOException("Couldn't find file: " + path);
             }
             return retVal;

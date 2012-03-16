@@ -40,6 +40,7 @@
 
 package org.glassfish.extras.grizzly;
 
+import org.glassfish.grizzly.http.server.util.IntrospectionUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.MetaData;

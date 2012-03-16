@@ -1677,7 +1677,7 @@ public class VirtualServer extends StandardHost
                     }
 
                     @Override
-                    public void onWriteEvent(Connection connection, Buffer data, long size) {
+                    public void onWriteEvent(Connection connection, Buffer data, int size) {
                         if (requestProbeProvider != null) {
                             requestProbeProvider.dataSentEvent(size);
                         }
@@ -2580,7 +2580,7 @@ public class VirtualServer extends StandardHost
                     org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
 
                     request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
-                    response.initialize(request, responsePacket, FilterChainContext.create(connection), null, null);
+                    response.initialize(request, responsePacket, FilterChainContext.create(connection), null);
 
                     Response res = new Response();
                     res.setCoyoteResponse(response);

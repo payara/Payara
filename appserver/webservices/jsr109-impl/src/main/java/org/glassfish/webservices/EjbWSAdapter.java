@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,7 @@
 
 package org.glassfish.webservices;
 
-import org.glassfish.grizzly.servlet.ServletConfigImpl;
 import org.glassfish.grizzly.servlet.ServletHandler;
-import org.glassfish.grizzly.servlet.WebappContext;
-
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
 
 
 /**
@@ -55,50 +50,8 @@ import java.util.NoSuchElementException;
 public class EjbWSAdapter extends ServletHandler {
 
     public EjbWSAdapter() {
-        super(new EjbWSServletConfig(new WebappContext("EjbWSAdapter")));
         this.setServletInstance(new EjbWebServiceServlet());
     }
-    
-    
-    // ---------------------------------------------------------- Nested Classes
-    
-    
-    private static class EjbWSServletConfig extends ServletConfigImpl {
-
-        private EjbWSServletConfig(WebappContext servletContextImpl) {
-            super(servletContextImpl);
-        }
-
-
-        // ------------------------------------------ Methods from ServletConfig
-
-
-        @Override
-        public String getServletName() {
-            return "EjbWSServlet";
-        }
-
-        @Override
-        public String getInitParameter(String s) {
-            return null;
-        }
-
-        @Override
-        public Enumeration<String> getInitParameterNames() {
-            return new Enumeration<String>() {
-                @Override
-                public boolean hasMoreElements() {
-                    return false;
-                }
-
-                @Override
-                public String nextElement() {
-                    throw new NoSuchElementException();
-                }
-            };
-        }
-
-    } // END EjbWSServletConfig
 
 
 }
