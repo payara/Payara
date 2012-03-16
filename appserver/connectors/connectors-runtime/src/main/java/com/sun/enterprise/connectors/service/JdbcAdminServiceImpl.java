@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,7 +71,8 @@ public class JdbcAdminServiceImpl extends ConnectorService {
             System.getProperty(ConnectorConstants.INSTALL_ROOT) + File.separator +
             "lib" + File.separator + "install" + File.separator + "databases" +
             File.separator + "dbvendormapping" + File.separator;
-    private final String JDBC40_CONNECTION_VALIDATION = "org.glassfish.api.jdbc.validation.JDBC40ConnectionValidation";
+    private final static String JDBC40_CONNECTION_VALIDATION =
+            "org.glassfish.api.jdbc.validation.JDBC40ConnectionValidation";
     private final static String DS_PROPERTIES = "ds.properties";
     private final static String CPDS_PROPERTIES = "cpds.properties";
     private final static String XADS_PROPERTIES = "xads.properties";

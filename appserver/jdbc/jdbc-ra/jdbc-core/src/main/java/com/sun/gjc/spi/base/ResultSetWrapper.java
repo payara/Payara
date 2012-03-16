@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ public abstract class ResultSetWrapper implements ResultSet {
 
     protected ResultSet resultSet = null;
     protected Statement statement = null;
-    protected MethodExecutor executor = null;
+    private MethodExecutor executor = null;
     protected final static Logger _logger;
     private ResultSetClosedEventListener eventListener = null;
 
@@ -2472,5 +2472,9 @@ public abstract class ResultSetWrapper implements ResultSet {
      */
     public void updateArray(String columnName, Array x) throws SQLException {
         resultSet.updateArray(columnName, x);
+    }
+
+    protected MethodExecutor getMethodExecutor() {
+        return executor;
     }
 }

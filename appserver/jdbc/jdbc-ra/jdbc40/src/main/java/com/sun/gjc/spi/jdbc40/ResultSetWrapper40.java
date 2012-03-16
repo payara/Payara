@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -115,7 +115,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{Integer.TYPE, Class.class};
             try {
-                return (T) executor.invokeMethod(resultSet, "getObject", valueTypes, columnIndex, type);
+                return (T) getMethodExecutor().invokeMethod(resultSet, "getObject", valueTypes, columnIndex, type);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_get_object", ex);
                 throw new SQLException(ex);
@@ -128,7 +128,7 @@ public class ResultSetWrapper40 extends ResultSetWrapper {
         if (DataSourceObjectBuilder.isJDBC41()) {
             Class<?>[] valueTypes = new Class<?>[]{String.class, Class.class};
             try {
-                return (T) executor.invokeMethod(resultSet, "getObject", valueTypes, columnLabel, type);
+                return (T) getMethodExecutor().invokeMethod(resultSet, "getObject", valueTypes, columnLabel, type);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_get_object", ex);
                 throw new SQLException(ex);

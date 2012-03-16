@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -592,7 +592,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
             checkValidity();
             Class<?>[] valueTypes = new Class<?>[]{String.class};
             try {
-                executor.invokeMethod(con, "setSchema", valueTypes, schema);
+                getMethodExecutor().invokeMethod(con, "setSchema", valueTypes, schema);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_connection_holder", ex);
                 throw new SQLException(ex);
@@ -606,7 +606,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         if(DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
             try {
-                return (String) executor.invokeMethod(con, "getSchema", null);
+                return (String) getMethodExecutor().invokeMethod(con, "getSchema", null);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_connection_holder", ex);
                 throw new SQLException(ex);
@@ -621,7 +621,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
             checkValidity();
             Class<?>[] valueTypes = new Class<?>[]{Executor.class, Integer.TYPE};
             try {
-                executor.invokeMethod(con, "setNetworkTimeout", valueTypes,  executorObj, milliseconds);
+                getMethodExecutor().invokeMethod(con, "setNetworkTimeout", valueTypes, executorObj, milliseconds);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_connection_holder", ex);
                 throw new SQLException(ex);
@@ -635,7 +635,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
         if (DataSourceObjectBuilder.isJDBC41()) {
             checkValidity();
             try {
-                return (Integer) executor.invokeMethod(con, "getNetworkTimeout", null);
+                return (Integer) getMethodExecutor().invokeMethod(con, "getNetworkTimeout", null);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_connection_holder", ex);
                 throw new SQLException(ex);

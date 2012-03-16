@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -375,9 +375,9 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
             Class<?>[] valueTypes = 
                     new Class<?>[]{String.class, String.class, String.class, String.class};
             try {
-                return (ResultSet) executor.invokeMethod(databaseMetaData, 
-                    "getPseudoColumns", valueTypes, catalog, schemaPattern, 
-                    tableNamePattern, columnNamePattern);
+                return (ResultSet) getMethodExecutor().invokeMethod(databaseMetaData,
+                        "getPseudoColumns", valueTypes, catalog, schemaPattern,
+                        tableNamePattern, columnNamePattern);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_dmd_wrapper", ex);
                 throw new SQLException(ex);
@@ -389,8 +389,8 @@ public class DatabaseMetaDataWrapper40 extends DatabaseMetaDataWrapper {
     public boolean generatedKeyAlwaysReturned() throws SQLException {
         if (DataSourceObjectBuilder.isJDBC41()) {
             try {
-                return (Boolean) executor.invokeMethod(databaseMetaData,
-                    "generatedKeyAlwaysReturned", null);
+                return (Boolean) getMethodExecutor().invokeMethod(databaseMetaData,
+                        "generatedKeyAlwaysReturned", null);
             } catch (ResourceException ex) {
                 _logger.log(Level.SEVERE, "jdbc.ex_dmd_wrapper", ex);
                 throw new SQLException(ex);
