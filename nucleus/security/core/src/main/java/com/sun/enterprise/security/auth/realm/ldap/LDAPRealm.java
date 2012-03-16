@@ -391,6 +391,14 @@ public final class LDAPRealm extends IASRealm
             return groupsList;
         } catch (Exception e) {
              _logger.log(Level.WARNING, "ldaprealm.groupsearcherror",e);
+        } finally {
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                } catch (NamingException e) {
+                    _logger.log(Level.WARNING, "ldaprealm.exception", e);
+                }
+            }
         }
         return null;
     }
