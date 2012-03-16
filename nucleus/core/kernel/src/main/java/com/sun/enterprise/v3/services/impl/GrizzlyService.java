@@ -338,12 +338,16 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
         configListener.setGrizzlyService(this);
 
         try {
+            boolean isAtLeastOneProxyStarted = false;
+            
             futures = new ArrayList<Future<Result<Thread>>>();
             for (NetworkListener listener : networkConfig.getNetworkListeners().getNetworkListener()) {
-                createNetworkProxy(listener);
+                isAtLeastOneProxyStarted |= (createNetworkProxy(listener) != null);
             }
             
-            registerNetworkProxy(); 
+            if (isAtLeastOneProxyStarted) {
+                registerNetworkProxy();
+            }
         } catch(RuntimeException e) { // So far postConstruct can not throw any other exception type
             logger.log(Level.SEVERE, "Unable to start v3. Closing all ports",e);
             for(NetworkProxy proxy : proxies) {
