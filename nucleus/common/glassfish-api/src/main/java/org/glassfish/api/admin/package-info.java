@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,7 @@
  {@link org.jvnet.hk2.annotations.Service#name} attribute.
 
  <p>Commands can be singleton or instantiated at each invocation depending on the {@link org.jvnet.hk2.annotations.Scope}
- annotation. Singleton commands will be injected once for all {@link org.jvnet.hk2.annotations.Inject} dependencies but
+ annotation. Singleton commands will be injected once for all {@link javax.inject.Inject} dependencies but
  will have all @{link org.glassfish.api.admin.Param} dependencies injected for each invocation.
 
  <p>more to be added to describe the v3 behaviors.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,6 @@ import java.util.concurrent.CountDownLatch;
 import org.glassfish.config.support.ConfigBeanListener;
 import org.glassfish.hk2.Provider;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.ConfigBean;
@@ -58,6 +57,7 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;

@@ -44,13 +44,13 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.Module;
 import java.io.ByteArrayOutputStream;
+import javax.inject.Inject;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.annotations.Inject;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -43,7 +43,6 @@ package com.sun.common.util.logging;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -57,6 +56,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.glassfish.api.admin.FileMonitoring;
+
+import javax.inject.Inject;
 
 /**
  * Implementation of Logging Commands

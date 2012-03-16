@@ -41,6 +41,8 @@ package org.glassfish.admin.mbeanserver;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 
@@ -54,7 +56,6 @@ import org.glassfish.external.amx.BootAMXMBean;
 
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Inject;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -97,7 +98,8 @@ public final class JMXStartupService implements PostConstruct {
     private MBeanServer mMBeanServer;
     @Inject
     private Domain mDomain;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private AdminService mAdminService;
     @Inject
     private Habitat mHabitat;
