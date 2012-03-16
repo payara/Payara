@@ -49,12 +49,11 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 

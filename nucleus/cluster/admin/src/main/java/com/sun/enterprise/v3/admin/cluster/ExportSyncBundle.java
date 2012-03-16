@@ -47,15 +47,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
+import javax.inject.Inject;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-//import org.glassfish.config.support.CommandTarget;
-//import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
@@ -286,9 +286,9 @@ public class ExportSyncBundle implements AdminCommand {
     private boolean hasError() {
         return report.getActionExitCode() != ExitCode.SUCCESS;
     }
-    @Inject(optional = true)
+    @Inject @Optional
     private Servers servers;
-    @Inject(optional = true)
+    @Inject @Optional
     private Clusters clusters;
     @Inject
     private ServerSynchronizer serverSynchronizer;

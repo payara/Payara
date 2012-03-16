@@ -42,11 +42,15 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
 import java.util.*;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.annotations.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.admin.cli.CLICommand;

@@ -50,7 +50,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.common.util.admin.CommandModelImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 

@@ -52,9 +52,10 @@ import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 /**

@@ -46,9 +46,10 @@ import javax.xml.bind.*;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
 import org.glassfish.api.admin.*;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PerLookup;
 
 import org.glassfish.api.I18n;
@@ -84,10 +85,10 @@ public class SynchronizeFiles implements AdminCommand {
     @Param(name = "file_list", primary = true)
     private File fileList;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private Applications applications;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private Servers servers;
 
     @Inject

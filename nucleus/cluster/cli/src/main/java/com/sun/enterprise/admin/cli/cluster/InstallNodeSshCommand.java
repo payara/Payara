@@ -44,14 +44,17 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import java.io.*;
-import java.io.ByteArrayOutputStream;
 import java.util.*;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.SSHUtil;
-import org.jvnet.hk2.annotations.*;
+
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 

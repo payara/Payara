@@ -48,12 +48,14 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import java.util.Map;
 import java.util.HashMap;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
+import javax.inject.Inject;
 
 /**
  * Remote AdminCommand to create a config node.  This command is run only on DAS.

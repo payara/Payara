@@ -39,7 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 

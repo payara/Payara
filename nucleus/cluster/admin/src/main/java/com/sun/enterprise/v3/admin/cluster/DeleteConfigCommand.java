@@ -45,7 +45,10 @@ package com.sun.enterprise.v3.admin.cluster;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import org.glassfish.api.Param;

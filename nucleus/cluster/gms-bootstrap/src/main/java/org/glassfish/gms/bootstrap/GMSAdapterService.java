@@ -58,7 +58,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
@@ -87,7 +90,7 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
     @Inject
     Clusters clusters;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     @Inject
@@ -99,6 +102,9 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
     @Inject
     StartupContext startupContext;
 
+    @Inject
+    private Provider<GMSAdapter> gmsAdapterProvider;
+    
     static private final Object lock = new Object();
 
     List<GMSAdapter> gmsAdapters = new LinkedList<GMSAdapter>();
@@ -208,7 +214,7 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
                 if (logger.isLoggable(TRACE_LEVEL)) {
                     logger.log(TRACE_LEVEL, "creating gms-adapter for clustername " + cluster.getName() + " since no gms adapter found for clustername " + cluster.getName());
                 }
-                result = habitat.getByContract(GMSAdapter.class);
+                result = gmsAdapterProvider.get();
 
                 // see https://glassfish.dev.java.net/issues/show_bug.cgi?id=12850
                 if (result == null) {

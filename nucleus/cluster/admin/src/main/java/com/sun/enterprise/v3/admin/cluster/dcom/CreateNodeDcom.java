@@ -47,7 +47,10 @@ import com.sun.enterprise.v3.admin.cluster.CreateRemoteNodeCommand;
 import com.sun.enterprise.v3.admin.cluster.NodeUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
 /**

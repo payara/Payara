@@ -46,7 +46,7 @@ import java.io.File;
 import java.util.*;
 import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.*;

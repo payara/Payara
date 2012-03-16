@@ -47,8 +47,12 @@ import java.net.URISyntaxException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import javax.inject.Inject;
+
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 import org.glassfish.api.ActionReport;
@@ -87,7 +91,7 @@ public final class ServerSynchronizer implements PostConstruct {
     @Inject
     private Domain domain;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private Applications applications;
 
     private static boolean syncArchive = false;

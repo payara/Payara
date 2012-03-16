@@ -44,7 +44,10 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import java.util.logging.Logger;
 
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

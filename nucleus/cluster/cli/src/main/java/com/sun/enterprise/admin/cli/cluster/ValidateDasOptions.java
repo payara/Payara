@@ -42,7 +42,8 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import java.io.*;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;

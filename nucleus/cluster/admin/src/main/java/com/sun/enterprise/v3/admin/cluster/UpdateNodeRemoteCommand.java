@@ -50,11 +50,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 
 /**
  * Remote AdminCommand to update a remote node.  This command is run only on DAS.

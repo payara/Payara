@@ -43,9 +43,12 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
 import com.sun.enterprise.v3.admin.RestartServer;
 import com.sun.enterprise.v3.admin.RestartServer;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 /**

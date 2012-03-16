@@ -42,11 +42,12 @@ package com.sun.enterprise.admin.cli.cluster;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import java.io.*;
-import java.io.File;
 import java.util.*;
 import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
-import org.jvnet.hk2.annotations.*;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.*;

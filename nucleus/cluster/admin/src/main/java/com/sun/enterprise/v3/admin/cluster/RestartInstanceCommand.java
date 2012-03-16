@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
 import com.sun.enterprise.admin.util.*;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -52,9 +51,12 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -308,7 +310,7 @@ public class RestartInstanceCommand implements AdminCommand {
     private Habitat habitat;
     @Inject
     private ServerEnvironment env;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config dasConfig;
     @Param(optional = false, primary = true)
     private String instanceName;

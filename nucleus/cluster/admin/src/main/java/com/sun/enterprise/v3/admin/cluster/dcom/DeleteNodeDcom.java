@@ -45,7 +45,10 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
 import com.sun.enterprise.v3.admin.cluster.DeleteNodeRemoteCommand;
 import java.util.List;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 /**

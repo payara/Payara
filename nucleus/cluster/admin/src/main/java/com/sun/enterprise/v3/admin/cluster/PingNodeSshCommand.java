@@ -43,7 +43,10 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.config.serverbeans.Node;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
