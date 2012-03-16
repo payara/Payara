@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,9 @@ package org.glassfish.admin.rest;
 
 import com.sun.hk2.component.InhabitantsParser;
 import com.sun.hk2.component.InhabitantsParserDecorator;
-import org.glassfish.admin.rest.adapter.RestManagementAdapter;
-import org.glassfish.admin.rest.adapter.RestMonitoringAdapter;
+import org.glassfish.admin.restconnector.ProxyRestAdminAdapter;
+import org.glassfish.admin.restconnector.ProxyRestManagementAdapter;
+import org.glassfish.admin.restconnector.ProxyRestMonitoringAdapter;
 import org.kohsuke.MetaInfServices;
 
 
@@ -60,7 +61,8 @@ public class EmbeddedInhabitantsParser implements InhabitantsParserDecorator {
 
     public void decorate(InhabitantsParser inhabitantsParser) {
         inhabitantsParser.drop(RestService.class);
-        inhabitantsParser.drop(RestManagementAdapter.class);
-        inhabitantsParser.drop(RestMonitoringAdapter.class);
+        inhabitantsParser.drop(ProxyRestManagementAdapter.class);
+        inhabitantsParser.drop(ProxyRestMonitoringAdapter.class);
+        inhabitantsParser.drop(ProxyRestAdminAdapter.class);
     }
 }
