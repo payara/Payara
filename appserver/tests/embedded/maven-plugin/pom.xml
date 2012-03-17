@@ -74,6 +74,7 @@
                 <module>jsptest</module>
                 <module>jsftest</module>
                 <module>localejbs</module>
+                <module>multipleApps</module>
             </modules>
         </profile>
         <profile>
@@ -101,6 +102,7 @@
                 <module>jsptest</module>
                 <module>jsftest</module>
                 <module>localejbs</module>
+                <module>multipleApps</module>
             </modules>
         </profile>
         <profile>
@@ -128,6 +130,7 @@
                 <module>jsptest</module>
                 <module>jsftest</module>
                 <module>localejbs</module>
+                <module>multipleApps</module>
             </modules>
         </profile>
     </profiles>
