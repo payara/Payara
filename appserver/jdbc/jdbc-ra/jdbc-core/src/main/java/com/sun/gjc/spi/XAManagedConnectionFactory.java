@@ -43,6 +43,7 @@ package com.sun.gjc.spi;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.common.DataSourceSpec;
+import com.sun.gjc.spi.base.AbstractDataSource;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
 
@@ -64,7 +65,7 @@ import javax.resource.spi.ConnectionDefinition;
  */
 @ConnectionDefinition(
     connectionFactory = javax.sql.DataSource.class,
-    connectionFactoryImpl = com.sun.gjc.spi.base.DataSource.class,
+    connectionFactoryImpl = AbstractDataSource.class,
     connection = java.sql.Connection.class,
     connectionImpl = com.sun.gjc.spi.base.ConnectionHolder.class
 )

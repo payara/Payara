@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public abstract class DataSource implements javax.sql.DataSource, java.io.Serializable,
+public abstract class AbstractDataSource implements javax.sql.DataSource, java.io.Serializable,
         com.sun.appserv.jdbc.DataSource, javax.resource.Referenceable {
 
     protected ManagedConnectionFactory mcf;
@@ -91,7 +91,7 @@ public abstract class DataSource implements javax.sql.DataSource, java.io.Serial
      * @param cm  <code>ConnectionManager</code> object either associated
      *            with Application server or Resource Adapter.
      */
-    public DataSource(ManagedConnectionFactory mcf, ConnectionManager cm) {
+    public AbstractDataSource(ManagedConnectionFactory mcf, ConnectionManager cm) {
         this.mcf = mcf;
         executor = new MethodExecutor();
         if (cm == null) {

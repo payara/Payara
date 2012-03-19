@@ -52,7 +52,7 @@ import javax.resource.spi.ConnectionManager;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class DataSource30 extends com.sun.gjc.spi.base.DataSource {
+public class DataSource30 extends com.sun.gjc.spi.base.AbstractDataSource {
 
 
     /**

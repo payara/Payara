@@ -43,7 +43,7 @@ package com.sun.gjc.spi.jdbc40;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.spi.ManagedConnectionFactory;
-import com.sun.gjc.spi.base.DataSource;
+import com.sun.gjc.spi.base.AbstractDataSource;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class DataSource40 extends DataSource {
+public class DataSource40 extends AbstractDataSource {
 
 
     protected final static StringManager localStrings =

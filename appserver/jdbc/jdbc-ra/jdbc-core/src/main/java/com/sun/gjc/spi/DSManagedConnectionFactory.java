@@ -63,7 +63,7 @@ import javax.resource.spi.ConnectionDefinition;
 
 @ConnectionDefinition(
     connectionFactory = javax.sql.DataSource.class,
-    connectionFactoryImpl = com.sun.gjc.spi.base.DataSource.class,
+    connectionFactoryImpl = com.sun.gjc.spi.base.AbstractDataSource.class,
     connection = java.sql.Connection.class,
     connectionImpl = com.sun.gjc.spi.base.ConnectionHolder.class
 )
