@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,13 +77,30 @@ public @interface EJB {
     String description() default "";
 
     /**
-     * The ejb-name of the Enterprise Java Bean to which this reference 
-     * is mapped.  Only applicable if the target EJB is defined within the 
+     * The <code>beanName</code> element references the value of the <code>name</code> 
+     * element of the <code>Stateful</code> or <code>Stateless</code> annotation, 
+     * whether defaulted or explicit. If the deployment descriptor was used to define 
+     * the name of the bean, the <code>beanName</code> element references the 
+     * <code>ejb-name</code> element of the bean definition.
+     * <p>
+     * The <code>beanName</code> element allows disambiguation if multiple session 
+     * beans in the ejb-jar implement the same interface. 
+     * <p>
+     * In order to reference a bean in another ejb-jar file in the same application, 
+     * the <code>beanName</code> may be composed of a path name specifying the ejb-jar 
+     * containing the referenced bean with the bean name of the target bean appended and 
+     * separated from the path name by &#35;. The path name is relative to the jar file 
+     * containing the component that is referencing the target bean.
+     * <p>
+     * Only applicable if the target EJB is defined within the 
      * same application or stand-alone module as the declaring component.
      */
     String beanName() default "";
 
     /**
+     * The interface type of the Enterprise Java Bean to which this reference
+     * is mapped.
+     * <p>
      * Holds one of the following types of the target EJB :
      * <ul>
      * <li> Local business interface
