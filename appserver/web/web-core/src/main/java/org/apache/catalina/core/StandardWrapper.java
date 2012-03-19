@@ -785,7 +785,14 @@ public class StandardWrapper
         Method[] methods = getAllDeclaredMethods(servletClass);
         for (int i=0; methods != null && i<methods.length; i++) {
             Method m = methods[i];
-	    
+            Class<?> params[] = m.getParameterTypes();
+
+            if (!(params.length == 2 &&
+                    params[0] == HttpServletRequest.class &&
+                    params[1] == HttpServletResponse.class)) {
+                continue;
+            }
+
             if (m.getName().equals("doGet")) {
                 allow.add("GET");
                 allow.add("HEAD");
