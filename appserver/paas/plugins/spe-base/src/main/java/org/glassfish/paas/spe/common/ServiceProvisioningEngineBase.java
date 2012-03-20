@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,9 +49,6 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.Service;
-import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
-import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.virtualization.config.TemplateIndex;
@@ -332,18 +329,6 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         } catch (Exception ex) {
             throw new ServiceProvisioningException(ex);
         }
-    }
-
-    protected void fireServiceChangeEvent(ServiceChangeEvent.Type type, Service ps) {
-        for(ServiceChangeListener listener : getServiceChangeListeners()) {
-            listener.onEvent(new ServiceChangeEvent(type, this, null, ps));
-        }
-    }
-
-    private Collection<ServiceChangeListener> getServiceChangeListeners() {
-        Collection<ServiceChangeListener> listeners = 
-                habitat.getAllByContract(ServiceChangeListener.class);
-        return listeners;
     }
 
     public Properties getIndexes(TemplateInstance templateInstance) {

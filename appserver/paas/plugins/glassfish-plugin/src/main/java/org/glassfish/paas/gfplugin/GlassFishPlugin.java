@@ -69,7 +69,6 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.ProvisioningFuture;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -204,8 +203,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
           */
         commandRunner.run(DELETE_ELASTIC_SERVICE, serviceName);
 
-        fireServiceChangeEvent(ServiceChangeEvent.Type.DELETED, service);
-
         return deleteSuccessful;
     }
 
@@ -276,8 +273,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                 "--max=" + serviceDescription.getConfiguration(MAX_CLUSTERSIZE),
                 serviceName);
 
-        fireServiceChangeEvent(ServiceChangeEvent.Type.CREATED, gfps);
-
         // Return the ProvisionedService object that represents the DAS/Cluster.
         return gfps;
     }
@@ -323,9 +318,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
          */
         commandRunner.run(ENABLE_AUTO_SCALING, serviceName);
 
-
-        fireServiceChangeEvent(ServiceChangeEvent.Type.STARTED, service);
-
         return service;
     }
 
@@ -370,8 +362,6 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         //ProvisionedService service = new GlassFishProvisionedService(serviceDescription,
         //        new Properties(), ServiceStatus.STOPPED, null);
         provisionedService.setStatus(ServiceStatus.STOPPED);
-
-        fireServiceChangeEvent(ServiceChangeEvent.Type.STOPPED, provisionedService);
 
         return stopSuccessful;
     }
