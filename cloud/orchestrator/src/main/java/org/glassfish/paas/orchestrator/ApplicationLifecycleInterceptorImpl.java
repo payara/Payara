@@ -90,8 +90,7 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
 
     //NOTE : refer & update isValidDeploymentTarget if needed as we are dependent on the list of "Origins" used in this method.
     public void before(final ExtendedDeploymentContext.Phase phase, final ExtendedDeploymentContext context) {
-
-./        if (isOrchestrationEnabled(context)) {
+        if (isOrchestrationEnabled(context)) {
             logEvent(true, phase, context);
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
