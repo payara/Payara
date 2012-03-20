@@ -58,8 +58,9 @@ import static com.sun.enterprise.admin.launcher.GFLauncherConstants.*;
 
 /**
  * This is the main Launcher class designed for external and internal usage.
- * Each of the 3 kinds of server -- domain, node-agent and instance -- need
- * to subclass this class.
+ * Each of the 3 kinds of server -- domain, node-agent and instance -- need to
+ * subclass this class.
+ *
  * @author bnevins
  */
 public abstract class GFLauncher {
@@ -75,8 +76,8 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Launches the server.  Any fatal error results in a GFLauncherException
-     * No unchecked Throwables of any kind will be thrown.
+     * Launches the server. Any fatal error results in a GFLauncherException No
+     * unchecked Throwables of any kind will be thrown.
      *
      * @throws com.sun.enterprise.admin.launcher.GFLauncherException
      */
@@ -101,6 +102,7 @@ public abstract class GFLauncher {
 
     /**
      * Launches the server - but forces the setup() to go through again.
+     *
      * @throws com.sun.enterprise.admin.launcher.GFLauncherException
      */
     public final void relaunch() throws GFLauncherException {
@@ -199,9 +201,9 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Returns the admin realm key file for the server, if the admin realm is a FileRealm.
-     * Otherwise return null. This value can be used to create a FileRealm for
-     * the server.
+     * Returns the admin realm key file for the server, if the admin realm is a
+     * FileRealm. Otherwise return null. This value can be used to create a
+     * FileRealm for the server.
      */
     public String getAdminRealmKeyFile() {
         return adminFileRealmKeyFile;
@@ -215,10 +217,11 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Returns the exit value of the process.  This only makes sense when we ran
+     * Returns the exit value of the process. This only makes sense when we ran
      * in verbose mode and waited for the process to exit in the wait() method.
      * Caveat Emptor!
-     * @return the process' exit value if it completed and we waited.  Otherwise
+     *
+     * @return the process' exit value if it completed and we waited. Otherwise
      * it returns -1
      */
     public final int getExitValue() {
@@ -228,10 +231,12 @@ public abstract class GFLauncher {
     /**
      * You don't want to call this before calling launch because it would not
      * make sense.
-     * @return The Process object of the launched Server process. you will either get
-     * a valid Process object or an Exceptio will be thrown.  You are guaranteed not to get a null.
-     * @throws GFLauncherException if the Process has not been created yet - call launch()
-     * before calling this method.
+     *
+     * @return The Process object of the launched Server process. you will
+     * either get a valid Process object or an Exceptio will be thrown. You are
+     * guaranteed not to get a null.
+     * @throws GFLauncherException if the Process has not been created yet -
+     * call launch() before calling this method.
      */
     public final Process getProcess() throws GFLauncherException {
         if (process == null)
@@ -244,7 +249,8 @@ public abstract class GFLauncher {
      * A ProcessStreamDrainer is always attached to every Process created here.
      * It is handy for getting the stdin and stdout as a nice String.
      *
-     * @return A valid ProcessStreamDrainer.  You are guaranteed to never get a null.
+     * @return A valid ProcessStreamDrainer. You are guaranteed to never get a
+     * null.
      * @throws GFLauncherException if the process has not launched yet
      * @see com.sun.enterprise.universal.process.ProcessStreamDrainer
      */
@@ -257,6 +263,7 @@ public abstract class GFLauncher {
 
     /**
      * Get the location of the server logfile
+     *
      * @return The full path of the logfile
      * @throws GFLauncherException if you call this method too early
      */
@@ -268,8 +275,8 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Return the port number of the debug port, or -1
-     * if debugging is not enabled.
+     * Return the port number of the debug port, or -1 if debugging is not
+     * enabled.
      *
      * @return the debug port, or -1 if not debugging
      */
@@ -278,7 +285,7 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Return true if suspend=y AND debugging is on.  otherwise return false.
+     * Return true if suspend=y AND debugging is on. otherwise return false.
      *
      * @return the debug port, or -1 if not debugging
      */
@@ -287,7 +294,8 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Does this domain need to be automatically upgraded before it can be started?
+     * Does this domain need to be automatically upgraded before it can be
+     * started?
      *
      * @return true if the domain needs to be upgraded first
      */
@@ -787,9 +795,11 @@ public abstract class GFLauncher {
     }
 
     /**
-     * Because of some issues in GlassFish OSGi launcher, a server updated from version 3.0.x to 3.1 won't start
-     * if a OSGi cache directory populated with 3.0.x modules is used. So, as a work around, we rename the cache
-     * directory when upgrade path is used. See GLASSFISH-15772 for more details.
+     * Because of some issues in GlassFish OSGi launcher, a server updated from
+     * version 3.0.x to 3.1 won't start if a OSGi cache directory populated with
+     * 3.0.x modules is used. So, as a work around, we rename the cache
+     * directory when upgrade path is used. See GLASSFISH-15772 for more
+     * details.
      *
      * @throws GFLauncherException if it fails to rename the cache directory
      */
