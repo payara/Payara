@@ -876,12 +876,14 @@ public abstract class GFLauncher {
 
     void logCommandLine() {
         StringBuilder sb = new StringBuilder();
-        for (String s : jvmOptionsList) {
-            // newline before the first line...
-            sb.append(NEWLINE);
-            sb.append(s);
-        }
+
         if (!isFakeLaunch()) {
+            Iterable<String> cmdLine = getCommandLine();
+
+            for (String s : cmdLine) {
+                sb.append(NEWLINE);
+                sb.append(s);
+            }
             GFLauncherLogger.info("commandline", sb.toString());
         }
     }
