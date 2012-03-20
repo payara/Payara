@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -51,45 +51,7 @@
     <groupId>org.glassfish</groupId>
     <artifactId>nucleus.paas</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Service Orchestration related modules</name>
-    <developers>
-        <developer>
-            <id>bhavanishankar</id>
-            <name>Bhavanishankara Sapaliga</name>
-            <url>http://www.java.net/blogs/bhavanishankar</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>jr158900</id>
-            <name>Jagadish Ramu</name>
-            <url>http://blogs.oracle.com/JagadishPrasath</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
- 	<developer>
-            <id>ss141213</id>
-            <name>Sanjeeb Sahoo</name>
-            <url>http://www.java.net/blogs/ss141213</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-	<developer>
-            <id>sivakumart</id>
-            <name>Sivakumar Thyagarajan</name>
-            <url>http://blogs.oracle.com/sivakumart</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
+    <name>PaaS related modules</name>
     <modules>
         <module>orchestrator</module>
     </modules>
