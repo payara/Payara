@@ -78,11 +78,12 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/stage/${install.dir.name}/glassfish/modules</outputDirectory>
+                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
+                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
-                            <includeScope>compile</includeScope>
+<!--                            <includeScope>compile</includeScope>-->
                             <includeScope>runtime</includeScope>
                             <stripVersion>true</stripVersion>
                         </configuration>
@@ -116,7 +117,19 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
-        </dependency>         
+        </dependency>   
+        
+    	<!-- now, listing package dependencies so that their content
+             can be excluded during staging -->	
+ 
+        <dependency>        
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>glassfish-jsf</artifactId>
+           <version>${project.version}</version>
+           <classifier>artifacts</classifier>
+	   <type>properties</type>
+           <scope>provided</scope>
+       </dependency>
     </dependencies>
 
     <profiles>

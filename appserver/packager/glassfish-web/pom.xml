@@ -82,9 +82,9 @@
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <excludeGroupIds>org.jboss.weld</excludeGroupIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
                    </execution>                  
@@ -118,7 +118,7 @@
  
         <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-jsf</artifactId>
+           <artifactId>glassfish-jcdi</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
 	   <type>properties</type>

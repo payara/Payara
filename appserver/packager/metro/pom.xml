@@ -82,9 +82,9 @@
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>                            
-                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <excludeGroupIds>org.jboss.weld</excludeGroupIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
                    </execution>                  

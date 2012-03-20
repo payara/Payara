@@ -42,23 +42,22 @@
 -->
 
 <project name="glassfish-jcdi package creation" default="create.package" basedir=".">
-       <import file="${basedir}/../common-targets.xml"/>
+    <import file="${basedir}/../common-targets.xml"/>
 
-	<target name="create.package">
-	<echo message="Staging files"/>
-
-        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-cdi.jar"
-            todir="target/stage/${install.dir.name}/glassfish/modules/autostart"
-            failonerror="false"/>
+    <target name="create.package">
+        <property name="package.name" value="glassfish-jcdi"/> 
+        <property name="previous.package.name" value="glassfish-jsf" />
+        
+        <antcall target="filter-module-artifacts"/>
+        <stage-module-jars/>
+        
 
         <if test="${compression}">
-	       <antcall target="pack.compression" />
-	</if>
+            <antcall target="pack.compression" />
+        </if>
            		   
-       <zip file="target/glassfish-jcdi.zip" basedir="target/stage">
-       </zip>
-
-      <attachArtifact file="target/glassfish-jcdi.zip"/> 
-   </target>
+        <antcall target="create-zip-artifact"/>	
+        <antcall target="create-list-artifact"/>	
+    </target>
 </project>
 

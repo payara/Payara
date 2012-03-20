@@ -102,7 +102,6 @@
 	<module>glassfish-jta</module>
 	<module>glassfish-jsf</module>
 	<module>glassfish-web</module>	
-	<!--module>glassfish-jcdi</module-->
 	<module>glassfish-jdbc</module>
 	<module>glassfish-gui</module>
 	<module>glassfish-ejb-lite</module>

@@ -46,7 +46,7 @@
 
    <target name="create.package">
 	   <property name="package.name" value="glassfish-web"/> 
-           <property name="previous.package.name" value="glassfish-jsf" />
+           <property name="previous.package.name" value="glassfish-jcdi" />
         
        <antcall target="filter-module-artifacts"/>
 
