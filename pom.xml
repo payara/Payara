@@ -193,8 +193,10 @@
             <modules>
                 <!-- Every time you change module list, please change
                      the same under release profiles as well (below) -->
-                <module>nucleus</module>
-                <module>appserver</module>               
+		<module>cloud</module>                
+		<module>nucleus</module>
+                <module>appserver</module>
+		               
             </modules>
             <build>
                 <plugins>
@@ -219,7 +221,7 @@
                         </executions>
                     </plugin>
                 </plugins>
-            </build>
+            </build>			
         </profile>
 
         <profile>
@@ -228,7 +230,8 @@
             <modules>
                 <!-- Every time you change module list, please change
                      the same under release profiles as well (below) -->
-                <module>nucleus</module>
+                <module>cloud</module>
+		<module>nucleus</module>
                 <module>appserver</module>
             </modules>
         </profile>        
@@ -273,6 +276,7 @@
             </build>
 
             <modules>
+		<module>cloud</module>
                 <module>nucleus</module>
                 <module>appserver</module>
             </modules>
@@ -284,6 +288,7 @@
             -->
             <id>release-phase-all</id>
             <modules>
+		<module>cloud</module>
                 <module>nucleus</module>
                 <module>appserver</module>
                 <module>copyright</module>
