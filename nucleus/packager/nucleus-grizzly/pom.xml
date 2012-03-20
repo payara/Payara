@@ -85,6 +85,7 @@
                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <includeGroupIds>org.glassfish.grizzly</includeGroupIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
                    </execution>                  

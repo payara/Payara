@@ -670,6 +670,12 @@
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-adapter</artifactId>
                 <version>${hk2.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>org.apache.felix.bundlerepository</artifactId>
+                    </exclusion>
+                </exclusions>                
             </dependency>
 
             <dependency>
