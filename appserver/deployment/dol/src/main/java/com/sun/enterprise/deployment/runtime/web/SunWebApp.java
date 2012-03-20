@@ -44,7 +44,7 @@ import com.sun.enterprise.deployment.runtime.common.EjbRef;
 import com.sun.enterprise.deployment.runtime.common.ResourceEnvRef;
 import com.sun.enterprise.deployment.runtime.common.ResourceRef;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 
 // BEGIN_NOI18N
 
@@ -52,7 +52,7 @@ public class SunWebApp extends WebPropertyContainer
 {
     
     static public final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
-    static public final String WL_SECURITY_ROLE_ASSIGNMENT = "WLSecurityRoleAssignment";	// NOI18N
+    static public final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
     static public final String SERVLET = "Servlet";	// NOI18N
     static public final String SESSION_CONFIG = "SessionConfig";	// NOI18N
     static public final String RESOURCE_ENV_REF = "ResourceEnvRef";	// NOI18N
@@ -124,48 +124,48 @@ public class SunWebApp extends WebPropertyContainer
     }
 
     // This attribute is an array, possibly empty
-    public void setWLSecurityRoleAssignment(int index, WLSecurityRoleAssignment value)
+    public void setWLSecurityRoleAssignment(int index, SecurityRoleAssignment value)
     {
-	this.setValue(WL_SECURITY_ROLE_ASSIGNMENT, index, value);
+	this.setValue(SECURITY_ROLE_ASSIGNMENT, index, value);
     }
 
     //
-    public WLSecurityRoleAssignment getWLSecurityRoleAssignment(int index)
+    public SecurityRoleAssignment getWLSecurityRoleAssignment(int index)
     {
-	return (WLSecurityRoleAssignment)this.getValue(WL_SECURITY_ROLE_ASSIGNMENT, index);
+	return (SecurityRoleAssignment)this.getValue(SECURITY_ROLE_ASSIGNMENT, index);
     }
 
     // This attribute is an array, possibly empty
-    public void setWLSecurityRoleAssignment(WLSecurityRoleAssignment[] value)
+    public void setWLSecurityRoleAssignment(SecurityRoleAssignment[] value)
     {
-	this.setValue(WL_SECURITY_ROLE_ASSIGNMENT, value);
+	this.setValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
 
     //
-    public WLSecurityRoleAssignment[] getWLSecurityRoleAssignment()
+    public SecurityRoleAssignment[] getWLSecurityRoleAssignment()
     {
-	return (WLSecurityRoleAssignment[])this.getValues(WL_SECURITY_ROLE_ASSIGNMENT);
+	return (SecurityRoleAssignment[])this.getValues(SECURITY_ROLE_ASSIGNMENT);
     }
 
     // Return the number of properties
     public int sizeWLSecurityRoleAssignment()
     {
-	return this.size(WL_SECURITY_ROLE_ASSIGNMENT);
+	return this.size(SECURITY_ROLE_ASSIGNMENT);
     }
 
     // Add a new element returning its index in the list
-    public int addWLSecurityRoleAssignment(WLSecurityRoleAssignment value)
+    public int addWLSecurityRoleAssignment(SecurityRoleAssignment value)
     {
-	return this.addValue(WL_SECURITY_ROLE_ASSIGNMENT, value);
+	return this.addValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
 
     //
     // Remove an element using its reference
     // Returns the index the element had in the list
     //
-    public int removeWLSecurityRoleAssignment(WLSecurityRoleAssignment value)
+    public int removeWLSecurityRoleAssignment(SecurityRoleAssignment value)
     {
-	return this.removeValue(WL_SECURITY_ROLE_ASSIGNMENT, value);
+	return this.removeValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
     
     // This attribute is an array, possibly empty

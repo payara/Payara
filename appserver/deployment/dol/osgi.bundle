@@ -52,7 +52,10 @@
                         com.sun.enterprise.deployment.node; \
                         com.sun.enterprise.deployment.node.runtime; \
                         com.sun.enterprise.deployment.runtime; \
+                        com.sun.enterprise.deployment.runtime.application; \
+                        com.sun.enterprise.deployment.runtime.application.wls; \
                         com.sun.enterprise.deployment.runtime.common; \
+                        com.sun.enterprise.deployment.runtime.common.wls; \
                         com.sun.enterprise.deployment.runtime.connector; \
                         com.sun.enterprise.deployment.runtime.web; \
                         com.sun.enterprise.deployment.runtime.ws; \

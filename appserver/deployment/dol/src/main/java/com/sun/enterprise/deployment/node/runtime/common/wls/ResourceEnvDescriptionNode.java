@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,24 +38,24 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node.runtime.common;
+package com.sun.enterprise.deployment.node.runtime.common.wls;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.common.ResourceRef;
+import com.sun.enterprise.deployment.runtime.common.ResourceEnvRef;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
 
 /**
- * This node handles resource-description in weblogic.xml
+ * This node handles resource-env-description in weblogic.xml
  *
  * @author  Shing Wai Chan
  */
-public class WLResourceDescriptionNode extends RuntimeDescriptorNode {
+public class ResourceEnvDescriptionNode extends RuntimeDescriptorNode {
     
-    public WLResourceDescriptionNode() {
+    public ResourceEnvDescriptionNode() {
     }
 
     /**
@@ -66,7 +66,7 @@ public class WLResourceDescriptionNode extends RuntimeDescriptorNode {
      */    
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
-        table.put(RuntimeTagNames.RES_REF_NAME, "setResRefName");
+        table.put(RuntimeTagNames.RESOURCE_ENV_REF_NAME, "setResourceEnvRefName");
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
     }
@@ -79,9 +79,9 @@ public class WLResourceDescriptionNode extends RuntimeDescriptorNode {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */    
-    public Node writeDescriptor(Node parent, String nodeName, ResourceRef descriptor) {  
+    public Node writeDescriptor(Node parent, String nodeName, ResourceEnvRef descriptor) {  
         Node refNode = appendChild(parent, nodeName);
-        appendTextChild(refNode, RuntimeTagNames.RES_REF_NAME, descriptor.getResRefName());
+        appendTextChild(refNode, RuntimeTagNames.RESOURCE_ENV_REF_NAME, descriptor.getResourceEnvRefName());
         appendTextChild(refNode, RuntimeTagNames.JNDI_NAME, descriptor.getJndiName());
         return refNode;
     }    

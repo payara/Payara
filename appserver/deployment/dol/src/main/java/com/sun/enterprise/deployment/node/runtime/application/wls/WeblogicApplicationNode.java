@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,19 +38,18 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node.runtime.application;
+package com.sun.enterprise.deployment.node.runtime.application.wls;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import org.glassfish.security.common.Role;
 import org.glassfish.deployment.common.SecurityRoleMapper;
-import com.sun.enterprise.deployment.runtime.ApplicationParameter;
-import com.sun.enterprise.deployment.runtime.WLModuleDescriptor;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.common.WLSecurityRoleAssignmentNode;
+import com.sun.enterprise.deployment.node.runtime.common.wls.SecurityRoleAssignmentNode;
 import com.sun.enterprise.deployment.node.web.InitParamNode;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
@@ -68,7 +67,7 @@ import org.glassfish.security.common.PrincipalImpl;
  * This node is responsible for handling all WebLogic runtime information for 
  * application.
  */
-public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
+public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
 
     public final static String SCHEMA_ID = "weblogic-application.xsd";
 
@@ -81,13 +80,13 @@ public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     }
 
 
-    /** Creates new WLApplicationRuntimeNode */
-    public WLApplicationRuntimeNode(Application descriptor) {
+    /** Creates new WeblogicApplicationNode */
+    public WeblogicApplicationNode(Application descriptor) {
         super(descriptor);
     }
     
-    /** Creates new WebBundleRuntimeNode */
-    public WLApplicationRuntimeNode() {
+    /** Creates new WeblogicApplicationNode */
+    public WeblogicApplicationNode() {
         super(null);    
     }
     
@@ -98,17 +97,15 @@ public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
         super.init();
         registerElementHandler(new XMLElement(
                 RuntimeTagNames.APPLICATION_PARAM), InitParamNode.class);
-        registerElementHandler(new XMLElement(
-                RuntimeTagNames.MODULE), WLModuleNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.WL_SECURITY_ROLE_ASSIGNMENT),
-                WLSecurityRoleAssignmentNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT),
+                SecurityRoleAssignmentNode.class);
     }
 
     /**
      * @return the XML tag associated with this XMLNode
      */
     protected XMLElement getXMLRootTag() {
-        return new XMLElement(RuntimeTagNames.WL_APPLICATION_RUNTIME_TAG);
+        return new XMLElement(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG);
     }    
     
     /** 
@@ -148,10 +145,8 @@ public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EnvironmentProperty) {
             descriptor.addApplicationParam((ApplicationParameter)newDescriptor);
-        } else if (newDescriptor instanceof WLModuleDescriptor) {
-            descriptor.addWLModule((WLModuleDescriptor)newDescriptor);
-        } else if (newDescriptor instanceof WLSecurityRoleAssignment) {
-            WLSecurityRoleAssignment roleMap = (WLSecurityRoleAssignment) newDescriptor;
+        } else if (newDescriptor instanceof SecurityRoleAssignment) {
+            SecurityRoleAssignment roleMap = (SecurityRoleAssignment) newDescriptor;
             if (descriptor!=null && !descriptor.isVirtual()) {
                 descriptor.addWLRoleAssignments(roleMap);
                 Role role = new Role(roleMap.getRoleName());
@@ -182,7 +177,7 @@ public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      */
     public Node writeDescriptor(Node parent, String nodeName, Application application) {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(),
-                    TagNames.WL_APPLICATION_NAMESPACE);
+                    TagNames.WLS_APPLICATION_NAMESPACE);
 
         // application-param*
         Set<ApplicationParameter> applicationParams = 
@@ -196,16 +191,10 @@ public class WLApplicationRuntimeNode extends RuntimeBundleNode<Application> {
             }
         }
 
-        // module*
-        WLModuleNode moduleNode = new WLModuleNode();
-        for (WLModuleDescriptor md :  application.getWLModules()) {
-            moduleNode.writeDescriptor(root, RuntimeTagNames.MODULE, md);
-        }
-
-        List<WLSecurityRoleAssignment> wlRoleAssignments = application.getWlRoleAssignments();
+        List<SecurityRoleAssignment> wlRoleAssignments = application.getWlRoleAssignments();
         for (int i = 0; i < wlRoleAssignments.size(); i++) {
-            WLSecurityRoleAssignmentNode sran = new WLSecurityRoleAssignmentNode();
-            sran.writeDescriptor(root, RuntimeTagNames.WL_SECURITY_ROLE_ASSIGNMENT, wlRoleAssignments.get(i));
+            SecurityRoleAssignmentNode sran = new SecurityRoleAssignmentNode();
+            sran.writeDescriptor(root, RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT, wlRoleAssignments.get(i));
         }
         return root;
     }

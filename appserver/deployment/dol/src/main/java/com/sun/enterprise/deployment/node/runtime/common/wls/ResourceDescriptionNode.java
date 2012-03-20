@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,73 +38,51 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.runtime;
+package com.sun.enterprise.deployment.node.runtime.common.wls;
 
-import com.sun.logging.LogDomains;
-import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.common.ResourceRef;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.w3c.dom.Node;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import java.util.Map;
 
 /**
- * This descriptor file holds the information of the module node 
- * in WL application xml.
+ * This node handles resource-description in weblogic.xml
+ *
+ * @author  Shing Wai Chan
  */
-public class WLModuleDescriptor extends RuntimeDescriptor {
+public class ResourceDescriptionNode extends RuntimeDescriptorNode {
     
-    private String name;
-    private String type;
-    private String path;
-
-    private final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-
-    public WLModuleDescriptor()
-    {
-        super();
+    public ResourceDescriptionNode() {
     }
 
-    public String getName() {
-        return name;
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
+    protected Map getDispatchTable() {    
+        Map table = super.getDispatchTable();
+        table.put(RuntimeTagNames.RES_REF_NAME, "setResRefName");
+        table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
+        return table;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        if (type.equals("JMS") || type.equals("JDBC") ||
-            type.equals("Interception")) {
-            this.type = type;
-        } else {
-            logger.log(Level.WARNING, "invalidwlmoduletype",
-                    new Object[] {type});
-        }
-    } 
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public boolean equals(Object other) {
-        if (other instanceof WLModuleDescriptor) {
-            if (getName().equals(((WLModuleDescriptor)other).getName())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public int hashCode() {
-        return getName().hashCode();
-    }
-
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
+     * @return the DOM tree top node
+     */    
+    public Node writeDescriptor(Node parent, String nodeName, ResourceRef descriptor) {  
+        Node refNode = appendChild(parent, nodeName);
+        appendTextChild(refNode, RuntimeTagNames.RES_REF_NAME, descriptor.getResRefName());
+        appendTextChild(refNode, RuntimeTagNames.JNDI_NAME, descriptor.getJndiName());
+        return refNode;
+    }    
 }

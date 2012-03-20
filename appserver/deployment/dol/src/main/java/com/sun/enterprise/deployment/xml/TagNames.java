@@ -159,12 +159,12 @@ public interface TagNames {
     public static final String JAVAEE_NAMESPACE = "http://java.sun.com/xml/ns/javaee";
     public static final String XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 
-    public static final String WL_WEB_APP_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-web-app";
-    public static final String WL_EJB_JAR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-ejb-jar";
-    public static final String WL_WEBSERVICES_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-webservices";
-    public static final String WL_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
-    public static final String WL_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application"; 
-    public static final String WL_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client"; 
+    public static final String WLS_WEB_APP_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-web-app";
+    public static final String WLS_EJB_JAR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-ejb-jar";
+    public static final String WLS_WEBSERVICES_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-webservices";
+    public static final String WLS_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
+    public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application"; 
+    public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client"; 
 
     public static final String PERSISTENCE_XML_NAMESPACE = "urn:ejb3-namespace";
 }

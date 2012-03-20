@@ -682,8 +682,10 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         InputStream sunIs = null;
         try {
             // apply the runtime settings if any
-            is = archive.getEntry(ddFileEntryName);
             DeploymentDescriptorFile confDD = getWLSConfigurationDDFile();
+            if (confDD != null) {
+                is = archive.getEntry(confDD.getDeploymentDescriptorPath());
+            }
 
             DeploymentDescriptorFile gfConfDD = getGFConfigurationDDFile();
             if (gfConfDD != null) {
@@ -702,14 +704,14 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
                         new Object[] {
                         gfConfDD.getDeploymentDescriptorPath(),
                         archive.getURI().getSchemeSpecificPart(),
-                        ddFileEntryName});
+                        confDD.getDeploymentDescriptorPath()});
                 }
                 if (sunIs != null && warnIfMultipleDDs) {
                     logger.log(Level.WARNING, "wls.counterpart.configdd.exists",
                         new Object[] {
                         sunConfDD.getDeploymentDescriptorPath(),
                         archive.getURI().getSchemeSpecificPart(),
-                        ddFileEntryName});
+                        confDD.getDeploymentDescriptorPath()});
                 }
                 if (archive.getURI() != null) {
                     confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
@@ -1235,9 +1237,18 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
             throws IOException {
 
         //check null: since .par archive does not have runtime dds
-        if (getConfigurationDDFile() != null) {
+        if (getWLSConfigurationDDFile() != null) {
             InputStream runIs = archive.getEntry(
-                    getConfigurationDDFile().getDeploymentDescriptorPath());
+                    getWLSConfigurationDDFile().getDeploymentDescriptorPath());
+            if (runIs != null) {
+                runIs.close();
+                return true;
+            }
+        }
+
+        if (getGFConfigurationDDFile() != null) {
+            InputStream runIs = archive.getEntry(
+                    getGFConfigurationDDFile().getDeploymentDescriptorPath());
             if (runIs != null) {
                 runIs.close();
                 return true;
@@ -1442,50 +1453,6 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
             entriesNames.add(e.nextElement());
         }
         return Descriptor.createUniqueFilenameAmongst(trialName, entriesNames);
-    }
-
-    public void saveRuntimeInfo(File output) throws IOException {
-        // if output file is null, we overwrite the current archive...
-        File outputFile = output;
-        if (outputFile == null) {
-            outputFile = getTempFile(path);
-        }
-
-        // copy all entries from source to target except the 
-        // runtime descriptor file
-        WritableArchive out = archiveFactory.createArchive(outputFile);
-        ReadableArchive in = archiveFactory.openArchive(new File(path));
-        Vector skipFiles = new Vector();
-        skipFiles.add(getRuntimeDeploymentDescriptorPath());
-        copyInto(in, out, skipFiles);
-        in.close();
-
-        // now save the runtime deployment descriptor...
-        OutputStream os = out.putNextEntry(getRuntimeDeploymentDescriptorPath());
-        writeRuntimeDeploymentDescriptors(os);
-        out.closeEntry();
-        out.close();
-
-        // if we overwrote the old archive, need to rename the tmp now
-        if (output == null) {
-            ReadableArchive finalArchive = archiveFactory.openArchive(new File(path));
-            finalArchive.delete();
-            ReadableArchive tmpArchive = archiveFactory.openArchive(outputFile);
-            tmpArchive.renameTo(path);
-        }
-
-    }
-
-    /**
-     * apply runtimne info to this archive descriptors and saves it
-     */
-    public void applyRuntimeInfo(File runtimeDD, File output) throws IOException, SAXParseException {
-
-        // update the runtime info
-        getConfigurationDDFile().read(getDescriptor(), new FileInputStream(runtimeDD));
-
-        // save the runtime info...
-        saveRuntimeInfo(output);
     }
 
     /**

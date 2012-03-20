@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node.runtime.common;
+package com.sun.enterprise.deployment.node.runtime.common.wls;
 
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.common.EjbRef;
@@ -52,7 +52,7 @@ import java.util.Map;
  *
  * @author  Shing Wai Chan
  */
-public class WLEjbReferenceDescriptionNode extends RuntimeDescriptorNode {
+public class EjbReferenceDescriptionNode extends RuntimeDescriptorNode {
     
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

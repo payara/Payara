@@ -50,11 +50,11 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.common.WLEjbReferenceDescriptionNode;
-import com.sun.enterprise.deployment.node.runtime.common.WLResourceDescriptionNode;
-import com.sun.enterprise.deployment.node.runtime.common.WLResourceEnvDescriptionNode;
-import com.sun.enterprise.deployment.node.runtime.common.WLSecurityRoleAssignmentNode;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.node.runtime.common.wls.EjbReferenceDescriptionNode;
+import com.sun.enterprise.deployment.node.runtime.common.wls.ResourceDescriptionNode;
+import com.sun.enterprise.deployment.node.runtime.common.wls.ResourceEnvDescriptionNode;
+import com.sun.enterprise.deployment.node.runtime.common.wls.SecurityRoleAssignmentNode;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.runtime.common.EjbRef;
 import com.sun.enterprise.deployment.runtime.common.ResourceRef;
 import com.sun.enterprise.deployment.runtime.common.ResourceEnvRef;
@@ -107,14 +107,14 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
      * Initialize the child handlers
      */
     protected void init() {
-        registerElementHandler(new XMLElement(RuntimeTagNames.WL_SECURITY_ROLE_ASSIGNMENT),
-                WLSecurityRoleAssignmentNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT),
+                SecurityRoleAssignmentNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_DESCRIPTION),
-                WLResourceDescriptionNode.class);
+                ResourceDescriptionNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_ENV_DESCRIPTION),
-                WLResourceEnvDescriptionNode.class);
+                ResourceEnvDescriptionNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.EJB_REFERENCE_DESCRIPTION),
-                WLEjbReferenceDescriptionNode.class);
+                EjbReferenceDescriptionNode.class);
         registerElementHandler(new XMLElement(WLWebServicesTagNames.SERVICE_REFERENCE_DESCRIPTION),
                 WLServiceRefNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.SESSION_DESCRIPTOR),
@@ -131,7 +131,7 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
      * @return the XML tag associated with this XMLNode
      */
     protected XMLElement getXMLRootTag() {
-        return new XMLElement(RuntimeTagNames.WL_WEB_RUNTIME_TAG);
+        return new XMLElement(RuntimeTagNames.WLS_WEB_RUNTIME_TAG);
     }    
     
     /** 
@@ -194,8 +194,8 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
         return srm;
     }
     public void addDescriptor(Object newDescriptor) {
-        if (newDescriptor instanceof WLSecurityRoleAssignment) {
-            WLSecurityRoleAssignment roleMap = (WLSecurityRoleAssignment) newDescriptor;
+        if (newDescriptor instanceof SecurityRoleAssignment) {
+            SecurityRoleAssignment roleMap = (SecurityRoleAssignment) newDescriptor;
             if (descriptor!=null) {
                 descriptor.getSunDescriptor().addWLSecurityRoleAssignment(roleMap);
                 Role role = new Role(roleMap.getRoleName());
@@ -262,23 +262,23 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
      */
     public Node writeDescriptor(Node parent, WebBundleDescriptor bundleDescriptor) {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(),
-                    TagNames.WL_WEB_APP_NAMESPACE);
+                    TagNames.WLS_WEB_APP_NAMESPACE);
 
         SunWebApp sunWebApp = bundleDescriptor.getSunDescriptor();
 
         //security-role-assignment*
-        WLSecurityRoleAssignment[] wlRoleAssignments = sunWebApp.getWLSecurityRoleAssignment();
+        SecurityRoleAssignment[] wlRoleAssignments = sunWebApp.getWLSecurityRoleAssignment();
         if (wlRoleAssignments != null && wlRoleAssignments.length > 0) {
-            WLSecurityRoleAssignmentNode sran = new WLSecurityRoleAssignmentNode();
+            SecurityRoleAssignmentNode sran = new SecurityRoleAssignmentNode();
             for (int i = 0; i < wlRoleAssignments.length; i++) {
-                sran.writeDescriptor(root, RuntimeTagNames.WL_SECURITY_ROLE_ASSIGNMENT, wlRoleAssignments[i]);
+                sran.writeDescriptor(root, RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT, wlRoleAssignments[i]);
             }
         }
 
         //resource-description*
         ResourceRef[] resourceRefs = sunWebApp.getResourceRef();
         if (resourceRefs != null && resourceRefs.length > 0) {
-            WLResourceDescriptionNode node = new WLResourceDescriptionNode();
+            ResourceDescriptionNode node = new ResourceDescriptionNode();
             for (ResourceRef resRef : resourceRefs) {
                 node.writeDescriptor(root, RuntimeTagNames.RESOURCE_DESCRIPTION, resRef);
             }
@@ -287,7 +287,7 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
         //resource-env-description*
         ResourceEnvRef[] resourceEnvRefs = sunWebApp.getResourceEnvRef();
         if (resourceEnvRefs != null && resourceEnvRefs.length > 0) {
-            WLResourceEnvDescriptionNode node = new WLResourceEnvDescriptionNode();
+            ResourceEnvDescriptionNode node = new ResourceEnvDescriptionNode();
             for (ResourceEnvRef resourceEnvRef : resourceEnvRefs) {
                 node.writeDescriptor(root, RuntimeTagNames.RESOURCE_ENV_DESCRIPTION, resourceEnvRef);
             }
@@ -296,7 +296,7 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
         //ejb-reference-description*
         EjbRef[] ejbRefs = sunWebApp.getEjbRef();
         if (ejbRefs != null && ejbRefs.length > 0) {
-            WLEjbReferenceDescriptionNode node = new WLEjbReferenceDescriptionNode();
+            EjbReferenceDescriptionNode node = new EjbReferenceDescriptionNode();
             for (EjbRef ejbRef : ejbRefs) {
                 node.writeDescriptor(root, RuntimeTagNames.EJB_REF, ejbRef);
             }

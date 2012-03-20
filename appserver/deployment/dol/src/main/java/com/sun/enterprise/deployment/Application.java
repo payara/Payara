@@ -45,9 +45,8 @@ import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.runtime.ApplicationParameter;
-import com.sun.enterprise.deployment.runtime.WLModuleDescriptor;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -191,7 +190,7 @@ public class Application extends BundleDescriptor
     private String libraryDirectory;
 
     private List<SecurityRoleMapping> roleMaps = new ArrayList<SecurityRoleMapping>();
-    private List<WLSecurityRoleAssignment> wlRoleAssignments = new ArrayList<WLSecurityRoleAssignment>();
+    private List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<SecurityRoleAssignment>();
 
     private boolean loadedFromApplicationXml = true;
 
@@ -204,9 +203,6 @@ public class Application extends BundleDescriptor
 
     private Set<ApplicationParameter> applicationParams = 
             new HashSet<ApplicationParameter>();
-
-    private Set<WLModuleDescriptor> wlModules =
-            new HashSet<WLModuleDescriptor>();
 
     private static final Habitat habitat = Globals.getDefaultHabitat();
     
@@ -1555,11 +1551,11 @@ public class Application extends BundleDescriptor
         return roleMaps;
     }
 
-    public List<WLSecurityRoleAssignment> getWlRoleAssignments() {
+    public List<SecurityRoleAssignment> getWlRoleAssignments() {
         return wlRoleAssignments;
     }
 
-    public void addWLRoleAssignments(WLSecurityRoleAssignment wlRoleAssignment) {
+    public void addWLRoleAssignments(SecurityRoleAssignment wlRoleAssignment) {
         wlRoleAssignments.add(wlRoleAssignment);
     }
 
@@ -1623,20 +1619,6 @@ public class Application extends BundleDescriptor
      */
     public void addApplicationParam(ApplicationParameter appParam) {
         applicationParams.add(appParam);
-    }
-
-    /**
-     * @return the Set of weblogic modules.
-     */
-    public Set<WLModuleDescriptor> getWLModules() {
-        return wlModules;
-    }
-
-   /**
-     * Adds a new context parameter to my list.
-     */
-    public void addWLModule(WLModuleDescriptor wlModule) {
-        wlModules.add(wlModule);
     }
 
     @Override

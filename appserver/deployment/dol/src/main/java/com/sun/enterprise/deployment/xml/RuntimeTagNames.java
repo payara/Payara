@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,11 +54,11 @@ public interface RuntimeTagNames extends TagNames {
     public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
     public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
 
-    public final static String WL_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
-    public final static String WL_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
-    public final static String WL_APPLICATION_RUNTIME_TAG = "weblogic-application";
-    public final static String WL_WEB_RUNTIME_TAG = "weblogic-web-app";
-    public final static String WL_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
+    public final static String WLS_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
+    public final static String WLS_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
+    public final static String WLS_APPLICATION_RUNTIME_TAG = "weblogic-application";
+    public final static String WLS_WEB_RUNTIME_TAG = "weblogic-web-app";
+    public final static String WLS_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
 
     public final static String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
     public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
@@ -151,7 +151,7 @@ public interface RuntimeTagNames extends TagNames {
     
     // SECURITY related
     public static final String SECURITY_ROLE_MAPPING = "security-role-mapping";
-    public static final String WL_SECURITY_ROLE_ASSIGNMENT = "security-role-assignment";
+    public static final String SECURITY_ROLE_ASSIGNMENT = "security-role-assignment";
     public static final String ROLE_NAME = "role-name";
     public static final String PRINCIPAL_NAME = "principal-name";
     public static final String GROUP_NAME = "group-name";

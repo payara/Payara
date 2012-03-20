@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,11 +38,11 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node.runtime.common;
+package com.sun.enterprise.deployment.node.runtime.common.wls;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
 
@@ -54,14 +54,14 @@ import java.util.List;
  * @author  Sudarsan Sridhar
  * @version 
  */
-public class WLSecurityRoleAssignmentNode extends RuntimeDescriptorNode {
+public class SecurityRoleAssignmentNode extends RuntimeDescriptorNode {
 
-    public WLSecurityRoleAssignmentNode() {
+    public SecurityRoleAssignmentNode() {
     }
 
     @Override
-    protected WLSecurityRoleAssignment createDescriptor() {
-        return new WLSecurityRoleAssignment();
+    protected SecurityRoleAssignment createDescriptor() {
+        return new SecurityRoleAssignment();
     }
 
     
@@ -72,7 +72,7 @@ public class WLSecurityRoleAssignmentNode extends RuntimeDescriptorNode {
      * @param value it's associated value
      */
     public void setElementValue(XMLElement element, String value) {
-        WLSecurityRoleAssignment sra = (WLSecurityRoleAssignment) getDescriptor();
+        SecurityRoleAssignment sra = (SecurityRoleAssignment) getDescriptor();
         if (RuntimeTagNames.ROLE_NAME.equals(element.getQName())) {
             sra.setRoleName(value);
         } else if (RuntimeTagNames.PRINCIPAL_NAME.equals(element.getQName())) {
@@ -92,7 +92,7 @@ public class WLSecurityRoleAssignmentNode extends RuntimeDescriptorNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */
-    public Node writeDescriptor(Node parent, String nodeName, WLSecurityRoleAssignment descriptor) {
+    public Node writeDescriptor(Node parent, String nodeName, SecurityRoleAssignment descriptor) {
         Node roleMapping = appendChild(parent, nodeName);
 
         //role-name

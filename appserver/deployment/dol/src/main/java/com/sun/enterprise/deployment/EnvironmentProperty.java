@@ -40,7 +40,7 @@
 
  package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.runtime.ApplicationParameter;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.InitializationParameter;

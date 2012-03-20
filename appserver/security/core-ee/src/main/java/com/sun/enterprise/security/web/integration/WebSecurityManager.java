@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,7 @@ import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
 import com.sun.enterprise.config.serverbeans.*;
 //V3:Commented import com.sun.enterprise.server.ApplicationServer;
-import com.sun.enterprise.deployment.runtime.common.WLSecurityRoleAssignment;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 //import org.apache.catalina.Globals;
@@ -222,9 +222,9 @@ public class WebSecurityManager  {
                             }
                         }
                     }
-                    WLSecurityRoleAssignment[] sras = sunDes.getWLSecurityRoleAssignment();
+                    SecurityRoleAssignment[] sras = sunDes.getWLSecurityRoleAssignment();
                     if(sras != null){
-                        for (WLSecurityRoleAssignment sra : sras) {
+                        for (SecurityRoleAssignment sra : sras) {
                             List<String> principals = sra.getPrincipalNames();
                             if (sra.isExternallyDefined()) {
                                 wsmf.ADMIN_GROUP.put(realmName + sra.getRoleName(), new Group(sra.getRoleName()));

@@ -109,7 +109,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
          * The WL descriptors use schemas, not DTDs, so 
          * we don't need to add them to the DTD mapping.
          */
-        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WL_WEB_RUNTIME_TAG, WLWebBundleRuntimeNode.class);
+        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WLS_WEB_RUNTIME_TAG, WLWebBundleRuntimeNode.class);
         
         return result;
     }

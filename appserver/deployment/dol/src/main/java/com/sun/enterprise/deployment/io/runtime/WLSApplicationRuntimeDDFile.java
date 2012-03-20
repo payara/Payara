@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.runtime.application.WLApplicationRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.application.wls.WeblogicApplicationNode;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -72,7 +72,7 @@ public class WLSApplicationRuntimeDDFile extends
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof Application) {
-            return new WLApplicationRuntimeNode((Application) descriptor);
+            return new WeblogicApplicationNode((Application) descriptor);
         }
         return null;
     }

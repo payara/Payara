@@ -43,7 +43,6 @@ package com.sun.enterprise.deployment.node.runtime;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.runtime.IASPersistenceManagerDescriptor;
 import com.sun.enterprise.deployment.runtime.PersistenceManagerInUse;
-import com.sun.enterprise.deployment.runtime.WLModuleDescriptor;
 import com.sun.enterprise.deployment.runtime.common.*;
 import com.sun.enterprise.deployment.runtime.connector.MapElement;
 import com.sun.enterprise.deployment.runtime.connector.Principal;

@@ -51,6 +51,7 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.io.EjbDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.EjbRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFEjbRuntimeDDFile;
+import com.sun.enterprise.deployment.io.runtime.WLSEjbRuntimeDDFile;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -84,7 +85,17 @@ public class EjbInWarArchivist
     }
 
     @Override
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
+    public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
+        return new WLSEjbRuntimeDDFile() {
+            public String getDeploymentDescriptorPath() {
+                return DescriptorConstants.WLS_EJB_IN_WAR_ENTRY;
+            }
+        };
+    }
+
+
+    @Override
+    public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
         return new GFEjbRuntimeDDFile() {
             public String getDeploymentDescriptorPath() {
                 return DescriptorConstants.GF_EJB_IN_WAR_ENTRY;
