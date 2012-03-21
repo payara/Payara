@@ -1845,7 +1845,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         ctx.setJ2EEServer(j2eeServer);
         ctx.setJ2EEApplication(j2eeApplication);
-        ctx.setCachingAllowed(false);
+        //turn on container internal cache by default as in v2
+        //ctx.setCachingAllowed(false);
         ctx.setCacheControls(vs.getCacheControls());
         ctx.setBean(wmInfo.getBean());
 

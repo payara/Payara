@@ -946,7 +946,7 @@ public class DefaultServlet
 
         // Find content type.
         String contentType = cacheEntry.attributes.getMimeType();
-        if (contentType == null) {
+        if (contentType == null && !cacheEntry.attributes.isMimeTypeInitialized()) {
             contentType = getServletContext().getMimeType(cacheEntry.name);
             cacheEntry.attributes.setMimeType(contentType);
         }
