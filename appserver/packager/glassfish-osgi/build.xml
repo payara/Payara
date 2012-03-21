@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,20 +42,41 @@
 -->
 
 <project name="glassfish-osgi package creation" default="create.package" basedir=".">
-       <import file="${basedir}/../common-targets.xml"/>
+    <import file="${basedir}/../common-targets.xml"/>
 
-	<target name="create.package">
+    <target name="create.package">
+        <property name="package.name" value="glassfish-osgi"/> 
+
+        <stage-module-jars/>
+        
+        <!-- BEGIN: re-using nucleus-osgi -->
+        <resolveArtifact artifactId="nucleus-osgi" property="nucleus-osgi.zip"/>
+	<unzip src="${nucleus-osgi.zip}" dest="target/stage/${install.dir.name}"/> 
+        <move file="target/stage/${install.dir.name}/nucleus"
+            tofile="target/stage/${install.dir.name}/glassfish" 
+            failonerror="false" />
+        <!-- END: re-using nucleus-osgi -->
+       
+        <!-- BEGIN: move osgi-web-container and its dependencies to autostart -->
+        <mkdir dir="target/stage/${install.dir.name}/glassfish/modules/autostart"/>
+       
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-web-container.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-javaee-base.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-cdi.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ee-resources.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-ejb-container.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-jdbc.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-jpa.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/osgi-jta.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <move file="target/stage/${install.dir.name}/glassfish/modules/org.apache.felix.eventadmin.jar" todir="target/stage/${install.dir.name}/glassfish/modules/autostart" failonerror="false"/>
+        <!-- END: move osgi-web-container and its dependencies to autostart -->
 
         <if test="${compression}">
 	       <antcall target="pack.compression" />
 	</if>
 
-        <move file="target/stage/${install.dir.name}/glassfish/modules/autostart/osgi-jpa-extension.jar" todir="target/stage/${install.dir.name}/glassfish/modules" failonerror="false"/>
-           		   
-       <zip file="target/glassfish-osgi.zip" basedir="target/stage">
-       </zip>
-
-      <attachArtifact file="target/glassfish-osgi.zip"/> 
+       <antcall target="create-zip-artifact"/>
+       <antcall target="create-list-artifact"/>
    </target>
 </project>
 

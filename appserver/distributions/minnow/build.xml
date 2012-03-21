@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,20 @@
         </unzip>
        
         <delete dir="target/stage" includes="*.zip"/>
-
+        
+        <!-- BEGIN: excluding content of glassfish-osgi -->
+        <resolveArtifact artifactId="glassfish-osgi" groupId="org.glassfish.packager"
+                        classifier="artifacts"
+                        type="properties"
+                        property="glassfish-osgi-artifacts" />
+        <copy file="${glassfish-osgi-artifacts}" tofile="target/glassfish-osgi-artifacts.properties"
+            overwrite="true" />
+        <replace file="target/glassfish-osgi-artifacts.properties" token="jars/" value="**/"/>
+        <delete quiet="true">
+            <fileset dir="target/stage/${install.dir.name}" includesfile="target/glassfish-osgi-artifacts.properties" />
+        </delete>        
+        <!-- END: excluding content of glassfish-osgi -->
+        
         <chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
 

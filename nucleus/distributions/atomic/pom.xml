@@ -137,6 +137,13 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.packager</groupId>
+            <artifactId>nucleus-osgi</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
             <artifactId>nucleus-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

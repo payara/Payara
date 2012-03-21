@@ -190,6 +190,17 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        
+        <!-- now, listing package dependencies so that their content
+                    can be excluded -->
+  	<dependency>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>glassfish-osgi</artifactId>
+           <version>${project.version}</version>
+           <classifier>artifacts</classifier>
+	   <type>properties</type>
+           <scope>provided</scope>
+   	</dependency>        
     </dependencies>
 </project>
 

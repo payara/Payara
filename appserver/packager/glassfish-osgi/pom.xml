@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,10 @@
     <packaging>distribution-base-zip</packaging>
     <description>This pom describes how to assemble the GlassFish OSGi support package</description>
 
+    <properties>
+        <temp.stagedir>${project.build.directory}/artifacts/jars/</temp.stagedir>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -68,8 +72,8 @@
                     </tasks>
                 </configuration>               
              </plugin>
-           <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -78,17 +82,20 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/stage/${install.dir.name}/glassfish/modules/autostart</outputDirectory>
+                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
+                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <includeGroupIds>org.glassfish.fighterfish,org.apache.felix</includeGroupIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>
-               </executions>
-           </plugin>
+                    </execution>
+                </executions>
+            </plugin>         
         </plugins>
     </build>
 
@@ -97,6 +104,16 @@
         <!--
 	      modules to be included in this package
         -->    
+       <!--
+          reusing nucleus-osgi staged content as-is
+        -->       
+        <dependency>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>nucleus-osgi</artifactId>
+           <version>${project.version}</version>
+           <scope>provided</scope>
+           <type>zip</type>
+       </dependency>        
          <!-- Shared OSGi support for Java EE -->
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>

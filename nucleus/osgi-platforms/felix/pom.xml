@@ -49,15 +49,11 @@
        bin/
           felix.jar
        conf/
-          config.properties
-          system.properties
+          osgi.properties
   modules/
-       org.apache.felix.shell.remote.jar 
-       org.apache.felix.gogo.runtime.jar 
-       org.apache.felix.gogo.shell.jar 
-       org.apache.felix.gogo.command.jar 
+       [org.apache.felix.*]
        autostart/
-          org.apache.felix.scr.jar 
+          [org.apache.felix.scr.jar]
 
    This is more or less how the layout would look if one downloads the Felix
    distribution from Felix project and installs. The only difference being we keep
@@ -103,61 +99,6 @@
                                <version>4.0.2</version>
                                <outputDirectory>${felix.outdir}/bin</outputDirectory>
                                <destFileName>felix.jar</destFileName>
-                             </artifactItem>
-                             <!-- We bundle Felix Shell bundles so that
-                                  user can use them to utilize the full power
-                                  of Felix even while using GlassFish -->
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.shell.remote</artifactId>
-                               <version>1.1.2</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.runtime</artifactId>
-                               <version>0.10.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.shell</artifactId>
-                               <version>0.10.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.gogo.command</artifactId>
-                               <version>0.10.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <!-- We install fileinstall bundle which monitors modules
-                                  dir and autodeploy dir for addition/removal/updation of bundles -->
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.fileinstall</artifactId>
-                               <version>3.1.10</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <!-- fileinstall needs configadmin service -->
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.configadmin</artifactId>
-                               <version>1.2.4</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
-                             </artifactItem>
-                             <artifactItem>
-                               <groupId>org.apache.felix</groupId>
-                               <artifactId>org.apache.felix.scr</artifactId>
-                               <version>1.4.0</version>
-                               <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}/autostart/</outputDirectory>
                              </artifactItem>
                              <!-- We don't ship this, as it affects startup benchmark by 1%.
                              <artifactItem>
