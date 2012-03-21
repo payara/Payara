@@ -42,8 +42,8 @@ package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.node.runtime.application.ApplicationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.application.GFApplicationRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.application.gf.GFApplicationRuntimeNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.Collection;
