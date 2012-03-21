@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -610,7 +610,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
             } catch (NumberFormatException e) {
                 System.err.println("Using port 8080");
             }
-            props.setPort("http-listener", port);
+            props.setPort("http-listener-1", port);
         }
     }
 
