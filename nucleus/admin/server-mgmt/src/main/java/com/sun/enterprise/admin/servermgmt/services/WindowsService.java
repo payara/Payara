@@ -158,17 +158,28 @@ public class WindowsService extends NonSMFServiceAdapter {
         return ObjectAnalyzer.toString(this);
     }
 
+    /**
+     * Byron Nevins MArch 2011
+     * There is a bug in the older version of winsw.  We MUST double-quote paths.
+     * winsw does this automatically for "executable" since it knows that it has
+     * to be a path.  But not for start/stop arg paths
+     * If we upgrade to a 'fixed' later version of winsw I checked and it
+     * is looking for already-quoted strings because of the bug.  So it won't
+     * be necessary to change it here.
+     *
+     * @return all start arguments as a String
+     */
     @Override
     public final String getLocationArgsStart() {
         if (isDomain()) {
             return makeStartArg("--domaindir")
-                    + makeStartArg(getServerDirs().getServerParentDir().getPath());
+                    + makeStartArg(quote(getServerDirs().getServerParentDir().getPath()));
         }
         else {
             return makeStartArg("--nodedir")
-                    + makeStartArg(getServerDirs().getServerGrandParentDir().getPath().replace('\\', '/'))
+                    + makeStartArg(quote(getServerDirs().getServerGrandParentDir().getPath().replace('\\', '/')))
                     + makeStartArg("--node")
-                    + makeStartArg(getServerDirs().getServerParentDir().getName());
+                    + makeStartArg(quote(getServerDirs().getServerParentDir().getName()));
         }
     }
 
@@ -176,14 +187,18 @@ public class WindowsService extends NonSMFServiceAdapter {
     public final String getLocationArgsStop() {
         if (isDomain()) {
             return makeStopArg("--domaindir")
-                    + makeStopArg(getServerDirs().getServerParentDir().getPath());
+                    + makeStopArg(quote(getServerDirs().getServerParentDir().getPath()));
         }
         else {
             return makeStopArg("--nodedir")
-                    + makeStopArg(getServerDirs().getServerGrandParentDir().getPath().replace('\\', '/'))
+                    + makeStopArg(quote( getServerDirs().getServerGrandParentDir().getPath().replace('\\', '/')))
                     + makeStopArg("--node")
-                    + makeStopArg(getServerDirs().getServerParentDir().getName());
+                    + makeStopArg(quote(getServerDirs().getServerParentDir().getName()));
         }
+    }
+
+    private String quote(String s) {
+        return StringUtils.quotePathIfNecessary(s);
     }
 
     @Override
