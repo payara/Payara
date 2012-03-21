@@ -177,7 +177,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.faces</artifactId>
-            <version>${mojarra.version}</version>
 	    <scope>provided</scope>
         </dependency>
         <dependency>

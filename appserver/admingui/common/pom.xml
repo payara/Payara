@@ -141,7 +141,6 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.faces</artifactId>
-            <version>${mojarra.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
