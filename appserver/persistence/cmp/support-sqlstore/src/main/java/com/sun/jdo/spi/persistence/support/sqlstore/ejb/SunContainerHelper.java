@@ -67,7 +67,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 
 import com.sun.ejb.Container;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.ejb.containers.EjbContainerUtil;
 
 import com.sun.jdo.api.persistence.support.JDOException;
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
@@ -139,7 +139,7 @@ public class SunContainerHelper extends SunTransactionHelper implements Containe
 
         EjbDescriptor desc = app.getEjbByName((String)params[1]);
 
-        return EjbContainerUtilImpl.getInstance().getContainer(desc.getUniqueId());
+        return habitat.getComponent(EjbContainerUtil.class).getContainer(desc.getUniqueId());
     }
 
     /** Get an EJBObject reference for this primary key and Container helper.

@@ -61,7 +61,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEventListener;
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEvent;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.ejb.containers.EjbContainerUtil;
 
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
 import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
@@ -88,6 +88,8 @@ public class SunTransactionHelper extends TransactionHelperImpl
 
     private static List<PersistenceManagerFactory> pmf_list;
     
+    private static EjbContainerUtil ejbContainerUtil;
+    
     private final static Object pmf_listSyncObject = new Object();
     
     /**
@@ -109,6 +111,8 @@ public class SunTransactionHelper extends TransactionHelperImpl
         connectorRuntime.registerConnectorNamingEventListener(helper);
         
         pmf_list = new ArrayList<PersistenceManagerFactory>();
+
+        ejbContainerUtil = Globals.getDefaultHabitat().getByContract(EjbContainerUtil.class);
     }
  
     /** Default constructor should not be public */
@@ -158,7 +162,7 @@ public class SunTransactionHelper extends TransactionHelperImpl
     /** SunTransactionHelper specific code */
     public void registerSynchronization(Transaction jta, Synchronization sync)
             throws RollbackException, SystemException {
-        EjbContainerUtilImpl.getInstance().registerPMSync(jta, sync);
+        ejbContainerUtil.registerPMSync(jta, sync);
     }
 
     /** SunTransactionHelper specific code */
