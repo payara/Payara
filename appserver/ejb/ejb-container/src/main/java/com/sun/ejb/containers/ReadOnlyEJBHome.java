@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,6 @@
 
 package com.sun.ejb.containers;
 
-import com.sun.ejb.ReadOnlyBeanNotifier;
-
 /**
  * Home interface for all Remote ReadOnly Beans
  *
@@ -50,9 +48,6 @@ import com.sun.ejb.ReadOnlyBeanNotifier;
 public interface ReadOnlyEJBHome
 	extends javax.ejb.EJBHome
 {
-
-    public ReadOnlyBeanNotifier getReadOnlyBeanNotifier()
-        throws java.rmi.RemoteException;
 
     public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
         throws java.rmi.RemoteException;

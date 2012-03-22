@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,6 @@
 package com.sun.ejb.containers;
 
 
-import com.sun.ejb.ReadOnlyBeanNotifier;
-
 import javax.rmi.PortableRemoteObject;
 
 import java.util.logging.*;
@@ -56,8 +54,7 @@ import com.sun.logging.*;
 
 public final class ReadOnlyBeanNotifierImpl 
     implements java.io.Serializable,
-        com.sun.appserv.ejb.ReadOnlyBeanNotifier,
-        com.sun.ejb.ReadOnlyBeanNotifier // deprecated
+        com.sun.appserv.ejb.ReadOnlyBeanNotifier
 {
     private ReadOnlyEJBHome readOnlyBeanHome = null;
 

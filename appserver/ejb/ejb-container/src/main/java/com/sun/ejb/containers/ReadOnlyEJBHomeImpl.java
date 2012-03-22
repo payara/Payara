@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,14 +73,6 @@ public abstract class ReadOnlyEJBHomeImpl
     /***********************************************/
     /** Implementation of ReadOnlyEJBHome methods **/
     /***********************************************/
-
-    //Shouldn't be called. deprecated
-    public com.sun.ejb.ReadOnlyBeanNotifier getReadOnlyBeanNotifier()
-        throws java.rmi.RemoteException
-    {
-        throw new java.rmi.RemoteException("Internal ERROR: "
-                + " getReadOnlyBeanNotifier() called");
-    }
 
     public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
         throws java.rmi.RemoteException
