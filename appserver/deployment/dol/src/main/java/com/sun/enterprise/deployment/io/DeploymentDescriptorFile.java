@@ -427,14 +427,14 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
     }
     
     /** 
-     * @return the location of the DeploymentDescriptor file for a 
-     * particular type of J2EE Archive
+     * @return the location of the deployment descriptor file for a 
+     * particular type of Java EE Archive
      */
     public abstract String getDeploymentDescriptorPath();
         
     /**
      * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
+     * descriptors associated with this Java EE module
      *
      * @param descriptor the descriptor for which we need the node
      */

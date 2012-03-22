@@ -70,8 +70,16 @@ public abstract class ExtensionsArchivist  {
 
     protected final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
+    /**
+     * @return the DeploymentDescriptorFile responsible for handling
+     *         standard deployment descriptor
+     */
     public abstract DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor);
 
+    /**
+     * @return if exists the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
+     */
     public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
         DeploymentDescriptorFile ddFile = getWLSConfigurationDDFile(descriptor);
         if (ddFile == null) {
@@ -83,33 +91,72 @@ public abstract class ExtensionsArchivist  {
         return ddFile;
     }
 
+    /**
+     * @param the moduleType
+     * @return whether this extension archivist supports this module type 
+     *
+     */
     public abstract boolean supportsModuleType(ArchiveType moduleType);
 
+    /**
+     * @return a default Descriptor for this archivist
+     */
     public abstract <T extends RootDeploymentDescriptor> T getDefaultDescriptor();
 
+    /**
+     * Returns the scanner for this archivist
+     *
+     */
     public ModuleScanner getScanner() {
         return null;
     }
 
+    /**
+     * @return if exists the DeploymentDescriptorFile responsible for
+     *         handling the WLS configuration deployment descriptors
+     */
     public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
         return null;
     }
 
 
+    /**
+     * @return if exists the DeploymentDescriptorFile responsible for
+     *         handling the GlassFish configuration deployment descriptors
+     */
     public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
         return null;
     }
 
+    /**
+     * @return if exists the DeploymentDescriptorFile responsible for
+     *         handling the Sun configuration deployment descriptors
+     */
     public DeploymentDescriptorFile getSunConfigurationDDFile(RootDeploymentDescriptor descriptor) {
         return null;
     }
 
 
+    /**
+     * Add the extension descriptor to the main descriptor
+     *
+     * @param root the main descriptor
+     * @param extension the extension descriptor
+     * @return the main descriptor with the extensions
+     */
     public <T extends RootDeploymentDescriptor> void addExtension(RootDeploymentDescriptor root, RootDeploymentDescriptor extension) {
         root.addExtensionDescriptor(extension.getClass(), extension, null);
         extension.setModuleDescriptor(root.getModuleDescriptor());
     }
 
+   /**
+     * Read the standard deployment descriptor of the extension
+     * @param archivist the primary archivist for this archive 
+     * @param archive the archive
+     * @param descriptor the main deployment descriptor
+     * @return the extension descriptor object
+     *
+     */
     public Object open(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
             throws IOException, SAXParseException {
 
@@ -142,6 +189,14 @@ public abstract class ExtensionsArchivist  {
          return null;
      }
 
+    /**
+     * Read the runtime deployment descriptors of the extension
+     *
+     * @param archivist the primary archivist for this archive 
+     * @param archive the archive
+     * @param descriptor the extension deployment descriptor
+     * @return the extension descriptor object with additional runtime information
+     */
      public Object readRuntimeDeploymentDescriptor(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
             throws IOException, SAXParseException {
 

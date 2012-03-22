@@ -202,8 +202,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     }
 
     /**
-     * Open a new archive file, read the XML descriptor and set the  constructed
-     * DOL descriptor instance
+     * Open a new archive file, read the deployment descriptors and annotations      *  and set the constructed DOL descriptor instance
      *
      * @param archive the archive file path
      * @return the deployment descriptor for this archive
@@ -353,10 +352,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     }
 
     /**
-     * Read the standard deployment descriptors (can contained in one or
-     * many file) and return the corresponding initialized descriptor instance.
-     * By default, the standard deployment descriptors are all contained in
-     * the xml file characterized with the path returned by
+     * Read all Java EE deployment descriptors and annotations
      *
      * @return the initialized descriptor
      */
@@ -417,6 +413,9 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         return descriptor;
     }
 
+    /**
+     * Read all Java EE annotations
+     */
     protected void readAnnotations(ReadableArchive archive, T descriptor,
                                  Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
             throws IOException {
@@ -1149,7 +1148,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
 
     /**
      * @return the  module type handled by this archivist
-     *         as defined in the application DTD
+     *         as defined in the application DTD/Schema
      */              
     public abstract ArchiveType getModuleType();
 
@@ -1219,6 +1218,8 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
     protected abstract String getArchiveExtension();
 
     /**
+     * Returns true if this archivist is capable of handling the archive type
+     *  Here we check for the existence of the deployment descriptors
      * @return true if the archivist is handling the provided archive
      */
     protected abstract boolean postHandles(ReadableArchive archive) throws IOException;
@@ -1269,6 +1270,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
 
     /**
      * Returns true if this archivist is capable of handling the archive type
+     * Here we check for the existence of the deployment descriptors
      *
      * @param archive the input archive
      * @return true if this archivist can handle this archive
