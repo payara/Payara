@@ -2039,8 +2039,8 @@ public class VirtualServer extends StandardHost
             ApplicationInfo appInfo = deployment.get(params.name);
             ApplicationRef appRef = domain.getApplicationRefInServer(params.target, params.name);
 
-            if (appInfo != null) {
-                if (appRef!=null && appRef.getVirtualServers().contains(getName())) {
+            if (appInfo!=null && appRef!=null) {
+                if (appRef.getVirtualServers().contains(getName())) {
                     throw new ConfigException(
                             "Context with name "+params.name+" is already registered on virtual server "+getName());
                 } else {
@@ -2182,7 +2182,12 @@ public class VirtualServer extends StandardHost
     public void removeContext(Context context) throws GlassFishException {
         ActionReport report = services.forContract(ActionReport.class).named("plain").get();
         Deployment deployment = services.forContract(Deployment.class).get();
-        String name = ((ContextFacade)context).getAppName();
+        String name;
+        if (context instanceof ContextFacade) {
+            name = ((ContextFacade)context).getAppName();
+        } else {
+            name = context.getPath();
+        }
         ApplicationInfo appInfo = deployment.get(name);
 
         if (appInfo == null) {
@@ -2215,7 +2220,9 @@ public class VirtualServer extends StandardHost
         } catch (TransactionFailure e) {
             throw new GlassFishException(e);
         } finally {
-            deploymentContext.clean();
+            if (deploymentContext!=null) {
+                deploymentContext.clean();
+            }
         }
 
         if (_logger.isLoggable(Level.FINE)) {
