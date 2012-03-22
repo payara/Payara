@@ -89,16 +89,13 @@
                  token="%%%SOURCE%%%" value="${source.distribution.name}"/>
 
         <!-- blow away default domain inherited from nucleus and recreate it
-             in order to pick up updated template files 
-             This should be removed once nucleus distro assembly moves to 
-             nucleus workspace -->
-
+             in order to pick up updated template files -->
         <delete dir="target/stage/${install.dir.name}/glassfish/domains/domain1"/>
                 
         <!-- create domain -->
         <antcall target="create-domain"/>
 
-        <!-- create distribution zip-->
+        <!-- create distribution zip -->
         <zip file="target/cpas.zip" duplicate="preserve">
             <zipfileset dir="target/stage" filemode="755"
                         includes="${install.dir.name}/bin/*"
