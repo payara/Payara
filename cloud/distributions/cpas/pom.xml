@@ -49,10 +49,10 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>cloud</artifactId>
-    <name>Glassfish Cloud Distribution</name>
+    <artifactId>cpas</artifactId>
+    <name>Glassfish CPAS Distribution</name>
     <packaging>distribution-base-zip</packaging>
-    <description>This pom describes how to assemble the GlassFish Cloud Distribution</description>
+    <description>This pom describes how to assemble the GlassFish CPAS Distribution</description>
 
     <build>
         <plugins>

@@ -57,7 +57,7 @@
     <name>Cloud distributions</name>
 
     <modules>
-        <module>cloud</module>
+        <module>cpas</module>
     </modules>
 
     <build>

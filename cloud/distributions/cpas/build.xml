@@ -41,9 +41,9 @@
 
 -->
 
-<project name="glassfish cloud distribution creation" default="create.distribution" basedir=".">
+<project name="glassfish cpas distribution creation" default="create.distribution" basedir=".">
     <import file="../distributions.xml"/>
-    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 - Cloud"/>
+    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 - CPAS"/>
 
     <target name="init">
         <condition property="windows">
@@ -55,7 +55,7 @@
     </target>
 
     <target name="create.distribution">
-        <echo message="Creating distribution: cloud"/>
+        <echo message="Creating distribution: cpas"/>
         <!-- making sure that nucleus distro is staged first -->
         <unzip dest="target/stage">
             <fileset dir="target/stage">
@@ -99,7 +99,7 @@
         <antcall target="create-domain"/>
 
         <!-- create distribution zip-->
-        <zip file="target/cloud.zip" duplicate="preserve">
+        <zip file="target/cpas.zip" duplicate="preserve">
             <zipfileset dir="target/stage" filemode="755"
                         includes="${install.dir.name}/bin/*"
                         excludes="${install.dir.name}/bin/*.bat" />
@@ -117,7 +117,7 @@
             </zipfileset>
         </zip> 
         <!-- deploy distribution artifact to maven repository" -->
-        <attachArtifact file="target/cloud.zip"/>
+        <attachArtifact file="target/cpas.zip"/>
     </target>
 
     <target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
