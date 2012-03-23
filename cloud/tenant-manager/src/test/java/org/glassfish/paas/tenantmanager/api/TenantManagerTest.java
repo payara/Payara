@@ -39,8 +39,9 @@
  */
 package org.glassfish.paas.tenantmanager.api;
 
-
 import org.glassfish.paas.tenantmanager.api.TenantManager;
+import org.glassfish.paas.tenantmanager.config.Tenant;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.tests.utils.Utils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,16 +50,21 @@ import org.jvnet.hk2.component.Habitat;
 
 public class TenantManagerTest {
     TenantManager tenantManager;
-	
+
     @Before
     public void before() {
-    	Habitat habitat = Utils.getNewHabitat();
-    	tenantManager = habitat.getComponent(TenantManager.class);
-    }	
-    
+        Habitat habitat = Utils.getNewHabitat();
+        TenantManagerConfig tenantManagerConfig = habitat.getComponent(TenantManagerConfig.class);
+        tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
+        tenantManager = habitat.getComponent(TenantManager.class);
+    }
+
     @Test
     public void testGet() {
-    	Assert.assertNotNull("tenantManager", tenantManager);
+        Assert.assertNotNull("tenantManager", tenantManager);
+        Tenant tenant = tenantManager.create("tenant3", "adminUserName");
+        Assert.assertNotNull("tenant", tenant);
+        Assert.assertEquals("tenant", "tenant3", tenant.getName());
     }
 
 }

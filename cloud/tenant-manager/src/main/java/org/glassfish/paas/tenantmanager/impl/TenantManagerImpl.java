@@ -39,8 +39,19 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.inject.Inject;
+
+import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.Tenant;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -57,8 +68,38 @@ public class TenantManagerImpl implements TenantManager {
      */
     @Override
     public Tenant create(String name, String adminUserName) {
-        // TODO Auto-generated method stub
-        return null;
+        String dir = null;
+        try {
+            dir = new File(config.getFileStore().toURI()).getAbsolutePath() + "/" + name;
+        } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        String filePath =  dir + "/tenant.xml";
+        try {
+            boolean created = new File(dir).mkdir();
+            // TODO: assert created
+            File file = new File(filePath);
+            created = file.createNewFile();
+            // TODO: assert created
+            Writer writer = new FileWriter(file);
+            writer.write("<tenant name='" + name + "'/>");
+            writer.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        String bak = null;
+        try {
+            tenantConfigService.getCurrentTenant();
+        } catch (IllegalArgumentException e) {
+            // ignore "No current tenatn set"
+        }
+        tenantConfigService.setCurrentTenant(name);
+        Tenant tenant = tenantConfigService.get(Tenant.class);
+        tenantConfigService.setCurrentTenant(bak);
+        // TODO: add default admin adminUserName
+        return tenant;
     }
 
     /**
@@ -67,7 +108,13 @@ public class TenantManagerImpl implements TenantManager {
     @Override
     public void delete(String name) {
         // TODO Auto-generated method stub
-
     }
+    
+    // TODO: obtain from server-config
+    @Inject
+    private TenantManagerConfig config;
+    
+    @Inject
+    private TenantConfigService tenantConfigService;
 
 }

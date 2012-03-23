@@ -50,7 +50,7 @@ import org.jvnet.hk2.component.Habitat;
 
 public class TenantConfigServiceTest {
     TenantConfigService tenantConfigService;
-    
+
     @Before
     public void before() {
         Habitat habitat = Utils.getNewHabitat();
@@ -58,7 +58,7 @@ public class TenantConfigServiceTest {
         tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
         tenantConfigService = habitat.getComponent(TenantConfigService.class);
     }   
-    
+
     @Test
     public void testGet() {
         Assert.assertNotNull("tenantConfigService", tenantConfigService);
