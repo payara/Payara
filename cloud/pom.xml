@@ -54,5 +54,6 @@
     <name>PaaS related modules</name>
     <modules>
         <module>orchestrator</module>
+        <module>elasticity</module>
     </modules>
 </project>
