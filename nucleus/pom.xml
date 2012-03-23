@@ -126,7 +126,6 @@
                 <module>packager</module>
                 <module>distributions</module>
                 <module>security</module>
-                <module>elasticity</module>
                 <module>tests</module>
             </modules>
             <build>
@@ -173,7 +172,6 @@
                 <module>packager</module>    
                 <module>distributions</module>    
                 <module>security</module>
-                <module>elasticity</module>
                 <module>tests</module>
             </modules>
         </profile>        
@@ -220,7 +218,6 @@
                 <module>packager</module>
                 <module>distributions</module>
                 <module>security</module>
-                <module>elasticity</module>
                 <module>tests</module>
             </modules>
        </profile>
