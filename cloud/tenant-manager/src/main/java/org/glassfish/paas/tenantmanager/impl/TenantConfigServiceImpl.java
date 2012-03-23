@@ -39,8 +39,20 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 import org.glassfish.paas.tenantmanager.api.TenantConfigService;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigParser;
+
+import com.sun.enterprise.module.ModulesRegistry;
 
 
 /**
@@ -51,14 +63,15 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class TenantConfigServiceImpl implements TenantConfigService {
-
     /**
      * {@inheritDoc}
      */
     @Override
     public <T> T get(Class<T> config) {
-        // TODO Auto-generated method stub
-        return null;
+        String name = getCurrentTenant();
+        Habitat habitat = getHabitat(name);
+        // TODO: assert Tenant/Environment/Service is requested
+        return  habitat.getComponent(config);
     }
 
     /**
@@ -66,7 +79,12 @@ public class TenantConfigServiceImpl implements TenantConfigService {
      */
     @Override
     public String getCurrentTenant() {
-        return currentTenant.get();
+        String name = currentTenant.get();
+        if (name == null) {
+            // TODO: loggin, error handlng, i18n
+            throw new IllegalArgumentException("No current tenant set");
+        }
+        return name;
     }
 
     /**
@@ -84,4 +102,43 @@ public class TenantConfigServiceImpl implements TenantConfigService {
         }
     };
 
+    private Habitat getHabitat(String name) {
+        if (!habitats.containsKey(name))  {
+            synchronized(habitats) {
+                if (!habitats.containsKey(name))  {
+                    habitats.put(name, getNewHabitat(name)); 
+                }                
+            }
+        }
+        return habitats.get(name);
+    }
+    
+    private Habitat getNewHabitat(String name) {
+        final Habitat habitat = registry.createHabitat("default");
+        populate(habitat, name);
+        return habitat;
+    }
+
+    private void populate(Habitat habitat, String name) {
+        String filePath = config.getFileStore().toString() + name + "/tenant.xml";
+        ConfigParser parser = new ConfigParser(habitat);
+        URL fileUrl = null;
+        try {
+            fileUrl = new URL(filePath);
+        } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+    }
+    
+    private Map<String, Habitat> habitats = new HashMap<String, Habitat>();
+
+    // TODO: obtain from server-config
+    @Inject
+    private TenantManagerConfig config;
+    
+    @Inject
+    private ModulesRegistry registry;
+    
 }

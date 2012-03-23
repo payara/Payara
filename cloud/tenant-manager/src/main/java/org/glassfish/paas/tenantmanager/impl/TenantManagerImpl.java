@@ -39,8 +39,8 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
-import org.glassfish.paas.tenantmanager.api.Tenant;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
+import org.glassfish.paas.tenantmanager.config.Tenant;
 import org.jvnet.hk2.annotations.Service;
 
 /**

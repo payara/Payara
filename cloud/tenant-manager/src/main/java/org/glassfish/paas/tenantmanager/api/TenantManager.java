@@ -40,11 +40,12 @@
 
 package org.glassfish.paas.tenantmanager.api;
 
+import org.glassfish.paas.tenantmanager.config.Tenant;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
  * TenantManager allows to manage information about all tenants. Its
- * responsibility is also to create new and delete existing informations.
+ * responsibility is to create new and delete existing informations.
  * 
  * @author Andriy Zhdanov
  * 

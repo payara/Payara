@@ -37,41 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.tenantmanager.api;
+package org.glassfish.paas.tenantmanager.config;
 
-import org.glassfish.paas.tenantmanager.api.TenantConfigService;
-import org.glassfish.paas.tenantmanager.config.Tenant;
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.glassfish.tests.utils.Utils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import java.net.URL;
 
-public class TenantConfigServiceTest {
-    TenantConfigService tenantConfigService;
-    
-    @Before
-    public void before() {
-        Habitat habitat = Utils.getNewHabitat();
-        TenantManagerConfig tenantManagerConfig = habitat.getComponent(TenantManagerConfig.class);
-        tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
-        tenantConfigService = habitat.getComponent(TenantConfigService.class);
-    }   
-    
-    @Test
-    public void testGet() {
-        Assert.assertNotNull("tenantConfigService", tenantConfigService);
-        //Assert.assertNull("currentTenant not initialized", tenantConfigService.getCurrentTenant());
-        tenantConfigService.setCurrentTenant("tenant1");
-        Assert.assertEquals("currentTenant", "tenant1", tenantConfigService.getCurrentTenant());
-        Tenant tenant = tenantConfigService.get(Tenant.class);
-        Assert.assertNotNull("currentTenant", tenant);
-        Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
-        tenantConfigService.setCurrentTenant("tenant2");
-        tenant = tenantConfigService.get(Tenant.class);
-        Assert.assertNotNull("currentTenant", tenant);
-        Assert.assertEquals("currentTenant", "tenant2", tenant.getName());
-    }
+import org.jvnet.hk2.annotations.Contract;
 
+@Contract
+public interface TenantManagerConfig {
+
+    URL getFileStore();
+    void setFileStore(URL fileStore);
 }

@@ -37,41 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.tenantmanager.api;
+package org.glassfish.paas.tenantmanager.impl;
 
-import org.glassfish.paas.tenantmanager.api.TenantConfigService;
-import org.glassfish.paas.tenantmanager.config.Tenant;
+import java.net.URL;
+
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.glassfish.tests.utils.Utils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.annotations.Service;
 
-public class TenantConfigServiceTest {
-    TenantConfigService tenantConfigService;
-    
-    @Before
-    public void before() {
-        Habitat habitat = Utils.getNewHabitat();
-        TenantManagerConfig tenantManagerConfig = habitat.getComponent(TenantManagerConfig.class);
-        tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
-        tenantConfigService = habitat.getComponent(TenantConfigService.class);
-    }   
-    
-    @Test
-    public void testGet() {
-        Assert.assertNotNull("tenantConfigService", tenantConfigService);
-        //Assert.assertNull("currentTenant not initialized", tenantConfigService.getCurrentTenant());
-        tenantConfigService.setCurrentTenant("tenant1");
-        Assert.assertEquals("currentTenant", "tenant1", tenantConfigService.getCurrentTenant());
-        Tenant tenant = tenantConfigService.get(Tenant.class);
-        Assert.assertNotNull("currentTenant", tenant);
-        Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
-        tenantConfigService.setCurrentTenant("tenant2");
-        tenant = tenantConfigService.get(Tenant.class);
-        Assert.assertNotNull("currentTenant", tenant);
-        Assert.assertEquals("currentTenant", "tenant2", tenant.getName());
+/**
+ * Temporary staff.
+ * 
+ * @author Andriy Zhdanov
+ *
+ */
+@Service
+public class TenantManagerConfigImpl implements TenantManagerConfig {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public URL getFileStore() {
+        return fileStore;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setFileStore(URL fileStore) {
+        this.fileStore = fileStore;
+    }
+
+    private URL fileStore = null; //System.getProperty(SystemPropertyConstants.CONFIG_ROOT_PROPERTY);
 
 }

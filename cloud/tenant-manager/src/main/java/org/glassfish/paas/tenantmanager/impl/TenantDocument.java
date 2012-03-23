@@ -37,18 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.tenantmanager.impl;
 
-package org.glassfish.paas.tenantmanager.api;
+import java.net.URL;
 
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.DomDocument;
 
 /**
+ * Override <code>make()</code> to create ConfigBean instead of Dom for
+ * <code>ConfigSupport.apply()</code> and keep URL of origin resource to
+ * persist changes later.
  * 
  * @author Andriy Zhdanov
- *
+ * 
  */
-@Configured
-public interface Tenant extends ConfigBeanProxy {
+public class TenantDocument extends DomDocument<ConfigBean> {
+
+    public TenantDocument(final Habitat habitat, URL resource) {
+        super(habitat);
+        
+        this.resource = resource;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
+            ConfigBean dom, ConfigModel configModel) {
+        return new ConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+    }
+
+    /**
+     * Get origin resource URL.
+     * 
+     * @return URL of origin resource
+     */
+    public URL getResource() {
+        return resource;
+    }
+
+    private URL resource;
 
 }
