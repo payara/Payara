@@ -37,136 +37,116 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.servermgmt.pe;
-
 
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 
-public final class PEDomainXmlTokens
-{
-    public static final String CONFIG_MODEL_NAME_TOKEN_NAME  = "CONFIG_MODEL_NAME";
+public final class PEDomainXmlTokens {
+    public static final String CONFIG_MODEL_NAME_TOKEN_NAME = "CONFIG_MODEL_NAME";
     public static final String CONFIG_MODEL_NAME_TOKEN_VALUE = "server-config";
-
-    public static final String HOST_NAME_TOKEN_NAME          = "HOST_NAME";
-    public static final String DOMAIN_NAME_TOKEN_NAME        = "DOMAIN_NAME";
-    
-    public static final String HTTP_PORT_TOKEN_NAME          = "HTTP_PORT";
-
-    public static final String ORB_LISTENER_PORT_TOKEN_NAME  = "ORB_LISTENER_PORT";
-
-    public static final String JMS_PROVIDER_PORT_TOKEN_NAME= "JMS_PROVIDER_PORT"; 
-    
-    public static final String SERVER_ID_TOKEN_NAME= "SERVER_ID"; 
-
-    public static final String ADMIN_PORT_TOKEN_NAME= "ADMIN_PORT";
-
-    public static final String HTTP_SSL_PORT_TOKEN_NAME= "HTTP_SSL_PORT";
-
-    public static final String ORB_SSL_PORT_TOKEN_NAME= "ORB_SSL_PORT";
-
-    public static final String ORB_MUTUALAUTH_PORT_TOKEN_NAME= "ORB_MUTUALAUTH_PORT";
-
+    public static final String HOST_NAME_TOKEN_NAME = "HOST_NAME";
+    public static final String DOMAIN_NAME_TOKEN_NAME = "DOMAIN_NAME";
+    public static final String HTTP_PORT_TOKEN_NAME = "HTTP_PORT";
+    public static final String ORB_LISTENER_PORT_TOKEN_NAME = "ORB_LISTENER_PORT";
+    public static final String JMS_PROVIDER_PORT_TOKEN_NAME = "JMS_PROVIDER_PORT";
+    public static final String SERVER_ID_TOKEN_NAME = "SERVER_ID";
+    public static final String ADMIN_PORT_TOKEN_NAME = "ADMIN_PORT";
+    public static final String HTTP_SSL_PORT_TOKEN_NAME = "HTTP_SSL_PORT";
+    public static final String ORB_SSL_PORT_TOKEN_NAME = "ORB_SSL_PORT";
+    public static final String ORB_MUTUALAUTH_PORT_TOKEN_NAME = "ORB_MUTUALAUTH_PORT";
     public static final String OSGI_SHELL_TELNET_PORT_TOKEN_NAME = "OSGI_SHELL_TELNET_PORT";
-
     public static final String JAVA_DEBUGGER_PORT_TOKEN_NAME = "JAVA_DEBUGGER_PORT";
-    
     public static final String ADMIN_CERT_DN_TOKEN_NAME = "ADMIN_CERT_DN";
-    
     public static final String INSTANCE_CERT_DN_TOKEN_NAME = "INSTANCE_CERT_DN";
-    
     public static final String SECURE_ADMIN_IDENTIFIER_TOKEN_NAME = "SECURE_ADMIN_IDENTIFIER";
-    
-
     //This token is used for SE/EE only now, but it is likely that we will want to expose it
     //in PE (i.e. to access the exposed Mbeans). Remember that the http jmx port (used by
     //asadmin) will not be exposed pubically.
-    public static final String JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME="JMX_SYSTEM_CONNECTOR_PORT";
-    
-    public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
-    {
+    public static final String JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME = "JMX_SYSTEM_CONNECTOR_PORT";
+
+    public static TokenValueSet getTokenValueSet(DomainConfig domainConfig) {
         final TokenValueSet tokens = new TokenValueSet();
 
-        String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);
-        if((instanceName == null) || (instanceName.equals("")))
+        String instanceName = (String) domainConfig.get(DomainConfig.K_SERVERID);
+        if ((instanceName == null) || (instanceName.equals("")))
             instanceName = PEFileLayout.DEFAULT_INSTANCE_NAME;
 
         TokenValue tv = new TokenValue(CONFIG_MODEL_NAME_TOKEN_NAME,
-                                    CONFIG_MODEL_NAME_TOKEN_VALUE);
+                CONFIG_MODEL_NAME_TOKEN_VALUE);
         tokens.add(tv);
 
-        tv = new TokenValue(HOST_NAME_TOKEN_NAME, 
-                (String)domainConfig.get(DomainConfig.K_HOST_NAME));
+        tv = new TokenValue(HOST_NAME_TOKEN_NAME,
+                (String) domainConfig.get(DomainConfig.K_HOST_NAME));
         tokens.add(tv);
 
-        final Integer adminPort = 
-            (Integer)domainConfig.get(DomainConfig.K_ADMIN_PORT);
+        final Integer adminPort =
+                (Integer) domainConfig.get(DomainConfig.K_ADMIN_PORT);
         tv = new TokenValue(ADMIN_PORT_TOKEN_NAME, adminPort.toString());
         tokens.add(tv);
 
-        final Integer httpPort = 
-            (Integer)domainConfig.get(DomainConfig.K_INSTANCE_PORT);
+        final Integer httpPort =
+                (Integer) domainConfig.get(DomainConfig.K_INSTANCE_PORT);
         tv = new TokenValue(HTTP_PORT_TOKEN_NAME, httpPort.toString());
         tokens.add(tv);
 
-        final Integer orbPort = 
-            (Integer)domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT);
+        final Integer orbPort =
+                (Integer) domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT);
         tv = new TokenValue(ORB_LISTENER_PORT_TOKEN_NAME, orbPort.toString());
         tokens.add(tv);
 
-        final Integer jmsPort = 
-            (Integer)domainConfig.get(DomainConfig.K_JMS_PORT);
+        final Integer jmsPort =
+                (Integer) domainConfig.get(DomainConfig.K_JMS_PORT);
         tv = new TokenValue(JMS_PROVIDER_PORT_TOKEN_NAME, jmsPort.toString());
         tokens.add(tv);
 
-        tv = new TokenValue(SERVER_ID_TOKEN_NAME, 
-                                instanceName);
+        tv = new TokenValue(SERVER_ID_TOKEN_NAME,
+                instanceName);
         tokens.add(tv);
- 
-        final Integer httpSslPort = 
-            (Integer)domainConfig.get(DomainConfig.K_HTTP_SSL_PORT);
+
+        final Integer httpSslPort =
+                (Integer) domainConfig.get(DomainConfig.K_HTTP_SSL_PORT);
         tv = new TokenValue(HTTP_SSL_PORT_TOKEN_NAME, httpSslPort.toString());
         tokens.add(tv);
 
-        final Integer orbSslPort = 
-            (Integer)domainConfig.get(DomainConfig.K_IIOP_SSL_PORT);
+        final Integer orbSslPort =
+                (Integer) domainConfig.get(DomainConfig.K_IIOP_SSL_PORT);
         tv = new TokenValue(ORB_SSL_PORT_TOKEN_NAME, orbSslPort.toString());
         tokens.add(tv);
 
-        final Integer orbMutualAuthPort = 
-            (Integer)domainConfig.get(DomainConfig.K_IIOP_MUTUALAUTH_PORT);
+        final Integer orbMutualAuthPort =
+                (Integer) domainConfig.get(DomainConfig.K_IIOP_MUTUALAUTH_PORT);
         tv = new TokenValue(ORB_MUTUALAUTH_PORT_TOKEN_NAME, orbMutualAuthPort.toString());
         tokens.add(tv);
 
-        final Integer jmxPort = 
-            (Integer)domainConfig.get(DomainConfig.K_JMX_PORT);
+        final Integer jmxPort =
+                (Integer) domainConfig.get(DomainConfig.K_JMX_PORT);
         tv = new TokenValue(JMX_SYSTEM_CONNECTOR_PORT_TOKEN_NAME, jmxPort.toString());
         tokens.add(tv);
 
         tv = new TokenValue(DOMAIN_NAME_TOKEN_NAME, domainConfig.getRepositoryName());
         tokens.add(tv);
-        
+
         final Integer osgiShellTelnetPort =
-            (Integer)domainConfig.get(DomainConfig.K_OSGI_SHELL_TELNET_PORT);
+                (Integer) domainConfig.get(DomainConfig.K_OSGI_SHELL_TELNET_PORT);
         tv = new TokenValue(OSGI_SHELL_TELNET_PORT_TOKEN_NAME, osgiShellTelnetPort.toString());
         tokens.add(tv);
 
         final Integer javaDebuggerPort =
-            (Integer)domainConfig.get(DomainConfig.K_JAVA_DEBUGGER_PORT);
+                (Integer) domainConfig.get(DomainConfig.K_JAVA_DEBUGGER_PORT);
         tv = new TokenValue(JAVA_DEBUGGER_PORT_TOKEN_NAME, javaDebuggerPort.toString());
         tokens.add(tv);
 
         tv = new TokenValue(ADMIN_CERT_DN_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_ADMIN_CERT_DN));
         tokens.add(tv);
-        
+
         tv = new TokenValue(INSTANCE_CERT_DN_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_INSTANCE_CERT_DN));
         tokens.add(tv);
-        
+
         tv = new TokenValue(SECURE_ADMIN_IDENTIFIER_TOKEN_NAME, (String) domainConfig.get(DomainConfig.K_SECURE_ADMIN_IDENTIFIER));
         tokens.add(tv);
-        
-        return ( tokens );
+
+        return (tokens);
     }
 }
