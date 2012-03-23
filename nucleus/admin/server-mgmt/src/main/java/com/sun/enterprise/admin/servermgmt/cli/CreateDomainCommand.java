@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
@@ -84,111 +83,91 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
- *  This is a local command that creates a domain.
+ * This is a local command that creates a domain.
  */
 @Service(name = "create-domain")
 @Scoped(PerLookup.class)
 public final class CreateDomainCommand extends CLICommand {
-
     // constants for create-domain options
     private static final String ADMIN_PORT = "adminport";
     private static final String ADMIN_PASSWORD = "AS_ADMIN_PASSWORD";
     private static final String ADMIN_ADMINPASSWORD = "AS_ADMIN_ADMINPASSWORD";
     private static final String MASTER_PASSWORD = "AS_ADMIN_MASTERPASSWORD";
     private static final String DEFAULT_MASTER_PASSWORD =
-                                    RepositoryManager.DEFAULT_MASTER_PASSWORD;
+            RepositoryManager.DEFAULT_MASTER_PASSWORD;
     private static final String SAVE_MASTER_PASSWORD = "savemasterpassword";
     private static final String INSTANCE_PORT = "instanceport";
     private static final String DOMAIN_PROPERTIES = "domainproperties";
     private static final String PORTBASE_OPTION = "portbase";
-
     private String adminUser = null;
-
     @Param(name = ADMIN_PORT, optional = true)
     private String adminPort;
-
     @Param(name = PORTBASE_OPTION, optional = true)
     private String portBase;
-
-    @Param(obsolete=true, name = "profile", optional = true)
+    @Param(obsolete = true, name = "profile", optional = true)
     private String profile;
-
     @Param(name = "template", optional = true)
     private String template;
-
     @Param(name = "domaindir", optional = true)
     private String domainDir;
-
     @Param(name = INSTANCE_PORT, optional = true)
     private String instancePort;
-
     @Param(name = SAVE_MASTER_PASSWORD, optional = true, defaultValue = "false")
     private boolean saveMasterPassword = false;
-
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
-
     @Param(name = DOMAIN_PROPERTIES, optional = true, separator = ':')
     private Properties domainProperties;
-
     @Param(name = "keytooloptions", optional = true)
     private String keytoolOptions;
-
     @Param(name = "savelogin", optional = true, defaultValue = "false")
     private boolean saveLoginOpt = false;
-
     @Param(name = "nopassword", optional = true, defaultValue = "false")
     private boolean noPassword = false;
-
     //@Param(name = "AS_ADMIN_ADMINPASSWORD", optional = true, password = true)
     private String adminPassword = null;
-
     //@Param(name = "AS_ADMIN_MASTERPASSWORD", optional = true, password = true)
     private String masterPassword = null;
-
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts = true;
-
     @Param(name = "domain_name", primary = true)
     private String domainName;
-
     private ParamModelData masterPasswordOption;
     private ParamModelData adminPasswordOption;
-
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(CreateDomainCommand.class);
 
     public CreateDomainCommand() {
         masterPasswordOption = new ParamModelData(MASTER_PASSWORD,
-                        String.class, false, null);
+                String.class, false, null);
         masterPasswordOption.description = strings.get("MasterPassword");
         masterPasswordOption.param._password = true;
         adminPasswordOption = new ParamModelData(ADMIN_PASSWORD,
-                        String.class, false, null);
+                String.class, false, null);
         adminPasswordOption.description = strings.get("AdminPassword");
         adminPasswordOption.param._password = true;
     }
 
     /**
-     * Add --adminport and --instanceport options with
-     * proper default values.  (Can't set default values above
-     * because it conflicts with --portbase option processing.)
+     * Add --adminport and --instanceport options with proper default values.
+     * (Can't set default values above because it conflicts with --portbase
+     * option processing.)
      */
     protected Collection<ParamModel> usageOptions() {
         Collection<ParamModel> opts = commandModel.getParameters();
         Set<ParamModel> uopts = new LinkedHashSet<ParamModel>();
-	ParamModel aPort = new ParamModelData(ADMIN_PORT, String.class, true,
-            Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT));
-	ParamModel iPort = new ParamModelData(INSTANCE_PORT, String.class, true,
-            Integer.toString(DEFAULT_INSTANCE_PORT));
-	for (ParamModel pm : opts) {
-	    if (pm.getName().equals(ADMIN_PORT))
+        ParamModel aPort = new ParamModelData(ADMIN_PORT, String.class, true,
+                Integer.toString(CLIConstants.DEFAULT_ADMIN_PORT));
+        ParamModel iPort = new ParamModelData(INSTANCE_PORT, String.class, true,
+                Integer.toString(DEFAULT_INSTANCE_PORT));
+        for (ParamModel pm : opts) {
+            if (pm.getName().equals(ADMIN_PORT))
                 uopts.add(aPort);
-	    else if (pm.getName().equals(INSTANCE_PORT))
+            else if (pm.getName().equals(INSTANCE_PORT))
                 uopts.add(iPort);
             else
                 uopts.add(pm);
-	}
+        }
         return uopts;
     }
 
@@ -196,47 +175,47 @@ public final class CreateDomainCommand extends CLICommand {
      */
     @Override
     protected void validate()
-            throws CommandException, CommandValidationException  {
+            throws CommandException, CommandValidationException {
         if (domainDir == null) {
             domainDir = getSystemProperty(
-                            SystemPropertyConstants.DOMAINS_ROOT_PROPERTY);
+                    SystemPropertyConstants.DOMAINS_ROOT_PROPERTY);
         }
         if (domainDir == null) {
             throw new CommandValidationException(
-                            strings.get("InvalidDomainPath", domainDir));
+                    strings.get("InvalidDomainPath", domainDir));
         }
 
         /*
-         * The only required value is the domain_name operand,
-         * which might have been prompted for before we get here.
+         * The only required value is the domain_name operand, which might have
+         * been prompted for before we get here.
          *
-         * If --user wasn't specified as a program option,
-         * we treat it as a required option and prompt for it
-         * if possible, unless --nopassword was specified in
-         * which case we default the user name.
+         * If --user wasn't specified as a program option, we treat it as a
+         * required option and prompt for it if possible, unless --nopassword
+         * was specified in which case we default the user name.
          *
-         * The next prompted-for value will be the admin password,
-         * if required.
+         * The next prompted-for value will be the admin password, if required.
          */
         if (programOpts.getUser() == null && !noPassword) {
             // prompt for it (if interactive)
             Console cons = System.console();
             if (cons != null && programOpts.isInteractive()) {
                 cons.printf("%s", strings.get("AdminUserRequiredPrompt",
-                    SystemPropertyConstants.DEFAULT_ADMIN_USER));
+                        SystemPropertyConstants.DEFAULT_ADMIN_USER));
                 String val = cons.readLine();
                 if (ok(val))
                     programOpts.setUser(val);
-            } else {
+            }
+            else {
                 //logger.info(strings.get("AdminUserRequired"));
                 throw new CommandValidationException(
-                    strings.get("AdminUserRequired"));
+                        strings.get("AdminUserRequired"));
             }
         }
         if (programOpts.getUser() != null) {
             try {
                 FileRealmHelper.validateUserName(programOpts.getUser());
-            } catch (IllegalArgumentException ise) {
+            }
+            catch (IllegalArgumentException ise) {
                 throw new CommandValidationException(
                         strings.get("InvalidUserName", programOpts.getUser()));
             }
@@ -254,53 +233,53 @@ public final class CreateDomainCommand extends CLICommand {
             throws CommandValidationException {
         // set the option name and value in the options list
         verifyPortBasePortIsValid(ADMIN_PORT,
-            portbase + PORTBASE_ADMINPORT_SUFFIX);
+                portbase + PORTBASE_ADMINPORT_SUFFIX);
         adminPort = String.valueOf(portbase + PORTBASE_ADMINPORT_SUFFIX);
 
         verifyPortBasePortIsValid(INSTANCE_PORT,
-            portbase + PORTBASE_INSTANCE_SUFFIX);
+                portbase + PORTBASE_INSTANCE_SUFFIX);
         instancePort = String.valueOf(portbase + PORTBASE_INSTANCE_SUFFIX);
 
         domainProperties = new Properties();
         verifyPortBasePortIsValid(DomainConfig.K_HTTP_SSL_PORT,
-            portbase + PORTBASE_HTTPSSL_SUFFIX);
+                portbase + PORTBASE_HTTPSSL_SUFFIX);
         domainProperties.put(DomainConfig.K_HTTP_SSL_PORT,
-            String.valueOf(portbase + PORTBASE_HTTPSSL_SUFFIX));
+                String.valueOf(portbase + PORTBASE_HTTPSSL_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_IIOP_SSL_PORT,
-            portbase + PORTBASE_IIOPSSL_SUFFIX);
+                portbase + PORTBASE_IIOPSSL_SUFFIX);
         domainProperties.put(DomainConfig.K_IIOP_SSL_PORT,
-            String.valueOf(portbase + PORTBASE_IIOPSSL_SUFFIX));
+                String.valueOf(portbase + PORTBASE_IIOPSSL_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_IIOP_MUTUALAUTH_PORT,
                 portbase + PORTBASE_IIOPMUTUALAUTH_SUFFIX);
         domainProperties.put(DomainConfig.K_IIOP_MUTUALAUTH_PORT,
-            String.valueOf(portbase + PORTBASE_IIOPMUTUALAUTH_SUFFIX));
+                String.valueOf(portbase + PORTBASE_IIOPMUTUALAUTH_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_JMS_PORT,
-            portbase + PORTBASE_JMS_SUFFIX);
+                portbase + PORTBASE_JMS_SUFFIX);
         domainProperties.put(DomainConfig.K_JMS_PORT,
-            String.valueOf(portbase + PORTBASE_JMS_SUFFIX));
+                String.valueOf(portbase + PORTBASE_JMS_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_ORB_LISTENER_PORT,
-            portbase + PORTBASE_IIOP_SUFFIX);
+                portbase + PORTBASE_IIOP_SUFFIX);
         domainProperties.put(DomainConfig.K_ORB_LISTENER_PORT,
-            String.valueOf(portbase + PORTBASE_IIOP_SUFFIX));
+                String.valueOf(portbase + PORTBASE_IIOP_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_JMX_PORT,
-            portbase + PORTBASE_JMX_SUFFIX);
+                portbase + PORTBASE_JMX_SUFFIX);
         domainProperties.put(DomainConfig.K_JMX_PORT,
-            String.valueOf(portbase + PORTBASE_JMX_SUFFIX));
+                String.valueOf(portbase + PORTBASE_JMX_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_OSGI_SHELL_TELNET_PORT,
-            portbase + PORTBASE_OSGI_SUFFIX);
+                portbase + PORTBASE_OSGI_SUFFIX);
         domainProperties.put(DomainConfig.K_OSGI_SHELL_TELNET_PORT,
-            String.valueOf(portbase + PORTBASE_OSGI_SUFFIX));
+                String.valueOf(portbase + PORTBASE_OSGI_SUFFIX));
 
         verifyPortBasePortIsValid(DomainConfig.K_JAVA_DEBUGGER_PORT,
-            portbase + PORTBASE_DEBUG_SUFFIX);
+                portbase + PORTBASE_DEBUG_SUFFIX);
         domainProperties.put(DomainConfig.K_JAVA_DEBUGGER_PORT,
-            String.valueOf(portbase + PORTBASE_DEBUG_SUFFIX));
+                String.valueOf(portbase + PORTBASE_DEBUG_SUFFIX));
 
     }
 
@@ -314,31 +293,34 @@ public final class CreateDomainCommand extends CLICommand {
         try {
             DomainsManager manager = new PEDomainsManager();
             DomainConfig config =
-                new DomainConfig(domainName, domainDir);
+                    new DomainConfig(domainName, domainDir);
             manager.validateDomain(config, false);
             verifyPortBase();
-        } catch (DomainException e) {
+        }
+        catch (DomainException e) {
             logger.fine(e.getLocalizedMessage());
             throw new CommandException(
-                strings.get("CouldNotCreateDomain", domainName), e);
+                    strings.get("CouldNotCreateDomain", domainName), e);
         }
 
         /*
-         * The admin user is specified with the --user program option.
-         * If not specified (because the user hit Enter at the prompt),
-         * we use the default, which allows unauthenticated login.
+         * The admin user is specified with the --user program option. If not
+         * specified (because the user hit Enter at the prompt), we use the
+         * default, which allows unauthenticated login.
          */
         adminUser = programOpts.getUser();
         if (!ok(adminUser)) {
             adminUser = SystemPropertyConstants.DEFAULT_ADMIN_USER;
             adminPassword = SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD;
-        } else if (noPassword) {
+        }
+        else if (noPassword) {
             adminPassword = SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD;
-        } else {
+        }
+        else {
             /*
-             * If the admin password was supplied in the password
-             * file, and no master password is suppied, we use the
-             * default master password without prompting.
+             * If the admin password was supplied in the password file, and no
+             * master password is suppied, we use the default master password
+             * without prompting.
              *
              * The admin password can be supplied using the deprecated
              * AS_ADMIN_ADMINPASSWORD option in the password file.
@@ -348,7 +330,8 @@ public final class CreateDomainCommand extends CLICommand {
             if (adminPassword != null) {
                 haveAdminPwd = true;
                 logger.warning(strings.get("DeprecatedAdminPassword"));
-            } else {
+            }
+            else {
                 haveAdminPwd = passwords.get(ADMIN_PASSWORD) != null;
                 adminPassword = getAdminPassword();
             }
@@ -375,23 +358,24 @@ public final class CreateDomainCommand extends CLICommand {
 
             // saving the login information happens inside this method
             createTheDomain(domainDir, domainProperties);
-        } catch (CommandException ce) {
+        }
+        catch (CommandException ce) {
             logger.info(ce.getLocalizedMessage());
             throw new CommandException(
-                strings.get("CouldNotCreateDomain", domainName), ce);
-        } catch (Exception e) {
+                    strings.get("CouldNotCreateDomain", domainName), ce);
+        }
+        catch (Exception e) {
             logger.fine(e.getLocalizedMessage());
             throw new CommandException(
-                strings.get("CouldNotCreateDomain", domainName), e);
+                    strings.get("CouldNotCreateDomain", domainName), e);
         }
         return 0;
     }
 
     /**
-     * Verify that the port is valid.
-     * Port must be greater than 0 and less than 65535.
-     * This method will also check if the port is in use.
-     * If checkPorts is false it does not throw an Exception if it is in use.
+     * Verify that the port is valid. Port must be greater than 0 and less than
+     * 65535. This method will also check if the port is in use. If checkPorts
+     * is false it does not throw an Exception if it is in use.
      *
      * @param portNum - the port number to verify
      * @throws CommandException if Port is not valid
@@ -414,27 +398,27 @@ public final class CreateDomainCommand extends CLICommand {
         NetUtils.PortAvailability avail = NetUtils.checkPort(portToVerify);
 
         switch (avail) {
-        case illegalNumber:
-            throw new CommandException(
-                strings.get("InvalidPortRange", portNum));
-
-        case inUse:
+            case illegalNumber:
                 throw new CommandException(
-                    strings.get("PortInUseError", domainName, portNum));
+                        strings.get("InvalidPortRange", portNum));
 
-        case noPermission:
+            case inUse:
                 throw new CommandException(
-                    strings.get("NoPermissionForPortError",
-                    portNum, domainName));
+                        strings.get("PortInUseError", domainName, portNum));
 
-        case unknown:
-            throw new CommandException(strings.get("UnknownPortMsg", portNum));
+            case noPermission:
+                throw new CommandException(
+                        strings.get("NoPermissionForPortError",
+                        portNum, domainName));
 
-        case OK:
-            logger.log(Level.FINER, "Port ={0}", portToVerify);
-            break;
-        default:
-            break;
+            case unknown:
+                throw new CommandException(strings.get("UnknownPortMsg", portNum));
+
+            case OK:
+                logger.log(Level.FINER, "Port ={0}", portToVerify);
+                break;
+            default:
+                break;
         }
     }
 
@@ -449,16 +433,16 @@ public final class CreateDomainCommand extends CLICommand {
             throws CommandValidationException {
         try {
             return Integer.parseInt(port);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new CommandValidationException(
                     strings.get("InvalidPortNumber", port));
         }
     }
 
     /**
-     * Verify that the portbase port is valid
-     * Port must be greater than 0 and less than 65535.
-     * This method will also check if the port is in used.
+     * Verify that the portbase port is valid Port must be greater than 0 and
+     * less than 65535. This method will also check if the port is in used.
      *
      * @param portNum the port number to verify
      * @throws CommandException if Port is not valid
@@ -468,11 +452,11 @@ public final class CreateDomainCommand extends CLICommand {
             throws CommandValidationException {
         if (portNum <= 0 || portNum > PORT_MAX_VAL) {
             throw new CommandValidationException(
-                strings.get("InvalidPortBaseRange", portNum, portName));
+                    strings.get("InvalidPortBaseRange", portNum, portName));
         }
         if (checkPorts && !NetUtils.isPortFree(portNum)) {
             throw new CommandValidationException(
-                strings.get("PortBasePortInUse", portNum, portName));
+                    strings.get("PortBasePortInUse", portNum, portName));
         }
         logger.finer("Port =" + portNum);
     }
@@ -549,10 +533,10 @@ public final class CreateDomainCommand extends CLICommand {
                 "JAVA_DEBUGGER");
 
         checkPortPrivilege(new Integer[]{
-            adminPortInt, instancePortInt, jmsPort, orbPort, httpSSLPort,
-            jmsPort, orbPort, httpSSLPort, iiopSSLPort,
-            iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort
-        });
+                    adminPortInt, instancePortInt, jmsPort, orbPort, httpSSLPort,
+                    jmsPort, orbPort, httpSSLPort, iiopSSLPort,
+                    iiopMutualAuthPort, jmxPort, osgiShellTelnetPort, javaDebuggerPort
+                });
 
         DomainConfig domainConfig = new DomainConfig(domainName,
                 adminPortInt, domainPath, adminUser,
@@ -581,19 +565,20 @@ public final class CreateDomainCommand extends CLICommand {
         manager.createDomain(domainConfig);
         try {
             modifyInitialDomainXml(domainConfig);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.warning(
-                            strings.get("CustomizationFailed",e.getMessage()));
+                    strings.get("CustomizationFailed", e.getMessage()));
         }
         logger.info(strings.get("DomainCreated", domainName));
         logger.info(strings.get("DomainPort", domainName, adminPortInt.toString()));
         if (adminPassword.equals(
                 SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD))
             logger.info(strings.get("DomainAllowsUnauth", domainName,
-                                                                    adminUser));
+                    adminUser));
         else
             logger.info(
-                strings.get("DomainAdminUser", domainName, adminUser));
+                    strings.get("DomainAdminUser", domainName, adminUser));
         //checkAsadminPrefsFile();
         if (saveLoginOpt) {
             saveLogin(adminPortInt, adminUser, adminPassword, domainName);
@@ -601,7 +586,7 @@ public final class CreateDomainCommand extends CLICommand {
     }
 
     /**
-     * Saves the login information to the login store.  Usually this is the file
+     * Saves the login information to the login store. Usually this is the file
      * ".asadminpass" in user's home directory.
      */
     private void saveLogin(final int port, final String user,
@@ -611,19 +596,20 @@ public final class CreateDomainCommand extends CLICommand {
             // and entry is overwritten
             final LoginInfoStore store = LoginInfoStoreFactory.getStore(null);
             final LoginInfo login =
-                new LoginInfo("localhost", port, user, password);
+                    new LoginInfo("localhost", port, user, password);
             if (store.exists(login.getHost(), login.getPort())) {
                 // just let the user know that the user has chosen to overwrite
                 // the login information. This is non-interactive, on purpose
                 logger.info(strings.get("OverwriteLoginMsgCreateDomain",
-                                        login.getHost(), "" + login.getPort()));
+                        login.getHost(), "" + login.getPort()));
             }
             store.store(login, true);
             logger.info(strings.get("LoginInfoStoredCreateDomain",
-                                    user, dn, store.getName()));
-        } catch (final Exception e) {
+                    user, dn, store.getName()));
+        }
+        catch (final Exception e) {
             logger.warning(
-                strings.get("LoginInfoNotStoredCreateDomain", user, dn));
+                    strings.get("LoginInfoNotStoredCreateDomain", user, dn));
             printExceptionStackTrace(e);
         }
     }
@@ -653,14 +639,17 @@ public final class CreateDomainCommand extends CLICommand {
             if ((port <= 0) || (port > PORT_MAX_VAL)) {
                 invalidPortSpecified = true;
             }
-        } else if (properties != null) {
+        }
+        else if (properties != null) {
             String property = properties.getProperty(key);
             if ((property != null) && !property.equals("")) {
                 port = convertPortStr(property);
-            } else {
+            }
+            else {
                 portNotSpecified = true;
             }
-        } else {
+        }
+        else {
             portNotSpecified = true;
         }
         if (portNotSpecified) {
@@ -673,23 +662,28 @@ public final class CreateDomainCommand extends CLICommand {
                 if (defaultPortUsed) {
                     logger.fine(strings.get("DefaultPortInUse",
                             name, defaultPort, Integer.toString(newport)));
-                } else {
+                }
+                else {
                     logger.fine(strings.get("PortNotSpecified",
                             name, Integer.toString(newport)));
                 }
-            } else if (invalidPortSpecified) {
+            }
+            else if (invalidPortSpecified) {
                 logger.fine(strings.get("InvalidPortRangeMsg",
                         name, Integer.toString(newport)));
-            } else {
+            }
+            else {
                 logger.fine(strings.get("PortInUse",
-                    name, Integer.toString(port), Integer.toString(newport)));
+                        name, Integer.toString(port), Integer.toString(newport)));
             }
             port = newport;
-        } else if (defaultPortUsed) {
+        }
+        else if (defaultPortUsed) {
             logger.fine(strings.get("UsingDefaultPort",
                     name, Integer.toString(port)));
-        } else {
-            logger.fine( strings.get("UsingPort",
+        }
+        else {
+            logger.fine(strings.get("UsingPort",
                     name, Integer.toString(port)));
         }
 
@@ -700,26 +694,29 @@ public final class CreateDomainCommand extends CLICommand {
     }
 
     /**
-     * Check if portbase option is specified.
-     * Portbase is mutually exclusive to adminport and domainproperties options.
-     * If portbase options is specfied and also adminport or domainproperties
-     * is specified as well, then throw an exception.
+     * Check if portbase option is specified. Portbase is mutually exclusive to
+     * adminport and domainproperties options. If portbase options is specfied
+     * and also adminport or domainproperties is specified as well, then throw
+     * an exception.
      */
     private boolean usePortBase() throws CommandValidationException {
         if (portBase != null) {
             if (adminPort != null) {
                 throw new CommandValidationException(
-                    strings.get("MutuallyExclusiveOption",
+                        strings.get("MutuallyExclusiveOption",
                         ADMIN_PORT, PORTBASE_OPTION));
-            } else if (instancePort != null) {
+            }
+            else if (instancePort != null) {
                 throw new CommandValidationException(
-                    strings.get("MutuallyExclusiveOption",
+                        strings.get("MutuallyExclusiveOption",
                         INSTANCE_PORT, PORTBASE_OPTION));
-            } else if (domainProperties != null) {
+            }
+            else if (domainProperties != null) {
                 throw new CommandValidationException(
-                    strings.get("MutuallyExclusiveOption",
+                        strings.get("MutuallyExclusiveOption",
                         DOMAIN_PROPERTIES, PORTBASE_OPTION));
-            } else {
+            }
+            else {
                 return true;
             }
         }
@@ -727,8 +724,8 @@ public final class CreateDomainCommand extends CLICommand {
     }
 
     /**
-     * Check if any of the port values are below 1024.
-     * If below 1024, then display a warning message.
+     * Check if any of the port values are below 1024. If below 1024, then
+     * display a warning message.
      */
     private void checkPortPrivilege(final Integer[] ports) {
         for (Integer port : ports) {
@@ -742,7 +739,9 @@ public final class CreateDomainCommand extends CLICommand {
         }
     }
 
-    /* validates adminpassword and masterpassword */
+    /*
+     * validates adminpassword and masterpassword
+     */
     public void validatePassword(String password, ParamModel pwdOpt)
             throws CommandValidationException {
         // XXX - hack alert!  the description is stored in the default value
@@ -752,12 +751,12 @@ public final class CreateDomainCommand extends CLICommand {
 
         if (password == null)
             throw new CommandValidationException(
-                                strings.get("PasswordMissing", description));
+                    strings.get("PasswordMissing", description));
     }
 
     /**
-     * Get the admin password, either from the password file or by
-     * prompting (if allowed).
+     * Get the admin password, either from the password file or by prompting (if
+     * allowed).
      *
      * @return admin password
      * @throws CommandValidationException if could not get the admin password
@@ -767,20 +766,20 @@ public final class CreateDomainCommand extends CLICommand {
     }
 
     /**
-     * Get the master password, prompting if necessary, and
-     * accepting the default ("changeit").
+     * Get the master password, prompting if necessary, and accepting the
+     * default ("changeit").
      */
     private String getMasterPassword()
             throws CommandValidationException, CommandException {
 
         return getPassword(masterPasswordOption,
-            DEFAULT_MASTER_PASSWORD, true);
+                DEFAULT_MASTER_PASSWORD, true);
     }
 
     /*
      */
     private void modifyInitialDomainXml(DomainConfig domainConfig)
-                                throws GlassFishException {
+            throws GlassFishException {
         // for each module implementing the @Contract DomainInitializer, extract
         // the initial domain.xml and insert it into the existing domain.xml
 
@@ -789,28 +788,28 @@ public final class CreateDomainCommand extends CLICommand {
         GlassFishRuntime runtime = GlassFishRuntime.bootstrap(bootstrapProperties);
 
         File domDir = new File(domainConfig.getDomainRoot(),
-                               domainConfig.getDomainName());
+                domainConfig.getDomainName());
         File configDir = new File(domDir, "config");
         GlassFishProperties glassFishProperties = new GlassFishProperties();
-        glassFishProperties.setConfigFileURI(new File(configDir, 
+        glassFishProperties.setConfigFileURI(new File(configDir,
                 "domain.xml").toURI().toString());
         glassFishProperties.setConfigFileReadOnly(false);
         glassFishProperties.setProperty(StartupContext.STARTUP_MODULESTARTUP_NAME,
-                                        "DomainCreation");
+                "DomainCreation");
         glassFishProperties.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY,
                 domDir.getAbsolutePath());
         glassFishProperties.setProperty("-domain", domainConfig.getDomainName());
- 
+
         GlassFish glassfish = runtime.newGlassFish(glassFishProperties);
         glassfish.start();
-        
+
         // Will always need DAS's name & config. No harm using the name 'server'
         // to fetch <server-config>
         com.sun.enterprise.config.serverbeans.Server serverConfig =
-            glassfish.getService(com.sun.enterprise.config.serverbeans.Server.class, 
+                glassfish.getService(com.sun.enterprise.config.serverbeans.Server.class,
                 "server");
         Config config = glassfish.getService(
-            Config.class, serverConfig.getConfigRef());
+                Config.class, serverConfig.getConfigRef());
 
         // Create a context object for this domain creation to enable the new
         // modules to make decisions
@@ -819,7 +818,7 @@ public final class CreateDomainCommand extends CLICommand {
         // this setting needs to be fixed. Domain type can be dev/ha/cluster and
         // this type needs to be extracted possibly using an api from installer
         ctx.setLogger(LogDomains.getLogger(
-            DomainInitializer.class, LogDomains.SERVER_LOGGER));
+                DomainInitializer.class, LogDomains.SERVER_LOGGER));
 
         // now for every such Inhabitant, fetch the actual initial config and
         // insert it into the module that initial config was targeted for.
@@ -830,33 +829,34 @@ public final class CreateDomainCommand extends CLICommand {
             logger.info(strings.get("NoCustomization"));
         }
         for (DomainInitializer inhabitant : habitat.getAllByContract(
-            DomainInitializer.class)) {
+                DomainInitializer.class)) {
             logger.info(strings.get("InvokeInitializer",
-                                                inhabitant.getClass()));
+                    inhabitant.getClass()));
             Container newContainerConfig = inhabitant.getInitialConfig(ctx);
             try {
                 ConfigSupport.apply((new ConfigCode() {
                     @Override
                     @SuppressWarnings("unchecked")
                     public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
-                        ((Config)objects[0]).getContainers().add((Container)objects[1]);
+                        ((Config) objects[0]).getContainers().add((Container) objects[1]);
                         return Boolean.TRUE;
                     }
-                }), new ConfigBeanProxy[] { config, newContainerConfig });
-            } catch(TransactionFailure e) {
+                }), new ConfigBeanProxy[]{config, newContainerConfig});
+            }
+            catch (TransactionFailure e) {
                 logger.severe(strings.get("InitializerTransactionFailure",
                         inhabitant.getClass()));
             }
         }
         glassfish.dispose();
     }
-    
+
     private void initSecureAdminSettings(final DomainConfig config) {
         config.put(DomainConfig.K_ADMIN_CERT_DN, KeystoreManager.getDASCertDN(config));
         config.put(DomainConfig.K_INSTANCE_CERT_DN, KeystoreManager.getInstanceCertDN(config));
         config.put(DomainConfig.K_SECURE_ADMIN_IDENTIFIER, secureAdminIdentifier());
     }
-    
+
     private String secureAdminIdentifier() {
         final UUID uuid = UUID.randomUUID();
         return uuid.toString();
