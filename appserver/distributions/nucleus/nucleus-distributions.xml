@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@
 -->
 
 <project name="Nucleus Distribution (ips) Creation" default="create-image" basedir=".">
-<property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Nucleus"/>
+<property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 Nucleus"/>
 
 <target name="create-image-dir">
     <mkdir dir="${installer.image.dir}"/>
@@ -120,6 +120,10 @@
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-corba-base"/>
+        <property name="image.dir" value="${image.dir}"/>
+    </ant>
+    <ant antfile="../distributions.xml" target="install-package">
+        <property name="package.name" value="glassfish-osgi"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
 
