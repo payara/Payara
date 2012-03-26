@@ -41,6 +41,8 @@
 package org.glassfish.paas.spe.common;
 
 import com.sun.logging.LogDomains;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
@@ -49,6 +51,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.virtualization.config.TemplateIndex;
@@ -345,5 +348,19 @@ public abstract class ServiceProvisioningEngineBase<T extends org.glassfish.paas
         ServiceCharacteristics sc = serviceDescription.getServiceCharacteristics();
         String templateId = ti != null ? ti.getId() : findTemplate(sc);
         return templateId != null? templateRepository.byName(templateId) : null;
+    }
+
+   /**
+     * {@inheritDoc}
+     */
+    public boolean deploy(PaaSDeploymentContext dc, Service service){
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean undeploy(PaaSDeploymentContext dc, Service service){
+        return true;
     }
 }

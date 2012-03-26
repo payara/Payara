@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
@@ -64,12 +63,12 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.Property;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
@@ -87,7 +86,7 @@ import org.glassfish.virtualization.spi.TemplateRepository;
  * @author Jagadish Ramu
  */
 @Scoped(PerLookup.class)
-@Service
+@org.jvnet.hk2.annotations.Service
 public class LBPlugin implements ServicePlugin {
 
     @Inject
@@ -275,8 +274,8 @@ public class LBPlugin implements ServicePlugin {
     }
    
     @Override
-    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
+    public void associateServices(Service serviceConsumer, ServiceReference svcRef,
+                                  Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         if(beforeDeployment){
             return;
         }
@@ -287,14 +286,14 @@ public class LBPlugin implements ServicePlugin {
             return;
         }
         
-        String appDomainName = dc.getDeploymentContext().getTransientAppMetaData
+        String appDomainName = dc.getTransientAppMetaData
                 (APPLICATION_DOMAIN_NAME, String.class);
         callAssociateService(serviceConsumer, serviceProvider, false, dc.getAppName(), appDomainName);
         
     }
 
-    private void callAssociateService(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
-            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig, String appName, String appDomainName) {
+    private void callAssociateService(Service serviceConsumer,
+            Service serviceProvider, boolean isReconfig, String appName, String appDomainName) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
         logger.entering(getClass().getName(), "provisionService");
@@ -328,8 +327,18 @@ public class LBPlugin implements ServicePlugin {
         }
     }
 
-    public ApplicationContainer deploy(ReadableArchive cloudArchive) {
-        return null;
+   /**
+     * {@inheritDoc}
+     */
+    public boolean deploy(PaaSDeploymentContext dc, Service service){
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean undeploy(PaaSDeploymentContext dc, Service service){
+        return true;
     }
 
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
@@ -465,8 +474,8 @@ public class LBPlugin implements ServicePlugin {
         return true;
     }
 
-    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
+    public void dissociateServices(Service serviceConsumer, ServiceReference svcRef,
+                                   Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc){
         if(!beforeUndeploy){
             return;
         }
@@ -537,9 +546,9 @@ public class LBPlugin implements ServicePlugin {
     }
 
     @Override
-    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
-            org.glassfish.paas.orchestrator.service.spi.Service oldServiceProvider,
-            org.glassfish.paas.orchestrator.service.spi.Service newServiceProvider,
+    public boolean reassociateServices(Service serviceConsumer,
+            Service oldServiceProvider,
+            Service newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
         callAssociateService(serviceConsumer, newServiceProvider, true, null, null);
         return true;

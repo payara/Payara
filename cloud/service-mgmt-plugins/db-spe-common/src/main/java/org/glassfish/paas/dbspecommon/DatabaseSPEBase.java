@@ -40,8 +40,6 @@
 package org.glassfish.paas.dbspecommon;
 
 import org.apache.tools.ant.AntClassLoader;
-import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
@@ -148,22 +146,20 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
                                                       ReadableArchive cloudArchive,
                                                       PaaSDeploymentContext dc) {
         Set<ServiceReference> servicesReferences = new LinkedHashSet<ServiceReference>();
-        if(dc.getDeploymentContext() != null){
-            //TODO : Jagadish : we are returning service-reference on own service, which can be
-            //avoided when new contract on ServicePlugin is introduced.
-            String initSqlFile = null;
-            initSqlFile = getInitSQLFileName(cloudArchive, dc);
-            if (new File(initSqlFile).exists()) {
-                servicesReferences.add(new ServiceReference("init-sql-ref","javax.sql.DataSource", null));
-                return servicesReferences; //no need to check service properties as one service-ref is sufficient.
-            }
-            String servicePropertiesFile = null;
-            servicePropertiesFile = getServicePropertiesFileName(dc, cloudArchive);
+        //TODO : Jagadish : we are returning service-reference on own service, which can be
+        //avoided when new contract on ServicePlugin is introduced.
+        String initSqlFile = null;
+        initSqlFile = getInitSQLFileName(cloudArchive, dc);
+        if (new File(initSqlFile).exists()) {
+            servicesReferences.add(new ServiceReference("init-sql-ref","javax.sql.DataSource", null));
+            return servicesReferences; //no need to check service properties as one service-ref is sufficient.
+        }
+        String servicePropertiesFile = null;
+        servicePropertiesFile = getServicePropertiesFileName(dc, cloudArchive);
 
-            if (new File(servicePropertiesFile).exists()) {
-                servicesReferences.add(new ServiceReference("service-properties-ref","javax.sql.DataSource", null));
-                return servicesReferences;
-            }
+        if (new File(servicePropertiesFile).exists()) {
+            servicesReferences.add(new ServiceReference("service-properties-ref","javax.sql.DataSource", null));
+            return servicesReferences;
         }
         return servicesReferences;
     }
@@ -269,19 +265,15 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         if(!beforeDeployment) {
             return;
         }
-        final DeploymentContext context = dc.getDeploymentContext();
         boolean databaseCreated = false;
         boolean databaseInitialized = false;
         String databaseName = null;
-        if(context == null) {
-            return;
-        }
         try {
-            Boolean isDatabaseInitialized = context.getTransientAppMetaData(
+            Boolean isDatabaseInitialized = dc.getTransientAppMetaData(
                     getClass().getName() + DB_INITIALIZED, Boolean.class);
             if (isDatabaseInitialized == null || !isDatabaseInitialized) {
 
-                final ReadableArchive readableArchive = context.getSource();
+                final ReadableArchive readableArchive = dc.getArchive();
                 String initSqlFile = null;
                 String ipAddress = serviceProvider.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
                 //Create Custom database
@@ -310,7 +302,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
             //Since associateServices are called multiple times, this ensures that
             //the custom db name creation and init sql execution are executed just once.
             if (databaseCreated || databaseInitialized) {
-                context.addTransientAppMetaData(getClass().getName() + DB_INITIALIZED, true);
+                dc.addTransientAppMetaData(getClass().getName() + DB_INITIALIZED, true);
             }
         }
     }
@@ -331,10 +323,10 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     private String getServicePropertiesFileName(PaaSDeploymentContext dc, ReadableArchive readableArchive) {
         String servicePropertiesFile;
         if (DeploymentUtils.isWebArchive(readableArchive)) {
-            servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+            servicePropertiesFile = dc.getArchive().getURI().getPath() +
                     "WEB-INF" + File.separator + SERVICE_PROPERTIES;
         } else {
-            servicePropertiesFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+            servicePropertiesFile = dc.getArchive().getURI().getPath() +
                     "META-INF" + File.separator + SERVICE_PROPERTIES;
         }
         return servicePropertiesFile;
@@ -343,10 +335,10 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
     private String getInitSQLFileName(ReadableArchive cloudArchive, PaaSDeploymentContext dc) {
         String initSqlFile;
         if (DeploymentUtils.isWebArchive(cloudArchive)) {
-            initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+            initSqlFile = dc.getArchive().getURI().getPath() +
                     "WEB-INF" + File.separator + INITSQL_SVC_CONFIG;
         } else {
-            initSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+            initSqlFile = dc.getArchive().getURI().getPath() +
                     "META-INF" + File.separator + INITSQL_SVC_CONFIG;
         }
         return initSqlFile;
@@ -402,22 +394,21 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         if(!beforeUndeploy) {
             return;
         }
-        final DeploymentContext context = dc.getDeploymentContext();
         try {
-            Boolean isDatabaseUnInitialized = context.getTransientAppMetaData(
+            Boolean isDatabaseUnInitialized = dc.getTransientAppMetaData(
                     getClass().getName() + DB_UNINITIALIZED, Boolean.class);
             if (isDatabaseUnInitialized == null || !isDatabaseUnInitialized) {
 
-                final ReadableArchive readableArchive = context.getSource();
+                final ReadableArchive readableArchive = dc.getArchive();
                 String tearDownSqlFile = null;
                 String ipAddress = serviceConsumer.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
 
                 //Execute Tear down SQL
                 if (DeploymentUtils.isWebArchive(readableArchive)) {
-                    tearDownSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    tearDownSqlFile = dc.getArchive().getURI().getPath() +
                             "WEB-INF" + File.separator + "teardown.sql";
                 } else {
-                    tearDownSqlFile = dc.getDeploymentContext().getSource().getURI().getPath() +
+                    tearDownSqlFile = dc.getArchive().getURI().getPath() +
                             "META-INF" + File.separator + "teardown.sql";
                 }
                 if (new File(tearDownSqlFile).exists()) {
@@ -427,15 +418,8 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         } finally {
             //Since dissociateServices are called multiple times, this ensures that
             //the tear down sql execution is executed just once.
-            context.addTransientAppMetaData(getClass().getName()+DB_UNINITIALIZED, true);
+            dc.addTransientAppMetaData(getClass().getName()+DB_UNINITIALIZED, true);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ApplicationContainer deploy(ReadableArchive cloudArchive) {
-        return null;
     }
 
     /**
@@ -624,5 +608,19 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
         task.setProject(project);
         task.setAutocommit(true);
         task.execute();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean deploy(PaaSDeploymentContext dc, Service service){
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean undeploy(PaaSDeploymentContext dc, Service service){
+        return true;
     }
 }

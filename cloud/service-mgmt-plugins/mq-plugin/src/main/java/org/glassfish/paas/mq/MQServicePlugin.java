@@ -363,10 +363,6 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         return deleteService(serviceDescription);
     }
 
-    public ApplicationContainer deploy(ReadableArchive cloudArchive) {
-        return null;
-    }
-
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
         ProvisionedService provisionedService = startService(serviceDescription);
 
@@ -420,7 +416,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (serviceConsumer.getServiceType().toString().equalsIgnoreCase("MQ") &&
                 serviceProvider.getServiceType().toString().equalsIgnoreCase("JavaEE") &&
                 serviceReference.getType().equalsIgnoreCase("JavaEE")) {
-            ReadableArchive archive = dc.getDeploymentContext().getSource();
+            ReadableArchive archive = dc.getArchive();
             Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
             if (serviceReferences.size() > 0) {
@@ -457,7 +453,7 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         if (serviceConsumer.getServiceType().toString().equalsIgnoreCase("MQ") &&
                 serviceProvider.getServiceType().toString().equalsIgnoreCase("JavaEE") &&
                 serviceReference.getType().equalsIgnoreCase("JavaEE")) {
-            ReadableArchive archive = dc.getDeploymentContext().getSource();
+            ReadableArchive archive = dc.getArchive();
             Set<ServiceReference> serviceReferences = discoverServiceReferences(archive);
 
             if (serviceReferences.size() > 0) {

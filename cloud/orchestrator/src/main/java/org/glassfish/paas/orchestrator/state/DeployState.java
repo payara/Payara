@@ -42,15 +42,30 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.Service;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
+
+import java.util.Set;
 
 /**
  * @author Jagadish Ramu
  */
-@Service
+@org.jvnet.hk2.annotations.Service
 public class DeployState extends AbstractPaaSDeploymentState {
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
+        boolean dasProvisioningEnabled = Boolean.getBoolean("org.glassfish.paas.provision-das");
+        if(dasProvisioningEnabled){
+            String appName = context.getAppName();
+            Set<Service> allServices = appInfoRegistry.getServices(appName);
+            for(Service service : allServices){
+                ServiceDescription sd = service.getServiceDescription();
+                ServicePlugin plugin = sd.getPlugin();
+                plugin.deploy(context, service);
+                //TODO atomic deployment support .
+            }
+        }
     }
 
     public Class getRollbackState() {

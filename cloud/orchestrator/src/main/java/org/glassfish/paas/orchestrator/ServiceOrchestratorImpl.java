@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.AdminCommandLock;
@@ -98,6 +99,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
     private static final Class [] PRE_DEPLOY_PHASE_STATES = {ServiceDependencyDiscoveryState.class, ProvisioningState.class,
             SharedServiceRegistrationState.class, ConfiguredServiceRegistrationState.class, ServiceReferenceRegistrationState.class,
             PreDeployAssociationState.class};
+    private static final Class [] DEPLOY_PHASE_STATES = {DeployState.class};
+    private static final Class [] UNDEPLOY_PHASE_STATES = {UndeployState.class};
     private static final Class [] POST_DEPLOY_PHASE_STATES = {PostDeployAssociationState.class, DeploymentCompletionState.class};
     private static final Class [] PRE_UNDEPLOY_PHASE_STATES = {PreUndeployDissociationState.class};
     private static final Class [] POST_UNDEPLOY_PHASE_STATES = {PostUndeployDissociationState.class,
@@ -210,6 +213,8 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         /*after deployment*//*
         , null);
         */
+
+
     }
 
     public Set<org.glassfish.paas.orchestrator.service.spi.Service> getServicesForAssociation(String appName){
@@ -224,10 +229,10 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         return getServicesForAssociation(appName);
     }
 
-    private void orchestrateTask(Class[] tasks, String appName, DeploymentContext dc, boolean deployment) {
+    private void orchestrateTask(Class[] tasks, String appName, PaaSDeploymentContext pc, boolean deployment) {
+
         for(Class clz : tasks){
             PaaSDeploymentState state = habitat.getByType(clz.getName());
-            PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
             try{
                 state.beforeExecution(pc);
                 state.handle(pc);
@@ -297,48 +302,86 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
      * @param appName Application Name
      * @param dc DeploymentContext associated with the current deployment operation
      */
-    private void provisionServicesForApplication(String appName, DeploymentContext dc) {
+    private void provisionServicesForApplication(String appName, PaaSDeploymentContext pc) {
         logger.log(Level.FINER, localStrings.getString("METHOD.provisionServicesForApplication"));
-        orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, dc, true);
+        orchestrateTask(PRE_DEPLOY_PHASE_STATES, appName, pc, true);
         logger.log(Level.FINER, localStrings.getString("METHOD.provisionServicesForApplication"));
     }
 
     public void postDeploy(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
+        logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
+        orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, pc, true);
+        logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
+    }
+
+    public void deploy(String appName, PaaSDeploymentContext dc) {
+        //TODO localStrings
+        logger.log(Level.FINER, localStrings.getString("METHOD.deploy"));
+        orchestrateTask(DEPLOY_PHASE_STATES, appName, dc, true);
+        logger.log(Level.FINER, localStrings.getString("METHOD.deploy"));
+    }
+
+    public void postDeploy(String appName, PaaSDeploymentContext dc) {
         logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
         orchestrateTask(POST_DEPLOY_PHASE_STATES, appName, dc, true);
         logger.log(Level.FINER, localStrings.getString("METHOD.postDeploy"));
     }
 
     public void startup(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
         logger.log(Level.FINER, localStrings.getString("METHOD.startup"));
-        orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, dc, false);
+        orchestrateTask(SERVER_STARTUP_PHASE_STATES, appName, pc, false);
         logger.log(Level.FINER, localStrings.getString("METHOD.startup"));
     }
 
     public void enable(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
         logger.log(Level.FINER, localStrings.getString("METHOD.enable"));
-        orchestrateTask(ENABLE_PHASE_STATES, appName, dc, false);
+        orchestrateTask(ENABLE_PHASE_STATES, appName, pc, false);
         logger.log(Level.FINER, localStrings.getString("METHOD.enable"));
     }
 
     public void disable(String appName, ExtendedDeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
         logger.log(Level.FINER, localStrings.getString("METHOD.disable"));
-        orchestrateTask(DISABLE_PHASE_STATES, appName, dc, false);
+        orchestrateTask(DISABLE_PHASE_STATES, appName, pc, false);
         logger.log(Level.FINER, localStrings.getString("METHOD.disable"));
     }
 
+    public void preUndeploy(String appName, PaaSDeploymentContext pc) {
+        logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
+        orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, pc, false);
+        logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
+    }
+
     public void preUndeploy(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
         logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
         if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
-            orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, dc, false);
+            orchestrateTask(PRE_UNDEPLOY_PHASE_STATES, appName, pc, false);
         }
         logger.log(Level.FINER, localStrings.getString("METHOD.preUndeploy"));
     }
 
+    public void undeploy(String appName, PaaSDeploymentContext dc) {
+        //TODO localStrings
+        logger.log(Level.FINER, localStrings.getString("METHOD.undeploy"));
+        orchestrateTask(UNDEPLOY_PHASE_STATES, appName, dc, true);
+        logger.log(Level.FINER, localStrings.getString("METHOD.undeploy"));
+    }
+
+    public void postUndeploy(String appName, PaaSDeploymentContext dc) {
+        logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
+        orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc, false);
+        logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
+    }
+
     public void postUndeploy(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
         logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
         if(!isOrchestratorInitiatedUndeploy(dc.getCommandParameters(OpsParams.class))){
-            orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, dc, false);
+            orchestrateTask(POST_UNDEPLOY_PHASE_STATES, appName, pc, false);
         }
         logger.log(Level.FINER, localStrings.getString("METHOD.postUndeploy"));
     }
@@ -357,7 +400,7 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     public ServiceMetadata getServices(ReadableArchive archive) throws Exception {
         ServiceDependencyDiscoveryState state = habitat.getByType(ServiceDependencyDiscoveryState.class);
-        PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), null);
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(archive.getName(), archive);
         return state.getServiceDependencyMetadata(pc, archive.getName(), archive);
     }
 
@@ -644,8 +687,13 @@ public class ServiceOrchestratorImpl implements ServiceOrchestrator {
         postUndeploy(appName, context);
     }
 
-    public void preDeploy(String appName, ExtendedDeploymentContext context) {
-        provisionServicesForApplication(appName, context);
+    public void preDeploy(String appName, PaaSDeploymentContext dc) {
+        provisionServicesForApplication(appName, dc);
+    }
+
+    public void preDeploy(String appName, DeploymentContext dc) {
+        PaaSDeploymentContext pc = new PaaSDeploymentContext(appName, dc);
+        provisionServicesForApplication(appName, pc);
     }
 
     public void addSharedService(String serviceName, ProvisionedService provisionedService) {

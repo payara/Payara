@@ -47,10 +47,13 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
+import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -64,15 +67,25 @@ public class UndeployState extends AbstractPaaSDeploymentState {
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         String appName = context.getAppName();
-
-        ParameterMap parameterMap = new ParameterMap();
-        parameterMap.add("DEFAULT", appName);
-        parameterMap.add("properties", ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL +"=true");
-        ActionReport report =  habitat.getComponent(ActionReport.class);
-        CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("undeploy", report);
-        invocation.parameters(parameterMap).execute();
-        Object args[]=new Object[]{appName,report.getMessage()};
-        logger.log(Level.FINEST, "undeploying.app",args);
+        boolean dasProvisioningEnabled = Boolean.getBoolean("org.glassfish.paas.provision-das");
+        if(dasProvisioningEnabled){
+            Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices = appInfoRegistry.getServices(appName);
+            for(org.glassfish.paas.orchestrator.service.spi.Service service : allServices){
+                ServiceDescription sd = service.getServiceDescription();
+                ServicePlugin plugin = sd.getPlugin();
+                plugin.undeploy(context, service);
+                //TODO atomic deployment support .
+            }
+        }else{
+            ParameterMap parameterMap = new ParameterMap();
+            parameterMap.add("DEFAULT", appName);
+            parameterMap.add("properties", ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL +"=true");
+            ActionReport report =  habitat.getComponent(ActionReport.class);
+            CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("undeploy", report);
+            invocation.parameters(parameterMap).execute();
+            Object args[]=new Object[]{appName,report.getMessage()};
+            logger.log(Level.FINEST, "undeploying.app",args);
+        }
     }
 
     public Class<PaaSDeploymentState> getRollbackState() {

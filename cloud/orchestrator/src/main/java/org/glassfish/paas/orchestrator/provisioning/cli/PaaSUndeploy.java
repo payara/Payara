@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,72 +38,62 @@
  * holder.
  */
 
-package org.glassfish.paas.orchestrator;
+package org.glassfish.paas.orchestrator.provisioning.cli;
 
-import org.glassfish.api.deployment.DeploymentContext;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
+import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.PerLookup;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
 
 /**
- * Deployment Context of a PaaS enabled application</br>
- *
  * @author Jagadish Ramu
  */
-public class PaaSDeploymentContext {
-    private DeploymentContext dc;
-    private String appName;
-    private ReadableArchive archive;
-    private Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
+@org.jvnet.hk2.annotations.Service(name = "paas-undeploy")
+@Scoped(PerLookup.class)
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS})
+@CommandLock(CommandLock.LockType.NONE)
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class, opType = RestEndpoint.OpType.GET, path = "paas-undeploy", description = "Undeploy a PaaS enabled application")
+})
+public class PaaSUndeploy implements AdminCommand {
 
-    public PaaSDeploymentContext(String appName, DeploymentContext dc){
-        this.appName = appName;
-        this.dc = dc;
-        if(dc != null){
-            this.archive = dc.getSource();
+
+    //TODO we need to pass application name instead of the archive again.
+    //TODO The archive need to be stored in CPAS (tenant store) and retrieved when needed.
+    @Param(name = "file", primary = true)
+    private File archive;
+
+    @Inject
+    private ServiceOrchestratorImpl orchestrator;
+
+    @Inject
+    private ArchiveFactory archiveFactory;
+
+
+    public void execute(AdminCommandContext context) {
+
+        ReadableArchive fileArchive = null;
+        try {
+            fileArchive = archiveFactory.openArchive(archive);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
 
-    public PaaSDeploymentContext(String appName, ReadableArchive archive){
-        this.appName = appName;
-        this.archive = archive;
-    }
-
-    /**
-     * provides the application-name. </br>
-     * application-name will be null in case of shared or external-service related operations/invocations.
-     * @return String appName
-     */
-    public String getAppName(){
-        return appName;
-    }
-
-    /**
-     * provides the deployment-context associated with the deployment</br>
-     * deployment-context will be null in case of non-deployment related activity
-     * eg: scaling, monitoring actions etc.,
-     * @return DeploymentContext
-     */
-    public DeploymentContext getDeploymentContext(){
-        return dc;
-    }
-
-    public void addTransientAppMetaData(String metaDataKey, Object metaData) {
-        if (metaData!=null) {
-            transientAppMetaData.put(metaDataKey, metaData);
-        }
-    }
-
-    public <T> T getTransientAppMetaData(String key, Class<T> metadataType) {
-        Object metaData = transientAppMetaData.get(key);
-        if (metaData != null) {
-            return metadataType.cast(metaData);
-        }
-        return null;
-    }
-
-    public ReadableArchive getArchive(){
-        return archive;
+        PaaSDeploymentContext dc = new PaaSDeploymentContext(archive.getName(), fileArchive);
+        orchestrator.preUndeploy(archive.getName(), dc);
+        orchestrator.undeploy(archive.getName(), dc);
+        orchestrator.postUndeploy(archive.getName(), dc);
     }
 }

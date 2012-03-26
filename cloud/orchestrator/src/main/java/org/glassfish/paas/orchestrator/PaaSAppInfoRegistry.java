@@ -67,6 +67,8 @@ public class PaaSAppInfoRegistry {
             new LinkedHashMap<String, Map<ServiceReference,ServiceDescription>>();
     private Map<String, Map<ServiceDescription, ServicePlugin>> pluginsToHandleSDMap=
             new LinkedHashMap<String, Map<ServiceDescription, ServicePlugin>>();
+    private Map<String, Set<ServicePlugin>> effectivePlugins =
+            new LinkedHashMap<String, Set<ServicePlugin>>();
 
 
     public ServiceMetadata removeServiceMetadata(String appName) {
@@ -75,6 +77,23 @@ public class PaaSAppInfoRegistry {
 
     public Map<String, Set<ProvisionedService>> getAllProvisionedServices(){
         return provisionedServices;
+    }
+
+    public void addEffectivePlugins(String appName, Set<ServicePlugin> effectivePlugins){
+        getEffectivePlugins(appName).addAll(effectivePlugins);
+    }
+
+    public Set<ServicePlugin> getEffectivePlugins(String appName){
+        Set<ServicePlugin> plugins = effectivePlugins.get(appName);
+        if(plugins == null){
+            effectivePlugins.put(appName, new LinkedHashSet<ServicePlugin>());
+            plugins = effectivePlugins.get(appName);
+        }
+        return plugins;
+    }
+
+    public Set<ServicePlugin> removeEffectivePlugins(String appName){
+        return effectivePlugins.remove(appName);
     }
 
     public Set<ProvisionedService> removeProvisionedServices(String appName) {
@@ -157,5 +176,13 @@ public class PaaSAppInfoRegistry {
         allServices.addAll(getConfiguredServices(appName));
         allServices.addAll(getProvisionedServices(appName));
         return allServices;
+    }
+
+    public void resetAppInfo(String appName){
+        removeProvisionedServices(appName);
+        removeServiceMetadata(appName);
+        removePluginsToHandleSDs(appName);
+        removeSRToSDMap(appName);
+        removeEffectivePlugins(appName);
     }
 }

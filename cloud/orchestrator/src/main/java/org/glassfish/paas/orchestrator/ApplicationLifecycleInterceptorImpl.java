@@ -95,7 +95,6 @@ public class ApplicationLifecycleInterceptorImpl implements ApplicationLifecycle
             AdminCommandLock.runWithSuspendedLock(new Runnable() {
                 public void run() {
                     if (phase.equals(ExtendedDeploymentContext.Phase.PREPARE)) {
-                        ReadableArchive archive = context.getSource();
                         OpsParams params = context.getCommandParameters(OpsParams.class);
                         String appName = params.name();
                         if (params.origin == OpsParams.Origin.deploy) {

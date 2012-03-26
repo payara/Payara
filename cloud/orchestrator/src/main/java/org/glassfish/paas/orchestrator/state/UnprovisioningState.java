@@ -110,10 +110,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
             orchestrator.removeVirtualCluster(virtualClusterName);
         }
 
-        appInfoRegistry.removeProvisionedServices(appName);
-        appInfoRegistry.removeServiceMetadata(appName);
-        appInfoRegistry.removePluginsToHandleSDs(appName);
-        appInfoRegistry.removeSRToSDMap(appName);
+        appInfoRegistry.resetAppInfo(appName);
 
         if(failed){
             throw new PaaSDeploymentException("Failure while unprovisioning services, refer server.log for more details");

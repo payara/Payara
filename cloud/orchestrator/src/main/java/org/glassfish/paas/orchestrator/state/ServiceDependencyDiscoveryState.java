@@ -40,7 +40,6 @@
 
 package org.glassfish.paas.orchestrator.state;
 
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
@@ -82,9 +81,9 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
     private ServiceMetadata serviceDependencyDiscovery(PaaSDeploymentContext context) throws PaaSDeploymentException {
         logger.log(Level.FINER, localStrings.getString("METHOD.serviceDependencyDiscovery"));
 
-        final DeploymentContext dc = context.getDeploymentContext();
+        //final DeploymentContext dc = context.getDeploymentContext();
         String appName = context.getAppName();
-        final ReadableArchive archive = dc.getSource();
+        final ReadableArchive archive = context.getArchive();
 
         return getServiceDependencyMetadata(context, appName, archive);
     }
@@ -353,6 +352,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
             }
             appInfoRegistry.getPluginsToHandleSDs(appName).putAll(pluginsToHandleSDs);
             appInfoRegistry.getSRToSDMap(appName).putAll(serviceRefToSD);
+            appInfoRegistry.addEffectivePlugins(appName, resolvedPlugins);
 
             logger.log(Level.INFO, "final.servicemetadata",appServiceMetadata);
             return appServiceMetadata;

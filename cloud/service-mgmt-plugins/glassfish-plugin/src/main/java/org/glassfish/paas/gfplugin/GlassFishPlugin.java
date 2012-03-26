@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.deploy.shared.DeploymentPlanArchive;
 import com.sun.enterprise.util.zip.ZipWriter;
-import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -69,6 +68,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServiceProvisioningException;
 import org.glassfish.paas.spe.common.ProvisioningFuture;
 import org.glassfish.paas.spe.common.ServiceProvisioningEngineBase;
@@ -78,7 +78,6 @@ import org.glassfish.virtualization.spi.AllocationStrategy;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
@@ -95,7 +94,7 @@ import java.util.logging.Logger;
 /**
  * @author Bhavanishankar S
  */
-@Service
+@org.jvnet.hk2.annotations.Service
 @Scoped(PerLookup.class)
 public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEServiceType>
         implements GlassFishPluginConstants {
@@ -341,7 +340,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
 
             // customize the VM before stop???
             stopSuccessful =  super.stopService(sd) || stopSuccessful;
-            for(org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()){
+            for(Service childService : provisionedService.getChildServices()){
                 ProvisionedService ps = (ProvisionedService)childService;
                 if(sd.getName().equals(ps.getName())){
                     if(stopSuccessful){
@@ -399,8 +398,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
      * @param svcRef           Service Reference from GlassFish to that service.
      * @param beforeDeployment indicates if this association is happening before the
      */
-    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
+    public void associateServices(Service serviceConsumer, ServiceReference svcRef,
+                                  Service serviceProvider, boolean beforeDeployment, PaaSDeploymentContext dc) {
         if (JDBC_DATASOURCE.equals(svcRef.getType()) &&
 	        serviceProvider.getServiceType().toString().equals(DATABASE_SERVICE_TYPE)  &&
             serviceConsumer.getServiceType().toString().equals(JAVAEE_SERVICE_TYPE)) {
@@ -462,9 +461,9 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         // then substitute 'service-name' with actual co-ordinates of the service.
         if(dc != null && dc.getDeploymentContext() != null) {
             Map<Resource, ResourcesXMLParser> resourceXmlParsers =
-                    dc.getDeploymentContext().getTransientAppMetaData(RESOURCE_XML_PARSERS, Map.class);
+                    dc.getTransientAppMetaData(RESOURCE_XML_PARSERS, Map.class);
             List<Resource> nonConnectorResources =
-                    dc.getDeploymentContext().getTransientAppMetaData(NON_CONNECTOR_RESOURCES, List.class);
+                    dc.getTransientAppMetaData(NON_CONNECTOR_RESOURCES, List.class);
             ResourcesXMLParser parser = null;
             // Find correct jdbc connection pool corresponding to the referenced resource
             // and substitute values for 'service-name' property.
@@ -579,8 +578,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         }
     }
 
-    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
+    public void dissociateServices(Service serviceConsumer, ServiceReference svcRef,
+                                   Service serviceProvider, boolean beforeUndeploy, PaaSDeploymentContext dc) {
         if (beforeUndeploy) {
             //if (serviceConsumer instanceof GlassFishProvisionedService) {
                // if (svcRef.getServiceRefType().equals(JAVAEE_SERVICE_TYPE)) {
@@ -619,8 +618,27 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
     }
 
 
-    public ApplicationContainer deploy(ReadableArchive cloudArchive) {
-        org.glassfish.paas.orchestrator.service.spi.Service service = null; // TODO :: should be passed in as argument.
+    public boolean undeploy(PaaSDeploymentContext dc, Service service){
+        ReadableArchive cloudArchive = dc.getArchive();
+        if (service instanceof GlassFishProvisionedService) {
+            GlassFishProvisionedService gfps = (GlassFishProvisionedService) service;
+            try {
+                logger.info("Undeploying " + cloudArchive.getName() + " using GlassFish plugin");
+                gfps.getProvisionedGlassFish().getCommandRunner().run("undeploy",
+                        "--target=" + gfps.getServiceDescription().getVirtualClusterName(),
+                        cloudArchive.getName());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        } else {
+            logger.warning("Unable to undeploy " + cloudArchive.getName() + " using GlassFish plugin. " +
+                    "The service is not an instance of GlassFishProvisionedService");
+        }
+        return true;
+    }
+
+    public boolean deploy(PaaSDeploymentContext dc, Service service) {
+        ReadableArchive cloudArchive = dc.getArchive();
         if (service instanceof GlassFishProvisionedService) {
             GlassFishProvisionedService gfps = (GlassFishProvisionedService) service;
             try {
@@ -629,7 +647,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
                 VirtualMachine vm = gfps.getVM();
                 vm.upload(archive, new File("/tmp"));
                 gfps.getProvisionedGlassFish().getCommandRunner().run("deploy",
-                        "--cluster=" + gfps.getServiceDescription().getVirtualClusterName(),
+                        "--target=" + gfps.getServiceDescription().getVirtualClusterName(),
                         "/tmp/" + archive.getName());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -637,6 +655,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         } else {
             logger.warning("Unable to deploy " + cloudArchive + " using GlassFish plugin. " +
                     "The service is not an instance of GlassFishProvisionedService");
+            return false;
         }
 /*
         GlassFish provisionedGlassFish =
@@ -658,7 +677,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         }
         return null;
 */
-        return null;
+        //return null;
+        return true;
     }
 
     public boolean isRunning(ProvisionedService provisionedSvc) {
@@ -765,8 +785,8 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
             // perform operation on VM before deleting??
             boolean deleteSuccessful = super.deleteService(sd);
             if(deleteSuccessful){
-                org.glassfish.paas.orchestrator.service.spi.Service serviceToPurge = null;
-                for(org.glassfish.paas.orchestrator.service.spi.Service service : provisionedService.getChildServices()){
+                Service serviceToPurge = null;
+                for(Service service : provisionedService.getChildServices()){
                     if(service.getName().equals(sd.getName())){
                         serviceToPurge = service;
                         break;
@@ -788,13 +808,14 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
     }
 
     @Override
-    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service svcConsumer,
-            org.glassfish.paas.orchestrator.service.spi.Service oldSvcProvider,
-            org.glassfish.paas.orchestrator.service.spi.Service newSvcProvider,
+    public boolean reassociateServices(Service svcConsumer,
+            Service oldSvcProvider,
+            Service newSvcProvider,
             ServiceOrchestrator.ReconfigAction reason) {
         //no-op
         throw new UnsupportedOperationException("Reassociation of Service " +
                 "not supported in this release");
     }
+
 
 }

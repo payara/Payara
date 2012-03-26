@@ -256,8 +256,8 @@ public interface ServicePlugin<T extends ServiceType> {
      * deployment or enablement that caused this association
      *                         
      */
-    public void associateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                  org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeDeployment,
+    public void associateServices(Service serviceConsumer, ServiceReference svcRef,
+                                  Service serviceProvider, boolean beforeDeployment,
                                   PaaSDeploymentContext dc);
 
     /**
@@ -277,8 +277,8 @@ public interface ServicePlugin<T extends ServiceType> {
      * @param dc The <code>DeploymentContext</code> associated with the application
      * undeployment or disablement that caused this dis-association
      */
-    public void dissociateServices(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer, ServiceReference svcRef,
-                                   org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean beforeUndeploy,
+    public void dissociateServices(Service serviceConsumer, ServiceReference svcRef,
+                                   Service serviceProvider, boolean beforeUndeploy,
                                    PaaSDeploymentContext dc);
     
     /**
@@ -289,8 +289,25 @@ public interface ServicePlugin<T extends ServiceType> {
      * when we support non-Java EE archives that the deployment infrastructure
      * cannot control, OE would invoke this method in the plugin to initiate
      * deployment of the archive in that container service.
+     * @param dc PaaSDeploymentContext
+     * @param service Service to which deployment needs to be done.
+     * @return boolean status indicating whether deployment was successful.
      */
-    public ApplicationContainer deploy(ReadableArchive cloudArchive);
+    public boolean deploy(PaaSDeploymentContext dc, Service service);
+
+    /**
+     * Undeploy the orchestration-enabled archive.
+     *
+     * At present, the undeploying an application in a provisioned GlassFish Service
+     * is performed by the deployment infrastructure in CPAS/DAS. In the future,
+     * when we support non-Java EE archives that the deployment infrastructure
+     * cannot control, OE would invoke this method in the plugin to initiate
+     * undeployment of the archive in that container service.
+     * @param dc PaaSDeploymentContext
+     * @param service Service to which deployment needs to be done.
+     * @return boolean status indicating whether undeployment was successful.
+     */
+    public boolean undeploy(PaaSDeploymentContext dc, Service service);
 
     /* SERVICE LIFECYCLE MANAGEMENT */
     
@@ -359,8 +376,8 @@ public interface ServicePlugin<T extends ServiceType> {
      * @param newSvcProvider The new Service Provider ProvisionedService
      * @param reason The reason for the re-configuration.
      */
-    public boolean reassociateServices(org.glassfish.paas.orchestrator.service.spi.Service svcConsumer,
-                   org.glassfish.paas.orchestrator.service.spi.Service oldSvcProvider,
-                   org.glassfish.paas.orchestrator.service.spi.Service newSvcProvider,
+    public boolean reassociateServices(Service svcConsumer,
+                   Service oldSvcProvider,
+                   Service newSvcProvider,
                    ServiceOrchestrator.ReconfigAction reason);
 }

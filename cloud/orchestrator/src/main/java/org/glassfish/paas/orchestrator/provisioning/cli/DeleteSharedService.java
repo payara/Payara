@@ -46,6 +46,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.embeddable.CommandResult;
@@ -119,7 +120,8 @@ public class DeleteSharedService implements AdminCommand {
                     SharedService sharedService = (SharedService) service;
                     ProvisionedService provisionedService = serviceOrchestrator.getSharedService(sharedService.getServiceName());
                     ServicePlugin plugin = provisionedService.getServiceDescription().getPlugin();
-                    PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
+                    DeploymentContext dc = null;
+                    PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, dc);
                     //we are caching service-info before unprovision just to make sure any Plugin
                     //does not remove the child services during unprovision.
                     ServiceInfo serviceInfo = serviceUtil.getServiceInfo(provisionedService.getName(), null);

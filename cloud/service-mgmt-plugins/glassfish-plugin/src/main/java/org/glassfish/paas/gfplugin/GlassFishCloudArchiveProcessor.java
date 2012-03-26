@@ -166,12 +166,12 @@ public class GlassFishCloudArchiveProcessor implements GlassFishPluginConstants 
                 serviceReferences.add(ref);
             }
 
-            if(dc != null && dc.getDeploymentContext() != null) {
+            if(dc != null) {
                 // Cache the resouceXmlParser so that it can be used in other
                 // deployment phases, instead of creating a new one in every phase.
-                dc.getDeploymentContext().addTransientAppMetaData(RESOURCE_XML_PARSERS,
+                dc.addTransientAppMetaData(RESOURCE_XML_PARSERS,
                         resourceXmlParsers);
-                dc.getDeploymentContext().addTransientAppMetaData(NON_CONNECTOR_RESOURCES,
+                dc.addTransientAppMetaData(NON_CONNECTOR_RESOURCES,
                         nonConnectorResources);
             }
             //add an implicit service-reference of type "glassfish"/"javaee" so that

@@ -46,6 +46,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.Services;
@@ -132,7 +133,8 @@ public class SharedServiceLazyInitializer {
         ServicePlugin defaultPlugin = serviceOrchestrator.getPlugin(sd);
         sd.setPlugin(defaultPlugin);
         sd.setServiceScope(ServiceScope.SHARED);
-        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, null);
+        DeploymentContext dc = null;
+        PaaSDeploymentContext pdc = new PaaSDeploymentContext(null, dc);
         ProvisionedService ps = defaultPlugin.provisionService(sd, pdc);
         Properties properties = ps.getServiceProperties();
         serviceUtil.updateState(sd.getName(),null,ps.getStatus().toString());

@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
@@ -155,10 +154,21 @@ public class DnsPlugin implements ServicePlugin {
                 "not supported in this release");
     }
 
-    @Override
-    public ApplicationContainer deploy(ReadableArchive cloudArchive) {
-        return null;
-    }
+    /**
+     * {@inheritDoc}
+     */
+     @Override
+     public boolean deploy(PaaSDeploymentContext dc, Service service){
+         return true;
+     }
+
+     /**
+      * {@inheritDoc}
+      */
+     @Override
+     public boolean undeploy(PaaSDeploymentContext dc, Service service){
+         return true;
+     }
 
     @Override
     public ProvisionedService startService(ServiceDescription serviceDescription, ServiceInfo serviceInfo) {
@@ -252,8 +262,7 @@ public class DnsPlugin implements ServicePlugin {
             Service serviceProvider, PaaSDeploymentContext dc, boolean isAdd) {
 
         String appName = dc.getAppName();
-        DeploymentContext context = dc.getDeploymentContext();
-        
+
         //TODO retrieve IP address from ServiceProvider's ServiceProperties ?
         String lbIPAddr = dnsServiceUtil.getIPAddress(
                 serviceProvider.getServiceDescription().getName(),
@@ -325,7 +334,7 @@ public class DnsPlugin implements ServicePlugin {
                     + executor.getLastExecutionError());
             } else {
                 if(isAdd){
-                    context.addTransientAppMetaData(APPLICATION_DOMAIN_NAME, appDomainName);
+                    dc.addTransientAppMetaData(APPLICATION_DOMAIN_NAME, appDomainName);
                 }
             }
         } catch (ExecException ex) {

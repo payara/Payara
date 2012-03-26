@@ -201,10 +201,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                 if(virtualClusterName != null){
                     orchestrator.removeVirtualCluster(virtualClusterName);
                 }
-                appInfoRegistry.removeProvisionedServices(appName);
-                appInfoRegistry.removeServiceMetadata(appName);
-                appInfoRegistry.removePluginsToHandleSDs(appName);
-                appInfoRegistry.removeSRToSDMap(appName);
+                appInfoRegistry.resetAppInfo(appName);
             }
 
             PaaSDeploymentException re = new PaaSDeploymentException("Failure while provisioning services");
