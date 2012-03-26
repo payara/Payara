@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
 @Scoped(PerLookup.class)
 public class VirtualizationType extends ValueBasedTemplateIndex {
 
-    public enum Type {libvirt, OVM, virtualbox, Native}
+    public enum Type {libvirt, OVM, virtualbox, Native, OVM30}
 
     Type value;
 

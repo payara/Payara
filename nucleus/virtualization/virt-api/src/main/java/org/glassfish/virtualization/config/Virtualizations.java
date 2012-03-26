@@ -42,6 +42,8 @@ package org.glassfish.virtualization.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -73,6 +75,12 @@ public interface Virtualizations extends DomainExtension {
     @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/virt/templates")
     String getTemplatesLocation();
     public void setTemplatesLocation();
+
+    
+    // FIXME -- jgish -- is this already available somewhere else?
+    @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/" +
+                            SystemPropertyConstants.DOCROOT_PROPERTY)
+    String getDocRoot();
 
     /**
      * Returns a virtualization configuration using the virtualization name.
