@@ -40,7 +40,7 @@
 #
 
 # This script helps setup services for running PaaS native, kvm or ovm tests.
-# setup.sh -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm
+# setup.sh -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm2|ovm3
 # Examples:
 #   1) Plain native setup
 #      setup.sh native
@@ -51,16 +51,16 @@
 #   4) KVM with jee,javadb,apachemodjk services
 #      setup.sh -t /kvm/images -s jee,javadb,apachemodjk kvm
 #   5) OVM with jee service
-#      setup.sh -t /ovm/templates -s jee ovm
+#      setup.sh -t /ovm/templates -s jee -p pool1 ovm2
 #   6) OVM with jee,otd services
-#      setup.sh -t /ovm/templates -s jee,otd ovm
+#      setup.sh -t /ovm/templates -s jee,otd -p pool1 ovm2
 #   7) Recreate domain1 before setting up
 #      setup.sh -r native
 # Author: Yamini K B
 # Date  : 8-FEB-2012
 
 GF_HOME=${GF_HOME:-$S1AS_HOME}
-USAGE="Usage: $(basename $0) -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm"
+USAGE="Usage: $(basename $0) -r -d <templates-dir> -s jee,javadb,mysql,oracle,apachemodjk,otd,lb native|kvm|ovm2|ovm3"
 
 [ -z "$GF_HOME" ] && echo "Please set GF_HOME or S1AS_HOME" && exit 1;
 
@@ -158,18 +158,80 @@ setup_kvm ()
     log "Successfully configured KVM...."
 }
 
-CONNECTION_STRING="http://admin:abc123@sf-x2200-7.in.oracle.com:8888;root:abc123"
-SUBNET="10.178.214.0/24"
-
-setup_ovm ()
+setup_init ()
 {
-    log "Configuring OVM...."
+    log "OVM init ...."
+    if [ -z "$POOL"]
+    then
+        err "Please specify pool name using -p <pool> option."
+        exit 3
+    fi
     $A start-domain domain1
     $A set configs.config.server-config.network-config.protocols.protocol.admin-listener.http.request-timeout-seconds=-1
     $A create-jvm-options -Dorg.glassfish.paas.orchestrator.parallel-provisioning=true
+}
+
+setup_ovm3 ()
+{
+    setup_init
+
+    log "Configuring OVM 3.0 ...."
+
+    DEFAULT="tcp://admin:Welcome123@ejp-153x-142.in.oracle.com:54321;root:abcd1234"
+    CONNECTION_STRING=${CONNECTION_STRING:-$DEFAULT}
+    SUBNET=${SUBNET:-$SUB}
+
+    $A create-ims-config-ovm --connectionstring $CONNECTION_STRING --ovmversion=3.0 ovm
+    $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
+
+    IFS_TMP=$IFS
+    IFS=","
+    for s in $SERVICES
+    do
+        case $s in
+            "jee") log "Creating template for jee service..."
+                    touch $templates_dir/glassfish.tgz
+                    $A create-template --files $templates_dir/glassfish.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM30 glassfish
+                    $A create-template-user --virtualization ovm --template glassfish glassfish
+                    ;;
+          "oracle") log "Creating template for oracle service..."
+                    touch $templates_dir/ORACLEDB.tgz
+                    $A create-template --files $templates_dir/ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=OVM30 ORACLE_DATABASE
+                    $A create-template-user --virtualization ovm --template ORACLE_DATABASE oracle
+                    ;;
+           "derby") log "Creating template for derby service..."
+                    touch $templates_dir/DERBY_DATABASE.tgz
+                    $A create-template --files $templates_dir/DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=OVM30 DERBY_DATABASE
+                    $A create-template-user --virtualization ovm --template DERBY_DATABASE glassfish
+                    ;;
+             "otd") log "Creating template for otd service..."
+                    touch $templates_dir/OTD_LARGE.tgz
+                    $A create-template --files $templates_dir/OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=OVM30 otd-new
+                    $A create-template-user --virtualization ovm --template otd-new cloud
+                    ;;
+                *) err "Ignoring unknown service $s"
+                    ;;
+        esac
+    done
+    IFS=$IFS_TMP
+
+    $A stop-domain
+    log "Successfully configured OVM 3.0 ...."
+
+}
+
+setup_ovm2 ()
+{
+    setup_init
+
+    log "Configuring OVM 2.2 ...."
+
+    DEFAULT="http://admin:abc123@sf-x2200-7.in.oracle.com:8888;root:abc123"
+    CONNECTION_STRING=${CONNECTION_STRING:-$DEFAULT}
+    SUBNET=${SUBNET:-$SUB}
 
     $A create-ims-config-ovm --connectionstring $CONNECTION_STRING  ovm
-    $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm pool2
+    $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
 
     IFS_TMP=$IFS
     IFS=","
@@ -203,14 +265,15 @@ setup_ovm ()
     IFS=$IFS_TMP
 
     $A stop-domain
-    log "Successfully configured OVM...."
+    log "Successfully configured OVM 2.2 ...."
 }
 
 log "GlassFish is at $GF_HOME"
 
 A=$GF_HOME/bin/asadmin
+SUB="10.178.214.0/24"
 
-while getopts rd:s: opt
+while getopts rd:s:c:n:p: opt
 do
   case ${opt} in
     r) log "Recreating domain1..."
@@ -229,6 +292,12 @@ do
          exit 2
        fi
        ;;
+    c) CONNECTION_STRING=$OPTARG
+       ;;
+    n) SUBNET=$OPTARG
+       ;;
+    p) POOL=$OPTARG
+       ;;
     \?) echo $USAGE
         exit 2;;
   esac
@@ -241,7 +310,9 @@ case "$1" in
             ;;
      "kvm") setup_kvm
             ;;
-     "ovm") setup_ovm
+     "ovm2") setup_ovm2
+            ;;
+     "ovm3") setup_ovm3
             ;;
          *) echo $USAGE
             exit 2;;
