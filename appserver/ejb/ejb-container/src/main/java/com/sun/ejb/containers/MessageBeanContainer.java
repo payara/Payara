@@ -225,9 +225,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 	}
 
 	protected void registerMonitorableComponents(Method[] msgListenerMethods) {
-		//registryMediator.registerProvider(this);
 		super.registerMonitorableComponents();
-		super.populateMethodMonitorMap(msgListenerMethods);
                 poolProbeListener = new EjbPoolStatsProvider(messageBeanPool_,
                         getContainerId(), containerInfo.appName, containerInfo.modName,
                         containerInfo.ejbName);
@@ -1079,10 +1077,6 @@ public final class MessageBeanContainer extends BaseContainer implements
 				// beforeMessageDelivery
 
 				methodCalled = true;
-				if (ejbMethodStatsManager.isMethodMonitorOn()) {
-					ejbMethodStatsManager.preInvoke(invocation.method);
-				}
-
 				if (isTimedObject()
 						&& isEjbTimeoutMethod(invocation.method)) {
 					invocation.beanMethod = invocation.method;
@@ -1150,11 +1144,6 @@ public final class MessageBeanContainer extends BaseContainer implements
 				invocation.exception = ejbEx;
 				throw ejbEx;
 			} finally {
-				if (methodCalled && (ejbMethodStatsManager.isMethodMonitorOn())) {
-					ejbMethodStatsManager.postInvoke(invocation.method,
-							invocation.exception);
-				}
-
 				/*
 				 * FIXME if ( AppVerification.doInstrument() ) {
 				 * AppVerification.getInstrumentLogger().doInstrumentForEjb

@@ -42,12 +42,10 @@ package com.sun.ejb.containers;
 
 import com.sun.ejb.*;
 import com.sun.ejb.codegen.ServiceInterfaceGenerator;
-import com.sun.ejb.base.stats.MonitoringRegistryMediator;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
 import com.sun.ejb.containers.interceptors.SystemInterceptorProxy;
 import com.sun.ejb.containers.util.MethodMap;
 import com.sun.ejb.portable.EJBMetaDataImpl;
-import com.sun.ejb.spi.stats.EJBMethodStatsManager;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.enterprise.iiop.api.ProtocolManager;
@@ -380,9 +378,7 @@ public abstract class BaseContainer
 
     protected HashMap			    methodMonitorMap;
     protected boolean			    monitorOn = false;
-    protected MonitoringRegistryMediator    registryMediator;
 
-    protected EJBMethodStatsManager	    ejbMethodStatsManager;
     protected EjbMonitoringStatsProvider    ejbProbeListener;
     protected EjbMonitoringProbeProvider    ejbProbeNotifier;
     protected EjbTimedObjectStatsProvider   timerProbeListener;
@@ -395,8 +391,6 @@ public abstract class BaseContainer
         
     private String _debugDescription;
 
-    //protected TimedObjectMonitorableProperties toMonitorProps = null;
-    
     //protected Agent callFlowAgent;
     
     protected CallFlowInfo callFlowInfo;
@@ -1917,10 +1911,6 @@ public abstract class BaseContainer
                 enlistExtendedEntityManagers(ctx);
             }
             
-            if (ejbMethodStatsManager.isMethodMonitorOn()) {
-                ejbMethodStatsManager.preInvoke(inv.method);
-            }
-            
         }
         catch ( Exception ex ) {
             _logger.log(Level.FINE, "ejb.preinvoke_exception", logParams);
@@ -2006,11 +1996,6 @@ public abstract class BaseContainer
             asyncManager.submit(inv);
             return;
         }
-
-        if (ejbMethodStatsManager.isMethodMonitorOn()) {
-            ejbMethodStatsManager.postInvoke(inv.method, inv.exception);
-        }
-
 
         if ( inv.ejb != null ) {
             // counterpart of invocationManager.preInvoke
@@ -4436,9 +4421,6 @@ public abstract class BaseContainer
     }
 
     private void unregisterProbeListeners() {
-        registryMediator.undeploy();
-        registryMediator = null;
-        ejbMethodStatsManager = null;
         try {
             ejbProbeListener.unregister();
             ProbeProviderFactory probeFactory = ejbContainerUtilImpl.getProbeProviderFactory();
@@ -5438,7 +5420,7 @@ public abstract class BaseContainer
 
 
     
-    protected void createMonitoringRegistryMediator() {
+    protected void createMonitoringRegistry() {
 	String appName = null;
 	String modName = null;
 	String ejbName = null;
@@ -5456,16 +5438,11 @@ public abstract class BaseContainer
 	    ejbName = ejbDescriptor.getName();
             containerInfo = new ContainerInfo(appName, modName, ejbName);
 
-	    this.registryMediator =
-		new MonitoringRegistryMediator( getEJBMonitoredObjectType(), ejbName, modName, appName);
-
-	    this.ejbMethodStatsManager = registryMediator.getEJBMethodStatsManager();
-
             ejbProbeListener = getMonitoringStatsProvider(appName, modName, ejbName);
             ejbProbeListener.addMethods(getContainerId(), appName, modName, ejbName, getMonitoringMethodsArray());
             ejbProbeListener.register();
 
-	    _logger.log(Level.FINE, "Created MonitoringRegistryMediator: appName: "
+	    _logger.log(Level.FINE, "Created MonitoringRegistry: appName: "
                 + appName + "; modName: " + modName + "; ejbName: " + ejbName);
 	} catch (Exception ex) {
 	    _logger.log(Level.SEVERE, "[**BaseContainer**] Could not create MonitorRegistryMediator. appName: " + appName + "; modName: " + modName + "; ejbName: " + ejbName, ex);
@@ -5485,13 +5462,6 @@ public abstract class BaseContainer
                 _logger.log(Level.FINE, "Error getting the EjbMonitoringProbeProvider");
             }
         }
-
-    }
-
-    protected void populateMethodMonitorMap() {
-        boolean hasGeneratedClasses = (monitoredGeneratedClasses.size() > 0);
-        Method[] methods = getMonitoringMethodsArray(hasGeneratedClasses);
-        populateMethodMonitorMap(methods, hasGeneratedClasses);
 
     }
 
@@ -5521,43 +5491,16 @@ public abstract class BaseContainer
         return methods;
     }
 
-    protected void populateMethodMonitorMap(Method[] methods) {
-        populateMethodMonitorMap(methods, false);
-    }
-    
-    protected void populateMethodMonitorMap(Method[] methods,
-            boolean prefixClassName) {
-	/*
-	methodMonitorMap = new HashMap();
-	MethodMonitor[] methodMonitors = new MethodMonitor[methods.length];
-	for (int i=0; i<methods.length; i++ ) {
-	    methodMonitors[i] = new MethodMonitor(methods[i]);
-	    methodMonitorMap.put(methods[i], methodMonitors[i]);
-	}
-	
-	registryMediator.registerProvider(methodMonitors);
-	*/
-	registryMediator.registerEJBMethods(methods, prefixClassName);
-	_logger.log(Level.FINE, "[Basecontainer] Registered Method Monitors");
-    }
-
-    void logMonitoredComponentsData() {
-	registryMediator.logMonitoredComponentsData(
-	    _logger.isLoggable(Level.FINE));
-    }
-
     protected void doFlush( EjbInvocation inv ) {
     }
 
     protected void registerMonitorableComponents() {
-        createMonitoringRegistryMediator();
+        createMonitoringRegistry();
         registerTimerMonitorableComponent();
     }
 
     protected void registerTimerMonitorableComponent() {
         if( isTimedObject() ) {
-            //toMonitorProps = new TimedObjectMonitorableProperties();
-	    //registryMediator.registerProvider( toMonitorProps );
             String invokerId = EjbMonitoringUtils.getInvokerId(containerInfo.appName, containerInfo.modName, containerInfo.ejbName);
             try {
                 ProbeProviderFactory probeFactory = ejbContainerUtilImpl.getProbeProviderFactory();
@@ -5580,17 +5523,14 @@ public abstract class BaseContainer
 
     protected void incrementCreatedTimedObject() {
         timerProbeNotifier.ejbTimerCreatedEvent();
-        //toMonitorProps.incrementTimersCreated();
     }
 
     protected void incrementRemovedTimedObject() {
         timerProbeNotifier.ejbTimerRemovedEvent();
-        //toMonitorProps.incrementTimersRemoved();
     }
 
     protected void incrementDeliveredTimedObject() {
         timerProbeNotifier.ejbTimerDeliveredEvent();
-        //toMonitorProps.incrementTimersDelivered();
     }
 
     private static class JndiInfo {
@@ -5830,77 +5770,6 @@ final class SafeProperties extends Properties {
         stream.writeObject(defaults);
     }
 } //SafeProperties{}
-
-/** TODO: remove
-final class TimedObjectMonitorableProperties 
-    implements com.sun.ejb.spi.stats.EJBTimedObjectStatsProvider
-    {
-
-    long timersCreated    = 0;
-    long timersRemoved    = 0;
-    long timersDelivered  = 0;
-    boolean toMonitor     = false;
-
-    public TimedObjectMonitorableProperties() {
-        timersCreated    = 0;
-        timersRemoved    = 0;
-        timersDelivered  = 0;
-        toMonitor        = false;
-    } 
-
-    public void incrementTimersCreated() {
-        if( toMonitor ) {
-            synchronized( this ) {
-                timersCreated++;
-            }
-        }
-    }
-
-    public long getTimersCreated() {
-        return timersCreated;
-    }
-
-    public void incrementTimersRemoved() {
-        if( toMonitor ) {
-            synchronized( this ) {
-                timersRemoved++;
-            }
-        }
-    }
-
-    public long getTimersRemoved() {
-        return timersRemoved;
-    }
-
-    public void incrementTimersDelivered() {
-        if( toMonitor ) {
-            synchronized( this ) {
-                timersDelivered++;
-            }
-        }
-    }
-
-    public long getTimersDelivered() {
-        return timersDelivered;
-    }
-
-    public void appendStats(StringBuffer sbuf) {
-	sbuf.append("[Timers: ")
-	    .append("Created=").append(timersCreated).append("; ")
-	    .append("Removed=").append(timersRemoved).append("; ")
-	    .append("Delivered=").append(timersDelivered).append("; ");
-	sbuf.append("]");
-    }
-
-    public void monitoringLevelChanged( boolean monitoringOn ) {
-        timersCreated   = 0;
-        timersRemoved   = 0;
-        timersDelivered = 0;
-        toMonitor       = monitoringOn;
-    }
-
-} //TimedObjectMonitorableProperties{}
-**/
 
 final class ContainerInfo {
     String appName;

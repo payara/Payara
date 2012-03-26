@@ -44,7 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.ejb.containers.EjbContainerUtilImpl;
-import com.sun.ejb.spi.stats.EJBCacheStatsProvider;
 
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.probe.provider.annotations.*;
@@ -97,9 +96,9 @@ public class EjbCacheStatsProvider {
     private String moduleName = null;
     private String beanName = null;
     private boolean registered = false;
-    private EJBCacheStatsProvider delegate;
+    private EjbCacheStatsProviderDelegate delegate;
 
-    public EjbCacheStatsProvider(EJBCacheStatsProvider delegate, long beanId,
+    public EjbCacheStatsProvider(EjbCacheStatsProviderDelegate delegate, long beanId,
             String appName, String moduleName, String beanName) {
 
         this.delegate = delegate;

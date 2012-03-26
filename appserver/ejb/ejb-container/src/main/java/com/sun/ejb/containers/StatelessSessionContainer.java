@@ -91,7 +91,6 @@ import org.glassfish.ejb.config.EjbContainer;
 
 public class StatelessSessionContainer
     extends BaseContainer 
-    //implements StatelessSessionBeanStatsProvider
 {
     private static final byte[] statelessInstanceKey = {0, 0, 0, 1};
 
@@ -267,10 +266,7 @@ public class StatelessSessionContainer
     }
 
     protected void registerMonitorableComponents() {
-        //registryMediator.registerProvider(this);
-        //registryMediator.registerProvider(pool);
         super.registerMonitorableComponents();
-        super.populateMethodMonitorMap();
 
         poolProbeListener = new EjbPoolStatsProvider(pool,
                 getContainerId(), containerInfo.appName, containerInfo.modName,

@@ -72,7 +72,7 @@ import java.util.logging.Logger;
  * to implement these features.
  */
 public abstract class AbstractPool
-    implements Pool, com.sun.ejb.spi.stats.EJBPoolStatsProvider
+    implements Pool
 {
 
     protected static final Logger _logger =

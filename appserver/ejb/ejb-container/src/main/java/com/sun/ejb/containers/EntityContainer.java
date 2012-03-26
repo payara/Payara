@@ -80,6 +80,7 @@ import com.sun.ejb.monitoring.stats.EntityBeanStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
 import org.glassfish.ejb.config.EjbContainer;
 
 /**
@@ -152,7 +153,7 @@ import org.glassfish.ejb.config.EjbContainer;
 
 public class EntityContainer
     extends BaseContainer
-    implements CacheListener //, EntityBeanStatsProvider
+    implements CacheListener 
 {
     
     private ThreadLocal ejbServant = new ThreadLocal() {
@@ -385,12 +386,7 @@ public class EntityContainer
     }
 
     protected void registerMonitorableComponents() {
-/** TODO
-	registryMediator.registerProvider(this);
-	registryMediator.registerProvider(entityCtxPool);
-**/
         super.registerMonitorableComponents();
-	super.populateMethodMonitorMap();
 	if (readyStore != null) {
 	    int confMaxCacheSize = cacheProp.maxCacheSize;
 	    if (confMaxCacheSize <= 0) {
@@ -2926,7 +2922,7 @@ public class EntityContainer
 
 
     class EntityCacheStatsProvider
-	implements com.sun.ejb.spi.stats.EJBCacheStatsProvider
+	implements EjbCacheStatsProviderDelegate
     {
 	private BaseCache cache;
 	private String configData;

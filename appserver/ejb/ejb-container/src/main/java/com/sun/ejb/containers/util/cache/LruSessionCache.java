@@ -47,6 +47,7 @@ import com.sun.ejb.spi.container.SFSBContainerCallback;
 import com.sun.ejb.spi.container.StatefulEJBContext;
 
 import com.sun.ejb.base.stats.StatefulSessionStoreMonitor;
+import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
 
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.util.SimpleMetadata;
@@ -59,7 +60,7 @@ import java.util.logging.*;
 
 public class LruSessionCache
     extends LruCache
-    implements com.sun.ejb.spi.stats.EJBCacheStatsProvider
+    implements EjbCacheStatsProviderDelegate
 {
 
     protected int           numActivated;
@@ -798,7 +799,7 @@ public class LruSessionCache
 	this.configData = configData;
     }
 
-    //Implementation of com.sun.ejb.spi.stats.EJBCacheStatsProvider
+    //Implementation of EjbCacheStatsProviderDelegate
 
     public void appendStats(StringBuffer sbuf) {
 	sbuf.append("[Cache: ")

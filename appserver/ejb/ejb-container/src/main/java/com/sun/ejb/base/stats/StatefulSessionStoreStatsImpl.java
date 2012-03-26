@@ -113,8 +113,6 @@ public class StatefulSessionStoreStatsImpl
 	MonitorableSFSBStoreManager provider)
     {
 	this.provider = provider;
-	super.initialize("com.sun.enterprise.admin.monitor.stats.StatefulSessionStoreStats");
-
 	initialize();
     }
 
@@ -122,7 +120,6 @@ public class StatefulSessionStoreStatsImpl
 	MonitorableSFSBStoreManager provider, String intfName)
     {
 	this.provider = provider;
-	super.initialize(intfName);
     }
 
     protected void initialize() {
@@ -387,9 +384,6 @@ public class StatefulSessionStoreStatsImpl
 	appendTimeStatistic(sbuf, "PassivationSize", passivationSize);
 	appendTimeStatistic(sbuf, "PassivationTime", passivationTime);
 
-	//Do not call provider.appendStats(). It is called from
-	//  MonitoringRegistryMediator so that all undocumented
-	//  features are grouped together
     }
 
     protected static void appendTimeStatistic(StringBuffer sbuf, String name,

@@ -320,10 +320,7 @@ public final class StatefulSessionContainer
     }
 
     protected void registerMonitorableComponents() {
-        //registryMediator.registerProvider(this);
-        //registryMediator.registerProvider(sessionBeanCache);
         super.registerMonitorableComponents();
-        super.populateMethodMonitorMap();
         cacheProbeListener = new EjbCacheStatsProvider(sessionBeanCache,
                 getContainerId(), containerInfo.appName, containerInfo.modName,
                 containerInfo.ejbName);

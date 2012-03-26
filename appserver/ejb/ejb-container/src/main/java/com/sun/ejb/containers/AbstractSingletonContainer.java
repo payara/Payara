@@ -269,7 +269,6 @@ public abstract class AbstractSingletonContainer
 
     protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
-        super.populateMethodMonitorMap();
         _logger.log(Level.FINE, "[Singleton Container] registered monitorable");
     }
 

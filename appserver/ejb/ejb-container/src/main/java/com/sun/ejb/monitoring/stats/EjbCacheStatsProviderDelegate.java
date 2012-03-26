@@ -38,15 +38,25 @@
  * holder.
  */
 
-package com.sun.ejb.spi.stats;
+package com.sun.ejb.monitoring.stats;
 
-public interface EJBStatsProvider
-    extends StatsProvider
+public interface EjbCacheStatsProviderDelegate
+    extends com.sun.ejb.spi.stats.StatsProvider
 {
 
-    public long getCreateCount();
+    public int getCacheHits();
 
-    public long getRemoveCount();
+    public int getCacheMisses();
 
+    public int getNumBeansInCache();
+
+    public int getNumExpiredSessionsRemoved();
+
+    public int getNumPassivationErrors();
+
+    public int getNumPassivations();
+
+    public int getNumPassivationSuccess();
+
+    public int getMaxCacheSize();
 }
-
