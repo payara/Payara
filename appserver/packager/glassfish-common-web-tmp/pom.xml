@@ -110,7 +110,7 @@
             <artifactId>pkg-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+           <groupId>org.glassfish.common</groupId>
             <artifactId>amx-javaee</artifactId>
             <version>${project.version}</version>
         </dependency>

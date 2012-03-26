@@ -163,6 +163,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>nucleus-jmx</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
 
         <!-- additional dependencies required to create default domain -->
         <dependency>

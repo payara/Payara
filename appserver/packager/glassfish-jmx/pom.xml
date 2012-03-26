@@ -49,12 +49,12 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>glassfish-common-full</artifactId>
-    <name>Glassfish Commons for Full Distribution </name>
+    <artifactId>glassfish-jmx</artifactId>
+    <name>Glassfish JMX Package</name>
     <packaging>distribution-base-zip</packaging>
-    <description>This pom describes how to assemble the GlassFish Commons for Full Distribution package</description>
+    <description>This pom describes how to assemble the GlassFish JMX package</description>
 
-    <build>
+     <build>
         <plugins>
             <plugin>
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
@@ -64,7 +64,7 @@
                         <if test="${do.compression}">
 			    <property name="compression" value="true" />
 			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
+                        <ant dir="." antfile="build.xml" target="create.package" />
                     </tasks>
                 </configuration>               
              </plugin>
@@ -98,51 +98,34 @@
         <!--
           modules to be included in this bundle
         -->       
+       <!--
+          reusing nucleus-jmx staged content as-is
+        -->       
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-javaee-full</artifactId>
-            <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>sun-as-jsr88-dm-frag</artifactId>
-            <version>${project.version}</version>
-            <type>distribution-fragment</type>
-        </dependency> 
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>nucleus-jmx</artifactId>
+           <version>${project.version}</version>
+           <scope>provided</scope>
+           <type>zip</type>
+       </dependency>
         <dependency>
             <groupId>org.glassfish.common</groupId>
-            <artifactId>mejb-frag</artifactId>
-	    <version>${project.version}</version>
-	    <type>distribution-fragment</type>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.external</groupId>
-           <artifactId>jaxr-ra</artifactId>
-           <version>${project.version}</version>
-           <type>distribution-fragment</type>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.admingui</groupId>
-	   <artifactId>console-common-full-plugin</artifactId>
-           <version>${project.version}</version>
-       </dependency> 
-       <dependency>
-           <groupId>org.glassfish.docs.help</groupId>
-	   <artifactId>console-common-full-plugin-help</artifactId>
-       </dependency> 
- 
-   	<!-- now, listing package dependencies so that their content
+            <artifactId>amx-javaee</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+      	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
-      
-       <dependency>        
+	<!-- package level dependency -->
+
+ 	<dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-ejb-lite</artifactId>
+           <artifactId>glassfish-jcdi</artifactId>
            <version>${project.version}</version>
-	   <classifier>artifacts</classifier>
+           <classifier>artifacts</classifier>
 	   <type>properties</type>
            <scope>provided</scope>
-       </dependency> 
-     
+       </dependency>   
     </dependencies>
 
     <profiles>
@@ -152,7 +135,7 @@
              -->
             <id>ips</id>
 	    <activation>
-	       <activeByDefault>false</activeByDefault> 
+	       <activeByDefault>false</activeByDefault>  
 	    </activation>
 	    <build>
             <plugins>
@@ -177,6 +160,7 @@
 	    </build>
         </profile>
    </profiles>        
+
 
 </project>
 

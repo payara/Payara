@@ -93,6 +93,7 @@
 	<module>nucleus-jersey</module>	
         <module>nucleus-virtualization</module>	
         <module>nucleus-osgi</module>
+	<module>nucleus-jmx</module>
         <module>nucleus-cluster-l10n</module>	
         <module>nucleus-common-l10n</module>	
         <module>nucleus-l10n</module>	

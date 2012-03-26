@@ -176,7 +176,18 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-osgi</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-jmx</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
  
 	<!-- all previous web-nb distribution packages -->
         <dependency>

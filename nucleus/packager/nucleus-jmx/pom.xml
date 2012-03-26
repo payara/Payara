@@ -45,14 +45,18 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.packager</groupId>
-        <artifactId>packages</artifactId>
+        <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>glassfish-common-full</artifactId>
-    <name>Glassfish Commons for Full Distribution </name>
+    <artifactId>nucleus-jmx</artifactId>
+    <name>Glassfish JMX Package</name>
     <packaging>distribution-base-zip</packaging>
-    <description>This pom describes how to assemble the GlassFish Commons for Full Distribution package</description>
+    <description>This pom describes how to assemble the GlassFish JMX package</description>
+
+    <properties>
+        <temp.stagedir>${project.build.directory}/artifacts/jars/</temp.stagedir>
+    </properties>
 
     <build>
         <plugins>
@@ -68,8 +72,8 @@
                     </tasks>
                 </configuration>               
              </plugin>
-             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -87,96 +91,44 @@
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
+                    </execution>                  
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-
+    
     <dependencies>
         <!--
           modules to be included in this bundle
         -->       
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>deployment-javaee-full</artifactId>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>glassfish-mbeanserver</artifactId>
             <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.deployment</groupId>
-            <artifactId>sun-as-jsr88-dm-frag</artifactId>
-            <version>${project.version}</version>
-            <type>distribution-fragment</type>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.glassfish.common</groupId>
-            <artifactId>mejb-frag</artifactId>
-	    <version>${project.version}</version>
-	    <type>distribution-fragment</type>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.external</groupId>
-           <artifactId>jaxr-ra</artifactId>
-           <version>${project.version}</version>
-           <type>distribution-fragment</type>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.admingui</groupId>
-	   <artifactId>console-common-full-plugin</artifactId>
-           <version>${project.version}</version>
-       </dependency> 
-       <dependency>
-           <groupId>org.glassfish.docs.help</groupId>
-	   <artifactId>console-common-full-plugin-help</artifactId>
-       </dependency> 
- 
-   	<!-- now, listing package dependencies so that their content
+            <artifactId>amx-core</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.security</groupId>
+                    <artifactId>security</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+   
+	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
-      
-       <dependency>        
+	<!-- package level dependency -->
+        <dependency>        
            <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-ejb-lite</artifactId>
+           <artifactId>nucleus</artifactId>
            <version>${project.version}</version>
-	   <classifier>artifacts</classifier>
+           <classifier>artifacts</classifier>
 	   <type>properties</type>
            <scope>provided</scope>
-       </dependency> 
-     
-    </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	       <activeByDefault>false</activeByDefault> 
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
-   </profiles>        
-
+        </dependency>
+    </dependencies> 
 </project>
 

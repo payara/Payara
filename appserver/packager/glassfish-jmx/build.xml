@@ -41,25 +41,31 @@
 
 -->
 
-<project name="glassfish web container package creation" default="create.package" basedir=".">
+<project name="glassfish jmx package creation" default="create.package" basedir=".">
     <import file="${basedir}/../common-targets.xml"/>
 
-   <target name="create.package">
-	   <property name="package.name" value="glassfish-web"/> 
-           <property name="previous.package.name" value="glassfish-jmx" />
-        
-       <antcall target="filter-module-artifacts"/>
+    <target name="create.package">
+        <property name="package.name" value="glassfish-jmx"/>
+        <property name="previous.package.name" value="glassfish-jcdi" />
 
-       
-       <stage-module-jars/>
-       <stage-distribution-fragments/>
+        <!-- BEGIN: re-using nucleus-jmx -->
+        <resolveArtifact artifactId="nucleus-jmx" property="nucleus-jmx.zip"/>
+	<unzip src="${nucleus-jmx.zip}" dest="target/stage/${install.dir.name}"/> 
+        <move file="target/stage/${install.dir.name}/nucleus"
+            tofile="target/stage/${install.dir.name}/glassfish" 
+            failonerror="false" />
+        <!-- END: re-using nucleus-jmx -->
 
-       <if test="${compression}">
-	       <antcall target="pack.compression" />
-       </if>
+        <antcall target="filter-module-artifacts"/>
 
-       <antcall target="create-zip-artifact"/>	
-       <antcall target="create-list-artifact"/>  
-   </target>
+        <stage-module-jars/>
+
+        <if test="${compression}">
+            <antcall target="pack.compression" />
+        </if>
+
+        <antcall target="create-zip-artifact"/>
+        <antcall target="create-list-artifact"/>
+    </target>
 </project>
-
+	

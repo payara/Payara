@@ -181,22 +181,6 @@
             <artifactId>flashlight-extra-jdk-packages</artifactId>
             <version>${project.version}</version>
         </dependency> 
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>glassfish-mbeanserver</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.common</groupId>
-            <artifactId>amx-core</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.glassfish.security</groupId>
-                    <artifactId>security</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
    
 	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	

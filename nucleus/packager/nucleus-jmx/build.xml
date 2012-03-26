@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,25 +41,21 @@
 
 -->
 
-<project name="glassfish web container package creation" default="create.package" basedir=".">
+<project name="nucleus-jmx package creation" default="create.package" basedir=".">
     <import file="${basedir}/../common-targets.xml"/>
 
-   <target name="create.package">
-	   <property name="package.name" value="glassfish-web"/> 
-           <property name="previous.package.name" value="glassfish-jmx" />
+    <target name="create.package">
+        <property name="package.name" value="nucleus-jmx"/> 
+        <property name="previous.package.name" value="nucleus" />
         
-       <antcall target="filter-module-artifacts"/>
-
+        <antcall target="filter-module-artifacts"/>
+        <stage-module-jars/>
        
-       <stage-module-jars/>
-       <stage-distribution-fragments/>
 
-       <if test="${compression}">
-	       <antcall target="pack.compression" />
-       </if>
+        <if test="${compression}">
+            <antcall target="pack.compression" />
+        </if>
 
-       <antcall target="create-zip-artifact"/>	
-       <antcall target="create-list-artifact"/>  
-   </target>
+        <antcall target="create-zip-artifact"/>
+    </target>
 </project>
-

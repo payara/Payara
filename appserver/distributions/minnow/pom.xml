@@ -197,8 +197,14 @@
            <groupId>org.glassfish.packager</groupId>
            <artifactId>glassfish-osgi</artifactId>
            <version>${project.version}</version>
-           <classifier>artifacts</classifier>
-	   <type>properties</type>
+	   <type>zip</type>
+           <scope>provided</scope>
+   	</dependency>        
+  	<dependency>
+           <groupId>org.glassfish.packager</groupId>
+           <artifactId>glassfish-jmx</artifactId>
+           <version>${project.version}</version>
+	   <type>zip</type>
            <scope>provided</scope>
    	</dependency>        
     </dependencies>
