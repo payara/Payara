@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * List existing virtual machines
  * @author Jerome Dochez
  */
-@Service(name="list-vm")
+@Service(name="list-vms")
 @Scoped(PerLookup.class)
 public class ListVirtualMachines implements AdminCommand {
 
