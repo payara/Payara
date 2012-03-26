@@ -56,6 +56,7 @@ import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.config.support.datatypes.Port;
@@ -65,17 +66,10 @@ import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.api.admin.config.*;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
+
 import javax.validation.Payload;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigSupport;
 
 /**
  * The configuration defines the configuration of a server instance that can be
@@ -379,6 +373,12 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     @DuckTyped
     NetworkListener getAdminListener();
 
+    @DuckTyped
+    <T extends ConfigExtension> T createDefaultChildByType(Class<T> type);
+
+
+
+
     /**
      * Return an extension configuration given the extension type.
      *
@@ -493,6 +493,28 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
             }
         }
+
+        public static  <U extends ConfigExtension>
+                U createDefaultChildByType(Config config,Class<U> p)
+                throws TransactionFailure {
+
+            final Class<U> parentElem = p;
+            ConfigSupport.apply(new SingleConfigCode<Config>() {
+
+                @Override
+                public Object run(Config parent) throws PropertyVetoException, TransactionFailure {
+                    ConfigExtension child = parent.createChild(parentElem);
+                    parent.getContainers().add(child);
+                    return child;
+                }
+            }, config);
+            return config.getExtensionByType(p);
+
+        }
+
+
+
+
 
     }
     /**
