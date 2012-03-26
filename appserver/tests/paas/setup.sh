@@ -161,11 +161,9 @@ setup_kvm ()
 setup_init ()
 {
     log "OVM init ...."
-    if [ -z "$POOL"]
-    then
-        err "Please specify pool name using -p <pool> option."
-        exit 3
-    fi
+    [ -z "$POOL"] && err "Please specify pool name using -p <pool> option." && exit 3;
+    [ -z "$CONNECTION_STRING" ] && echo "Please specify connection string using -c <string> option." && exit 1;
+    [ -z "$SUBNET" ] && echo "Please specify subnet using -n <subnet> option." && exit 1;
     $A start-domain domain1
     $A set configs.config.server-config.network-config.protocols.protocol.admin-listener.http.request-timeout-seconds=-1
     $A create-jvm-options -Dorg.glassfish.paas.orchestrator.parallel-provisioning=true
@@ -176,10 +174,6 @@ setup_ovm3 ()
     setup_init
 
     log "Configuring OVM 3.0 ...."
-
-    DEFAULT="tcp://admin:Welcome123@ejp-153x-142.in.oracle.com:54321;root:abcd1234"
-    CONNECTION_STRING=${CONNECTION_STRING:-$DEFAULT}
-    SUBNET=${SUBNET:-$SUB}
 
     $A create-ims-config-ovm --connectionstring $CONNECTION_STRING --ovmversion=3.0 ovm
     $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
@@ -226,10 +220,6 @@ setup_ovm2 ()
 
     log "Configuring OVM 2.2 ...."
 
-    DEFAULT="http://admin:abc123@sf-x2200-7.in.oracle.com:8888;root:abc123"
-    CONNECTION_STRING=${CONNECTION_STRING:-$DEFAULT}
-    SUBNET=${SUBNET:-$SUB}
-
     $A create-ims-config-ovm --connectionstring $CONNECTION_STRING  ovm
     $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
 
@@ -271,7 +261,6 @@ setup_ovm2 ()
 log "GlassFish is at $GF_HOME"
 
 A=$GF_HOME/bin/asadmin
-SUB="10.178.214.0/24"
 
 while getopts rd:s:c:n:p: opt
 do
