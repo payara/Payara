@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,16 +45,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>paas.plugins</artifactId>
+        <artifactId>paas.spe</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish</groupId>
-    <artifactId>paas.gfplugin</artifactId>
+    <artifactId>paas.spe-base</artifactId>
     <packaging>hk2-jar</packaging>
     <version>4.0-SNAPSHOT</version>
-    <name>GlassFish Plugin</name>
+    <name>Base for building Service Provisioning Engines</name>
 
     <build>
         <resources>
@@ -108,16 +108,6 @@
         <dependency>
             <groupId>org.glassfish.virtualization</groupId>
             <artifactId>virt-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>paas.spe-base</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.resources</groupId>
-            <artifactId>resources-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
