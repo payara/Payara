@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,11 +45,8 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.Supplemental;
-import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.hk2.Factory;
 import org.glassfish.virtualization.config.Virtualizations;
-import org.glassfish.virtualization.spi.Disk;
-import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
@@ -57,14 +54,6 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * hidden command to start the virtual machine when the instance is requested to start.
@@ -89,108 +78,30 @@ public class SupplementalStartInstance implements AdminCommand {
     @Inject(optional = true)
     Virtualizations virtualizations;
 
-    @Inject
-    Disk custDisk;
-
-    @Inject
-    AuthTokenManager authTokenManager;
+    @Param(name="_vmStartup", optional=true, defaultValue = "true")
+    private String vmStartup;
 
     @Override
     public void execute(AdminCommandContext context) {
+
+        if (!Boolean.valueOf(vmStartup) || instanceName.indexOf("_")==-1 || groups==null) {
+                context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                return;
+        }
 
         if (virtualizations==null || instanceName.indexOf("_")==-1) {
             context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
             return;
         }
         final String groupName = instanceName.substring(0, instanceName.indexOf("_"));
-        final String machineName = instanceName.substring(instanceName.indexOf("_")+1, instanceName.lastIndexOf("_"));
         final String vmName = instanceName.substring(instanceName.lastIndexOf("_")+1, instanceName.length()-"Instance".length());
 
         ServerPool group = groups.byName(groupName);
         try {
             VirtualMachine vm = group.vmByName(vmName);
-            VirtualMachineInfo vmInfo = vm.getInfo();
-            if (Machine.State.RESUMING.equals(vmInfo.getState()) || Machine.State.READY.equals(vmInfo.getState())) {
-                context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                return;
-            }
+            vmLifecycle.get().start(vm);
         } catch (VirtException e) {
             RuntimeContext.logger.warning(e.getMessage());
-        }
-
-        File machineDisks = RuntimeContext.absolutize(new File(virtualizations.getDisksLocation(), group.getName()));
-        machineDisks = new File(machineDisks, machineName);
-        File custDir = new File(machineDisks, vmName + "cust");
-        File custFile = new File(custDir, "customization");
-
-        try {
-            if (custFile.exists() && group instanceof PhysicalServerPool) {
-
-                // only if ISO customization is present (ie not for JRVE)
-                // this needs to be moved to virtualization specific code.
-
-                Properties customizedProperties = new Properties();
-
-                // read existing properties
-                FileReader fileReader = null;
-                try {
-                    fileReader = new FileReader(custFile);
-                    customizedProperties.load(fileReader);
-                } finally {
-                    fileReader.close();
-                }
-
-                // we create 3 tokens as the starting VM may invoke 3 commands, one to change IP address
-                // one to notify of startup, one for the start-local-instance
-                customizedProperties.put("AuthToken", authTokenManager.createToken());
-                customizedProperties.put("AuthToken2", authTokenManager.createToken());
-                customizedProperties.put("StartToken", authTokenManager.createToken());
-
-                // write them out
-                FileWriter fileWriter = null;
-                try {
-                    fileWriter = new FileWriter(new File(custDir, "customization"));
-                    customizedProperties.store(fileWriter, "Customization properties for virtual machine" + vmName);
-                } finally {
-                    fileWriter.close();
-                }
-
-                final File custISOFile = new File(machineDisks, vmName + "cust.iso");
-                custDisk.createISOFromDirectory(custDir, custISOFile);
-
-                PhysicalServerPool physicalGroup = (PhysicalServerPool) group;
-                final Machine machine = physicalGroup.byName(machineName);
-                machine.execute(new MachineOperations<Object>() {
-                    @Override
-                    public Object run(FileOperations fileOperations) throws IOException {
-                        fileOperations.delete(machine.getConfig().getDisksLocation() + "/" + vmName + "cust.iso");
-                        fileOperations.copy(custISOFile, new File(machine.getConfig().getDisksLocation()));
-                        return null;
-                    }
-                });
-            }
-
-            VirtualMachine vm = group.vmByName(vmName);
-
-            CountDownLatch latch = vmLifecycle.get().inStartup(vm.getName());
-            vmLifecycle.get().start(vm);
-            try {
-                latch.await(90, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                context.getActionReport().failure(RuntimeContext.logger, "Virtual machine " + vmName +
-                    " took too long to register its startup");
-                return;
-            }
-
-        } catch(Exception e) {
-            e.printStackTrace();
-            context.getActionReport().failure(RuntimeContext.logger, e.getMessage(), e);
-            try {
-                custDisk.umount();
-            } catch(IOException exe) {
-                //
-            }
-            return;
         }
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
         //String nodeName = instanceName.substring(0, instanceName.length() - "Instance".length());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,17 +42,33 @@ package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.spi.Disk;
+import org.glassfish.virtualization.spi.FileOperations;
+import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.MachineOperations;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
+import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.TemplateInstance;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.spi.VirtualMachineInfo;
+import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service to register virtual machine lifecycle tokens.
@@ -64,6 +80,14 @@ public class VirtualMachineLifecycle {
     final TemplateRepository templateRepository;
     final Map<String, CountDownLatch> inStartup = new HashMap<String, CountDownLatch>();
     final Domain domain;
+    @Inject(optional = true)
+    private Virtualizations virtualizations;
+
+    @Inject
+    Disk custDisk;
+
+    @Inject
+    AuthTokenManager authTokenManager;
 
     public VirtualMachineLifecycle(@Inject TemplateRepository templateRepository, @Inject Domain domain) {
         this.templateRepository = templateRepository;
@@ -92,7 +116,76 @@ public class VirtualMachineLifecycle {
     }
 
     public void start(VirtualMachine vm) throws VirtException {
-        vm.start();
+        VirtualMachineInfo vmInfo = vm.getInfo();
+        if (Machine.State.SUSPENDED.equals(vmInfo.getState()) ||
+                Machine.State.SUSPENDING.equals(vmInfo.getState())) {
+            final String vmName = vm.getName();
+            final Machine machine = vm.getMachine();
+            ServerPool group = vm.getServerPool();
+            File machineDisks = RuntimeContext.absolutize(
+                    new File(virtualizations.getDisksLocation(), group.getName()));
+            machineDisks = new File(machineDisks, machine.getName());
+            File custDir = new File(machineDisks, vm.getName() + "cust");
+            File custFile = new File(custDir, "customization");
+            try {
+                if (custFile.exists() && group instanceof PhysicalServerPool) {
+
+                    // only if ISO customization is present (ie not for JRVE)
+                    // this needs to be moved to virtualization specific code.
+
+                    Properties customizedProperties = new Properties();
+
+                    // read existing properties
+                    FileReader fileReader = null;
+                    try {
+                        fileReader = new FileReader(custFile);
+                        customizedProperties.load(fileReader);
+                    } finally {
+                        fileReader.close();
+                    }
+
+                    // we create 3 tokens as the starting VM may invoke 3 commands, one to change IP address
+                    // one to notify of startup, one for the start-local-instance
+                    customizedProperties.put("AuthToken", authTokenManager.createToken());
+                    customizedProperties.put("AuthToken2", authTokenManager.createToken());
+                    customizedProperties.put("StartToken", authTokenManager.createToken());
+
+                    // write them out
+                    FileWriter fileWriter = null;
+                    try {
+                        fileWriter = new FileWriter(new File(custDir, "customization"));
+                        customizedProperties.store(fileWriter, "Customization properties for virtual machine" + vmName);
+                    } finally {
+                        fileWriter.close();
+                    }
+
+                    final File custISOFile = new File(machineDisks, vmName + "cust.iso");
+                    custDisk.createISOFromDirectory(custDir, custISOFile);
+
+                    machine.execute(new MachineOperations<Object>() {
+                        @Override
+                        public Object run(FileOperations fileOperations) throws IOException {
+                            fileOperations.delete(machine.getConfig().getDisksLocation() + "/" + vmName + "cust.iso");
+                            fileOperations.copy(custISOFile, new File(machine.getConfig().getDisksLocation()));
+                            return null;
+                        }
+                    });
+                }
+                CountDownLatch latch = inStartup(vmName);
+                vm.start();
+                try {
+                    latch.await(90, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                try {
+                    custDisk.umount();
+                } catch (IOException exe) {
+                    //
+                }
+            }
+        }
         // we do not call the customizer from here since we don't know the
         // virtual machine address, etc...
         // so we wait for the register-startup or register-virtual-machine calls

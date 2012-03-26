@@ -477,7 +477,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
 
             future.fireEvent(AllocationPhase.VM_START);
-            vmLifecycle.start(vm);
+            vm.start();
 
             return future;
         } catch(VirtException e) {
