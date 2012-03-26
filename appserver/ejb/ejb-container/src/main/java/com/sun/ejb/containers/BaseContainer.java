@@ -41,9 +41,11 @@
 package com.sun.ejb.containers;
 
 import com.sun.ejb.*;
+import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 import com.sun.ejb.codegen.ServiceInterfaceGenerator;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
 import com.sun.ejb.containers.interceptors.SystemInterceptorProxy;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.ejb.containers.util.MethodMap;
 import com.sun.ejb.portable.EJBMetaDataImpl;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;

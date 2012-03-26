@@ -44,8 +44,8 @@ import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
 import com.sun.enterprise.container.common.spi.InterceptorInvoker;
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 
-import com.sun.ejb.containers.EjbOptionalIntfGenerator;
-import com.sun.ejb.containers.OptionalLocalInterfaceProvider;
+import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.logging.LogDomains;
 
 import java.lang.reflect.Proxy;

@@ -48,8 +48,8 @@ import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import com.sun.ejb.EJBUtils;
-import com.sun.ejb.containers.EjbOptionalIntfGenerator;
-import com.sun.ejb.containers.OptionalLocalInterfaceProvider;
+import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.Logger;

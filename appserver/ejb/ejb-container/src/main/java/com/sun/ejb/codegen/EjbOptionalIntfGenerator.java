@@ -38,10 +38,11 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb.codegen;
 
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;

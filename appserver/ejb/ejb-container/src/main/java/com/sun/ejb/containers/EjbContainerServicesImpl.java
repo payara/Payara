@@ -41,6 +41,7 @@
 package com.sun.ejb.containers;
 
 import com.sun.ejb.Container;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.jvnet.hk2.annotations.Service;

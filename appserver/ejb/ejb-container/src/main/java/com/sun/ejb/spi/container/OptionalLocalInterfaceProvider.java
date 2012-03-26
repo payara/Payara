@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb.spi.container;
 
 import java.lang.reflect.Proxy;
 
