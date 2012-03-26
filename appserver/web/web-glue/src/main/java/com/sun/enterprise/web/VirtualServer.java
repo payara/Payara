@@ -2501,9 +2501,11 @@ public class VirtualServer extends StandardHost
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-            DOMSource src = new DOMSource(doc);
-            StreamResult result = new StreamResult(file);
-            transformer.transform(src, result);
+            if (file!=null) {
+                DOMSource src = new DOMSource(doc);
+                StreamResult result = new StreamResult(file);
+                transformer.transform(src, result);
+            }
 
         }
     }
