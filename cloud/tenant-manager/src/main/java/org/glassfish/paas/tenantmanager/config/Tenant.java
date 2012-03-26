@@ -43,6 +43,7 @@ package org.glassfish.paas.tenantmanager.config;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 /**
  * 
@@ -54,4 +55,8 @@ public interface Tenant extends ConfigBeanProxy {
     @Attribute
     String getName();
     void setName(String name);
+
+    @Element
+    TenantAdmin getTenantAdmin();
+    void setTenantAdmin(TenantAdmin tenantAdmin);
 }

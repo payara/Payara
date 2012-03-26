@@ -61,6 +61,16 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>

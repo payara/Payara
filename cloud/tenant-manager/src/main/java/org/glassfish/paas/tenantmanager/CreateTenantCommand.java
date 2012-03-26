@@ -1,0 +1,150 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+package org.glassfish.paas.tenantmanager;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.Services;
+//import org.glassfish.paas.admin.CloudService;
+//import org.glassfish.paas.admin.CloudServices;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.*;
+
+import javax.inject.Inject;
+import java.beans.PropertyVetoException;
+import java.io.File;
+import org.glassfish.internal.api.Target;
+import org.glassfish.paas.tenantmanager.api.TenantManager;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
+
+/**
+ * An example command using zero config Service initialization
+ * and the new Config aps
+ * @author Bhakti Mehta
+ *
+ */
+@Service(name = "create-tenant")
+@Scoped(PerLookup.class)
+@I18n("create.tenant")
+@TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS})
+public final class CreateTenantCommand
+        implements AdminCommand {
+    @Inject
+    private TenantManagerConfig tmConfig;
+
+    @Inject
+    private TenantManager tm;
+
+    @Param (primary=true)
+    String tenantId;
+
+    private ActionReport report;
+
+    final private static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(CreateTenantCommand.class);
+
+    @Inject
+    Habitat habitat;
+
+    private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
+
+
+
+    @Override
+    public void execute(AdminCommandContext context) {
+
+
+        report = context.getActionReport();
+
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+
+         if (tenantId == null) {
+            String msg = localStrings.getLocalString("NullTenantId", "TenantId cannot be null");
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setMessage(msg);
+            return;
+        }
+        //config can be the server config for a command which does not target a particular config
+        //otherwise we can use
+        //TargetUtil.getConfig to get a particular config...
+        Config config = habitat.getComponent(Config.class, "server-config");
+        /*
+        CloudServices cs = config.getExtensionByType(CloudServices.class);
+        TenantManagementConfig tm = null;
+
+        if (cs == null ) {
+             // cs = createCloudService(config);
+            config.createDefaultChildByType(CloudServices.class);
+            cs = config.getExtensionByType(CloudServices.class);
+
+            if (cs != null) {
+                 tm = cs.createDefaultChildByType(TenantManagementConfig.class) ;
+            }
+
+        }
+        String installRoot = System.getProperty(INSTALL_ROOT);
+
+        File tmStore = new File(installRoot, cs.getCloudServiceByType(TenantManagementConfig.class).getFileStore() );
+        */
+        String tmStore = tmConfig.getFileStore().toString();
+        System.out.println("The default tm filestore is: " + tmStore);
+        
+        tm.create(tenantId, "admin");
+        
+    //Now that the default tm is obtained
+    //TM can add the tenants...
+    //...
+
+    }
+
+
+}

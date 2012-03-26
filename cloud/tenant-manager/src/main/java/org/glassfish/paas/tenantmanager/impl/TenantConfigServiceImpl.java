@@ -51,6 +51,8 @@ import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
+import org.jvnet.hk2.config.TransactionListener;
+import org.jvnet.hk2.config.Transactions;
 
 import com.sun.enterprise.module.ModulesRegistry;
 
@@ -115,6 +117,7 @@ public class TenantConfigServiceImpl implements TenantConfigService {
     
     private Habitat getNewHabitat(String name) {
         final Habitat habitat = registry.createHabitat("default");
+        habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
         populate(habitat, name);
         return habitat;
     }
@@ -126,6 +129,7 @@ public class TenantConfigServiceImpl implements TenantConfigService {
         try {
             fileUrl = new URL(filePath);
         } catch (MalformedURLException e) {
+            // should not happen, filePath obtained from URL + name
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -140,5 +144,8 @@ public class TenantConfigServiceImpl implements TenantConfigService {
     
     @Inject
     private ModulesRegistry registry;
+    
+    @Inject
+    private TransactionListener transactionListener;
     
 }

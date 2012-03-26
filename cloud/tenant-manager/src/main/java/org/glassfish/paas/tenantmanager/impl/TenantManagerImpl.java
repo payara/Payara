@@ -43,16 +43,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.Tenant;
+import org.glassfish.paas.tenantmanager.config.TenantAdmin;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Default implementation for {@link TenantManager}.
@@ -67,21 +71,26 @@ public class TenantManagerImpl implements TenantManager {
      * {@inheritDoc}
      */
     @Override
-    public Tenant create(String name, String adminUserName) {
-        String dir = null;
+    public Tenant create(final String name, final String adminUserName) {
+        // TODO: assert not exists?
+        String dir = "";
         try {
             dir = new File(config.getFileStore().toURI()).getAbsolutePath() + "/" + name;
         } catch (URISyntaxException e1) {
+            // can not happen
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         String filePath =  dir + "/tenant.xml";
         try {
             boolean created = new File(dir).mkdir();
-            // TODO: assert created
+            // TODO: i18n
+            logger.fine("Tenant dir " + dir + " was " + (created ? "" : "not ") + "created");
+            // TODO: better assert created?
             File file = new File(filePath);
             created = file.createNewFile();
-            // TODO: assert created
+            logger.fine("Tenant file " + file + " was " + (created ? "" : "not ") + "created");
+            // TODO: better assert created?
             Writer writer = new FileWriter(file);
             writer.write("<tenant name='" + name + "'/>");
             writer.close();
@@ -91,13 +100,30 @@ public class TenantManagerImpl implements TenantManager {
         }
         String bak = null;
         try {
-            tenantConfigService.getCurrentTenant();
+            bak = tenantConfigService.getCurrentTenant();
         } catch (IllegalArgumentException e) {
             // ignore "No current tenatn set"
         }
         tenantConfigService.setCurrentTenant(name);
         Tenant tenant = tenantConfigService.get(Tenant.class);
         tenantConfigService.setCurrentTenant(bak);
+        
+        try {
+            ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                @Override
+                public Object run(Tenant tenant) throws TransactionFailure {
+                    TenantAdmin tenantAdmin = tenant.createChild(TenantAdmin.class);
+                    tenantAdmin.setName(adminUserName);
+                    tenant.setTenantAdmin(tenantAdmin);
+                    return tenant;
+                }
+                
+            }, tenant);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();            
+        }
+        
         // TODO: add default admin adminUserName
         return tenant;
     }
@@ -117,4 +143,6 @@ public class TenantManagerImpl implements TenantManager {
     @Inject
     private TenantConfigService tenantConfigService;
 
+    @Inject
+    private Logger logger;
 }

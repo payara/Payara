@@ -37,55 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.tenantmanager.impl;
+package org.glassfish.paas.tenantmanager.config;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.util.SystemPropertyConstants;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * Temporary staff.
+ * Tenant main admin user.
  * 
  * @author Andriy Zhdanov
  *
  */
-@Service
-public class TenantManagerConfigImpl implements TenantManagerConfig {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public URL getFileStore() {
-        return fileStore;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setFileStore(URL fileStore) {
-        this.fileStore = fileStore;
-    }
-
-    private URL fileStore;
-    
-    private TenantManagerConfigImpl() {
-        String fs = System.getProperty(SystemPropertyConstants.CONFIG_ROOT_PROPERTY);
-        if (fs != null) {
-            try {
-                fileStore = new URL("file://" + fs + "/tenants-store");
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } else {
-            // TODO: alert no config root?
-        }
-        
-    }
-
+@Configured
+public interface TenantAdmin extends ConfigBeanProxy{
+    @Attribute
+    String getName();
+    void setName(String name);
 }

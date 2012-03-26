@@ -43,6 +43,12 @@ import java.net.URL;
 
 import org.jvnet.hk2.annotations.Contract;
 
+/**
+ * TenantMananager service config from CPAS domain.xml.
+ * 
+ * @author Andriy Zhdanov
+ *
+ */
 @Contract
 public interface TenantManagerConfig {
 

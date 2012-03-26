@@ -39,14 +39,26 @@
  */
 package org.glassfish.paas.tenantmanager.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.Tenant;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
+import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.tests.utils.Utils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Dom;
+
+import com.sun.enterprise.util.io.FileUtils;
 
 public class TenantManagerTest {
     TenantManager tenantManager;
@@ -59,12 +71,31 @@ public class TenantManagerTest {
         tenantManager = habitat.getComponent(TenantManager.class);
     }
 
+    private String readConfigXml(URL config) throws IOException, URISyntaxException {
+        File file = new File(config.toURI());
+        return FileUtils.readSmallFile(file);
+        
+    }
+
+    // TODO: find in glassfish and re-use it
+    private void assertConfigXml(String msg, String expectedFileName, ConfigBeanProxy actualConfig) throws MalformedURLException, IOException, URISyntaxException {
+        ConfigBean configBean = (ConfigBean) Dom.unwrap(actualConfig);
+        TenantDocument doc = (TenantDocument) configBean.document;
+        String expectedUrl = TenantConfigServiceTest.class.getResource("/").toString() + expectedFileName + "-expected.xml";
+        String expected = readConfigXml(new URL(expectedUrl));
+        String actual = readConfigXml(doc.getResource());
+        Assert.assertEquals(msg, expected, actual);
+
+    }
+    
+
     @Test
-    public void testGet() {
+    public void testCreate() throws URISyntaxException, MalformedURLException, IOException {
         Assert.assertNotNull("tenantManager", tenantManager);
-        Tenant tenant = tenantManager.create("tenant3", "adminUserName");
+        Tenant tenant = tenantManager.create("tenant3", "admin");
         Assert.assertNotNull("tenant", tenant);
         Assert.assertEquals("tenant", "tenant3", tenant.getName());
+        assertConfigXml("New tenant xml", "tenant3", tenant);
     }
 
 }

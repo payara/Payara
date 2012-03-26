@@ -1,0 +1,3 @@
+<tenant name="tenant3">
+  <tenant-admin name="admin"></tenant-admin>
+</tenant>
