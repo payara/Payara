@@ -102,6 +102,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
@@ -398,7 +399,7 @@ public class StandardContext
     /**
      * The MIME mappings for this web application, keyed by extension.
      */
-    private HashMap<String,String> mimeMappings = new HashMap<String,String>();
+    private Map<String,String> mimeMappings = new HashMap<String,String>();
 
     /**
      * The context initialization parameters for this web application,
@@ -712,10 +713,10 @@ public class StandardContext
 
     private boolean sessionCookieNameInitialized = false;
 
-    protected ConcurrentHashMap<String, ServletRegistrationImpl> servletRegisMap =
+    protected ConcurrentMap<String, ServletRegistrationImpl> servletRegisMap =
         new ConcurrentHashMap<String, ServletRegistrationImpl>();
 
-    protected ConcurrentHashMap<String, FilterRegistrationImpl> filterRegisMap =
+    protected ConcurrentMap<String, FilterRegistrationImpl> filterRegisMap =
         new ConcurrentHashMap<String, FilterRegistrationImpl>();
 
     /**
@@ -3128,9 +3129,7 @@ public class StandardContext
      * @param mimeType Corresponding MIME type
      */
     public void addMimeMapping(String extension, String mimeType) {
-        synchronized (mimeMappings) {
-            mimeMappings.put(extension, mimeType);
-        }
+        mimeMappings.put(extension.toLowerCase(Locale.ENGLISH), mimeType);
         if (notifyContainerListeners) {
             fireContainerEvent("addMimeMapping", extension);
         }
@@ -4017,24 +4016,7 @@ public class StandardContext
     @Override
     public String findMimeMapping(String extension) {
 
-        String mimeType = mimeMappings.get(extension);
-        if (mimeType == null) {
-            // No mapping found, try case-insensitive match
-            synchronized (mimeMappings) {
-                for(String ext : mimeMappings.keySet()) {
-                    if(ext.equalsIgnoreCase(extension)) {
-                        // Case-insensitive extension match found
-                        mimeType = mimeMappings.get(ext);
-                        // Add given extension to the map, in order to make
-                        // subsequent lookups faster
-                        mimeMappings.put(extension, mimeType);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return mimeType;
+        return mimeMappings.get(extension.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -4043,10 +4025,8 @@ public class StandardContext
      */
     @Override
     public String[] findMimeMappings() {
-        synchronized (mimeMappings) {
-            return mimeMappings.keySet().toArray(
-                new String[mimeMappings.size()]);
-        }
+        return mimeMappings.keySet().toArray(
+            new String[mimeMappings.size()]);
     }
 
     /**
@@ -4582,9 +4562,7 @@ public class StandardContext
     @Override
     public void removeMimeMapping(String extension) {
 
-        synchronized (mimeMappings) {
-            mimeMappings.remove(extension);
-        }
+        mimeMappings.remove(extension.toLowerCase(Locale.ENGLISH));
 
         if (notifyContainerListeners) {
             fireContainerEvent("removeMimeMapping", extension);
