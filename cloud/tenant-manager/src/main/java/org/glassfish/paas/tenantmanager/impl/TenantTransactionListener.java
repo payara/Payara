@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,23 +58,23 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
-import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 
 @Service
-public class TenantTransactionListener implements TransactionListener {
+public class TenantTransactionListener implements ConfigListener {
     @Inject
     protected Logger logger;
 
     @Override
-    public void transactionCommited(List<PropertyChangeEvent> changes) {
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         // assume there is a change and all changes are for one document
-        PropertyChangeEvent event = changes.get(0);
+        PropertyChangeEvent event = events[0];
         ConfigBeanProxy source = (ConfigBeanProxy) event.getSource();
         ConfigBean configBean = (ConfigBean) Dom.unwrap(source);
         TenantDocument doc = (TenantDocument) configBean.document;
@@ -85,6 +84,7 @@ public class TenantTransactionListener implements TransactionListener {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        return null;
     }
     
     // TODO: refactor GlassFishDocument and DomainXmlPersistance to let CTM reuse it
@@ -165,14 +165,8 @@ public class TenantTransactionListener implements TransactionListener {
         }
     }
 
-    @Override
-    public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> arg0) {
-        // TODO Auto-generated method stub
-    }
-
     final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(TenantTransactionListener.class);    
 
     final XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
-    
 }

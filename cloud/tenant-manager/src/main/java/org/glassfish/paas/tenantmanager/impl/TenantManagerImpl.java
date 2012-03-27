@@ -83,7 +83,7 @@ public class TenantManagerImpl implements TenantManager {
         }
         String filePath =  dir + "/tenant.xml";
         try {
-            boolean created = new File(dir).mkdir();
+            boolean created = new File(dir).mkdirs();
             // TODO: i18n
             logger.fine("Tenant dir " + dir + " was " + (created ? "" : "not ") + "created");
             // TODO: better assert created?

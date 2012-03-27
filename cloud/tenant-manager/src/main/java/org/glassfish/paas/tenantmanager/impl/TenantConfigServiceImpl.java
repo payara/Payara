@@ -50,11 +50,13 @@ import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigParser;
-import org.jvnet.hk2.config.TransactionListener;
-import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.SingleModulesRegistry;
 
 
 /**
@@ -116,14 +118,17 @@ public class TenantConfigServiceImpl implements TenantConfigService {
     }
     
     private Habitat getNewHabitat(String name) {
-        final Habitat habitat = registry.createHabitat("default");
-        habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
-        populate(habitat, name);
+        ModulesRegistry registry = new SingleModulesRegistry(TenantConfigServiceImpl.class.getClassLoader());
+        Habitat habitat = registry.createHabitat("default");
+        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
+        DomDocument<Dom> doc = populate(habitat, name);
+        ((ConfigBean)doc.getRoot()).addListener(transactionListener);
         return habitat;
     }
 
-    private void populate(Habitat habitat, String name) {
-        String filePath = config.getFileStore().toString() + name + "/tenant.xml";
+    @SuppressWarnings("unchecked")
+    private DomDocument<Dom> populate(Habitat habitat, String name) {
+        String filePath = config.getFileStore().toString() + "/" + name + "/tenant.xml";
         ConfigParser parser = new ConfigParser(habitat);
         URL fileUrl = null;
         try {
@@ -133,7 +138,7 @@ public class TenantConfigServiceImpl implements TenantConfigService {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+        return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
     }
     
     private Map<String, Habitat> habitats = new HashMap<String, Habitat>();
@@ -142,10 +147,12 @@ public class TenantConfigServiceImpl implements TenantConfigService {
     @Inject
     private TenantManagerConfig config;
     
+    /* does not work!
     @Inject
     private ModulesRegistry registry;
-    
+    */
+
     @Inject
-    private TransactionListener transactionListener;
+    private TenantTransactionListener transactionListener;
     
 }
