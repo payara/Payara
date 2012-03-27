@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -355,13 +355,24 @@ final class ApplicationFilterChain implements FilterChain {
      * @param filterConfig The FilterConfig for the servlet to be executed
      */
     void addFilter(ApplicationFilterConfig filterConfig) {
-        if (n == filters.length) {
-            ApplicationFilterConfig[] newFilters =
-                new ApplicationFilterConfig[n + INCREMENT];
-            System.arraycopy(filters, 0, newFilters, 0, n);
-            filters = newFilters;
+        boolean add = true;
+        String filterName = filterConfig.getFilterName(); // cannot be null
+        for (int i = 0; i < n; i++) {
+            ApplicationFilterConfig afc = filters[i];
+            if (afc != null && filterName.equals(afc.getFilterName())) {
+                add = false;
+                break;
+            }
         }
-        filters[n++] = filterConfig;
+        if (add) {
+            if (n == filters.length) {
+                ApplicationFilterConfig[] newFilters =
+                    new ApplicationFilterConfig[n + INCREMENT];
+                System.arraycopy(filters, 0, newFilters, 0, n);
+                filters = newFilters;
+            }
+            filters[n++] = filterConfig;
+        }
     }
 
 
