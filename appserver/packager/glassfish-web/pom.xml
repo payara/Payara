@@ -103,15 +103,6 @@
 	    <version>${project.version}</version>
 	    <type>pom</type>
         </dependency>        
-    	<dependency>
-            <groupId>org.glassfish.admingui</groupId>
-            <artifactId>console-web-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-            <artifactId>console-web-plugin-help</artifactId>
-        </dependency>
 
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	

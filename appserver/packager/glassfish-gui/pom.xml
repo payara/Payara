@@ -148,6 +148,33 @@
            <groupId>org.glassfish.docs.help</groupId>
            <artifactId>console-cluster-plugin-help</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.admingui</groupId>
+            <artifactId>console-web-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.docs.help</groupId>
+            <artifactId>console-web-plugin-help</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admingui</groupId>
+            <artifactId>console-jdbc-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.docs.help</groupId>
+            <artifactId>console-jdbc-plugin-help</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.admingui</groupId>
+            <artifactId>console-jca-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency> 
+        <dependency>
+            <groupId>org.glassfish.docs.help</groupId>
+            <artifactId>console-jca-plugin-help</artifactId>
+        </dependency>        
 
     	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	

@@ -139,15 +139,6 @@
             <artifactId>connectors-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.admingui</groupId>
-	    <artifactId>console-jca-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency> 
-        <dependency>
-            <groupId>org.glassfish.docs.help</groupId>
-	    <artifactId>console-jca-plugin-help</artifactId>
-        </dependency> 
 
 	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
