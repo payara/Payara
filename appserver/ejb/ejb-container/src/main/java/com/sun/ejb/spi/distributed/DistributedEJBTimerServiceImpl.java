@@ -44,7 +44,7 @@ import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
-import org.glassfish.ejb.api.DistributedEJBTimerService;
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
 
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;

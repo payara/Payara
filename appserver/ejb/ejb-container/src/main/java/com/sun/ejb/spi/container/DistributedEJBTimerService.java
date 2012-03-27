@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.ejb.api;
+package com.sun.ejb.spi.container;
 
 import org.jvnet.hk2.annotations.Contract;
 

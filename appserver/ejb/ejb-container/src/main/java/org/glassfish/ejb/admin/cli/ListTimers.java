@@ -46,7 +46,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.List;
 
-import org.glassfish.ejb.api.DistributedEJBTimerService;
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

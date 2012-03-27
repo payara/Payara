@@ -92,7 +92,7 @@ import org.glassfish.ejb.config.EjbTimerService;
  * @author Marina Vatkina
  */
 public class EJBTimerService 
-        /**implements com.sun.ejb.spi.distributed.DistributedEJBTimerService **/ {
+        /**implements com.sun.ejb.spi.container.DistributedEJBTimerService **/ {
 
     EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
 

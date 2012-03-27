@@ -51,7 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.glassfish.ejb.api.DistributedEJBTimerService;
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;

@@ -68,7 +68,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.ejb.spi.CMPDeployer;
-import org.glassfish.ejb.api.DistributedEJBTimerService;
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
