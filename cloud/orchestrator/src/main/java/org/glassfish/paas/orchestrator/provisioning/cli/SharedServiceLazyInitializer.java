@@ -54,6 +54,7 @@ import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -197,5 +198,6 @@ public class SharedServiceLazyInitializer {
                 serviceUtil.registerService(null, childPS, ps);
             }
         }
+        serviceUtil.fireServiceChangeEvent(ServiceChangeEvent.Type.CREATED, ps);
     }
 }

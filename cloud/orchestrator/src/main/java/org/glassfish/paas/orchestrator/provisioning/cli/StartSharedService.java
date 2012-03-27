@@ -119,21 +119,8 @@ public class StartSharedService implements AdminCommand {
                             Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                             ProvisionedService provisionedService = plugin.startService(serviceDescription, serviceInfo);
                             if (provisionedService != null) {
-                                List<String> serviceNames = new ArrayList<String>();
-                                if (provisionedService.getChildServices() != null) {
-                                    for (org.glassfish.paas.orchestrator.service.spi.Service childService : provisionedService.getChildServices()) {
-                                        serviceNames.add(childService.getName());
-                                    }
-                                }
-                                //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
-                                serviceNames.add(serviceName);
-
-
                                 orchestrator.addSharedService(serviceName, provisionedService);
-                                for (String sharedSvcName : serviceNames) {
-                                    serviceUtil.updateState(sharedSvcName, null, provisionedService.getStatus().toString());
-                                }
-
+                                serviceUtil.updateState(provisionedService, null);
                             } else {
                                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                 report.setMessage("Unable to start the shared service [" + serviceName + "]");

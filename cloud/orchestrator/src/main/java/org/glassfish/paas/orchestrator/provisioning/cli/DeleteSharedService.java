@@ -56,6 +56,7 @@ import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.jvnet.hk2.annotations.Inject;
@@ -128,6 +129,9 @@ public class DeleteSharedService implements AdminCommand {
                     plugin.unprovisionService(provisionedService.getServiceDescription(), pdc);
                     serviceOrchestrator.removeSharedService(sharedService.getServiceName());
                     serviceUtil.unregisterService(serviceInfo);
+                    //TODO since the provisionedService is destroyed, it will not have all the original
+                    //TODO information ?
+                    serviceUtil.fireServiceChangeEvent(ServiceChangeEvent.Type.DELETED, provisionedService);
 
                     // delete virtual cluster
                     String virtualClusterName = service.getServiceName();

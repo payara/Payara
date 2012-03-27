@@ -51,6 +51,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -147,7 +148,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
             for (Future<ProvisionedService> future : provisioningFutures) {
                 try {
                     ProvisionedService ps = future.get();
-                    serviceUtil.registerService(appName, ps, null);
+                    registerServiceAndNotify(appName, ps);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.parallel",ps));
                 } catch (Exception e) {
@@ -166,7 +167,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                     Object args[]=new Object[]{sd,chosenPlugin};
                     logger.log(Level.FINEST, localStrings.getString("started.provisioningservice.serial",args));
                     ProvisionedService ps = chosenPlugin.provisionService(sd, context);
-                    serviceUtil.registerService(appName, ps, null);
+                    registerServiceAndNotify(appName, ps);
                     appPSs.add(ps);
                     logger.log(Level.FINEST, localStrings.getString("completed.provisioningservice.serial",ps));
                 } catch (Exception e) {
@@ -191,6 +192,7 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
                         logger.log(Level.INFO, "rollingback.provisioningservice",args);
                         chosenPlugin.unprovisionService(sd, context); //TODO we could do unprovisioning in parallel.
                         serviceUtil.unregisterServiceInfo(sd.getName(), sd.getAppName());
+                        serviceUtil.fireServiceChangeEvent(ServiceChangeEvent.Type.DELETED, ps);
                         logger.log(Level.INFO, "rolledback.provisioningservice",args);
                     }catch(Exception e){
                         logger.log(Level.WARNING, localStrings.getString("failure.while.rollingback.ps",ps),e);
@@ -211,5 +213,10 @@ public class ProvisioningState extends AbstractPaaSDeploymentState {
 
             throw re;
         }
+    }
+
+    private void registerServiceAndNotify(String appName, ProvisionedService ps) {
+        serviceUtil.registerService(appName, ps, null);
+        serviceUtil.fireServiceChangeEvent(ServiceChangeEvent.Type.CREATED, ps);
     }
 }

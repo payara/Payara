@@ -45,6 +45,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
+import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.ConfiguredServiceImpl;
@@ -52,9 +53,7 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceCharacteristics;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
-import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
-import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
-import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
+import org.glassfish.paas.orchestrator.service.spi.*;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
@@ -159,6 +158,28 @@ public class ServiceUtil {
     }
 
 */
+
+    public void updateState(ProvisionedService service, String appName){
+
+        if (service.getChildServices() != null) {
+            for (org.glassfish.paas.orchestrator.service.spi.Service childService : service.getChildServices()) {
+                updateState(childService.getName(), appName, service.getStatus().toString());
+            }
+        }
+        updateState(service.getName(), appName, service.getStatus().toString());
+        fireServiceChangeEvent(getServiceChangeEventType(service.getStatus()), service);
+    }
+
+    private ServiceChangeEvent.Type getServiceChangeEventType(ServiceStatus status){
+        if(ServiceStatus.RUNNING.equals(status) || ServiceStatus.STARTED.equals(status)){
+            return ServiceChangeEvent.Type.STARTED;
+        }else if(ServiceStatus.STOPPED.equals(status) || ServiceStatus.NOT_RUNNING.equals(status)){
+            return ServiceChangeEvent.Type.STOPPED;
+        }else{
+            throw new RuntimeException("Unknown Service Status : " + status);
+        }
+    }
+
     public void updateState(String serviceName, String appName, final String state) {
         Service matchingService = getService(serviceName, appName);
         if (matchingService != null) {
@@ -758,6 +779,16 @@ public class ServiceUtil {
         }
     }
 
+    public void fireServiceChangeEvent(ServiceChangeEvent.Type type,
+                                          org.glassfish.paas.orchestrator.service.spi.Service ps) {
+        for(ServiceChangeListener listener : getServiceChangeListeners()) {
+            listener.onEvent(new ServiceChangeEvent(type, this, null, ps));
+        }
+    }
+
+    private Collection<ServiceChangeListener> getServiceChangeListeners() {
+        return habitat.getAllByContract(ServiceChangeListener.class);
+    }
 
     private ServiceInfo createServiceInfo(String appName, org.glassfish.paas.orchestrator.service.spi.Service serviceNode,
                                           ServiceInfo parentServiceInfo) {

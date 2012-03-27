@@ -148,27 +148,15 @@ public class StopSharedService implements AdminCommand {
                                 /*ServiceDescription serviceDescription = serviceUtil.getSharedServiceDescription(serviceInfo);
                                 Plugin plugin = orchestrator.getPlugin(serviceDescription);*/
                                 ProvisionedService ps = orchestrator.getSharedService(serviceName);
-                                List<String> serviceNames = new ArrayList<String>();
-                                if (ps.getChildServices() != null) {
-                                    for (org.glassfish.paas.orchestrator.service.spi.Service childService : ps.getChildServices()) {
-                                        serviceNames.add(childService.getName());
-                                    }
-                                }
-                                //Getting the list of all the services whose state needs to be updated in correspondence to the Provisioned service
-                                serviceNames.add(serviceName);
-
                                 boolean serviceStopped = plugin.stopService(ps, serviceInfo);
                                 if (serviceStopped) {
                                     orchestrator.removeSharedService(serviceName);
-                                    for (String sharedSvcName : serviceNames) {
-                                        serviceUtil.updateState(sharedSvcName, null, ps.getStatus().toString());
-                                    }
+                                    serviceUtil.updateState(ps, null);
                                 } else {
                                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                     report.setMessage("Unable to stop shared service [" + serviceName + "]");
                                     return;
                                 }
-
                             }
                         }
                     }

@@ -47,6 +47,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Service;
 
@@ -84,6 +85,7 @@ public class UnprovisioningState extends AbstractPaaSDeploymentState {
                     for(ProvisionedService ps : servicesToUnprovision){
                         if(sd.getName().equals(ps.getName())){
                             serviceUtil.unregisterService(appName, ps);
+                            serviceUtil.fireServiceChangeEvent(ServiceChangeEvent.Type.DELETED, ps);
                         }
                     }
                 }

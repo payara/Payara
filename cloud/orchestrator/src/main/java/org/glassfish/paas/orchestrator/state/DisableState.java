@@ -100,13 +100,7 @@ public class DisableState extends AbstractPaaSDeploymentState {
         if(serviceInfo != null){
             ProvisionedService ps = orchestrator.getProvisionedService(sd, appName);
             chosenPlugin.stopService(ps, serviceInfo);
-            serviceUtil.updateState(ps.getName(), appName, ps.getStatus().toString());
-            if(ps.getChildServices() != null){
-                for(org.glassfish.paas.orchestrator.service.spi.Service serviceNode : ps.getChildServices()){
-                    ProvisionedService provisionedService = (ProvisionedService)serviceNode;
-                    serviceUtil.updateState(provisionedService.getName(), appName, provisionedService.getStatus().toString());
-                }
-            }
+            serviceUtil.updateState(ps, appName);
             return true;
         }else{
             Object[] args=new Object[]{sd.getName(),appName};
