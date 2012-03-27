@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.tenantmanager.api;
 
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -73,4 +74,10 @@ public interface TenantConfigService {
      */
     void setCurrentTenant(String name);
 
+    /**
+     * Helper method for zero- tenant-manager -config.
+     * 
+     * @return TenantManagerConfig created or existing
+     */
+    TenantManagerConfig getTenantManagerConfig();
 }

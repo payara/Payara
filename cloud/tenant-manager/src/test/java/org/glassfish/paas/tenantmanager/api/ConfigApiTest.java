@@ -37,55 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.tenantmanager.impl;
+package org.glassfish.paas.tenantmanager.api;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.xml.stream.XMLStreamReader;
 
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.jvnet.hk2.annotations.Service;
+import org.junit.Ignore;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.DomDocument;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-
-/**
- * Temporary staff.
- * 
- * @author Andriy Zhdanov
- *
- */
-@Service
-public class TenantManagerConfigImpl implements TenantManagerConfig {
-    /**
-     * {@inheritDoc}
-     */
+@Ignore
+public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
     @Override
-    public URL getFileStore() {
-        return fileStore;
+    public String getFileName() {        
+        return "TenantDomain";
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void setFileStore(URL fileStore) {
-        this.fileStore = fileStore;
+    public DomDocument<ConfigBean> getDocument(Habitat habitat) {
+        TestDocument doc = habitat.getByType(TestDocument.class);
+        if (doc == null) {
+            doc = new TestDocument(habitat);
+        }
+        return doc;
     }
 
-    private URL fileStore;
-    
-    private TenantManagerConfigImpl() {
-        String fs = System.getProperty(SystemPropertyConstants.CONFIG_ROOT_PROPERTY);
-        if (fs != null) {
-            try {
-                fileStore = new URL("file://" + fs + "/tenants-store");
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } else {
-            // TODO: alert no config root?
+    // TODO: make it reusable, move to ConfigApiTest?
+    class TestDocument extends DomDocument<ConfigBean> {
+
+        public TestDocument(Habitat habitat) {
+            super(habitat);
         }
         
+        @Override
+        public ConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
+                ConfigBean dom, ConfigModel configModel) {
+            return new ConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+        }
     }
 
 }

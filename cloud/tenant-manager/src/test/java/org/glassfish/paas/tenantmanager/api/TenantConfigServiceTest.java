@@ -42,21 +42,36 @@ package org.glassfish.paas.tenantmanager.api;
 import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.config.Tenant;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.glassfish.tests.utils.Utils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
-public class TenantConfigServiceTest {
+public class TenantConfigServiceTest extends ConfigApiTest {
     TenantConfigService tenantConfigService;
 
     @Before
     public void before() {
-        Habitat habitat = Utils.getNewHabitat();
-        TenantManagerConfig tenantManagerConfig = habitat.getComponent(TenantManagerConfig.class);
-        tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
+        Habitat habitat = getHabitat();
         tenantConfigService = habitat.getComponent(TenantConfigService.class);
+        TenantManagerConfig tenantManagerConfig = tenantConfigService.getTenantManagerConfig();
+        // change file store to point to test files
+        try {
+            ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
+                @Override
+                public Object run(TenantManagerConfig tmc) throws TransactionFailure {
+                    String fileStore = TenantConfigServiceTest.class.getResource("/").getPath();
+                    tmc.setFileStore(fileStore);
+                    return tmc;
+                }
+            }, tenantManagerConfig);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();            
+        }
     }   
 
     @Test

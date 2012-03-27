@@ -43,16 +43,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
-
 import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.Tenant;
 import org.glassfish.paas.tenantmanager.config.TenantAdmin;
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -73,14 +70,7 @@ public class TenantManagerImpl implements TenantManager {
     @Override
     public Tenant create(final String name, final String adminUserName) {
         // TODO: assert not exists?
-        String dir = "";
-        try {
-            dir = new File(config.getFileStore().toURI()).getAbsolutePath() + "/" + name;
-        } catch (URISyntaxException e1) {
-            // can not happen
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        String dir = tenantConfigService.getTenantManagerConfig().getFileStore() + "/" + name;
         String filePath =  dir + "/tenant.xml";
         try {
             boolean created = new File(dir).mkdirs();
@@ -135,10 +125,6 @@ public class TenantManagerImpl implements TenantManager {
     public void delete(String name) {
         // TODO Auto-generated method stub
     }
-    
-    // TODO: obtain from server-config
-    @Inject
-    private TenantManagerConfig config;
     
     @Inject
     private TenantConfigService tenantConfigService;

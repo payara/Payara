@@ -39,7 +39,6 @@
  */
 package org.glassfish.paas.tenantmanager;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -49,26 +48,19 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.Services;
-//import org.glassfish.paas.admin.CloudService;
-//import org.glassfish.paas.admin.CloudServices;
+import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import org.glassfish.internal.api.Target;
-import org.glassfish.paas.tenantmanager.api.TenantManager;
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 
 /**
- * An example command using zero config Service initialization
- * and the new Config aps
+ * Create Tenant Command using zero config initialization.
+ * 
  * @author Bhakti Mehta
+ * @author Andriy Zhdanov
  *
  */
 @Service(name = "create-tenant")
@@ -76,11 +68,7 @@ import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 @I18n("create.tenant")
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS})
-public final class CreateTenantCommand
-        implements AdminCommand {
-    @Inject
-    private TenantManagerConfig tmConfig;
-
+public final class CreateTenantCommand implements AdminCommand {
     @Inject
     private TenantManager tm;
 
@@ -95,54 +83,23 @@ public final class CreateTenantCommand
     @Inject
     Habitat habitat;
 
-    private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
-
-
-
     @Override
     public void execute(AdminCommandContext context) {
-
-
         report = context.getActionReport();
 
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
-         if (tenantId == null) {
+        if (tenantId == null) {
             String msg = localStrings.getLocalString("NullTenantId", "TenantId cannot be null");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             return;
         }
-        //config can be the server config for a command which does not target a particular config
-        //otherwise we can use
-        //TargetUtil.getConfig to get a particular config...
-        Config config = habitat.getComponent(Config.class, "server-config");
-        /*
-        CloudServices cs = config.getExtensionByType(CloudServices.class);
-        TenantManagementConfig tm = null;
 
-        if (cs == null ) {
-             // cs = createCloudService(config);
-            config.createDefaultChildByType(CloudServices.class);
-            cs = config.getExtensionByType(CloudServices.class);
+        // see TenantConfigService.getTenantManagerConfig for zero-config initialization
 
-            if (cs != null) {
-                 tm = cs.createDefaultChildByType(TenantManagementConfig.class) ;
-            }
-
-        }
-        String installRoot = System.getProperty(INSTALL_ROOT);
-
-        File tmStore = new File(installRoot, cs.getCloudServiceByType(TenantManagementConfig.class).getFileStore() );
-        */
-        String tmStore = tmConfig.getFileStore().toString();
-        System.out.println("The default tm filestore is: " + tmStore);
-        
+        // create tenant config file
         tm.create(tenantId, "admin");
-        
-    //Now that the default tm is obtained
-    //TM can add the tenants...
-    //...
 
     }
 

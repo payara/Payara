@@ -66,6 +66,12 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 
+/**
+ * Persists Tenant information.
+ * 
+ * @author Andriy Zhdanov
+ *
+ */
 @Service
 public class TenantTransactionListener implements ConfigListener {
     @Inject
@@ -100,10 +106,10 @@ public class TenantTransactionListener implements ConfigListener {
         File destination = new File(filePath);
 
         // get a temporary file
-        File f = File.createTempFile("domain", ".xml", destination.getParentFile());
+        File f = File.createTempFile("tenant", ".xml", destination.getParentFile());
         if (!f.exists()) {
             throw new IOException(localStrings.getLocalString("NoTmpFile",
-                    "Cannot create temporary file when saving domain.xml"));
+                    "Cannot create temporary file when saving tenant.xml"));
         }
 
         // write to the temporary file
@@ -138,7 +144,7 @@ public class TenantTransactionListener implements ConfigListener {
         }        
 
         // backup the current file
-        File backup = new File(destination.getParentFile(), "domain.xml.bak");
+        File backup = new File(destination.getParentFile(), "tenant.xml.bak");
         if (destination.exists() && backup.exists() && !backup.delete()) {
             String msg = localStrings.getLocalString("BackupDeleteFailed",
                     "Could not delete previous backup file at {0}" , backup.getAbsolutePath());
@@ -151,11 +157,11 @@ public class TenantTransactionListener implements ConfigListener {
             logger.severe(msg);
             throw new IOException(msg);
         }
-        // save the temp file to domain.xml
+        // save the temp file to tenant.xml
         if (!FileUtils.renameFile(f, destination)) {
             String msg = localStrings.getLocalString("TmpRenameFailed",
                     "Could not rename {0} to {1}",  f.getAbsolutePath() , destination.getAbsolutePath());
-            // try to rename backup to domain.xml (so that at least something is there)
+            // try to rename backup to tenant.xml (so that at least something is there)
             if (!FileUtils.renameFile(backup, destination)) {
                 msg += "\n" + localStrings.getLocalString("RenameFailed",
                         "Could not rename backup to {0}", destination.getAbsolutePath());

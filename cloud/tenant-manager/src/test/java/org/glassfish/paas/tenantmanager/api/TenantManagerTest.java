@@ -47,9 +47,7 @@ import java.net.URL;
 
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.Tenant;
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
-import org.glassfish.tests.utils.Utils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,14 +58,12 @@ import org.jvnet.hk2.config.Dom;
 
 import com.sun.enterprise.util.io.FileUtils;
 
-public class TenantManagerTest {
+public class TenantManagerTest extends ConfigApiTest {
     TenantManager tenantManager;
 
     @Before
     public void before() {
-        Habitat habitat = Utils.getNewHabitat();
-        TenantManagerConfig tenantManagerConfig = habitat.getComponent(TenantManagerConfig.class);
-        tenantManagerConfig.setFileStore(TenantConfigServiceTest.class.getResource("/"));
+        Habitat habitat = getHabitat();
         tenantManager = habitat.getComponent(TenantManager.class);
     }
 
@@ -97,5 +93,4 @@ public class TenantManagerTest {
         Assert.assertEquals("tenant", "tenant3", tenant.getName());
         assertConfigXml("New tenant xml", "tenant3", tenant);
     }
-
 }

@@ -39,22 +39,30 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.api.TenantConfigService;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigParser;
+import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
 
@@ -99,6 +107,45 @@ public class TenantConfigServiceImpl implements TenantConfigService {
         currentTenant.set(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TenantManagerConfig getTenantManagerConfig() {
+        CloudServices cs = config.getExtensionByType(CloudServices.class);
+        if (cs == null ) {
+           cs = config.createDefaultChildByType(CloudServices.class);
+        }
+
+        TenantManagerConfig tmc = cs.getCloudServiceByType(TenantManagerConfig.class);
+        if (tmc == null ) {
+            tmc = cs.createDefaultChildByType(TenantManagerConfig.class);
+
+            // set default values
+            try {
+                ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
+                    @Override
+                    public Object run(TenantManagerConfig tmc) throws TransactionFailure {
+                        File configDir = env.getConfigDirPath();
+                        if (configDir != null) {
+                            String fileStore = configDir.getAbsolutePath() + "/tenants-store";
+                            System.out.println("fileStore: " + fileStore);
+                            tmc.setFileStore(fileStore);
+                        } else {
+                            // TODO: alert no config root?
+                        }
+                        return tmc;
+                    }
+                }, tmc);
+            } catch (TransactionFailure e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();            
+            }
+        }
+
+        return tmc;
+    }
+
     private ThreadLocal<String> currentTenant = new ThreadLocal<String>() {
         @Override
         protected String initialValue() {
@@ -128,13 +175,13 @@ public class TenantConfigServiceImpl implements TenantConfigService {
 
     @SuppressWarnings("unchecked")
     private DomDocument<Dom> populate(Habitat habitat, String name) {
-        String filePath = config.getFileStore().toString() + "/" + name + "/tenant.xml";
+        String filePath = getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
         ConfigParser parser = new ConfigParser(habitat);
         URL fileUrl = null;
         try {
-            fileUrl = new URL(filePath);
+            fileUrl = new URL("file://" + filePath);
         } catch (MalformedURLException e) {
-            // should not happen, filePath obtained from URL + name
+            // should not happen
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -143,9 +190,12 @@ public class TenantConfigServiceImpl implements TenantConfigService {
     
     private Map<String, Habitat> habitats = new HashMap<String, Habitat>();
 
-    // TODO: obtain from server-config
     @Inject
-    private TenantManagerConfig config;
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config config;
+
+    @Inject
+    ServerEnvironment env;
     
     /* does not work!
     @Inject

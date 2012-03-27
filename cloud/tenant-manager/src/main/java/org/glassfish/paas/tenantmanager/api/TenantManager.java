@@ -69,5 +69,4 @@ public interface TenantManager {
      * @param name
      */
     void delete(String name);
-
 }

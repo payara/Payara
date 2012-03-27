@@ -39,9 +39,9 @@
  */
 package org.glassfish.paas.tenantmanager.config;
 
-import java.net.URL;
-
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.paas.admin.CloudService;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
 /**
  * TenantMananager service config from CPAS domain.xml.
@@ -49,9 +49,11 @@ import org.jvnet.hk2.annotations.Contract;
  * @author Andriy Zhdanov
  *
  */
-@Contract
-public interface TenantManagerConfig {
+@Configured
+public interface TenantManagerConfig extends CloudService {
 
-    URL getFileStore();
-    void setFileStore(URL fileStore);
+    @Attribute
+    String getFileStore();
+    void setFileStore(String fileStore);
+
 }
