@@ -150,7 +150,8 @@ public class Multipart {
                                          requestItem.getFieldName(),
                                          requestItem.getContentType(),
                                          requestItem.isFormField(),
-                                         requestItem.getName());
+                                         requestItem.getName(),
+                                         request.getCharacterEncoding());
                 Streams.copy(requestItem.openStream(),
                              partItem.getOutputStream(), true);
                 String fileName = partItem.getFileName();
