@@ -269,7 +269,7 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
                     new ListenableFutureImpl<AllocationPhase, VirtualMachine>(latch, vm, source);
 
             future.fireEvent(AllocationPhase.VM_START);
-            vmLifecycle.start(vm);
+            vm.start();
 
             return future;
         } catch (Exception e) {
