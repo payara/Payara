@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,21 +46,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish</groupId>
-        <artifactId>glassfish-main-parent</artifactId>
+        <artifactId>glassfish-cloud-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish</groupId>
-    <artifactId>glassfish-cloud-parent</artifactId>
+    <groupId>org.glassfish.virtualization</groupId>
+    <artifactId>virtualization</artifactId>
     <packaging>pom</packaging>
-    <name>PaaS related modules</name>
+    <name>GlassFish Virtualization Modules (IMS)</name>  
     <modules>
-        <module>iaas-mgmt</module>
-        <module>iaas-mgmt-plugins</module>
-        <module>orchestrator</module>
-        <module>tenant-manager</module>
-	<module>elasticity</module>
-	<module>service-mgmt</module>
-	<module>service-mgmt-plugins</module>
-        <module>admin</module>
+    	<module>virt-api</module>
+        <module>virt-core</module>
     </modules>
 </project>
