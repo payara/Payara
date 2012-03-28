@@ -73,11 +73,4 @@ public interface TenantConfigService {
      * Get current tenant.
      */
     void setCurrentTenant(String name);
-
-    /**
-     * Helper method for zero- tenant-manager -config.
-     * 
-     * @return TenantManagerConfig created or existing
-     */
-    TenantManagerConfig getTenantManagerConfig();
 }

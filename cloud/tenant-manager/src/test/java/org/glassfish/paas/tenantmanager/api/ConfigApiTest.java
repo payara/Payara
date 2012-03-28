@@ -51,7 +51,7 @@ import org.jvnet.hk2.config.DomDocument;
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
     @Override
     public String getFileName() {        
-        return "TenantDomain";
+        return "DomainTest";
     }
 
     @Override

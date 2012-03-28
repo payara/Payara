@@ -43,26 +43,73 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
-import org.glassfish.paas.tenantmanager.api.TenantConfigService;
-import org.glassfish.paas.tenantmanager.api.TenantManager;
-import org.glassfish.paas.tenantmanager.config.Tenant;
-import org.glassfish.paas.tenantmanager.config.TenantAdmin;
+import javax.inject.Named;
+
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.paas.admin.CloudServices;
+import org.glassfish.paas.tenantmanager.api.Tenant;
+import org.glassfish.paas.tenantmanager.api.TenantAdmin;
+import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.SingleModulesRegistry;
+
 /**
- * Default implementation for {@link TenantManager}.
+ * Default implementation for {@link TenantManagerEx}.
  * 
  * @author Andriy Zhdanov
  * 
  */
 @Service
-public class TenantManagerImpl implements TenantManager {
+public class TenantManagerImpl implements TenantManagerEx {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T> T get(Class<T> config) {
+        String name = getCurrentTenant();
+        return get(config, name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getCurrentTenant() {
+        String name = currentTenant.get();
+        if (name == null) {
+            // TODO: logging, error handling, i18n
+            throw new IllegalArgumentException("No current tenant set");
+        }
+        return name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setCurrentTenant(String name) {
+        currentTenant.set(name);
+    }
 
     /**
      * {@inheritDoc}
@@ -70,7 +117,7 @@ public class TenantManagerImpl implements TenantManager {
     @Override
     public Tenant create(final String name, final String adminUserName) {
         // TODO: assert not exists?
-        String dir = tenantConfigService.getTenantManagerConfig().getFileStore() + "/" + name;
+        String dir = getTenantManagerConfig().getFileStore() + "/" + name;
         String filePath =  dir + "/tenant.xml";
         try {
             boolean created = new File(dir).mkdirs();
@@ -88,16 +135,8 @@ public class TenantManagerImpl implements TenantManager {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        String bak = null;
-        try {
-            bak = tenantConfigService.getCurrentTenant();
-        } catch (IllegalArgumentException e) {
-            // ignore "No current tenatn set"
-        }
-        tenantConfigService.setCurrentTenant(name);
-        Tenant tenant = tenantConfigService.get(Tenant.class);
-        tenantConfigService.setCurrentTenant(bak);
-        
+
+        Tenant tenant = get(Tenant.class, name);
         try {
             ConfigSupport.apply(new SingleConfigCode<Tenant>() {
                 @Override
@@ -119,15 +158,131 @@ public class TenantManagerImpl implements TenantManager {
     }
 
     /**
+     * Get current tenant specific information. It is possible to get relevant
+     * top level configuration, like Tenant, Environments and Services.
+     * 
+     * @param config
+     *            Config class.
+     * @param tenantName
+     *            Tenant name.
+     * @return Config.
+     */
+    private <T> T get(Class<T> config, String tenantName) {
+        Habitat habitat = getHabitat(tenantName);
+        // TODO: assert Tenant/Environment/Service is requested
+        return  habitat.getComponent(config);
+        
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void delete(String name) {
         // TODO Auto-generated method stub
     }
+
+    /**
+     * Simply threadLocal variable to track current tenant.
+     */
+    private ThreadLocal<String> currentTenant = new ThreadLocal<String>() {
+        @Override
+        protected String initialValue() {
+            return null;
+        }
+    };
+
+    private Habitat getHabitat(String name) {
+        if (!habitats.containsKey(name))  {
+            synchronized(habitats) {
+                if (!habitats.containsKey(name))  {
+                    habitats.put(name, getNewHabitat(name)); 
+                }                
+            }
+        }
+        return habitats.get(name);
+    }
     
+    private Habitat getNewHabitat(String name) {
+        ModulesRegistry registry = new SingleModulesRegistry(TenantManagerImpl.class.getClassLoader());
+        Habitat habitat = registry.createHabitat("default");
+        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
+        DomDocument<Dom> doc = populate(habitat, name);
+        ((ConfigBean)doc.getRoot()).addListener(transactionListener);
+        return habitat;
+    }
+
+    @SuppressWarnings("unchecked")
+    private DomDocument<Dom> populate(Habitat habitat, String name) {
+        String filePath = getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
+        ConfigParser parser = new ConfigParser(habitat);
+        URL fileUrl = null;
+        try {
+            fileUrl = new URL("file://" + filePath);
+        } catch (MalformedURLException e) {
+            // should not happen
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TenantManagerConfig getTenantManagerConfig() {
+        CloudServices cs = config.getExtensionByType(CloudServices.class);
+        if (cs == null ) {
+           cs = config.createDefaultChildByType(CloudServices.class);
+        }
+
+        TenantManagerConfig tmc = cs.getCloudServiceByType(TenantManagerConfig.class);
+        if (tmc == null ) {
+            tmc = cs.createDefaultChildByType(TenantManagerConfig.class);
+
+            // set default values
+            try {
+                ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
+                    @Override
+                    public Object run(TenantManagerConfig tmc) throws TransactionFailure {
+                        File configDir = env.getConfigDirPath();
+                        if (configDir != null) {
+                            String fileStore = configDir.getAbsolutePath() + "/tenants-store";
+                            System.out.println("fileStore: " + fileStore);
+                            tmc.setFileStore(fileStore);
+                        } else {
+                            // TODO: alert no config root?
+                        }
+                        return tmc;
+                    }
+                }, tmc);
+            } catch (TransactionFailure e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();            
+            }
+        }
+
+        return tmc;
+    }
+
+    /**
+     * Habitats per tenant.
+     */
+    private Map<String, Habitat> habitats = new HashMap<String, Habitat>();
+
+    /**
+     * Server config.
+     */
     @Inject
-    private TenantConfigService tenantConfigService;
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config config;
+
+    @Inject
+    ServerEnvironment env;
+
+    @Inject
+    private TenantTransactionListener transactionListener;
 
     @Inject
     private Logger logger;

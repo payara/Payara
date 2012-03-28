@@ -45,8 +45,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.glassfish.paas.tenantmanager.api.TenantManager;
-import org.glassfish.paas.tenantmanager.config.Tenant;
+import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,17 +54,35 @@ import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.util.io.FileUtils;
 
 public class TenantManagerTest extends ConfigApiTest {
-    TenantManager tenantManager;
+    TenantManagerEx tenantManager;
 
     @Before
     public void before() {
         Habitat habitat = getHabitat();
-        tenantManager = habitat.getComponent(TenantManager.class);
+        tenantManager = habitat.getComponent(TenantManagerEx.class);
+        // change file store to point to test files for testGet
+        TenantManagerConfig tenantManagerConfig = tenantManager.getTenantManagerConfig();
+        try {
+            ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
+                @Override
+                public Object run(TenantManagerConfig tmc) throws TransactionFailure {
+                    String fileStore = TenantManagerTest.class.getResource("/").getPath();
+                    tmc.setFileStore(fileStore);
+                    return tmc;
+                }
+            }, tenantManagerConfig);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();            
+        }
     }
 
     private String readConfigXml(URL config) throws IOException, URISyntaxException {
@@ -73,18 +91,19 @@ public class TenantManagerTest extends ConfigApiTest {
         
     }
 
+    // Compare expected tenant.xml contents with actual config bean xml contents.
     // TODO: find in glassfish and re-use it
     private void assertConfigXml(String msg, String expectedFileName, ConfigBeanProxy actualConfig) throws MalformedURLException, IOException, URISyntaxException {
         ConfigBean configBean = (ConfigBean) Dom.unwrap(actualConfig);
         TenantDocument doc = (TenantDocument) configBean.document;
-        String expectedUrl = TenantConfigServiceTest.class.getResource("/").toString() + expectedFileName + "-expected.xml";
+        String expectedUrl = TenantManagerTest.class.getResource("/").toString() + expectedFileName + "-expected.xml";
         String expected = readConfigXml(new URL(expectedUrl));
         String actual = readConfigXml(doc.getResource());
         Assert.assertEquals(msg, expected, actual);
 
     }
-    
 
+    // Create tenant and verify created tenant.xml literally.
     @Test
     public void testCreate() throws URISyntaxException, MalformedURLException, IOException {
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -92,5 +111,20 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertNotNull("tenant", tenant);
         Assert.assertEquals("tenant", "tenant3", tenant.getName());
         assertConfigXml("New tenant xml", "tenant3", tenant);
+    }
+
+    // Verify tenant1 and tenant2 can be retrieved
+    @Test
+    public void testGet() {
+        Assert.assertNotNull("tenantManager", tenantManager);
+        tenantManager.setCurrentTenant("tenant1");
+        Assert.assertEquals("currentTenant", "tenant1", tenantManager.getCurrentTenant());
+        Tenant tenant = tenantManager.get(Tenant.class);
+        Assert.assertNotNull("currentTenant", tenant);
+        Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
+        tenantManager.setCurrentTenant("tenant2");
+        tenant = tenantManager.get(Tenant.class);
+        Assert.assertNotNull("currentTenant", tenant);
+        Assert.assertEquals("currentTenant", "tenant2", tenant.getName());
     }
 }

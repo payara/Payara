@@ -40,7 +40,7 @@
 
 package org.glassfish.paas.tenantmanager.api;
 
-import org.glassfish.paas.tenantmanager.config.Tenant;
+import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Contract;
  * 
  */
 @Contract
-public interface TenantManager {
+public interface TenantManagerEx extends TenantConfigService {
     /**
      * Creates new tenant.
      * 
@@ -69,4 +69,11 @@ public interface TenantManager {
      * @param name
      */
     void delete(String name);
+
+    /**
+     * Helper method for zero- tenant-manager -config.
+     * 
+     * @return TenantManagerConfig created or existing
+     */
+    TenantManagerConfig getTenantManagerConfig();
 }
