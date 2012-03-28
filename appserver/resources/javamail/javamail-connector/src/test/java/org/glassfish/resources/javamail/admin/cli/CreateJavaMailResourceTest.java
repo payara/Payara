@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,8 +55,10 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.junit.After;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
@@ -64,6 +66,7 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+
 import java.beans.PropertyVetoException;
 
 
@@ -98,25 +101,14 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
 
     @After
     public void tearDown() throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<Resources>() {
-            public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                Resource target = null;
-                for (Resource resource : param.getResources()) {
-                    if (resource instanceof MailResource) {
-                        MailResource r = (MailResource) resource;
-                        if (r.getJndiName().equals("mail/MyMailSession") ||
-                                r.getJndiName().equals("dupRes")) {
-                            target = resource;
-                            break;
-                        }
-                    }
-                }
-                if (target != null) {
-                    param.getResources().remove(target);
-                }
-                return null;
-            }
-        }, resources);
+        org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource deleteCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource.class);
+        parameters = new ParameterMap();
+        parameters.set("jndi_name", "mail/MyMailSession");
+
+        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        parameters = new ParameterMap();
+        parameters.set("jndi_name", "dupRes");
+        cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
     }
 
     /**
