@@ -64,6 +64,8 @@ import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 
 import java.rmi.Naming;
 import java.util.*;
@@ -91,6 +93,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
@@ -254,6 +257,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private String brokerInstanceName = null;
 
     private File mqPassFile = null;
+    private boolean grizzlyListenerInit;
 
     @Inject
     private ConnectorRuntime connectorRuntime;
@@ -351,9 +355,50 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         super.loadRAConfiguration();
         postRAConfiguration();
     }
+    
+    /**
+     * Start Grizzly based JMS lazy listener, which is going to initialize
+     * JMS container on first request.
+     */  
+    public void initializeLazyListener(JmsService jmsService) {
+        if (jmsService != null) {
+            if (EMBEDDED.equalsIgnoreCase(jmsService.getType()) && !grizzlyListenerInit) {
+                GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+                if (grizzlyService != null) {
+                List<JmsHost> jmsHosts = jmsService.getJmsHost();
+                    for (JmsHost oneHost : jmsHosts) {
+                        if (Boolean.valueOf(oneHost.getLazyInit())) {
+                            String jmsHost = null;
+                            if (oneHost.getHost() != null && "localhost".equals(oneHost.getHost())) {
+                                jmsHost = "0.0.0.0";
+                            } else {
+                                jmsHost = oneHost.getHost();
+                            }
+                            NetworkListener dummy = new DummyNetworkListener();
+                            dummy.setPort(oneHost.getPort());
+                            dummy.setAddress(jmsHost);
+                            dummy.setProtocol("light-weight-listener");
+                            dummy.setTransport("tcp");
+                            dummy.setName(JMS_SERVICE);
+                            grizzlyService.createNetworkProxy(dummy);
+                            grizzlyListenerInit = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
         try{
         if (this.moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
+            if (connectorRuntime.isServer()) {
+                Domain domain = Globals.get(Domain.class);
+                ServerContext serverContext = Globals.get(ServerContext.class);
+                Server server = domain.getServerNamed(serverContext.getInstanceName());
+                JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
+                initializeLazyListener(jmsService);
+            }
 		//System.setProperty("imq.jmsra.direct.clustered", "true");
                 AccessController.doPrivileged
                         (new java.security.PrivilegedExceptionAction() {

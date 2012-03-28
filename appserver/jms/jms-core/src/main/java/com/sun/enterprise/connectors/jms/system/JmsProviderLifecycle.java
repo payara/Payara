@@ -44,6 +44,7 @@ package com.sun.enterprise.connectors.jms.system;
 //import org.glassfish.jms.admin.monitor.config.JmsServiceMI;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 //import org.jvnet.hk2.config.ConfigSupport;
@@ -57,9 +58,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.internal.api.PostStartup;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
-import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import org.glassfish.grizzly.config.dom.NetworkListener;
 
 import java.util.List;
 
@@ -85,14 +83,8 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     public static final String JMS_SERVICE = "jms-service";
     //static Logger _logger = LogDomains.getLogger(JmsProviderLifecycle.class, LogDomains.RSR_LOGGER);
 
-    private final static String JMS_DEFAULT_LISTENER_IP="0.0.0.0";
-    private final static String JMS_DEFAULT_HOST="localhost";
-
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
-    
-    @Inject
-    private GrizzlyService grizzlyService;
     
     @Inject
     private Provider<JMSConfigListener> jmsConfigListenerProvider;
@@ -103,9 +95,13 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Provider<JmsService> jmsServiceProvider;
 
+    @Inject
+    private ActiveJmsResourceAdapter activeJmsResourceAdapter;
+
     public void postConstruct()
     {
-       initializeLazyListener();
+       final JmsService jmsService = config.getExtensionByType(JmsService.class);
+       activeJmsResourceAdapter.initializeLazyListener(jmsService);
        if (eagerStartupRequired())
        {
         try {
@@ -174,39 +170,6 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
 
         return false;
     }
-
-    /**
-     * Start Grizzly based JMS lazy listener, which is going to initialize
-     * JMS container on first request.
-     */
-    private void initializeLazyListener() {
-        /*
-         * Do the same as above for JMS listeners also but only for MQ's EMBEDDED MODE
-         */
-        final JmsService jmsService = config.getExtensionByType(JmsService.class);
-        if (jmsService != null) {
-            if ("EMBEDDED".equalsIgnoreCase(jmsService.getType())) {
-                List<JmsHost> jmsHosts = jmsService.getJmsHost();
-                for (JmsHost oneHost : jmsHosts) {
-                    if (Boolean.valueOf(oneHost.getLazyInit())) {
-                        String jmsHost = null;
-                        if (oneHost.getHost() != null && JMS_DEFAULT_HOST.equals(oneHost.getHost())) {
-                            jmsHost = JMS_DEFAULT_LISTENER_IP;
-                        } else {
-                            jmsHost = oneHost.getHost();
-                        }
-                        NetworkListener dummy = new DummyNetworkListener();
-                        dummy.setPort(oneHost.getPort());
-                        dummy.setAddress(jmsHost);
-                        dummy.setProtocol("light-weight-listener");
-                        dummy.setTransport("tcp");
-                        dummy.setName("mq-service");
-                        grizzlyService.createNetworkProxy(dummy);
-                    }
-                }
-            }
-        }
-    }    
 
     private JmsService getJmsService() {
             return jmsServiceProvider.get();
