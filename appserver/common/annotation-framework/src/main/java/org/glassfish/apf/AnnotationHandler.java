@@ -69,7 +69,7 @@ import java.lang.annotation.Annotation;
 public interface AnnotationHandler {
     
     /**
-     * @return the annoation type this annotation handler is handling
+     * @return the annotation type this annotation handler is handling
      */
     public Class<? extends Annotation> getAnnotationType();
     

@@ -57,7 +57,11 @@ import java.io.IOException;
 public interface Scanner<T> {
 
     /**
-     *
+     * Scan the archive file and gather a list of classes 
+     * that should be processed for anntoations
+     * @param archiveFile the archive file for scanning
+     * @param bundleDesc the bundle descriptor associated with this archive
+     * @param classloader the classloader used to scan the annotation
      */
     public void process(File archiveFile, T bundleDesc,
             ClassLoader classLoader) throws IOException;
