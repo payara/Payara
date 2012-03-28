@@ -696,8 +696,8 @@ public class ResourceAttributes implements Attributes {
      * @param mimeType The mimeType to set.
      */
     public void setMimeType(String mimeType) {
-        this.mimeTypeInitialized = true;
         this.mimeType = mimeType;
+        this.mimeTypeInitialized = true;
     }
 
 
