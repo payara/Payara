@@ -47,6 +47,8 @@ import java.net.URL;
 
 import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
+import org.glassfish.paas.tenantmanager.entity.Tenant;
+import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.junit.Assert;
 import org.junit.Before;
@@ -126,6 +128,11 @@ public class TenantManagerTest extends ConfigApiTest {
         tenant = tenantManager.get(Tenant.class);
         Assert.assertNotNull("currentTenant", tenant);
         Assert.assertEquals("currentTenant", "tenant2", tenant.getName());
+        Assert.assertTrue("Has Environments", tenant.hasCreatedEnvironment());
+        Assert.assertEquals("Tenant Services", 3, tenant.getServices().getTenantServices().size());
+        Assert.assertEquals("Default Services", 1, tenant.getServices().getDefaultServices().size());
+        Assert.assertEquals("Shared Services", 1, tenant.getServices().getSharedServices().size());
+        Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
     }
 
     // Update exsisting tenant1, verify tenant xml is updated.

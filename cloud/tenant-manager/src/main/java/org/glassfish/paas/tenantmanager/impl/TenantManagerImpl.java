@@ -54,10 +54,10 @@ import javax.inject.Named;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.paas.admin.CloudServices;
-import org.glassfish.paas.tenantmanager.api.Tenant;
-import org.glassfish.paas.tenantmanager.api.TenantAdmin;
 import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
+import org.glassfish.paas.tenantmanager.entity.Tenant;
+import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
@@ -196,7 +196,6 @@ public class TenantManagerImpl implements TenantManagerEx {
                         File configDir = env.getConfigDirPath();
                         if (configDir != null) {
                             String fileStore = configDir.getAbsolutePath() + "/tenants-store";
-                            System.out.println("fileStore: " + fileStore);
                             tmc.setFileStore(fileStore);
                         } else {
                             // TODO: alert no config root?

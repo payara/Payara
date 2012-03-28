@@ -37,22 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.paas.tenantmanager.api;
+package org.glassfish.paas.tenantmanager.entity;
 
-import org.jvnet.hk2.config.Attribute;
+import org.glassfish.paas.tenantmanager.api.TenantScoped;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 /**
- * Tenant main admin user.
+ * DefaultService is mapping to default a service would take if the deployer
+ * does not specify which one to use. For example a tenant can configure that
+ * whenever database service is needed by an app and the app has not specified
+ * any mapping to database, the default is going to be pointing to a shared
+ * database running somewhere.
  * 
  * @author Andriy Zhdanov
- *
+ * 
  */
 @Configured
 @TenantScoped
-public interface TenantAdmin extends ConfigBeanProxy{
-    @Attribute
-    String getName();
-    void setName(String name);
+public interface DefaultService extends ConfigBeanProxy, TenantService {
+
 }

@@ -37,45 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.tenantmanager.entity;
 
-package org.glassfish.paas.tenantmanager.api;
-
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.glassfish.paas.tenantmanager.entity.Tenant;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.paas.tenantmanager.api.TenantScoped;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * TenantManagerEx allows to manage information about all tenants. Its
- * responsibility is to create new and delete existing informations. It is
- * designed for internal (tenant-manager) usage only.
+ * SharedServices These are services that are shared by various environments of
+ * a tenant. It's not yet clear how these services will be deployed and would
+ * they always be ExternalService or not.
  * 
  * @author Andriy Zhdanov
  * 
  */
-@Contract
-public interface TenantManagerEx extends TenantManager {
-    /**
-     * Creates new tenant.
-     * 
-     * @param name
-     *            Tenant name.
-     * @param adminUserName
-     *            default administrator name.
-     * @return new Tenant.
-     */
-    Tenant create(String name, String adminUserName);
+@Configured
+@TenantScoped
+public interface SharedService extends ConfigBeanProxy, TenantService {
 
-    /**
-     * Deletes tenant.
-     * 
-     * @param name
-     */
-    void delete(String name);
-
-    /**
-     * Helper method for zero- tenant-manager -config.
-     * 
-     * @return TenantManagerConfig created or existing
-     */
-    TenantManagerConfig getTenantManagerConfig();
 }

@@ -37,45 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.tenantmanager.entity;
 
-package org.glassfish.paas.tenantmanager.api;
+import java.util.List;
 
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.glassfish.paas.tenantmanager.entity.Tenant;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.paas.tenantmanager.api.TenantScoped;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 /**
- * TenantManagerEx allows to manage information about all tenants. Its
- * responsibility is to create new and delete existing informations. It is
- * designed for internal (tenant-manager) usage only.
+ * Tenant environments place holder.
  * 
  * @author Andriy Zhdanov
- * 
+ *
  */
-@Contract
-public interface TenantManagerEx extends TenantManager {
-    /**
-     * Creates new tenant.
-     * 
-     * @param name
-     *            Tenant name.
-     * @param adminUserName
-     *            default administrator name.
-     * @return new Tenant.
-     */
-    Tenant create(String name, String adminUserName);
+@Configured
+@TenantScoped
+public interface Environments extends ConfigBeanProxy {
 
-    /**
-     * Deletes tenant.
-     * 
-     * @param name
-     */
-    void delete(String name);
+    @Element("*")
+    List<TenantEnvironment> getEnvironments();
 
-    /**
-     * Helper method for zero- tenant-manager -config.
-     * 
-     * @return TenantManagerConfig created or existing
-     */
-    TenantManagerConfig getTenantManagerConfig();
 }

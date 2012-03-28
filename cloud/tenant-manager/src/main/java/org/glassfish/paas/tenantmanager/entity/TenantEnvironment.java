@@ -37,27 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.paas.tenantmanager.entity;
 
-package org.glassfish.paas.tenantmanager.api;
-
-import org.jvnet.hk2.config.Attribute;
+import org.glassfish.paas.tenantmanager.api.TenantScoped;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
 
 /**
+ * Tenant environment place holder, extend it and declare needed details.
  * 
  * @author Andriy Zhdanov
  *
  */
 @Configured
 @TenantScoped
-public interface Tenant extends ConfigBeanProxy {
-    @Attribute
-    String getName();
-    void setName(String name);
+public interface TenantEnvironment extends ConfigBeanProxy {
 
-    @Element
-    TenantAdmin getTenantAdmin();
-    void setTenantAdmin(TenantAdmin tenantAdmin);
 }

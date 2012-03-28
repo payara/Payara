@@ -41,4 +41,13 @@
 
 -->
 <tenant name="tenant2">
+  <tenant-admin name="admin"/>
+  <environments>
+  	<tenant-environment/>
+  </environments>
+  <services>
+  	<default-service/>
+  	<shared-service/>
+  	<external-service/>
+  </services>
 </tenant>
