@@ -139,8 +139,10 @@ public class EJBContainerImpl extends EJBContainer {
             }
 
             if (app instanceof ScatteredArchive) {
+                _logger.info("[EJBContainerImpl] Deploying as a ScatteredArchive");
                 deployedAppName = deployer.deploy(((ScatteredArchive)app).toURI(), params);
             } else {
+                _logger.info("[EJBContainerImpl] Deploying as a File");
                 deployedAppName = deployer.deploy((File)app, params);
             }
 

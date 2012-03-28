@@ -184,14 +184,17 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
 
                 if (l.installed_root != null && l.instance_root != null) {
                     // Real install
+                    _logger.info("[EJBContainerProviderImpl] Using installation location " + l.installed_root.getCanonicalPath());
                     bootstrapProperties.setInstallRoot(l.installed_root.getCanonicalPath());
                 }
                 if (l.instance_root != null && l.reuse_instance_location) {
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.fine("[EJBContainerProviderImpl] Reusing instance location at: " + l.instance_root);
                     }
+                    _logger.info("[EJBContainerProviderImpl] Using instance location: " + l.instance_root.getCanonicalPath());
                     glassFishProperties.setInstanceRoot(l.instance_root.getCanonicalPath());
                 } else if (l.domain_file != null) {
+                    _logger.info("[EJBContainerProviderImpl] Using config file location: " + l.domain_file.toURI().toString());
                     glassFishProperties.setConfigFileURI(l.domain_file.toURI().toString());
                 }
                 addWebContainerIfRequested(properties, glassFishProperties);
