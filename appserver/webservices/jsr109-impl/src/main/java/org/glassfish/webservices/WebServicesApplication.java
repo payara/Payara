@@ -117,7 +117,6 @@ public class WebServicesApplication implements ApplicationContainer {
             while(iter.hasNext()) {
                 ejbendpoint = iter.next();
                 String contextRoot = ejbendpoint.contextRoot;
-                httpHandler.setContextPath(contextRoot);
                 WebServerInfo wsi = new WsUtil().getWebServerInfoForDAS();
                 URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
                 dispatcher.registerEndpoint(contextRoot, httpHandler, this);
