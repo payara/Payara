@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,8 +54,10 @@ import com.sun.enterprise.config.serverbeans.ResourceRef;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.glassfish.tests.utils.Utils;
 import org.junit.After;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
@@ -99,25 +101,13 @@ public class CreateCustomResourceTest extends ConfigApiTest {
 
     @After
     public void tearDown() throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<Resources>() {
-            public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                Resource target = null;
-                for (Resource resource : param.getResources()) {
-                    if (resource instanceof org.glassfish.resources.config.CustomResource) {
-                        CustomResource r = (CustomResource) resource;
-                        if (r.getJndiName().equals("sample_custom_resource") ||
-                                r.getJndiName().equals("dupRes")) {
-                            target = resource;
-                            break;
-                        }
-                    }
-                }
-                if (target != null) {
-                    param.getResources().remove(target);
-                }
-                return null;
-            }
-        }, resources);
+        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
+        parameters = new ParameterMap();
+        parameters.set("jndi_name", "sample_custom_resource");
+        cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
+        parameters = new ParameterMap();
+        parameters.set("jndi_name", "dupRes");
+        cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
     }
 
     /**
