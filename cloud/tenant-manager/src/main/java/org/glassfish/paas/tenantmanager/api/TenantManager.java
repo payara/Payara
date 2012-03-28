@@ -37,27 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.paas.tenantmanager.api;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
+ * TenantManager provides access to information about all tenants. It is
+ * designed for multi-tenant environment, so keeps track of the currently active
+ * tenant, and guarantees access to currently active tenant information only.
+ * CAUTION: Interface is currently evolving and may be changed.
  * 
  * @author Andriy Zhdanov
- *
+ * 
  */
-@Configured
-@TenantScoped
-public interface Tenant extends ConfigBeanProxy {
-    @Attribute
-    String getName();
-    void setName(String name);
+@Contract
+public interface TenantManager {
 
-    @Element
-    TenantAdmin getTenantAdmin();
-    void setTenantAdmin(TenantAdmin tenantAdmin);
+    /**
+     * Get current tenant specific information. It is possible to get relevant
+     * top level configuration, like Tenant, Environments and Services.
+     * 
+     * @param config
+     *            Config class.
+     * @return Config.
+     */
+    <T> T get(Class<T> config);
+
+    /**
+     * Get current tenant.
+     */
+    String getCurrentTenant();
+
+    /**
+     * Get current tenant.
+     */
+    void setCurrentTenant(String name);
 }

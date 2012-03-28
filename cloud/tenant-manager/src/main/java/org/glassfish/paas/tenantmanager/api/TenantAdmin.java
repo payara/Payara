@@ -50,6 +50,7 @@ import org.jvnet.hk2.config.Configured;
  *
  */
 @Configured
+@TenantScoped
 public interface TenantAdmin extends ConfigBeanProxy{
     @Attribute
     String getName();

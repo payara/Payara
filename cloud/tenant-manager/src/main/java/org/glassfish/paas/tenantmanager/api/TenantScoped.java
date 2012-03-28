@@ -39,38 +39,12 @@
  */
 package org.glassfish.paas.tenantmanager.api;
 
-import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
-import org.jvnet.hk2.annotations.Contract;
-
 /**
- * TenantConfigService provides access to information about all tenants. It is
- * designed for multi-tenant environment, so keeps track of the currently active
- * tenant, and guarantees access to currently active tenant information only.
- * CAUTION: Interface is currently evolving and may be change or even removed.
+ * Designates entity scoped by current tenant.
  * 
  * @author Andriy Zhdanov
- * 
+ *
  */
-@Contract
-public interface TenantConfigService {
+public @interface TenantScoped {
 
-    /**
-     * Get current tenant specific information. It is possible to get relevant
-     * top level configuration, like Tenant, Environments and Services.
-     * 
-     * @param config
-     *            Config class.
-     * @return Config.
-     */
-    <T> T get(Class<T> config);
-
-    /**
-     * Get current tenant.
-     */
-    String getCurrentTenant();
-
-    /**
-     * Get current tenant.
-     */
-    void setCurrentTenant(String name);
 }

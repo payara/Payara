@@ -44,14 +44,15 @@ import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
- * TenantManager allows to manage information about all tenants. Its
- * responsibility is to create new and delete existing informations.
+ * TenantManagerEx allows to manage information about all tenants. Its
+ * responsibility is to create new and delete existing informations. It is
+ * designed for internal (tenant-manager) usage only.
  * 
  * @author Andriy Zhdanov
  * 
  */
 @Contract
-public interface TenantManagerEx extends TenantConfigService {
+public interface TenantManagerEx extends TenantManager {
     /**
      * Creates new tenant.
      * 
