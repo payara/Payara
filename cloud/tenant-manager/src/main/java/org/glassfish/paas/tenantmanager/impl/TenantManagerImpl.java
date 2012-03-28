@@ -59,6 +59,7 @@ import org.glassfish.paas.tenantmanager.api.TenantAdmin;
 import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigParser;
@@ -71,6 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
+import com.sun.enterprise.util.io.FileUtils;
 
 /**
  * Default implementation for {@link TenantManagerEx}.
@@ -111,24 +113,29 @@ public class TenantManagerImpl implements TenantManagerEx {
         currentTenant.set(name);
     }
 
+    private File getTenantFile(String name) {
+        String dir = getTenantManagerConfig().getFileStore() + "/" + name;
+        String filePath =  dir + "/tenant.xml";
+        return new File(filePath);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Tenant create(final String name, final String adminUserName) {
+        File tenantFile = getTenantFile(name);
+        File tenantDir = tenantFile.getParentFile();
         // TODO: assert not exists?
-        String dir = getTenantManagerConfig().getFileStore() + "/" + name;
-        String filePath =  dir + "/tenant.xml";
         try {
-            boolean created = new File(dir).mkdirs();
+            boolean created = tenantDir.mkdirs();
             // TODO: i18n
-            logger.fine("Tenant dir " + dir + " was " + (created ? "" : "not ") + "created");
+            logger.fine("Tenant dir " + tenantDir.getPath() + " was " + (created ? "" : "not ") + "created");
             // TODO: better assert created?
-            File file = new File(filePath);
-            created = file.createNewFile();
-            logger.fine("Tenant file " + file + " was " + (created ? "" : "not ") + "created");
+            created = tenantFile.createNewFile();
+            logger.fine("Tenant file " + tenantFile.getPath() + " was " + (created ? "" : "not ") + "created");
             // TODO: better assert created?
-            Writer writer = new FileWriter(file);
+            Writer writer = new FileWriter(tenantFile);
             writer.write("<tenant name='" + name + "'/>");
             writer.close();
         } catch (IOException e) {
@@ -158,73 +165,13 @@ public class TenantManagerImpl implements TenantManagerEx {
     }
 
     /**
-     * Get current tenant specific information. It is possible to get relevant
-     * top level configuration, like Tenant, Environments and Services.
-     * 
-     * @param config
-     *            Config class.
-     * @param tenantName
-     *            Tenant name.
-     * @return Config.
-     */
-    private <T> T get(Class<T> config, String tenantName) {
-        Habitat habitat = getHabitat(tenantName);
-        // TODO: assert Tenant/Environment/Service is requested
-        return  habitat.getComponent(config);
-        
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public void delete(String name) {
-        // TODO Auto-generated method stub
-    }
-
-    /**
-     * Simply threadLocal variable to track current tenant.
-     */
-    private ThreadLocal<String> currentTenant = new ThreadLocal<String>() {
-        @Override
-        protected String initialValue() {
-            return null;
-        }
-    };
-
-    private Habitat getHabitat(String name) {
-        if (!habitats.containsKey(name))  {
-            synchronized(habitats) {
-                if (!habitats.containsKey(name))  {
-                    habitats.put(name, getNewHabitat(name)); 
-                }                
-            }
-        }
-        return habitats.get(name);
-    }
-    
-    private Habitat getNewHabitat(String name) {
-        ModulesRegistry registry = new SingleModulesRegistry(TenantManagerImpl.class.getClassLoader());
-        Habitat habitat = registry.createHabitat("default");
-        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
-        DomDocument<Dom> doc = populate(habitat, name);
-        ((ConfigBean)doc.getRoot()).addListener(transactionListener);
-        return habitat;
-    }
-
-    @SuppressWarnings("unchecked")
-    private DomDocument<Dom> populate(Habitat habitat, String name) {
-        String filePath = getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
-        ConfigParser parser = new ConfigParser(habitat);
-        URL fileUrl = null;
-        try {
-            fileUrl = new URL("file://" + filePath);
-        } catch (MalformedURLException e) {
-            // should not happen
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+        habitats.remove(name);
+        // TODO: do we really want to delete file or just dispose habitat?
+        FileUtils.deleteFileMaybe(getTenantFile(name));
     }
 
     /**
@@ -264,6 +211,73 @@ public class TenantManagerImpl implements TenantManagerEx {
         }
 
         return tmc;
+    }
+
+    /**
+     * Simply threadLocal variable to track current tenant.
+     */
+    private ThreadLocal<String> currentTenant = new ThreadLocal<String>() {
+        @Override
+        protected String initialValue() {
+            return null;
+        }
+    };
+
+    /**
+     * Get current tenant specific information. It is possible to get relevant
+     * top level configuration, like Tenant, Environments and Services.
+     * 
+     * @param config
+     *            Config class.
+     * @param tenantName
+     *            Tenant name.
+     * @return Config.
+     */
+    private <T> T get(Class<T> config, String tenantName) {
+        Habitat habitat = getHabitat(tenantName);
+        // TODO: assert Tenant/Environment/Service is requested
+        return  habitat.getComponent(config);
+        
+    }
+
+    private Habitat getHabitat(String name) {
+        if (!habitats.containsKey(name))  {
+            synchronized(habitats) {
+                if (!habitats.containsKey(name))  {
+                    habitats.put(name, getNewHabitat(name)); 
+                }                
+            }
+        }
+        return habitats.get(name);
+    }
+    
+    private Habitat getNewHabitat(String name) {
+        ModulesRegistry registry = new SingleModulesRegistry(TenantManagerImpl.class.getClassLoader());
+        Habitat habitat = registry.createHabitat("default");
+        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
+        DomDocument<Dom> doc = populate(habitat, name);
+        ((ConfigBean)doc.getRoot()).addListener(transactionListener);
+        return habitat;
+    }
+
+    @SuppressWarnings("unchecked")
+    private DomDocument<Dom> populate(Habitat habitat, String name) {
+        String filePath = getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
+        ConfigParser parser = new ConfigParser(habitat);
+        URL fileUrl = null;
+        try {
+            fileUrl = new URL("file://" + filePath);
+        } catch (MalformedURLException e) {
+            // should not happen
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+        } catch (ComponentException e) {
+            // TODO: i18n, better error
+            throw new IllegalArgumentException("Tenant '" + name + "' might be deleted", e);
+        }
     }
 
     /**

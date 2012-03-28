@@ -113,7 +113,7 @@ public class TenantManagerTest extends ConfigApiTest {
         assertConfigXml("New tenant xml", "tenant3", tenant);
     }
 
-    // Verify tenant1 and tenant2 can be retrieved
+    // Verify tenant1 and tenant2 can be retrieved.
     @Test
     public void testGet() {
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -126,5 +126,41 @@ public class TenantManagerTest extends ConfigApiTest {
         tenant = tenantManager.get(Tenant.class);
         Assert.assertNotNull("currentTenant", tenant);
         Assert.assertEquals("currentTenant", "tenant2", tenant.getName());
+    }
+
+    // Update exsisting tenant1, verify tenant xml is updated.
+    @Test
+    public void testUpdate() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
+        Assert.assertNotNull("tenantManager", tenantManager);
+        tenantManager.setCurrentTenant("tenant1");
+        // safe to update tenant1 nested elements not used in testGet.
+        Tenant tenant = tenantManager.get(Tenant.class);
+        // and actually it's not possible to update root element,
+        //  see WriteableView.setter(WriteableView.java:235).
+        TenantAdmin admin = tenant.getTenantAdmin();
+        ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+            @Override
+            public Object run(TenantAdmin admin) throws TransactionFailure {
+                admin.setName("test");
+                return admin;
+            }
+        }, admin);
+        assertConfigXml("Updated tenant xml", "tenant1", tenant);
+    }
+
+    // Create and delete tenant, verify exception is thrown on next get.
+    @Test
+    public void testDelete() {
+        Assert.assertNotNull("tenantManager", tenantManager);
+        Tenant tenant = tenantManager.create("tenant3", "admin");
+        Assert.assertNotNull("tenant", tenant);
+        tenantManager.delete("tenant3");
+        tenantManager.setCurrentTenant("tenant3");
+        try {
+            tenant = tenantManager.get(Tenant.class);
+            Assert.fail("Tenat must have been deleted");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue("Tenant deleted", true);
+        }
     }
 }
