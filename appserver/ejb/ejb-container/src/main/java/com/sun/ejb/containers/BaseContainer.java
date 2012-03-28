@@ -5508,12 +5508,12 @@ public abstract class BaseContainer
                 ProbeProviderFactory probeFactory = ejbContainerUtilImpl.getProbeProviderFactory();
                 timerProbeNotifier = probeFactory.getProbeProvider(EjbTimedObjectProbeProvider.class, invokerId);
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.INFO, "Got TimerProbeProvider: " + timerProbeNotifier.getClass().getName());
+                    _logger.log(Level.FINE, "Got TimerProbeProvider: " + timerProbeNotifier.getClass().getName());
                 }
             } catch (Exception ex) {
                 timerProbeNotifier = new EjbTimedObjectProbeProvider();
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.INFO, "Error getting the TimerProbeProvider");
+                    _logger.log(Level.FINE, "Error getting the TimerProbeProvider");
                 }
             }
             timerProbeListener = new EjbTimedObjectStatsProvider(

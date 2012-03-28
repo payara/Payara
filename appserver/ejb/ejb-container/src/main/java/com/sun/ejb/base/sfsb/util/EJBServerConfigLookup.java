@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -450,9 +450,11 @@ public final class EJBServerConfigLookup {
         try {
 
             isEJBAvailabilityEnabled = this.getEjbContainerAvailabilityEnabledFromConfig();
-            _logger.log(Level.INFO,
-                    "EJBSCLookup:: sc.getEjbContainerAvailabilityEnabledFromConfig() ==> "
-                            + isEJBAvailabilityEnabled);
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE,
+                        "EJBSCLookup:: sc.getEjbContainerAvailabilityEnabledFromConfig() ==> "
+                                + isEJBAvailabilityEnabled);
+            }
 
             //TODO: find out if clustered
 
@@ -465,10 +467,12 @@ public final class EJBServerConfigLookup {
         }
 
         boolean result = isClustered && isEJBAvailabilityEnabled && isStoreTypeMemory;
-        _logger.log(Level.FINE, "EJBServerConfigLookup::==> isClustered:"
-                + isClustered + " ; isEJBAvailabilityEnabled: "
-                + isEJBAvailabilityEnabled + " ; isStoreTypeMemory ==> "
-                + isStoreTypeMemory + " ; result: " + result);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "EJBServerConfigLookup::==> isClustered:"
+                    + isClustered + " ; isEJBAvailabilityEnabled: "
+                    + isEJBAvailabilityEnabled + " ; isStoreTypeMemory ==> "
+                    + isStoreTypeMemory + " ; result: " + result);
+        }
 
         return result;
     }
