@@ -78,6 +78,7 @@ import org.apache.catalina.Engine;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
+import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.jasper.runtime.JspFactoryImpl;
@@ -1890,7 +1891,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
         ctx.setParentClassLoader(parentLoader);
 
-
         if (wbd != null) {
             // Determine if an alternate DD is set for this web-module in
             // the application
@@ -1923,6 +1923,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // Set the class loader on the DOL object
         if (wbd != null && wbd.hasWebServices()) {
             wbd.addExtraAttribute("WEBLOADER", loader);
+        }
+
+        for (LifecycleListener listener : ctx.findLifecycleListeners()) {
+            if (listener instanceof ContextConfig) {
+                ((ContextConfig) listener).setClassLoader(wmInfo.getAppClassLoader());
+            }
         }
 
         // Configure the session manager and other related settings
