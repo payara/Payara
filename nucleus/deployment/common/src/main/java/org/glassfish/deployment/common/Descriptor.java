@@ -126,11 +126,14 @@ public class Descriptor extends DynamicAttributesDescriptor implements Serializa
 
     /**
      * Get child descriptor extension for a given type.
-     * If the XML element that the given type represents can only occur once,
-     * this returns that single descriptor.
-     * If the XML element that the given type represents can occur multiple 
-     * times, this returns the first element of the list of descriptors 
-     * corresponding to the type.
+     *
+     * It is a convenience API to get the single child extension descriptor 
+     * if the XML element it represents can only occur once.
+     * 
+     * Returns that single descriptor if the XML element that the given type 
+     * represents can only occur once.
+     * Returns the first element of the list of descriptors if the XML element 
+     * that the given type represents can occur multiple times.
      *
      * @param c the child descriptor type  
      * @return the single or the first descriptor extension for a given type
