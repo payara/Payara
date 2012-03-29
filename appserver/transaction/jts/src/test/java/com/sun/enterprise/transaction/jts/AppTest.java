@@ -1396,6 +1396,7 @@ public class AppTest extends TestCase {
         System.out.println("**Testing TM with " + ((exType == null)? "success" : exType.getName()) + " during 2PC commit ===>");
         TestResource theResource1 = new TestResource();
         TestResource theResource2 = new TestResource();
+        TestSync s = new TestSync(false);
         try {
             System.out.println("**Starting transaction ....");
             t.begin();
@@ -1405,6 +1406,9 @@ public class AppTest extends TestCase {
             // Create and set invMgr
             createUtx();
             Transaction tx = t.getTransaction();
+
+            tx.registerSynchronization(s);
+
             t.enlistResource(tx, new TestResourceHandle(theResource1));
             t.enlistResource(tx, new TestResourceHandle(theResource2));
 
@@ -1427,6 +1431,8 @@ public class AppTest extends TestCase {
                 assert (false);
             } else {
                 System.out.println("**Successful commit - Status after commit: " + status + " <===");
+                assertTrue ("beforeCompletion was not called", s.called_beforeCompletion);
+                assertTrue ("afterCompletion was not called", s.called_afterCompletion);
                 assert (true);
             }
         } catch (Throwable ex) {
@@ -1446,6 +1452,8 @@ public class AppTest extends TestCase {
                    System.out.println("**Forget 2 was called: " + theResource2.forgetCalled());
                 }
 
+                assertTrue ("beforeCompletion was not called", s.called_beforeCompletion);
+                assertTrue ("afterCompletion was not called", s.called_afterCompletion);
                 assert (status);
             } else {
                 System.out.println("**Caught " + ((exType == null)? " unexpected " : " NOT a " + exType.getName()) + " during 2PC...");

@@ -281,6 +281,7 @@ class CoordinatorTerm implements CompletionHandler {
         // Now, process the actual 2PC
 
         Throwable heuristicExc = null;
+        Throwable otherExc = null;
 
         // GDH Now see if we can legally call commit one phase
         // the commitOnePhase method will return false if this is
@@ -302,7 +303,7 @@ class CoordinatorTerm implements CompletionHandler {
                 } if (exc instanceof INTERNAL) {
                     // ADDED(Ram J) percolate any system exception
                     // back to the caller.
-                    throw (INTERNAL) exc;
+                    otherExc = exc; //throw (INTERNAL) exc;
                 }else {
                 }
             }
@@ -330,9 +331,9 @@ class CoordinatorTerm implements CompletionHandler {
                 } catch( HeuristicMixed exc ) {
                     heuristicExc = exc;
                 } catch( INVALID_TRANSACTION exc ) {
-                    throw exc;
+                    otherExc = exc; //throw exc;
                 } catch( INTERNAL exc ) {
-                    throw exc;
+                    otherExc = exc; //throw exc;
                 } catch( Throwable exc ) {
                 }
             }
@@ -398,7 +399,7 @@ class CoordinatorTerm implements CompletionHandler {
                     // ADDED(Ram J) percolate any system exception
                     // back to the caller.
                     if (exc instanceof INTERNAL) {
-                        throw (INTERNAL) exc;
+                        otherExc = exc; //throw (INTERNAL) exc;
                     }
                 }
 
@@ -426,6 +427,11 @@ class CoordinatorTerm implements CompletionHandler {
                 throw (HeuristicMixed)heuristicExc;
             else
                 throw (HeuristicHazard)heuristicExc;
+        } else if( otherExc != null ) {
+            if (otherExc instanceof INVALID_TRANSACTION)
+                throw (INVALID_TRANSACTION) otherExc;
+            else if (otherExc instanceof INTERNAL)
+                throw (INTERNAL) otherExc;
         }
 
         // If the transaction was rolled back, raise an exception.
