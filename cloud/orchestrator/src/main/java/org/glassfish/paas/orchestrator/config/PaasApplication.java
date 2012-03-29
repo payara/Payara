@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,65 +40,36 @@
 
 package org.glassfish.paas.orchestrator.config;
 
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.jvnet.hk2.component.Injectable;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
+import org.jvnet.hk2.component.Injectable;
 
-import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
-import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
- * @author Jagadish Ramu
+ * * @author Sandhya Kripalani K
+ * <p/>
+ * Config Bean representation of <paas-application></paas-application> element in the CPAS domain.xml.
+ * This element is a child of <paas-applications></paas-applications> element.
+ * This representation is required as all the application related details are stored only in the domain.xml of
+ * the individual DAS(s) provisioned during deployment of an application in PaaS style.
  */
 @Configured
-public interface Service extends ConfigBeanProxy, Injectable, PropertyBag{
-
-    /**
-    	Properties as per {@link PropertyBag}
-     */
-    @PropertiesDesc(props={})
-    @Element
-    List<Property> getProperty();
-
+public interface PaasApplication extends ConfigBeanProxy, Injectable {
 
     @Attribute
-    @Param
     @NotNull
-    String getType();
+    String getAppName();
 
-    void setType(String type) throws PropertyVetoException;
+    void setAppName(String name) throws PropertyVetoException;
 
-    @Param
+    @Attribute
     @NotNull
-    @Attribute(key = true)
-    String getServiceName();
+    boolean isEnabled();
 
-    void setServiceName(String name) throws PropertyVetoException;
-
-    @Attribute
-    @Param
-    String getParentService();
-
-    void setParentService(String serviceName) throws PropertyVetoException;
-
-    @Attribute
-    @Param
-    String getRequestingPlugin();
-
-    void setRequestingPlugin(String requestingPlugin) throws PropertyVetoException;
-
-    @Attribute
-    @Param
-    String getMatchingPlugin();
-
-    void setMatchingPlugin(String matchingPlugin) throws PropertyVetoException;
-
+    void setEnabled(boolean enabled) throws PropertyVetoException;
 
 }

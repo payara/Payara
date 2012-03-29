@@ -47,11 +47,17 @@ import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
 import org.glassfish.paas.orchestrator.PaaSDeploymentState;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.config.PaasApplication;
+import org.glassfish.paas.orchestrator.config.PaasApplications;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
+import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,25 +72,54 @@ public class UndeployState extends AbstractPaaSDeploymentState {
     private CommandRunner commandRunner;
 
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
-        String appName = context.getAppName();
+        final String appName = context.getAppName();
         boolean dasProvisioningEnabled = Boolean.getBoolean("org.glassfish.paas.provision-das");
-        if(dasProvisioningEnabled){
+        if (dasProvisioningEnabled) {
             Set<org.glassfish.paas.orchestrator.service.spi.Service> allServices = appInfoRegistry.getServices(appName);
-            for(org.glassfish.paas.orchestrator.service.spi.Service service : allServices){
+            for (org.glassfish.paas.orchestrator.service.spi.Service service : allServices) {
                 ServiceDescription sd = service.getServiceDescription();
                 ServicePlugin plugin = sd.getPlugin();
                 plugin.undeploy(context, service);
                 //TODO atomic deployment support .
+
+                //Deleting the corresponding config in CPAS' domain.xml
+                try {
+                    PaasApplications paasApplications = serviceUtil.getPaasApplications();
+                    if (ConfigSupport.apply(new SingleConfigCode<PaasApplications>() {
+                        public Object run(PaasApplications paasApplications) throws PropertyVetoException, TransactionFailure {
+                            for (PaasApplication paasApplication : paasApplications.getPaasApplications()) {
+                                if (appName.equalsIgnoreCase(paasApplication.getAppName())) {
+                                    paasApplications.getPaasApplications().remove(paasApplication);
+                                    return paasApplication;
+                                }
+                            }
+                            return null;
+                        }
+                    }, paasApplications) == null) {
+                        logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName);
+                        //TODO - ideally a Rollback should happen.
+                    }
+
+                } catch (TransactionFailure
+                        transactionFailure) {
+                    //handle this
+                    logger.log(Level.SEVERE, "Error while persisting config during paas-undeploy of application "+appName+". Exception : "+ transactionFailure.getMessage());
+                    //TODO - ideally a Rollback should happen.
+                    return;
+
+                }
+
+
             }
-        }else{
+        } else {
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("DEFAULT", appName);
-            parameterMap.add("properties", ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL +"=true");
-            ActionReport report =  habitat.getComponent(ActionReport.class);
+            parameterMap.add("properties", ServiceOrchestratorImpl.ORCHESTRATOR_UNDEPLOY_CALL + "=true");
+            ActionReport report = habitat.getComponent(ActionReport.class);
             CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("undeploy", report);
             invocation.parameters(parameterMap).execute();
-            Object args[]=new Object[]{appName,report.getMessage()};
-            logger.log(Level.FINEST, "undeploying.app",args);
+            Object args[] = new Object[]{appName, report.getMessage()};
+            logger.log(Level.FINEST, "undeploying.app", args);
         }
     }
 

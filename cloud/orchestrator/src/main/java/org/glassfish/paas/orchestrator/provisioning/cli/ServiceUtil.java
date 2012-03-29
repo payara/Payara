@@ -815,4 +815,27 @@ public class ServiceUtil {
         serviceInfo.setParentService(parentServiceInfo);
         return serviceInfo;
     }
+
+    public PaasApplications getPaasApplications() {
+        PaasApplications paasApplications = domain.getExtensionByType(PaasApplications.class);
+        if (paasApplications == null) {
+            try {
+                if (ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                    public Object run(Domain param) throws PropertyVetoException, TransactionFailure {
+                        PaasApplications  paasApplications = param.createChild(PaasApplications.class);
+                        param.getExtensions().add(paasApplications);
+                        return paasApplications;
+                    }
+                }, domain) == null) {
+                    logger.log(Level.SEVERE, "unable.tocreate.paasapplications");
+                }
+            } catch (TransactionFailure transactionFailure) {
+                logger.log(Level.SEVERE, "unable.tocreate.paasapplications",transactionFailure);
+                throw new RuntimeException(transactionFailure.getMessage(), transactionFailure);
+            }
+        }
+
+        paasApplications = domain.getExtensionByType(PaasApplications.class);
+        return paasApplications;
+    }
 }

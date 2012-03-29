@@ -42,11 +42,22 @@ package org.glassfish.paas.orchestrator.state;
 
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.PaaSDeploymentException;
+import org.glassfish.paas.orchestrator.config.PaasApplication;
+import org.glassfish.paas.orchestrator.config.PaasApplications;
+import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
+import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+import com.sun.enterprise.config.serverbeans.Domain;
+import java.beans.PropertyVetoException;
+
 
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * @author Jagadish Ramu
@@ -54,16 +65,44 @@ import java.util.Set;
 @org.jvnet.hk2.annotations.Service
 public class DeployState extends AbstractPaaSDeploymentState {
 
+    @Inject
+    private Domain domain;
+
     public void handle(PaaSDeploymentContext context) throws PaaSDeploymentException {
         boolean dasProvisioningEnabled = Boolean.getBoolean("org.glassfish.paas.provision-das");
-        if(dasProvisioningEnabled){
-            String appName = context.getAppName();
+        if (dasProvisioningEnabled) {
+            final String appName = context.getAppName();
             Set<Service> allServices = appInfoRegistry.getServices(appName);
-            for(Service service : allServices){
+            for (Service service : allServices) {
                 ServiceDescription sd = service.getServiceDescription();
                 ServicePlugin plugin = sd.getPlugin();
                 plugin.deploy(context, service);
                 //TODO atomic deployment support .
+
+                //Creating a config in CPAS' domain.xml
+                try {
+                    PaasApplications paasApplications=serviceUtil.getPaasApplications();
+                    if (ConfigSupport.apply(new SingleConfigCode<PaasApplications>() {
+                        public Object run(PaasApplications paasApplications) throws PropertyVetoException, TransactionFailure {
+                            PaasApplication paasApplication=paasApplications.createChild(PaasApplication.class);
+                            paasApplication.setAppName(appName);
+                            paasApplication.setEnabled(true);
+                            paasApplications.getPaasApplications().add(paasApplication);
+                            return paasApplication;
+                        }
+                    }, paasApplications) == null) {
+                        //  handle this
+                        logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName);
+                        //TODO - ideally a Rollback should happen.
+                    }
+
+                } catch (TransactionFailure transactionFailure) {
+                    //handle this
+                    logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName+". Exception : "+ transactionFailure.getMessage());
+                    //TODO - ideally a Rollback should happen.
+                    return;
+
+                }
             }
         }
     }

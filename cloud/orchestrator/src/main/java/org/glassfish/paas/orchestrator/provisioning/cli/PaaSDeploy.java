@@ -43,16 +43,19 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.Param;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.PaaSDeploymentContext;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
+import org.glassfish.paas.orchestrator.config.PaasApplication;
+import org.glassfish.paas.orchestrator.config.PaasApplications;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 
@@ -78,6 +81,8 @@ public class PaaSDeploy implements AdminCommand {
     @Inject
     private ArchiveFactory archiveFactory;
 
+    @Inject
+    private ServiceUtil serviceUtil;
 
     public void execute(AdminCommandContext context) {
 
@@ -89,6 +94,19 @@ public class PaaSDeploy implements AdminCommand {
         }
 
         PaaSDeploymentContext dc = new PaaSDeploymentContext(archive.getName(), fileArchive);
+
+        final ActionReport report = context.getActionReport();
+        PaasApplications paasApplications=serviceUtil.getPaasApplications();
+
+        //Validation to check that an application with same name is not already deployed.
+        for(PaasApplication paasApplication:paasApplications.getPaasApplications()){
+            if(paasApplication.getAppName().equalsIgnoreCase(archive.getName())){
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage("A paas-enabled application with name [ "+archive.getName()+" ] is already deployed.");
+                return;
+            }
+        }
+
         orchestrator.preDeploy(archive.getName(), dc);
         orchestrator.deploy(archive.getName(), dc);
         orchestrator.postDeploy(archive.getName(), dc);
