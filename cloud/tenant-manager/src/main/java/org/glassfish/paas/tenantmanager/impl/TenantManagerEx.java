@@ -38,8 +38,9 @@
  * holder.
  */
 
-package org.glassfish.paas.tenantmanager.api;
+package org.glassfish.paas.tenantmanager.impl;
 
+import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.jvnet.hk2.annotations.Contract;

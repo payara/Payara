@@ -73,7 +73,7 @@ import com.sun.enterprise.util.io.FileUtils;
  *
  */
 @Service
-public class TenantTransactionListener implements ConfigListener {
+public class TenantConfigListener implements ConfigListener {
     @Inject
     protected Logger logger;
 
@@ -172,7 +172,7 @@ public class TenantTransactionListener implements ConfigListener {
     }
 
     final static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(TenantTransactionListener.class);    
+            new LocalStringManagerImpl(TenantConfigListener.class);    
 
     final XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
 }

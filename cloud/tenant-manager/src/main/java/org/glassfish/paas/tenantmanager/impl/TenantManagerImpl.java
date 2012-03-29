@@ -54,7 +54,6 @@ import javax.inject.Named;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.paas.admin.CloudServices;
-import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
@@ -253,9 +252,9 @@ public class TenantManagerImpl implements TenantManagerEx {
     private Habitat getNewHabitat(String name) {
         ModulesRegistry registry = new SingleModulesRegistry(TenantManagerImpl.class.getClassLoader());
         Habitat habitat = registry.createHabitat("default");
-        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionListener);
+        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
         DomDocument<Dom> doc = populate(habitat, name);
-        ((ConfigBean)doc.getRoot()).addListener(transactionListener);
+        ((ConfigBean)doc.getRoot()).addListener(configListener);
         return habitat;
     }
 
@@ -295,7 +294,7 @@ public class TenantManagerImpl implements TenantManagerEx {
     ServerEnvironment env;
 
     @Inject
-    private TenantTransactionListener transactionListener;
+    private TenantConfigListener configListener;
 
     @Inject
     private Logger logger;

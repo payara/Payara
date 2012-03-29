@@ -45,11 +45,11 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.glassfish.paas.tenantmanager.api.TenantManagerEx;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
+import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
