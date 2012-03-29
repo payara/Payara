@@ -64,6 +64,15 @@ public class ServiceChangeEvent extends EventObject {
         this.newValue = newValue;
     }
 
+    @Override
+    public String toString() {
+        return "ServiceChangeEvent{" +
+                "type=" + type +
+                ", oldValue=" + oldValue +
+                ", newValue=" + newValue +
+                '}';
+    }
+
     /**
      * Gets the source of the event.
      * <p/>
