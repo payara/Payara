@@ -89,8 +89,9 @@ public class TenantManagerTest extends ConfigApiTest {
 
     private String readConfigXml(URL config) throws IOException, URISyntaxException {
         File file = new File(config.toURI());
-        return FileUtils.readSmallFile(file);
-        
+        String contents = FileUtils.readSmallFile(file);
+        // strip copyright notice
+        return contents.substring(contents.indexOf("<tenant"));
     }
 
     // Compare expected tenant.xml contents with actual config bean xml contents.
