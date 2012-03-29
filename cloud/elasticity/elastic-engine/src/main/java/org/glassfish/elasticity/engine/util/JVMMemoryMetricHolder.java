@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,9 +51,16 @@ import org.jvnet.hk2.component.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.Client;
+import javax.ws.rs.core.MediaType;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Server;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
@@ -66,7 +73,15 @@ public class JVMMemoryMetricHolder
 
     public Long max;
 
-    TabularMetricHolder<MemoryStat> table;
+    private static final String baseURL = "http://localhost:4848/monitoring/domain/";
+    private static final String jvm_memory = "jvm/memory";
+    private static final String heap_used = "usedheapsize-count";
+    private static final String heap_commited = "committedheapsize-count";
+    private static final String maxheapsize = "maxheapsize-count";
+    private static final String RESPONSE_TYPE = MediaType.APPLICATION_JSON;
+
+    // need to store instance name, instance port, instance host and data for the instance
+    HashMap<String, Object>  instancesTable= null;
 
     MetricAttribute[] attributes;
 
@@ -74,13 +89,49 @@ public class JVMMemoryMetricHolder
 
     private boolean debug;
 
+    @Inject
+    private Clusters clusters;
+
     @Override
     public void postConstruct() {
-        this.table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
 
-        this.attributes = new MetricAttribute[]{new MaxSizeAttribute(), table};
-        this.memBean = ManagementFactory.getMemoryMXBean();
-        this.max = memBean.getHeapMemoryUsage().getMax();
+//        this.max = memBean.getHeapMemoryUsage().getMax();
+    }
+
+    private void init() {
+       //create a hash map with all instance names in this service
+        //each instance is a TabularMetricHolder for data with name, host and port
+
+        // need to get the service name  hard code for now
+        Cluster cluster = clusters.getCluster("c1");
+        if (cluster == null) {
+            System.out.println("No cluster called "+ "c1");
+            return;
+        }
+        List<Server> serverList = cluster.getInstances();
+        if (serverList == null) {
+            System.out.println("no server instances found.");
+            return;
+        }
+        // until we have metric gatherer factories init this way
+        if (instancesTable == null ){
+            instancesTable= new HashMap<String, Object>();
+            for (Server server : serverList) {
+                Map<String , Object> instanceInfo= new HashMap<String, Object>();
+                String instanceName = server.getName();
+                instanceInfo.put("name",instanceName);
+                // hardcode for now.
+                instanceInfo.put("hostname","localhost");
+                instanceInfo.put("port","4848"); // or make it an Integer
+                TabularMetricHolder<MemoryStat> table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
+                instanceInfo.put("table",table);
+                MetricAttribute[] attributes = new MetricAttribute[]{new MaxSizeAttribute(), table};
+                instanceInfo.put("attributes", attributes);
+                instanceInfo.put("max",0); //can we add this later
+                instancesTable.put("name",instanceInfo);
+            }
+        }
+
     }
 
     @Override
@@ -90,9 +141,37 @@ public class JVMMemoryMetricHolder
 
     @Override
     public void gatherMetric() {
-        MemoryUsage memUsage = memBean.getHeapMemoryUsage();
-        table.add(System.currentTimeMillis(), new MemoryStat(memUsage.getUsed(), memUsage.getCommitted()));
+        //only because we don't have metric factories and callback
+         init();
+        //  for each instance in the service get the data
+        // use another class so can be done concurrently if needed
+        for (String name : instancesTable.keySet()) {
+            Map<String , Object> instanceInfo= (Map)instancesTable.get(name);
+            String instanceName = (String)instanceInfo.get("name");
+            String jvmMemURL = baseURL + instanceName +"/"+  jvm_memory ;
+            //catch exception
+            try {
+                Map<String, Object> res = CollectMetricData.getRestData(jvmMemURL);
+                if (res == null ) return;
+                Map<String, Object> jvmMemHeap = (Map) res.get(heap_used);
+                Integer heapUsed = (Integer)jvmMemHeap.get("count");
 
+                Map<String, Object> jvmMemCommited = (Map) res.get(heap_commited);
+                Integer commitedUsed = (Integer)jvmMemCommited.get("count");
+                // should only do this once
+                Map<String, Object> jvmMemMax = (Map) res.get(maxheapsize);
+                Integer jvmMax = (Integer)jvmMemMax.get("count");
+                instanceInfo.put("max",jvmMax);
+                TabularMetricHolder<MemoryStat> table= (TabularMetricHolder)instanceInfo.get("table");
+                table.add(System.currentTimeMillis(), new MemoryStat(heapUsed.longValue(), commitedUsed.longValue()));
+                instanceInfo.put("table", table);
+                System.out.println("Instance name " + instanceName + " Used heap " + heapUsed);
+            } catch (Exception ex)  {
+
+            }
+        }
+
+/*
         if (debug) {
             Iterator<TabularMetricEntry<MemoryStat>> iter = table.iterator(2 * 60 * 60, TimeUnit.SECONDS);
             int count = 1;
@@ -110,11 +189,18 @@ public class JVMMemoryMetricHolder
             }
             System.out.println("So far collected: " + count);
         }
+        */
     }
 
     @Override
     public void purgeDataOlderThan(int time, TimeUnit unit) {
-        table.purgeEntriesOlderThan(time, unit);
+        //go to each instance and purge old data
+        for (String name : instancesTable.keySet()) {
+            Map<String , Object> instanceInfo= (Map)instancesTable.get(name);
+            TabularMetricHolder<MemoryStat> table= (TabularMetricHolder)instanceInfo.get("table");
+            table.purgeEntriesOlderThan(time, unit);
+            instanceInfo.put("table", table);
+        }
     }
 
     @Override

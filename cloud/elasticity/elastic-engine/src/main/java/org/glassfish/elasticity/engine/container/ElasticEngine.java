@@ -89,7 +89,7 @@ public class ElasticEngine
             //throw new IllegalStateException("ElasticEngine not initialized with a service name");
         }
 
-        metricGathererContainer.start();
+//        metricGathererContainer.start();
 
 //        System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {

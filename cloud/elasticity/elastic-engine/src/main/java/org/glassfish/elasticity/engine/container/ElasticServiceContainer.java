@@ -268,7 +268,8 @@ public class ElasticServiceContainer {
     }
 
     private void loadAlerts() {
-        if (this.enabled.get() && service.getAlerts().getAlert() != null) {
+//        if (this.enabled.get() && service.getAlerts().getAlert() != null) {
+        if (this.enabled.get() && service.getAlerts() != null) {
             for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
                 addAlert(alertConfig);
             }
