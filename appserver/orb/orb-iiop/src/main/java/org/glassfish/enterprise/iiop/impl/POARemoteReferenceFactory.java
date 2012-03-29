@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,7 @@ import org.omg.CORBA.portable.Delegate;
 import org.glassfish.enterprise.iiop.api.RemoteReferenceFactory;
 
 import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
+import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
 
 import org.omg.PortableServer.POA ;
 import org.omg.PortableServer.Servant ;
@@ -71,6 +72,8 @@ import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.corba.ee.spi.extension.ServantCachingPolicy;
 import com.sun.corba.ee.spi.extension.ZeroPortPolicy;
 import com.sun.corba.ee.spi.extension.CopyObjectPolicy;
+import com.sun.corba.ee.spi.extension.RequestPartitioningPolicy;
+import com.sun.corba.ee.spi.threadpool.ThreadPoolManager;
 
 import com.sun.corba.ee.spi.presentation.rmi.PresentationManager ;
 
@@ -291,7 +294,6 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
 	        policies.add(new CopyObjectPolicy(PASS_BY_REFERENCE_ID));
 	    }
 
-            /** TODO get thread pool name from config
 	    if (threadPoolName != null) {
 	        ThreadPoolManager threadPoolManager
 		        = S1ASThreadPoolManager.getThreadPoolManager();
@@ -303,7 +305,6 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
                 logger.log(Level.WARNING, "Not using threadpool-request-partitioning...", ex);
 	        }
 	    }
-            **/
 
             /** TODO
             logger.log(Level.INFO, "POARemoteRefFactory checking if SFSBVersionPolicy need to be added");
