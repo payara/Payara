@@ -226,12 +226,6 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     }
 
     /**
-     * @return a set of service-ref from this bundle or an empty set
-     *         if none
-     */
-    public abstract Set getServiceReferenceDescriptors();
-
-    /**
      * Return web services defined for this module.  Not applicable for
      * application clients.
      */

@@ -54,6 +54,7 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
@@ -165,7 +166,7 @@ class ClientJarMakerImpl implements ClientJarMaker {
                     }                
                 }
                 
-                Set refs = subBundleDesc.getServiceReferenceDescriptors();
+                Set refs = ((JndiNameEnvironment)subBundleDesc).getServiceReferenceDescriptors();
                 for (Iterator itr = refs.iterator();itr.hasNext();) {
                     ServiceReferenceDescriptor srd = (ServiceReferenceDescriptor) itr.next();
                     subEntries.add(srd.getMappingFileUri());

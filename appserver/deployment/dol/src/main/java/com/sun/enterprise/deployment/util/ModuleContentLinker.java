@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.internal.api.Globals;
@@ -90,7 +91,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
             accept(aWebService);
         }
 
-        for (Iterator<ServiceReferenceDescriptor> itr = bundle.getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
+        for (Iterator<ServiceReferenceDescriptor> itr = ((JndiNameEnvironment)bundle).getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
             accept(itr.next());
         }
 

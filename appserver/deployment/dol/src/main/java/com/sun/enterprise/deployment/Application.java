@@ -1207,9 +1207,9 @@ public class Application extends BundleDescriptor
     }
 
     /**
-     * Add a web bundle descriptor to this application.
+     * Add a bundle descriptor to this application.
      *
-     * @param bundleDescriptor the web bundle descriptor to add
+     * @param bundleDescriptor the bundle descriptor to add
      */
     public void addBundleDescriptor(BundleDescriptor bundleDescriptor) {
         ModuleDescriptor newModule = bundleDescriptor.getModuleDescriptor();
