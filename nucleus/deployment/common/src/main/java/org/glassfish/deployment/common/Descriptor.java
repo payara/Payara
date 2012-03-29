@@ -87,8 +87,7 @@ public class Descriptor extends DynamicAttributesDescriptor implements Serializa
     private Map<String, String> largeIcons = null;
     private Map<String, String> smallIcons = null;
 
-    private Map<Class<? extends Descriptor>,Descriptor> descriptorExtensions =
-            new HashMap<Class<? extends Descriptor>, Descriptor>();
+    private Map<Class<? extends Descriptor>, List<? extends Descriptor>> descriptorExtensions = new HashMap<Class<? extends Descriptor>, List<? extends Descriptor>>();
 
     /**
      * The default constructor. Constructs a descriptor with
@@ -97,12 +96,53 @@ public class Descriptor extends DynamicAttributesDescriptor implements Serializa
     public Descriptor() {
     }
 
-    public <T extends Descriptor> T getDescriptorExtension(final Class<T> c) {
-        return (T)descriptorExtensions.get(c);
+    /**
+     * Add a child descriptor to the parent descriptor as an extension.
+     *
+     * @param dde the child descriptor  
+     *
+     */
+    public <T extends Descriptor> void addDescriptorExtension(final T dde) {
+        List<T> descriptorList = (List<T>)
+            descriptorExtensions.get(dde.getClass());
+        if (descriptorList == null) {
+            descriptorList = new ArrayList<T>();
+            descriptorExtensions.put(dde.getClass(), descriptorList);
+        }
+        descriptorList.add(dde);
     }
 
-    public void addDescriptorExtension(final Descriptor dde) {
-         descriptorExtensions.put((Class<? extends Descriptor>)dde.getClass(), dde);
+    /**
+     * Get all child descriptor extensions for a given type.
+     *
+     * @param c the child descriptor type  
+     * @return the list of descriptor extension for a given type
+     *
+     */
+    public <T extends Descriptor> List<T> getDescriptorExtensions (
+        final Class<T> c) {
+        return (List<T>) descriptorExtensions.get(c);
+    }
+
+    /**
+     * Get child descriptor extension for a given type.
+     * If the XML element that the given type represents can only occur once,
+     * this returns that single descriptor.
+     * If the XML element that the given type represents can occur multiple 
+     * times, this returns the first element of the list of descriptors 
+     * corresponding to the type.
+     *
+     * @param c the child descriptor type  
+     * @return the single or the first descriptor extension for a given type
+     *
+     */
+    public <T extends Descriptor> T getDescriptorExtension(final Class<T> c) {
+        List<T> descriptorList = (List<T>) descriptorExtensions.get(c);
+        if (descriptorList == null || descriptorList.isEmpty()) {
+            return null;
+        } else {
+            return descriptorList.get(0);
+        }
     }
 
     /**
