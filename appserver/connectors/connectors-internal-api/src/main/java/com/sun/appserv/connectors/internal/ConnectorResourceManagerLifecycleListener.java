@@ -210,6 +210,9 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
         public <T extends ConfigBeanProxy> NotProcessed changed(Changed.TYPE type, Class<T> changedType,
                                                                 T changedInstance) {
             NotProcessed np = null;
+            if(!(changedInstance instanceof Application)){
+                return np;
+            }
             if(serverEnvironment.isDas()){
                 ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
                 try {
@@ -221,7 +224,6 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
                             np = handleAddEvent(changedInstance);
                             break;
                         default:
-                            np = new NotProcessed("Unrecognized type of change: " + type);
                             break;
                     }
                 } finally {
