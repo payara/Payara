@@ -78,31 +78,6 @@ public class DeployState extends AbstractPaaSDeploymentState {
                 ServicePlugin plugin = sd.getPlugin();
                 plugin.deploy(context, service);
                 //TODO atomic deployment support .
-
-                //Creating a config in CPAS' domain.xml
-                try {
-                    PaasApplications paasApplications=serviceUtil.getPaasApplications();
-                    if (ConfigSupport.apply(new SingleConfigCode<PaasApplications>() {
-                        public Object run(PaasApplications paasApplications) throws PropertyVetoException, TransactionFailure {
-                            PaasApplication paasApplication=paasApplications.createChild(PaasApplication.class);
-                            paasApplication.setAppName(appName);
-                            paasApplication.setEnabled(true);
-                            paasApplications.getPaasApplications().add(paasApplication);
-                            return paasApplication;
-                        }
-                    }, paasApplications) == null) {
-                        //  handle this
-                        logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName);
-                        //TODO - ideally a Rollback should happen.
-                    }
-
-                } catch (TransactionFailure transactionFailure) {
-                    //handle this
-                    logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName+". Exception : "+ transactionFailure.getMessage());
-                    //TODO - ideally a Rollback should happen.
-                    return;
-
-                }
             }
         }
     }

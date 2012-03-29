@@ -42,6 +42,7 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
@@ -55,9 +56,15 @@ import org.glassfish.paas.orchestrator.config.PaasApplications;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -84,6 +91,8 @@ public class PaaSDeploy implements AdminCommand {
     @Inject
     private ServiceUtil serviceUtil;
 
+    protected final static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
+
     public void execute(AdminCommandContext context) {
 
         ReadableArchive fileArchive = null;
@@ -94,6 +103,7 @@ public class PaaSDeploy implements AdminCommand {
         }
 
         PaaSDeploymentContext dc = new PaaSDeploymentContext(archive.getName(), fileArchive);
+        final String appName=dc.getAppName();
 
         final ActionReport report = context.getActionReport();
         PaasApplications paasApplications=serviceUtil.getPaasApplications();
@@ -110,5 +120,30 @@ public class PaaSDeploy implements AdminCommand {
         orchestrator.preDeploy(archive.getName(), dc);
         orchestrator.deploy(archive.getName(), dc);
         orchestrator.postDeploy(archive.getName(), dc);
+
+        //Creating a config in CPAS' domain.xml
+                try {
+
+                    if (ConfigSupport.apply(new SingleConfigCode<PaasApplications>() {
+                        public Object run(PaasApplications paasApplications) throws PropertyVetoException, TransactionFailure {
+                            PaasApplication paasApplication = paasApplications.createChild(PaasApplication.class);
+                            paasApplication.setAppName(appName);
+                            paasApplication.setEnabled(true);
+                            paasApplications.getPaasApplications().add(paasApplication);
+                            return paasApplication;
+                        }
+                    }, paasApplications) == null) {
+                        //  handle this
+                        logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName);
+                        //TODO - ideally a Rollback should happen.
+                    }
+
+                } catch (TransactionFailure transactionFailure) {
+                    //handle this
+                    logger.log(Level.SEVERE, "Error while persisting config during paas-deploy of application "+appName+". Exception : "+ transactionFailure.getMessage());
+                    //TODO - ideally a Rollback should happen.
+                    return;
+
+                }
     }
 }
