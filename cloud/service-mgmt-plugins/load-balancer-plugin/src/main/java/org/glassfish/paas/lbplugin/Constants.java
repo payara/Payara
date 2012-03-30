@@ -52,6 +52,9 @@ public class Constants {
     public static final String HTTP_PORT_PROP_NAME = "http-port";
     public static final String SSL_ENABLED_PROP_NAME = "ssl-enabled";
     public static final String HTTPS_PORT_PROP_NAME = "https-port";
+    public static final String HEALTH_CHECK_INTERVAL_PROP_NAME = "health-check-interval";
+    public static final String HEALTH_CHECK_URL_PROP_NAME = "health-check-url";
+    public static final String HEALTH_CHECK_TIMEOUT_PROP_NAME = "health-check-timeout";
     public static final String DEFAULT_HTTP_PORT = "50080";
     public static final String DEFAULT_SSL_ENABLED = "false";
     public static final String DEFAULT_HTTPS_PORT = "50443";
