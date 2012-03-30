@@ -355,24 +355,13 @@ final class ApplicationFilterChain implements FilterChain {
      * @param filterConfig The FilterConfig for the servlet to be executed
      */
     void addFilter(ApplicationFilterConfig filterConfig) {
-        boolean add = true;
-        String filterName = filterConfig.getFilterName(); // cannot be null
-        for (int i = 0; i < n; i++) {
-            ApplicationFilterConfig afc = filters[i];
-            if (afc != null && filterName.equals(afc.getFilterName())) {
-                add = false;
-                break;
-            }
+        if (n == filters.length) {
+            ApplicationFilterConfig[] newFilters =
+                new ApplicationFilterConfig[n + INCREMENT];
+            System.arraycopy(filters, 0, newFilters, 0, n);
+            filters = newFilters;
         }
-        if (add) {
-            if (n == filters.length) {
-                ApplicationFilterConfig[] newFilters =
-                    new ApplicationFilterConfig[n + INCREMENT];
-                System.arraycopy(filters, 0, newFilters, 0, n);
-                filters = newFilters;
-            }
-            filters[n++] = filterConfig;
-        }
+        filters[n++] = filterConfig;
     }
 
 
