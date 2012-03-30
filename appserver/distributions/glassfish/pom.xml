@@ -238,6 +238,7 @@
             <type>distribution-fragment</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- additional legal content dependency -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>

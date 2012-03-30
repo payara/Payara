@@ -43,7 +43,7 @@
 
 <project name="glassfish v3, glassfish distribution creation" default="create.distribution" basedir=".">
     <import file="../distributions.xml"/>
-    <property name="source.distribution.name" value="GlassFish Open Source Edition 3.2"/>
+    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0"/>
 
     <target name="create.distribution">
         <echo message="Creating distribution: glassfish"/>
@@ -64,7 +64,6 @@
 
 	<resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
    
-
         <unzip src="${servicetag-registry.zip}"
            dest="target/stage/${install.dir.name}">
           <patternset>
@@ -78,7 +77,6 @@
         <!-- stage appropriate legal content for this distribution -->
 
         <resolveArtifact artifactId="legal-fragment" groupId="org.glassfish.packager" property="legal-fragment.zip"/>
-
 
         <unzip src="${legal-fragment.zip}"
            dest="target/stage/${install.dir.name}">
@@ -103,15 +101,6 @@
 	    <zipfileset dir="target/stage" filemode="755"
 		    includes="${install.dir.name}/mq/bin/*"
 		    excludes="${install.dir.name}/mq/bin/*.exe" />
-            <zipfileset dir="target/stage">
-		    <include name="${install.dir.name}/bin/*.bat" />
-	    </zipfileset>
-	    <zipfileset dir="target/stage">
-		    <include name="${install.dir.name}/glassfish/bin/*.bat" />
-	    </zipfileset>
-	    <zipfileset dir="target/stage">
-		    <include name="${install.dir.name}/mq/bin/*.exe" />
-            </zipfileset>
 	    <zipfileset  dir="target/stage"
 		    includes="${install.dir.name}/**">
             </zipfileset>

@@ -44,6 +44,16 @@
 <project name="glassfish minnow distribution creation" default="create.distribution" basedir=".">
     <import file="../distributions.xml"/>
     <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 Minnow"/>
+    
+    <target name="init">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+    </target>
+
     <target name="create.distribution">
         <echo message="Creating distribution: minnow"/>
         <unzip dest="target/stage">
@@ -54,42 +64,6 @@
        
         <delete dir="target/stage" includes="*.zip"/>
 
-        <!-- BEGIN: excluding content of glassfish-osgi -->
-        <resolveArtifact property="glassfish-osgi-zip"
-                         groupId="org.glassfish.packager"
-                         artifactId="glassfish-osgi"
-                         type="zip" />
-
-        <zipfileset id="glassfish-osgi.artifacts" src="${glassfish-osgi-zip}" includes="**"/>
-        <echo file="target/glassfish-osgi-artifacts.properties" append="true" message="${toString:glassfish-osgi.artifacts}"/>
-        <replace file="target/glassfish-osgi-artifacts.properties" token=";">
-            <replacevalue><![CDATA[
-]]></replacevalue>
-        </replace>
-       
-        <delete quiet="false">
-            <fileset dir="target/stage" includesfile="target/glassfish-osgi-artifacts.properties" />
-        </delete>
-        <!-- END: excluding content of glassfish-osgi -->
-        
-        <!-- BEGIN: excluding content of glassfish-jmx -->
-        <resolveArtifact property="glassfish-jmx-zip"
-                         groupId="org.glassfish.packager"
-                         artifactId="glassfish-jmx"
-                         type="zip" />
-
-        <zipfileset id="glassfish-jmx.artifacts" src="${glassfish-jmx-zip}" includes="**"/>
-        <echo file="target/glassfish-jmx-artifacts.properties" append="true" message="${toString:glassfish-jmx.artifacts}"/>
-        <replace file="target/glassfish-jmx-artifacts.properties" token=";">
-            <replacevalue><![CDATA[
-]]></replacevalue>
-        </replace>
-       
-        <delete quiet="false">
-            <fileset dir="target/stage" includesfile="target/glassfish-jmx-artifacts.properties" />
-        </delete>
-        <!-- END: excluding content of glassfish-jmx -->
-        
         <chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 	<chmod file="target/stage/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
 
@@ -97,7 +71,6 @@
 
 	<resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
    
-
         <unzip src="${servicetag-registry.zip}"
            dest="target/stage/${install.dir.name}">
           <patternset>
@@ -108,8 +81,8 @@
 	<replace file="target/stage/${install.dir.name}/glassfish/lib/registration/servicetag-registry.xml" 
 		token="%%%SOURCE%%%" value="${source.distribution.name}"/>
 
-        <!-- stage appropriate legal content for this distribution -
-          it is OK to inherit nucleus content at this point     -->
+        <!-- create domain -->
+        <antcall target="create-domain"/>          
 
         <!-- create distribution zip-->
        	<zip file="target/minnow.zip" duplicate="preserve">
@@ -119,18 +92,27 @@
 	    <zipfileset dir="target/stage" filemode="755"
 		    includes="${install.dir.name}/glassfish/bin/*"
 		    excludes="${install.dir.name}/glassfish/bin/*.bat" />
-            <zipfileset dir="target/stage">
-		    <include name="${install.dir.name}/bin/*.bat" />
-	    </zipfileset>
-	    <zipfileset dir="target/stage">
-		    <include name="${install.dir.name}/glassfish/bin/*.bat" />
-            </zipfileset>
 	    <zipfileset  dir="target/stage"
-		    includes="${install.dir.name}/**"
-                    excludes="${install.dir.name}/glassfish/domains/**">
+		    includes="${install.dir.name}/**">
             </zipfileset>
         </zip> 
         <!-- deploy distribution artifact to maven repository" -->
         <attachArtifact file="target/minnow.zip"/>
    </target>
+   
+   <target name="create-domain" depends="create-domain-on-windows, create-domain-on-unix"/>
+
+   <target name="create-domain-on-windows" depends="init" if="windows">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin.bat"/>
+       </ant>
+   </target>
+
+   <target name="create-domain-on-unix" depends="init" if="unix">
+       <ant antfile="../distributions.xml" target="create-domain">
+           <property name="exec.dir" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin"/>
+           <property name="exec.executable" value="${basedir}/target/stage/${install.dir.name}/glassfish/bin/asadmin"/>
+       </ant>
+   </target>   
 </project>

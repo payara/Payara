@@ -42,7 +42,7 @@
 -->
 
 <project name="GlassFish Distribution (ips) Creation" default="create-image" basedir=".">
-<property name="source.distribution.name" value="GlassFish Open Source Edition 3.2"/>
+<property name="source.distribution.name" value="GlassFish Open Source Edition 4.0"/>
 
 <target name="create-image" depends="create-installer-image, create-glassfish-image">
     <mkdir dir="${installer.image.dir}"/>

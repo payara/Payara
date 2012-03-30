@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,7 @@
 -->
 
 <project name="Web Distribution (ips) Creation" default="create-image" basedir=".">
-<property name="source.distribution.name" value="GlassFish Open Source Edition 3.2 Web Profile"/>
+<property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 Web Profile"/>
 <import file="../distributions.xml"/>
 <target name="init">
         <condition property="windows">
@@ -90,27 +90,11 @@
 
 <target name="create-common-image" description="Creating IPS Image">
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-grizzly-full"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-common-web"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-virtualization"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-ha"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-registration"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jca"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
@@ -130,10 +114,6 @@
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-web"/>
-        <property name="image.dir" value="${image.dir}"/>
-    </ant>
-    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-osgi-http"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
@@ -142,11 +122,11 @@
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jcdi"/>
+        <property name="package.name" value="glassfish-jmx"/>
         <property name="image.dir" value="${image.dir}"/>
-    </ant>
+    </ant>    
     <ant antfile="../distributions.xml" target="install-package">
-        <property name="package.name" value="glassfish-jdbc"/>
+        <property name="package.name" value="glassfish-jcdi"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
     <ant antfile="../distributions.xml" target="install-package">
@@ -178,23 +158,23 @@
         <property name="image.dir" value="${image.dir}"/>
     </ant>
 
-        <!-- stage servicetag registry file and set source value -->
+    <!-- stage servicetag registry file and set source value -->
 
-	<resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
-   
+    <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
 
-        <unzip src="${servicetag-registry.zip}"
-           dest="${image.dir}">
-          <patternset>
-		  <exclude name="META-INF/**"/>
-	  </patternset>
-        </unzip>
 
-	<replace file="${image.dir}/glassfish/lib/registration/servicetag-registry.xml" 
-		token="%%%SOURCE%%%" value="${source.distribution.name}"/>
+    <unzip src="${servicetag-registry.zip}"
+        dest="${image.dir}">
+        <patternset>
+                <exclude name="META-INF/**"/>
+        </patternset>
+    </unzip>
 
-        <!-- stage appropriate legal content for this distribution -
-          it is OK to inherit nucleus content at this point     -->
+    <replace file="${image.dir}/glassfish/lib/registration/servicetag-registry.xml" 
+            token="%%%SOURCE%%%" value="${source.distribution.name}"/>
+
+    <!-- stage appropriate legal content for this distribution -
+        it is OK to inherit nucleus content at this point     -->
 
 </target>
 

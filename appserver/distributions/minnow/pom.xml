@@ -114,13 +114,74 @@
              self sufficient. See GLASSFISH-17170 for more details.
         -->
 
-        <!-- nucleus distribution -->
+        <!-- atomic distribution packages-->
         <dependency>
-            <groupId>org.glassfish.distributions</groupId>
-            <artifactId>nucleus</artifactId>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>felix</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-hk2</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-grizzly</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-nucleus</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+ 
+	<!-- all previous web-nb distribution packages -->
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-common</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>shoal</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-cluster</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-virtualization</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>jersey</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-management</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.packager</groupId>
+            <artifactId>glassfish-corba-base</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
 
         <!-- additional grizzly modules package -->
@@ -182,6 +243,7 @@
             <type>distribution-fragment</type>
             <optional>true</optional>
         </dependency>
+        
         <!-- additional legal content dependency -->
         <dependency>
             <groupId>org.glassfish.packager</groupId>
@@ -190,23 +252,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        
-        <!-- now, listing package dependencies so that their content
-                    can be excluded -->
-  	<dependency>
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-osgi</artifactId>
-           <version>${project.version}</version>
-	   <type>zip</type>
-           <scope>provided</scope>
-   	</dependency>        
-  	<dependency>
-           <groupId>org.glassfish.packager</groupId>
-           <artifactId>glassfish-jmx</artifactId>
-           <version>${project.version}</version>
-	   <type>zip</type>
-           <scope>provided</scope>
-   	</dependency>        
     </dependencies>
 </project>
 
