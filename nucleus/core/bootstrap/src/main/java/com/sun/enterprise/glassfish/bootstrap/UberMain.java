@@ -43,6 +43,7 @@ package com.sun.enterprise.glassfish.bootstrap;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 
 import java.io.BufferedReader;
@@ -68,7 +69,12 @@ public class UberMain {
     public void run() throws Exception {
         addShutdownHook(); // handle Ctrt-C.
 
-        gf = GlassFishRuntime.bootstrap().newGlassFish();
+        GlassFishProperties gfProps =new GlassFishProperties();
+        gfProps.setProperty("org.glassfish.embeddable.autoDelete",
+                System.getProperty("org.glassfish.embeddable.autoDelete", "true"));
+
+        gf = GlassFishRuntime.bootstrap().newGlassFish(gfProps);
+        
         gf.start();
 
         CommandRunner cr = gf.getCommandRunner();
