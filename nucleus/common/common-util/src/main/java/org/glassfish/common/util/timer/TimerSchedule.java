@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.timer;
+package org.glassfish.common.util.timer;
 
 import java.util.ArrayList;
 import java.util.Calendar;

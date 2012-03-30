@@ -71,7 +71,7 @@
                         org.glassfish.admin.payload; \
                         org.glassfish.common.util.admin; \
                         org.glassfish.quality; \
-                        org.glassfish.timer; \
+                        org.glassfish.common.util.timer; \
                         org.glassfish.security.common; \
                         com.sun.logging.enterprise.system.core; \
                         org.glassfish.server; version=${project.osgi.version}

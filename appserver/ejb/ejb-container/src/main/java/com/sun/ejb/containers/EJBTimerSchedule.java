@@ -40,7 +40,7 @@
 
 package com.sun.ejb.containers;
 
-import org.glassfish.timer.TimerSchedule;
+import org.glassfish.common.util.timer.TimerSchedule;
 
 import javax.ejb.ScheduleExpression;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
