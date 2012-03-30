@@ -199,14 +199,14 @@ public class CollectServiceLogFiles implements AdminCommand {
                     serviceLogRecordMap = service.collectLogs(serviceLogType, Level.INFO, new Date());
                     if (serviceLogRecordMap != null) {
                         creatingLogFilesOnDAS(serviceLogRecordMap, report);
-                        reportMessage.append("Logs are collected for [" + service.getName() + "] having service type [ " + service.getServiceType().getName() + " ] " +
+                        reportMessage.append("Logs are collected for ["+ service.getName() +"] having service type [" + service.getServiceType().getName() + "] " +
                                 "which is used by [" + appName + "]" + "\n");
                     } else {
-                        reportMessage.append("Collect Logs are unsupported for [" + service.getName() + "]  having service type [ " + service.getServiceType().getName() + " ] " +
+                        reportMessage.append("Collect Logs are unsupported for ["+ service.getName() +"]  having service type [" + service.getServiceType().getName() + "] " +
                                 "which is used by [" + appName + "]" + "\n");
                     }
                 } catch (UnsupportedOperationException ex) {
-                    reportMessage.append("Collect Logs are unsupported for [" + service.getName() + "]  having service type [ " + service.getServiceType().getName() + " ] " +
+                    reportMessage.append("Collect Logs are unsupported for ["+ service.getName() +"]  having service type [" + service.getServiceType().getName() + "] " +
                             "which is used by [" + appName + "]" + "\n");
                 }
             }
@@ -254,11 +254,11 @@ public class CollectServiceLogFiles implements AdminCommand {
                             serviceLogRecordMap = service.collectLogs(serviceLogType, Level.INFO, new Date());
                             creatingLogFilesOnDAS(serviceLogRecordMap, report);
                             reportMessage.append("Logs are collected for [" + service.getName() + "] having service " +
-                                    "type [ " + service.getServiceType().getName() + " ] " +
+                                    "type [" + service.getServiceType().getName() + "] " +
                                     "which is used by [" + appName + "]" + "\n");
                         } catch (UnsupportedOperationException ex) {
                             reportMessage.append("Collect Logs are unsupported for [" + service.getName() + "] having " +
-                                    "service type [ " + service.getServiceType().getName() + " ] " +
+                                    "service type [" + service.getServiceType().getName() + "] " +
                                     "which is used by [" + appName + "]" + "\n");
                         }
                     }
@@ -272,10 +272,10 @@ public class CollectServiceLogFiles implements AdminCommand {
                         serviceLogRecordMap = configuredService.collectLogs(serviceLogType, Level.INFO, new Date());
                         creatingLogFilesOnDAS(serviceLogRecordMap, report);
                         reportMessage.append("Logs are collected for [" + serviceName + "] having service " +
-                                "type [ " + configuredService.getServiceType().getName() + " ]" + "\n");
+                                "type [" + configuredService.getServiceType().getName() + "]" + "\n");
                     } catch (UnsupportedOperationException ex) {
                         reportMessage.append("Collect Logs are unsupported for [" + serviceName + "] having " +
-                                "service type [ " + configuredService.getServiceType().getName() + " ]" + "\n");
+                                "service type [" + configuredService.getServiceType().getName() + "]" + "\n");
                     }
                 }
             }
@@ -287,38 +287,45 @@ public class CollectServiceLogFiles implements AdminCommand {
                         serviceLogRecordMap = provisionedService.collectLogs(serviceLogType, Level.INFO, new Date());
                         creatingLogFilesOnDAS(serviceLogRecordMap, report);
                         reportMessage.append("Logs are collected for [" + serviceName + "] having service type " +
-                                "[ " + provisionedService.getServiceType().getName() + " ]" + "\n");
+                                "[" + provisionedService.getServiceType().getName() + "]" + "\n");
                     } catch (UnsupportedOperationException ex) {
                         reportMessage.append("Collect Logs are unsupported for [" + serviceName + "] having service " +
-                                "type [ " + provisionedService.getServiceType().getName() + " ]" + "\n");
+                                "type [" + provisionedService.getServiceType().getName() + "]" + "\n");
                     }
                 }
             }
         }
 
         String zipFile = "";
-        try {
-            zipFile = loggingConfig.createZipFile(getZipFilePath().getAbsolutePath());
-            if (zipFile == null || new File(zipFile) == null) {
-                // Failure during zip
-                report.setMessage("File is downloaded on DAS [" + getZipFilePath().getAbsolutePath() + "] but " +
+        File zipFilePath = getZipFilePath();
+        if (zipFilePath != null && zipFilePath.exists()) {
+            try {
+                zipFile = loggingConfig.createZipFile(zipFilePath.getAbsolutePath());
+                if (zipFile == null || new File(zipFile) == null) {
+                    // Failure during zip
+                    reportMessage.append("File is downloaded on DAS [" + getZipFilePath().getAbsolutePath() + "] but " +
+                            "error occur while creating zip file");
+                    report.setMessage(reportMessage.toString());
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Exception during creating zip file on DAS: " + e);
+                reportMessage.append("File is downloaded on DAS [" + getZipFilePath().getAbsolutePath() + "] but " +
                         "error occur while creating zip file");
+                report.setMessage(reportMessage.toString());
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
 
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception during creating zip file on DAS: " + e);
-            report.setMessage("File is downloaded on DAS [" + getZipFilePath().getAbsolutePath() + "] but " +
-                    "error occur while creating zip file");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
+            deleteDir(new File(getZipFilePath().getAbsolutePath() + File.separator + "logs"));
 
-        deleteDir(new File(getZipFilePath().getAbsolutePath() + File.separator + "logs"));
-
-        if (retrieve) {
-            retrieveFile(zipFile, context, getZipFilePath(), initFileXferProps(), report);
+            if (retrieve) {
+                retrieveFile(zipFile, context, getZipFilePath(), initFileXferProps(), report);
+            }
+        } else {
+            reportMessage.append("As collect logs are unsupported for each of the services so no zip file available on DAS." + "\n");
         }
 
         report.setMessage(reportMessage.toString());
@@ -550,26 +557,29 @@ public class CollectServiceLogFiles implements AdminCommand {
             }
 
             if (fileAttachedToPayload) {
-                File targetLocalFile = new File(retrieveFilePath); // CAUTION: file instead of dir
+                File targetLocalFile = new File(retrieveFilePath); // CAUTION: file instead of dir   StringBuffer
 
                 if (!targetLocalFile.exists()) {
                     boolean created = targetLocalFile.mkdirs();
 
                     if (!created) {
-                        report.setMessage("Retrieve File Path is not exists [ " + retrieveFilePath + " ]");
+                        reportMessage.append("Retrieve File Path is not exists [" + retrieveFilePath + "]");
+                        report.setMessage(reportMessage.toString());
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;
                     }
                 }
-                FileOutputStream targetStream = new FileOutputStream(targetLocalFile);
+                FileOutputStream targetStream = new FileOutputStream(targetLocalFile + File.separator
+                        + zipFileName.substring(zipFileName.lastIndexOf(File.separator)+1,zipFileName.length()));
                 outboundPayload.writeTo(targetStream);
                 targetStream.flush();
                 targetStream.close();
             }
 
         } catch (Exception ex) {
-            logger.severe("Error while copying zip file to [ " + retrieveFilePath + " ]" + ex);
-            report.setMessage("Error while copying zip file to [ " + retrieveFilePath + " ]");
+            logger.severe("Error while copying zip file ["+zipFileName+"] to [" + retrieveFilePath + " ]" + ex);
+            reportMessage.append("Error while copying zip file ["+zipFileName+"] to [" + retrieveFilePath + " ]");
+            report.setMessage(reportMessage.toString());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

@@ -73,6 +73,8 @@ public class TailServiceLogFile extends CLICommand {
     @Param(name = "logtype", optional = false)
     private String logtype;
 
+    private String lastrecorddateinmilliseconds = "0";
+
     @Override
     protected int executeCommand() throws CommandException {
 
@@ -82,11 +84,13 @@ public class TailServiceLogFile extends CLICommand {
 
             String fileData = attr.get("filedata_value");
             String filePointer = attr.get("filepointer_value");
+            String lastrecorddateinmilliseconds = attr.get("lastrecorddateinmilliseconds_value");
 
             if (fileData != null && fileData.trim().length() > 0) {
                 System.out.println(fileData);
             }
             this.filepointer = filePointer;
+            this.lastrecorddateinmilliseconds = lastrecorddateinmilliseconds;
         }
     }
 
@@ -96,6 +100,8 @@ private String[] getParams() {
         ss.add(commandName);
         ss.add("--filepointer");
         ss.add(filepointer);
+        ss.add("--lastrecorddateinmilliseconds");
+        ss.add(lastrecorddateinmilliseconds);
         ss.add("--serviceName");
         ss.add(serviceName);
         ss.add("--logtype");

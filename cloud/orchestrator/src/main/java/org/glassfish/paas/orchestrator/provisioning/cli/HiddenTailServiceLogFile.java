@@ -97,6 +97,9 @@ public class HiddenTailServiceLogFile implements AdminCommand {
     @Param(name = "filepointer", optional = false)
     private String filepointer;
 
+    @Param(name = "lastrecorddateinmilliseconds", optional = false)
+    private String lastrecorddateinmilliseconds;
+
 
     @Inject
     private Domain domain;
@@ -119,8 +122,6 @@ public class HiddenTailServiceLogFile implements AdminCommand {
     String recordEndMarker = "|#]";
     String fieldSeparator = "|";
 
-    long dateinmilliseconds = 0L;
-
     private static Logger logger = LogDomains.getLogger(CollectServiceLogFiles.class, LogDomains.PAAS_LOGGER);
 
     StringBuffer reportMessage = new StringBuffer();
@@ -128,6 +129,8 @@ public class HiddenTailServiceLogFile implements AdminCommand {
     StringBuffer fileData = new StringBuffer();
 
     String newLine = System.getProperty("line.separator");
+
+    long _lastrecorddateinmilliseconds = 0L;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -140,6 +143,7 @@ public class HiddenTailServiceLogFile implements AdminCommand {
         }
 
         long _filePointer = Long.valueOf(filepointer);
+        _lastrecorddateinmilliseconds = Long.valueOf(lastrecorddateinmilliseconds);
 
         logger.log(Level.INFO, "Collecting Service Log Records");
 
@@ -257,6 +261,7 @@ public class HiddenTailServiceLogFile implements AdminCommand {
 
                     report.getTopMessagePart().addProperty("filedata", fileData.toString());
                     report.getTopMessagePart().addProperty("filepointer", String.valueOf(_filePointer));
+                    report.getTopMessagePart().addProperty("lastrecorddateinmilliseconds", String.valueOf(_lastrecorddateinmilliseconds));
 
                 } catch (Exception e) {
                     System.out.println(e);
@@ -407,14 +412,14 @@ public class HiddenTailServiceLogFile implements AdminCommand {
 
             File serviceLogFile = new File(serviceDirectoryOnDAS, logtype);
 
-            FileWriter fstream = new FileWriter(serviceLogFile);
+            FileWriter fstream = new FileWriter(serviceLogFile,true);
             BufferedWriter out = new BufferedWriter(fstream);
 
             for (ServiceLogRecord serviceLogRecord : serviceLogRecords) {
 
                 long millis = serviceLogRecord.getMillis();
 
-                if (millis > dateinmilliseconds) {
+                if (millis >= _lastrecorddateinmilliseconds) {
 
                     SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSS");
                     Calendar calendar = Calendar.getInstance();
@@ -443,6 +448,8 @@ public class HiddenTailServiceLogFile implements AdminCommand {
                     logDetails.append(recordEndMarker);
                     out.write(logDetails.toString());
                     out.newLine();
+
+                    _lastrecorddateinmilliseconds = millis;
                 }
             }
             out.close();
