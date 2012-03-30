@@ -146,7 +146,7 @@ public class ApacheLBProvisioner implements LBProvisioner{
     @Override
     public void associateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, String domainName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception{
+            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig,Properties healthProps) throws Exception{
         if(!isReconfig){
             createApacheConfig(clusterName, commandRunner, habitat, serviceName, isFirst);
 	} else {
@@ -167,8 +167,15 @@ public class ApacheLBProvisioner implements LBProvisioner{
         } else if (appName != null) {
             appDomainConfigProps.remove("app." + appName + ".domain-name");
         }
-        
-	createNewWorkerPropertiesFile(commandRunner, serviceName);
+        if (healthProps != null) {
+            setAppHealthConfig(appName, serviceName, healthProps, appDomainConfigProps);
+        }
+        createNewWorkerPropertiesFile(commandRunner, serviceName);
+        if (appDomainConfigProps.getProperty("app." + appName + ".domain-name") != null) {
+            getApacheLBUtility().createCertificate(virtualMachine,
+                    appDomainConfigProps.getProperty("app." + appName
+                    + ".domain-name"));
+        }
 	reconfigureApache(virtualMachine, serviceName, glassfishHome, appName,
 		domainName, appDomainConfigProps);
 	File tempworkerFile = new File(System.getProperty("user.dir")
@@ -176,17 +183,17 @@ public class ApacheLBProvisioner implements LBProvisioner{
 	virtualMachine.upload(tempworkerFile, new File(apacheConfDir));
 	persistPropertiesFile(serviceName,appDomainConfigProps);
 
-	tempworkerFile.delete();
+	getApacheLBUtility().deleteTempFile(tempworkerFile);
 
 	getApacheLBUtility().restartApacheGracefully(virtualMachine);
     }
-
+    
     private void reconfigureApache(VirtualMachine virtualMachine,
             String serviceName, String glassfishHome, String appName,
             String domainName, Properties appDomainConfigProps)
             throws IOException, ComponentException, InterruptedException {
         
-	getApacheLBUtility().associateServer(appName, domainName,virtualMachine,appDomainConfigProps);
+	getApacheLBUtility().associateServer(virtualMachine,appDomainConfigProps);
         //Doing hard reconfig  on windows till a solution is found for graceful reconfig
         if(useWindowsConfig()){
             restartHttpdProcess();
@@ -297,7 +304,30 @@ public class ApacheLBProvisioner implements LBProvisioner{
 
     }
     
-   
+    /* Set App Specific Health Configuration */
+    private void setAppHealthConfig(String appName, String serviceName,
+	    Properties healthProps, Properties appConfigProps)
+	    throws IOException {
+        
+	String healthInterval = healthProps
+		.getProperty(Constants.HEALTH_CHECK_INTERVAL_PROP_NAME);
+	String healthTimeOut = healthProps
+		.getProperty(Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME);
+	if ( healthInterval !=null) {
+	    appConfigProps
+		    .setProperty(appName + "."
+			    + Constants.HEALTH_CHECK_INTERVAL_PROP_NAME,
+			    healthInterval);
+
+	}
+	if (healthTimeOut != null) {
+	    appConfigProps.setProperty(appName + "."
+		    + Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME, healthTimeOut);
+	}
+	persistPropertiesFile(serviceName, appConfigProps);
+
+    }
+    
     /* Create a Config properties file to store http ports and domain name */
     private void createAppDomainConfigProperties(String serviceName,LBServiceConfiguration configuration, String domainName)
 	    throws IOException {
@@ -313,19 +343,36 @@ public class ApacheLBProvisioner implements LBProvisioner{
 	if (domainName != null) {
 	    configProps.setProperty("LB.domain-name", domainName);
 	}
-	persistPropertiesFile(serviceName,configProps);
+	if (configuration.getHealthInterval() != null) {
+	    configProps.setProperty(Constants.HEALTH_CHECK_INTERVAL_PROP_NAME,
+		    configuration.getHealthInterval());
+	}
+	if (configuration.getHealthTimeout() != null) {
+	    configProps.setProperty(Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME,
+		    configuration.getHealthTimeout());
+	}
+	persistPropertiesFile(serviceName, configProps);
 
     }
-
+    
     /* Store the Application Domain Config Properties File */
     private void persistPropertiesFile(String serviceName,Properties propFile) throws IOException {
 	File appDomainConfigFile = new File(serverEnvironment.getConfigDirPath()
 		+ File.separator +LB_CONFIG_DIRECTORY + File.separator + serviceName + "_" + CONFIGURATION_FILE_NAME);
 
 	FileOutputStream fout = new FileOutputStream(appDomainConfigFile);
-	propFile.store(fout, "Application Domain Names");
-	fout.close();
-
+	try{
+	    propFile.store(fout, "Application Domain Names");
+	}finally{
+            if(fout != null){
+                try {
+                    fout.close(); 
+                }catch (IOException ex){
+                    //ignore
+                }
+            }
+	}
+	
     }
     
     /*Create LB directory to store config properties file*/
@@ -374,15 +421,19 @@ public class ApacheLBProvisioner implements LBProvisioner{
 			+ "_" + CONFIGURATION_FILE_NAME);
                
 	createNewWorkerPropertiesFile(commandRunner, serviceName);
+	getApacheLBUtility().removeCertificates(configProps.getProperty("app." +
+                appName + ".domain-name"), virtualMachine);
+	configProps.remove("app." + appName + ".domain-name");
+	configProps.remove(appName +"."+Constants.HEALTH_CHECK_INTERVAL_PROP_NAME);
+	configProps.remove(appName +"."+ Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME);
 	reconfigureApache(virtualMachine, serviceName, glassfishHome, appName,
 		null, configProps);
-	configProps.remove("app." + appName + ".domain-name");
 	persistPropertiesFile(serviceName,configProps);
 	File tempWorkFile = new File(System.getProperty("user.dir")
 		+ File.separator + "worker.properties");
 	virtualMachine.upload(tempWorkFile, new File(apacheConfDir));
 	getApacheLBUtility().restartApacheGracefully(virtualMachine);
-	tempWorkFile.delete();
+	getApacheLBUtility().deleteTempFile(tempWorkFile);
         if (isLast) {
             params.clear();
             params.add(serviceName + "-lb-config");

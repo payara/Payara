@@ -57,6 +57,9 @@ public class LBServiceConfiguration {
     private String httpPort = null;
     private String httpsPort = null;
     private boolean sslEnabled = false;
+    private String healthInterval = null;
+    private String healthURL = null;
+    private String healthTimeout = null;
 
     public LBServiceConfiguration() {
     }
@@ -82,6 +85,12 @@ public class LBServiceConfiguration {
                 Constants.HTTPS_PORT_PROP_NAME));
         configuration.setSslEnabled(Boolean.valueOf(serviceConfigurations.
                 getProperty(Constants.SSL_ENABLED_PROP_NAME)).booleanValue());
+        configuration.setHealthInterval(serviceConfigurations.getProperty(
+        	Constants.HEALTH_CHECK_INTERVAL_PROP_NAME));
+        configuration.setHealthURL(serviceConfigurations.getProperty(
+        	Constants.HEALTH_CHECK_URL_PROP_NAME));
+        configuration.setHealthTimeout(serviceConfigurations.getProperty(
+        	Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME));
         return configuration;
     }
 
@@ -130,6 +139,30 @@ public class LBServiceConfiguration {
 
     public boolean isSslEnabled() {
         return sslEnabled;
+    }
+    
+    public void setHealthInterval(String healthInterval) {
+	this.healthInterval = healthInterval;
+    }
+    
+    public void setHealthURL(String healthURL) {
+	this.healthURL = healthURL;
+    }
+    
+    public void setHealthTimeout(String healthTimeout) {
+	this.healthTimeout = healthTimeout;
+    }
+    
+    public String getHealthInterval() {
+	return healthInterval;
+    }
+    
+    public String getHealthURL() {
+	return healthURL;
+    }
+    
+    public String getHealthTimeout() {
+	return healthTimeout;
     }
 
 }

@@ -60,7 +60,7 @@ public interface LBProvisioner {
 
     public void associateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, String domainName, CommandRunner commandRunner, String clusterName,
-            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig) throws Exception;
+            Habitat habitat, String glassfishHome, boolean isFirst, boolean isReconfig,Properties healthProps) throws Exception;
 
     public void dissociateApplicationServerWithLB(String appName, VirtualMachine virtualMachine,
             String serviceName, CommandRunner commandRunner, String clusterName,

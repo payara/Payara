@@ -39,6 +39,9 @@
  */
 package org.glassfish.paas.lbplugin;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -108,6 +111,9 @@ public class LBPlugin implements ServicePlugin {
     private TemplateRepository templateRepository;
 
     private static final String APPLICATION_DOMAIN_NAME = "application-domain-name";
+    
+    private static final String HEALTH_CHECK_PROP_FILE_PATH =
+            "WEB-INF" + File.separator +"health-check.properties";
 
     private static Logger logger = Logger.getLogger(LBPlugin.class.getName());
 
@@ -288,14 +294,71 @@ public class LBPlugin implements ServicePlugin {
         
         String appDomainName = dc.getTransientAppMetaData
                 (APPLICATION_DOMAIN_NAME, String.class);
-        callAssociateService(serviceConsumer, serviceProvider, false, dc.getAppName(), appDomainName);
+    
+        callAssociateService(serviceConsumer, serviceProvider, false, dc.getAppName(), appDomainName,
+                dc.getArchive().getURI().getPath() + HEALTH_CHECK_PROP_FILE_PATH);
         
     }
+    
+    
+    private String getAppSpecificHealthConfig(String healthcheckPropName) {
 
-    private void callAssociateService(Service serviceConsumer,
-            Service serviceProvider, boolean isReconfig, String appName, String appDomainName) {
+	Properties healthProps = readPropertiesFile(healthcheckPropName);
+	String healthConfig = null;
+	String interval = healthProps
+		.getProperty(Constants.HEALTH_CHECK_INTERVAL_PROP_NAME);
+	String timeout = healthProps
+		.getProperty(Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME);
+	String url = healthProps
+		.getProperty(Constants.HEALTH_CHECK_URL_PROP_NAME);
+
+	if (interval != null) {
+	    healthConfig = Constants.HEALTH_CHECK_INTERVAL_PROP_NAME + "="
+		    + interval + ":";
+	}
+	if (timeout != null) {
+	    healthConfig = healthConfig
+		    + Constants.HEALTH_CHECK_TIMEOUT_PROP_NAME + "=" + timeout
+		    + ":";
+	}
+	if (url != null) {
+	    healthConfig = healthConfig + Constants.HEALTH_CHECK_URL_PROP_NAME
+		    + "=" + url;
+
+	}
+
+	return healthConfig;
+
+    }
+    
+    /* Load the properties file */
+    public Properties readPropertiesFile(String propFile) {
+	Properties prop = new Properties();
+        FileInputStream is = null;
+	try {
+	    is = new FileInputStream(propFile);
+	    prop.load(is);
+	    return prop;
+	} catch (Exception e) {
+	    LBPluginLogger.getLogger().log(Level.FINE,
+		    "Failed to read from " + propFile + " file.");
+	} finally {
+            if(is != null){
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    //ignore
+                }
+            }
+        }
+	return prop;
+    }
+
+    private void callAssociateService(org.glassfish.paas.orchestrator.service.spi.Service serviceConsumer,
+            org.glassfish.paas.orchestrator.service.spi.Service serviceProvider, boolean isReconfig, String appName, String appDomainName,String healthPropFileName) {
         ServiceDescription serviceDescription = serviceConsumer.getServiceDescription();
         String serviceName = serviceDescription.getName();
+        String healthProps = getAppSpecificHealthConfig(healthPropFileName);
         logger.entering(getClass().getName(), "provisionService");
         ArrayList<String> params;
         String[] parameters;
@@ -307,6 +370,10 @@ public class LBPlugin implements ServicePlugin {
         params.add(serviceProvider.getServiceDescription().getName());
         params.add("--virtualcluster");
         params.add(serviceDescription.getVirtualClusterName());
+        if (healthProps != null) {
+	    params.add("--props");
+	    params.add(healthProps);
+	}
         if (appDomainName != null) {
             params.add("--domainname");
             params.add(appDomainName);
@@ -550,7 +617,7 @@ public class LBPlugin implements ServicePlugin {
             Service oldServiceProvider,
             Service newServiceProvider,
             ServiceOrchestrator.ReconfigAction reason) {
-        callAssociateService(serviceConsumer, newServiceProvider, true, null, null);
+        callAssociateService(serviceConsumer, newServiceProvider, true, null, null, null);
         return true;
     }
     

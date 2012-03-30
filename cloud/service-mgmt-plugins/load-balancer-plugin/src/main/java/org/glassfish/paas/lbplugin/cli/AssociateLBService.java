@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.lbplugin.cli;
 
+import java.util.Properties;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -80,6 +81,9 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
 
     @Param(name = "first", optional=true, defaultValue="true")
     boolean isFirst;
+    
+    @Param(name="props", optional=true, separator=':')
+    Properties healthProps;
 
     @Inject
     private ServerContext serverContext;
@@ -94,7 +98,7 @@ public class AssociateLBService extends BaseLBService implements AdminCommand {
                     .associateApplicationServerWithLB(appName, virtualMachine,
                     serviceName, domainName, commandRunner, clusterName, habitat,
                     serverContext.getInstallRoot().getAbsolutePath(),
-                    isFirst, isReconfig);
+                    isFirst, isReconfig,healthProps);
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             report.setMessage("Service with name [" + serviceName + "] is associated with cluster  " + "[ " + clusterName + " ] successfully.");
         } catch (Exception ex) {
