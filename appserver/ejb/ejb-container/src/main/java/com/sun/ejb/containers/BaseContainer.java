@@ -2159,7 +2159,7 @@ public abstract class BaseContainer
      * Call back from the timer migration process to add 
      * automatic timers to the map of scheduleIds
      */
-    protected void addSchedule(TimerPrimaryKey timerId, TimerSchedule ts) {
+    protected void addSchedule(TimerPrimaryKey timerId, EJBTimerSchedule ts) {
         for (Map.Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
             Method m = entry.getKey();
             if (m.getName().equals(ts.getTimerMethodName()) &&

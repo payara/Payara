@@ -502,7 +502,7 @@ public class EJBTimerService
                                             "not a periodic timer");
         }
 
-        TimerSchedule ts = timerState.getTimerSchedule();
+        EJBTimerSchedule ts = timerState.getTimerSchedule();
         if (ts != null) {
             return getNextScheduledTimeout(ts);
         }
@@ -581,7 +581,7 @@ public class EJBTimerService
     /**
      * @return Primary key of newly created timer
      */
-    TimerPrimaryKey createTimer(long containerId, long applicationId, TimerSchedule schedule, 
+    TimerPrimaryKey createTimer(long containerId, long applicationId, EJBTimerSchedule schedule, 
                                 TimerConfig timerConfig, String server_name) 
                                 throws CreateException {
 
@@ -593,7 +593,7 @@ public class EJBTimerService
      * @return Primary key of newly created timer
      */
     TimerPrimaryKey createTimer(long containerId, long applicationId, Object timedObjectPrimaryKey,
-                                TimerSchedule schedule, TimerConfig timerConfig) 
+                                EJBTimerSchedule schedule, TimerConfig timerConfig) 
                                 throws CreateException {
 
         return createTimer(containerId, applicationId, timedObjectPrimaryKey, 
@@ -606,7 +606,7 @@ public class EJBTimerService
      */
     private TimerPrimaryKey createTimer(long containerId, long applicationId, Object timedObjectPrimaryKey,
                                 Date initialExpiration, long intervalDuration,
-                                TimerSchedule schedule, TimerConfig timerConfig) 
+                                EJBTimerSchedule schedule, TimerConfig timerConfig) 
                                 throws CreateException {
 
         return createTimer(containerId, applicationId, timedObjectPrimaryKey, initialExpiration,
@@ -619,7 +619,7 @@ public class EJBTimerService
      */
     private TimerPrimaryKey createTimer(long containerId, long applicationId, Object timedObjectPrimaryKey,
                                 Date initialExpiration, long intervalDuration,
-                                TimerSchedule schedule, TimerConfig timerConfig,
+                                EJBTimerSchedule schedule, TimerConfig timerConfig,
                                 String server_name) 
                                 throws CreateException {
 
@@ -708,7 +708,7 @@ public class EJBTimerService
     void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId, 
                                 Object timedObjectPrimaryKey, String server_name,
                                 Date initialExpiration, long intervalDuration,
-                                TimerSchedule schedule, TimerConfig timerConfig) 
+                                EJBTimerSchedule schedule, TimerConfig timerConfig) 
                                 throws Exception {
 
         if (timerConfig.isPersistent()) {
@@ -803,7 +803,7 @@ public class EJBTimerService
                     continue;
                 }
 
-                TimerSchedule ts = new TimerSchedule(sch, mname, args_length);
+                EJBTimerSchedule ts = new EJBTimerSchedule(sch, mname, args_length);
                 TimerConfig tc = new TimerConfig();
                 String info = sch.getInfo();
                 if (info != null && !info.equals("")) {
@@ -917,7 +917,7 @@ public class EJBTimerService
 
         Date initialExpiration = rt.getInitialExpiration();
         long intervalDuration = rt.getIntervalDuration();
-        TimerSchedule ts = rt.getTimerSchedule();
+        EJBTimerSchedule ts = rt.getTimerSchedule();
 
         Date nextTimeout = initialExpiration;
         if (ts != null) {
@@ -945,13 +945,13 @@ public class EJBTimerService
 
     ScheduleExpression getScheduleExpression(TimerPrimaryKey timerId) throws FinderException {
         
-        TimerSchedule ts = getTimerSchedule(timerId);
+        EJBTimerSchedule ts = getTimerSchedule(timerId);
         return (ts == null)? null : ts.getScheduleExpression();
     }
 
     boolean isCalendarTimer(TimerPrimaryKey timerId) throws FinderException {
         
-        TimerSchedule ts = getTimerSchedule(timerId);
+        EJBTimerSchedule ts = getTimerSchedule(timerId);
         return (ts != null);
     }
 
@@ -983,10 +983,10 @@ public class EJBTimerService
     /**
      * Called by #getScheduleExpression and #isCalendarTimer
      */
-    TimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
+    EJBTimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
-        TimerSchedule ts = null;
+        EJBTimerSchedule ts = null;
 
         RuntimeTimerState rt = getNonPersistentTimer(timerId);
         if (rt != null) {
@@ -1495,7 +1495,7 @@ public class EJBTimerService
      * Returns next schedule-based timeout or null if such schedule will
      * not expire again.
      */
-    Date getNextScheduledTimeout(TimerSchedule ts) {
+    Date getNextScheduledTimeout(EJBTimerSchedule ts) {
         Calendar next = ts.getNextTimeout();
         if( ts.isValid(next) ) {
             return next.getTime();

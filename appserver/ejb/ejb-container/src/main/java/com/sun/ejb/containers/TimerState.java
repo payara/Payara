@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -308,7 +308,7 @@ public class TimerState implements Serializable {
         pkHashCode = pkHash;
     }
 
-    public TimerSchedule getTimerSchedule() {
+    public EJBTimerSchedule getTimerSchedule() {
         return timerSchedule_;
     }
 
@@ -328,7 +328,7 @@ public class TimerState implements Serializable {
     private transient Date creationTime_;
     private transient Date initialExpiration_;
     private transient Date lastExpiration_;
-    private transient TimerSchedule timerSchedule_;
+    private transient EJBTimerSchedule timerSchedule_;
     
     public TimerState () {
     }
@@ -336,7 +336,7 @@ public class TimerState implements Serializable {
     public TimerState (String timerId, long containerId, long applicationId,
              String ownerId, Object timedObjectPrimaryKey, 
              Date initialExpiration, long intervalDuration, 
-             TimerSchedule schedule, Serializable info) throws IOException {
+             EJBTimerSchedule schedule, Serializable info) throws IOException {
 
         this.timerId = timerId;
         this.ownerId = ownerId;
@@ -412,7 +412,7 @@ public class TimerState implements Serializable {
         creationTime_ = new Date(creationTimeRaw);
         initialExpiration_ = new Date(initialExpirationRaw);
         if (schedule != null) {
-            timerSchedule_ = new TimerSchedule(schedule);
+            timerSchedule_ = new EJBTimerSchedule(schedule);
         }
 
         // Lazily deserialize Blob state.  This makes the

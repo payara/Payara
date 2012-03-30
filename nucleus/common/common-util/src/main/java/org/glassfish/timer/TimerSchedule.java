@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package org.glassfish.timer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,13 +54,11 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.Serializable;
 
-import javax.ejb.ScheduleExpression;
-
-import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
-
 /**
- * A runtime representation of the user-defined calendar-based 
- * timeout expression for an enterprise bean timer.
+ * This class converts a cron-like string to its internal representation
+ * and calculates the next timeout after the current timestamp.
+ *
+ * @author mvatkina
  */
 
 public class TimerSchedule implements Serializable {
@@ -78,10 +76,6 @@ public class TimerSchedule implements Serializable {
 
     private Date start_ = null;
     private Date end_ = null;
-
-    private boolean automatic_ = false;
-    private String methodName_ = null;
-    private int paramCount_ = 0;
 
     private boolean configured = false;
     private boolean isValid = true;
@@ -157,56 +151,13 @@ public class TimerSchedule implements Serializable {
       */
     public TimerSchedule() {}
 
-    /** Construct TimerSchedule instance from a given ScheduleExpression.
-      * Need to copy all values because ScheduleExpression is mutable
-      * and can be modified by the user.
-      */
-    public TimerSchedule(ScheduleExpression se) {
-        second(se.getSecond());
-        minute(se.getMinute());
-        hour(se.getHour());
-        dayOfMonth(se.getDayOfMonth());
-        month(se.getMonth());
-        dayOfWeek(se.getDayOfWeek());
-        year(se.getYear());
-        timezone(se.getTimezone());
-
-        // Create local copies
-        start(se.getStart());
-        end(se.getEnd());
-
-        configure();
-    }
-
-    /** Construct TimerSchedule instance from a given Schedule annotation.
-      */
-    public TimerSchedule(ScheduledTimerDescriptor sd, String methodName, int paramCount) {
-        second(sd.getSecond());
-        minute(sd.getMinute());
-        hour(sd.getHour());
-        dayOfMonth(sd.getDayOfMonth());
-        month(sd.getMonth());
-        dayOfWeek(sd.getDayOfWeek());
-        year(sd.getYear());
-        timezone(sd.getTimezone());
-        start(sd.getStart());
-        end(sd.getEnd());
-
-        methodName_ = methodName;
-        paramCount_ = paramCount;
-
-        automatic_ = true;
-
-        configure();
-    }
-
-    /** Reconstruct TimerSchedule instance from a given String.
-      */
+    /** Construct TimerSchedule instance from a given String.
+     */
     public TimerSchedule(String s) {
         String[] sp = s.split(" # ");
 
-        if (!(sp.length == 11 || sp.length == 13)) {
-            throw new IllegalStateException("Cannot construct TimerSchedule from " + s);
+        if (!isExpectedElementCount(sp)) {
+            throw new IllegalStateException("Cannot construct " + getClass().getName() + " from " + s);
         }
 
         second_ = sp[0];
@@ -219,12 +170,8 @@ public class TimerSchedule implements Serializable {
         timezone_ = (sp[7].equals("null")? null : sp[7]);
         start_ = (sp[8].equals("null")? null : new Date(Long.parseLong(sp[8])));
         end_ = (sp[9].equals("null")? null : new Date(Long.parseLong(sp[9])));
-        automatic_ = Boolean.parseBoolean(sp[10]);
 
-        if (sp.length == 13) {
-            methodName_ = sp[11];
-            paramCount_ = Integer.parseInt(sp[12]);
-        }
+        parseOtherElements(sp);
 
         configure();
     }
@@ -335,23 +282,6 @@ public class TimerSchedule implements Serializable {
         return (end_ == null) ? null : new Date(end_.getTime());
     }
 
-    public TimerSchedule setAutomatic(boolean b) {
-        automatic_ = b;
-        return this;
-    }
-
-    public boolean isAutomatic() {
-        return automatic_;
-    }
-
-    public String getTimerMethodName() {
-        return methodName_;
-    }
-
-    public int getMethodParamCount() {
-        return paramCount_;
-    }
-
     public String getScheduleAsString() {
         StringBuffer s = new StringBuffer()
                .append(second_).append(" # ")
@@ -364,29 +294,9 @@ public class TimerSchedule implements Serializable {
                .append( timezone_).append(" # ") 
                .append(((start_ == null) ? null : start_.getTime()))
                .append(" # ") 
-               .append(((end_ == null) ? null : end_.getTime()))
-               .append(" # ").append(automatic_);
-
-        if (automatic_) {
-            s.append(" # ").append(methodName_).append(" # ").append(paramCount_);
-        }
+               .append(((end_ == null) ? null : end_.getTime()));
 
         return s.toString();
-    }
-
-    public ScheduleExpression getScheduleExpression() {
-        return new ScheduleExpression().
-                second(second_).
-                minute(minute_).
-                hour(hour_).
-                dayOfMonth(dayOfMonth_).
-                month(month_).
-                dayOfWeek(dayOfWeek_).
-                year(year_).
-                timezone(timezone_).
-                start(start_).
-                end(end_);
-
     }
 
     public int hashCode() {
@@ -402,17 +312,6 @@ public class TimerSchedule implements Serializable {
         TimerSchedule t = (TimerSchedule)o;
         return getScheduleAsString().equals(t.getScheduleAsString());
 
-    }
-
-    /**
-     * Returns true if this Schedule can calculate its next timeout
-     * without errors.
-     */
-    public static boolean isValid(ScheduledTimerDescriptor s) {
-        TimerSchedule ts = new TimerSchedule(s, null, 0);
-        ts.getNextTimeout();
-
-        return true;
     }
 
     /**
@@ -615,10 +514,24 @@ public class TimerSchedule implements Serializable {
     }
 
     /**
+     * Validate number of elements in the input string
+     */
+    protected boolean isExpectedElementCount(String[] el) {
+        return el.length == 10;
+    }
+
+    /**
+     * Allows subclasses to parse extra elements
+     */
+    protected void parseOtherElements(String[] el) {
+        // do nothing in the base class
+    }
+
+    /**
      * Populate all internale structures to be used for the next timeout
      * calculations
      */
-    private void configure() {
+    protected void configure() {
         // XXX Can it ever be called by different threads?
 
         parseNumbersOrNames(second_, seconds, 0, 60, true, SECOND);

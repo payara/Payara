@@ -392,7 +392,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
      */
     private void _notifyContainers(Set<TimerState> timers) {
         for(TimerState timer: timers) {
-            TimerSchedule ts = timer.getTimerSchedule();
+            EJBTimerSchedule ts = timer.getTimerSchedule();
             if (ts != null && ts.isAutomatic()) {
                 long containerId = timer.getContainerId();
                 BaseContainer container = getContainer(containerId);
@@ -477,7 +477,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
                     // tracking last expiration or an expiration hasn't
                     // occurred yet for this timer.
                     Date lastExpiration = timer.getLastExpiration();
-                    TimerSchedule ts = timer.getTimerSchedule();
+                    EJBTimerSchedule ts = timer.getTimerSchedule();
 
                     // @@@ need to handle case where last expiration time
                     // is not stored in database.  This will be the case
@@ -668,7 +668,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
     void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId,
                                 Object timedObjectPrimaryKey, String server_name,
                                 Date initialExpiration, long intervalDuration,
-                                TimerSchedule schedule, TimerConfig timerConfig) 
+                                EJBTimerSchedule schedule, TimerConfig timerConfig) 
                                 throws Exception {
         try {
             if (timerConfig.isPersistent()) {
@@ -733,7 +733,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
             boolean schedulesExist = (schedules.size() > 0);
             for (TimerState timer : timers) {
-                TimerSchedule ts = timer.getTimerSchedule();
+                EJBTimerSchedule ts = timer.getTimerSchedule();
                 if (ts != null && ts.isAutomatic() && schedulesExist) {
                     for (Map.Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
                         Method m = entry.getKey();
@@ -934,7 +934,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
         TimerState timer = getPersistentTimer(timerId);
         Date initialExpiration = timer.getInitialExpiration();
         long intervalDuration = timer.getIntervalDuration();
-        TimerSchedule ts = timer.getTimerSchedule();
+        EJBTimerSchedule ts = timer.getTimerSchedule();
 
         Date nextTimeout = null;
         if (ts != null) {
@@ -1006,10 +1006,10 @@ public class PersistenceEJBTimerService extends EJBTimerService
     /**
      * Called by #getScheduleExpression and #isCalendarTimer
      */
-    TimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
+    EJBTimerSchedule getTimerSchedule(TimerPrimaryKey timerId) throws FinderException {
 
         // Check non-persistent timers first
-        TimerSchedule ts = null;
+        EJBTimerSchedule ts = null;
         if (!super.isPersistent(timerId)) { 
             ts = super.getTimerSchedule(timerId);
         } else {

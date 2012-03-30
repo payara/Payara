@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -97,7 +97,7 @@ class RuntimeTimerState {
     private Object timedObjectPrimaryKey_;
     private boolean persistent_ = true;
     private Serializable info_;
-    private TimerSchedule schedule_;
+    private EJBTimerSchedule schedule_;
 
     private boolean expired_ = false;
 
@@ -118,7 +118,7 @@ class RuntimeTimerState {
                       Date initialExpiration, long intervalDuration, 
                       BaseContainer container, 
                       Object timedObjectPkey,
-                      TimerSchedule schedule,
+                      EJBTimerSchedule schedule,
                       Serializable info,
                       boolean persistent) {
         this(timerId, initialExpiration, intervalDuration, container.getContainerId(),
@@ -130,7 +130,7 @@ class RuntimeTimerState {
                       long containerId, 
                       BaseContainer container, 
                       Object timedObjectPkey,
-                      TimerSchedule schedule,
+                      EJBTimerSchedule schedule,
                       Serializable info,
                       boolean persistent) {
 
@@ -190,7 +190,7 @@ class RuntimeTimerState {
         return intervalDuration_;
     }
 
-    TimerSchedule getTimerSchedule() {
+    EJBTimerSchedule getTimerSchedule() {
         return schedule_;
     }
 
@@ -403,7 +403,7 @@ class RuntimeTimerState {
         buffer.append("'Container ID = " + containerId_ + "' ");
         buffer.append("'" + getInitialExpiration() + "' ");
         buffer.append("'" + getIntervalDuration() + "' ");
-        TimerSchedule ts = getTimerSchedule();
+        EJBTimerSchedule ts = getTimerSchedule();
         if( ts != null ) {
             buffer.append("'" + ts.getScheduleAsString() + "' ");
         }
