@@ -61,5 +61,6 @@
 	<module>service-mgmt</module>
 	<module>service-mgmt-plugins</module>
         <module>admin</module>
+        <module>gui</module>
     </modules>
 </project>

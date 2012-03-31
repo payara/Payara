@@ -2,7 +2,7 @@ rem @echo off
 
 rem  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-rem  Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+rem  Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
 
 rem  The contents of this file are subject to the terms of either the GNU
 rem  General Public License Version 2 only ("GPL") or the Common Development

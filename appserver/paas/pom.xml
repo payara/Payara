@@ -92,6 +92,5 @@
         </developer>
     </developers>
     <modules>
-        <module>console</module>
     </modules>
 </project>
