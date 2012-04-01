@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,11 +47,7 @@
 package com.sun.enterprise.deployment.node.connector;
 
 import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.node.AbstractBundleNode;
-import com.sun.enterprise.deployment.node.BundleNode;
-import com.sun.enterprise.deployment.node.DescriptorFactory;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.XMLNode;
+import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.xml.ConnectorTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.jvnet.hk2.annotations.Service;
@@ -129,6 +125,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
         super();
         registerElementHandler(new XMLElement(ConnectorTagNames.LICENSE), 
             LicenseNode.class, "setLicenseDescriptor");
+        SaxParserHandler.registerBundleNode(this, ConnectorTagNames.CONNECTOR);
     }
 
 

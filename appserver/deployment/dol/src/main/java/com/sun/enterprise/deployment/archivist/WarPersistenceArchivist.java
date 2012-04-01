@@ -67,7 +67,7 @@ public class WarPersistenceArchivist extends PersistenceArchivist {
         final String CLASSES_DIR = "WEB-INF/classes/";
 
         if(logger.isLoggable(Level.FINE)) {
-            logger.logp(Level.FINE, "EjbArchivist",
+            logger.logp(Level.FINE, "WarPersistenceArchivist",
                     "readPersistenceDeploymentDescriptors", "archive = {0}",
                     warArchive.getURI());
         }

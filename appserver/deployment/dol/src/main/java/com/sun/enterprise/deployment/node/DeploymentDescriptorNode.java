@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.node.ejb.AroundInvokeNode;
-import com.sun.enterprise.deployment.node.ejb.AroundTimeoutNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
@@ -56,7 +54,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -804,36 +801,6 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
                 (EntityManagerFactoryReferenceDescriptor)entityMgrFactoryRefs.next();
             subNode.writeDescriptor(parentNode, TagNames.PERSISTENCE_UNIT_REF, aEntityMgrFactoryRef);
         }        
-    }
-    
-    protected void writeAroundInvokeDescriptors
-        (Node parentNode, Iterator aroundInvokeDescs) {
-        if (aroundInvokeDescs == null || !aroundInvokeDescs.hasNext())
-            return;
-
-        AroundInvokeNode subNode = new AroundInvokeNode();
-        for(; aroundInvokeDescs.hasNext();) {
-            LifecycleCallbackDescriptor next =
-                (LifecycleCallbackDescriptor) aroundInvokeDescs.next();
-            subNode.writeDescriptor(parentNode, 
-                                    EjbTagNames.AROUND_INVOKE_METHOD, next);
-        }
-
-    }
-
-    protected void writeAroundTimeoutDescriptors
-        (Node parentNode, Iterator aroundTimeoutDescs) {
-        if (aroundTimeoutDescs == null || !aroundTimeoutDescs.hasNext())
-            return;
-
-        AroundTimeoutNode subNode = new AroundTimeoutNode();
-        for(; aroundTimeoutDescs.hasNext();) {
-            LifecycleCallbackDescriptor next =
-                (LifecycleCallbackDescriptor) aroundTimeoutDescs.next();
-            subNode.writeDescriptor(parentNode, 
-                                    EjbTagNames.AROUND_TIMEOUT_METHOD, next);
-        }
-
     }
 
     protected void writePostActivateDescriptors

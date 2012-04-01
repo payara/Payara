@@ -135,6 +135,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
         super();
         registerElementHandler(new XMLElement(WebTagNames.ABSOLUTE_ORDERING),
                AbsoluteOrderingNode.class, "setAbsoluteOrderingDescriptor");
+        SaxParserHandler.registerBundleNode(this, WebTagNames.WEB_BUNDLE);
     }
 
     public void setElementValue(XMLElement element, String value) {
@@ -160,7 +161,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
    /**
      * @return the XML tag associated with this XMLNode
      */
-    protected XMLElement getXMLRootTag() {
+   protected XMLElement getXMLRootTag() {
         return tag;
     }       
 

@@ -173,6 +173,8 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
                                MessageDestinationNode.class,
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+
+        SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
     
     /**

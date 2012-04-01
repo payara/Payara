@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,8 +83,8 @@ public class XMLValidationHandler extends DefaultHandler {
             mapping = new Hashtable<String, String>();
             mapping.put(com.sun.enterprise.deployment.node.ApplicationNode.PUBLIC_DTD_ID ,  "application_1_3.dtd" );
             mapping.put(com.sun.enterprise.deployment.node.ApplicationNode.PUBLIC_DTD_ID_12 , "application_1_2.dtd");
-            mapping.put(com.sun.enterprise.deployment.node.ejb.EjbBundleNode.PUBLIC_DTD_ID, "ejb-jar_2_0.dtd" ) ;
-            mapping.put(com.sun.enterprise.deployment.node.ejb.EjbBundleNode.PUBLIC_DTD_ID_12, "ejb-jar_1_1.dtd" );
+            mapping.put(org.glassfish.ejb.deployment.node.EjbBundleNode.PUBLIC_DTD_ID, "ejb-jar_2_0.dtd" ) ;
+            mapping.put(org.glassfish.ejb.deployment.node.EjbBundleNode.PUBLIC_DTD_ID_12, "ejb-jar_1_1.dtd" );
             mapping.put(com.sun.enterprise.deployment.node.appclient.AppClientNode.PUBLIC_DTD_ID, "application-client_1_3.dtd" );
             mapping.put(com.sun.enterprise.deployment.node.appclient.AppClientNode.PUBLIC_DTD_ID_12, "application-client_1_2.dtd" );
 

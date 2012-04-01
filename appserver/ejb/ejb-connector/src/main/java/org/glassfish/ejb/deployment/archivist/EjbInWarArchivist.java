@@ -40,76 +40,66 @@
 
 package org.glassfish.ejb.deployment.archivist;
 
-import com.sun.enterprise.deployment.archivist.*;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
+import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
-import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.io.EjbDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.runtime.EjbRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.GFEjbRuntimeDDFile;
-import com.sun.enterprise.deployment.io.runtime.WLSEjbRuntimeDDFile;
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
 /**
  * @author Mahesh Kannan
  */
+
 @Service
 @Scoped(PerLookup.class)
-public class EjbInWarArchivist
-        extends ExtensionsArchivist {
+public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Inject
     Provider<EjbInWarScanner> scanner;
 
-    
+    @Inject @Named("EjbInWarDeploymentDescriptorFile")
+    Provider<DeploymentDescriptorFile> standardDD;
+
+    @Inject @Named("WLSEjbInWarRuntimeDDFile")
+    Provider<DeploymentDescriptorFile> wlsEjbInWarRuntimeDD;
+
+    @Inject @Named("GFEjbInWarRuntimeDDFile")
+    Provider<DeploymentDescriptorFile> gfEjbInWarRuntimeDD;
+
+    @Inject @Named("EjbInWarRuntimeDDFile")
+    Provider<DeploymentDescriptorFile> ejbInWarRuntimeDD;
+
     /**
      * @return the DeploymentDescriptorFile responsible for handling
      *         standard deployment descriptor
      */
-    @Override                                                  
+    @Override
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
-        return new EjbDeploymentDescriptorFile() {
-            public String getDeploymentDescriptorPath() {
-                return DescriptorConstants.EJB_IN_WAR_ENTRY;
-            }
-        };
+        return standardDD.get();
     }
 
     @Override
     public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLSEjbRuntimeDDFile() {
-            public String getDeploymentDescriptorPath() {
-                return DescriptorConstants.WLS_EJB_IN_WAR_ENTRY;
-            }
-        };
+        return wlsEjbInWarRuntimeDD.get();
     }
-
 
     @Override
     public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new GFEjbRuntimeDDFile() {
-            public String getDeploymentDescriptorPath() {
-                return DescriptorConstants.GF_EJB_IN_WAR_ENTRY;
-            }
-        };
+        return gfEjbInWarRuntimeDD.get();
     }
 
     @Override
     public DeploymentDescriptorFile getSunConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new EjbRuntimeDDFile() {
-            public String getDeploymentDescriptorPath() {
-                return DescriptorConstants.S1AS_EJB_IN_WAR_ENTRY;
-            }
-        };
+        return ejbInWarRuntimeDD.get();
     }
 
     /**
@@ -122,7 +112,6 @@ public class EjbInWarArchivist
     public ModuleScanner getScanner() {
         return scanner.get();
     }
-
 
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {

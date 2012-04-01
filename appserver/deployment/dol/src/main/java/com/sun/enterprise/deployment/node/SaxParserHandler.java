@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -58,8 +57,10 @@ import org.xml.sax.helpers.NamespaceSupport;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
-import org.jvnet.hk2.component.PostConstruct;
 
 
 /**
@@ -70,11 +71,7 @@ import org.jvnet.hk2.component.PostConstruct;
  */
 @Service
 @Scoped(PerLookup.class)
-public class SaxParserHandler extends DefaultHandler implements PostConstruct {
-    
-    @Inject
-    private static BundleNode[] bundleNodes;
-    
+public class SaxParserHandler extends DefaultHandler {
     public static final String JAXP_SCHEMA_LANGUAGE =
         "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
     public static final String JAXP_SCHEMA_SOURCE = 
@@ -82,43 +79,44 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
     public static final String W3C_XML_SCHEMA =
         "http://www.w3.org/2001/XMLSchema";
     
-    // allows use of 'final' in static initializer for _mappingStuff
-    // @Immutable
     private static final class MappingStuff {
-        public final Map<String,String> mMapping;
-        private final Map<String,Class> mRootNodesMutable; // use only when initializing
-        public final Map<String,Class> mRootNodes;
-        private final Set<String> mElementsAllowingEmptyValuesMutable;
-        public final Collection<String> mElementsAllowingEmptyValues;
-        private final Set<String> mElementsPreservingWhiteSpaceMutable;
-        public final Collection<String> mElementsPreservingWhiteSpace;
+        public final ConcurrentMap<String, Boolean> mBundleRegistrationStatus = new ConcurrentHashMap<String, Boolean>();
+        public final ConcurrentMap<String,String> mMapping = new ConcurrentHashMap<String,String>();
+
+        private final ConcurrentMap<String,Class> mRootNodesMutable;
+        public final Map<String,Class>            mRootNodes;
+
+        private final CopyOnWriteArraySet<String> mElementsAllowingEmptyValuesMutable;
+        public final Collection<String>           mElementsAllowingEmptyValues;
+
+        private final CopyOnWriteArraySet<String> mElementsPreservingWhiteSpaceMutable;
+        public final Collection<String>           mElementsPreservingWhiteSpace;
         
         MappingStuff() {
-            mMapping    = new HashMap<String,String>();
-            mRootNodesMutable  = new HashMap<String,Class>();
+            mRootNodesMutable  = new ConcurrentHashMap<String,Class>();
             mRootNodes         = Collections.unmodifiableMap( mRootNodesMutable );
-            mElementsAllowingEmptyValuesMutable = new HashSet<String>();
+
+            mElementsAllowingEmptyValuesMutable = new CopyOnWriteArraySet<String>();
             mElementsAllowingEmptyValues = Collections.unmodifiableSet(mElementsAllowingEmptyValuesMutable);
-            mElementsPreservingWhiteSpaceMutable = new HashSet<String>();
+
+            mElementsPreservingWhiteSpaceMutable = new CopyOnWriteArraySet<String>();
             mElementsPreservingWhiteSpace = Collections.unmodifiableSet(mElementsPreservingWhiteSpaceMutable);
         }
-    };
+    }
     
-    private static volatile boolean _MappingStuffInited = false;
-    private static final MappingStuff _mappingStuff = new MappingStuff(); 
+    private static final MappingStuff _mappingStuff = new MappingStuff();
     
     private final List<XMLNode> nodes = new ArrayList<XMLNode>();
     public XMLNode topNode = null;
     protected String publicID=null;
     private StringBuffer elementData=null;
-    private Map prefixMapping=null;
+    private Map<String, String> prefixMapping=null;
     
     private boolean stopOnXMLErrors = false;
 
     private boolean pushedNamespaceContext=false;
-    private NamespaceSupport namespaces;
+    private NamespaceSupport namespaces = new NamespaceSupport();
 
-    // for i18N
     private static final LocalStringManagerImpl localStrings=
 	    new LocalStringManagerImpl(SaxParserHandler.class);    
     
@@ -134,70 +132,54 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
         return _mappingStuff.mElementsPreservingWhiteSpace;
     }
 
-    @Override
-    public void postConstruct() {
-        init();
-
-        // Create helper class to manage namespace contexts.
-        namespaces = new NamespaceSupport();
-    }
-
-    /**
-        @return the Map of root nodes.
-     */
-    private static void init() {
-        if ( _MappingStuffInited ) {    // '_MappingStuffInited' MUST be 'volatile'
+    public static void registerBundleNode(BundleNode bn, String bundleTagName) {
+        /*
+        * There is exactly one standard node object for each descriptor type.
+        * The node's registerBundle method itself adds the publicID-to-DTD
+        * entry to the mapping.  This method needs to add the tag-to-node class
+        * entry to the rootNodes map.
+        */
+        if (_mappingStuff.mBundleRegistrationStatus.containsKey(bundleTagName)) {
             return;
         }
-        
-        synchronized( SaxParserHandler.class ) {
-            final Map<String,Class> rootNodes= _mappingStuff.mRootNodesMutable;
-            final Map<String,String> mapping = _mappingStuff.mMapping;
-            final Collection<String> elementsAllowingEmptyValues = _mappingStuff.mElementsAllowingEmptyValuesMutable;
-            final Collection<String> elementsPreservingWhiteSpace = _mappingStuff.mElementsPreservingWhiteSpaceMutable;
-            
-            for (BundleNode bn : bundleNodes) {
-                /*
-                 * There is exactly one standard node object for each descriptor type.
-                 * The node's registerBundle method itself adds the publicID-to-DTD
-                 * entry to the mapping.  This method needs to add the tag-to-node class
-                 * entry to the rootNodes map.
-                 */
-                String rootNodeKey = bn.registerBundle(mapping);
-                rootNodes.put(rootNodeKey, bn.getClass());
-                
-                /*
-                 * There can be multiple runtime nodes (for example, sun-xxx and
-                 * glassfish-xxx).  So the BundleNode's registerRuntimeBundle 
-                 * updates the publicID-to-DTD map and returns a map of tags to
-                 * runtime node classes.  
-                 */
-                rootNodes.putAll(bn.registerRuntimeBundle(mapping));
-                
-                /*
-                 * This node might know of elements which should permit empty values,
-                 * or elements for which we should preserve white space.  Track them.
-                 */
-                elementsAllowingEmptyValues.addAll(bn.elementsAllowingEmptyValue());
-                elementsPreservingWhiteSpace.addAll(bn.elementsPreservingWhiteSpace());
-            }
-            
-            // post treatment, let's remove the URL from the DTD so we use local copies...
-            for (Map.Entry<String,String> entry : mapping.entrySet()) {
-                final String publicID = entry.getKey();
-                final String dtd = entry.getValue();
-                mapping.put(publicID, dtd.substring(dtd.lastIndexOf('/')+1));
-            }
 
-            _MappingStuffInited = true;
+        final HashMap<String, String> dtdMapping = new HashMap<String, String>();
+
+        String rootNodeKey = bn.registerBundle(dtdMapping);
+        _mappingStuff.mRootNodesMutable.putIfAbsent(rootNodeKey, bn.getClass());
+
+        /*
+        * There can be multiple runtime nodes (for example, sun-xxx and
+        * glassfish-xxx).  So the BundleNode's registerRuntimeBundle
+        * updates the publicID-to-DTD map and returns a map of tags to
+        * runtime node classes.
+        */
+        _mappingStuff.mRootNodesMutable.putAll(bn.registerRuntimeBundle(dtdMapping));
+
+        // let's remove the URL from the DTD so we use local copies...
+        for (Map.Entry<String, String> entry : dtdMapping.entrySet()) {
+            final String publicID = entry.getKey();
+            final String dtd = entry.getValue();
+            _mappingStuff.mMapping.put(publicID, dtd.substring(dtd.lastIndexOf('/') + 1));
         }
+
+        /*
+        * This node might know of elements which should permit empty values,
+        * or elements for which we should preserve white space.  Track them.
+        */
+        Collection<String> c = bn.elementsAllowingEmptyValue();
+        if (c.size() > 0) {
+            _mappingStuff.mElementsAllowingEmptyValuesMutable.addAll(c);
+        }
+
+        c = bn.elementsPreservingWhiteSpace();
+        if (c.size() > 0) {
+            _mappingStuff.mElementsPreservingWhiteSpaceMutable.addAll(c);
+        }
+
+        _mappingStuff.mBundleRegistrationStatus.put(rootNodeKey, Boolean.TRUE);
     }
-    
-    public static void registerMapping(String publicID, String systemID) {
-        getMapping().put(publicID, systemID);
-    }
-    
-                        
+
     public InputSource resolveEntity(String publicID, String systemID) throws SAXException {
         try {
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -222,7 +204,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
             }
             if ( getMapping().containsKey(publicID)) {                    
                 this.publicID = publicID;
-                return new InputSource(new BufferedInputStream(getDTDUrlFor((String) getMapping().get(publicID))));                
+                return new InputSource(new BufferedInputStream(getDTDUrlFor(getMapping().get(publicID))));
             } 
         } catch(Exception ioe) {
             DOLUtils.getDefaultLogger().log(Level.SEVERE, ioe.getMessage(), ioe);
@@ -277,7 +259,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
     /**
      * @return an URL for the schema location for a schema indentified by the 
      * passed parameter
-     * @param the system id for the schema
+     * @param schemaSystemID the system id for the schema
      */
     public static String getSchemaURLFor(String schemaSystemID) throws IOException {
         File f = getSchemaFileFor(schemaSystemID);
@@ -291,7 +273,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
     /**
      * @return a File pointer to the localtion of the schema indentified by the 
      * passed parameter
-     * @param the system id for the schema
+     * @param schemaSystemID the system id for the schema
      */
     public static File getSchemaFileFor(String schemaSystemID) throws IOException {
         
@@ -323,7 +305,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
                         throws SAXException {
 
         if (prefixMapping==null) {
-            prefixMapping = new HashMap();
+            prefixMapping = new HashMap<String, String>();
         }
         
         // We need one namespace context per element, but any prefix mapping 
@@ -356,7 +338,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
         
         if (nodes.isEmpty()) {
             // this must be a root element...
-            Class rootNodeClass = (Class) _mappingStuff.mRootNodes.get(localName);
+            Class rootNodeClass = _mappingStuff.mRootNodes.get(localName);
             if (rootNodeClass==null) {
                 DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.invalidDescriptorMappingFailure",
                         new Object[] {localName , " not supported !"});                
@@ -384,7 +366,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
                 }
             }
         } else {
-            node = (XMLNode) nodes.get(nodes.size()-1);
+            node = nodes.get(nodes.size()-1);
         }
         
         if (node!=null) {
@@ -417,7 +399,7 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
             return;
         }
         XMLElement element = new XMLElement(qName, namespaces);
-        XMLNode topNode = (XMLNode) nodes.get(nodes.size()-1);
+        XMLNode topNode = nodes.get(nodes.size()-1);
         if (elementData!=null && (elementData.length()!=0 || allowsEmptyValue(element.getQName()))) {
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
                 DOLUtils.getDefaultLogger().finer("For element " + element.getQName() + " And value " + elementData);
@@ -480,12 +462,11 @@ public class SaxParserHandler extends DefaultHandler implements PostConstruct {
     }
     
     private void addPrefixMapping(XMLNode node) {
-        if (prefixMapping!=null) {
-            for (Iterator itr = prefixMapping.keySet().iterator();itr.hasNext();) {
-                String prefix = (String) itr.next();
-                node.addPrefixMapping(prefix, (String) prefixMapping.get(prefix));
+        if (prefixMapping != null) {
+            for (Map.Entry<String, String> entry : prefixMapping.entrySet()) {
+                node.addPrefixMapping(entry.getKey(), entry.getValue());
             }
-            prefixMapping=null;
+            prefixMapping = null;
         }
     }
 

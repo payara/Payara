@@ -61,7 +61,7 @@ import org.glassfish.embeddable.*;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;

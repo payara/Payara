@@ -40,7 +40,6 @@
 
 package org.glassfish.ejb.deployment.annotation.impl;
 
-import com.sun.enterprise.deployment.annotation.impl.*;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.jvnet.hk2.annotations.Scoped;
@@ -53,13 +52,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-/**
- * Created by IntelliJ IDEA.
- * User: mk
- * Date: Mar 26, 2008
- * Time: 11:12:42 PM
- * To change this template use File | Settings | File Templates.
- */
 @Service
 @Scoped(PerLookup.class)
 public class EjbInWarScanner

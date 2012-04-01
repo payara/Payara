@@ -40,16 +40,18 @@
 
 package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.node.ejb.EjbBundleNode;
 import com.sun.enterprise.deployment.runtime.IASPersistenceManagerDescriptor;
 import com.sun.enterprise.deployment.runtime.PersistenceManagerInUse;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.deployment.types.*;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.security.common.Role;
 
 import java.util.*;
@@ -68,7 +70,7 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
         ResourceReferenceContainer, ServiceReferenceContainer,
             MessageDestinationReferenceContainer {
  
-    public final static String SPEC_VERSION = "2.1";
+    public final static String SPEC_VERSION = "3.1";
    
     private long uniqueId;    
     private Boolean disableNonportableJndiNames;
@@ -160,7 +162,7 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
      * loaded by this descriptor
      */
     public String getDefaultSpecVersion() {
-        return EjbBundleNode.SPEC_VERSION;
+        return SPEC_VERSION;
     }
 
     /**

@@ -111,6 +111,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.ejb</groupId>
+            <artifactId>ejb-container</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
+         <dependency>
             <groupId>org.glassfish.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>

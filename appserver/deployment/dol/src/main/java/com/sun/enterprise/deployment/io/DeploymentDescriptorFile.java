@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.deployment.io;
 
-import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.node.J2EEDocumentBuilder;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.SaxParserHandler;
@@ -49,6 +48,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.Descriptor;
+import org.jvnet.hk2.annotations.Contract;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -61,11 +62,13 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * This abstract class defines common behaviour for classes responsibles 
+ * This abstract class defines common behaviour for classes responsible
  * for loading/saving XML deployment descriptors
  *
  * @author Jerome Dochez
  */
+
+@Contract
 public abstract class DeploymentDescriptorFile<T extends Descriptor> {
     
     public final static String FULL_VALIDATION = "full";

@@ -78,7 +78,7 @@ public class AppClientRuntimeNode extends
         registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_REFERENCE), 
                                ResourceRefNode.class);     
         registerElementHandler(new XMLElement(RuntimeTagNames.EJB_REFERENCE), 
-                               EjbRefNode.class);             
+                               EjbRefNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_ENV_REFERENCE), 
                                ResourceEnvRefNode.class);                     
         registerElementHandler(new XMLElement(RuntimeTagNames.MESSAGE_DESTINATION_REFERENCE),

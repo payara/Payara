@@ -43,36 +43,34 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.WLSApplicationRuntimeDDFile;
-import com.sun.enterprise.deployment.util.*;
+import com.sun.enterprise.deployment.util.AnnotationDetector;
+import com.sun.enterprise.deployment.util.ApplicationValidator;
+import com.sun.enterprise.deployment.util.ApplicationVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
-import com.sun.hk2.component.Holder;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.jvnet.hk2.annotations.Optional;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
 
 /**
  * This class is responsible for handling application archive files
@@ -88,12 +86,6 @@ public class ApplicationArchivist extends Archivist<Application>
     @Inject
     Provider<ArchivistFactory> archivistFactory;
 
-    @Inject
-    Habitat habitat;
-
-    @Inject @Optional
-    ExtensionsArchivist[] extensionsArchivists; 
-    
     /**
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
@@ -380,7 +372,8 @@ public class ApplicationArchivist extends Archivist<Application>
                         }
 
                         //Section EE.8.4.2.1.d.ii
-                        EjbArchivist ejbArchivist = new EjbArchivist();
+                        Archivist ejbArchivist = archivistFactory.get().getArchivist(
+                                org.glassfish.deployment.common.DeploymentUtils.ejbType());
                         if (ejbArchivist.hasStandardDeploymentDescriptor(subArchive)
                                 || ejbArchivist.hasRuntimeDeploymentDescriptor(subArchive)) {
 
@@ -481,7 +474,7 @@ public class ApplicationArchivist extends Archivist<Application>
         Vector<File> files = new Vector<File>();
         getListOfFiles(appRoot, files,
                 new ArchiveIntrospectionFilter(appRoot.getAbsolutePath()));
-        return (File[]) files.toArray(new File[files.size()]);
+        return files.toArray(new File[files.size()]);
     }
 
     private static void getListOfFiles(
