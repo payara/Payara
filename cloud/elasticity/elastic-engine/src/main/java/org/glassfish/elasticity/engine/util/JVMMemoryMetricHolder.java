@@ -67,7 +67,8 @@ import com.sun.enterprise.config.serverbeans.Server;
  */
 @Service(name = "jvm_memory")
 public class JVMMemoryMetricHolder
-        implements MetricNode, MetricGatherer, PostConstruct {
+    extends MetricGatherer
+    implements MetricNode, PostConstruct {
 
     static final String _NAME = "jvm_memory";
 
@@ -132,11 +133,6 @@ public class JVMMemoryMetricHolder
             }
         }
 
-    }
-
-    @Override
-    public String getSchedule() {
-        return "10s";
     }
 
     @Override

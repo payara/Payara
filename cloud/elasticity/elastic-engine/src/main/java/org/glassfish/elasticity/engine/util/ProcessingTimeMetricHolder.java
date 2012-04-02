@@ -63,7 +63,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service(name="processingtime")
 public class ProcessingTimeMetricHolder
-    implements MetricNode, MetricGatherer, PostConstruct {
+    extends MetricGatherer
+    implements MetricNode, PostConstruct {
 
     static final String _NAME = "processingtime";
     private String instanceName;
@@ -88,11 +89,6 @@ public class ProcessingTimeMetricHolder
         this.instanceName = serverEnv.getInstanceName();
         MonitoringRuntimeDataRegistry monitoringRegistry = services.forContract(MonitoringRuntimeDataRegistry.class).get();
         rootNode = monitoringRegistry.get(this.instanceName);
-    }
-
-    @Override
-    public String getSchedule() {
-        return "10s";
     }
 
     @Override

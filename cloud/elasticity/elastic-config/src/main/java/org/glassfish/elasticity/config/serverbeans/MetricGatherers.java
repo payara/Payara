@@ -39,13 +39,6 @@
  */
 package org.glassfish.elasticity.config.serverbeans;
 
-import com.sun.enterprise.config.serverbeans.*;
-import org.glassfish.api.I18n;
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.TypeAndNameResolver;
-import org.glassfish.config.support.TypeResolver;
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
@@ -68,7 +61,7 @@ public interface MetricGatherers extends ConfigBeanProxy    {
    * @return the list of configured {@link Alerts}
    */
   @Element("*")
-  public List<MetricGatherer> getMetricGatherer();
+  public List<MetricGathererConfig> getMetricGatherer();
 
   /**
    * Return the metric gatherer with the given type, or null if no such alert exists.
@@ -78,12 +71,12 @@ public interface MetricGatherers extends ConfigBeanProxy    {
    */
 
   @DuckTyped
-  public MetricGatherer  getMetricGatherer(String name);
+  public MetricGathererConfig getMetricGatherer(String name);
 
 
   class Duck {
-      public static MetricGatherer getMetricGatherer(MetricGatherers instance, String name) {
-          for (MetricGatherer mg : instance.getMetricGatherer()) {
+      public static MetricGathererConfig getMetricGatherer(MetricGatherers instance, String name) {
+          for (MetricGathererConfig mg : instance.getMetricGatherer()) {
               if (mg.getName().equals(name)) {
                   return mg;
               }

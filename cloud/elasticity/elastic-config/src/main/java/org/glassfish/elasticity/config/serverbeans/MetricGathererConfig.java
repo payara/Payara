@@ -65,7 +65,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
  * To change this template use File | Settings | File Templates.
  */
 @Configured
-public interface MetricGatherer extends ConfigBeanProxy {
+public interface MetricGathererConfig extends ConfigBeanProxy {
 
     /**
      * Sets the metric name
@@ -111,5 +111,10 @@ public interface MetricGatherer extends ConfigBeanProxy {
 
     @Attribute(defaultValue = "false")
     public int getAutoStart();
-
+    
+    @Attribute
+    public String getLookupName();
+    
+    @Param(name="lookup-name")
+    public void setLookupName(String val);
 }

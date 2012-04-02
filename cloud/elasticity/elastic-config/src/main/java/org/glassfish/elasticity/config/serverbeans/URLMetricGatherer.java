@@ -9,7 +9,7 @@ import java.beans.PropertyVetoException;
  * User: cmott
  * Date: 10/26/11
  */
-public interface URLMetricGatherer extends MetricGatherer {
+public interface URLMetricGatherer extends MetricGathererConfig {
     /**
      * Sets the metric URL
      * @param value URL

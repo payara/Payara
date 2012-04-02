@@ -220,7 +220,7 @@ public interface ElasticService extends ConfigBeanProxy  {
              //for now, create memory gatherer and take defaults
 
              MetricGatherers mgs = instance.createChild(MetricGatherers.class);
-             MetricGatherer mg  =  mgs.createChild(MetricGatherer.class);
+             MetricGathererConfig mg  =  mgs.createChild(MetricGathererConfig.class);
              mg.setName( "memory");
              mgs.getMetricGatherer().add(mg);
              instance.setMetricGatherers(mgs);

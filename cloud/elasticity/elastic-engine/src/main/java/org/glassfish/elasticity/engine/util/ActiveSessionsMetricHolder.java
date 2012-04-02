@@ -61,7 +61,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service(name="session_count")
 public class ActiveSessionsMetricHolder
-    implements MetricNode, MetricGatherer, PostConstruct {
+    extends MetricGatherer
+    implements MetricNode, PostConstruct {
 
     static final String _NAME = "session_count";
     private String instanceName;
@@ -83,11 +84,6 @@ public class ActiveSessionsMetricHolder
         this.instanceName = System.getProperty("com.sun.aas.instanceName");
         MonitoringRuntimeDataRegistry monitoringRegistry = services.forContract(MonitoringRuntimeDataRegistry.class).get();
         rootNode = monitoringRegistry.get(this.instanceName);
-    }
-
-    @Override
-    public String getSchedule() {
-        return "10s";
     }
 
     @Override

@@ -41,16 +41,24 @@ package org.glassfish.elasticity.engine.container;
 
 
 import org.glassfish.api.Startup;
+import org.glassfish.common.util.timer.TimerSchedule;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.hk2.PostConstruct;
 import javax.inject.Inject;
 
 import org.glassfish.hk2.Services;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
+import org.glassfish.paas.tenantmanager.entity.Environments;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.elasticity.config.serverbeans.ElasticService;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
+import org.glassfish.paas.tenantmanager.api.TenantManager;
+import org.glassfish.paas.tenantmanager.entity.Tenant;
+
+import java.util.Date;
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
@@ -60,7 +68,7 @@ import org.glassfish.elasticity.config.serverbeans.ElasticServices;
  */
 @Service
 public class ElasticEngine
-        implements Startup, PostConstruct {
+        implements Startup, PostConstruct, ServiceChangeListener {
 
     @Inject
     Services services;
@@ -77,6 +85,9 @@ public class ElasticEngine
 
     @Inject
     ElasticServiceManager elasticServiceManager;
+
+    @Inject
+    TenantManager tm;
 
     private String serviceName;
 
@@ -97,6 +108,11 @@ public class ElasticEngine
                 startElasticService(service);
             }
         }
+
+        org.glassfish.common.util.timer.TimerSchedule ts = 
+                new TimerSchedule().second("10");
+        System.out.println("Now: "+ System.currentTimeMillis()
+            + "; 10s from now: " + ts.getNextTimeout().getTimeInMillis());
 
     }
 
@@ -121,4 +137,21 @@ public class ElasticEngine
         return Startup.Lifecycle.START;
     }
 
+    @Override
+    public void onEvent(ServiceChangeEvent event) {
+        System.out.println("ElasticEngine ServiceChangeEvent::onEvent " + event);
+        try {
+            tm.setCurrentTenant("t1");
+
+            Tenant t = tm.get(Tenant.class);
+
+            System.out.println("Tenant t = " + t);
+
+            System.out.println("ElasticEngine ServiceChangeEvent::onEvent==> "
+                    + " name = " + event.getNewValue().getName()  + "; type = " + event.getNewValue().getServiceType().getName());
+
+        } catch (Exception ex) {
+            System.out.println("** NO TENANT AVAILABLE...");
+        }
+    }
 }

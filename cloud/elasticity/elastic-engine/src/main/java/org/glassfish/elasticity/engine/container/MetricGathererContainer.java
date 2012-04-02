@@ -85,7 +85,7 @@ public class MetricGathererContainer
 
     public void start() {
         for (MetricGatherer mg : metricGatherers) {
-            String sch  = mg.getSchedule();
+            String sch  = "10s";//mg.getSchedule();
             long frequency = 10 * 1000;
             if (sch != null) {
                 sch = sch.trim();

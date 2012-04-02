@@ -39,23 +39,14 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
-import com.sun.jdi.VirtualMachine;
 import org.glassfish.elasticity.config.serverbeans.*;
-import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.util.StringUtils;
-import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
+
 import java.util.logging.Logger;
 //import org.glassfish.virtualization.libvirt.*;
 //import org.glassfish.virtualization.spi.*;
@@ -106,7 +97,7 @@ public class testElasticity implements AdminCommand {
 
         MetricGatherers mgs = es.getMetricGatherers();
         if (mgs != null ){
-        for (MetricGatherer mg: mgs.getMetricGatherer()){
+        for (MetricGathererConfig mg: mgs.getMetricGatherer()){
             System.out.println("metric gatherer type "+ mg.getName());
             System.out.println("metric gatherer rate "+ mg.getCollectionRate());
         }

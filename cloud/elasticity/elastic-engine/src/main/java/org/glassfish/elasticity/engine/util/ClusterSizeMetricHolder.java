@@ -63,7 +63,8 @@ import com.sun.enterprise.config.serverbeans.*;
  */
 @Service(name="cluster_instance_size")
 public class ClusterSizeMetricHolder
-    implements MetricNode, MetricGatherer, PostConstruct {
+    extends MetricGatherer
+    implements MetricNode, PostConstruct {
 
     @Inject
     Domain domain;
@@ -86,11 +87,6 @@ public class ClusterSizeMetricHolder
     @Override
     public void postConstruct() {
         this.attributes = new MetricAttribute[] {new CurrentSizeAttribute()};
-    }
-
-    @Override
-    public String getSchedule() {
-        return "10s";
     }
 
     public int getCurrentSize() {

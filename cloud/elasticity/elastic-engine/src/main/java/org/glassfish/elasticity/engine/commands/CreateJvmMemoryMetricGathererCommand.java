@@ -138,7 +138,7 @@ public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
                         else
                             writeableMGs = t.enroll(writeableMGs);
 
-                        MetricGatherer writeableGatherer = writeableMGs.createChild(MetricGatherer.class);
+                        MetricGathererConfig writeableGatherer = writeableMGs.createChild(MetricGathererConfig.class);
                         if (name != null)
                             writeableGatherer.setName(name);
                         if (autoStart)

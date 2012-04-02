@@ -157,20 +157,31 @@ public class TabularMetricHolder<V>
     
     private NavigableMap<Long, MetricEntryHolder> getView(long duration, TimeUnit unit, boolean allowPartialData)
         throws NotEnoughMetricDataException {
-    	if (! map.isEmpty()) {
+        NavigableMap<Long, MetricEntryHolder> result = null;
+        if (! map.isEmpty()) {
 	        Long maxKey = map.lastKey();
 	        if (maxKey != null) {
 	            Long minKey = map.floorKey(maxKey - TimeUnit.MILLISECONDS.convert(duration, unit));
 	            if (minKey != null) {
-	                return map.subMap(minKey, true, maxKey, true);
+	                result = map.subMap(minKey, true, maxKey, true);
 	            } else if (allowPartialData) {
                     minKey = map.ceilingKey(maxKey - TimeUnit.MILLISECONDS.convert(duration, unit));
-	                return map.subMap(minKey, true, maxKey, true);
+	                result = map.subMap(minKey, true, maxKey, true);
                 }
 	        }
     	}
 
-        throw new NotEnoughMetricDataException("Not enough metric data for "  + duration + " " + unit);
+        if (result == null) {
+            throw new NotEnoughMetricDataException("Not enough metric data for "  + duration + " " + unit);
+        }
+
+        NavigableMap<Long, MetricEntryHolder> view =
+                new ConcurrentSkipListMap<Long, MetricEntryHolder>();
+        for (Long k : result.keySet()) {
+            view.put(k, result.get(k));
+        }
+
+        return view;
     }
     
     private NavigableMap<Long, MetricEntryHolder> getOldestView(long duration, TimeUnit unit) {

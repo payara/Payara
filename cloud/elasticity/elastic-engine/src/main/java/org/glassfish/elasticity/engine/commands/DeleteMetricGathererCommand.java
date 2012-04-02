@@ -127,7 +127,7 @@ public class DeleteMetricGathererCommand implements AdminCommand{
                         MetricGatherers writeableMG = elasticService.getMetricGatherers();
                         if (writeableMG != null) {
                             writeableMG = t.enroll(writeableMG);
-                            MetricGatherer mg = writeableMG.getMetricGatherer(name);
+                            MetricGathererConfig mg = writeableMG.getMetricGatherer(name);
                             writeableMG.getMetricGatherer().remove(mg);
                         }
                         //nothing to delete
