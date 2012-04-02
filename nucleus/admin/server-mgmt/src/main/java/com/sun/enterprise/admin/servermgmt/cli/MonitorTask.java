@@ -37,8 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.cli;
+package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.logging.Logger;

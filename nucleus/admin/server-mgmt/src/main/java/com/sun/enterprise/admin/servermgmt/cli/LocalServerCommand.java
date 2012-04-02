@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,8 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.cli;
+package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.cli.CLICommand;
+import com.sun.enterprise.admin.cli.CLIConstants;
+import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
@@ -57,6 +60,7 @@ import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.io.ServerDirs;
+import java.util.logging.Level;
 
 /**
  * A class that's supposed to capture all the behavior common to operation
@@ -173,8 +177,7 @@ public abstract class LocalServerCommand extends CLICommand {
             return pw.getPasswordForAlias("master-password");
         }
         catch (Exception e) {
-            logger.finer("master password file reading error: "
-                    + e.getMessage());
+            logger.log(Level.FINER, "master password file reading error: {0}", e.getMessage());
             return null;
         }
     }
@@ -236,8 +239,7 @@ public abstract class LocalServerCommand extends CLICommand {
                 mpv = retry(RETRIES);
         }
         long t1 = System.currentTimeMillis();
-        logger.finer("Time spent in master password extraction: "
-                + (t1 - t0) + " msec");       //TODO
+        logger.log(Level.FINER, "Time spent in master password extraction: {0} msec", (t1 - t0));       //TODO
         return mpv;
     }
 
@@ -251,7 +253,7 @@ public abstract class LocalServerCommand extends CLICommand {
             throw new NullPointerException();
 
         ourDir = getUniquePath(ourDir);
-        logger.finer("Check if server is at location " + ourDir);
+        logger.log(Level.FINER, "Check if server is at location {0}", ourDir);
 
         try {
             RemoteCommand cmd =
@@ -259,7 +261,7 @@ public abstract class LocalServerCommand extends CLICommand {
             Map<String, String> attrs =
                     cmd.executeAndReturnAttributes(new String[]{"__locations"});
             String theirDirPath = attrs.get(directoryKey);
-            logger.finer("Remote server has root directory " + theirDirPath);
+            logger.log(Level.FINER, "Remote server has root directory {0}", theirDirPath);
 
             if (ok(theirDirPath)) {
                 File theirDir = getUniquePath(new File(theirDirPath));
@@ -293,7 +295,7 @@ public abstract class LocalServerCommand extends CLICommand {
             return true;
         }
         catch (Exception ex) {
-            logger.finer("\nisRunning got exception: " + ex);
+            logger.log(Level.FINER, "\nisRunning got exception: {0}", ex);
             return false;
         }
         finally {
@@ -366,7 +368,7 @@ public abstract class LocalServerCommand extends CLICommand {
      * If there are any problems fall back to the previous implementation of
      * isRunning() which looks for the pidfile to get deleted
      */
-    private final boolean isRunningUsingJps() {
+    private boolean isRunningUsingJps() {
         int pp = getPrevPid();
 
         if (pp < 0)
@@ -412,8 +414,8 @@ public abstract class LocalServerCommand extends CLICommand {
             // Careful -- there is a slice of time where the file does not exist!
             try {
                 long newTimeStamp = pwFile.lastModified(); // could be 0L
-                logger.finer("Checking timestamp of local-password.  "
-                        + "old: " + oldTimeStamp + ", new: " + newTimeStamp);
+                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}", 
+                        new Object[]{oldTimeStamp, newTimeStamp});
 
                 if (newTimeStamp > oldTimeStamp) {
                     // Server has restarted but may not be quite ready to handle commands
@@ -444,7 +446,8 @@ public abstract class LocalServerCommand extends CLICommand {
             try {
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
                 long up = getUptime();
-                logger.finer("oldserver-uptime, newserver-uptime = " + uptimeOldServer + " --- " + up);
+                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}", 
+                        new Object[]{uptimeOldServer, up});
 
                 if (up > 0 && up < uptimeOldServer) {
                     return;
@@ -470,7 +473,7 @@ public abstract class LocalServerCommand extends CLICommand {
             throw new CommandException(strings.get("restart.dasNotRunning"));
         }
 
-        logger.finer("server uptime: " + up_ms);
+        logger.log(Level.FINER, "server uptime: {0}", up_ms);
         return up_ms;
     }
     /**
@@ -516,7 +519,7 @@ public abstract class LocalServerCommand extends CLICommand {
         return programOpts.getPasswordLocation() == ProgramOptions.PasswordLocation.LOCAL_PASSWORD;
     }
 
-    private final File getJKS() {
+    private File getJKS() {
         if (serverDirs == null)
             return null;
 

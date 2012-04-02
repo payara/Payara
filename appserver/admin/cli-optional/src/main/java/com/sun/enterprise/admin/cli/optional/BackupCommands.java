@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,8 @@ import java.io.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.Param;
 import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.admin.cli.*;
+import com.sun.enterprise.admin.servermgmt.cli.LocalDomainCommand;
 import com.sun.enterprise.backup.BackupRequest;
 import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;

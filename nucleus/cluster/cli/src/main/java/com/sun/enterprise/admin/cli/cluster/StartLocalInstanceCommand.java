@@ -59,8 +59,9 @@ import org.glassfish.api.admin.*;
 
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.ObjectAnalyzer;
-import com.sun.enterprise.admin.cli.StartServerCommand;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
+import com.sun.enterprise.admin.servermgmt.cli.StartServerCommand;
+import com.sun.enterprise.admin.servermgmt.cli.StartServerHelper;
 
 /**
  * Start a local server instance.

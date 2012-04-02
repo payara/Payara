@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.admin.cli;
+package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.cli.CLICommand;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;

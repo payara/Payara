@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,27 +38,30 @@
  * holder.
  */
 
-package com.sun.enterprise.admin.cli;
+package com.sun.enterprise.admin.servermgmt.cli;
 
-import com.sun.enterprise.admin.launcher.GFLauncherException;
-import com.sun.enterprise.admin.launcher.GFLauncherFactory;
-import com.sun.enterprise.universal.xml.MiniXmlParserException;
-import java.util.List;
-import org.glassfish.api.admin.RuntimeType;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * @author bnevins
+ * Strings -- Get your Strings here.
+ * One file with Strings
+ * So one class for messing with them!
+ * Nothing in here is public protected.  Only for use by this one java package.
+ * @author Byron Nevins
  */
-public interface StartServerCommand {
 
-    /**
-  * @return the type of "this" server
-  */
-    RuntimeType getType();
+final class Strings {
+    private Strings() {
+        // no instances allowed!
+    }
 
-    /**
-     * Create a launcher for the whatever type of server "we" are.
-     */
-    void createLauncher() throws GFLauncherException, MiniXmlParserException;
-    List<String> getLauncherArgs();
+    static String get(String indexString) {
+        return strings.get(indexString);
+    }
+
+    static String get(String indexString, Object... objects) {
+        return strings.get(indexString, objects);
+    }
+
+    final private static LocalStringsImpl strings = new LocalStringsImpl(Strings.class);
 }

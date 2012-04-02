@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.admin.cli;
+package com.sun.enterprise.admin.servermgmt.cli;
 
+import com.sun.enterprise.admin.cli.CLIConstants;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -48,7 +49,7 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import static com.sun.enterprise.admin.cli.CLIConstants.*;
+import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.launcher.GFLauncher;
 import com.sun.enterprise.admin.launcher.GFLauncherException;
 import com.sun.enterprise.admin.launcher.GFLauncherFactory;
@@ -154,14 +155,14 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                     int returnValue = launcher.getExitValue();
 
                     switch (returnValue) {
-                        case RESTART_NORMAL:
+                        case CLIConstants.RESTART_NORMAL:
                             logger.info(strings.get("restart"));
                             break;
-                        case RESTART_DEBUG_ON:
+                        case CLIConstants.RESTART_DEBUG_ON:
                             logger.info(strings.get("restartChangeDebug", "on"));
                             info.setDebug(true);
                             break;
-                        case RESTART_DEBUG_OFF:
+                        case CLIConstants.RESTART_DEBUG_OFF:
                             logger.info(strings.get("restartChangeDebug", "off"));
                             info.setDebug(false);
                             break;
