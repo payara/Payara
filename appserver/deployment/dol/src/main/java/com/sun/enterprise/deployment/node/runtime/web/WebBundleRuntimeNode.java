@@ -41,13 +41,13 @@
 package com.sun.enterprise.deployment.node.runtime.web;
 
 import com.sun.enterprise.deployment.*;
-import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.*;
 import com.sun.enterprise.deployment.node.runtime.common.EjbRefNode;
 import com.sun.enterprise.deployment.node.runtime.common.ResourceEnvRefNode;
 import com.sun.enterprise.deployment.node.runtime.common.ResourceRefNode;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
+import com.sun.enterprise.deployment.node.web.WebBundleNode;
 import com.sun.enterprise.deployment.runtime.common.*;
 import com.sun.enterprise.deployment.runtime.web.*;
 import com.sun.enterprise.deployment.runtime.web.ClassLoader;
@@ -56,6 +56,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Element;
@@ -80,12 +81,16 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
     /** Creates new WebBundleRuntimeNode */
     public WebBundleRuntimeNode(WebBundleDescriptor descriptor) {
         super(descriptor);
-	getSunDescriptor();
+        //trigger registration in standard node, if it hasn't happened
+        habitat.getByType(WebBundleNode.class);
+        if (descriptor != null) {
+            getSunDescriptor();
+        }
     }
     
     /** Creates new WebBundleRuntimeNode */
     public WebBundleRuntimeNode() {
-        super(null);    
+        this(null);
     }
     
     /**
@@ -209,7 +214,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
-     * @param descriptor the new descriptor
+     * @param newDescriptor the new descriptor
      */
     public void addDescriptor(Object newDescriptor) {
 	if (newDescriptor instanceof EjbRef) {
@@ -329,20 +334,20 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
     /**
      * parsed an attribute of an element
      *  
-     * @param the element name
-     * @param the attribute name
-     * @param the attribute value
+     * @param elementName the element name
+     * @param attributeName the attribute name
+     * @param value the attribute value
      * @return true if the attribute was processed
      */ 
     protected boolean setAttributeValue(XMLElement elementName,
         XMLElement attributeName, String value) {
         SunWebApp sunWebApp = (SunWebApp)getSunDescriptor();
         if (attributeName.getQName().equals(RuntimeTagNames.ERROR_URL)) {
-            sunWebApp.setAttributeValue(sunWebApp.ERROR_URL, value);
+            sunWebApp.setAttributeValue(SunWebApp.ERROR_URL, value);
             return true;
         }
         if (attributeName.getQName().equals(RuntimeTagNames.HTTPSERVLET_SECURITY_PROVIDER)) {
-            sunWebApp.setAttributeValue(sunWebApp.HTTPSERVLET_SECURITY_PROVIDER, value);
+            sunWebApp.setAttributeValue(SunWebApp.HTTPSERVLET_SECURITY_PROVIDER, value);
             return true;
         }
 
@@ -362,7 +367,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
             // for embedded war, the context root will be set 
             // using the value in application.xml
             Application app = descriptor.getApplication();
-            if ( (app == null) || (app!=null && app.isVirtual()) ) {
+            if (app == null || app.isVirtual()) {
                 descriptor.setContextRoot(value);
             }
         } else if (element.getQName().equals(RuntimeTagNames.KEEP_STATE)) {
@@ -376,7 +381,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param the descriptor to write
+     * @param bundleDescriptor the descriptor to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, WebBundleDescriptor bundleDescriptor) {    
@@ -494,16 +499,16 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
 	
         // parameter-encoding?
         if (sunWebApp.isParameterEncoding()) {
-            Element parameter = (Element) appendChild(web, RuntimeTagNames.PARAMETER_ENCODING);
+            Element parameter = appendChild(web, RuntimeTagNames.PARAMETER_ENCODING);
 
             if (sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.FORM_HINT_FIELD)!=null) {
                 setAttribute(parameter, RuntimeTagNames.FORM_HINT_FIELD,
-                (String) sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.FORM_HINT_FIELD));
+                        sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.FORM_HINT_FIELD));
             }
 
             if (sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.DEFAULT_CHARSET)!=null) {
                 setAttribute(parameter, RuntimeTagNames.DEFAULT_CHARSET,
-                (String) sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.DEFAULT_CHARSET));
+                        sunWebApp.getAttributeValue(SunWebApp.PARAMETER_ENCODING, SunWebApp.DEFAULT_CHARSET));
             }
         }          
 
@@ -528,14 +533,14 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
         webServiceNode.writeWebServiceRuntimeInfo(web, bundleDescriptor);
 
         // error-url
-        if (sunWebApp.getAttributeValue(sunWebApp.ERROR_URL) != null) {
-            setAttribute(web, RuntimeTagNames.ERROR_URL, sunWebApp.getAttributeValue(sunWebApp.ERROR_URL));
+        if (sunWebApp.getAttributeValue(SunWebApp.ERROR_URL) != null) {
+            setAttribute(web, RuntimeTagNames.ERROR_URL, sunWebApp.getAttributeValue(SunWebApp.ERROR_URL));
         }
 
         // httpservlet-security-provider
-        if (sunWebApp.getAttributeValue(sunWebApp.HTTPSERVLET_SECURITY_PROVIDER) != null) {
+        if (sunWebApp.getAttributeValue(SunWebApp.HTTPSERVLET_SECURITY_PROVIDER) != null) {
             setAttribute(web, RuntimeTagNames.HTTPSERVLET_SECURITY_PROVIDER, 
-                         sunWebApp.getAttributeValue(sunWebApp.HTTPSERVLET_SECURITY_PROVIDER));
+                         sunWebApp.getAttributeValue(SunWebApp.HTTPSERVLET_SECURITY_PROVIDER));
         }
 
         // keep-state

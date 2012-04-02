@@ -50,6 +50,7 @@ import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.glassfish.deployment.common.SecurityRoleMapper;
+import org.glassfish.ejb.deployment.node.EjbBundleNode;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
@@ -69,15 +70,17 @@ public class EjbBundleRuntimeNode extends
     /** Creates new EjbBundleRuntimeNode */
     public EjbBundleRuntimeNode(EjbBundleDescriptor descriptor) {
         super(descriptor);
-        registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING), 
-                               SecurityRoleMappingNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.EJBS), 
-                               EntrepriseBeansRuntimeNode.class);   
+        //trigger registration in standard node, if it hasn't happened
+        habitat.getByType(EjbBundleNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING),
+                SecurityRoleMappingNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.EJBS),
+                EntrepriseBeansRuntimeNode.class);
     }
     
     /** Creates new EjbBundleRuntimeNode */
     public EjbBundleRuntimeNode() {
-        super(null);    
+        this(null);    
     }    
     
     /** 
@@ -159,7 +162,7 @@ public class EjbBundleRuntimeNode extends
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
-     * @param descriptor the new descriptor
+     * @param newDescriptor the new descriptor
      */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof SecurityRoleMapping) {
@@ -189,7 +192,7 @@ public class EjbBundleRuntimeNode extends
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param the descriptor to write
+     * @param bundleDescriptor the descriptor to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, EjbBundleDescriptor bundleDescriptor) {    

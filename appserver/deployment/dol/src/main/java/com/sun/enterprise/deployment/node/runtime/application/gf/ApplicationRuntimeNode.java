@@ -41,26 +41,20 @@
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
 import com.sun.enterprise.deployment.Application;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.security.common.Role;
-import org.glassfish.deployment.common.SecurityRoleMapper;
+import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
+import com.sun.enterprise.deployment.node.runtime.*;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
-import com.sun.enterprise.deployment.node.runtime.ResourceRefNode;
-import com.sun.enterprise.deployment.node.runtime.EjbRefNode;
-import com.sun.enterprise.deployment.node.runtime.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.runtime.MessageDestinationRefNode;
-import com.sun.enterprise.deployment.node.runtime.MessageDestinationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.ServiceRefNode;
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.common.PrincipalNameDescriptor;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.security.common.Group;
+import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
 
 import java.util.List;
@@ -82,6 +76,8 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     
     public ApplicationRuntimeNode(Application descriptor) {
         super(descriptor);
+        //trigger registration in standard node, if it hasn't happened
+        habitat.getByType(ApplicationNode.class);
     }   
     
     /**
@@ -211,7 +207,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
-     * @param mewDescriptor the new descriptor
+     * @param newDescriptor the new descriptor
      */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof SecurityRoleMapping) {
@@ -241,7 +237,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
      *
      * @param parent node for the DOM tree
      * @param nodeName the node name
-     * @param descriptor the descriptor to write
+     * @param application the descriptor to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, String nodeName, Application application) {    

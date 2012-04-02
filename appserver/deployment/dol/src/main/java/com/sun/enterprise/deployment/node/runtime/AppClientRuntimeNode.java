@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.appclient.AppClientNode;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -62,9 +63,12 @@ public class AppClientRuntimeNode extends
     
     public AppClientRuntimeNode(ApplicationClientDescriptor descriptor) {
         super(descriptor);
-    }  
+        //trigger registration in standard node, if it hasn't happened
+        habitat.getByType(AppClientNode.class);
+    }
     
     public AppClientRuntimeNode() {
+        this(null);
     }      
     
     /**
@@ -143,7 +147,7 @@ public class AppClientRuntimeNode extends
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param the descriptor to write
+     * @param bundleDescriptor the descriptor to write
      * @return the DOM tree top node
      */    
     public Node writeDescriptor(Node parent, ApplicationClientDescriptor bundleDescriptor) {       
