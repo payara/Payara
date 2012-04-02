@@ -95,7 +95,7 @@
         <!-- Set sourceEncoding property to eliminate warning with "File encoding not set" -->
         <!-- when running FindBugs plugin.  -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
-        <mail.version>1.4.5-rc1</mail.version>
+        <mail.version>1.4.5</mail.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <jms-api.version>1.1-rev-1</jms-api.version>
         <servlet-api.version>3.0.1</servlet-api.version>
