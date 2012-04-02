@@ -48,14 +48,14 @@ import org.glassfish.paas.orchestrator.service.spi.Service;
  * @author Mahesh.Kannan@Oracle.Com
  */
 @Contract
-public abstract class MetricGatherer<C> {
+public abstract class AbstractMetricGatherer<C> {
 
     private Service provisionedService;
     
     private C config;
     
     public void initialize(Service service, C config) {
-        this.provisionedService = provisionedService;
+        this.provisionedService = service;
         this.config = config;
     }
     

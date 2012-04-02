@@ -103,7 +103,7 @@ public class AddAlertAction implements AdminCommand  {
             return;
         }
 
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);

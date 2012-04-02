@@ -91,7 +91,7 @@ public class DeleteMetricGathererCommand implements AdminCommand{
             return;
         }
 
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);
@@ -122,7 +122,7 @@ public class DeleteMetricGathererCommand implements AdminCommand{
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t != null) {
-                    ElasticService elasticService = elasticServices.getElasticService(servicename);
+                    ElasticServiceConfig elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null) {
                         MetricGatherers writeableMG = elasticService.getMetricGatherers();
                         if (writeableMG != null) {

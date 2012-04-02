@@ -41,7 +41,7 @@ package org.glassfish.elasticity.engine.container;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.engine.message.MessageProcessor;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
@@ -85,7 +85,7 @@ public class ElasticServiceContainer {
 
     private Logger logger = EngineUtil.getLogger();
 
-    private ElasticService service;
+    private ElasticServiceConfig service;
 
     private String name;
 
@@ -112,7 +112,7 @@ public class ElasticServiceContainer {
 
     private ScheduledFuture<?> clusterSizeMonitorTask;
 
-    public void initialize(ElasticService service) {
+    public void initialize(ElasticServiceConfig service) {
         this.service = service;
         this.name = service.getName();
         this.enabled.set(service.getEnabled());
@@ -189,7 +189,7 @@ public class ElasticServiceContainer {
         return gsp;
     }
 
-    public ElasticService getElasticService() {
+    public ElasticServiceConfig getElasticService() {
         return service;
     }
 

@@ -44,6 +44,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.metric.TabularMetricAttribute;
@@ -68,7 +69,7 @@ import java.util.logging.Logger;
 public class DescribeMetricAttributesCommand implements AdminCommand{
 
     @Inject
-    org.glassfish.elasticity.api.MetricGatherer[] metricGatherers;
+    AbstractMetricGatherer[] metricGatherers;
 
     @Inject
     Services services;

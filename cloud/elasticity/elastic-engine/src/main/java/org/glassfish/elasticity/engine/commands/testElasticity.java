@@ -73,7 +73,7 @@ public class testElasticity implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        ElasticService es= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig es= elasticServices.getElasticService(servicename);
         if (es == null) {
             //node doesn't exist
             String msg = Strings.get("noSuchService", servicename);

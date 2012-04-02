@@ -40,7 +40,7 @@
 
 package org.glassfish.elasticity.engine.util;
 
-import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.util.TabularMetricHolder;
@@ -63,7 +63,7 @@ import com.sun.enterprise.config.serverbeans.*;
  */
 @Service(name="cluster_instance_size")
 public class ClusterSizeMetricHolder
-    extends MetricGatherer
+    extends AbstractMetricGatherer
     implements MetricNode, PostConstruct {
 
     @Inject

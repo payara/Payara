@@ -40,12 +40,13 @@
 package org.glassfish.elasticity.engine.container;
 
 import org.glassfish.api.Startup;
-import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import javax.inject.Inject;
 
 import org.glassfish.hk2.Services;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.concurrent.TimeUnit;
@@ -70,8 +71,8 @@ public class MetricGathererContainer
     @Inject
     ElasticEngineThreadPool threadPool;
 
-    @Inject
-    MetricGatherer[] metricGatherers;
+    @Inject @Optional
+    AbstractMetricGatherer[] metricGatherers;
 
     private Logger logger;
 
@@ -84,7 +85,10 @@ public class MetricGathererContainer
     }
 
     public void start() {
-        for (MetricGatherer mg : metricGatherers) {
+        if (metricGatherers == null) {
+            return;
+        }
+        for (AbstractMetricGatherer mg : metricGatherers) {
             String sch  = "10s";//mg.getSchedule();
             long frequency = 10 * 1000;
             if (sch != null) {
@@ -123,7 +127,7 @@ public class MetricGathererContainer
     }
 
     public void stop() {
-        for (MetricGatherer mg : metricGatherers) {
+        for (AbstractMetricGatherer mg : metricGatherers) {
             mg.stop();
         }
     }
@@ -131,13 +135,13 @@ public class MetricGathererContainer
     private class MetricGathererWrapper
         implements Runnable {
 
-        private MetricGatherer mg;
+        private AbstractMetricGatherer mg;
 
         private int maxDataHoldingTimeInSeconds;
 
         private long prevPurgeTime = System.currentTimeMillis();
 
-        MetricGathererWrapper(MetricGatherer mg, int maxDataHoldingTimeInSeconds) {
+        MetricGathererWrapper(AbstractMetricGatherer mg, int maxDataHoldingTimeInSeconds) {
             this.mg = mg;
             this.maxDataHoldingTimeInSeconds = maxDataHoldingTimeInSeconds;
         }

@@ -44,7 +44,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
@@ -94,7 +93,7 @@ public class DeleteAlertCommand implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);
@@ -133,7 +132,7 @@ public class DeleteAlertCommand implements AdminCommand{
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService elasticService = elasticServices.getElasticService(servicename);
+                    ElasticServiceConfig elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null ){
                         Alerts writeableAlerts = elasticService.getAlerts();
                         if (writeableAlerts != null)  {

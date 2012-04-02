@@ -46,7 +46,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.elasticity.config.serverbeans.Actions;
 import org.glassfish.elasticity.config.serverbeans.LogAction;
@@ -95,7 +95,7 @@ public class DeleteLogActionCommand implements AdminCommand{
            return;
        }
 
-       ElasticService elasticService= elasticServices.getElasticService(servicename);
+       ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
        if (elasticService == null) {
            //service doesn't exist
            String msg = Strings.get("noSuchService", servicename);
@@ -127,7 +127,7 @@ public class DeleteLogActionCommand implements AdminCommand{
                // get the transaction
                Transaction t = Transaction.getTransaction(param);
                if (t != null) {
-                   ElasticService elasticService = elasticServices.getElasticService(servicename);
+                   ElasticServiceConfig elasticService = elasticServices.getElasticService(servicename);
                    if (elasticService != null) {
                        Actions writeableAction = elasticService.getActions();
                        if (writeableAction != null) {

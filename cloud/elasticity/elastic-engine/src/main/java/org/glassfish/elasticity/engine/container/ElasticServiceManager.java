@@ -40,15 +40,27 @@
 package org.glassfish.elasticity.engine.container;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.glassfish.elasticity.api.MetricGathererConfigurator;
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 @Service
 @Scoped(Singleton.class)
 public class ElasticServiceManager {
+    
+    @Inject
+    Habitat habitat;
 
 	private ConcurrentHashMap<String, ElasticServiceContainer> _containers
 		= new ConcurrentHashMap<String, ElasticServiceContainer>();
@@ -67,6 +79,25 @@ public class ElasticServiceManager {
 
     public Collection<ElasticServiceContainer> containers() {
         return _containers.values();
+    }
+
+    public void onEvent(ServiceChangeEvent event) {
+        switch (event.getType()) {
+            case CREATED:
+                List<MetricGathererConfig> mgConfigs = new LinkedList<MetricGathererConfig>();
+                List resolvers = new LinkedList();
+                Collection<MetricGathererConfigurator> configurators =
+                        habitat.getAllByContract(MetricGathererConfigurator.class);
+                for (MetricGathererConfigurator configurator : configurators) {
+                    configurator.configure(event.getNewValue(), mgConfigs, resolvers);
+                }
+
+                //We now have the MetricGathererConfigs and Resolvers for this Service
+                System.out.println("**Need to Initialized Service: " + event.getNewValue().getName()
+                    + " with  " + configurators.size() + " configurators and "
+                        + resolvers.size() + " resolvers ");
+
+        }
     }
 	
 }

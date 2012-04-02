@@ -40,7 +40,7 @@
 package org.glassfish.elasticity.engine.util;
 
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 
@@ -63,7 +63,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service(name="processingtime")
 public class ProcessingTimeMetricHolder
-    extends MetricGatherer
+    extends AbstractMetricGatherer
     implements MetricNode, PostConstruct {
 
     static final String _NAME = "processingtime";

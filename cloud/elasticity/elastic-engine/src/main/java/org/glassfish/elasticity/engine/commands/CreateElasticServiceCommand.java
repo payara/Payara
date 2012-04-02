@@ -39,22 +39,14 @@
  */
 package org.glassfish.elasticity.engine.commands;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-
-import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.elasticity.config.serverbeans.*;
 
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.StringUtils;
+
 import java.beans.PropertyVetoException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.glassfish.elasticity.config.serverbeans.*;
+
 import org.glassfish.elasticity.engine.container.ElasticEngine;
 import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.glassfish.api.ActionReport;
@@ -69,9 +61,6 @@ import org.jvnet.hk2.config.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoint.OpType;
-import org.glassfish.api.admin.RestEndpoints;
 
 /**
  ** Remote AdminCommand to create an elastic service element.  This command is run only on DAS.
@@ -161,7 +150,7 @@ public class CreateElasticServiceCommand implements AdminCommand  {
         }
 
         //notify elastic container to run
-        ElasticService elasticService = elasticServices.getElasticService(name);
+        ElasticServiceConfig elasticService = elasticServices.getElasticService(name);
         elasticEngine.startElasticService(elasticService);
 
         logger.log(Level.FINE, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
@@ -175,9 +164,9 @@ public class CreateElasticServiceCommand implements AdminCommand  {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService elasticService = elasticServices.getElasticService(name);
+                    ElasticServiceConfig elasticService = elasticServices.getElasticService(name);
                     if (elasticService != null ){
-                        ElasticService writeableService = t.enroll(elasticService);
+                        ElasticServiceConfig writeableService = t.enroll(elasticService);
 
                         if (min !=-1)
                             writeableService.setMin(min);

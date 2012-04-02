@@ -49,16 +49,13 @@ import javax.inject.Inject;
 import org.glassfish.hk2.Services;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
-import org.glassfish.paas.tenantmanager.entity.Environments;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
-
-import java.util.Date;
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
@@ -104,7 +101,7 @@ public class ElasticEngine
 
 //        System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
-            for (ElasticService service : elasticServices.getElasticService()) {
+            for (ElasticServiceConfig service : elasticServices.getElasticService()) {
                 startElasticService(service);
             }
         }
@@ -116,7 +113,7 @@ public class ElasticEngine
 
     }
 
-    public void startElasticService(ElasticService service) {
+    public void startElasticService(ElasticServiceConfig service) {
         if (service.getEnabled()) {
             ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
             container.initialize(service);
@@ -140,6 +137,7 @@ public class ElasticEngine
     @Override
     public void onEvent(ServiceChangeEvent event) {
         System.out.println("ElasticEngine ServiceChangeEvent::onEvent " + event);
+        elasticServiceManager.onEvent(event);
         try {
             tm.setCurrentTenant("t1");
 

@@ -41,25 +41,19 @@ package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.elasticity.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.util.StringUtils;
+
 import java.beans.PropertyVetoException;
-import java.util.HashMap;
-import java.util.Map;
-import org.glassfish.elasticity.config.serverbeans.*;
+
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticServiceManager;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoint.OpType;
-import org.glassfish.api.admin.RestEndpoints;
 
 /**
  ** Remote AdminCommand to create an alert element.  This command is run only on DAS.
@@ -90,7 +84,7 @@ public class DeleteElasticServiceCommand implements AdminCommand {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
         if(elasticServices != null){
-            ElasticService elasticService= elasticServices.getElasticService(name);
+            ElasticServiceConfig elasticService= elasticServices.getElasticService(name);
             if (elasticService == null) {
                 //service doesn't exist
                 String msg = Strings.get("noSuchService", name);
@@ -130,7 +124,7 @@ public class DeleteElasticServiceCommand implements AdminCommand {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService elasticService = elasticServices.getElasticService(name);
+                    ElasticServiceConfig elasticService = elasticServices.getElasticService(name);
                     if (elasticService != null ){
                         ElasticServices writeableService = t.enroll(elasticServices);
                         writeableService.getElasticService().remove(elasticService);

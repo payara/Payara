@@ -54,7 +54,7 @@ import java.beans.PropertyVetoException;
  * applications, resources, and configuration.
  */
 @Configured
-public interface ElasticService extends ConfigBeanProxy  {
+public interface ElasticServiceConfig extends ConfigBeanProxy  {
 
     /**
      * Sets the elastic service name
@@ -194,7 +194,7 @@ public interface ElasticService extends ConfigBeanProxy  {
         @Override
         @SuppressWarnings("unchecked")
         public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type)  {
-            for (ElasticService elasticService : elasticServices.getElasticService()) {
+            for (ElasticServiceConfig elasticService : elasticServices.getElasticService()) {
                 if (elasticService.getName().equals(name)) {
                     return (T) elasticService;
                 }
@@ -204,7 +204,7 @@ public interface ElasticService extends ConfigBeanProxy  {
     }
 
     @Service
-    class Decorator implements CreationDecorator<ElasticService> {
+    class Decorator implements CreationDecorator<ElasticServiceConfig> {
         /**
           * Decorates the newly CRUD created elastic configuration instance.
           * tasks :
@@ -216,7 +216,7 @@ public interface ElasticService extends ConfigBeanProxy  {
           * @throws PropertyVetoException
           */
          @Override
-         public void decorate(AdminCommandContext context, final ElasticService instance) throws TransactionFailure, PropertyVetoException {
+         public void decorate(AdminCommandContext context, final ElasticServiceConfig instance) throws TransactionFailure, PropertyVetoException {
              //for now, create memory gatherer and take defaults
 
              MetricGatherers mgs = instance.createChild(MetricGatherers.class);

@@ -44,23 +44,21 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.*;
+
 import java.util.logging.Logger;
-import java.beans.PropertyVetoException;
+
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
- /*
+/*
 
 /*
-  * command used by GUI for OOW
- */
+ * command used by GUI for OOW
+*/
 
 @Service(name = "describe-memory-alert")
 @I18n("describe.memory.alert")
@@ -95,7 +93,7 @@ public class DescribeMemoryAlertCommand implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);

@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 
@@ -101,7 +101,7 @@ public class DisableAutoScaling
             report.setMessage(msg);
             return;
         }
-        ElasticService elasticService = elasticServices.getElasticService(name);
+        ElasticServiceConfig elasticService = elasticServices.getElasticService(name);
 
     	if (service != null && elasticService !=null ) {
             try {
@@ -123,7 +123,7 @@ public class DisableAutoScaling
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService welasticService = elasticServices.getElasticService(name);
+                    ElasticServiceConfig welasticService = elasticServices.getElasticService(name);
                     welasticService = t.enroll(welasticService);
                     welasticService.setEnabled(false);
                 }

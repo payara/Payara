@@ -44,7 +44,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
@@ -63,7 +62,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @Service(name = "configure-elastic-service-limits")
 @I18n("configure.elastic.service.limits")
 @Scoped(PerLookup.class)
-@RestEndpoints({ @RestEndpoint(configBean = ElasticService.class, opType = OpType.POST, path = "configure-elastic-service-limits", description = "Configure Elastic Service limits") })
+@RestEndpoints({ @RestEndpoint(configBean = ElasticServiceConfig.class, opType = OpType.POST, path = "configure-elastic-service-limits", description = "Configure Elastic Service limits") })
 public class ConfigureElasticServiceLimits implements AdminCommand{
 
     @Inject (optional = true)
@@ -97,7 +96,7 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);
@@ -135,7 +134,7 @@ public class ConfigureElasticServiceLimits implements AdminCommand{
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t!=null) {
-                    ElasticService welasticService = elasticServices.getElasticService(servicename);
+                    ElasticServiceConfig welasticService = elasticServices.getElasticService(servicename);
                     if (welasticService != null ){
                         welasticService = t.enroll(welasticService);
                         if (min != -1)

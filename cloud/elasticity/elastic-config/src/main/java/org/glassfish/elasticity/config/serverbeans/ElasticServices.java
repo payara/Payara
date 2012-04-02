@@ -45,7 +45,6 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
 import javax.inject.Inject;
@@ -67,14 +66,14 @@ public interface ElasticServices extends DomainExtension {
      * be added or removed by using the returned {@link java.util.List}
      * instance
      *
-     * @return the list of configured {@link ElasticService}
+     * @return the list of configured {@link ElasticServiceConfig}
      */
      @Create(value = "_create-elastic-services-element", resolver = ESResolver.class, i18n = @I18n("org.glassfish.elasticity.config.create-elastic-service-element"))
 
     @Element ("elasticservice")
-    public List<ElasticService> getElasticService();
+    public List<ElasticServiceConfig> getElasticService();
 
-    void setElasticService(ElasticService elasticService);
+    void setElasticService(ElasticServiceConfig elasticService);
 
     /**
      * Return the elastic service with the given name, or null if no such elastic service exists.
@@ -83,11 +82,11 @@ public interface ElasticServices extends DomainExtension {
      * @return          the Elastic Service object, or null if no such elastic service
      */
     @DuckTyped
-    public ElasticService getElasticService(String name);
+    public ElasticServiceConfig getElasticService(String name);
 
     class Duck {
-        public static ElasticService getElasticService(ElasticServices instance, String name) {
-            for (ElasticService service : instance.getElasticService()) {
+        public static ElasticServiceConfig getElasticService(ElasticServices instance, String name) {
+            for (ElasticServiceConfig service : instance.getElasticService()) {
                 if (service.getName().equals(name)) {
                     return service;
                 }

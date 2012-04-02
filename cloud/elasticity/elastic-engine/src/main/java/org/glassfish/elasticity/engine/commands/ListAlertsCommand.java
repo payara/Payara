@@ -48,7 +48,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.glassfish.api.admin.*;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.Alerts;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -88,7 +88,7 @@ public class ListAlertsCommand implements AdminCommand {
             report.setMessage(msg);
             return;
         }
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);

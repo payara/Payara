@@ -39,24 +39,18 @@
  */
 package org.glassfish.elasticity.engine.util;
 
-import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
-import org.glassfish.elasticity.metric.TabularMetricAttribute;
-import org.glassfish.elasticity.metric.TabularMetricEntry;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
-import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.Client;
 import javax.ws.rs.core.MediaType;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -67,7 +61,7 @@ import com.sun.enterprise.config.serverbeans.Server;
  */
 @Service(name = "jvm_memory")
 public class JVMMemoryMetricHolder
-    extends MetricGatherer
+    extends AbstractMetricGatherer
     implements MetricNode, PostConstruct {
 
     static final String _NAME = "jvm_memory";

@@ -41,7 +41,7 @@
 package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.elasticity.api.MetricGatherer;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -51,7 +51,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -65,7 +64,7 @@ import java.util.logging.Logger;
 public class ListMetricGatherersCommand  implements AdminCommand {
 
     @Inject
-    MetricGatherer[] metricGatherers;
+    AbstractMetricGatherer[] metricGatherers;
 
     @Param(name="service")
     String servicename;
@@ -82,7 +81,7 @@ public class ListMetricGatherersCommand  implements AdminCommand {
         StringBuilder sb = new StringBuilder();
         boolean firstName =true;
 
-        for (MetricGatherer mg : metricGatherers) {
+        for (AbstractMetricGatherer mg : metricGatherers) {
             String metricName = mg.getClass().getAnnotation(Service.class).toString();
             if ( firstName)
                 firstName = false;

@@ -40,9 +40,8 @@
 package org.glassfish.elasticity.api;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 
-import java.security.Provider;
 import java.util.Map;
 
 /**
@@ -50,7 +49,7 @@ import java.util.Map;
  */
 public interface AlertContext<C extends AlertConfig> {
 
-    public ElasticService getElasticService();
+    public ElasticServiceConfig getElasticService();
 
     public C getAlertConfig();
 

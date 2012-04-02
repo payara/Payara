@@ -4,11 +4,9 @@ import org.glassfish.elasticity.api.Alert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertAction;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.config.serverbeans.ElasticService;
+import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.glassfish.elasticity.group.ElasticMessageHandler;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -38,7 +36,7 @@ public class AlertContextImpl<C extends AlertConfig>
         this.alert = alert;
     }
 
-    public ElasticService getElasticService() {
+    public ElasticServiceConfig getElasticService() {
         return elasticServiceContainer.getElasticService();
     }
 

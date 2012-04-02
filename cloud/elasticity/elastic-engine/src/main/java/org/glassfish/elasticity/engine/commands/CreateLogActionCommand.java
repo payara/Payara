@@ -95,7 +95,7 @@ public class CreateLogActionCommand implements AdminCommand {
             return;
         }
 
-        ElasticService elasticService= elasticServices.getElasticService(servicename);
+        ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
         if (elasticService == null) {
             //service doesn't exist
             String msg = Strings.get("noSuchService", servicename);
@@ -126,9 +126,9 @@ public class CreateLogActionCommand implements AdminCommand {
                 // get the transaction
                 Transaction t = Transaction.getTransaction(param);
                 if (t != null) {
-                    ElasticService elasticService = elasticServices.getElasticService(servicename);
+                    ElasticServiceConfig elasticService = elasticServices.getElasticService(servicename);
                     if (elasticService != null) {
-                        ElasticService writeableService = t.enroll(elasticService);
+                        ElasticServiceConfig writeableService = t.enroll(elasticService);
                         Actions writeableAction = elasticService.getActions();
                         if (writeableAction == null)
                             writeableAction = writeableService.createChild(Actions.class);
