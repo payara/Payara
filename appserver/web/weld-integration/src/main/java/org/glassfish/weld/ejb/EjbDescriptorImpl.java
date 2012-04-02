@@ -40,21 +40,25 @@
 
 package org.glassfish.weld.ejb;
 
-import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
-import org.jboss.weld.ejb.SessionBeanInterceptor;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ejb.Local;
 import javax.ejb.Remote;
 import javax.interceptor.InvocationContext;
 
-import com.sun.enterprise.deployment.*;
+import org.jboss.weld.ejb.SessionBeanInterceptor;
+import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 
-import java.lang.reflect.Method;
-import java.lang.annotation.Annotation;
-
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.EjbRemovalInfo;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
 
 /**
  */
@@ -85,7 +89,9 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
         return ejbDesc;
     }
 
+    @SuppressWarnings("unchecked")
     public Class<T> getBeanClass() {
+        @SuppressWarnings("rawtypes")
         Class beanClassType = null;
 	    try {
 
@@ -117,7 +123,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             Set<String> extraNames = new HashSet<String>();
             for(String local : localNames) {
                 try {
-                    Class localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
+                    Class<?> localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
                     addIfLocal(localClass.getInterfaces(), extraNames);
                 } catch(ClassNotFoundException e) {
                     throw new IllegalStateException(e);
@@ -135,8 +141,9 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             for(String local : localNames) {
                 try {
 
-                    Class localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
-                    BusinessInterfaceDescriptor busIntfDesc =
+                    Class<?> localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
+                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                    BusinessInterfaceDescriptor<?> busIntfDesc =
                             new BusinessInterfaceDescriptorImpl(localClass);
                     localBusIntfs.add(busIntfDesc);
 
@@ -239,8 +246,8 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     }
     */
 
-    private void addIfLocal(Class[] interfaces, Set<String> names) {
-        for(Class next : interfaces) {
+    private void addIfLocal(Class<?>[] interfaces, Set<String> names) {
+        for(Class<?> next : interfaces) {
             if( next.getAnnotation(Local.class) != null ) {
                 names.add(next.getName());
             }
@@ -248,8 +255,8 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
         }
     }
     
-    private void addIfRemote(Class[] interfaces, Set<String> names) {
-        for(Class next : interfaces) {
+    private void addIfRemote(Class<?>[] interfaces, Set<String> names) {
+        for(Class<?> next : interfaces) {
             if( next.getAnnotation(Remote.class) != null ) {
                 names.add(next.getName());
             }
@@ -262,7 +269,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
 
         EjbInterceptor interceptor = new EjbInterceptor();
 
-        Class interceptorClass = SessionBeanInterceptor.class;
+        Class<SessionBeanInterceptor> interceptorClass = SessionBeanInterceptor.class;
 
         String interceptorName = interceptorClass.getName();
 
@@ -295,18 +302,6 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
 
     }
 
-    private Method getMethodForMethodAnnotation(Class c, String annotationClassName) {
-        for(Method m : c.getDeclaredMethods()) {
-            for(Annotation next : m.getDeclaredAnnotations()) {
-
-                if( next.annotationType().getName().equals(annotationClassName)) {
-                    return m;
-                }
-            }
-        }
-        return null;
-    }
-
 
     @Override
     public Collection<BusinessInterfaceDescriptor<?>> getRemoteBusinessInterfaces() {
@@ -321,7 +316,7 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             Set<String> extraNames = new HashSet<String>();
             for(String local : remoteNames) {
                 try {
-                    Class remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
+                    Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
                     addIfRemote(remoteClass.getInterfaces(), extraNames);
                 } catch(ClassNotFoundException e) {
                     throw new IllegalStateException(e);
@@ -339,8 +334,9 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             for(String remote : remoteNames) {
                 try {
 
-                    Class remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(remote);
-                    BusinessInterfaceDescriptor busIntfDesc =
+                    Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(remote);
+                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                    BusinessInterfaceDescriptor<?> busIntfDesc =
                             new BusinessInterfaceDescriptorImpl(remoteClass);
                     remoteBusIntfs.add(busIntfDesc);
 

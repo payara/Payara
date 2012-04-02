@@ -43,7 +43,6 @@ package org.glassfish.weld.services;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,13 +58,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.glassfish.ejb.api.EjbContainerServices;
+import org.glassfish.hk2.Services;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.glassfish.weld.ejb.SessionObjectReferenceImpl;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
-import org.glassfish.hk2.Services;
 
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
@@ -129,10 +128,10 @@ public class EjbServicesImpl implements EjbServices
     }
    
 
-    private String getDefaultGlobalJndiName(EjbDescriptor ejbDesc) {
+    private String getDefaultGlobalJndiName(EjbDescriptor<?> ejbDesc) {
 
         EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor)
-                ((EjbDescriptorImpl) ejbDesc).getEjbDescriptor();
+                ((EjbDescriptorImpl<?>) ejbDesc).getEjbDescriptor();
 
         String clientView = null;
 
@@ -152,15 +151,15 @@ public class EjbServicesImpl implements EjbServices
 
         // Work around bug that ejbDesc might be internal 299 descriptor.
         if( ejbDesc instanceof org.jboss.weld.ejb.InternalEjbDescriptor ) {
-            ejbDesc = ((org.jboss.weld.ejb.InternalEjbDescriptor)ejbDesc).delegate();
+            ejbDesc = ((org.jboss.weld.ejb.InternalEjbDescriptor<?>)ejbDesc).delegate();
         }
 
          com.sun.enterprise.deployment.EjbDescriptor glassfishEjbDesc = (com.sun.enterprise.deployment.EjbDescriptor)
-                ((EjbDescriptorImpl) ejbDesc).getEjbDescriptor();
+                ((EjbDescriptorImpl<?>) ejbDesc).getEjbDescriptor();
 
         // Convert to EjbInterceptor
         // First create master list of EjbInterceptor descriptors
-        for(Interceptor next : interceptorBindings.getAllInterceptors()) {
+        for(Interceptor<?> next : interceptorBindings.getAllInterceptors()) {
             logger.log(Level.FINE, "trying to register:" + next);
             // Add interceptor to list all interceptors in ejb descriptor
             if( !(glassfishEjbDesc.hasInterceptorClass(next.getBeanClass().getName()))) {
@@ -203,7 +202,7 @@ public class EjbServicesImpl implements EjbServices
 
         // 299-provided list is organized as per-method.  Append each method chain to EjbDescriptor.
         
-        Class ejbBeanClass = null;
+        Class<?> ejbBeanClass = null;
 
         try {
             ClassLoader cl = glassfishEjbDesc.getEjbBundleDescriptor().getClassLoader();
@@ -243,7 +242,7 @@ public class EjbServicesImpl implements EjbServices
             return ejbInterceptorList;
         }
 
-        for(Interceptor next : lifecycleList ) {
+        for(Interceptor<?> next : lifecycleList ) {
 
             EjbInterceptor ejbInt = makeEjbInterceptor(next, ejbDesc.getEjbBundleDescriptor());
             LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
@@ -284,7 +283,7 @@ public class EjbServicesImpl implements EjbServices
 
     }
 
-    private Class getInterceptorAnnotationType(InterceptionType interceptionType) {
+    private Class<?> getInterceptorAnnotationType(InterceptionType interceptionType) {
 
         switch(interceptionType) {
             case POST_CONSTRUCT :
@@ -305,6 +304,7 @@ public class EjbServicesImpl implements EjbServices
                         interceptionType);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private String getInterceptorMethod(Class interceptorClass, Class annotation) {
 
         for(Method next : interceptorClass.getDeclaredMethods()) {
@@ -318,7 +318,7 @@ public class EjbServicesImpl implements EjbServices
 
     }
 
-    private EjbInterceptor makeEjbInterceptor(Interceptor interceptor, EjbBundleDescriptor bundle) {
+    private EjbInterceptor makeEjbInterceptor(Interceptor<?> interceptor, EjbBundleDescriptor bundle) {
 
         EjbInterceptor ejbInt = new EjbInterceptor();
         ejbInt.setBundleDescriptor(bundle);
@@ -328,15 +328,6 @@ public class EjbServicesImpl implements EjbServices
         return ejbInt;
     }
 
-    private EjbInterceptor getEjbInterceptorByClassName(Set<EjbInterceptor> allInterceptors, String name) {
-
-        for(EjbInterceptor next : allInterceptors) {
-            if( next.getInterceptorClassName().equals(name) ) {
-                return next;
-            }
-        }
-        throw new IllegalArgumentException("No interceptor with class name " + name);
-    }
 
     public void cleanup() {
         //Nothing to do here.

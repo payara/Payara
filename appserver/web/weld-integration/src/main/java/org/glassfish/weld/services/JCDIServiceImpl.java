@@ -151,6 +151,7 @@ public class JCDIServiceImpl implements JCDIService
     }
 
     // instance could be null. If null, create a new one
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private JCDIInjectionContext _createJCDIInjectionContext(EjbDescriptor ejb, 
 							     Object instance) {
 
@@ -215,6 +216,7 @@ public class JCDIServiceImpl implements JCDIService
     }
     
 
+    @SuppressWarnings("unchecked")
     public void injectEJBInstance(JCDIInjectionContext injectionCtx) {
     	JCDIInjectionContextImpl injectionCtxImpl = 
     	    (JCDIInjectionContextImpl) injectionCtx;
@@ -225,7 +227,7 @@ public class JCDIServiceImpl implements JCDIService
     	// NOTE : PostConstruct is handled by ejb container
     }
 
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle) {
+    public JCDIInjectionContext createManagedObject(@SuppressWarnings("rawtypes") Class managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
 
@@ -235,6 +237,7 @@ public class JCDIServiceImpl implements JCDIService
      * @param managedObject the managed object
      * @param bundle  the bundle descriptor
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
@@ -250,6 +253,7 @@ public class JCDIServiceImpl implements JCDIService
         it.inject(managedObject, cc);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct) {
 
@@ -285,6 +289,7 @@ public class JCDIServiceImpl implements JCDIService
 
     }
 
+    @SuppressWarnings("rawtypes")
     private class JCDIInjectionContextImpl implements JCDIInjectionContext {
 
         InjectionTarget it;
@@ -302,6 +307,7 @@ public class JCDIServiceImpl implements JCDIService
             return instance;
         }
 
+        @SuppressWarnings("unchecked")
         public void cleanup(boolean callPreDestroy) {
 
             if( callPreDestroy ) {

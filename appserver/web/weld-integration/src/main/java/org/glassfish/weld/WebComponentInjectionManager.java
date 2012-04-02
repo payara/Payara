@@ -65,22 +65,23 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class WebComponentInjectionManager implements WebComponentDecorator {
+    @SuppressWarnings("unchecked")
     public void decorate(Object webComponent, WebModule wm) {
         if (wm.getWebBundleDescriptor().hasExtensionProperty(WeldDeployer.WELD_EXTENSION)) {
             DeploymentContext deploymentContext = wm.getWebModuleConfig().getDeploymentContext();
             WeldBootstrap weldBootstrap = deploymentContext.getTransientAppMetaData(
-                WeldDeployer.WELD_BOOTSTRAP, org.jboss.weld.bootstrap.WeldBootstrap.class); 
+                WeldDeployer.WELD_BOOTSTRAP, org.jboss.weld.bootstrap.WeldBootstrap.class);
 
             DeploymentImpl deploymentImpl = deploymentContext.getTransientAppMetaData(
                 WeldDeployer.WELD_DEPLOYMENT, DeploymentImpl.class); 
-            Collection deployments = deploymentImpl.getBeanDeploymentArchives();
+            Collection<BeanDeploymentArchive> deployments = deploymentImpl.getBeanDeploymentArchives();
             BeanDeploymentArchive beanDeploymentArchive = (BeanDeploymentArchive)deployments.iterator().next(); 
             BeanManager beanManager = weldBootstrap.getManager(beanDeploymentArchive);
             // PENDING : Not available in this Web Beans Release
-            CreationalContext ccontext = beanManager.createCreationalContext(null);
+            CreationalContext<?> ccontext = beanManager.createCreationalContext(null);
+            @SuppressWarnings("rawtypes")
             InjectionTarget injectionTarget = beanManager.createInjectionTarget(beanManager.createAnnotatedType(webComponent.getClass()));
             injectionTarget.inject(webComponent, ccontext);
-
         }
     }
 }

@@ -153,10 +153,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     public void event(Event event) {
         if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED) ) {
             ApplicationInfo appInfo = (ApplicationInfo)event.hook();
-            WeldBootstrap bootstrap = (WeldBootstrap)appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
+            WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
                 WeldBootstrap.class);
             if( bootstrap != null ) {
-                DeploymentImpl deploymentImpl = (DeploymentImpl) appInfo.getTransientAppMetaData(
+                DeploymentImpl deploymentImpl = appInfo.getTransientAppMetaData(
                         WELD_DEPLOYMENT, DeploymentImpl.class);
                 
                 List<BeanDeploymentArchive> archives = deploymentImpl.getBeanDeploymentArchives();
@@ -192,7 +192,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STARTED) ) {
             ApplicationInfo appInfo = (ApplicationInfo)event.hook();
-            WeldBootstrap bootstrap = (WeldBootstrap)appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
+            WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
                 WeldBootstrap.class);
             if( bootstrap != null ) {
                 try {
@@ -225,7 +225,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             if (Boolean.valueOf(shutdown) == Boolean.TRUE) {
                 return;
             }
-            WeldBootstrap bootstrap = (WeldBootstrap)appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
+            WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
                 WeldBootstrap.class);
             if (bootstrap != null) {
                 try {
@@ -235,7 +235,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 }
                 appInfo.addTransientAppMetaData(WELD_SHUTDOWN, "true");
             }
-            DeploymentImpl deploymentImpl = (DeploymentImpl)appInfo.getTransientAppMetaData(
+            DeploymentImpl deploymentImpl = appInfo.getTransientAppMetaData(
                 WELD_DEPLOYMENT, DeploymentImpl.class);
             if (deploymentImpl != null) {
                 deploymentImpl.cleanup();
@@ -304,7 +304,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if(bdaClazz.isInterface()){
             return;
         }
-        AnnotatedType at = bootstrap.getManager(bda).createAnnotatedType(bdaClazz);
+        AnnotatedType<?> at = bootstrap.getManager(bda).createAnnotatedType(bdaClazz);
         InjectionTarget<?> it = bootstrap.getManager(bda).fireProcessInjectionTarget(at);
         ((BeanDeploymentArchiveImpl)bda).putInjectionTarget(at, it);
     }
@@ -353,7 +353,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         // See if a WeldBootsrap has already been created - only want one per app.
 
-        WeldBootstrap bootstrap = (WeldBootstrap)context.getTransientAppMetaData(WELD_BOOTSTRAP,
+        WeldBootstrap bootstrap = context.getTransientAppMetaData(WELD_BOOTSTRAP,
                 WeldBootstrap.class);
         if ( bootstrap == null) {
             bootstrap = new WeldBootstrap();
@@ -376,7 +376,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         // Check if we already have a Deployment
 
-        DeploymentImpl deploymentImpl = (DeploymentImpl)context.getTransientAppMetaData(
+        DeploymentImpl deploymentImpl = context.getTransientAppMetaData(
             WELD_DEPLOYMENT, DeploymentImpl.class);
 
         // Create a Deployment Collecting Information From The ReadableArchive (archive)

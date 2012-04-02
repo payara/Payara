@@ -47,10 +47,10 @@ import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 public class BusinessInterfaceDescriptorImpl<T> implements BusinessInterfaceDescriptor<T>
 {
     
-    private Class clientViewType;
+    private Class<T> clientViewType;
 
 
-    public BusinessInterfaceDescriptorImpl(Class clientViewType) {
+    public BusinessInterfaceDescriptorImpl(Class<T> clientViewType) {
 	    this.clientViewType = clientViewType;
     }
 
