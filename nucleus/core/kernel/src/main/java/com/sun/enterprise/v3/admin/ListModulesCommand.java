@@ -73,7 +73,7 @@ import org.glassfish.api.admin.*;
 public class ListModulesCommand implements AdminCommand {
 
     @Inject
-    ModulesRegistry modulesRegistry;
+    ModulesRegistry registry;
 
     public void execute(AdminCommandContext context) {
 
@@ -84,56 +84,32 @@ public class ListModulesCommand implements AdminCommand {
         ActionReport.MessagePart top = report.getTopMessagePart();
         top.setMessage("List Of Modules");
         top.setChildrenType("Module");
-        for(Module module : modulesRegistry.getModules()) {
 
-            ActionReport.MessagePart childPart = top.addChild();
-            String version = module.getModuleDefinition().getVersion();
-            if (version==null) {
-                version = "any";
+        StringBuilder sb = new StringBuilder("Module Status Report Begins\n");
+        // first started :
 
-            }
-            
-            childPart.setMessage(module.getModuleDefinition().getName() +
-                ":" + version);
-
-            childPart.addProperty("State", module.getState().toString());
-            if (module.isSticky()) {
-                childPart.addProperty("Sticky", "true");
-            }
-            if (!module.isShared()) {
-                childPart.addProperty("visibility", "private");
-            } else {
-                childPart.addProperty("visibility", "public");
-            }
-            
-            if (module.getState().equals(ModuleState.READY)) {
-                childPart.setChildrenType("Module Characteristics");
-                ActionReport.MessagePart provides = childPart.addChild();
-                provides.setMessage("Provides to following services");
-                provides.setChildrenType("Provides");
-
-                /*for (URL info : module.getServiceProviders().getDescriptors()) {
-                    provides.addChild().setMessage(info.toString());
-                } */
-
-                ActionReport.MessagePart imports = childPart.addChild();
-                imports.setMessage("List of imported modules");
-                imports.setChildrenType("Imports");
-                for (Module i : module.getImports()) {
-                    String importVersion = i.getModuleDefinition().getVersion();
-                    if (importVersion==null) {
-                        importVersion="any";
-                    }
-                    imports.addChild().setMessage(i.getModuleDefinition().getName() + ":" + importVersion);
-                }
-
-                ActionReport.MessagePart implementations = childPart.addChild();
-                implementations.setMessage("List of Jars implementing the module");
-                implementations.setChildrenType("Jar");
-                for (URI location : module.getModuleDefinition().getLocations()) {
-                    implementations.addChild().setMessage(location.toString());
-                }
+        for (Module m : registry.getModules()) {
+            if (m.getState()== ModuleState.READY) {
+                sb.append(m).append("\n");
             }
         }
+        sb.append("\n");
+        // then resolved
+        for (Module m : registry.getModules()) {
+            if (m.getState()== ModuleState.RESOLVED) {
+                sb.append(m).append("\n");
+            }
+        }
+        sb.append("\n");
+        // finally installed
+        for (Module m : registry.getModules()) {
+            if (m.getState()!= ModuleState.READY && m.getState()!=ModuleState.RESOLVED) {
+                sb.append(m).append("\n");
+            }
+        }
+        sb.append("Module Status Report Ends");
+        ActionReport.MessagePart childPart = top.addChild();
+        childPart.setMessage(sb.toString());
+
     }
 }
