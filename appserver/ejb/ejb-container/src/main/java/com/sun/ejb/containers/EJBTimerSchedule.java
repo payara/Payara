@@ -112,6 +112,8 @@ public class EJBTimerSchedule extends TimerSchedule {
      */
     public EJBTimerSchedule(String s) {
         super(s);
+
+        parseOtherElements(s.split(" # "));
     }
 
     public EJBTimerSchedule setAutomatic(boolean b) {
