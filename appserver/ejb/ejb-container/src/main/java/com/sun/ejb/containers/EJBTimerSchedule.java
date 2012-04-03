@@ -113,7 +113,14 @@ public class EJBTimerSchedule extends TimerSchedule {
     public EJBTimerSchedule(String s) {
         super(s);
 
-        parseOtherElements(s.split(" # "));
+        // Parse the rest of elements
+        String[] sp = s.split(" # ");
+        automatic_ = Boolean.parseBoolean(sp[10]);
+
+        if (sp.length == 13) {
+            methodName_ = sp[11];
+            paramCount_ = Integer.parseInt(sp[12]);
+        }
     }
 
     public EJBTimerSchedule setAutomatic(boolean b) {
@@ -188,16 +195,6 @@ public class EJBTimerSchedule extends TimerSchedule {
     @Override
     protected boolean isExpectedElementCount(String[] el) {
         return (el.length == 11 || el.length == 13);
-    }
-
-    @Override
-    protected void parseOtherElements(String[] el) {
-        automatic_ = Boolean.parseBoolean(el[10]);
-
-        if (el.length == 13) {
-            methodName_ = el[11];
-            paramCount_ = Integer.parseInt(el[12]);
-        }
     }
 
 }
