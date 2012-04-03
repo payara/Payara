@@ -149,56 +149,66 @@ public class TenantManagerTest extends ConfigApiTest {
     }
 
     // Create verify created tenant.xml literally
+    // Update newly created tenenat (add service)
     // Then delete, verify exception is thrown on next get.
     @Test
     public void testCreateDelete() throws MalformedURLException, IOException, URISyntaxException {
         Assert.assertNotNull("tenantManager", tenantManager);
-        Tenant tenant = tenantManager.create("tenant3", "admin");
-        Assert.assertNotNull("tenant", tenant);
-        Assert.assertEquals("tenant", "tenant3", tenant.getName());
-        assertConfigXml("New tenant xml", "tenant3", tenant);
-        Assert.assertNotNull("tenant", tenant);
-
-        TenantServices services = tenant.getServices();
-        // this should go to tenant-manager somewhere
-        if (services == null) {
+        try {
+            Tenant tenant = tenantManager.create("tenant3", "admin");
+            Assert.assertNotNull("tenant", tenant);
+            Assert.assertEquals("tenant", "tenant3", tenant.getName());
+            assertConfigXml("New tenant xml", "tenant3", tenant);
+    
+            TenantServices services = tenant.getServices();
+            // this should go to tenant-manager somewhere
+            if (services == null) {
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                        @Override
+                        public Object run(Tenant tenant) throws TransactionFailure {
+                            TenantServices services = tenant.createChild(TenantServices.class);
+                            tenant.setServices(services);
+                            return services;
+                        }
+                    }, tenant);
+                } catch (TransactionFailure e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                services = tenant.getServices();
+            }
+            // this is how some service can be added
             try {
-                ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
                     @Override
-                    public Object run(Tenant tenant) throws TransactionFailure {
-                        TenantServices services = tenant.createChild(TenantServices.class);
-                        tenant.setServices(services);
+                    public Object run(TenantServices services) throws TransactionFailure {
+                        DefaultService service = services.createChild(DefaultService.class);
+                        services.getTenantServices().add(service);
                         return services;
                     }
-                }, tenant);
+                }, services);
             } catch (TransactionFailure e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                e.printStackTrace();            
+            }        
+            assertConfigXml("Updated new tenant xml", "tenant3-updated", tenant);
+    
+            tenantManager.delete("tenant3");
+            tenantManager.setCurrentTenant("tenant3");
+            try {
+                tenant = tenantManager.get(Tenant.class);
+                Assert.fail("Tenat must have been deleted");
+            } catch (IllegalArgumentException e) {
+                Assert.assertTrue("Tenant deleted", true);
             }
-            services = tenant.getServices();
-        }
-        // this is how elasticity service can be added
-        try {
-            ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
-                @Override
-                public Object run(TenantServices services) throws TransactionFailure {
-                    DefaultService service = services.createChild(DefaultService.class);
-                    services.getTenantServices().add(service);
-                    return services;
-                }
-            }, services);
-        } catch (TransactionFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();            
-        }        
-
-        tenantManager.delete("tenant3");
-        tenantManager.setCurrentTenant("tenant3");
-        try {
-            tenant = tenantManager.get(Tenant.class);
-            Assert.fail("Tenat must have been deleted");
-        } catch (IllegalArgumentException e) {
-            Assert.assertTrue("Tenant deleted", true);
+        } finally {
+            // clean up
+            try {
+                tenantManager.delete("tenant3");
+            } catch (Throwable e) {
+                // ignore
+            }
         }
     }
 }
