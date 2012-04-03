@@ -231,9 +231,12 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     public boolean upload(File localFile, File remoteTargetDirectory) {
         try {
-            FileUtils.copy(localFile, new File(remoteTargetDirectory, localFile.getName()));
-            logger.log(Level.INFO, "Successfully copied file {0} to directory {1}",
-                    new Object[]{localFile.getAbsolutePath(), remoteTargetDirectory.getAbsolutePath()});
+            File toFile = new File(remoteTargetDirectory, localFile.getName());
+            if(!toFile.equals(localFile)) {
+                FileUtils.copy(localFile, toFile);
+                logger.log(Level.INFO, "Successfully copied file {0} to directory {1}",
+                        new Object[]{localFile.getAbsolutePath(), remoteTargetDirectory.getAbsolutePath()});
+            }
             return true;
         } catch (Exception e) {
             RuntimeContext.logger.log(Level.WARNING, e.getMessage(), e);
