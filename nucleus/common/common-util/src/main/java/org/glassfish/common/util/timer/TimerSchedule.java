@@ -171,8 +171,6 @@ public class TimerSchedule implements Serializable {
         start_ = (sp[8].equals("null")? null : new Date(Long.parseLong(sp[8])));
         end_ = (sp[9].equals("null")? null : new Date(Long.parseLong(sp[9])));
 
-        parseOtherElements(sp);
-
         configure();
     }
 
@@ -518,13 +516,6 @@ public class TimerSchedule implements Serializable {
      */
     protected boolean isExpectedElementCount(String[] el) {
         return el.length == 10;
-    }
-
-    /**
-     * Allows subclasses to parse extra elements
-     */
-    protected void parseOtherElements(String[] el) {
-        // do nothing in the base class
     }
 
     /**
