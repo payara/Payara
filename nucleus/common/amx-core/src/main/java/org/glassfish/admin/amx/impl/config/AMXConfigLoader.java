@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -402,7 +402,7 @@ public final class AMXConfigLoader
                     //debug( "AMXConfigLoaderThread.registerOne(): " + objectName);
                 }
             } catch (final Throwable t) {
-                mLogger.log(Level.WARNING, "Can't register config MBean: " + objectName, t);
+                mLogger.log(Level.WARNING, "Can't register config MBean: type=" + getType(cb) + ", name=" + getKey(cb), t);
             } finally {
                 job.releaseLatch();
             }
