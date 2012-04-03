@@ -106,16 +106,6 @@ public class TenantManagerTest extends ConfigApiTest {
 
     }
 
-    // Create tenant and verify created tenant.xml literally.
-    @Test
-    public void testCreate() throws URISyntaxException, MalformedURLException, IOException {
-        Assert.assertNotNull("tenantManager", tenantManager);
-        Tenant tenant = tenantManager.create("tenant3", "admin");
-        Assert.assertNotNull("tenant", tenant);
-        Assert.assertEquals("tenant", "tenant3", tenant.getName());
-        assertConfigXml("New tenant xml", "tenant3", tenant);
-    }
-
     // Verify tenant1 and tenant2 can be retrieved.
     @Test
     public void testGet() {
@@ -156,11 +146,15 @@ public class TenantManagerTest extends ConfigApiTest {
         assertConfigXml("Updated tenant xml", "tenant1", tenant);
     }
 
-    // Create and delete tenant, verify exception is thrown on next get.
+    // Create verify created tenant.xml literally
+    // Then delete, verify exception is thrown on next get.
     @Test
-    public void testDelete() {
+    public void testCreateDelete() throws MalformedURLException, IOException, URISyntaxException {
         Assert.assertNotNull("tenantManager", tenantManager);
         Tenant tenant = tenantManager.create("tenant3", "admin");
+        Assert.assertNotNull("tenant", tenant);
+        Assert.assertEquals("tenant", "tenant3", tenant.getName());
+        assertConfigXml("New tenant xml", "tenant3", tenant);
         Assert.assertNotNull("tenant", tenant);
         tenantManager.delete("tenant3");
         tenantManager.setCurrentTenant("tenant3");

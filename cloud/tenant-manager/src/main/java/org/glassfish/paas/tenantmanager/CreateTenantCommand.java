@@ -39,7 +39,10 @@
  */
 package org.glassfish.paas.tenantmanager;
 
+import java.util.logging.Logger;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -48,10 +51,10 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.paas.tenantmanager.impl.SecurityStore;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
@@ -75,13 +78,17 @@ public final class CreateTenantCommand implements AdminCommand {
     @Param (primary=true)
     String tenantId;
 
+    //TODO: this is still a String, need to convert to char[]
+    @Param(name="password", password=true)
+    private String password;
+
     private ActionReport report;
 
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateTenantCommand.class);
 
     @Inject
-    Habitat habitat;
+    SecurityStore securityStore;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -96,12 +103,17 @@ public final class CreateTenantCommand implements AdminCommand {
             return;
         }
 
+        logger.fine("Creating tenant admin:" + tenantId + "." + "admin");
+        securityStore.create(tenantId + "." + "admin", password.toCharArray());
+
         // see TenantConfigService.getTenantManagerConfig for zero-config initialization
 
-        // create tenant config file
+        logger.fine("Creating tenant:" + tenantId);
         tm.create(tenantId, "admin");
 
+        // note, both creates fail independently if already exists
     }
 
-
+    @Inject
+    private Logger logger;
 }

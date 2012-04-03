@@ -125,7 +125,10 @@ public class TenantManagerImpl implements TenantManagerEx {
     public Tenant create(final String name, final String adminUserName) {
         File tenantFile = getTenantFile(name);
         File tenantDir = tenantFile.getParentFile();
-        // TODO: assert not exists?
+        if (tenantFile.exists()) {
+            // TODO: i18n
+            throw new IllegalArgumentException("Tenant " + name + " already exists");
+        }
         try {
             boolean created = tenantDir.mkdirs();
             // TODO: i18n

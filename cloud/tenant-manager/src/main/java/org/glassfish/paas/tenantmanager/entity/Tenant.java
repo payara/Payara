@@ -78,4 +78,5 @@ public interface Tenant extends ConfigBeanProxy {
       public static boolean hasCreatedEnvironment(Tenant tenant) {
          return tenant.getEnvironments().getEnvironments().size() != 0;
       }
-    }}
+    }
+}
