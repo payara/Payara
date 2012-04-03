@@ -46,8 +46,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
+import org.glassfish.paas.tenantmanager.entity.DefaultService;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
+import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.junit.Assert;
@@ -156,6 +158,40 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertEquals("tenant", "tenant3", tenant.getName());
         assertConfigXml("New tenant xml", "tenant3", tenant);
         Assert.assertNotNull("tenant", tenant);
+
+        TenantServices services = tenant.getServices();
+        // this should go to tenant-manager somewhere
+        if (services == null) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                    @Override
+                    public Object run(Tenant tenant) throws TransactionFailure {
+                        TenantServices services = tenant.createChild(TenantServices.class);
+                        tenant.setServices(services);
+                        return services;
+                    }
+                }, tenant);
+            } catch (TransactionFailure e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            services = tenant.getServices();
+        }
+        // this is how elasticity service can be added
+        try {
+            ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
+                @Override
+                public Object run(TenantServices services) throws TransactionFailure {
+                    DefaultService service = services.createChild(DefaultService.class);
+                    services.getTenantServices().add(service);
+                    return services;
+                }
+            }, services);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();            
+        }        
+
         tenantManager.delete("tenant3");
         tenantManager.setCurrentTenant("tenant3");
         try {
