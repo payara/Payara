@@ -52,7 +52,7 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface TenantManagerConfig extends CloudService {
 
-    @Attribute
+    @Attribute(defaultValue="${com.sun.aas.instanceRoot}/config/tenants-store")
     String getFileStore();
     void setFileStore(String fileStore);
 

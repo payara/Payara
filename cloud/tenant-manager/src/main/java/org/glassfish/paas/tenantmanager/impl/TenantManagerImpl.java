@@ -159,7 +159,6 @@ public class TenantManagerImpl implements TenantManagerEx {
             e.printStackTrace();            
         }
         
-        // TODO: add default admin adminUserName
         return tenant;
     }
 
@@ -186,26 +185,6 @@ public class TenantManagerImpl implements TenantManagerEx {
         TenantManagerConfig tmc = cs.getCloudServiceByType(TenantManagerConfig.class);
         if (tmc == null ) {
             tmc = cs.createDefaultChildByType(TenantManagerConfig.class);
-
-            // set default values
-            try {
-                ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
-                    @Override
-                    public Object run(TenantManagerConfig tmc) throws TransactionFailure {
-                        File configDir = env.getConfigDirPath();
-                        if (configDir != null) {
-                            String fileStore = configDir.getAbsolutePath() + "/tenants-store";
-                            tmc.setFileStore(fileStore);
-                        } else {
-                            // TODO: alert no config root?
-                        }
-                        return tmc;
-                    }
-                }, tmc);
-            } catch (TransactionFailure e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();            
-            }
         }
 
         return tmc;
