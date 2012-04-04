@@ -51,7 +51,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -73,7 +72,6 @@ public class JVMMemoryMetricHolder
     private static final String heap_used = "usedheapsize-count";
     private static final String heap_commited = "committedheapsize-count";
     private static final String maxheapsize = "maxheapsize-count";
-    private static final String RESPONSE_TYPE = MediaType.APPLICATION_JSON;
 
     // need to store instance name, instance port, instance host and data for the instance
     HashMap<String, Object>  instancesTable= null;
@@ -95,7 +93,8 @@ public class JVMMemoryMetricHolder
 
     private void init() {
        //create a hash map with all instance names in this service
-        //each instance is a TabularMetricHolder for data with name, host and port
+        // each entry is a name of instance and the object which holds the data as in previous design
+        // init the host and port for the instance when creating the object
 
         // need to get the service name  hard code for now
         Cluster cluster = clusters.getCluster("c1");
@@ -111,19 +110,13 @@ public class JVMMemoryMetricHolder
         // until we have metric gatherer factories init this way
         if (instancesTable == null ){
             instancesTable= new HashMap<String, Object>();
+
             for (Server server : serverList) {
                 Map<String , Object> instanceInfo= new HashMap<String, Object>();
                 String instanceName = server.getName();
-                instanceInfo.put("name",instanceName);
-                // hardcode for now.
-                instanceInfo.put("hostname","localhost");
-                instanceInfo.put("port","4848"); // or make it an Integer
-                TabularMetricHolder<MemoryStat> table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
-                instanceInfo.put("table",table);
-                MetricAttribute[] attributes = new MetricAttribute[]{new MaxSizeAttribute(), table};
-                instanceInfo.put("attributes", attributes);
-                instanceInfo.put("max",0); //can we add this later
-                instancesTable.put("name",instanceInfo);
+                JVMInstanceMemoryHolder jvmInstanceHolder = new JVMInstanceMemoryHolder("localhost", "4848", instanceName);
+
+                instancesTable.put(instanceName,jvmInstanceHolder);
             }
         }
 
@@ -136,29 +129,8 @@ public class JVMMemoryMetricHolder
         //  for each instance in the service get the data
         // use another class so can be done concurrently if needed
         for (String name : instancesTable.keySet()) {
-            Map<String , Object> instanceInfo= (Map)instancesTable.get(name);
-            String instanceName = (String)instanceInfo.get("name");
-            String jvmMemURL = baseURL + instanceName +"/"+  jvm_memory ;
-            //catch exception
-            try {
-                Map<String, Object> res = CollectMetricData.getRestData(jvmMemURL);
-                if (res == null ) return;
-                Map<String, Object> jvmMemHeap = (Map) res.get(heap_used);
-                Integer heapUsed = (Integer)jvmMemHeap.get("count");
-
-                Map<String, Object> jvmMemCommited = (Map) res.get(heap_commited);
-                Integer commitedUsed = (Integer)jvmMemCommited.get("count");
-                // should only do this once
-                Map<String, Object> jvmMemMax = (Map) res.get(maxheapsize);
-                Integer jvmMax = (Integer)jvmMemMax.get("count");
-                instanceInfo.put("max",jvmMax);
-                TabularMetricHolder<MemoryStat> table= (TabularMetricHolder)instanceInfo.get("table");
-                table.add(System.currentTimeMillis(), new MemoryStat(heapUsed.longValue(), commitedUsed.longValue()));
-                instanceInfo.put("table", table);
-                System.out.println("Instance name " + instanceName + " Used heap " + heapUsed);
-            } catch (Exception ex)  {
-
-            }
+            JVMInstanceMemoryHolder instanceMemoryHolder = (JVMInstanceMemoryHolder)instancesTable.get(name);
+            instanceMemoryHolder.gatherMetric();
         }
 
 /*
@@ -253,5 +225,43 @@ public class JVMMemoryMetricHolder
         public String toString() {
             return "used=" + used + "; committed=" + committed;
         }
+    }
+
+    private class JVMInstanceMemoryHolder {
+
+        String hostName= "localhost";
+        String port = "4848";
+        String instanceName = null;
+        TabularMetricHolder<MemoryStat> table;
+
+        public   JVMInstanceMemoryHolder(String host, String port, String instName){
+            hostName = host;
+            port = port;
+            instanceName = instName;
+            table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
+
+        }
+
+        public void gatherMetric() {
+            String jvmMemURL = baseURL + instanceName +"/"+  jvm_memory ;
+            //catch exception
+            try {
+                Map<String, Object> res = CollectMetricData.getRestData(jvmMemURL);
+                if (res == null ) return;
+                Map<String, Object> jvmMemHeap = (Map) res.get(heap_used);
+                Integer heapUsed = (Integer)jvmMemHeap.get("count");
+
+                Map<String, Object> jvmMemCommited = (Map) res.get(heap_commited);
+                Integer commitedUsed = (Integer)jvmMemCommited.get("count");
+                // should only do this once
+                Map<String, Object> jvmMemMax = (Map) res.get(maxheapsize);
+                Integer jvmMax = (Integer)jvmMemMax.get("count");
+                table.add(System.currentTimeMillis(), new MemoryStat(heapUsed.longValue(), commitedUsed.longValue()));
+                System.out.println("Instance name " + instanceName + " Used heap " + heapUsed);
+            } catch (Exception ex)  {
+
+            }
+    }
+
     }
 }

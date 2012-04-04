@@ -147,7 +147,6 @@ public class MetricGathererContainer
         }
 
         public void run() {
-            System.out.println("Starting Metric Gatherer");
             mg.gatherMetric();
 
             long now = System.currentTimeMillis();

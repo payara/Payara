@@ -56,6 +56,8 @@ import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
+import  org.glassfish.elasticity.engine.util.SetElasticTenantId;
+
 
 /**
  * Elastic Engine for a service. An instance of ElasticEngine keeps track
@@ -114,6 +116,8 @@ public class ElasticEngine
     }
 
     public void startElasticService(ElasticServiceConfig service) {
+        SetElasticTenantId.setId();      // for now elasticity hardcodes the tenant Id
+
         if (service.getEnabled()) {
             ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
             container.initialize(service);
