@@ -100,8 +100,7 @@ public class ServerHelper {
             return null;
         }
         // Look at the address for the admin-listener first
-        NetworkListener nl = getAdminListener(config);
-        String addr = nl.getAddress();
+        String addr = translateAddressAndPort(getAdminListener(config), server, config)[0];
         if (addr != null && !addr.equals("0.0.0.0")) {
             return addr;
         }
@@ -178,30 +177,48 @@ public class ServerHelper {
         if (server == null || config == null)
             return null;
 
-        return translatePort(getAdminListener(config), server, config);
+        return translateAddressAndPort(getAdminListener(config), server, config)[1];
     }
 
-    private static String translatePort(NetworkListener adminListener, Server server, Config config) {
+    /**
+     *
+     * @param adminListener
+     * @param server
+     * @param config
+     * @return ret[0] == address, ret[1] == port
+     */
+    private static String[] translateAddressAndPort(NetworkListener adminListener, Server server, Config config) {
         NetworkListener adminListenerRaw = null;
+        String[] ret = new String[2];
+            String portString = null;
+            String addressString = null;
 
         try {
             Dom serverDom = Dom.unwrap(server);
             Domain domain = serverDom.getHabitat().getComponent(Domain.class);
 
             adminListenerRaw = GlassFishConfigBean.getRawView(adminListener);
-            String portString = adminListenerRaw.getPort();
-
-            if (!isToken(portString))
-                return portString;
-
+            portString = adminListenerRaw.getPort();
+            addressString = adminListenerRaw.getAddress();
             PropertyResolver resolver = new PropertyResolver(domain, server.getName());
-            return resolver.getPropertyValue(portString);
+
+            if (isToken(portString))
+                ret[1] = resolver.getPropertyValue(portString);
+            else
+                ret[1] = portString;
+
+            if (isToken(addressString))
+                ret[0] = resolver.getPropertyValue(addressString);
+            else
+                ret[0] = addressString;
         }
         catch (ClassCastException e) {
             //jc: workaround for issue 12354
             // TODO severe error
-            return translatePortOld(adminListener.getPort(), server, config);
+            ret[0] = translatePortOld(addressString, server, config);
+            ret[1] = translatePortOld(portString, server, config);
         }
+        return ret;
     }
 
     private static String translatePortOld(String portString, Server server, Config config) {
