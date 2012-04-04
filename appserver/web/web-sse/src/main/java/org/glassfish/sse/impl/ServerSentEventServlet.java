@@ -73,6 +73,7 @@ public final class ServerSentEventServlet extends HttpServlet {
     private BeanManager bm;
 
     @Override
+    @SuppressWarnings("unchecked")
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
                 throws ServletException, IOException {
 
