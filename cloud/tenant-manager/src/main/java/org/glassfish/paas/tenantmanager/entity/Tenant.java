@@ -39,12 +39,18 @@
  */
 package org.glassfish.paas.tenantmanager.entity;
 
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
 import org.glassfish.paas.tenantmanager.api.TenantScoped;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
+
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 
 /**
  * Tenant PaaS related information, users, environments, services.
@@ -68,15 +74,33 @@ public interface Tenant extends ConfigBeanProxy {
     void setEnvironments(Environments environments);
 
     @Element
+    @NotNull
     TenantServices getServices();
     void setServices(TenantServices services);
 
+    @Element("*")
+    List<DomainExtension> getExtensions();
+
     @DuckTyped
     boolean hasCreatedEnvironment();
+
+    @DuckTyped
+    <T extends DomainExtension> T getExtensionByType(Class<T> type);  
 
     class Duck {
       public static boolean hasCreatedEnvironment(Tenant tenant) {
          return tenant.getEnvironments().getEnvironments().size() != 0;
       }
+
+      public static <T extends DomainExtension> T getExtensionByType(Tenant tenant, Class<T> type) {
+          for (DomainExtension extension : tenant.getExtensions()) {
+              if (type.isInstance(extension)) {
+                  return type.cast(extension);
+              }
+          }
+          return null;
+          
+      }
     }
+
 }

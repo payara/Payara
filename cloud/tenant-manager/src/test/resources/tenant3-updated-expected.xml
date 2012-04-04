@@ -41,8 +41,9 @@
 
 -->
 <tenant name="tenant3">
-  <tenant-admin name="admin"></tenant-admin>
+  <domain-extension></domain-extension>
   <services>
     <default-service></default-service>
   </services>
+  <tenant-admin name="admin"></tenant-admin>
 </tenant>

@@ -63,6 +63,7 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.util.io.FileUtils;
 
 public class TenantManagerTest extends ConfigApiTest {
@@ -117,6 +118,8 @@ public class TenantManagerTest extends ConfigApiTest {
         Tenant tenant = tenantManager.get(Tenant.class);
         Assert.assertNotNull("currentTenant", tenant);
         Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
+        Assert.assertNotNull("Zero Services", tenant.getServices());
+        Assert.assertNotNull("Zero Extensions", tenant.getExtensions());
         tenantManager.setCurrentTenant("tenant2");
         tenant = tenantManager.get(Tenant.class);
         Assert.assertNotNull("currentTenant", tenant);
@@ -126,6 +129,7 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertEquals("Default Services", 1, tenant.getServices().getDefaultServices().size());
         Assert.assertEquals("Shared Services", 1, tenant.getServices().getSharedServices().size());
         Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
+        Assert.assertNotNull("Domain Extensions", tenant.getExtensions());
     }
 
     // Update exsisting tenant1, verify tenant xml is updated.
@@ -160,24 +164,23 @@ public class TenantManagerTest extends ConfigApiTest {
             Assert.assertEquals("tenant", "tenant3", tenant.getName());
             assertConfigXml("New tenant xml", "tenant3", tenant);
     
-            TenantServices services = tenant.getServices();
-            // this should go to tenant-manager somewhere
-            if (services == null) {
-                try {
-                    ConfigSupport.apply(new SingleConfigCode<Tenant>() {
-                        @Override
-                        public Object run(Tenant tenant) throws TransactionFailure {
-                            TenantServices services = tenant.createChild(TenantServices.class);
-                            tenant.setServices(services);
-                            return services;
-                        }
-                    }, tenant);
-                } catch (TransactionFailure e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                services = tenant.getServices();
+            // this is how some extension can be added
+            try {
+                ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                    @Override
+                    public Object run(Tenant tenant) throws TransactionFailure {
+                        DomainExtension extension = tenant.createChild(DomainExtension.class);
+                        tenant.getExtensions().add(extension);
+                        return tenant;
+                    }
+                }, tenant);
+            } catch (TransactionFailure e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();            
             }
+            Assert.assertNotNull("Extension", tenant.getExtensionByType(DomainExtension.class));
+
+            TenantServices services = tenant.getServices();
             // this is how some service can be added
             try {
                 ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
