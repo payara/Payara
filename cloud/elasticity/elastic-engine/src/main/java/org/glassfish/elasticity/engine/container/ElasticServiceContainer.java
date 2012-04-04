@@ -64,6 +64,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 
+/**
+ * For now we associate Alerts and MetricGatherers to a Service. Later,
+ *  Alerts will be  associated with an Environment.
+ *
+ */
 @Service
 @Scoped(PerLookup.class)
 public class ElasticServiceContainer {

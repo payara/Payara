@@ -43,9 +43,14 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.api.MetricGathererConfigurator;
 import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
+import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.jvnet.hk2.annotations.Scoped;
@@ -61,6 +66,11 @@ public class ElasticServiceManager {
     
     @Inject
     Habitat habitat;
+
+    @Inject
+    ElasticEngineThreadPool threadPool;
+    
+    private Logger logger;
 
 	private ConcurrentHashMap<String, ElasticServiceContainer> _containers
 		= new ConcurrentHashMap<String, ElasticServiceContainer>();
@@ -97,6 +107,47 @@ public class ElasticServiceManager {
                     + " with  " + configurators.size() + " configurators and "
                         + resolvers.size() + " resolvers ");
 
+                ElasticServiceContainer serviceContainer =
+                        habitat.forContract(ElasticServiceContainer.class).get();
+                for (MetricGathererConfig cfg : mgConfigs) {
+                    AbstractMetricGatherer mg = habitat.forContract(AbstractMetricGatherer.class).named(cfg.getName()).get();
+                    mg.initialize(event.getNewValue(), cfg);
+
+                    threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, 300),
+                            10, 10, TimeUnit.SECONDS);
+
+                }
+
+        }
+    }
+    private class MetricGathererWrapper
+            implements Runnable {
+
+        private AbstractMetricGatherer mg;
+
+        private int maxDataHoldingTimeInSeconds;
+
+        private long prevPurgeTime = System.currentTimeMillis();
+        
+        private Logger logger;
+
+        MetricGathererWrapper(AbstractMetricGatherer mg, int maxDataHoldingTimeInSeconds) {
+            this.mg = mg;
+            this.maxDataHoldingTimeInSeconds = maxDataHoldingTimeInSeconds;
+
+            logger = Logger.getLogger(MetricGathererWrapper.class.getName());
+        }
+
+        public void run() {
+            logger.log(Level.INFO, "Gathering data for metric...");
+            mg.gatherMetric();
+
+            long now = System.currentTimeMillis();
+            if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
+                prevPurgeTime = now;
+                logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
+                mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);
+            }
         }
     }
 	
