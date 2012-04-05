@@ -48,6 +48,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -58,54 +59,100 @@ import java.util.Map;
  * Time: 11:38 AM
  * To change this template use File | Settings | File Templates.
  */
-@org.jvnet.hk2.annotations.Service(name = "tail-service-log-file")
+@org.jvnet.hk2.annotations.Service(name = "tail-service-log-files")
 @Scoped(PerLookup.class)
 public class TailServiceLogFile extends CLICommand {
 
-    private String commandName = "_hidden-tail-service-log-file";
+    private String commandName = "_hidden-tail-service-log-files";
 
-    @Param(name = "filepointer", optional = true, defaultValue = "0")
-    private String filepointer;
+    private String filepointer = "0";
 
-    @Param(name = "servicename", optional = false)
+    @Param(name = "servicename", optional = true)
     private String serviceName;
 
-    @Param(name = "logtype", optional = false)
-    private String logtype;
+    @Param(name = "appname", optional = true)
+    private String appName;
+
+    @Param(name = "n", optional = true, defaultValue = "10")
+    private String numberOfRecords;
 
     private String lastrecorddateinmilliseconds = "0";
+
+    boolean validationSuccess = true;
+
+    String origin;
 
     @Override
     protected int executeCommand() throws CommandException {
 
-        while (true) {
-            RemoteCommand cmd = new RemoteCommand(commandName, programOpts, env);
-            Map<String, String> attr = cmd.executeAndReturnAttributes(getParams());
-
-            String fileData = attr.get("filedata_value");
-            String filePointer = attr.get("filepointer_value");
-            String lastrecorddateinmilliseconds = attr.get("lastrecorddateinmilliseconds_value");
-
-            if (fileData != null && fileData.trim().length() > 0) {
-                System.out.println(fileData);
-            }
-            this.filepointer = filePointer;
-            this.lastrecorddateinmilliseconds = lastrecorddateinmilliseconds;
+        if (appName == null && serviceName == null) {
+            validationSuccess = false;
+            System.out.println("Missing application name or service name.");
         }
+
+        if (appName != null && serviceName != null) {
+            validationSuccess = false;
+            System.out.println("Enter either application name or service name.");
+        }
+
+        if (validationSuccess) {
+
+            Date date = new Date();
+            long milliseconds = date.getTime();
+            origin = String.valueOf(milliseconds);
+
+            while (true) {
+
+                RemoteCommand cmd = new RemoteCommand(commandName, programOpts, env);
+
+                Map<String, String> attr = cmd.executeAndReturnAttributes(getParams());
+
+                String fileData = attr.get("filedata_value");
+                String filePointer = attr.get("filepointer_value");
+                String lastrecorddateinmilliseconds = attr.get("lastrecorddateinmilliseconds_value");
+                String origin = attr.get("origin_value");
+
+                if (fileData != null && fileData.trim().length() > 0) {
+                    System.out.println(fileData);
+                }
+                this.filepointer = filePointer;
+                this.lastrecorddateinmilliseconds = lastrecorddateinmilliseconds;
+                this.origin = origin;
+
+            }
+        }
+        return 0;
     }
 
-private String[] getParams() {
+    private String[] getParams() {
         List<String> ss = new ArrayList<String>();
 
         ss.add(commandName);
+
         ss.add("--filepointer");
         ss.add(filepointer);
+
         ss.add("--lastrecorddateinmilliseconds");
         ss.add(lastrecorddateinmilliseconds);
-        ss.add("--serviceName");
-        ss.add(serviceName);
-        ss.add("--logtype");
-        ss.add(logtype);
+
+        ss.add("--n");
+        ss.add(numberOfRecords);
+
+        if (serviceName != null) {
+            ss.add("--serviceName");
+            ss.add(serviceName);
+        }
+
+        if (appName != null) {
+            ss.add("--appname");
+            ss.add(appName);
+        }
+
+        if(origin !=null) {
+            ss.add("--origin");
+            ss.add(origin);
+        }
+
         return ss.toArray(new String[ss.size()]);
     }
 }
