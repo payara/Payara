@@ -75,13 +75,18 @@ public interface CloudServices extends ConfigBeanProxy, Injectable,ConfigExtensi
 
     class Duck {
 
-        public static <T extends CloudService> T getCloudServiceByType(CloudServices c, Class<T> type) {
+        public static <T extends CloudService> T getCloudServiceByType(CloudServices c, Class<T> type) throws TransactionFailure {
+            T cloudservice = null;
             for (CloudService extension : c.getCloudServices()) {
                 try {
-                    return type.cast(extension);
+                    cloudservice = type.cast(extension);
+                    return cloudservice;
                 } catch (Exception e) {
                     // ignore, not the right type.
                 }
+            }
+            if (cloudservice == null ) {
+                return createDefaultChildByType(c,type);
             }
             return null;
 

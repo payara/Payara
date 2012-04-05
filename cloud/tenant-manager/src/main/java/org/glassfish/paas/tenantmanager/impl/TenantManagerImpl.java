@@ -181,15 +181,7 @@ public class TenantManagerImpl implements TenantManagerEx {
     @Override
     public TenantManagerConfig getTenantManagerConfig() {
         CloudServices cs = config.getExtensionByType(CloudServices.class);
-        if (cs == null ) {
-           cs = config.createDefaultChildByType(CloudServices.class);
-        }
-
         TenantManagerConfig tmc = cs.getCloudServiceByType(TenantManagerConfig.class);
-        if (tmc == null ) {
-            tmc = cs.createDefaultChildByType(TenantManagerConfig.class);
-        }
-
         return tmc;
     }
 

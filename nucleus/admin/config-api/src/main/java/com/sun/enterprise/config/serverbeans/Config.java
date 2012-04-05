@@ -445,14 +445,24 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
             return map;
         }
 
-        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) {
+        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws ClassNotFoundException,TransactionFailure{
+            T configExtension = null;
             for (Container extension : c.getContainers()) {
                 try {
-                    return type.cast(extension);
+                    configExtension = type.cast(extension);
+                    return configExtension ;
+
+
                 } catch (Exception e) {
                     // ignore, not the right type.
                 }
             }
+            if (configExtension == null ) {
+
+                return createDefaultChildByType(c ,type);
+
+            }
+
             return null;
         }
 
@@ -504,6 +514,7 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                 @Override
                 public Object run(Config parent) throws PropertyVetoException, TransactionFailure {
                     ConfigExtension child = parent.createChild(parentElem);
+                    Dom.unwrap(child).addDefaultChildren();
                     parent.getContainers().add(child);
                     return child;
                 }
