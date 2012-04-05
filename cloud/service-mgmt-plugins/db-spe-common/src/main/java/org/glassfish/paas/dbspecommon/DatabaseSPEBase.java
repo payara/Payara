@@ -275,7 +275,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
 
                 final ReadableArchive readableArchive = dc.getArchive();
                 String initSqlFile = null;
-                String ipAddress = serviceProvider.getProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
+                String ipAddress = serviceProvider.getServiceProperties().getProperty(VIRTUAL_MACHINE_IP_ADDRESS);
                 //Create Custom database
                 String servicePropertiesFile = getServicePropertiesFileName(dc, readableArchive);
 
