@@ -166,6 +166,11 @@ public final class StatefulSessionContainer
     private CheckpointPolicy checkpointPolicy;
     private int removalGracePeriodInSeconds;
 
+    private InvocationInfo postConstructInvInfo;
+    private InvocationInfo preDestroyInvInfo;
+    private InvocationInfo postActivateInvInfo;
+    private InvocationInfo prePassivateInvInfo;
+
     private StatefulSessionStoreMonitor sfsbStoreMonitor;
 
     private final String traceInfoPrefix;
@@ -205,6 +210,23 @@ public final class StatefulSessionContainer
         this.ejbName = desc.getName();
 
         this.traceInfoPrefix = "sfsb-" + ejbName + ": ";
+
+        postConstructInvInfo = getLifecycleCallbackInvInfo(ejbDescriptor.getPostConstructDescriptors());
+        preDestroyInvInfo = getLifecycleCallbackInvInfo(ejbDescriptor.getPreDestroyDescriptors());
+
+        EjbSessionDescriptor sfulDesc = (EjbSessionDescriptor) ejbDescriptor;
+        postActivateInvInfo = getLifecycleCallbackInvInfo(sfulDesc.getPostActivateDescriptors());
+        prePassivateInvInfo = getLifecycleCallbackInvInfo(sfulDesc.getPrePassivateDescriptors());
+    }
+
+    private InvocationInfo getLifecycleCallbackInvInfo(
+            Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
+        InvocationInfo inv = new InvocationInfo();
+        inv.ejbName = ejbDescriptor.getName();
+        inv.methodIntf = MethodDescriptor.EJB_BEAN;
+        inv.txAttr = getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors);
+
+        return inv;
     }
 
     protected void initializeHome()
@@ -282,6 +304,23 @@ public final class StatefulSessionContainer
                 }
          });
       
+    }
+
+    // Called before invoking a bean with no Tx or with a new Tx.
+    // Check if the bean is associated with an unfinished tx.
+    protected void checkUnfinishedTx(Transaction prevTx, EjbInvocation inv) {
+        try {
+            if ( inv.invocationInfo.isBusinessMethod && prevTx != null &&
+                prevTx.getStatus() != Status.STATUS_NO_TRANSACTION ) {
+                // An unfinished tx exists for the bean.
+                // so we cannot invoke the bean with no Tx or a new Tx.
+                throw new IllegalStateException(
+                    "Bean is associated with a different unfinished transaction");
+            }
+        } catch (SystemException ex) {
+            _logger.log(Level.FINE, "ejb.checkUnfinishedTx_exception", ex);
+            throw new EJBException(ex);
+        }
     }
 
     protected void loadCheckpointInfo() {
@@ -722,10 +761,22 @@ public final class StatefulSessionContainer
         context.setState(BeanState.READY);
 
         EjbInvocation ejbInv = null;
+        boolean initGotToPreInvokeTx = false;
         try {
             // Need to do preInvoke because setSessionContext can access JNDI
             ejbInv = super.createEjbInvocation(context.getEJB(), context);
             invocationManager.preInvoke(ejbInv);
+
+            // Call preInvokeTx directly.  InvocationInfo containing tx
+            // attribute must be set prior to calling preInvoke
+            ejbInv.transactionAttribute = postConstructInvInfo.txAttr;
+            ejbInv.invocationInfo = postConstructInvInfo;
+
+            initGotToPreInvokeTx = true;
+            context.setInLifeCycleCallback(true);
+            preInvokeTx(ejbInv);
+
+
             // PostConstruct must be called after state set to something
                 // other than CREATED
             interceptorManager.intercept(CallbackType.POST_CONSTRUCT, context);
@@ -735,8 +786,26 @@ public final class StatefulSessionContainer
             throw ejbEx;
         } finally {
             if (ejbInv != null) {
-                invocationManager.postInvoke(ejbInv);
+                try {
+                    invocationManager.postInvoke(ejbInv);
+                    if( initGotToPreInvokeTx ) {
+                        postInvokeTx(ejbInv);
+                    }
+                } catch(Exception pie) {
+                    if (ejbInv.exception != null) {
+                        _logger.log(Level.FINE, "Exception during SFSB startup postInvoke ", pie);
+                    } else {
+                        ejbInv.exception = pie;
+                        CreateException creEx = new CreateException("Initialization failed for Stateful Session Bean " +
+                                        ejbDescriptor.getName());
+                        creEx.initCause(pie);
+                        throw creEx;
+                    }
+                } finally {
+                    context.setInLifeCycleCallback(false);
+                }
             }
+
         }
 
         ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
@@ -957,6 +1026,8 @@ public final class StatefulSessionContainer
                 (declaringClass == javax.ejb.EJBLocalHome.class));
 
         try {
+            // Do only the 1st part. The rest will be done in destroyBean()
+            ejbInv.useFastPath = true;
             preInvoke(ejbInv);
             removeBean(ejbInv);
         } catch (Exception e) {
@@ -969,7 +1040,9 @@ public final class StatefulSessionContainer
                         (ejbDescriptor, removeMethod, i.exception);
             }
             */
-            postInvoke(ejbInv);
+            ejbInv.useFastPath = false;
+            // do not do tx processing
+            postInvoke(ejbInv, false);
         }
 
         if (ejbInv.exception != null) {
@@ -1002,15 +1075,6 @@ public final class StatefulSessionContainer
                 containerInfo.appName, containerInfo.modName,
                 containerInfo.ejbName);
             SessionContextImpl sc = (SessionContextImpl) inv.context;
-            Transaction tc = sc.getTransaction();
-
-            if (tc != null && tc.getStatus() !=
-                    Status.STATUS_NO_TRANSACTION) {
-                // EJB2.0 section 7.6.4: remove must always be called without
-                // a transaction.
-                throw new RemoveException
-                        ("Cannot remove EJB: transaction in progress");
-            }
 
             // call ejbRemove on the EJB
             if (_logger.isLoggable(TRACE_LEVEL)) {
@@ -1020,8 +1084,7 @@ public final class StatefulSessionContainer
 
             sc.setInEjbRemove(true);
             try {
-                interceptorManager.intercept(
-                        CallbackType.PRE_DESTROY, sc);
+                destroyBean(inv, sc);
             } catch (Throwable t) {
                 _logger.log(Level.FINE,
                         "exception thrown from SFSB PRE_DESTROY", t);
@@ -1032,10 +1095,6 @@ public final class StatefulSessionContainer
         }
         catch (EJBException ex) {
             _logger.log(Level.FINE, "EJBException in removing bean", ex);
-            throw ex;
-        }
-        catch (RemoveException ex) {
-            _logger.log(Level.FINE, "Remove exception while removing bean", ex);
             throw ex;
         }
         catch (Exception ex) {
@@ -1214,8 +1273,7 @@ public final class StatefulSessionContainer
                 try {
                     // call ejbRemove on the bean
                     ctx.setInEjbRemove(true);
-                    interceptorManager.intercept(
-                            CallbackType.PRE_DESTROY, ctx);
+                    destroyBean(null, ctx);
                 } catch (Throwable t) {
                     _logger.log(Level.FINE, "ejbRemove exception", t);
                 } finally {
@@ -1694,10 +1752,7 @@ public final class StatefulSessionContainer
                             + " == true) and exception " + inv.exception);
                 } else {
                     try {
-                        // PRE-DESTROY runs in an unspecified tx context, so
-                        // we call it here in releaseContext, after
-                        // postInvokeTx has completed.
-                        interceptorManager.intercept(CallbackType.PRE_DESTROY, sc);
+                        destroyBean(inv, sc);
                     } catch (Throwable t) {
                         _logger.log(Level.FINE, "@Remove.preDestroy exception",
                                 t);
@@ -1771,8 +1826,11 @@ public final class StatefulSessionContainer
 
     void afterBegin(EJBContextImpl context) {
         // TX_BEAN_MANAGED EJBs cannot implement SessionSynchronization
-        if (isBeanManagedTran)
+        // Do not call afterBegin if it is a transactional lifecycle callback
+        if (isBeanManagedTran || ((SessionContextImpl) context).getInLifeCycleCallback()) {
             return;
+        }
+
         // Note: this is only called for business methods.
         // For SessionBeans non-business methods are never called with a Tx.
         Object ejb = context.getEJB();
@@ -1812,7 +1870,9 @@ public final class StatefulSessionContainer
     void beforeCompletion(EJBContextImpl context) {
         // SessionSync calls on TX_BEAN_MANAGED SessionBeans
         // are not allowed
-        if( isBeanManagedTran || (beforeCompletionMethod == null) ) {
+        // Do not call beforeCompletion if it is a transactional lifecycle callback
+        if( isBeanManagedTran || beforeCompletionMethod == null || 
+                ((SessionContextImpl) context).getInLifeCycleCallback() ) {
             return;
 	}
 
@@ -1859,6 +1919,11 @@ public final class StatefulSessionContainer
                 || (status == Status.STATUS_NO_TRANSACTION);
 
         sc.setTransaction(null);
+
+        // Do not call afterCompletion if it is a transactional lifecycle callback
+        if (sc.getInLifeCycleCallback()) {
+            return;
+        }
 
         // SessionSync calls on TX_BEAN_MANAGED SessionBeans
         // are not allowed.
@@ -2657,7 +2722,7 @@ public final class StatefulSessionContainer
     private void invokePreDestroyAndUndeploy(SessionContextImpl ctx) {
         try {
             ctx.setInEjbRemove(true);
-            interceptorManager.intercept(CallbackType.PRE_DESTROY, ctx);
+            destroyBean(null, ctx);
         } catch (Throwable t) {
             _logger.log(Level.FINE,
                     "exception thrown from SFSB PRE_DESTROY", t);
@@ -2687,6 +2752,38 @@ public final class StatefulSessionContainer
         } catch (Exception ex) {
         }  finally {
             scheduledTimerTasks.clear();
+        }
+    }
+
+    private void destroyBean(EjbInvocation ejbInv, EJBContextImpl ctx) {
+        if (ejbInv == null) {
+            ejbInv = createEjbInvocation(ctx.getEJB(), ctx);
+        }
+
+        try {
+
+            ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
+            invocationManager.preInvoke(ejbInv);
+            // Call preInvokeTx directly.  InvocationInfo containing tx
+            // attribute must be set prior to calling preInvoke
+            ejbInv.transactionAttribute = preDestroyInvInfo.txAttr;
+            ejbInv.invocationInfo = preDestroyInvInfo;
+            preInvokeTx(ejbInv);
+
+            interceptorManager.intercept(CallbackType.PRE_DESTROY, ctx);
+        } catch (Throwable t) {
+            _logger.log(Level.FINE,
+                    "exception thrown from SFSB PRE_DESTROY", t);
+        } finally {
+            if( ejbInv != null ) {
+                invocationManager.postInvoke(ejbInv);
+                try {
+                    postInvokeTx(ejbInv);
+                } catch(Exception pie) {
+                    _logger.log(Level.FINE, "SFSB postInvokeTx exception", pie);
+                }
+                ((SessionContextImpl)ctx).setInLifeCycleCallback(false);
+            }
         }
     }
 

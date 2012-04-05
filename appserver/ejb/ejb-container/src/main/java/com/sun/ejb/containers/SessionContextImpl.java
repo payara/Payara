@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,6 +85,10 @@ public final class SessionContextImpl
 
     private long version;
     
+    // Do not call Session Synchronization callbacks when in transactional
+    // lifecycle callbacks
+    private boolean inLifeCycleCallback = false;
+
     // Map of entity managers with extended persistence context 
     // for this stateful session bean.
     private transient Map<EntityManagerFactory, EntityManager> extendedEntityManagerMap;
@@ -269,6 +273,14 @@ public final class SessionContextImpl
     
     void setInAfterCompletion(boolean flag) {
         inAfterCompletion = flag;
+    }
+    
+    void setInLifeCycleCallback(boolean s) {
+        inLifeCycleCallback = s;
+    }
+    
+    boolean getInLifeCycleCallback() {
+        return inLifeCycleCallback;
     }
     
     // Used to check if stateful session bean is in ejbCreate.

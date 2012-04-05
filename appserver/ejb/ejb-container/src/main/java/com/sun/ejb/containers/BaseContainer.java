@@ -4494,27 +4494,11 @@ public abstract class BaseContainer
         int status = (preInvokeTxStatus != null) ?
             preInvokeTxStatus.intValue() : transactionManager.getStatus();
         
-        //For MessageDrivenBeans,ejbCreate/ejbRemove must be called without a Tx.
-        // For SessionBeans, ejbCreate/ejbRemove must be called without a Tx.
-        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx
-        // so no special work needed.
-        if ( (isStatefulSession || isStatelessSession) &&
-             !inv.invocationInfo.isBusinessMethod ) {
-            // EJB2.0 section 7.5.7 says that ejbCreate/ejbRemove etc are called
-            // without a Tx. So suspend the client's Tx if any.
-            
-            // Note: ejbRemove cannot be called when EJB is associated with
-            // a Tx, according to EJB2.0 section 7.6.4. This check is done in
-            // the container's implementation of removeBean().
-            
-            if ( status != Status.STATUS_NO_TRANSACTION ) {
-                // client request is associated with a Tx
-                try {
-                    inv.clientTx = transactionManager.suspend();
-                } catch (SystemException ex) {
-                    throw new EJBException(ex);
-                }
-            }
+        // For MessageDrivenBeans,ejbCreate/ejbRemove must be called without a Tx.
+        // For StatelessSessionBeans, ejbCreate/ejbRemove must be called without a Tx.
+        // For StatefullSessionBeans ejbCreate/ejbRemove/ejbFind can be called with or without a Tx.
+        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx so no special work needed.
+        if ( suspendedTransaction(inv) ) {
             return;
         }
         
@@ -4634,18 +4618,6 @@ public abstract class BaseContainer
     // Called before invoking a bean with no Tx or with a new Tx.
     // Check if the bean is associated with an unfinished tx.
     protected void checkUnfinishedTx(Transaction prevTx, EjbInvocation inv) {
-        try {
-            if ( !isMessageDriven && !isStatelessSession && !isSingleton && (prevTx != null) &&
-            	(prevTx.getStatus() != Status.STATUS_NO_TRANSACTION) ) {
-                // An unfinished tx exists for the bean.
-                // so we cannot invoke the bean with no Tx or a new Tx.
-                throw new IllegalStateException(
-                    "Bean is associated with a different unfinished transaction");
-            }
-        } catch (SystemException ex) {
-            _logger.log(Level.FINE, "ejb.checkUnfinishedTx_exception", ex);
-            throw new EJBException(ex);
-        }
     }
     
     
@@ -4682,6 +4654,18 @@ public abstract class BaseContainer
         // a Synchronization object with the TM, the afterCompletion
         // will get called.
         afterBegin(context);
+    }
+    
+    // Called from preInvokeTx to suspend transaction if necessary
+    protected boolean suspendedTransaction(EjbInvocation inv) throws Exception {
+        // Overridden in subclass that needs it
+        return false;
+    }
+    
+    // Called from postInvokeTx to resume transaction if necessary
+    protected boolean resumedTransaction(EjbInvocation inv) throws Exception {
+        // Overridden in subclass that needs it
+        return false;
     }
     
     // Called from preInvokeTx before invoking the bean with the client's Tx
@@ -4824,20 +4808,13 @@ public abstract class BaseContainer
         InvocationInfo invInfo = inv.invocationInfo;
         Throwable exception = inv.exception;
         
-        // For SessionBeans, ejbCreate/ejbRemove was called without a Tx,
+        // For StatelessSessionBeans, ejbCreate/ejbRemove was called without a Tx,
         // so resume client's Tx if needed.
-        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx
+        // For StatefulSessionBeans ejbCreate/ejbRemove was called with or without a Tx,
+        // so resume client's Tx if needed.
+        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx 
         // so no special processing needed.
-        if ( (isStatefulSession || isStatelessSession) && !invInfo.isBusinessMethod ) {
-            // check if there was a suspended client Tx
-            if ( inv.clientTx != null )
-                transactionManager.resume(inv.clientTx);
-            
-            if ( exception != null
-                 && exception instanceof PreInvokeException ) {
-                inv.exception = ((PreInvokeException)exception).exception;
-            }
-            
+        if ( resumedTransaction(inv) ) {
             return;
         }
         
@@ -5280,10 +5257,6 @@ public abstract class BaseContainer
         return appExceptionRequiringRollback;
     }
     
-    public void setMonitorOn(boolean flag) {
-        monitorOn = flag;
-    }
-    
     public boolean getDebugMonitorFlag() {
         return debugMonitorFlag;
     }
@@ -5316,6 +5289,31 @@ public abstract class BaseContainer
         return hasLocalHomeView;
     }
     
+    protected int getTxAttrForLifecycleCallback(Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
+        int txAttr =  isBeanManagedTran ?
+                Container.TX_BEAN_MANAGED : Container.TX_REQUIRES_NEW;
+
+        if( !isBeanManagedTran ) {
+            for(LifecycleCallbackDescriptor lcd : lifecycleCallbackDescriptors) {
+                if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
+
+                    Method postConstructMethod =
+                        lcd.getLifecycleCallbackMethodObject(loader);
+                    int lcTxAttr = findTxAttr(
+                        new MethodDescriptor(postConstructMethod, MethodDescriptor.EJB_BEAN));
+                    // Since REQUIRED and REQUIRES_NEW are already taken care of, only
+                    // override the value if it's TX_NOT_SUPPORTED.
+                    if( lcTxAttr == Container.TX_NOT_SUPPORTED ) {
+                        txAttr = lcTxAttr;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return txAttr;
+    }
+
 
     /**
      * Called from various places within the container that are responsible

@@ -126,14 +126,8 @@ public abstract class AbstractSingletonContainer
     protected AbstractSingletonContainer(EjbDescriptor desc, ClassLoader loader)
         throws Exception {
         super(ContainerType.SINGLETON, desc, loader);
-        super.setMonitorOn(false); //TODO super.setMonitorOn(ejbContainer.isMonitoringEnabled());
 
         super.createCallFlowAgent(ComponentType.SLSB);
-
-        Set<LifecycleCallbackDescriptor> postConstructDescriptors =
-            ejbDescriptor.getPostConstructDescriptors();
-        Set<LifecycleCallbackDescriptor> preDestroyDescriptors =
-            ejbDescriptor.getPreDestroyDescriptors();
 
         // Tx attribute for PostConstruct/PreDestroy methods can only be specified using
         // a PostConstruct/PreDestroy method defined on the bean class.  If nothing is
@@ -143,55 +137,16 @@ public abstract class AbstractSingletonContainer
         // lazily as a side effect of an invocation.   Like timeout methods, from the
         // developer's perspective there is never an inflowing transaction to a Singleton
         // PostConstruct or PreDestroy method.
-        int defaultTxAttr =  isBeanManagedTran ?
-                Container.TX_BEAN_MANAGED : Container.TX_REQUIRES_NEW;
-
-        int postConstructTxAttr = defaultTxAttr;
-        int preDestroyTxAttr = defaultTxAttr;
-
-        if( !isBeanManagedTran ) {
-            for(LifecycleCallbackDescriptor lcd : postConstructDescriptors) {
-                if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
-
-                    Method postConstructMethod =
-                        lcd.getLifecycleCallbackMethodObject(loader);
-                    int txAttr = findTxAttr(
-                        new MethodDescriptor(postConstructMethod, MethodDescriptor.EJB_BEAN));
-                    // Since REQUIRED and REQUIRES_NEW are already taken care of, only
-                    // override the value if it's TX_NOT_SUPPORTED.
-                    if( txAttr == Container.TX_NOT_SUPPORTED ) {
-                        postConstructTxAttr = txAttr;                       
-                    }
-                    break;
-                }
-            }
-            for(LifecycleCallbackDescriptor lcd : preDestroyDescriptors) {
-                if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
-
-                    Method preDestroyMethod =
-                        lcd.getLifecycleCallbackMethodObject(loader);
-                    int txAttr = findTxAttr(
-                        new MethodDescriptor(preDestroyMethod, MethodDescriptor.EJB_BEAN));
-                    // Since REQUIRED and REQUIRES_NEW are already taken care of, only
-                    // override the value if it's TX_NOT_SUPPORTED.
-                    if( txAttr == Container.TX_NOT_SUPPORTED ) {
-                        preDestroyTxAttr = txAttr;                       
-                    }
-                    break;
-                }
-            }
-        }
 
         postConstructInvInfo = new InvocationInfo();
         postConstructInvInfo.ejbName = ejbDescriptor.getName();
         postConstructInvInfo.methodIntf = MethodDescriptor.EJB_BEAN;
-        postConstructInvInfo.txAttr = postConstructTxAttr;
+        postConstructInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPostConstructDescriptors());;
 
         preDestroyInvInfo = new InvocationInfo();
         preDestroyInvInfo.ejbName = ejbDescriptor.getName();
         preDestroyInvInfo.methodIntf = MethodDescriptor.EJB_BEAN;
-        preDestroyInvInfo.txAttr = preDestroyTxAttr;            
-
+        preDestroyInvInfo.txAttr = getTxAttrForLifecycleCallback(ejbDescriptor.getPreDestroyDescriptors());
 
     }
 
@@ -261,10 +216,6 @@ public abstract class AbstractSingletonContainer
 
     private void createBeanPool() {
         this.singletonCtxFactory = new SingletonContextFactory();
-    }
-
-    protected void checkUnfinishedTx(Transaction prevTx, EjbInvocation inv) {
-
     }
 
     protected void registerMonitorableComponents() {
