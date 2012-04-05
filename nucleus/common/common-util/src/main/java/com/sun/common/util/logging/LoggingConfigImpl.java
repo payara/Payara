@@ -511,6 +511,26 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     }
 
     /*
+      * Returns the zip File Name to create for collection log files
+      *
+      * @param sourceDir Directory underneath zip file should be created.
+      * @param fileName file name for zip file
+      */
+
+    private String getZipFileName(String sourceDir,String fileName) {
+
+        final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH-mm-ss";
+
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+        String currentTime = sdf.format(cal.getTime());
+
+        String zipFile = sourceDir + File.separator + fileName + "-" + currentTime + ".zip";
+
+        return zipFile;
+    }
+
+    /*
       * Creating zip file for given log files
       *
       * @param sourceDir Source directory from which needs to create zip
@@ -521,6 +541,39 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
     public String createZipFile(String sourceDir) throws IOException {
 
         String zipFile = getZipFileName(sourceDir);
+        boolean zipDone = false;
+        try {
+            //create object of FileOutputStream
+            FileOutputStream fout = new FileOutputStream(zipFile);
+
+            //create object of ZipOutputStream from FileOutputStream
+            ZipOutputStream zout = new ZipOutputStream(fout);
+
+            //create File object from source directory
+            File fileSource = new File(sourceDir);
+
+            zipDone = addDirectory(zout, fileSource);
+
+            //close the ZipOutputStream
+            zout.close();
+        } catch (IOException ioe) {
+            Logger.getAnonymousLogger().log(Level.SEVERE, "Error while creating zip file :", ioe);
+            throw ioe;
+        }
+        return zipFile;
+    }
+
+    /*
+      * Creating zip file for given log files
+      *
+      * @param sourceDir Source directory from which needs to create zip
+      * @param zipFileName zip file name which need to be created
+      * @throws  IOException
+      */
+
+    public String createZipFile(String sourceDir,String zipFileName) throws IOException {
+
+        String zipFile = getZipFileName(sourceDir,zipFileName);
         boolean zipDone = false;
         try {
             //create object of FileOutputStream
