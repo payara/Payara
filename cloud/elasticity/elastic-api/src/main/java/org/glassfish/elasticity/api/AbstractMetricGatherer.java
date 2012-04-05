@@ -55,9 +55,9 @@ public abstract class AbstractMetricGatherer<C extends MetricGathererConfig> {
     
     private C config;
     
-    public void initialize(Service service, MetricGathererConfig config) {
+    public void initialize(Service service, C config) {
         this.provisionedService = service;
-        this.config = (C) config;
+        this.config = config;
     }
     
     public void purgeDataOlderThan(int time, TimeUnit unit) {

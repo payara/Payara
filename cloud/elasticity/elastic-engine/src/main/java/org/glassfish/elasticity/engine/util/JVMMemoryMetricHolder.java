@@ -63,7 +63,7 @@ import com.sun.enterprise.config.serverbeans.Server;
  */
 @Service(name = "jvm_memory")
 public class JVMMemoryMetricHolder
-    extends AbstractMetricGatherer<MetricGathererConfig>
+    extends AbstractMetricGatherer<JVMMetricGathererConfig>
     implements MetricNode, PostConstruct {
 
     static final String _NAME = "jvm_memory";
@@ -96,7 +96,8 @@ public class JVMMemoryMetricHolder
 //        this.max = memBean.getHeapMemoryUsage().getMax();
     }
 
-    public void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, MetricGathererConfig config) {
+    @Override
+    public void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, JVMMetricGathererConfig config) {
         super.initialize(service, config);
 //        ServiceType type = service.getServiceType();
         serviceName = service.getName();
