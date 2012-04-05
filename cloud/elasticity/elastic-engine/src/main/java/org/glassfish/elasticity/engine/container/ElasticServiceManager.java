@@ -111,7 +111,7 @@ public class ElasticServiceManager {
                         habitat.forContract(ElasticServiceContainer.class).get();
                 for (MetricGathererConfig cfg : mgConfigs) {
                     AbstractMetricGatherer mg = habitat.forContract(AbstractMetricGatherer.class).named(cfg.getName()).get();
-                    mg.initialize(event.getNewValue(), cfg);
+                    mg.init(event.getNewValue(), cfg);
                     threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, 300),
                             10, 10, TimeUnit.SECONDS);
 
@@ -138,7 +138,6 @@ public class ElasticServiceManager {
         }
 
         public void run() {
-            logger.log(Level.INFO, "Gathering data for metric...");
             mg.gatherMetric();
 
             long now = System.currentTimeMillis();

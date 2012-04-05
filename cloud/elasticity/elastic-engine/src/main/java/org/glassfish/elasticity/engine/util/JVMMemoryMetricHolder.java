@@ -97,14 +97,11 @@ public class JVMMemoryMetricHolder
     }
 
     @Override
-    public void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, JVMMetricGathererConfig config) {
-        super.initialize(service, config);
-//        ServiceType type = service.getServiceType();
+    protected void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, JVMMetricGathererConfig config) {
         serviceName = service.getName();
-        init();
-    }
+        System.out.println("*** JVMMemoryMetricHolder.initialize called.... "+ serviceName
+            + "; service.getProperties => " + service.getProperties());
 
-    private void init() {
        //create a hash map with all instance names in this service
         // each entry is a name of instance and the object which holds the data as in previous design
         // init the host and port for the instance when creating the object
@@ -142,7 +139,6 @@ public class JVMMemoryMetricHolder
 //         init();
         //  for each instance in the service get the data
         // use another class so can be done concurrently if needed
-        System.out.println("Gather data");
         for (String name : instancesTable.keySet()) {
             JVMInstanceMemoryHolder instanceMemoryHolder = (JVMInstanceMemoryHolder)instancesTable.get(name);
             instanceMemoryHolder.gatherMetric();
