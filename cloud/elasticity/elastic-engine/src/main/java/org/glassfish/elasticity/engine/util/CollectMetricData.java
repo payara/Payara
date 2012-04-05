@@ -61,12 +61,11 @@ public class CollectMetricData {
 
         try {
             Client client = Client.create();
-
             ClientResponse response = client.resource(url).accept(RESPONSE_TYPE).get(ClientResponse.class);
 
             res = getEntityValues(response);
         } catch (Exception ex){
-            // could not get data
+                ex.printStackTrace();
         }
 
           return res;

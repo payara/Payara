@@ -39,12 +39,14 @@
  */
 package org.glassfish.elasticity.engine.util;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 
@@ -56,6 +58,11 @@ import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ParameterMap;
+import com.sun.logging.LogDomains;
+import com.sun.enterprise.v3.common.PropsFileActionReporter;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
@@ -75,6 +82,7 @@ public class JVMMemoryMetricHolder
     private static final String heap_used = "usedheapsize-count";
     private static final String heap_commited = "committedheapsize-count";
     private static final String maxheapsize = "maxheapsize-count";
+    private AdminCommandContext context = null;
 
     // need to store instance name, instance port, instance host and data for the instance
     HashMap<String, Object>  instancesTable= null;
@@ -85,7 +93,8 @@ public class JVMMemoryMetricHolder
 
     String serviceName;
 
-    private boolean debug;
+    @Inject
+    private CommandRunner cr;
 
     @Inject
     private Clusters clusters;
@@ -106,7 +115,6 @@ public class JVMMemoryMetricHolder
         // each entry is a name of instance and the object which holds the data as in previous design
         // init the host and port for the instance when creating the object
 
-        // need to get the service name  hard code for now
         Cluster cluster = clusters.getCluster(serviceName);
         if (cluster == null) {
             System.out.println("No cluster called "+ serviceName);
@@ -127,53 +135,33 @@ public class JVMMemoryMetricHolder
                 JVMInstanceMemoryHolder jvmInstanceHolder = new JVMInstanceMemoryHolder("localhost", "4848", instanceName);
 
                 instancesTable.put(instanceName,jvmInstanceHolder);
+                turnOnMonitoring(instanceName);
             }
         }
-        //should trun on monitoring for the service so can collect data
-
     }
 
     @Override
     public void gatherMetric() {
         //only because we don't have metric factories and callback
-//         init();
         //  for each instance in the service get the data
         // use another class so can be done concurrently if needed
         for (String name : instancesTable.keySet()) {
             JVMInstanceMemoryHolder instanceMemoryHolder = (JVMInstanceMemoryHolder)instancesTable.get(name);
             instanceMemoryHolder.gatherMetric();
         }
-
-/*
-        if (debug) {
-            Iterator<TabularMetricEntry<MemoryStat>> iter = table.iterator(2 * 60 * 60, TimeUnit.SECONDS);
-            int count = 1;
-            TabularMetricEntry<MemoryStat> lastEntry = null;
-            while (iter.hasNext()) {
-                TabularMetricEntry<MemoryStat> tme = iter.next();
-                if (count == 1) {
-                    System.out.println(" " + count + " | " + new Date(tme.getTimestamp()) + " | " + tme.getV() + "; ");
-                }
-                lastEntry = tme;
-                count++;
-            }
-            if (lastEntry != null) {
-                System.out.println(" " + count + " | " + new Date(lastEntry.getTimestamp()) + " | " + lastEntry.getV() + "; ");
-            }
-            System.out.println("So far collected: " + count);
-        }
-        */
     }
 
     @Override
     public void purgeDataOlderThan(int time, TimeUnit unit) {
         //go to each instance and purge old data
+        /*
         for (String name : instancesTable.keySet()) {
             Map<String , Object> instanceInfo= (Map)instancesTable.get(name);
             TabularMetricHolder<MemoryStat> table= (TabularMetricHolder)instanceInfo.get("table");
             table.purgeEntriesOlderThan(time, unit);
             instanceInfo.put("table", table);
         }
+        */
     }
 
     @Override
@@ -184,6 +172,21 @@ public class JVMMemoryMetricHolder
     @Override
     public String getName() {
         return _NAME;
+    }
+
+    private void turnOnMonitoring(String insName) {
+        context = new AdminCommandContext(
+                LogDomains.getLogger(JVMMemoryMetricHolder.class, LogDomains.ADMIN_LOGGER),
+                new PropsFileActionReporter());
+        ActionReport report = context.getActionReport();
+
+        CommandRunner.CommandInvocation ci = cr.getCommandInvocation("set", report);
+        ParameterMap map = new ParameterMap();
+        String monitorIns = insName+".monitoring-service.module-monitoring-levels.jvm=HIGH";
+        map.add("DEFAULT", monitorIns);
+        ci.parameters(map);
+        ci.execute();
+
     }
 
     @Override
