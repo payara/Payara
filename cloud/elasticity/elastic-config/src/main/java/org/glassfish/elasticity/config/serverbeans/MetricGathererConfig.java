@@ -111,10 +111,5 @@ public interface MetricGathererConfig extends ConfigBeanProxy {
 
     @Attribute(defaultValue = "false")
     public int getAutoStart();
-    
-    @Attribute
-    public String getLookupName();
-    
-    @Param(name="lookup-name")
-    public void setLookupName(String val);
+
 }

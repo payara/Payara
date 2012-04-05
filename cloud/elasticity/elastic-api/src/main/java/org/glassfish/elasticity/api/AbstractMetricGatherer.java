@@ -39,6 +39,7 @@
  */
 package org.glassfish.elasticity.api;
 
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.concurrent.TimeUnit;
@@ -48,15 +49,15 @@ import org.glassfish.paas.orchestrator.service.spi.Service;
  * @author Mahesh.Kannan@Oracle.Com
  */
 @Contract
-public abstract class AbstractMetricGatherer<C> {
+public abstract class AbstractMetricGatherer<C extends MetricGathererConfig> {
 
     private Service provisionedService;
     
     private C config;
     
-    public void initialize(Service service, C config) {
+    public void initialize(Service service, MetricGathererConfig config) {
         this.provisionedService = service;
-        this.config = config;
+        this.config = (C) config;
     }
     
     public void purgeDataOlderThan(int time, TimeUnit unit) {

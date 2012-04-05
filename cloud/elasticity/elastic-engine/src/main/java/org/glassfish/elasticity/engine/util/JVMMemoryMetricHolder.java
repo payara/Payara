@@ -43,8 +43,10 @@ import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.util.TabularMetricHolder;
+import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 
 import java.lang.management.MemoryMXBean;
 import java.util.*;
@@ -57,10 +59,11 @@ import com.sun.enterprise.config.serverbeans.Server;
 
 /**
  * @author Mahesh.Kannan@Oracle.Com
+ * @author  carla.mott@oracle.com
  */
 @Service(name = "jvm_memory")
 public class JVMMemoryMetricHolder
-    extends AbstractMetricGatherer
+    extends AbstractMetricGatherer<MetricGathererConfig>
     implements MetricNode, PostConstruct {
 
     static final String _NAME = "jvm_memory";
@@ -80,6 +83,8 @@ public class JVMMemoryMetricHolder
 
     MemoryMXBean memBean;
 
+    String serviceName;
+
     private boolean debug;
 
     @Inject
@@ -91,15 +96,22 @@ public class JVMMemoryMetricHolder
 //        this.max = memBean.getHeapMemoryUsage().getMax();
     }
 
+    public void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, MetricGathererConfig config) {
+        super.initialize(service, config);
+//        ServiceType type = service.getServiceType();
+        serviceName = service.getName();
+        init();
+    }
+
     private void init() {
        //create a hash map with all instance names in this service
         // each entry is a name of instance and the object which holds the data as in previous design
         // init the host and port for the instance when creating the object
 
         // need to get the service name  hard code for now
-        Cluster cluster = clusters.getCluster("c1");
+        Cluster cluster = clusters.getCluster(serviceName);
         if (cluster == null) {
-            System.out.println("No cluster called "+ "c1");
+            System.out.println("No cluster called "+ serviceName);
             return;
         }
         List<Server> serverList = cluster.getInstances();
@@ -119,15 +131,17 @@ public class JVMMemoryMetricHolder
                 instancesTable.put(instanceName,jvmInstanceHolder);
             }
         }
+        //should trun on monitoring for the service so can collect data
 
     }
 
     @Override
     public void gatherMetric() {
         //only because we don't have metric factories and callback
-         init();
+//         init();
         //  for each instance in the service get the data
         // use another class so can be done concurrently if needed
+        System.out.println("Gather data");
         for (String name : instancesTable.keySet()) {
             JVMInstanceMemoryHolder instanceMemoryHolder = (JVMInstanceMemoryHolder)instancesTable.get(name);
             instanceMemoryHolder.gatherMetric();

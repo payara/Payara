@@ -116,7 +116,8 @@ public class ElasticEngine
     }
 
     public void startElasticService(ElasticServiceConfig service) {
-        SetElasticTenantId.setId();      // for now elasticity hardcodes the tenant Id
+        //need to create the tenant first then set it
+//        SetElasticTenantId.setId();      // for now elasticity hardcodes the tenant Id
 
         if (service.getEnabled()) {
             ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
@@ -142,18 +143,18 @@ public class ElasticEngine
     public void onEvent(ServiceChangeEvent event) {
         System.out.println("ElasticEngine ServiceChangeEvent::onEvent " + event);
         elasticServiceManager.onEvent(event);
-        try {
-            tm.setCurrentTenant("t1");
-
-            Tenant t = tm.get(Tenant.class);
-
-            System.out.println("Tenant t = " + t);
-
-            System.out.println("ElasticEngine ServiceChangeEvent::onEvent==> "
-                    + " name = " + event.getNewValue().getName()  + "; type = " + event.getNewValue().getServiceType().getName());
-
-        } catch (Exception ex) {
-            System.out.println("** NO TENANT AVAILABLE...");
-        }
+//        try {
+//            tm.setCurrentTenant("t1");
+//
+//            Tenant t = tm.get(Tenant.class);
+//
+//            System.out.println("Tenant t = " + t);
+//
+//            System.out.println("ElasticEngine ServiceChangeEvent::onEvent==> "
+//                    + " name = " + event.getNewValue().getName()  + "; type = " + event.getNewValue().getServiceType().getName());
+//
+//        } catch (Exception ex) {
+//            System.out.println("** NO TENANT AVAILABLE...");
+//        }
     }
 }
