@@ -54,7 +54,9 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
@@ -467,14 +469,17 @@ public class LBPlugin implements ServicePlugin {
     }
 
 
-    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context) {
         //no-op. Just by looking at a orchestration archive
         //the LB plugin cannot say that an LB needs to be provisioned.
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
 
         Application application = null;
+        DeploymentContext dc = context.getDeploymentContext();
+        String archiveType = dc.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
         try {
-            application = applicationFactory.openArchive(cloudArchive.getURI());
+            application = applicationFactory.openArchive(cloudArchive.getURI(), archiveType);
         } catch(Exception ex) {
             LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
         }

@@ -177,7 +177,8 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
         return serviceReferences;
     }
 
-    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context) {
         HashSet<ServiceDescription> implicitServiceDescriptions = new HashSet<ServiceDescription>();
 
         if (!JavaEEDeploymentUtils.isJavaEE(cloudArchive, habitat)) {

@@ -71,6 +71,8 @@ import java.util.logging.Level;
  */
 @Service
 @Scoped(PerLookup.class)
+//TODO change to CarType.ARCHIVE_TYPE once moved to appclient module
+@ArchivistFor("car")
 public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
 
     public static final Attributes.Name GLASSFISH_APPCLIENT =

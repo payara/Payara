@@ -148,7 +148,11 @@ public abstract class GenericHandler implements ArchiveHandler {
         }
 
         // now try to get the default
-        appName = archive.getName();
+        return getDefaultApplicationNameFromArchiveName(archive);
+    }
+
+    protected String getDefaultApplicationNameFromArchiveName(ReadableArchive archive) {
+        String appName = archive.getName();
         int lastDot = appName.lastIndexOf('.');
         if (lastDot != -1) {
             if (appName.substring(lastDot).equalsIgnoreCase("." + getArchiveType())) {

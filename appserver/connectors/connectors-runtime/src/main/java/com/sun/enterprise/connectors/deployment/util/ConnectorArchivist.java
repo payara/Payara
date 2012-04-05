@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.connectors.deployment.util;
 
+import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.ResourceAdapterAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.deployment.io.ConnectorDeploymentDescriptorFile;
@@ -66,6 +68,7 @@ import javax.inject.Inject;
  */
 @Service
 @Scoped(PerLookup.class)
+@ArchivistFor(RarType.ARCHIVE_TYPE)
 public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
 
     @Inject

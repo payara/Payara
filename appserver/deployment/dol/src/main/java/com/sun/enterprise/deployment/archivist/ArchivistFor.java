@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,22 +41,26 @@
 package com.sun.enterprise.deployment.archivist;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Index;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Composite archivists are just like any other archivists except they
- * get a chance at looking at the archive before other archivists do
- *
- * The main reason for this tag interface is that some archivists might
- * be tricked into thinking a composite archive is theirs when in fact they only
- * own a part of it.
- *
- * For instance, take a war file inside an ear file. and asssume that the war file
- * contains some .jsp files. The archivist responsible for handling the war
- * file could be fooled into thinking the ear file is a war file since it contains
- * jsp files, yet in reality, it only owns one of the sub archive bundled inside
- * the composite ear file.
- *
+ * Normally goes with {@link org.jvnet.hk2.annotations.Service} annotation,
+ * and this annotation must be placed on a class that extends
+ * {@link com.sun.enterprise.deployment.archivist.Archivist}.
  */
 @Contract
-public interface CompositeArchivist {
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ArchivistFor {
+    /**
+     * see {@link org.glassfish.api.deployment.archive.ArchiveType} and its
+     * implementation classes for valid string values.
+     */
+    @Index String value();
 }

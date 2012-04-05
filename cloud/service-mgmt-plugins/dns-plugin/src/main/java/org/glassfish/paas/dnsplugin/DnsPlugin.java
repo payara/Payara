@@ -124,7 +124,8 @@ public class DnsPlugin implements ServicePlugin {
     }
 
     @Override
-    public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive, String appName) {
+    public Set<ServiceDescription> getImplicitServiceDescriptions(
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context) {
         //currently DNS is only supported as a external service
         //so will never be provisioned
         return new HashSet<ServiceDescription>();

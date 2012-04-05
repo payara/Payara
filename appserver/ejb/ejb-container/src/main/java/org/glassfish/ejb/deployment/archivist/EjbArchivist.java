@@ -44,11 +44,11 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
 import com.sun.enterprise.deployment.util.EjbBundleValidator;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -66,10 +66,10 @@ import java.util.Set;
  * This class is responsible for handling J2EE EJB Bundlearchive files.
  *
  * @author  Jerome Dochez
- * @version
  */
 @Service
 @Scoped(PerLookup.class)
+@ArchivistFor(org.glassfish.ejb.EjbType.ARCHIVE_TYPE)
 public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
 
     /**
@@ -83,11 +83,6 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
 
     @Inject @Named("GFEjbRuntimeDDFile")
     Provider<DeploymentDescriptorFile> gfEjbRuntimeDD;
-
-    // resources...
-    private static LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(EjbArchivist.class);
-
 
     /**
      * @return the  module type handled by this archivist

@@ -40,18 +40,57 @@
 
 package com.sun.enterprise.connectors;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.appserv.connectors.internal.api.*;
+import com.sun.appserv.connectors.internal.spi.ConnectorNamingEventListener;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.connectors.authentication.AuthenticationService;
+import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
+import com.sun.enterprise.connectors.module.ConnectorApplication;
+import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
+import com.sun.enterprise.connectors.service.*;
 import com.sun.enterprise.connectors.util.*;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
+import com.sun.enterprise.deployment.archivist.ArchivistFactory;
+import com.sun.enterprise.resource.deployer.DataSourceDefinitionDeployer;
+import com.sun.enterprise.resource.pool.PoolManager;
+import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
+import com.sun.enterprise.resource.pool.monitor.PoolMonitoringLevelListener;
+import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.logging.LogDomains;
+import org.glassfish.admin.monitor.MonitoringBootstrap;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.SecurityMap;
+import org.glassfish.connectors.config.WorkSecurityMap;
+import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.ConnectorClassLoaderService;
+import org.glassfish.internal.api.DelegatingClassLoader;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.resources.api.PoolInfo;
+import org.glassfish.resources.api.ResourceDeployer;
+import org.glassfish.resources.api.ResourceInfo;
+import org.glassfish.resources.api.ResourcesRegistry;
+import org.glassfish.resources.listener.ResourceManager;
+import org.glassfish.resources.naming.ResourceNamingService;
+import org.glassfish.resources.util.ResourceManagerFactory;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.component.PreDestroy;
+import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.config.types.Property;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.net.URI;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -65,51 +104,13 @@ import javax.resource.spi.work.WorkManager;
 import javax.security.auth.callback.CallbackHandler;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-
-import com.sun.appserv.connectors.internal.api.*;
-import com.sun.appserv.connectors.internal.spi.*;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.connectors.authentication.AuthenticationService;
-import com.sun.enterprise.connectors.module.ConnectorApplication;
-import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
-import com.sun.enterprise.connectors.service.*;
-import com.sun.enterprise.connectors.service.ConnectorService;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
-import com.sun.enterprise.deployment.archivist.ArchivistFactory;
-import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
-import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.connectors.config.SecurityMap;
-import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import com.sun.enterprise.resource.deployer.DataSourceDefinitionDeployer;
-import com.sun.enterprise.resource.pool.PoolManager;
-import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
-import com.sun.enterprise.resource.pool.monitor.PoolMonitoringLevelListener;
-import com.sun.enterprise.security.jmac.callback.ContainerCallbackHandler;
-import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import org.glassfish.admin.monitor.MonitoringBootstrap;
-import org.glassfish.resources.api.*;
-import org.glassfish.resources.listener.ResourceManager;
-import org.glassfish.resources.naming.ResourceNamingService;
-import org.glassfish.resources.util.ResourceManagerFactory;
-import org.jvnet.hk2.component.*;
-import org.jvnet.hk2.config.types.Property;
-import org.glassfish.api.admin.*;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.DelegatingClassLoader;
-import org.glassfish.internal.api.ConnectorClassLoaderService;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -1318,15 +1319,8 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public ConnectorArchivist getConnectorArchvist() throws ConnectorRuntimeException {
-        try{
-            ArchivistFactory archivistFactory = archivistFactoryProvider.get();
-            return (ConnectorArchivist)archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.rarType());
-        }catch(IOException ioe){
-            _logger.log(Level.WARNING, "unable to get Connector Archivist : ", ioe);
-            ConnectorRuntimeException cre = new ConnectorRuntimeException(ioe.getMessage());
-            cre.setStackTrace(ioe.getStackTrace());
-            throw cre;
-        }
+        ArchivistFactory archivistFactory = archivistFactoryProvider.get();
+        return (ConnectorArchivist) archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.rarType());
     }
 
     public WorkContextHandler getWorkContextHandler(){

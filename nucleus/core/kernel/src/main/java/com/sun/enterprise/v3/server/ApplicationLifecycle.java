@@ -360,6 +360,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     commandParams.type);
                 context.setArchiveHandler(handler);
             }
+            context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, handler.getArchiveType());
             DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
 
             if (tracing!=null) {

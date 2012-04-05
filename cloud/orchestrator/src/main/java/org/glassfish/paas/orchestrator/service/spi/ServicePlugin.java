@@ -164,7 +164,7 @@ public interface ServicePlugin<T extends ServiceType> {
      * that this Plugin "implies" for the provided application archive. 
      */
     public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive, String appName);
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context);
     
     /* SERVICE PROVISIONING */
     

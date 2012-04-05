@@ -234,6 +234,8 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
             // create an initial  context
             ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, logger, archive, this, env);
+            initialContext.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, archiveHandler.getArchiveType());
+
             if (tracing!=null) {
                 initialContext.addModuleMetaData(tracing);
                 tracing.addMark(DeploymentTracing.Mark.INITIAL_CONTEXT_CREATED);

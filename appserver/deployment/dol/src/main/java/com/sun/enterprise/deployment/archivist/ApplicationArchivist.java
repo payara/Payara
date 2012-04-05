@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EarType;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -76,13 +77,11 @@ import java.util.logging.Level;
  * This class is responsible for handling application archive files
  *
  * @author  Jerome Dochez
- * @version
  */
 @Service
 @Scoped(PerLookup.class)
-public class ApplicationArchivist extends Archivist<Application> 
-    implements CompositeArchivist {
-
+@ArchivistFor(EarType.ARCHIVE_TYPE)
+public class ApplicationArchivist extends Archivist<Application> {
     @Inject
     Provider<ArchivistFactory> archivistFactory;
 
@@ -134,7 +133,7 @@ public class ApplicationArchivist extends Archivist<Application>
                 
         // write this application .ear file contents...
         for (ModuleDescriptor aModule : descriptor.getModules()) {
-            Archivist subArchivist = archivistFactory.get().getPrivateArchivistFor(aModule.getModuleType());
+            Archivist subArchivist = archivistFactory.get().getArchivist(aModule.getModuleType());
             subArchivist.initializeContext(this);
             subArchivist.setModuleDescriptor(aModule);
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -180,9 +179,6 @@ public class ApplicationArchivist extends Archivist<Application>
                     }
                     subArchivist.writeContents(internalJar);
                     out.closeEntry(internalJar);
-                    
-                } catch(IOException ioe) {
-                    throw ioe;
                 } finally {
                     if (tmpFile!=null)
                         tmpFile.delete();
@@ -458,7 +454,7 @@ public class ApplicationArchivist extends Archivist<Application>
         try {
             uri = subModule.getCanonicalPath().substring(aRoot.length() + 1);
         } catch (IOException ex) {
-            uri = subModule.getAbsolutePath().substring(aRoot.length() + 1);;
+            uri = subModule.getAbsolutePath().substring(aRoot.length() + 1);
         } 
         return uri.replace(File.separatorChar, '/');
     }
@@ -568,7 +564,7 @@ public class ApplicationArchivist extends Archivist<Application>
                 DOLUtils.getDefaultLogger().fine("Opening sub-module " + aModule);
             }
             RootDeploymentDescriptor descriptor = null;
-            Archivist newArchivist = archivistFactory.get().getPrivateArchivistFor(aModule.getModuleType());
+            Archivist newArchivist = archivistFactory.get().getArchivist(aModule.getModuleType());
             newArchivist.initializeContext(this);
             newArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
             newArchivist.setRuntimeXMLValidationLevel(
@@ -725,7 +721,7 @@ public class ApplicationArchivist extends Archivist<Application>
 
             // each modules first...
             for (ModuleDescriptor md : descriptor.getModules()) { 
-                Archivist archivist = archivistFactory.get().getPrivateArchivistFor(md.getModuleType());
+                Archivist archivist = archivistFactory.get().getArchivist(md.getModuleType());
                 archivist.initializeContext(this);
                 archivist.setRuntimeXMLValidation(
                     this.getRuntimeXMLValidation());
@@ -838,7 +834,7 @@ public class ApplicationArchivist extends Archivist<Application>
         for (ModuleDescriptor md : descriptor.getModules()) {
             ReadableArchive sub = archive.getSubArchive(md.getArchiveUri());
             if (sub!=null) {
-                Archivist subArchivist = archivistFactory.get().getPrivateArchivistFor(md.getModuleType());
+                Archivist subArchivist = archivistFactory.get().getArchivist(md.getModuleType());
                 if (!subArchivist.performOptionalPkgDependenciesCheck(sub))
                     returnValue = false;
             }
@@ -885,7 +881,7 @@ public class ApplicationArchivist extends Archivist<Application>
             entriesAdded.add(aModule.getArchiveUri());
             ReadableArchive subSource = source.getSubArchive(aModule.getArchiveUri());
             WritableArchive subTarget = target.createSubArchive(aModule.getArchiveUri());
-            Archivist newArchivist = archivistFactory.get().getPrivateArchivistFor(aModule.getModuleType());
+            Archivist newArchivist = archivistFactory.get().getArchivist(aModule.getModuleType());
             ReadableArchive subArchive = archiveFactory.openArchive(subTarget.getURI());
             subSource.setParentArchive(subArchive);
             newArchivist.copyInto(subSource, subTarget, overwriteManifest);
@@ -953,8 +949,8 @@ public class ApplicationArchivist extends Archivist<Application>
      * Judge an entry to be a top-level submodule if it ends with _war, _jar,
      * _rar, or .war, .jar, or .rar (MyEclipse uses latter pattern.)
      *
-     * @param entryName
-     * @return
+     * @param entryName entryName
+     * @return true | false
      */
     private static boolean resemblesTopLevelSubmodule(final String entryName) {
         return (entryName.endsWith("_war")

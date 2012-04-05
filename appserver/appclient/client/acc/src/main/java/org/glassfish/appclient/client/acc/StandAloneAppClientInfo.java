@@ -43,11 +43,20 @@ package org.glassfish.appclient.client.acc;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.AppClientPersistenceDependencyAnnotationScanner;
-import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
+import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
 import com.sun.enterprise.loader.ASURLClassLoader;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
+import org.xml.sax.SAXParseException;
+
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,13 +65,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.xml.sax.SAXParseException;
 
 /**
  * Represents an app client that is in a stand-alone archive, not inside an
@@ -89,20 +91,17 @@ public class StandAloneAppClientInfo extends AppClientInfo implements PostConstr
     }
 
     public void postConstruct() {
-        try {
-            Archivist archivist = archivistFactory.getArchivist(appClientArchive, getClassLoader());
-            if (!(archivist instanceof AppClientArchivist)) {
-                throw new IllegalArgumentException("expected an app client module but " +
-                        appClientArchive.getURI().toASCIIString() +
-                        " was recognized by " + archivist.getClass().getName());
-            }
-            appClientArchivist = (AppClientArchivist) archivist;
-            setDescriptor(appClientArchivist.getDescriptor());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        Archivist archivist = archivistFactory.getArchivist(ModuleType.CAR.toString(), getClassLoader());
+        if (!(archivist instanceof AppClientArchivist)) {
+            throw new IllegalArgumentException("expected an app client module but " +
+                    appClientArchive.getURI().toASCIIString() +
+                    " was recognized by " + archivist.getClass().getName());
         }
+        appClientArchivist = (AppClientArchivist) archivist;
+        setDescriptor(appClientArchivist.getDescriptor());
     }
-/**
+
+    /**
      *Finishes initialization work.
      *<p>
      *The calling logic that instantiates this object must invoke completeInit

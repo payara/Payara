@@ -210,7 +210,7 @@ public abstract class DatabaseSPEBase extends ServiceProvisioningEngineBase<RDBM
      * {@inheritDoc}
      */
     public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive, String appName) {
+            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context) {
         //no-op. Just by looking at a orchestration archive
         //the db plugin cannot say that a DB needs to be provisioned.
         return new HashSet<ServiceDescription>();

@@ -94,4 +94,9 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
         return parent;
     }
 
+    public String getDefaultApplicationName(ReadableArchive archive,
+        DeploymentContext context) {
+        return getDefaultApplicationNameFromArchiveName(archive);
+    }
+
 }

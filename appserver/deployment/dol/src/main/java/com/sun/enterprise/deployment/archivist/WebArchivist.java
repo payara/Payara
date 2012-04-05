@@ -89,6 +89,8 @@ import java.net.URL;
  */
 @Service
 @Scoped(PerLookup.class)
+//TODO change to WarType.ARCHIVE_TYPE once moved to web module
+@ArchivistFor("war")
 public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
 

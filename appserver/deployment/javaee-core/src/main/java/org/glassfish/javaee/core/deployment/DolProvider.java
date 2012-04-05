@@ -40,62 +40,53 @@
 
 package org.glassfish.javaee.core.deployment;
 
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.deployment.common.DeploymentContextImpl;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.deployment.DeploymentTracing;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PreDestroy;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.ApplicationMetaDataProvider;
-import org.glassfish.api.deployment.MetaData;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.api.deployment.archive.ArchiveHandler;
-import org.glassfish.api.ActionReport;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.internal.deployment.ApplicationInfoProvider;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.xml.sax.SAXParseException;
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.archivist.*;
 import com.sun.enterprise.deployment.deploy.shared.DeploymentPlanArchive;
-import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
-import com.sun.enterprise.deployment.archivist.Archivist;
-import com.sun.enterprise.deployment.archivist.ArchivistFactory;
-import com.sun.enterprise.deployment.archivist.ApplicationFactory;
-import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
-import com.sun.enterprise.deployment.archivist.DescriptorArchivist;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.common.HTMLActionReporter;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.ApplicationMetaDataProvider;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.MetaData;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.deployment.common.*;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.deployment.ApplicationInfoProvider;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.DeploymentTracing;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PreDestroy;
+import org.xml.sax.SAXParseException;
 
-import java.io.IOException;
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.net.URL;
-
-import java.util.List;
-import java.util.ArrayList;
-
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * ApplicationMetada
@@ -154,9 +145,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
 
         String name = params.name();
-
-        Archivist archivist = archivistFactory.getArchivist(
-                sourceArchive, cl);
+        String archiveType = dc.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
+        Archivist archivist = archivistFactory.getArchivist(archiveType, cl);
         if (archivist == null) {
             // if no JavaEE medata was found in the archive, we return 
             // an empty Application object
@@ -247,8 +237,8 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     /**
      * return the name for the given application
      */
-    public String getNameFor(ReadableArchive archive, 
-        DeploymentContext context) {
+    public String getNameFor(ReadableArchive archive,
+                             DeploymentContext context) {
         Application application = null;
         try {
             // for these cases, the standard DD could contain the application
@@ -258,12 +248,13 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 archive.exists("META-INF/ejb-jar.xml") || 
                 archive.exists("META-INF/application-client.xml") || 
                 archive.exists("META-INF/ra.xml")) {
-                application = applicationFactory.createApplicationFromStandardDD(archive);
+                String archiveType = context.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class) ;
+                application = applicationFactory.createApplicationFromStandardDD(archive, archiveType);
                 DeploymentTracing tracing = null; 
                 if (context != null) {
                     tracing = context.getModuleMetaData(DeploymentTracing.class);
                 }
-                if (tracing!=null) {
+                if (tracing != null) {
                     tracing.addMark(DeploymentTracing.Mark.DOL_LOADED);
                 }
                 ApplicationHolder holder = new ApplicationHolder(application);

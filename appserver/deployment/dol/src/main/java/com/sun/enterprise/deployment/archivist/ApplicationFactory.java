@@ -99,10 +99,10 @@ public class ApplicationFactory implements ContractProvider {
      * @param jarFile the archive file
      * @return the application object
      */
-    public Application openArchive(URI jarFile)
+    public Application openArchive(URI jarFile, String archiveType)
             throws IOException, SAXParseException {
 
-        return openArchive(jarFile, false);
+        return openArchive(jarFile, archiveType, false);
     }
 
     /**
@@ -204,9 +204,8 @@ public class ApplicationFactory implements ContractProvider {
      * @param archive the archive for the application
      */
     public Application createApplicationFromStandardDD(
-        ReadableArchive archive) throws IOException, SAXParseException {
-        Archivist archivist = archivistFactory.getArchivist(archive, 
-            null);
+        ReadableArchive archive, String archiveType) throws IOException, SAXParseException {
+        Archivist archivist = archivistFactory.getArchivist(archiveType, null);
         String xmlValidationLevel = dasConfig.getDeployXmlValidation();
         archivist.setXMLValidationLevel(xmlValidationLevel);
         if (xmlValidationLevel.equals("none")) {
@@ -255,11 +254,9 @@ public class ApplicationFactory implements ContractProvider {
      * @param handleRuntimeInfo set to true to read configuration deployment descriptors
      * @return the application object
      */
-    public Application openArchive(URI jarFile, boolean handleRuntimeInfo)
+    public Application openArchive(URI jarFile, String archiveType, boolean handleRuntimeInfo)
             throws IOException, SAXParseException {
-
-        ReadableArchive in = archiveFactory.openArchive(jarFile);
-        Archivist archivist = archivistFactory.getPrivateArchivistFor(in);
+        Archivist archivist = archivistFactory.getArchivist(archiveType);
         return openArchive(archivist, jarFile, handleRuntimeInfo);
     }
 

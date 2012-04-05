@@ -40,17 +40,15 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.jvnet.hk2.annotations.Service;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -145,19 +143,6 @@ public class DescriptorArchivist {
                 archivist.writeStandardDeploymentDescriptors(out);
             }
         }
-    }
-    
-    /**
-     * writes a bundle descriptor 
-     * @param the bundle descriptor
-     * @param the abstract archive
-     */
-    public void write(BundleDescriptor bundle, ReadableArchive in, WritableArchive out)
-        throws IOException
-    {
-        Archivist archivist = archivistFactory.getArchivist(in, 
-            bundle.getClassLoader());
-        write(bundle, archivist, in, out);
     }
     
     /**

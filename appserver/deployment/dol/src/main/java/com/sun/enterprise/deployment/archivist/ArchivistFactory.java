@@ -40,23 +40,18 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.ContractProvider;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import javax.inject.Inject;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.PostConstruct;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This factory class is responsible for creating Archivists
@@ -65,44 +60,37 @@ import java.util.LinkedList;
  */
 @Service
 @Scoped(Singleton.class)
-public class ArchivistFactory implements ContractProvider, PostConstruct {
-
-    @Inject
-    Archivist[] archivists;
-
-    @Inject
-    CompositeArchivist[] compositeArchivists;
-
+public class ArchivistFactory implements ContractProvider {
     @Inject @Optional
     ExtensionsArchivist[] extensionsArchivists;
 
     @Inject
-    ArchiveFactory archiveFactory;
-
-    @Inject
     Habitat habitat;
 
-    public ArchivistFactory() {
-        habitat = null;
-    }
-    
-    public Archivist getArchivist(ReadableArchive archive,
-        ClassLoader cl) throws IOException {
-        Archivist archivist = getPrivateArchivistFor(archive);
-        if (archivist!=null) {
-            archivist.setClassLoader(cl);
+    public Archivist getArchivist(String archiveType, ClassLoader cl) {
+        Archivist result = getArchivist(archiveType);
+        if(result != null) {
+            result.setClassLoader(cl);
         }
-        return archivist;
+        return result;
     }
 
+    public Archivist getArchivist(String archiveType) {
+        Archivist result = null;
+        for (Inhabitant<?> inhabitant : habitat.getInhabitants(ArchivistFor.class)) {
+            String indexedType = inhabitant.metadata().get(ArchivistFor.class.getName()).get(0);
+            if(indexedType.equals(archiveType)) {
+                result = (Archivist) inhabitant.get();
+            }
+        }
+        return result;
+    }
 
-    public Archivist getArchivist(ArchiveType moduleType)
-        throws IOException {
-        return getPrivateArchivistFor(moduleType);
+    public Archivist getArchivist(ArchiveType moduleType) {
+        return getArchivist(String.valueOf(moduleType));
     }
 
     public List<ExtensionsArchivist> getExtensionsArchists(ArchiveType moduleType) {
-
         List<ExtensionsArchivist> archivists = new ArrayList<ExtensionsArchivist>();
         for (ExtensionsArchivist ea : extensionsArchivists) {
             if (ea.supportsModuleType(moduleType)) {
@@ -111,99 +99,4 @@ public class ArchivistFactory implements ContractProvider, PostConstruct {
         }
         return archivists;
     }
-
-    /**
-     * Only archivists should have access to this API. we'll see how it works,
-     * @param moduleType
-     * @return
-     * @throws IOException
-     */
-    Archivist getPrivateArchivistFor(ArchiveType moduleType)
-        throws IOException {
-        if (moduleType == null) return null;
-        for (Archivist pa : archivists) {
-            Archivist a = Archivist.class.cast(pa);
-            if (a.getModuleType().equals(moduleType)) {
-                return copyOf(a);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Only archivists should have access to this API. we'll see how it works,
-     * @param archive
-     * @return
-     * @throws IOException
-     */
-    Archivist getPrivateArchivistFor(ReadableArchive archive)
-        throws IOException {
-        // do CompositeArchivist first
-        Archivist a = getPrivateArchivistFor(archive, compositeArchivists); 
-        if (a == null) {
-            a = getPrivateArchivistFor(archive, archivists);
-        }
-        return a;
-    }
-
-    private Archivist getPrivateArchivistFor(ReadableArchive archive, 
-        Object[] aa) throws IOException {
-        //first, check the existence of any deployment descriptors
-        for (Object pa : aa) {
-            Archivist a = Archivist.class.cast(pa);
-            if (a.hasStandardDeploymentDescriptor(archive) ||
-                    a.hasRuntimeDeploymentDescriptor(archive)) {
-                return copyOf(a);
-                }
-            }
-
-        // Java EE 5 Specification: Section EE.8.4.2.1
-
-        //second, check file extension if any, excluding .jar as it needs
-        //additional processing
-        String uri = archive.getURI().getPath();
-        File file = new File(uri);
-        if (!file.isDirectory() && !uri.endsWith(Archivist.EJB_EXTENSION)) {
-            for (Object pa : aa) {
-                Archivist a = Archivist.class.cast(pa);
-                if (uri.endsWith(a.getArchiveExtension())) {
-                    return copyOf(a);
-                }
-            }
-        }
-
-        //finally, still not returned here, call for additional processing
-        for (Object pa : aa) {
-            Archivist a = Archivist.class.cast(pa);
-            if (a.postHandles(archive)) {
-                return copyOf(a);
-            }
-        }
-
-        return null;
-    }
-
-    private Archivist copyOf(Archivist a) {
-        try {
-            return habitat.getComponent(a.getClass());
-//            return a.getClass().newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void postConstruct() {
-        // move appclient archivist to the last to match as other archives 
-        // could have Main-Class in Manifest also
-        LinkedList<Archivist> sortedArchivists = new LinkedList<Archivist>();
-        for (Archivist a : archivists) {
-            if (a instanceof AppClientArchivist) {
-                sortedArchivists.addLast(a);
-            } else {
-                sortedArchivists.addFirst(a);
-            }
-        }
-        archivists = sortedArchivists.toArray(new Archivist[sortedArchivists.size()]);
-    }
-
 }

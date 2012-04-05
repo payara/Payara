@@ -210,7 +210,7 @@ public class ServiceDependencyDiscoveryState extends AbstractPaaSDeploymentState
                 //supports this type of archive) if it has any implicit
                 //service-description for this application
                 if (!serviceDescriptionExistsForPlugin(appServiceMetadata, svcPlugin)) {
-                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName);
+                    Set<ServiceDescription> implicitServiceDescs = svcPlugin.getImplicitServiceDescriptions(archive, appName, context);
                     if(implicitServiceDescs != null){
                         for (ServiceDescription sd : implicitServiceDescs) {
                             logger.log(Level.FINEST, localStrings.getString("implicit.SD",sd));
