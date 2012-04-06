@@ -244,13 +244,13 @@ public class JVMMemoryMetricHolder
     private class JVMInstanceMemoryHolder {
 
         String hostName= "localhost";
-        String port = "4848";
+        String hostPort = "4848";
         String instanceName = null;
         TabularMetricHolder<MemoryStat> table;
 
         public   JVMInstanceMemoryHolder(String host, String port, String instName){
             hostName = host;
-            port = port;
+            hostPort = port;
             instanceName = instName;
             table = new TabularMetricHolder<MemoryStat>("heap", MemoryStat.class);
 
