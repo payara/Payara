@@ -239,6 +239,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
      */
     public String getNameFor(ReadableArchive archive,
                              DeploymentContext context) {
+        if (context == null) {
+            return null;
+        }
         Application application = null;
         try {
             // for these cases, the standard DD could contain the application
@@ -286,12 +289,13 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             if (archiveHandler==null) {
                 throw new IllegalArgumentException(localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized", archiveName));
             }
-            String appName = archiveHandler.getDefaultApplicationName(archive);
 
             DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
-            parameters.name = appName;
             ActionReport report = new HTMLActionReporter();
             context = new DeploymentContextImpl(report, logger, archive, parameters, env);
+            context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, archiveHandler.getArchiveType());
+            String appName = archiveHandler.getDefaultApplicationName(archive, context);
+            parameters.name = appName;
 
             if (archive instanceof InputJarArchive) {
                 // we need to expand the archive first in this case
