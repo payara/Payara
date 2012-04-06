@@ -112,8 +112,7 @@ public final class CreateTenantCommand implements AdminCommand {
 
         // see TenantConfigService.getTenantManagerConfig for zero-config initialization
 
-        logger.log(Level.INFO, "create.tenent", tenantId);
-        logger.fine("Creating tenant:" + tenantId);
+        logger.log(Level.INFO, "create.tenant", tenantId);
         tm.create(tenantId, "admin");
 
         // note, both creates fail independently if already exists
