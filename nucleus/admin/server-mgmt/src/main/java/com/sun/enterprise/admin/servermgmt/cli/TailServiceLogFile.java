@@ -106,7 +106,7 @@ public class TailServiceLogFile extends CLICommand {
                 Map<String, String> attr = cmd.executeAndReturnAttributes(getParams());
 
                 String fileData = attr.get("filedata_value");
-                String filePointer = attr.get("filepointer_value");
+                String filePointer = attr.get("filePointer_value");
                 String origin = attr.get("origin_value");
 
                 if (fileData != null && fileData.trim().length() > 0) {
@@ -125,7 +125,7 @@ public class TailServiceLogFile extends CLICommand {
 
         ss.add(commandName);
 
-        ss.add("--filepointer");
+        ss.add("--filePointer");
         ss.add(filepointer);
 
         ss.add("--n");
@@ -137,7 +137,7 @@ public class TailServiceLogFile extends CLICommand {
         }
 
         if (appName != null) {
-            ss.add("--appname");
+            ss.add("--appName");
             ss.add(appName);
         }
 
