@@ -133,21 +133,23 @@ public class JMSConfigListener implements ConfigListener{
         }
         if(event.getSource() instanceof JmsService ) {
            if (eventName.equals(ServerTags.MASTER_BROKER)) {
-                     String oldMB = oldValue.toString();
-                     String newMB = newValue.toString();
+                     String oldMB = oldValue != null ? oldValue.toString() : null;
+                     String newMB = newValue != null ? newValue.toString(): null;
 
             _logger.log(Level.FINE, "Got JmsService Master Broker change event "
                 + event.getSource() + " "
                 + eventName + " " + oldMB + " " + newMB);
 
-             Server newMBServer = domain.getServerNamed(newMB);
-             if(newMBServer != null)
-             {
-                 Node node = domain.getNodeNamed(newMBServer.getNodeRef());
-                 String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
-                 if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
-                 String newMasterBrokerHost = node.getNodeHost();
-                 aresourceAdapter.setMasterBroker(newMasterBrokerHost + ":" + newMasterBrokerPort);
+             if (newMB != null) {
+                 Server newMBServer = domain.getServerNamed(newMB);
+                 if(newMBServer != null)
+                 {
+                     Node node = domain.getNodeNamed(newMBServer.getNodeRef());
+                     String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
+                     if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
+                     String newMasterBrokerHost = node.getNodeHost();
+                     aresourceAdapter.setMasterBroker(newMasterBrokerHost + ":" + newMasterBrokerPort);
+                 }
              }
             }
         }   if (eventName.equals(ServerTags.SERVER_REF)){
