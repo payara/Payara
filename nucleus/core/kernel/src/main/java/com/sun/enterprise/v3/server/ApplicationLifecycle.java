@@ -516,6 +516,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         appInfo.start(context, tracker);
                         notifyLifecycleInterceptorsAfter(ExtendedDeploymentContext.Phase.START, context);
                     } catch(Throwable loadException) {
+                        logger.log(Level.SEVERE, loadException.getMessage(), loadException);
                         report.failure(logger, "Exception while loading the app", null);
                         report.setFailureCause(loadException);
                         tracker.actOn(logger);
