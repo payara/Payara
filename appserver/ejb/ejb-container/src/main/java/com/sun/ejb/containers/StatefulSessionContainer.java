@@ -65,6 +65,7 @@ import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 import com.sun.enterprise.util.Utility;
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.transaction.api.JavaEETransaction;
 
 import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
@@ -2571,6 +2572,89 @@ public final class StatefulSessionContainer
                 }
                 context.addExtendedEntityManagerMapping(
                         newRefInfo.getEntityManagerFactory(), newRefInfo);
+            }
+        }
+    }
+
+    @Override
+    protected void validateEMForClientTx(EjbInvocation inv, JavaEETransaction clientJ2EETx) 
+            throws EJBException {
+        SessionContextImpl sessionCtx = (SessionContextImpl) inv.context;
+        Map<EntityManagerFactory, EntityManager> entityManagerMap =
+        sessionCtx.getExtendedEntityManagerMap();
+
+        for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+                entityManagerMap.entrySet()) {
+            EntityManagerFactory emf = entry.getKey();
+
+            // Make sure there is no Transactional persistence context
+            // for the same EntityManagerFactory as this SFSB's
+            // Extended persistence context for the propagated transaction.
+            if( clientJ2EETx.getTxEntityManager(emf) != null ) {
+                throw new EJBException("There is an active transactional persistence context for the same EntityManagerFactory as the current stateful session bean's extended persistence context");
+            }
+
+            // Now see if there's already a *different* extended
+            // persistence context within this transaction for the
+            // same EntityManagerFactory.
+            EntityManager em = clientJ2EETx.getExtendedEntityManager(emf);
+            if( (em != null) && entry.getValue() != em ) {
+                throw new EJBException("Detected two different extended persistence contexts for the same EntityManagerFactory within a transaction");
+            }
+
+        }
+
+    }
+
+    @Override
+    protected void enlistExtendedEntityManagers(ComponentContext ctx) {
+        if (ctx.getTransaction() != null) {
+            JavaEETransaction j2eeTx = (JavaEETransaction) ctx.getTransaction();
+            SessionContextImpl sessionCtx = (SessionContextImpl) ctx;
+            Map<EntityManagerFactory, EntityManager> entityManagerMap =
+                sessionCtx.getExtendedEntityManagerMap();
+
+            for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+                     entityManagerMap.entrySet()) {
+                EntityManagerFactory emf = entry.getKey();
+                EntityManager extendedEm = entry.getValue();
+
+                EntityManager extendedEmAssociatedWithTx =
+                    j2eeTx.getExtendedEntityManager(emf);
+
+                // If there's not already an EntityManager registered for
+                // this extended EntityManagerFactory within the current tx
+                if (extendedEmAssociatedWithTx == null) {
+                    j2eeTx.addExtendedEntityManagerMapping(emf,
+                                                           extendedEm);
+                    sessionCtx.setEmfRegisteredWithTx(emf, true);
+
+                    // Tell persistence provider to associate the extended
+                    // entity manager with the transaction.
+                    // @@@ Comment this out when joinTransaction supported on
+                    // EntityManager API.
+                    extendedEm.joinTransaction();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void delistExtendedEntityManagers(ComponentContext ctx) {
+        if ( ((EJBContextImpl)ctx).getTransaction() != null ) {
+            SessionContextImpl sessionCtx = (SessionContextImpl) ctx;
+            JavaEETransaction j2eeTx = (JavaEETransaction) sessionCtx.getTransaction();
+
+            Map<EntityManagerFactory, EntityManager> entityManagerMap = sessionCtx
+                    .getExtendedEntityManagerMap();
+            for (Map.Entry<EntityManagerFactory, EntityManager> entry :
+                    entityManagerMap.entrySet()) {
+                EntityManagerFactory emf = entry.getKey();
+
+                if (sessionCtx.isEmfRegisteredWithTx(emf)) {
+                    j2eeTx.removeExtendedEntityManagerMapping(emf);
+                    sessionCtx.setEmfRegisteredWithTx(emf, false);
+                }
             }
         }
     }

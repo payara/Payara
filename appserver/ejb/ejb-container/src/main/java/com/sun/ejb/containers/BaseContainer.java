@@ -1930,35 +1930,11 @@ public abstract class BaseContainer
     }
     
     protected void enlistExtendedEntityManagers(ComponentContext ctx) {
-        if (isStatefulSession && (ctx.getTransaction() != null)) {
-            JavaEETransaction j2eeTx = (JavaEETransaction) ctx.getTransaction();
-            SessionContextImpl sessionCtx = (SessionContextImpl) ctx;
-            Map<EntityManagerFactory, EntityManager> entityManagerMap = 
-                sessionCtx.getExtendedEntityManagerMap();
-                    
-            for (Map.Entry<EntityManagerFactory, EntityManager> entry : 
-                     entityManagerMap.entrySet()) {
-                EntityManagerFactory emf = entry.getKey();
-                EntityManager extendedEm = entry.getValue();
-
-                EntityManager extendedEmAssociatedWithTx = 
-                    j2eeTx.getExtendedEntityManager(emf);
-
-                // If there's not already an EntityManager registered for
-                // this extended EntityManagerFactory within the current tx
-                if (extendedEmAssociatedWithTx == null) {
-                    j2eeTx.addExtendedEntityManagerMapping(emf,
-                                                           extendedEm);
-                    sessionCtx.setEmfRegisteredWithTx(emf, true);
-
-                    // Tell persistence provider to associate the extended
-                    // entity manager with the transaction.
-                    // @@@ Comment this out when joinTransaction supported on
-                    // EntityManager API.
-                    extendedEm.joinTransaction();
-                }
-            }
-        }
+        // Do nothing in general case
+    }
+    
+    protected void delistExtendedEntityManagers(ComponentContext ctx) {
+        // Do nothing in general case
     }
     
     /**
@@ -2003,25 +1979,7 @@ public abstract class BaseContainer
             // counterpart of invocationManager.preInvoke
             if (! inv.useFastPath) {
                 invocationManager.postInvoke(inv);
-                if (isStatefulSession
-                        && (((EJBContextImpl) inv.context).getTransaction() != null)) {
-
-                    SessionContextImpl sessionCtx = (SessionContextImpl) inv.context;
-                    JavaEETransaction j2eeTx = (JavaEETransaction) sessionCtx
-                            .getTransaction();
-
-                    Map<EntityManagerFactory, EntityManager> entityManagerMap = sessionCtx
-                            .getExtendedEntityManagerMap();
-                    for (Map.Entry<EntityManagerFactory, EntityManager> entry : 
-                            entityManagerMap.entrySet()) {
-                        EntityManagerFactory emf = entry.getKey();
-
-                        if (sessionCtx.isEmfRegisteredWithTx(emf)) {
-                            j2eeTx.removeExtendedEntityManagerMapping(emf);
-                            sessionCtx.setEmfRegisteredWithTx(emf, false);
-                        }
-                    }
-                }
+                delistExtendedEntityManagers(inv.context);
             } else {
                 doTxProcessing = doTxProcessing && (inv.exception != null);
             }
@@ -4698,35 +4656,7 @@ public abstract class BaseContainer
             throw new TransactionRolledbackLocalException(
                 "Client's transaction aborted");
         
-        if( isStatefulSession ) {
-
-            SessionContextImpl sessionCtx = (SessionContextImpl) inv.context;
-            Map<EntityManagerFactory, EntityManager> entityManagerMap =
-                sessionCtx.getExtendedEntityManagerMap();
-
-            JavaEETransaction clientJ2EETx = (JavaEETransaction) clientTx;
-            for (Map.Entry<EntityManagerFactory, EntityManager> entry : 
-                    entityManagerMap.entrySet()) {
-                EntityManagerFactory emf = entry.getKey();
-
-                // Make sure there is no Transactional persistence context
-                // for the same EntityManagerFactory as this SFSB's 
-                // Extended persistence context for the propagated transaction.
-                if( clientJ2EETx.getTxEntityManager(emf) != null ) {
-                    throw new EJBException("There is an active transactional persistence context for the same EntityManagerFactory as the current stateful session bean's extended persistence context");
-                }
-
-                // Now see if there's already a *different* extended 
-                // persistence context within this transaction for the 
-                // same EntityManagerFactory.
-                EntityManager em = clientJ2EETx.getExtendedEntityManager(emf);
-                if( (em != null) && entry.getValue() != em ) {
-                    throw new EJBException("Detected two different extended persistence contexts for the same EntityManagerFactory within a transaction");
-                }
-
-            }
-            
-        }
+        validateEMForClientTx(inv, (JavaEETransaction) clientTx);
 
         if ( prevTx == null
         || prevStatus == Status.STATUS_NO_TRANSACTION ) {
@@ -4792,6 +4722,10 @@ public abstract class BaseContainer
                 }
             }
         }
+    }
+
+    protected void validateEMForClientTx(EjbInvocation inv, JavaEETransaction t) {
+        // Do nothing in general case
     }
     
     
@@ -4918,6 +4852,22 @@ public abstract class BaseContainer
         // exception, should the transaction be rolled back if not already so ?
     }
     
+    private EJBException destroyBeanAndRollback(EJBContextImpl context, String type) throws Exception {
+        try {
+            forceDestroyBean(context);
+        } finally {
+            transactionManager.rollback();
+        }
+        
+        EJBException ex = null;
+        if (type != null) {
+            ex = new EJBException(type + " method returned without" + 
+                    " completing transaction");
+            _logger.log(Level.FINE, "ejb.incomplete_sessionbean_txn_exception",logParams);
+            _logger.log(Level.FINE,"",ex);
+        }
+        return ex;
+    }
     
     private Throwable checkExceptionBeanMgTx(EJBContextImpl context,
             Throwable exception, int status)
@@ -4948,53 +4898,18 @@ public abstract class BaseContainer
                 }
                 else {
                     // system/unchecked exception was thrown by EJB
-                    try {
-                        forceDestroyBean(context);
-                    } finally {
-                        transactionManager.rollback();
-                    }
+                    destroyBeanAndRollback(context, null);
                     newException = processSystemException(exception);
                 }
             }
             else if( isStatelessSession  ) { // stateless SessionBean
-                try {
-                    forceDestroyBean(context);
-                } finally {
-                    transactionManager.rollback();
-                }
-                newException = new EJBException(
-                    "Stateless SessionBean method returned without" + 
-                    " completing transaction");
-                _logger.log(Level.FINE,
-                    "ejb.incomplete_sessionbean_txn_exception",logParams);
-                _logger.log(Level.FINE,"",newException);
+                newException = destroyBeanAndRollback(context, "Stateless SessionBean");
             }
             else if( isSingleton ) {
-                try {
-                    forceDestroyBean(context);
-                } finally {
-                    transactionManager.rollback();
-                }
-                newException = new EJBException(
-                    "Singleton SessionBean method returned without" + 
-                    " completing transaction");
-                _logger.log(Level.FINE,
-                    "ejb.incomplete_sessionbean_txn_exception",logParams);
-                _logger.log(Level.FINE,"",newException);
+                newException = destroyBeanAndRollback(context, "Singleton SessionBean");
             }
             else { // MessageDrivenBean
-                try {
-                    forceDestroyBean(context);
-                } finally {
-                    transactionManager.rollback();
-                }
-                newException = new EJBException(
-                    "MessageDrivenBean method returned without" + 
-                    " completing transaction");
-                _logger.log(Level.FINE,
-                    "ejb.incomplete_msgdrivenbean_txn_exception",logParams);
-                _logger.log(Level.FINE,"",newException.toString());
-                
+                newException = destroyBeanAndRollback(context, "MessageDrivenBean");
             }
         }
         return newException;
@@ -5076,11 +4991,7 @@ public abstract class BaseContainer
         && isSystemUncheckedException(newException) ) {
             // EJB2.0 section 18.3.1, Table 15
             // Rollback the Tx we started
-            try {
-                forceDestroyBean(context);
-            } finally {
-                transactionManager.rollback();
-            }
+            destroyBeanAndRollback(context, null);
             newException = processSystemException(newException);
         }
         else {
@@ -5297,10 +5208,9 @@ public abstract class BaseContainer
             for(LifecycleCallbackDescriptor lcd : lifecycleCallbackDescriptors) {
                 if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
 
-                    Method postConstructMethod =
-                        lcd.getLifecycleCallbackMethodObject(loader);
+                    Method callbackMethod = lcd.getLifecycleCallbackMethodObject(loader);
                     int lcTxAttr = findTxAttr(
-                        new MethodDescriptor(postConstructMethod, MethodDescriptor.EJB_BEAN));
+                        new MethodDescriptor(callbackMethod, MethodDescriptor.EJB_BEAN));
                     // Since REQUIRED and REQUIRES_NEW are already taken care of, only
                     // override the value if it's TX_NOT_SUPPORTED.
                     if( lcTxAttr == Container.TX_NOT_SUPPORTED ) {
