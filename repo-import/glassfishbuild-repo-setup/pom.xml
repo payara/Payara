@@ -82,7 +82,7 @@
           modules to be included in this bundle
         -->       
         <dependency>
-      	    <groupId>org.glassfish</groupId>
+      	    <groupId>org.glassfish.mq</groupId>
             <artifactId>mq-distribution</artifactId>
             <version>${mq.version}</version>
 	    <classifier>repo</classifier>
