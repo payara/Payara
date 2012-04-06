@@ -67,7 +67,7 @@ public class SecurityStoreImpl implements SecurityStore {
 
         CommandInvocation cmd = commandRunner.getCommandInvocation("create-file-user", actionReport);
         ParameterMap map = new ParameterMap();
-        map.add("userpassword", password.toString());
+        map.add("userpassword", String.valueOf(password));
         map.add("username", name);
         // TODO: map.add("authrealmname", "file"); if default-realm differs from 'file'? 
         cmd.parameters(map);

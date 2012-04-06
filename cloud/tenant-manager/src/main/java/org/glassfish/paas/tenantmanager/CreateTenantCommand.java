@@ -39,9 +39,11 @@
  */
 package org.glassfish.paas.tenantmanager;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -69,7 +71,7 @@ import javax.inject.Inject;
 @Service(name = "create-tenant")
 @Scoped(PerLookup.class)
 @I18n("create.tenant")
-@TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.STANDALONE_INSTANCE})
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS})
 public final class CreateTenantCommand implements AdminCommand {
     @Inject
@@ -87,6 +89,8 @@ public final class CreateTenantCommand implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateTenantCommand.class);
 
+    final private static Logger logger = LogDomains.getLogger(CreateTenantCommand.class, LogDomains.PAAS_LOGGER);
+
     @Inject
     SecurityStore securityStore;
 
@@ -103,17 +107,16 @@ public final class CreateTenantCommand implements AdminCommand {
             return;
         }
 
-        logger.fine("Creating tenant admin:" + tenantId + "." + "admin");
-        securityStore.create(tenantId + "." + "admin", password.toCharArray());
+        logger.log(Level.INFO, "create.tenant.admin", tenantId + ".admin");
+        securityStore.create(tenantId + ".admin", password.toCharArray());
 
         // see TenantConfigService.getTenantManagerConfig for zero-config initialization
 
+        logger.log(Level.INFO, "create.tenent", tenantId);
         logger.fine("Creating tenant:" + tenantId);
         tm.create(tenantId, "admin");
 
         // note, both creates fail independently if already exists
     }
 
-    @Inject
-    private Logger logger;
 }
