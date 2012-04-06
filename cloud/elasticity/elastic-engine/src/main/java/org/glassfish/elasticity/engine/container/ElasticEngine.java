@@ -142,7 +142,7 @@ public class ElasticEngine
     @Override
     public void onEvent(ServiceChangeEvent event) {
         System.out.println("ElasticEngine ServiceChangeEvent::onEvent " + event);
-       // elasticServiceManager.onEvent(event);
+//        elasticServiceManager.onEvent(event);
 //        try {
 //            tm.setCurrentTenant("t1");
 //
