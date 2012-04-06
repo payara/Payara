@@ -76,8 +76,6 @@ public class TailServiceLogFile extends CLICommand {
     @Param(name = "n", optional = true, defaultValue = "10")
     private String numberOfRecords;
 
-    private String lastrecorddateinmilliseconds = "0";
-
     boolean validationSuccess = true;
 
     String origin;
@@ -109,14 +107,12 @@ public class TailServiceLogFile extends CLICommand {
 
                 String fileData = attr.get("filedata_value");
                 String filePointer = attr.get("filepointer_value");
-                String lastrecorddateinmilliseconds = attr.get("lastrecorddateinmilliseconds_value");
                 String origin = attr.get("origin_value");
 
                 if (fileData != null && fileData.trim().length() > 0) {
                     System.out.println(fileData);
                 }
                 this.filepointer = filePointer;
-                this.lastrecorddateinmilliseconds = lastrecorddateinmilliseconds;
                 this.origin = origin;
 
             }
@@ -131,9 +127,6 @@ public class TailServiceLogFile extends CLICommand {
 
         ss.add("--filepointer");
         ss.add(filepointer);
-
-        ss.add("--lastrecorddateinmilliseconds");
-        ss.add(lastrecorddateinmilliseconds);
 
         ss.add("--n");
         ss.add(numberOfRecords);
