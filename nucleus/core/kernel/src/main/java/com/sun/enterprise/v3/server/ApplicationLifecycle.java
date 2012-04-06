@@ -360,17 +360,20 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     commandParams.type);
                 context.setArchiveHandler(handler);
             }
+
+            if (handler==null) {
+                report.setMessage(localStrings.getLocalString("unknownarchivetype","Archive type of {0} was not recognized",context.getSourceDir()));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return null;
+            }
+
             context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, handler.getArchiveType());
             DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
 
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
-            if (handler==null) {
-                report.setMessage(localStrings.getLocalString("unknownarchivetype","Archive type of {0} was not recognized",context.getSourceDir()));
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return null;                
-            }
+
             ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
