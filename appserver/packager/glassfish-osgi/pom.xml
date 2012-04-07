@@ -147,22 +147,10 @@
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-ejb-container</artifactId>
-            <exclusions>
-                <exclusion>  
-                    <groupId>org.eclipse.persistence</groupId>
-                    <artifactId>javax.persistence</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-web-container</artifactId>
-            <exclusions>
-                <exclusion>  
-                    <groupId>org.eclipse.persistence</groupId>
-                    <artifactId>javax.persistence</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <!-- Add the dependency here so that packager bundles this as well. 
@@ -204,5 +192,6 @@
 	    </build>
         </profile>
    </profiles>        
+
 </project>
 
