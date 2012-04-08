@@ -37,57 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.commands;
- import org.glassfish.elasticity.config.serverbeans.*;
- import org.glassfish.api.ActionReport;
- import org.glassfish.api.I18n;
- import org.glassfish.api.Param;
- import org.glassfish.api.admin.*;
- import org.jvnet.hk2.annotations.*;
- import org.jvnet.hk2.component.*;
+package org.glassfish.elasticity.metrics.commands;
 
- import java.util.logging.Logger;
- import org.glassfish.api.admin.CommandRunner.CommandInvocation;
- import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.elasticity.config.serverbeans.*;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.component.*;
+
+import java.util.logging.Logger;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import org.glassfish.api.ActionReport.MessagePart;
+import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
 /*
-  * command used by GUI for OOW
- */
 
-@Service(name = "create-memory-alert")
-@I18n("create.memory.alert")
+/*
+ * command used by GUI for OOW
+*/
+
+@Service(name = "describe-memory-alert")
+@I18n("describe.memory.alert")
 @Scoped(PerLookup.class)
-@RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
-public class CreateMemoryAlert implements AdminCommand{
+@RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = OpType.GET, path = "describe-memory-alert", description = "Describe memory alert")})
+public class DescribeMemoryAlertCommand implements AdminCommand{
 
-    @Inject (optional = true)
+    @Inject(optional = true)
     ElasticServices elasticServices;
 
     @Inject
-    private CommandRunner cr;
+    Domain domain;
 
-    @Param (name ="alertname", primary = true)
-    String alertname;
-
-    @Param(name="servicename")
+    @Param(name="servicename",  optional=false)
     String servicename;
 
-    @Param(name="threshold")
-    String threshold;
+    @Param(name="alertname", primary=true)
+    String alertname;
 
-    @Param(name="enabled", defaultValue="true",optional=true)
-    boolean enabled;
-
-    @Param(name="sample-interval", optional = true)
-    String sampleInterval;
+    private static final String EOL = "\n";
 
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        if (elasticServices == null)   {
+         if (elasticServices == null)   {
             //service doesn't exist
             String msg = Strings.get("elasticity.not.enabled");
             logger.warning(msg);
@@ -104,7 +102,6 @@ public class CreateMemoryAlert implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-
         AlertConfig  alert = elasticService.getAlerts().getAlert(alertname);
         if (elasticService == null) {
             //alert doesn't exist
@@ -114,38 +111,20 @@ public class CreateMemoryAlert implements AdminCommand{
             report.setMessage(msg);
             return;
         }
-        //delete the existing alert
+        //get the threshold value
+        String expr = alert.getExpression();
+        String threshold = "";
+        int i =expr.indexOf(">");
+        threshold = expr.substring(++i);
 
-        CommandInvocation ci = cr.getCommandInvocation("delete-alert", report);
-        ParameterMap map = new ParameterMap();
-        map.add("service", servicename);
-        map.add("DEFAULT", alertname);
-        ci.parameters(map);
-        ci.execute();
-
-        //create a new alert with new values
-        String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  > " +threshold ;
-
-        ci = cr.getCommandInvocation("create-alert", report);
-        map = new ParameterMap();
-        map.add("service", servicename);
-        if (sampleInterval != null)
-            map.add("sampleinterval",sampleInterval);
-        map.add("expression", expression);
-        if(!enabled)
-            map.add("enabled", "false");
-        map.add("DEFAULT", alertname);
-        ci.parameters(map);
-        ci.execute();
-
-        //add alarm to the alert , only add alarm state
-        ci = cr.getCommandInvocation("add-alert-action",report);
-        map = new ParameterMap();
-        map.add("service", servicename);
-        map.add("actionref","scale-up-action");
-        map.add("state","alarm-state");
-        map.add("DEFAULT", alertname);
-        ci.parameters(map);
-        ci.execute();
+        String enabled = Boolean.toString(alert.getEnabled());
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        report.setMessage("threshold=" + threshold + "; enabled=" + enabled);
+        MessagePart mp = report.getTopMessagePart();
+        mp.addProperty("service ", servicename );
+        mp.addProperty("alert", alertname);
+        mp.addProperty("threshold", threshold);
+        mp.addProperty("sampleInterval", Integer.toString(alert.getSampleInterval()));
+        mp.addProperty("enabled", enabled);
     }
 }

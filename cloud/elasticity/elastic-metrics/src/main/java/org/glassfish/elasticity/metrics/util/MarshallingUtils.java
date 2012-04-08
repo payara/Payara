@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.util;
 
 
 import java.io.ByteArrayInputStream;

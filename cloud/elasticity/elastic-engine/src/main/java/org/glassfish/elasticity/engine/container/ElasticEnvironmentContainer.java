@@ -40,17 +40,12 @@
 package org.glassfish.elasticity.engine.container;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.elasticity.api.AbstractMetricGatherer;
-import org.glassfish.elasticity.api.MetricGathererConfigurator;
-import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
+import org.glassfish.elasticity.engine.util.EngineUtil;
+import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.jvnet.hk2.annotations.Scoped;
@@ -58,11 +53,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 @Service
-@Scoped(Singleton.class)
-public class ElasticServiceManager {
+@Scoped(PerLookup.class)
+public class ElasticEnvironmentContainer {
     
     @Inject
     Habitat habitat;
@@ -70,7 +64,9 @@ public class ElasticServiceManager {
     @Inject
     ElasticEngineThreadPool threadPool;
     
-    private Logger logger;
+    private static final Logger _logger = EngineUtil.getLogger();
+    
+    private String envName;
 
 	private ConcurrentHashMap<String, ElasticServiceContainer> _containers
 		= new ConcurrentHashMap<String, ElasticServiceContainer>();
@@ -87,66 +83,32 @@ public class ElasticServiceManager {
 		_containers.remove(name);
 	}
 
-    public Collection<ElasticServiceContainer> containers() {
-        return _containers.values();
-    }
-
-    public void onEvent(ServiceChangeEvent event) {
+    public void onEvent(String envName, ServiceChangeEvent event) {
+        ElasticServiceContainer serviceContainer = null;
         switch (event.getType()) {
             case CREATED:
-                List<MetricGathererConfig> mgConfigs = new LinkedList<MetricGathererConfig>();
-                List resolvers = new LinkedList();
-                Collection<MetricGathererConfigurator> configurators =
-                        habitat.getAllByContract(MetricGathererConfigurator.class);
-                for (MetricGathererConfigurator configurator : configurators) {
-                    configurator.configure(event.getNewValue(), mgConfigs, resolvers);
-                }
+                this.envName = envName;
+                serviceContainer = habitat.forContract(ElasticServiceContainer.class).get();
+                addElasticServiceContainer(event.getNewValue().getName(), serviceContainer);
+                serviceContainer.start(event.getNewValue());
 
-                //We now have the MetricGathererConfigs and Resolvers for this Service
-                System.out.println("**Need to Initialized Service: " + event.getNewValue().getName()
-                    + " with  " + configurators.size() + " configurators and "
-                        + resolvers.size() + " resolvers ");
 
-                ElasticServiceContainer serviceContainer =
-                        habitat.forContract(ElasticServiceContainer.class).get();
-                for (MetricGathererConfig cfg : mgConfigs) {
-                    AbstractMetricGatherer mg = habitat.forContract(AbstractMetricGatherer.class).named(cfg.getName()).get();
-                    mg.init(event.getNewValue(), cfg);
-                    threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, 300),
-                            10, 10, TimeUnit.SECONDS);
+                break;
 
-                }
+            case MODIFIED:
+                System.out.println("**(Service MODIFIED) ElasticEnvironmentContainer got Event: " + event.getType());
+                serviceContainer = _containers.get(event.getOldValue().getName());
+                break;
 
+            case DELETED:
+                removeElasticServiceContainer(event.getNewValue().getName());
+                break;
+
+            default: 
+                System.out.println("**ElasticEnvironmentContainer got Event: " + event.getType());
+                break;
         }
     }
-    private class MetricGathererWrapper
-            implements Runnable {
 
-        private AbstractMetricGatherer mg;
-
-        private int maxDataHoldingTimeInSeconds;
-
-        private long prevPurgeTime = System.currentTimeMillis();
-        
-        private Logger logger;
-
-        MetricGathererWrapper(AbstractMetricGatherer mg, int maxDataHoldingTimeInSeconds) {
-            this.mg = mg;
-            this.maxDataHoldingTimeInSeconds = maxDataHoldingTimeInSeconds;
-
-            logger = Logger.getLogger(MetricGathererWrapper.class.getName());
-        }
-
-        public void run() {
-            mg.gatherMetric();
-
-            long now = System.currentTimeMillis();
-            if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
-                prevPurgeTime = now;
-                logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
-                mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);
-            }
-        }
-    }
 	
 }

@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.beans.PropertyVetoException;
 
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -74,7 +74,7 @@ public class DeleteElasticServiceCommand implements AdminCommand {
   Domain domain;
 
   @Inject
-   ElasticServiceManager elasticServiceManager;
+  ElasticEnvironmentContainer elasticServiceManager;
 
   @Param(name="name", primary = true)
    String name;

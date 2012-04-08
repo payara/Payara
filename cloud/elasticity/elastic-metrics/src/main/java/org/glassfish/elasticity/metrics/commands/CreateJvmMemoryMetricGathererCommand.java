@@ -38,14 +38,13 @@
  * holder.
  */
 
-package org.glassfish.elasticity.engine.commands;
+package org.glassfish.elasticity.metrics.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.*;
 import org.glassfish.elasticity.config.serverbeans.*;
 
 import javax.inject.Inject;
@@ -154,5 +153,100 @@ public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
             }
 
         }, domain);
+    }
+
+    @Service(name = "create-memory-alert")
+    @I18n("create.memory.alert")
+    @Scoped(PerLookup.class)
+    @RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = RestEndpoint.OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
+    public static class CreateMemoryAlert implements AdminCommand{
+
+        @org.jvnet.hk2.annotations.Inject(optional = true)
+        ElasticServices elasticServices;
+
+        @org.jvnet.hk2.annotations.Inject
+        private CommandRunner cr;
+
+        @Param (name ="alertname", primary = true)
+        String alertname;
+
+        @Param(name="servicename")
+        String servicename;
+
+        @Param(name="threshold")
+        String threshold;
+
+        @Param(name="enabled", defaultValue="true",optional=true)
+        boolean enabled;
+
+        @Param(name="sample-interval", optional = true)
+        String sampleInterval;
+
+        @Override
+        public void execute(AdminCommandContext context) {
+            ActionReport report = context.getActionReport();
+            Logger logger= context.logger;
+
+            if (elasticServices == null)   {
+                //service doesn't exist
+                String msg = Strings.get("elasticity.not.enabled");
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+            ElasticServiceConfig elasticService= elasticServices.getElasticService(servicename);
+            if (elasticService == null) {
+                //service doesn't exist
+                String msg = Strings.get("noSuchService", servicename);
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+
+            AlertConfig  alert = elasticService.getAlerts().getAlert(alertname);
+            if (elasticService == null) {
+                //alert doesn't exist
+                String msg = Strings.get("noSuchAlert", alertname);
+                logger.warning(msg);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(msg);
+                return;
+            }
+            //delete the existing alert
+
+            CommandRunner.CommandInvocation ci = cr.getCommandInvocation("delete-alert", report);
+            ParameterMap map = new ParameterMap();
+            map.add("service", servicename);
+            map.add("DEFAULT", alertname);
+            ci.parameters(map);
+            ci.execute();
+
+            //create a new alert with new values
+            String expression = "any[avg(jvm_memory.heap.used)*100/jvm_memory.maxMemory]  > " +threshold ;
+
+            ci = cr.getCommandInvocation("create-alert", report);
+            map = new ParameterMap();
+            map.add("service", servicename);
+            if (sampleInterval != null)
+                map.add("sampleinterval",sampleInterval);
+            map.add("expression", expression);
+            if(!enabled)
+                map.add("enabled", "false");
+            map.add("DEFAULT", alertname);
+            ci.parameters(map);
+            ci.execute();
+
+            //add alarm to the alert , only add alarm state
+            ci = cr.getCommandInvocation("add-alert-action",report);
+            map = new ParameterMap();
+            map.add("service", servicename);
+            map.add("actionref","scale-up-action");
+            map.add("state","alarm-state");
+            map.add("DEFAULT", alertname);
+            ci.parameters(map);
+            ci.execute();
+        }
     }
 }

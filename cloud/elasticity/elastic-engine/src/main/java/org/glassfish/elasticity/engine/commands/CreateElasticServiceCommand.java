@@ -48,7 +48,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import java.beans.PropertyVetoException;
 
 import org.glassfish.elasticity.engine.container.ElasticEngine;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -88,7 +88,7 @@ public class CreateElasticServiceCommand implements AdminCommand  {
   ElasticEngine elasticEngine;
 
   @Inject
-   ElasticServiceManager elasticServiceManager;
+  ElasticEnvironmentContainer elasticServiceManager;
 
   @Inject
   ServerEnvironment serverEnv;

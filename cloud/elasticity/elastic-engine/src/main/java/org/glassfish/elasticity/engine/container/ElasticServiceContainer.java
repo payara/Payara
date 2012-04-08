@@ -40,8 +40,11 @@
 package org.glassfish.elasticity.engine.container;
 
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
+import org.glassfish.elasticity.api.MetricGathererConfigurator;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 import org.glassfish.elasticity.engine.message.MessageProcessor;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
@@ -51,12 +54,15 @@ import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.Provider;
 import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -88,11 +94,9 @@ public class ElasticServiceContainer {
     @Inject
     private ServiceOrchestrator orchestrator;
 
-    private Logger logger = EngineUtil.getLogger();
+    private static final Logger _logger = EngineUtil.getLogger();
 
-    private ElasticServiceConfig service;
-
-    private String name;
+    private org.glassfish.paas.orchestrator.service.spi.Service provisionedService;
 
     private AtomicBoolean enabled = new AtomicBoolean(true);
 
@@ -115,18 +119,34 @@ public class ElasticServiceContainer {
 
     private long RECONFIG_TIME_IN_MILLIS = 30 * 1000;
 
-    private ScheduledFuture<?> clusterSizeMonitorTask;
+    public void start(org.glassfish.paas.orchestrator.service.spi.Service provisionedService) {
+        StringBuilder sb = new StringBuilder("ServiceInfo: ");
+        sb.append("\n\tEnvironment name                 : ").append(provisionedService.getServiceDescription().getAppName())
+                .append("\n\tService Name               : ").append(provisionedService.getName())
+                .append("\n\tProperties                 : ").append(provisionedService.getProperties())
+                .append("\n\tService Configuration      : ").append(provisionedService.getServiceDescription().getConfigurations())
+            .append("\n\t");
+        List<MetricGathererConfig> mgConfigs = new LinkedList<MetricGathererConfig>();
+        List resolvers = new LinkedList();
+        for (Provider<MetricGathererConfigurator> provider : services.forContract(MetricGathererConfigurator.class).all()) {
+            MetricGathererConfigurator configurator = provider.get();
+            configurator.configure(provisionedService, mgConfigs, resolvers);
+        }
 
-    public void initialize(ElasticServiceConfig service) {
-        this.service = service;
-        this.name = service.getName();
-        this.enabled.set(service.getEnabled());
-        this.minSize.set(service.getMin());
-        this.maxSize.set(service.getMax());
+        for (MetricGathererConfig cfg : mgConfigs) {
+            _logger.log(Level.INFO, "Configuring " + cfg.getName() + "; " + cfg);
+            AbstractMetricGatherer mg = services.forContract(AbstractMetricGatherer.class).named(cfg.getName()).get();
+            mg.init(provisionedService, cfg);
+            threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, 300),
+                    5, 5, TimeUnit.SECONDS);
+
+        }
+        
+        System.out.println("Started ServiceContainer for " + sb.toString());
     }
 
     public String getName() {
-        return this.name;
+        return this.provisionedService.getName();
     }
 
     public boolean isEnabled() {
@@ -161,7 +181,7 @@ public class ElasticServiceContainer {
 
     public synchronized void reconfigureClusterLimits(int minSize, int maxSize) {
 
-        logger.log(Level.INFO, "reconfigure service; service-name=" + service.getName()
+        _logger.log(Level.INFO, "reconfigure service; service-name=" + provisionedService.getName()
                 + "; minSize=" + minSize + "; maxSize=" + maxSize);
 
         this.minSize.set(minSize);
@@ -173,16 +193,16 @@ public class ElasticServiceContainer {
     private synchronized void checkClusterSize() {
         try {
             if (getCurrentMemberCount() < minSize.get()) {
-                logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + service.getName()
+                _logger.log(Level.INFO, "SCALE UP: reconfigure service; service-name=" + provisionedService.getName()
                         + "; minSize=" + minSize + "; maxSize=" + maxSize);
                 scaleUp();
             } else if (getCurrentMemberCount() > maxSize.get()) {
-                logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + service.getName()
+                _logger.log(Level.INFO, "SCALE DOWN: reconfigure service; service-name=" + provisionedService.getName()
                         + "; minSize=" + minSize + "; maxSize=" + maxSize);
                 scaleDown();
             }
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Exception during orchestrator invocation", ex);
+            _logger.log(Level.WARNING, "Exception during orchestrator invocation", ex);
         }
     }
 
@@ -195,22 +215,22 @@ public class ElasticServiceContainer {
     }
 
     public ElasticServiceConfig getElasticService() {
-        return service;
+        return null;//service;
     }
 
     public void startContainer() {
 
         isDAS = "server".equals(serverEnvironment.getInstanceName());
 
-        if (gmsAdapterService != null && gmsAdapterService.getGMSAdapterByName(service.getName()) != null) {
-            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapterByName(service.getName());
+        if (gmsAdapterService != null && gmsAdapterService.getGMSAdapterByName(provisionedService.getName()) != null) {
+            GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapterByName(provisionedService.getName());
 
             gsp = new GroupServiceProvider(gmsAdapter.getModule().getInstanceName(),
                     gmsAdapter.getClusterName(), false);
 
             messageProcessor = new MessageProcessor(this, serverEnvironment);
             gsp.registerGroupMemberEventListener(messageProcessor);
-            gsp.registerGroupMessageReceiver(service.getName(), messageProcessor);
+            gsp.registerGroupMessageReceiver(provisionedService.getName(), messageProcessor);
 
 //            clusterSizeMonitorTask = threadPool.scheduleAtFixedRate(
 //                    new ClusterSizeMonitor(), 30, 30, TimeUnit.SECONDS);
@@ -218,7 +238,7 @@ public class ElasticServiceContainer {
 
         if (isDAS) {
             loadAlerts();
-             logger.log(Level.FINE, "**Initialized & Loaded Alerts ElasticService = " + this.service.getName());
+            _logger.log(Level.FINE, "**Initialized & Loaded Alerts ElasticService = " + this.provisionedService.getName());
         }
     }
 
@@ -227,14 +247,14 @@ public class ElasticServiceContainer {
 
         //Unload even if not DAS
         unloadAlerts();
-        if (clusterSizeMonitorTask != null) {
-            clusterSizeMonitorTask.cancel(false);
-        }
+//        if (clusterSizeMonitorTask != null) {
+//            clusterSizeMonitorTask.cancel(false);
+//        }
     }
 
     public void addAlert(AlertConfig alertConfig) {
         try {
-            logger.log(Level.INFO, "Creating Alert[" + service.getName() + "]: " + alertConfig.getName());
+            _logger.log(Level.INFO, "Creating Alert[" + provisionedService.getName() + "]: " + alertConfig.getName());
 
             String sch = alertConfig.getSchedule().trim();
             long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
@@ -246,7 +266,7 @@ public class ElasticServiceContainer {
                     threadPool.scheduleAtFixedRate(alertCtx, frequencyInSeconds, frequencyInSeconds, TimeUnit.SECONDS);
             alertCtx.setFuture(future);
             alerts.put(alertConfig.getName(), alertCtx);
-            logger.log(Level.INFO, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
+            _logger.log(Level.INFO, "SCHEDULED Alert[name=" + alertName + "; schedule=" + sch
                     + "; expression=" + alertConfig.getExpression() + "; will be executed every= " + frequencyInSeconds);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -263,7 +283,7 @@ public class ElasticServiceContainer {
     @Override
     public String toString() {
         return "ElasticServiceContainer{" +
-                "name='" + name + '\'' +
+                "name='" + provisionedService.getName() + '\'' +
                 ", enabled=" + enabled +
                 ", minSize=" + minSize +
                 ", maxSize=" + maxSize +
@@ -273,17 +293,11 @@ public class ElasticServiceContainer {
     }
 
     private void loadAlerts() {
-//        if (this.enabled.get() && service.getAlerts().getAlert() != null) {
-        if (this.enabled.get() && service.getAlerts() != null) {
-            for (AlertConfig alertConfig : service.getAlerts().getAlert()) {
-                addAlert(alertConfig);
-            }
-        }
     }
 
     private void unloadAlerts() {
         for (String alertName : alerts.keySet()) {
-            logger.log(Level.FINE,  "Stopping alert: " + alertName);
+            _logger.log(Level.FINE, "Stopping alert: " + alertName);
             removeAlert(alertName);
         }
     }
@@ -319,50 +333,81 @@ public class ElasticServiceContainer {
 
     public synchronized void scaleUp() {
         if (System.currentTimeMillis() - prevResizeTime > RECONFIG_TIME_IN_MILLIS) {
-            if (getCurrentMemberCount() < service.getMax()) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
-                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
-                        + service.getName() + ", " + service.getName() + ", 1, null)");
-                }
-
-                orchestrator.scaleService(service.getName(), service.getName(), 1, null);
-                prevResizeTime = System.currentTimeMillis();
-            } else {
-                if (logger.isLoggable(Level.FINE)) {
-                   logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
-                    + "; max=" + service.getMax() + "; current=" + getCurrentMemberCount() + "]:  Already at max instances ( = " + service.getMax() + " )");
-                }
-            }
+            orchestrator.scaleService(provisionedService.getServiceDescription().getAppName(), provisionedService.getName(), 1, null);
+            prevResizeTime = System.currentTimeMillis();
         }
+
+//        if (System.currentTimeMillis() - prevResizeTime > RECONFIG_TIME_IN_MILLIS) {
+//            if (getCurrentMemberCount() < service.getMax()) {
+//                if (_logger.isLoggable(Level.INFO)) {
+//                    _logger.log(Level.INFO, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+//                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
+//                        + service.getName() + ", " + service.getName() + ", 1, null)");
+//                }
+//
+//                orchestrator.scaleService(provisionedService.getServiceDescription().getAppName(), provisionedService.getName(), 1, null);
+//                prevResizeTime = System.currentTimeMillis();
+//            } else {
+//                if (_logger.isLoggable(Level.FINE)) {
+//                   _logger.log(Level.FINE, "scaleUp[" + service.getName() + ": min=" + service.getMin()
+//                    + "; max=" + service.getMax() + "; current=" + getCurrentMemberCount() + "]:  Already at max instances ( = " + service.getMax() + " )");
+//                }
+//            }
+//        }
     }
 
     public synchronized void scaleDown() {
         if (System.currentTimeMillis() - prevResizeTime > RECONFIG_TIME_IN_MILLIS) {
-            if (getCurrentMemberCount() > service.getMin()) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
-                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
-                        + service.getName() + ", " + service.getName() + ", -1, null)");
-                }
-                orchestrator.scaleService(service.getName(), service.getName(), -1, null);
-                prevResizeTime = System.currentTimeMillis();
-            } else {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
-                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Already at min instances ( = " + service.getMin() + " )");
-                }
+            orchestrator.scaleService(provisionedService.getServiceDescription().getAppName(), provisionedService.getName(), -1, null);
+            prevResizeTime = System.currentTimeMillis();
+        }
+
+//        if (System.currentTimeMillis() - prevResizeTime > RECONFIG_TIME_IN_MILLIS) {
+//            if (getCurrentMemberCount() > service.getMin()) {
+//                if (_logger.isLoggable(Level.INFO)) {
+//                    _logger.log(Level.INFO, "scaleDown[" + getName() + ": min=" + service.getMin()
+//                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Invoking orchestrator.scaleService("
+//                        + service.getName() + ", " + service.getName() + ", -1, null)");
+//                }
+//                orchestrator.scaleService(provisionedService.getServiceDescription().getAppName(), provisionedService.getName(), -1, null);
+//                prevResizeTime = System.currentTimeMillis();
+//            } else {
+//                if (_logger.isLoggable(Level.FINE)) {
+//                    _logger.log(Level.FINE, "scaleDown[" + service.getName() + ": min=" + service.getMin()
+//                        + "; max=" +service.getMax() + "; current=" + getCurrentMemberCount() + "]: Already at min instances ( = " + service.getMin() + " )");
+//                }
+//            }
+//        }
+    }
+
+    private class MetricGathererWrapper
+            implements Runnable {
+
+        private AbstractMetricGatherer mg;
+
+        private int maxDataHoldingTimeInSeconds;
+
+        private long prevPurgeTime = System.currentTimeMillis();
+
+        private Logger logger;
+
+        MetricGathererWrapper(AbstractMetricGatherer mg, int maxDataHoldingTimeInSeconds) {
+            this.mg = mg;
+            this.maxDataHoldingTimeInSeconds = maxDataHoldingTimeInSeconds;
+
+            logger = Logger.getLogger(MetricGathererWrapper.class.getName());
+        }
+
+        public void run() {
+            mg.gatherMetric();
+
+            long now = System.currentTimeMillis();
+            if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
+                prevPurgeTime = now;
+                logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
+                mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);
             }
         }
     }
-
-      private class ClusterSizeMonitor
-        implements Runnable {
-
-        public void run() {
-            checkClusterSize();
-        }
-    }
-
 
 }

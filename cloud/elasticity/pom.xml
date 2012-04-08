@@ -59,5 +59,6 @@
 	<module>elastic-config</module>
 	<module>elastic-api</module>
 	<module>elastic-engine</module>
+	<module>elastic-metrics</module>
     </modules>
 </project>

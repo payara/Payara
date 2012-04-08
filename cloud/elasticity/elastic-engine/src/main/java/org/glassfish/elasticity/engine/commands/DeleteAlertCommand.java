@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.beans.PropertyVetoException;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
@@ -72,7 +72,7 @@ public class DeleteAlertCommand implements AdminCommand{
     Domain domain;
 
     @Inject
-    ElasticServiceManager elasticServiceManager;
+    ElasticEnvironmentContainer elasticServiceManager;
 
     @Param (name ="alert", primary = true)
     String alertname;

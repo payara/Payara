@@ -40,9 +40,7 @@
 package org.glassfish.elasticity.engine.container;
 
 
-import org.glassfish.api.Startup;
-import org.glassfish.common.util.timer.TimerSchedule;
-import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
+import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.PostConstruct;
 import javax.inject.Inject;
 
@@ -55,8 +53,10 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
-import org.glassfish.paas.tenantmanager.entity.Tenant;
-import  org.glassfish.elasticity.engine.util.SetElasticTenantId;
+
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -67,7 +67,7 @@ import  org.glassfish.elasticity.engine.util.SetElasticTenantId;
  */
 @Service
 public class ElasticEngine
-        implements Startup, PostConstruct, ServiceChangeListener {
+        implements PostConstruct, ServiceChangeListener {
 
     @Inject
     Services services;
@@ -76,85 +76,56 @@ public class ElasticEngine
     ElasticServices elasticServices;
 
     @Inject
-    ElasticEngineThreadPool threadPool;
-
-    @Inject
-    MetricGathererContainer metricGathererContainer;
-
-
-    @Inject
-    ElasticServiceManager elasticServiceManager;
-
-    @Inject
     TenantManager tm;
+    
+    private static final Logger _logger = EngineUtil.getLogger();
 
-    private String serviceName;
+    private static final Logger logger = EngineUtil.getLogger();
 
-    public void initialize(String serviceName) {
-        this.serviceName = serviceName;
-    }
+
+    private HashMap<String, ElasticEnvironmentContainer> environments
+            = new HashMap<String, ElasticEnvironmentContainer>();
 
     public void postConstruct() {
-        if (serviceName == null) {
-            //throw new IllegalStateException("ElasticEngine not initialized with a service name");
-        }
-
-//        metricGathererContainer.start();
-
-//        System.out.println("Elastic Services: " + elasticServices);
         if (elasticServices != null && elasticServices.getElasticService() != null) {
             for (ElasticServiceConfig service : elasticServices.getElasticService()) {
                 startElasticService(service);
             }
         }
-
-        org.glassfish.common.util.timer.TimerSchedule ts = 
-                new TimerSchedule().second("10");
-        System.out.println("Now: "+ System.currentTimeMillis()
-            + "; 10s from now: " + ts.getNextTimeout().getTimeInMillis());
-
     }
 
     public void startElasticService(ElasticServiceConfig service) {
-        //need to create the tenant first then set it
-//        SetElasticTenantId.setId();      // for now elasticity hardcodes the tenant Id
-
         if (service.getEnabled()) {
-            ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
-            container.initialize(service);
-            elasticServiceManager.addElasticServiceContainer(service.getName(), container);
-            container.startContainer();
+//            ElasticServiceContainer container = services.byType(ElasticServiceContainer.class).get();
+//            container.start(service);
+//            elasticServiceManager.addElasticServiceContainer(service.getName(), container);
+//            container.startContainer();
         }
     }
 
-    public void stop() {
-        for (ElasticServiceContainer container : elasticServiceManager.containers()) {
-            container.stopContainer();
-        }
-
-        metricGathererContainer.stop();
-    }
-
-    public Lifecycle getLifecycle() {
-        return Startup.Lifecycle.START;
+    public void stop() {;
     }
 
     @Override
     public void onEvent(ServiceChangeEvent event) {
-        System.out.println("ElasticEngine ServiceChangeEvent::onEvent " + event);
-//        elasticServiceManager.onEvent(event);
-//        try {
-//            tm.setCurrentTenant("t1");
-//
-//            Tenant t = tm.get(Tenant.class);
-//
-//            System.out.println("Tenant t = " + t);
-//
-//            System.out.println("ElasticEngine ServiceChangeEvent::onEvent==> "
-//                    + " name = " + event.getNewValue().getName()  + "; type = " + event.getNewValue().getServiceType().getName());
-//
-//        } catch (Exception ex) {
-//            System.out.println("** NO TENANT AVAILABLE...");
-//        }
+        String envName = event.getNewValue().getServiceDescription().getAppName();
+        switch (event.getType()) {
+            case CREATED:
+                ElasticEnvironmentContainer container = services.forContract(ElasticEnvironmentContainer.class).get();
+                environments.put(envName, container);
+                container.onEvent(envName, event);
+
+                _logger.log(Level.INFO, "Instantiated ElasticEnvironmentContainer for: " + envName);
+                break;
+
+            case MODIFIED:
+                break;
+
+            case DELETED:
+                ElasticEnvironmentContainer ctr = environments.remove(envName);
+                ctr.onEvent(envName, event);
+                break;
+        }
+
     }
 }

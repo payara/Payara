@@ -46,7 +46,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
-import org.glassfish.elasticity.engine.container.ElasticServiceManager;
+import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.scopes.PerLookup;
 import javax.inject.Inject;
@@ -85,7 +85,7 @@ public class EnableAutoScaling
 	private String name;
 
     @Inject
-    ElasticServiceManager elasticServiceManager;
+    ElasticEnvironmentContainer elasticServiceManager;
 	
     public void execute(AdminCommandContext context) {
     	ElasticServiceContainer service = elasticServiceManager.getElasticServiceContainer(name);

@@ -1,4 +1,4 @@
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -33,7 +33,7 @@ public class JVMMetricGathererConfig
 
     @Override
     public int getCollectionRate() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 15;
     }
 
     @Override

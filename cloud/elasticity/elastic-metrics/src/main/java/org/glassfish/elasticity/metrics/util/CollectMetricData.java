@@ -37,19 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.util;
 
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.Client;
+import org.glassfish.elasticity.metrics.util.MarshallingUtils;
+
 import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

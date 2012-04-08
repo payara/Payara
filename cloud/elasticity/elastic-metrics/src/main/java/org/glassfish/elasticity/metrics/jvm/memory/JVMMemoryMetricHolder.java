@@ -37,22 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
+import org.glassfish.elasticity.metrics.util.CollectMetricData;
 import org.glassfish.elasticity.util.TabularMetricHolder;
-import org.glassfish.paas.orchestrator.service.ServiceType;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
-import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
 
 import java.lang.management.MemoryMXBean;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import com.sun.enterprise.config.serverbeans.Clusters;
@@ -85,7 +85,7 @@ public class JVMMemoryMetricHolder
     private AdminCommandContext context = null;
 
     // need to store instance name, instance port, instance host and data for the instance
-    HashMap<String, Object>  instancesTable= null;
+    HashMap<String, JVMInstanceMemoryHolder>  instancesTable = new HashMap<String, JVMInstanceMemoryHolder>();
 
     MetricAttribute[] attributes;
 
@@ -99,17 +99,15 @@ public class JVMMemoryMetricHolder
     @Inject
     private Clusters clusters;
 
+    private static final Logger _logger = Logger.getLogger("elastic-metrics93");
+
     @Override
     public void postConstruct() {
-
-//        this.max = memBean.getHeapMemoryUsage().getMax();
     }
 
     @Override
     protected void initialize(org.glassfish.paas.orchestrator.service.spi.Service service, JVMMetricGathererConfig config) {
         serviceName = service.getName();
-        System.out.println("*** JVMMemoryMetricHolder.initialize called.... "+ serviceName
-            + "; service.getProperties => " + service.getProperties());
 
        //create a hash map with all instance names in this service
         // each entry is a name of instance and the object which holds the data as in previous design
@@ -126,17 +124,13 @@ public class JVMMemoryMetricHolder
             return;
         }
         // until we have metric gatherer factories init this way
-        if (instancesTable == null ){
-            instancesTable= new HashMap<String, Object>();
+        for (Server server : serverList) {
+            Map<String , Object> instanceInfo= new HashMap<String, Object>();
+            String instanceName = server.getName();
+            JVMInstanceMemoryHolder jvmInstanceHolder = new JVMInstanceMemoryHolder("localhost", "4848", instanceName);
 
-            for (Server server : serverList) {
-                Map<String , Object> instanceInfo= new HashMap<String, Object>();
-                String instanceName = server.getName();
-                JVMInstanceMemoryHolder jvmInstanceHolder = new JVMInstanceMemoryHolder("localhost", "4848", instanceName);
-
-                instancesTable.put(instanceName,jvmInstanceHolder);
-                turnOnMonitoring(instanceName);
-            }
+            instancesTable.put(instanceName,jvmInstanceHolder);
+            turnOnMonitoring(instanceName);
         }
     }
 
@@ -153,15 +147,18 @@ public class JVMMemoryMetricHolder
 
     @Override
     public void purgeDataOlderThan(int time, TimeUnit unit) {
-        //go to each instance and purge old data
-        /*
         for (String name : instancesTable.keySet()) {
             Map<String , Object> instanceInfo= (Map)instancesTable.get(name);
-            TabularMetricHolder<MemoryStat> table= (TabularMetricHolder)instanceInfo.get("table");
-            table.purgeEntriesOlderThan(time, unit);
-            instanceInfo.put("table", table);
+            if (instanceInfo != null) {
+                TabularMetricHolder<MemoryStat> table= (TabularMetricHolder) instanceInfo.get("table");
+                try {
+                table.purgeEntriesOlderThan(time, unit);
+                } catch (Exception ex) {
+                    _logger.log(Level.WARNING, "Exception during purging old entries", ex);
+                }
+            }
         }
-        */
+        
     }
 
     @Override
@@ -246,6 +243,8 @@ public class JVMMemoryMetricHolder
         String hostName= "localhost";
         String hostPort = "4848";
         String instanceName = null;
+
+        long maxHeap = -1;
         TabularMetricHolder<MemoryStat> table;
 
         public   JVMInstanceMemoryHolder(String host, String port, String instName){
@@ -258,22 +257,22 @@ public class JVMMemoryMetricHolder
 
         public void gatherMetric() {
             String jvmMemURL = baseURL + instanceName +"/"+  jvm_memory ;
-            //catch exception
             try {
                 Map<String, Object> res = CollectMetricData.getRestData(jvmMemURL);
                 if (res == null ) return;
-                Map<String, Object> jvmMemHeap = (Map) res.get(heap_used);
-                Integer heapUsed = (Integer)jvmMemHeap.get("count");
 
-                Map<String, Object> jvmMemCommited = (Map) res.get(heap_commited);
-                Integer commitedUsed = (Integer)jvmMemCommited.get("count");
-                // should only do this once
-                Map<String, Object> jvmMemMax = (Map) res.get(maxheapsize);
-                Integer jvmMax = (Integer)jvmMemMax.get("count");
-                table.add(System.currentTimeMillis(), new MemoryStat(heapUsed.longValue(), commitedUsed.longValue()));
-                System.out.println("Instance name " + instanceName + " Used heap " + heapUsed);
+                if (maxHeap == -1) {
+                    // should only do this once
+                    Map<String, Object> jvmMemMax = (Map) res.get(maxheapsize);
+                    maxHeap = (Integer) jvmMemMax.get("count");
+                }
+
+                MemoryStat memStat = new MemoryStat((Integer)((Map) res.get(heap_used)).get("count"),
+                        (Integer) ((Map) res.get(heap_commited)).get("count"));
+                table.add(System.currentTimeMillis(), memStat);
             } catch (Exception ex)  {
-
+                _logger.log(Level.WARNING, "Exception while collecting metric " + ex);
+                _logger.log(Level.FINE, "Exception whilr collecting metric", ex);
             }
     }
 

@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.sessions;
 
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
+
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import javax.inject.Inject;
 
@@ -51,7 +53,7 @@ import org.jvnet.hk2.component.PostConstruct;
 
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
-import org.glassfish.external.statistics.RangeStatistic;
+import org.glassfish.external.statistics.CountStatistic;
 
 import java.util.concurrent.TimeUnit;
 
@@ -59,16 +61,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Jennifer.Chou@Oracle.Com
  */
-@Service(name="session_count")
-public class ActiveSessionsMetricHolder
+@Service(name="processingtime")
+public class ProcessingTimeMetricHolder
     extends AbstractMetricGatherer
     implements MetricNode, PostConstruct {
 
-    static final String _NAME = "session_count";
+    static final String _NAME = "processingtime";
     private String instanceName;
-    private static final String WEB_SESSION_ACTIVESESSIONSCURRENT = "web.session.activesessionscurrent";
+    private static final String WEB_REQUEST_PROCESSINGTIME = "web.request.processingtime";
 
-    TabularMetricHolder<ActiveSessionsStat> table = null;
+    TabularMetricHolder<ProcessingTimeStat> table = null;
 
     MetricAttribute[] attributes;
     
@@ -76,12 +78,15 @@ public class ActiveSessionsMetricHolder
     
     @Inject
     Services services;
+    
+    @Inject
+    ServerEnvironment serverEnv;
 
     @Override
     public void postConstruct() {
-        this.table = new TabularMetricHolder<ActiveSessionsStat>("activeSessions", ActiveSessionsStat.class);
+        this.table = new TabularMetricHolder<ProcessingTimeStat>("processingTime", ProcessingTimeStat.class);
         this.attributes = new MetricAttribute[] {new InstanceAttribute(), table};
-        this.instanceName = System.getProperty("com.sun.aas.instanceName");
+        this.instanceName = serverEnv.getInstanceName();
         MonitoringRuntimeDataRegistry monitoringRegistry = services.forContract(MonitoringRuntimeDataRegistry.class).get();
         rootNode = monitoringRegistry.get(this.instanceName);
     }
@@ -90,29 +95,27 @@ public class ActiveSessionsMetricHolder
     public void gatherMetric() {
         //TreeNode activeSessionsNode = rootNode.getNode("applications.*.*.activesessionscurrent");
         if (rootNode != null) {
-            TreeNode activeSessionsNode = rootNode.getNode(WEB_SESSION_ACTIVESESSIONSCURRENT);
-            
+            TreeNode activeSessionsNode = rootNode.getNode(WEB_REQUEST_PROCESSINGTIME);
+
             if (activeSessionsNode != null) {
                 Object value = activeSessionsNode.getValue();
-                
+
                 if (value != null) {
-                    if (value instanceof RangeStatistic) {
-                        RangeStatistic statisticObject = (RangeStatistic) value;
-                        
-                        table.add(System.currentTimeMillis(), new ActiveSessionsStat(
-                                statisticObject.getHighWaterMark(),
+                    if (value instanceof CountStatistic) {
+                        CountStatistic statisticObject = (CountStatistic) value;
+
+                        table.add(System.currentTimeMillis(), new ProcessingTimeStat(
                                 statisticObject.getLastSampleTime(),
                                 statisticObject.getDescription(),
                                 statisticObject.getUnit(),
                                 statisticObject.getName(),
                                 statisticObject.getStartTime(),
-                                statisticObject.getCurrent(),
-                                statisticObject.getLowWaterMark()));
+                                statisticObject.getCount()));
 
-                        //Iterator<TabularMetricEntry<ActiveSessionsStat>> iter = table.iterator(10, TimeUnit.SECONDS);
+                        //Iterator<TabularMetricEntry<ProcessingTimeStat>> iter = table.iterator(10, TimeUnit.SECONDS);
                         //while (iter.hasNext()) {
-                        //    TabularMetricEntry<ActiveSessionsStat> tme = iter.next();
-                        //System.out.println("SessionCountMetricHolder Gathered metric: " + tme.getTimestamp() + " " + tme.getV());
+                        //    TabularMetricEntry<ProcessingTimeStat> tme = iter.next();
+                        //System.out.println("ProcessingTimeMetricHolder Gathered metric: " + tme.getTimestamp() + " " + tme.getV());
                         //}
                     }
                 }
@@ -159,31 +162,23 @@ public class ActiveSessionsMetricHolder
         }
     }
 
-    private class ActiveSessionsStat {
+    private class ProcessingTimeStat {
 
-        private long highWaterMark;
         private long lastSampleTime;
         private String description;
         private String unit;
         private String name;
         private long startTime;
-        private long current;
-        private long lowWaterMark;
+        private long count;
 
-        ActiveSessionsStat(long highWaterMark, long lastSampleTime, String description, 
-                String unit, String name, long startTime, long current, long lowWaterMark) {
-            this.highWaterMark = highWaterMark;
+        ProcessingTimeStat(long lastSampleTime, String description, 
+                String unit, String name, long startTime, long count) {
             this.lastSampleTime = lastSampleTime;
             this.description = description;
             this.unit = unit;
             this.name = name;
             this.startTime = startTime;
-            this.current = current;
-            this.lowWaterMark = lowWaterMark;
-        }
-
-        public long getHighWatermark() {
-            return highWaterMark;
+            this.count = count;
         }
 
         public long getLastSampleTime() {
@@ -206,17 +201,13 @@ public class ActiveSessionsMetricHolder
             return startTime;
         }
         
-        public long getCurrent() {
-            return current;
-        }
-        
-        public long getLowWaterMark() {
-            return lowWaterMark;
+        public long getCount() {
+            return count;
         }
 
         public String toString() {
-            return "highWaterMark=" + highWaterMark + "; lastSampleTime=" + lastSampleTime + "; description=" + description + "; unit=" + unit +
-                    "; name=" +name + "; startTime=" + startTime + "; current="+ current + "; + lowWaterMark=" + lowWaterMark;
+            return "lastSampleTime=" + lastSampleTime + "; description=" + description + "; unit=" + unit +
+                    "; name=" +name + "; startTime=" + startTime + "; count="+ count;
         }
     }
 }

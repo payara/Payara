@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.elasticity.engine.util;
+package org.glassfish.elasticity.metrics.sessions;
 
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
