@@ -1,6 +1,6 @@
 package org.glassfish.elasticity.engine.container;
 
-import org.glassfish.elasticity.api.Alert;
+import org.glassfish.elasticity.api.AbstractAlert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertAction;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
@@ -22,7 +22,7 @@ public class AlertContextImpl<C extends AlertConfig>
 
     private C config;
 
-    private Alert alert;
+    private AbstractAlert alert;
 
     private ScheduledFuture<?> future;
 
@@ -30,7 +30,7 @@ public class AlertContextImpl<C extends AlertConfig>
 
     private String alertToken;
 
-    public AlertContextImpl(ElasticServiceContainer elasticServiceContainer, C config, Alert alert) {
+    public AlertContextImpl(ElasticServiceContainer elasticServiceContainer, C config, AbstractAlert alert) {
         this.elasticServiceContainer = elasticServiceContainer;
         this.config = config;
         this.alert = alert;
@@ -48,10 +48,6 @@ public class AlertContextImpl<C extends AlertConfig>
         return config;
     }
 
-    public Alert getAlert() {
-        return alert;
-    }
-
     public ScheduledFuture<?> getFuture() {
         return future;
     }
@@ -66,7 +62,7 @@ public class AlertContextImpl<C extends AlertConfig>
 
     public void run() {
         try {
-            Alert.AlertState state = alert.execute(this);
+            AbstractAlert.AlertState state = alert.execute(this);
 //            System.out.println("Alert[" + config.getName() + "]: returned STATE = " + state);
             try {
                 switch (state) {

@@ -39,18 +39,23 @@
  */
 package org.glassfish.elasticity.engine.container;
 
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.elasticity.api.AbstractAlert;
+import org.glassfish.elasticity.api.AbstractMetricGatherer;
+import org.glassfish.elasticity.api.AlertConfigurator;
+import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
+import org.glassfish.hk2.Services;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 
@@ -59,7 +64,7 @@ import javax.inject.Inject;
 public class ElasticEnvironmentContainer {
     
     @Inject
-    Habitat habitat;
+    Services services;
 
     @Inject
     ElasticEngineThreadPool threadPool;
@@ -88,11 +93,17 @@ public class ElasticEnvironmentContainer {
         switch (event.getType()) {
             case CREATED:
                 this.envName = envName;
-                serviceContainer = habitat.forContract(ElasticServiceContainer.class).get();
+                serviceContainer = services.forContract(ElasticServiceContainer.class).get();
                 addElasticServiceContainer(event.getNewValue().getName(), serviceContainer);
                 serviceContainer.start(event.getNewValue());
 
 
+                AlertConfigurator alertConfigurator = services.forContract(AlertConfigurator.class).get();
+                AlertConfig cfg = alertConfigurator.getAlertConfig(event.getNewValue());
+                AbstractAlert<? extends AlertConfig> alert =
+                        services.forContract(AbstractAlert.class).named(cfg.getType()).get();
+                int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());
+                threadPool.scheduleAtFixedRate(alert, freqInSeconds, freqInSeconds, TimeUnit.SECONDS);
                 break;
 
             case MODIFIED:
@@ -110,5 +121,4 @@ public class ElasticEnvironmentContainer {
         }
     }
 
-	
 }

@@ -74,14 +74,8 @@ public class ElasticEngine
 
     @Inject @Optional
     ElasticServices elasticServices;
-
-    @Inject
-    TenantManager tm;
     
     private static final Logger _logger = EngineUtil.getLogger();
-
-    private static final Logger logger = EngineUtil.getLogger();
-
 
     private HashMap<String, ElasticEnvironmentContainer> environments
             = new HashMap<String, ElasticEnvironmentContainer>();
@@ -114,8 +108,6 @@ public class ElasticEngine
                 ElasticEnvironmentContainer container = services.forContract(ElasticEnvironmentContainer.class).get();
                 environments.put(envName, container);
                 container.onEvent(envName, event);
-
-                _logger.log(Level.INFO, "Instantiated ElasticEnvironmentContainer for: " + envName);
                 break;
 
             case MODIFIED:

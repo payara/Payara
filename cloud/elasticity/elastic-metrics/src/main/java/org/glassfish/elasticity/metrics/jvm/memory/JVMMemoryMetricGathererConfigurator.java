@@ -18,7 +18,6 @@ public class JVMMemoryMetricGathererConfigurator
     implements MetricGathererConfigurator, PostConstruct {
 
     public void postConstruct() {
-        System.out.println("**INSTANTIATED MetricGathererConfigurator....");
     }
     
     @Override
@@ -33,7 +32,6 @@ public class JVMMemoryMetricGathererConfigurator
              mgConfigs.add(mgConfig);
         } catch (PropertyVetoException ex) {
         }
-        System.out.println("created MG config");
     }
 
 }

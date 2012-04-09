@@ -214,7 +214,7 @@ public class JVMMemoryMetricHolder
         }
     }
 
-    private class MemoryStat {
+    public static class MemoryStat {
 
         private long used;
 
@@ -238,7 +238,7 @@ public class JVMMemoryMetricHolder
         }
     }
 
-    private class JVMInstanceMemoryHolder {
+    public static class JVMInstanceMemoryHolder {
 
         String hostName= "localhost";
         String hostPort = "4848";
@@ -267,12 +267,13 @@ public class JVMMemoryMetricHolder
                     maxHeap = (Integer) jvmMemMax.get("count");
                 }
 
-                MemoryStat memStat = new MemoryStat((Integer)((Map) res.get(heap_used)).get("count"),
+                MemoryStat memStat = new MemoryStat(
+                        (Integer)((Map) res.get(heap_used)).get("count"),
                         (Integer) ((Map) res.get(heap_commited)).get("count"));
                 table.add(System.currentTimeMillis(), memStat);
             } catch (Exception ex)  {
                 _logger.log(Level.WARNING, "Exception while collecting metric " + ex);
-                _logger.log(Level.FINE, "Exception whilr collecting metric", ex);
+                _logger.log(Level.FINE, "Exception while collecting metric", ex);
             }
     }
 

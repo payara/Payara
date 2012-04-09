@@ -44,8 +44,10 @@ import org.jvnet.hk2.annotations.Contract;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 
+import javax.inject.Inject;
+
 /**
- * An Alert typically uses some metrics and determines if the Alert's state.
+ * An Alert typically uses some metrics and determines the Alert's state.
  * The ElasticityEngine will then use this Alert's state to execute a set
  * of Actions.
  *
@@ -53,22 +55,41 @@ import org.glassfish.elasticity.config.serverbeans.AlertConfig;
  *
  */
 @Contract
-public interface Alert<C extends AlertConfig> {
+public abstract class AbstractAlert<C extends AlertConfig>
+    implements Runnable {
 
 	public enum AlertState {OK, ALARM, NO_DATA};
+
+    @Inject
+    private Services services;
+
+    private C config;
+
+    private AlertContext ctx;
 
 	/**
 	 * Called by the framework when the rule is instantiated.
 	 *
 	 * @param config
 	 */
-	public void initialize(Services h, C config);
+	public final void init(C config) {
+        this.config = config;
+        initialize();
+    }
+
+    protected void initialize() {
+
+    }
 	
 	/**
 	 * Execute this rule and return the state of this rule
 	 * 
 	 * @return the rule's state
 	 */
-	public AlertState execute(AlertContext<C> ctx);
+	public abstract AlertState execute(AlertContext<C> ctx);
+
+    public void run() {
+        execute(ctx);
+    }
 	
 }

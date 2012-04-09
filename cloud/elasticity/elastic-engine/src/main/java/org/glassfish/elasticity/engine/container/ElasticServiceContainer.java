@@ -134,15 +134,15 @@ public class ElasticServiceContainer {
         }
 
         for (MetricGathererConfig cfg : mgConfigs) {
-            _logger.log(Level.INFO, "Configuring " + cfg.getName() + "; " + cfg);
+            _logger.log(Level.FINE, "Configuring " + cfg.getName() + "; " + cfg);
             AbstractMetricGatherer mg = services.forContract(AbstractMetricGatherer.class).named(cfg.getName()).get();
             mg.init(provisionedService, cfg);
             threadPool.scheduleAtFixedRate(new MetricGathererWrapper(mg, 300),
-                    5, 5, TimeUnit.SECONDS);
+                    10, 10, TimeUnit.SECONDS);
 
         }
         
-        System.out.println("Started ServiceContainer for " + sb.toString());
+        _logger.log(Level.FINE, "Started ServiceContainer for " + sb.toString());
     }
 
     public String getName() {
@@ -257,7 +257,7 @@ public class ElasticServiceContainer {
             _logger.log(Level.INFO, "Creating Alert[" + provisionedService.getName() + "]: " + alertConfig.getName());
 
             String sch = alertConfig.getSchedule().trim();
-            long frequencyInSeconds = getFrequencyOfAlertExecutionInSeconds(sch);
+            long frequencyInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(sch);
             String alertName = alertConfig.getName();
             ExpressionBasedAlert<AlertConfig> alert = new ExpressionBasedAlert<AlertConfig>();
             alert.initialize(services, alertConfig);
@@ -300,35 +300,6 @@ public class ElasticServiceContainer {
             _logger.log(Level.FINE, "Stopping alert: " + alertName);
             removeAlert(alertName);
         }
-    }
-
-
-    private int getFrequencyOfAlertExecutionInSeconds(String sch) {
-        String schStr = sch.trim();
-        int index = 0;
-        for (; index < schStr.length(); index++) {
-            if (Character.isDigit(schStr.charAt(index))) {
-                break;
-            }
-        }
-
-        int frequencyInSeconds = 30;
-        try {
-            frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
-        } catch (NumberFormatException nfEx) {
-            //TODO
-        }
-        if (index < schStr.length()) {
-            switch (schStr.charAt(index)) {
-                case 's':
-                    break;
-                case 'm':
-                    frequencyInSeconds *= 60;
-                    break;
-            }
-        }
-
-        return frequencyInSeconds;
     }
 
     public synchronized void scaleUp() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,15 @@
 package org.glassfish.elasticity.api;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
+import org.glassfish.paas.orchestrator.service.spi.Service;
+import org.jvnet.hk2.annotations.Contract;
 
-import java.util.Map;
+import java.util.Collection;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public interface AlertContext<C extends AlertConfig> {
+@Contract
+public interface AlertConfigurator {
 
-    public ElasticServiceConfig getElasticService();
-
-    public C getAlertConfig();
-
-    public Map getTransientData();
+    public AlertConfig getAlertConfig(Service service);
 
 }

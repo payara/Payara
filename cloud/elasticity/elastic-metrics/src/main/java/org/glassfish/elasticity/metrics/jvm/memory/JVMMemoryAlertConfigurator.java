@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.api;
+package org.glassfish.elasticity.metrics.jvm.memory;
 
+import org.glassfish.elasticity.api.AlertConfigurator;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
+import org.glassfish.hk2.PostConstruct;
+import org.glassfish.paas.orchestrator.service.spi.Service;
 
-import java.util.Map;
+import java.util.Collection;
 
-/**
- * @author Mahesh.Kannan@Oracle.Com
- */
-public interface AlertContext<C extends AlertConfig> {
+@org.jvnet.hk2.annotations.Service
+public class JVMMemoryAlertConfigurator
+    implements AlertConfigurator, PostConstruct {
 
-    public ElasticServiceConfig getElasticService();
-
-    public C getAlertConfig();
-
-    public Map getTransientData();
+    public void postConstruct() {
+    }
+    
+    @Override
+    public JVMMemoryAlertConfig getAlertConfig(Service provisionedService) {
+        return new JVMMemoryAlertConfig();
+    }
 
 }

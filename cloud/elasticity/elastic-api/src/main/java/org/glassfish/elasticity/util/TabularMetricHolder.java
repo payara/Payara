@@ -124,17 +124,17 @@ public class TabularMetricHolder<V>
     }
 	
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit) {
-        Collection<TabularMetricEntry<V>> normalizedCollection = new ArrayList<TabularMetricEntry<V>>();
+        Collection<TabularMetricEntry<V>> data = new ArrayList<TabularMetricEntry<V>>();
         try {
             NavigableMap<Long, MetricEntryHolder> subMap = getView(duration, unit, true);
             for (MetricEntryHolder entry : subMap.values()) {
-                normalizedCollection.add(new NormalizedTabularMetricEntry<V>(entry));
+                data.add(entry);
             }
         } catch (NotEnoughMetricDataException ex) {
-            //Will not happen
+            throw ex;
         }
 
-        return normalizedCollection.iterator();
+        return data.iterator();
 	}
 
 	public Iterator<TabularMetricEntry<V>> iterator(long duration, TimeUnit unit, boolean allowPartialData)

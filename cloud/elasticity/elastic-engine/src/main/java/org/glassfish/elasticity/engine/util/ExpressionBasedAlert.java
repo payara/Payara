@@ -39,7 +39,7 @@
  */
 package org.glassfish.elasticity.engine.util;
 
-import org.glassfish.elasticity.api.Alert;
+import org.glassfish.elasticity.api.AbstractAlert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.container.AlertContextImpl;
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * @author Mahesh Kannan
  */
 public class ExpressionBasedAlert<C extends AlertConfig>
-        implements Alert<C> {
+        extends AbstractAlert<C> {
 
     private static final Logger _logger = EngineUtil.getLogger();
 

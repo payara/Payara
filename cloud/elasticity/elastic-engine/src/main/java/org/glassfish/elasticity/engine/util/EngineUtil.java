@@ -48,5 +48,33 @@ public class EngineUtil {
 	public static Logger getLogger() {
 		return _logger;
 	}
-	
+
+    public static int getFrequencyOfAlertExecutionInSeconds(String sch) {
+        String schStr = sch.trim();
+        int index = 0;
+        for (; index < schStr.length(); index++) {
+            if (Character.isDigit(schStr.charAt(index))) {
+                break;
+            }
+        }
+
+        int frequencyInSeconds = 30;
+        try {
+            frequencyInSeconds = Integer.parseInt(schStr.substring(0, index));
+        } catch (NumberFormatException nfEx) {
+            //TODO
+        }
+        if (index < schStr.length()) {
+            switch (schStr.charAt(index)) {
+                case 's':
+                    break;
+                case 'm':
+                    frequencyInSeconds *= 60;
+                    break;
+            }
+        }
+
+        return frequencyInSeconds;
+    }
+
 }

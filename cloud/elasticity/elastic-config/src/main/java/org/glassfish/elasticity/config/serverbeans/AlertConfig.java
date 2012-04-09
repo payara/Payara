@@ -62,6 +62,12 @@ public interface AlertConfig extends ConfigBeanProxy {
 
     @Attribute
     public String getName();
+
+    @Param(name="type")
+    public void setType(String val);
+    
+    @Attribute
+    public String getType();
     /**
      * Sets the alert schedule
      * @param value alert schedule
@@ -70,7 +76,7 @@ public interface AlertConfig extends ConfigBeanProxy {
     @Param(name="schedule", optional=true, defaultValue="30s")
     public void setSchedule(String value) throws PropertyVetoException;
 
-    @Attribute (defaultValue = "30s")
+    @Attribute (defaultValue = "10s")
     public String getSchedule();
 
     /**
@@ -111,11 +117,11 @@ public interface AlertConfig extends ConfigBeanProxy {
      * @param value alert service
      * @throws PropertyVetoException if a listener vetoes the change
      */
-    @Param(name="service")
-    public void setService(String value) throws PropertyVetoException;
+    @Param(name="environment")
+    public void setEnvironment(String value) throws PropertyVetoException;
 
     @Attribute
-    public String getService();
+    public String getEnvironment();
 
     /**
      * List of actions associated with this alert
