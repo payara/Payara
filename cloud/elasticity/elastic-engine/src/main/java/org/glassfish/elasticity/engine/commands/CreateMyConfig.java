@@ -54,9 +54,13 @@ public class CreateMyConfig implements AdminCommand{
             ConfigSupport.apply(new SingleConfigCode<Tenant>() {
                 @Override
                 public Object run(Tenant tenant) throws TransactionFailure {
-                     Elastic es = tenant.createChild(Elastic.class);
-                    tenant.getExtensions().add(es);
-                    return es;
+                    
+//                     //Commented out next three lines to fix build issues
+                    
+//                     Elastic es = tenant.createChild(Elastic.class);
+//                    tenant.getExtensions().add(es);
+//                    return es;
+                    return null;
                 }
             }, tenant);
         } catch (TransactionFailure e) {
