@@ -66,7 +66,7 @@ public class SimpleMetricTest {
     }
 
     @Test
-    public void testInsert() {
+    public void addAndTestIfEmpty() {
         for (int i=1; i<8; i++) {
             table.add(i*1000, new MemStat(i,i));
         }
@@ -75,7 +75,7 @@ public class SimpleMetricTest {
     }
 
     @Test
-    public void testInsert2() {
+    public void addAndCount() {
         for (int i=1; i<8; i++) {
             table.add(i*1000, new MemStat(i,i));
         }
@@ -92,7 +92,7 @@ public class SimpleMetricTest {
     }
 
     @Test
-    public void testInsert3() {
+    public void addMultipleTimes() {
         for (int i=1; i<8; i++) {
             table.add(i*1000, new MemStat(i,i));
         }
@@ -112,12 +112,51 @@ public class SimpleMetricTest {
         while (iter2.hasNext()) {
             count++;
             TabularMetricEntry<MemStat> entry = iter2.next();
-            System.out.println("Data: " + entry.getTimestamp() + " : " + entry.getV());
+            //System.out.println("Data: " + entry.getTimestamp() + " : " + entry.getV());
         }
 
         assert(count == 6);
     }
-    
+
+    @Test
+    public void purgeOldEntries() {
+        long now =System.currentTimeMillis();
+        for (int i=1; i<8; i++) {
+            table.add(now + (i * 1000), new MemStat(i,i));
+        }
+
+        try {Thread.sleep(3000);} catch (Exception ex) {}
+
+        Iterator<TabularMetricEntry<MemStat>> iter = table.idleEntries(3, TimeUnit.SECONDS);
+        while (iter.hasNext()) {
+            TabularMetricEntry<MemStat> entry = iter.next();
+            System.out.println("1. Old Data: " + entry.getTimestamp() + " : " + entry.getV());
+        }
+        Iterator<TabularMetricEntry<MemStat>> curIter = table.iterator(3, TimeUnit.SECONDS);
+        while (curIter.hasNext()) {
+            TabularMetricEntry<MemStat> entry = curIter.next();
+            System.out.println("1. Current Data: " + entry.getTimestamp() + " : " + entry.getV());
+        }
+
+        now= System.currentTimeMillis();
+        table.purgeEntriesOlderThan(3, TimeUnit.SECONDS);
+
+        for (int i=10; i<18; i++) {
+            table.add(i*1000 + now, new MemStat(i,i));
+        }
+        try {Thread.sleep(3000);} catch (Exception ex) {}
+
+        int count = 0;
+        Iterator<TabularMetricEntry<MemStat>> iter2 = table.idleEntries(5, TimeUnit.SECONDS);
+        while (iter2.hasNext()) {
+            count++;
+            TabularMetricEntry<MemStat> entry = iter2.next();
+            System.out.println("2. Old Data: " + entry.getTimestamp() + " : " + entry.getV());
+        }
+
+        assert(true);
+    }
+
     private static class MemStat {
         public int v1;
         public int v2;

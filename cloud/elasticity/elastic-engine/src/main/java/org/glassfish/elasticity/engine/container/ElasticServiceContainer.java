@@ -41,6 +41,8 @@ package org.glassfish.elasticity.engine.container;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
+import org.glassfish.elasticity.api.ElasticEnvironment;
+import org.glassfish.elasticity.api.ElasticService;
 import org.glassfish.elasticity.api.MetricGathererConfigurator;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
@@ -61,6 +63,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -77,7 +80,8 @@ import org.glassfish.paas.orchestrator.ServiceOrchestrator;
  */
 @Service
 @Scoped(PerLookup.class)
-public class ElasticServiceContainer {
+public class ElasticServiceContainer
+    implements ElasticService {
 
     @Inject
     private Services services;
@@ -118,6 +122,25 @@ public class ElasticServiceContainer {
     private long prevResizeTime = System.currentTimeMillis();
 
     private long RECONFIG_TIME_IN_MILLIS = 30 * 1000;
+
+    @Override
+    public String getServiceName() {
+        return provisionedService.getName();
+    }
+
+    @Override
+    public ElasticEnvironment getElasticEnvironment() {
+        return null;
+    }
+
+    @Override
+    public void addMetricGatherer(MetricGathererConfig cfg) {
+    }
+
+    @Override
+    public Collection<MetricGathererConfig> getMetricGathererConfigs() {
+        return null;
+    }
 
     public void start(org.glassfish.paas.orchestrator.service.spi.Service provisionedService) {
         StringBuilder sb = new StringBuilder("ServiceInfo: ");
@@ -370,13 +393,17 @@ public class ElasticServiceContainer {
         }
 
         public void run() {
-            mg.gatherMetric();
+            try {
+                mg.gatherMetric();
 
-            long now = System.currentTimeMillis();
-            if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
-                prevPurgeTime = now;
-                logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
-                mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);
+                long now = System.currentTimeMillis();
+                if (((now - prevPurgeTime) / 1000) > maxDataHoldingTimeInSeconds) {
+                    prevPurgeTime = now;
+                    logger.log(Level.INFO, "Purging data for MetricGatherer: " + mg.getClass().getName());
+                    mg.purgeDataOlderThan(maxDataHoldingTimeInSeconds, TimeUnit.SECONDS);
+                }
+            } catch (Exception ex) {
+                _logger.log(Level.WARNING, "Exception while running metric gatherer " + ex);
             }
         }
     }

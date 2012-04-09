@@ -146,7 +146,21 @@ public class TabularMetricHolder<V>
     	throws UnsupportedOperationException {
         getOldestView(duration, unit).clear();
     }
-    
+
+    public Iterator<TabularMetricEntry<V>> idleEntries(long duration, TimeUnit unit) {
+        Collection<TabularMetricEntry<V>> data = new ArrayList<TabularMetricEntry<V>>();
+        try {
+            NavigableMap<Long, MetricEntryHolder> subMap = getOldestView(duration, unit);
+            for (MetricEntryHolder entry : subMap.values()) {
+                data.add(entry);
+            }
+        } catch (NotEnoughMetricDataException ex) {
+            //throw ex;
+        }
+
+        return data.iterator();
+    }
+
     protected MetricEntryHolder createMetricEntryHolder(long ts, V v) {
     	return new MetricEntryHolder(ts, v);
     }

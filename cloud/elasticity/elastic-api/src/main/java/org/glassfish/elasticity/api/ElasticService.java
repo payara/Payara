@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,52 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.elasticity.util;
+package org.glassfish.elasticity.api;
 
-import org.glassfish.elasticity.api.MetricFunction;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.elasticity.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
+import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Collection;
 
 /**
- * @author Mahesh.Kannan@Oracle.Com
+ * An ElasticEnvironment contains a set of ElasticServices. Some of these
+ *  can be shared services.
+ *
+ * Each ElasticService runs a set of MetricGatherers that collects metric
+ *   data for a Service.
+ *
+ * An ElasticEnvironment contains a set of Alerts that monitors
+ *  the Services in the environment and triggers Actions when
+ *  certain thresholds are crossed.
+ *
  */
-@Service(name="avg")
-@Scoped(PerLookup.class)
-public class Average
-	implements MetricFunction<Number, Double>{
-
-    private double sum;
-
-    private int count;
-
-	public void accept(Collection<Number> collection) {
-        for (Number value : collection) {
-		    accept(value);
-        }
-    }
+@Contract
+public interface ElasticService {
     
-    public void accept(Number val) {
-        sum += val.doubleValue();
-        count++;
-    }
+    public String getServiceName();
     
-    public int getCount() {
-        return count;
-    }
-    
-    public double getSum() {
-    	return sum;
-    }
+    public ElasticEnvironment getElasticEnvironment();
 
-    public Double value() {
-        return count > 0 ? sum / count : 0;
-    }
+    public void addMetricGatherer(MetricGathererConfig cfg);
 
-    public void reset() {
-        count = 0;
-        sum = 0;
-    }
+    public Collection<MetricGathererConfig> getMetricGathererConfigs();
+
 }

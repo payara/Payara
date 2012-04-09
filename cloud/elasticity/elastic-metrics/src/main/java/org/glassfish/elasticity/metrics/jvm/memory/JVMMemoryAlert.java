@@ -42,7 +42,9 @@ package org.glassfish.elasticity.metrics.jvm.memory;
 import org.glassfish.elasticity.api.AbstractAlert;
 import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.metric.TabularMetricEntry;
+import org.glassfish.elasticity.util.Average;
 import org.glassfish.elasticity.util.NotEnoughMetricDataException;
+import org.glassfish.hk2.Services;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -61,6 +63,9 @@ public class JVMMemoryAlert
     private static final Logger _logger = Logger.getLogger("elastic-logger");
 
     @Inject
+    Services services;
+
+    @Inject
     JVMMemoryMetricHolder metric;
 
     public AlertState execute(AlertContext<JVMMemoryAlertConfig> ctx) {
@@ -68,10 +73,11 @@ public class JVMMemoryAlert
         StringBuilder sb = new StringBuilder("JVMMemoryAlert: ");
         for (String inst : metric.instancesTable.keySet()) {
             JVMMemoryMetricHolder.JVMInstanceMemoryHolder instMetric = metric.instancesTable.get(inst);
-            if (instMetric.table.isEmpty()) {
+            if (resultState == AlertState.NO_DATA || instMetric.table.isEmpty()) {
                 resultState = AlertState.NO_DATA;
                 break;
             } else {
+                Average avg = services.forContract(Average.class).get();
                 try {
                     sb.append("\n\t").append(inst).append("(").append(instMetric.maxHeap).append("): ");
                     Iterator<TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat>> iter = instMetric.table.iterator(30, TimeUnit.SECONDS);
@@ -79,10 +85,18 @@ public class JVMMemoryAlert
                         TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat> data = iter.next();
                         sb.append(" {").append(data.getTimestamp() % 1000000).append(": ")
                                 .append(data.getV().getUsed()).append("}");
+                        avg.accept(data.getV().getUsed());
                     }
+
+                    double average = avg.value();
+                    if (average / instMetric.maxHeap * 100 > 50) {
+                        resultState = AlertState.ALARM;
+                    }
+                    sb.append("; RESULT : (avg : " + (average / instMetric.maxHeap * 100) + ") ==> " + resultState);
                 } catch (NotEnoughMetricDataException nedEx) {
-                    sb.append("NO_DATA");
+                    sb.append("; RESULT : NO_DATA");
                     resultState = AlertState.NO_DATA;
+                    break;
                 }
             }
         }

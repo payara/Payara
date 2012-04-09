@@ -39,14 +39,13 @@
  */
 package org.glassfish.elasticity.engine.container;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.elasticity.api.AbstractAlert;
-import org.glassfish.elasticity.api.AbstractMetricGatherer;
-import org.glassfish.elasticity.api.AlertConfigurator;
+import org.glassfish.elasticity.api.*;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
@@ -61,8 +60,11 @@ import javax.inject.Inject;
 
 @Service
 @Scoped(PerLookup.class)
-public class ElasticEnvironmentContainer {
+public class ElasticEnvironmentContainer
+    implements ElasticEnvironment {
     
+    private String name;
+
     @Inject
     Services services;
 
@@ -75,7 +77,26 @@ public class ElasticEnvironmentContainer {
 
 	private ConcurrentHashMap<String, ElasticServiceContainer> _containers
 		= new ConcurrentHashMap<String, ElasticServiceContainer>();
+    
+    public String getEnvironmentName() {
+        return name;
+    }
 
+    public Collection<ElasticService> getElasticServices() {
+        return null;
+    }
+
+    public void addAlert(AlertConfig cfg) {
+        AbstractAlert<? extends AlertConfig> alert =
+                services.forContract(AbstractAlert.class).named(cfg.getType()).get();
+        int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());
+        threadPool.scheduleAtFixedRate(alert, freqInSeconds, freqInSeconds, TimeUnit.SECONDS);
+    }
+
+    public Collection<AlertConfig> getAlertConfigs() {
+        return null;
+    }
+    
 	public ElasticServiceContainer getElasticServiceContainer(String name) {
 		return _containers.get(name);
 	}
@@ -89,6 +110,7 @@ public class ElasticEnvironmentContainer {
 	}
 
     public void onEvent(String envName, ServiceChangeEvent event) {
+        this.name = envName;
         ElasticServiceContainer serviceContainer = null;
         switch (event.getType()) {
             case CREATED:
@@ -100,10 +122,7 @@ public class ElasticEnvironmentContainer {
 
                 AlertConfigurator alertConfigurator = services.forContract(AlertConfigurator.class).get();
                 AlertConfig cfg = alertConfigurator.getAlertConfig(event.getNewValue());
-                AbstractAlert<? extends AlertConfig> alert =
-                        services.forContract(AbstractAlert.class).named(cfg.getType()).get();
-                int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());
-                threadPool.scheduleAtFixedRate(alert, freqInSeconds, freqInSeconds, TimeUnit.SECONDS);
+                addAlert(cfg);
                 break;
 
             case MODIFIED:
@@ -120,5 +139,7 @@ public class ElasticEnvironmentContainer {
                 break;
         }
     }
+    
+
 
 }
