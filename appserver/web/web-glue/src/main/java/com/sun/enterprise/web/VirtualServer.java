@@ -130,6 +130,8 @@ import org.jvnet.hk2.config.types.Property;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -590,7 +592,13 @@ public class VirtualServer extends StandardHost
                     wmInfo.setLocation(docroot);
                     wmInfo.setDescriptor(wbd);
                     wmInfo.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
-                    wmInfo.setAppClassLoader(new WebappClassLoader(wmInfo.getParentLoader()));
+                    WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+                        @Override
+                        public WebappClassLoader run() {
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader());
+                        }
+                    });
+                    wmInfo.setAppClassLoader(cloader);
                 }
             }
 
@@ -636,8 +644,12 @@ public class VirtualServer extends StandardHost
             wmInfo.setDescriptor(wbd);
             wmInfo.setParentLoader(
                 serverContext.getCommonClassLoader());
-            WebappClassLoader loader = new WebappClassLoader(
-                wmInfo.getParentLoader());
+            WebappClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+                @Override
+                public WebappClassLoader run() {
+                    return new WebappClassLoader(serverContext.getCommonClassLoader());
+                }
+            });
             loader.start();            
             wmInfo.setAppClassLoader(loader);
             if ( wbd.getApplication() == null ) {
@@ -730,7 +742,14 @@ public class VirtualServer extends StandardHost
                     wmInfo.setDescriptor(wbd);
                     wmInfo.setLocation(docroot);
                     wmInfo.setParentLoader(EmbeddedWebContainer.class.getClassLoader());
-                    wmInfo.setAppClassLoader(new WebappClassLoader(wmInfo.getParentLoader()));
+                    WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+                        @Override
+                        public WebappClassLoader run() {
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader());
+                        }
+                    });
+                    wmInfo.setAppClassLoader(cloader);
+
                 }
             } else {
                 Object[] params = { id, getID() };
@@ -750,7 +769,7 @@ public class VirtualServer extends StandardHost
      * @param appName Name of the app to get vs
      *
      * @return virtual servers as a string (separated by space or comma)
-     */
+     *
     private String getVirtualServers(String appName) {
         String ret = null;
         Server server = Globals.getDefaultServices().forContract(Server.class).get();
@@ -761,7 +780,7 @@ public class VirtualServer extends StandardHost
         }
 
         return ret;
-    }
+    } */
 
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ package org.apache.catalina.valves;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.core.ApplicationDispatcher;
+import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.StringManager;
@@ -361,7 +362,13 @@ public abstract class RequestFilterValve
         ServletResponse sres = response.getResponse();
         HttpServletResponse hres = (HttpServletResponse)sres;
 
-        ErrorPage errorPage = ((StandardHost)getContainer()).findErrorPage(statusCode);
+
+        ErrorPage errorPage = null;
+        if (getContainer() instanceof StandardHost) {
+            errorPage = ((StandardHost)getContainer()).findErrorPage(statusCode);
+        } else if (getContainer() instanceof StandardContext){
+            errorPage = ((StandardContext)getContainer()).findErrorPage(statusCode);
+        }
         if (errorPage != null) {
             try {
                 hres.setStatus(statusCode);   

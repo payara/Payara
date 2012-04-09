@@ -1187,7 +1187,7 @@ public class PECoyoteConnector extends Connector {
             Context context) {
         if (requestProbeProvider != null) {
             String appName = null;
-            if (context != null) {
+            if (context instanceof WebModule) {
                 appName = ((WebModule) context).getMonitoringNodeName();
             }
             String hostName = null;
@@ -1215,7 +1215,7 @@ public class PECoyoteConnector extends Connector {
             Context context, int statusCode) {
         if (requestProbeProvider != null) {
             String appName = null;
-            if (context != null) {
+            if (context instanceof WebModule) {
                 appName = ((WebModule) context).getMonitoringNodeName();
             }
             String hostName = null;

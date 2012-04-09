@@ -349,7 +349,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     @Override
     public Engine createEngine() {
 
-        StandardEngine engine = new WebEngine(webContainer);
+        StandardEngine engine = new StandardEngine();
 
         engine.setDebug(debug);
         // Default host will be set to the first host added
@@ -366,6 +366,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     }
 
 
+    /*
     static class WebEngine extends StandardEngine {
 
         private WebContainer webContainer;
@@ -411,6 +412,6 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
                     _logger.log(Level.SEVERE, msg, t);
                 }
             }
-        }*/
-    }
+        }
+    }*/
 }

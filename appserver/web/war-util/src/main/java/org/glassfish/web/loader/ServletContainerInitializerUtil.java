@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -99,7 +101,7 @@ public class ServletContainerInitializerUtil {
                     cl.getClass().getCanonicalName());
                 return null;
             }
-            URLClassLoader webAppCl = (URLClassLoader) cl;
+            final URLClassLoader webAppCl = (URLClassLoader) cl;
 
             // Create a new List of URLs with missing fragments removed from
             // the currentUrls
@@ -133,9 +135,14 @@ public class ServletContainerInitializerUtil {
             // sun-web.xml
             URL[] urlsForNewClassLoader =
                 new URL[newClassLoaderUrlList.size()];
-            cl = new URLClassLoader(newClassLoaderUrlList.toArray(
-                                        urlsForNewClassLoader),
-                                    webAppCl.getParent());
+            final URL[] urlArray = newClassLoaderUrlList.toArray(urlsForNewClassLoader);
+
+            cl = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+                @Override
+                public URLClassLoader run() {
+                    return new URLClassLoader(urlArray, webAppCl.getParent());
+                }
+            });
         }
 
         return ServiceLoader.load(ServletContainerInitializer.class, cl);

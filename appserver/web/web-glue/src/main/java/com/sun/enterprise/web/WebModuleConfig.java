@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -217,7 +217,9 @@ public class WebModuleConfig {
      * Sets the deployment context for this web application.
      */
     public void setDeploymentContext(DeploymentContext deploymentContext) {
-        this.deploymentContext = deploymentContext;
+        synchronized (this) {
+            this.deploymentContext = deploymentContext;
+        }
     }
 
     /**
@@ -276,7 +278,9 @@ public class WebModuleConfig {
      * directory will be created
      */
     public void setWorkDirBase(String baseDir) {
-        _baseDir = baseDir;
+        synchronized (this) {
+            _baseDir = baseDir;
+        }
     }
 
     // START S1AS 6178005

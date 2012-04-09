@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -94,7 +94,7 @@ public class PwcCoyoteRequest extends Request {
         super.setContext(ctx);
         Response response = (Response) getResponse();
         // Assert response!=null
-        if (response != null) {
+        if ((response != null) && (ctx instanceof PwcWebModule)) {
             String[] cacheControls = ((PwcWebModule) ctx).getCacheControls();
             for (int i=0; cacheControls!=null && i<cacheControls.length; i++) {
                 response.addHeader("Cache-Control", cacheControls[i]);
