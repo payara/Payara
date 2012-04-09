@@ -76,12 +76,30 @@ public interface Tenant extends ConfigBeanProxy {
     TenantServices getServices();
     void setServices(TenantServices services);
 
+    @Element("*")
+    List<TenantExtension> getExtensions();
+
     @DuckTyped
     boolean hasCreatedEnvironment();
+
+
+    @DuckTyped
+    <T extends TenantExtension> T getExtensionByType(Class<T> type);
 
     class Duck {
       public static boolean hasCreatedEnvironment(Tenant tenant) {
          return tenant.getEnvironments().getEnvironments().size() != 0;
       }
-    }
+
+     public static <T extends TenantExtension> T getExtensionByType(Tenant t, Class<T> type) {
+            for (TenantExtension extension : t.getExtensions()) {
+                try {
+                    return type.cast(extension);
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+     }
 }
