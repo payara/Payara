@@ -59,5 +59,10 @@
 			<artifactId>config-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>paas.tenant-manager</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 </project>
