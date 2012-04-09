@@ -47,7 +47,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.beans.PropertyVetoException;
 
-import org.glassfish.elasticity.engine.container.ElasticEngine;
+import org.glassfish.elasticity.api.ElasticEngine;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -151,7 +151,7 @@ public class CreateElasticServiceCommand implements AdminCommand  {
 
         //notify elastic container to run
         ElasticServiceConfig elasticService = elasticServices.getElasticService(name);
-        elasticEngine.startElasticService(elasticService);
+        //elasticEngine.startElasticService(elasticService);
 
         logger.log(Level.FINE, "Executed elasticEngine.startElasticService(" + elasticService.getName() + ")");
 

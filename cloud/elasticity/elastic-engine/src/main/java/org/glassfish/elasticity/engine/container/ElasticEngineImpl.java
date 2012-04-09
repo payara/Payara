@@ -40,6 +40,8 @@
 package org.glassfish.elasticity.engine.container;
 
 
+import org.glassfish.elasticity.api.ElasticEngine;
+import org.glassfish.elasticity.api.ElasticEnvironment;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.PostConstruct;
 import javax.inject.Inject;
@@ -66,8 +68,8 @@ import java.util.logging.Logger;
  * @author Mahesh Kannan
  */
 @Service
-public class ElasticEngine
-        implements PostConstruct, ServiceChangeListener {
+public class ElasticEngineImpl
+        implements ElasticEngine, PostConstruct, ServiceChangeListener {
 
     @Inject
     Services services;
@@ -87,6 +89,11 @@ public class ElasticEngine
             }
         }
     }
+
+    public ElasticEnvironment getElasticEnvironment(String envName) {
+        return environments.get(envName);    
+    }
+    
 
     public void startElasticService(ElasticServiceConfig service) {
         if (service.getEnabled()) {
