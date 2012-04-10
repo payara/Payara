@@ -93,10 +93,8 @@ public interface Tenant extends ConfigBeanProxy {
 
      public static <T extends TenantExtension> T getExtensionByType(Tenant t, Class<T> type) {
             for (TenantExtension extension : t.getExtensions()) {
-                try {
+                if (type.isInstance(extension)) {
                     return type.cast(extension);
-                } catch (Exception e) {
-                    // ignore, not the right type.
                 }
             }
             return null;

@@ -100,6 +100,14 @@ public interface TenantServices extends ConfigBeanProxy {
     @DuckTyped
     List<ExternalService> getExternalServices();
 
+    /**
+     * Get particular service by type.
+     * 
+     * @return Service. May be <code>null</code>.
+     */
+    @DuckTyped
+    <T extends TenantService> T getServiceByType(Class<T> type);
+
     class Duck {
         public static List<DefaultService> getDefaultServices(TenantServices tenantServices) {
             return getServices(tenantServices, DefaultService.class);
@@ -112,6 +120,15 @@ public interface TenantServices extends ConfigBeanProxy {
         public static List<ExternalService> getExternalServices(TenantServices tenantServices) {
             return getServices(tenantServices, ExternalService.class);
         }
+
+        public static <T extends TenantService> T getServiceByType(TenantServices tenantServices, Class<T> type) {
+            List<T> services = getServices(tenantServices, type);
+            if (services.size() > 0) {
+                return services.get(0);
+            }
+            return null;
+        }
+
 
         private static <T extends TenantService> List<T> getServices(TenantServices tenantServices, Class<T> type) {
             List<T> services = new ArrayList<T>();

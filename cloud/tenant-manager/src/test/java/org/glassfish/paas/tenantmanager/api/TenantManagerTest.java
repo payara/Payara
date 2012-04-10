@@ -49,6 +49,7 @@ import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.DefaultService;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
+import org.glassfish.paas.tenantmanager.entity.TenantExtension;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
@@ -128,7 +129,8 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertEquals("Default Services", 1, tenant.getServices().getDefaultServices().size());
         Assert.assertEquals("Shared Services", 1, tenant.getServices().getSharedServices().size());
         Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
-        //Assert.assertNotNull("Domain Extensions", tenant.getExtensions());
+        Assert.assertNotNull("Specific Service", tenant.getServices().getServiceByType(DefaultService.class));
+        Assert.assertNotNull("Domain Extensions", tenant.getExtensions());
     }
 
     // Update exsisting tenant1, verify tenant xml is updated.
@@ -164,12 +166,11 @@ public class TenantManagerTest extends ConfigApiTest {
             assertConfigXml("New tenant xml", "tenant3", tenant);
     
             // this is how some extension can be added
-            /*
             try {
                 ConfigSupport.apply(new SingleConfigCode<Tenant>() {
                     @Override
                     public Object run(Tenant tenant) throws TransactionFailure {
-                        DomainExtension extension = tenant.createChild(DomainExtension.class);
+                        TenantExtension extension = tenant.createChild(TenantExtension.class);
                         tenant.getExtensions().add(extension);
                         return tenant;
                     }
@@ -178,8 +179,7 @@ public class TenantManagerTest extends ConfigApiTest {
                 // TODO Auto-generated catch block
                 e.printStackTrace();            
             }
-            Assert.assertNotNull("Extension", tenant.getExtensionByType(DomainExtension.class));
-            */
+            Assert.assertNotNull("Extension", tenant.getExtensionByType(TenantExtension.class));
 
             TenantServices services = tenant.getServices();
             // this is how some service can be added
