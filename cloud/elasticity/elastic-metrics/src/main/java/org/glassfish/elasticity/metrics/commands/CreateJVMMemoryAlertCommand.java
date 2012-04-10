@@ -85,9 +85,6 @@ public class CreateJVMMemoryAlertCommand implements AdminCommand {
   @Param(name="environment")
   String envname;
 
-  @Param(name="service")
-  String serviceName;
-
   @Param(name="schedule", optional = true)
   String schedule;
 
@@ -97,10 +94,14 @@ public class CreateJVMMemoryAlertCommand implements AdminCommand {
   @Param(name="enabled", defaultValue = "true", optional = true)
   boolean enabled;
 
+   String serviceName = "gf-service-";
+
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
+
+        serviceName = serviceName+envname;
 
         if (elasticServices == null)   {
             //service doesn't exist

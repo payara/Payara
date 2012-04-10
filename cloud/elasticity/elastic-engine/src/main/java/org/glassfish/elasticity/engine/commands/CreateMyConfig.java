@@ -4,6 +4,9 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import javax.inject.Inject;
+
+import org.glassfish.paas.tenantmanager.entity.TenantService;
+import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.*;
@@ -36,8 +39,9 @@ public class CreateMyConfig implements AdminCommand{
         ActionReport report = context.getActionReport();
         tm.setCurrentTenant("t1");
         Tenant tenant = tm.get(Tenant.class);
+         System.out.println("tenant" +tenant.getName());
+//        elastic =  (Elastic)tenant.getTenantServices (Elastic.class);
 
-//        elastic =  tenant.getExtensionByType (Elastic.class);
         try {
 
             createESElement();
