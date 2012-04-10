@@ -38,7 +38,7 @@ public class CreateMyConfig implements AdminCommand{
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         tm.setCurrentTenant("t1");
-        Tenant tenant = tm.get(Tenant.class);
+        tenant = tm.get(Tenant.class);
          System.out.println("tenant" +tenant.getName());
 //        elastic =  (Elastic)tenant.getTenantServices (Elastic.class);
 
@@ -52,16 +52,18 @@ public class CreateMyConfig implements AdminCommand{
 
         public void createESElement() throws TransactionFailure {
 
-//         TenantServices services = tenant.getServices();
         try {
-            ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+            ConfigSupport.apply(new SingleConfigCode() {
                 @Override
-                public Object run(Tenant tenant) throws TransactionFailure {
+                public Object run(ConfigBeanProxy param) throws TransactionFailure {
                     
-//                     //Commented out next three lines to fix build issues
-                    
-                     Elastic es = tenant.createChild(Elastic.class);
-//                    tenant.getExtensions().add(es);
+                    Transaction t = Transaction.getTransaction(param);
+                    TenantServices tenantServices =((Tenant)param).getServices();
+
+                    t.enroll(tenantServices);
+
+                     Elastic es = tenantServices.createChild(Elastic.class);
+                    tenantServices.getTenantServices().add(es);
                     return es;
                 }
             }, tenant);
