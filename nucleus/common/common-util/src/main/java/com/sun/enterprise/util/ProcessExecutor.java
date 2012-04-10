@@ -59,6 +59,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.lang.IllegalArgumentException;
 
+
 /**
  * @author Kedar
  * @version 1.0
@@ -83,7 +84,7 @@ public class ProcessExecutor {
     private boolean retainExecutionLogs = false;
     private String lastExecutionOutputString = null;
     private String lastExecutionErrorString = null;
-    private static boolean bDebug = false;
+    private boolean bDebug = false;
 
     /**
      * Creates new ProcessExecutor
@@ -223,9 +224,9 @@ public class ProcessExecutor {
             }
         }
         if (mOutFile != null)
-            mOutFile.delete();
+            delete(mOutFile);
         if (mErrFile != null)
-            mErrFile.delete();
+            delete(mErrFile);
     }
 
     public void execute() throws ExecException {
@@ -541,10 +542,21 @@ public class ProcessExecutor {
         return (s.toString());
     }
 
+    /*
+     * bnevins, April 2012
+     * I added this method to solve a FindBugs low-level issue about ignoring the
+     * return value.
+     */
+    private static void delete(File f) {
+        if(f != null && !f.delete()) {
+            f.deleteOnExit();
+        }
+    }
+
     private static class RAFileReader {
         final File file;
-        final int LAST_BYTES = 16384;
-        final String RMODE = "r"; //read
+        final static int LAST_BYTES = 16384;
+        final static String RMODE = "r"; //read
 
         RAFileReader(final File file) {
             this.file = file;
@@ -564,11 +576,9 @@ public class ProcessExecutor {
         private String readWithoutCheck(final long seekPos) {
             final StringBuffer sb = new StringBuffer();
             RandomAccessFile rf = null;
-            long ln = 0L;
             int lines = 0;
             try {
                 rf = new RandomAccessFile(file, RMODE);
-                ln = rf.length();
                 rf.seek(seekPos);
                 String tmp = rf.readLine();
                 while (tmp != null) {
@@ -628,7 +638,6 @@ public class ProcessExecutor {
         }
     }
 }
-
 /**
  * inner class to flush runtime.exec process so it doesn't hang
  */
