@@ -1,6 +1,7 @@
 package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.*;
@@ -23,9 +24,8 @@ import org.jvnet.hk2.component.Habitat;
 @Scoped(PerLookup.class)
 public class CreateMyConfig implements AdminCommand{
 
-    private  TenantManagerEx tm;
     @Inject
-     Habitat habitat;
+    TenantManager tm;
 
     Elastic elastic=null;
 
@@ -34,7 +34,6 @@ public class CreateMyConfig implements AdminCommand{
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        tm = habitat.getComponent(TenantManagerEx.class);
         tm.setCurrentTenant("t1");
         Tenant tenant = tm.get(Tenant.class);
 
@@ -57,10 +56,9 @@ public class CreateMyConfig implements AdminCommand{
                     
 //                     //Commented out next three lines to fix build issues
                     
-//                     Elastic es = tenant.createChild(Elastic.class);
+                     Elastic es = tenant.createChild(Elastic.class);
 //                    tenant.getExtensions().add(es);
-//                    return es;
-                    return null;
+                    return es;
                 }
             }, tenant);
         } catch (TransactionFailure e) {

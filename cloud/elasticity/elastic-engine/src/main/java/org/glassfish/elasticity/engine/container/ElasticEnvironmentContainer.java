@@ -115,14 +115,15 @@ public class ElasticEnvironmentContainer
         switch (event.getType()) {
             case CREATED:
                 this.envName = envName;
+                System.out.println("Created elastic environment "+ envName);
                 serviceContainer = services.forContract(ElasticServiceContainer.class).get();
                 addElasticServiceContainer(event.getNewValue().getName(), serviceContainer);
                 serviceContainer.start(event.getNewValue());
 
 
-                AlertConfigurator alertConfigurator = services.forContract(AlertConfigurator.class).get();
-                AlertConfig cfg = alertConfigurator.getAlertConfig(event.getNewValue());
-                addAlert(cfg);
+//                AlertConfigurator alertConfigurator = services.forContract(AlertConfigurator.class).get();
+ //               AlertConfig cfg = alertConfigurator.getAlertConfig(event.getNewValue());
+//                addAlert(cfg);
                 break;
 
             case MODIFIED:
