@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -70,8 +72,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.util.io.FileUtils;
+import com.sun.hk2.component.ExistingSingletonInhabitant;
+import com.sun.hk2.component.InhabitantsParser;
 
 /**
  * Default implementation for {@link TenantManagerEx}.
@@ -224,10 +227,36 @@ public class TenantManagerImpl implements TenantManagerEx {
     }
     
     private Habitat getNewHabitat(String name) {
-        ModulesRegistry registry = new SingleModulesRegistry(TenantManagerImpl.class.getClassLoader());
-        Habitat habitat = registry.createHabitat("default");
-        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
+        // "rain dance" based on com.sun.enterprise.module.bootstrap.Main.createHabitat
+        // own SingleModulesRegistry is not enough for multi-modules project, so
+        // "clone" parent habitat, but set modulesRegistry for DomainXml beforehand. 
+        Habitat habitat = modulesRegistry.newHabitat();
+        InhabitantsParser parser = new InhabitantsParser(habitat); 
+        habitat.add(new ExistingSingletonInhabitant<ModulesRegistry>(ModulesRegistry.class, modulesRegistry));
+        final ClassLoader oldCL = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+                return cl;
+            }
+        });
+        try {
+            // initialize habitat!
+            habitat = modulesRegistry.createHabitat("default", parser);
+        } finally {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    Thread.currentThread().setContextClassLoader(oldCL);
+                    return null;
+                }
+            });
+        }
         DomDocument<Dom> doc = populate(habitat, name);
+        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
+        // subscribe changeListener to particular document, 
+        // this may be even better, than subscribing "any" transactionsListener
         ((ConfigBean)doc.getRoot()).addListener(configListener);
         return habitat;
     }
@@ -272,4 +301,7 @@ public class TenantManagerImpl implements TenantManagerEx {
 
     @Inject
     private Logger logger;
+
+    @Inject
+    private ModulesRegistry modulesRegistry;
 }

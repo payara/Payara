@@ -52,21 +52,17 @@ public class CreateMyConfig implements AdminCommand{
 
         public void createESElement() throws TransactionFailure {
 
+        TenantServices services = tenant.getServices();
         try {
-            ConfigSupport.apply(new SingleConfigCode() {
+            ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
                 @Override
-                public Object run(ConfigBeanProxy param) throws TransactionFailure {
+                public Object run(TenantServices tenantServices) throws TransactionFailure {
                     
-                    Transaction t = Transaction.getTransaction(param);
-                    TenantServices tenantServices =((Tenant)param).getServices();
-
-                    t.enroll(tenantServices);
-
-                     Elastic es = tenantServices.createChild(Elastic.class);
+                    Elastic es = tenantServices.createChild(Elastic.class);
                     tenantServices.getTenantServices().add(es);
-                    return es;
+                    return tenantServices;
                 }
-            }, tenant);
+            }, services);
         } catch (TransactionFailure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
