@@ -91,7 +91,7 @@ public class ObjectAnalyzer {
      * @param settersOnly
      * @return  */
     public static String getMethods(Class clazz, boolean settersOnly) {
-        String s = new String();
+        StringBuilder sb = new StringBuilder();
 
         Method[] methods = clazz.getMethods();
 
@@ -102,9 +102,9 @@ public class ObjectAnalyzer {
             if (settersOnly && isSetter == false)
                 continue;
 
-            s = s + m.toString() + '\n';
+            sb.append(m.toString()).append('\n');
         }
-        return s;
+        return sb.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -330,7 +330,7 @@ public class ObjectAnalyzer {
     /**
      * @param args  */
     public static void main(String[] args) {
-        String s = new String("Hello!");//NOI18N
+        String s = "Hello!";//NOI18N
 
         System.out.println("Regular: \n" + toString(s) + "\n\n");//NOI18N
         System.out.println("Super: \n" + toStringWithSuper(s) + "\n\n");//NOI18N
