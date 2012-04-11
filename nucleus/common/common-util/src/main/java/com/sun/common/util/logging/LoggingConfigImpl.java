@@ -517,7 +517,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @param fileName file name for zip file
       */
 
-    private String getZipFileName(String sourceDir,String fileName) {
+    private String getZipFileName(String sourceDir, String fileName) {
 
         final String DATE_FORMAT_NOW = "yyyy-MM-dd_HH-mm-ss";
 
@@ -552,7 +552,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             //create File object from source directory
             File fileSource = new File(sourceDir);
 
-            zipDone = addDirectory(zout, fileSource);
+            zipDone = addDirectory(zout, fileSource,
+                    fileSource.getAbsolutePath().length() + 1);
 
             //close the ZipOutputStream
             zout.close();
@@ -571,9 +572,9 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    public String createZipFile(String sourceDir,String zipFileName) throws IOException {
+    public String createZipFile(String sourceDir, String zipFileName) throws IOException {
 
-        String zipFile = getZipFileName(sourceDir,zipFileName);
+        String zipFile = getZipFileName(sourceDir, zipFileName);
         boolean zipDone = false;
         try {
             //create object of FileOutputStream
@@ -585,7 +586,8 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             //create File object from source directory
             File fileSource = new File(sourceDir);
 
-            zipDone = addDirectory(zout, fileSource);
+            zipDone = addDirectory(zout, fileSource,
+                    fileSource.getAbsolutePath().length() + 1);
 
             //close the ZipOutputStream
             zout.close();
@@ -606,7 +608,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
       * @throws  IOException
       */
 
-    private boolean addDirectory(ZipOutputStream zout, File fileSource) throws IOException {
+    private boolean addDirectory(ZipOutputStream zout, File fileSource, int ignoreLength) throws IOException {
 
         boolean zipDone = false;
 
@@ -616,7 +618,7 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
         for (int i = 0; i < files.length; i++) {
             //if the file is directory, call the function recursively
             if (files[i].isDirectory()) {
-                addDirectory(zout, files[i]);
+                addDirectory(zout, files[i], ignoreLength);
                 continue;
             }
 
@@ -633,7 +635,9 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
 
                 //create object of FileInputStream
                 FileInputStream fin = new FileInputStream(files[i].getAbsolutePath());
-                zout.putNextEntry(new ZipEntry(files[i].getAbsolutePath()));
+                zout.putNextEntry(new ZipEntry(ignoreLength > -1 ?
+                        files[i].getAbsolutePath().substring(ignoreLength) :
+                        files[i].getAbsolutePath()));
 
                 /*
                             * After creating entry in the zip file, actually

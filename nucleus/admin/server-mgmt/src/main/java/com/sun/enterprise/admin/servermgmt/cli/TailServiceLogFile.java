@@ -76,6 +76,9 @@ public class TailServiceLogFile extends CLICommand {
     @Param(name = "n", optional = true, defaultValue = "10")
     private String numberOfRecords;
 
+    @Param(name = "_pollIntervalInSeconds", optional = true, defaultValue = "5")
+    private String pollIntervalInSeconds;
+
     boolean validationSuccess = true;
 
     String origin;
@@ -115,6 +118,12 @@ public class TailServiceLogFile extends CLICommand {
                 this.filepointer = filePointer;
                 this.origin = origin;
 
+                try {
+                    Thread.currentThread().sleep(Long.parseLong(pollIntervalInSeconds) * 1000);
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
             }
         }
         return 0;
@@ -141,7 +150,7 @@ public class TailServiceLogFile extends CLICommand {
             ss.add(appName);
         }
 
-        if(origin !=null) {
+        if (origin != null) {
             ss.add("--origin");
             ss.add(origin);
         }
