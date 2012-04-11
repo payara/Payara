@@ -64,5 +64,13 @@
             <artifactId>paas.tenant-manager</artifactId>
             <version>${project.version}</version>
         </dependency>
-	</dependencies>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.glassfish.tests</groupId>
+            <artifactId>utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
