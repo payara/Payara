@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.elasticity.api.*;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.config.serverbeans.ElasticAlerts;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.Services;
@@ -87,6 +88,13 @@ public class ElasticEnvironmentContainer
     }
 
     public void addAlert(AlertConfig cfg) {
+        AbstractAlert<? extends AlertConfig> alert =
+                services.forContract(AbstractAlert.class).named(cfg.getType()).get();
+        int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());
+        threadPool.scheduleAtFixedRate(alert, freqInSeconds, freqInSeconds, TimeUnit.SECONDS);
+    }
+
+        public void addAlert(ElasticAlerts cfg) {
         AbstractAlert<? extends AlertConfig> alert =
                 services.forContract(AbstractAlert.class).named(cfg.getType()).get();
         int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());

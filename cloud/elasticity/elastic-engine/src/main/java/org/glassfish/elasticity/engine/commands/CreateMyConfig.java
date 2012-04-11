@@ -1,6 +1,8 @@
 package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.elasticity.api.ElasticEngine;
+import org.glassfish.elasticity.config.serverbeans.ElasticAlerts;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import javax.inject.Inject;
@@ -30,6 +32,9 @@ public class CreateMyConfig implements AdminCommand{
     @Inject
     TenantManager tm;
 
+   @Inject
+   ElasticEngine elasticEngine;
+
     Elastic elastic=null;
 
     Tenant tenant;
@@ -39,15 +44,23 @@ public class CreateMyConfig implements AdminCommand{
         ActionReport report = context.getActionReport();
         tm.setCurrentTenant("t1");
         tenant = tm.get(Tenant.class);
-         System.out.println("tenant" +tenant.getName());
-//        elastic =  (Elastic)tenant.getTenantServices (Elastic.class);
-
+         System.out.println("tenant " +tenant.getName());
+        TenantServices ts = tenant.getServices();
+        elastic =  (Elastic)ts.getServiceByType(Elastic.class);
+        if (elastic != null) {
+            System.out.println("Elastic element already exists");
+            return;
+        }
         try {
 
             createESElement();
          } catch(TransactionFailure e) {
             e.printStackTrace();
         }
+        elastic =  (Elastic)ts.getServiceByType(Elastic.class);
+         ElasticAlerts ea = elastic.getElasticAlerts();
+
+        elasticEngine.getElasticEnvironment("SessionDemo").addAlert(ea);
         }
 
         public void createESElement() throws TransactionFailure {
@@ -59,6 +72,10 @@ public class CreateMyConfig implements AdminCommand{
                 public Object run(TenantServices tenantServices) throws TransactionFailure {
                     
                     Elastic es = tenantServices.createChild(Elastic.class);
+
+                    ElasticAlerts alerts=es.createChild((ElasticAlerts.class));
+                    alerts.setName(("alert1"));
+                    es.setElasticAlerts(alerts);
                     tenantServices.getTenantServices().add(es);
                     return tenantServices;
                 }

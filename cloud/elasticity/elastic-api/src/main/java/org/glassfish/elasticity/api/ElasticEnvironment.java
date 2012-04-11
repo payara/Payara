@@ -40,6 +40,7 @@
 package org.glassfish.elasticity.api;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
+import org.glassfish.elasticity.config.serverbeans.ElasticAlerts;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Collection;
@@ -64,6 +65,8 @@ public interface ElasticEnvironment {
     public Collection<ElasticService> getElasticServices();
 
     public void addAlert(AlertConfig cfg);
+
+    public void addAlert(ElasticAlerts cfg);
     
     public Collection<AlertConfig> getAlertConfigs();
 

@@ -43,6 +43,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
+import org.glassfish.elasticity.metric.TabularMetricEntry;
 import org.glassfish.elasticity.metrics.util.CollectMetricData;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import org.jvnet.hk2.annotations.Service;
@@ -238,7 +239,7 @@ public class JVMMemoryMetricHolder
         }
     }
 
-    public static class JVMInstanceMemoryHolder {
+    public static class JVMInstanceMemoryHolder  {
 
         String hostName= "localhost";
         String hostPort = "4848";

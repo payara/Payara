@@ -101,8 +101,8 @@ public class JVMMemoryAlert
             }
         }
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, sb.toString());
+        if (_logger.isLoggable(Level.INFO)) {
+            _logger.log(Level.INFO, sb.toString());
         }
 
         return resultState;
