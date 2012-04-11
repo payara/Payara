@@ -55,8 +55,8 @@ public class ElasticConfigTest  extends ConfigApiTest {
                     Elastic es = tenantServices.createChild(Elastic.class);
 
                     ElasticAlerts alerts=es.createChild((ElasticAlerts.class));
-                    alerts.setName(("alert1"));
-                    es.setElasticAlerts(alerts);
+//                    alerts.setName(("alert1"));
+//                    es.setElasticAlerts(alerts);
                     tenantServices.getTenantServices().add(es);
                     return tenantServices;
                 }
@@ -69,8 +69,8 @@ public class ElasticConfigTest  extends ConfigApiTest {
         Assert.assertNotNull("Elastic Service", elastic);
         ElasticAlerts alerts = elastic.getElasticAlerts();
         Assert.assertNotNull("Elastic Alertrs", alerts);
-        Assert.assertEquals("Elastic Alert Schedule", "10s", alerts.getSchedule());
-        Assert.assertEquals("Elastic Alert Sample Interval", 5, alerts.getSampleInterval());
+//        Assert.assertEquals("Elastic Alert Schedule", "10s", alerts.getSchedule());
+//        Assert.assertEquals("Elastic Alert Sample Interval", 5, alerts.getSampleInterval());
         
         
         
