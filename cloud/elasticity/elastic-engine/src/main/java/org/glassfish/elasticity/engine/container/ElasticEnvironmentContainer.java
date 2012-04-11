@@ -95,7 +95,7 @@ public class ElasticEnvironmentContainer
     }
 
         public void addAlert(ElasticAlerts cfg) {
-        AbstractAlert<? extends AlertConfig> alert =
+        AbstractAlert<? extends ElasticAlerts> alert =
                 services.forContract(AbstractAlert.class).named(cfg.getType()).get();
         int freqInSeconds = EngineUtil.getFrequencyOfAlertExecutionInSeconds(cfg.getSchedule());
         threadPool.scheduleAtFixedRate(alert, freqInSeconds, freqInSeconds, TimeUnit.SECONDS);

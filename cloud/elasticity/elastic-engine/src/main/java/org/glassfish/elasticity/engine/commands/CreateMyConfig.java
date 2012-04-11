@@ -60,7 +60,7 @@ public class CreateMyConfig implements AdminCommand{
         elastic =  (Elastic)ts.getServiceByType(Elastic.class);
          ElasticAlerts ea = elastic.getElasticAlerts();
 
-        elasticEngine.getElasticEnvironment("SessionDemo").addAlert(ea);
+        elasticEngine.getElasticEnvironment("SimpleSessionDemo").addAlert(ea);
         }
 
         public void createESElement() throws TransactionFailure {
@@ -75,6 +75,8 @@ public class CreateMyConfig implements AdminCommand{
 
                     ElasticAlerts alerts=es.createChild((ElasticAlerts.class));
                     alerts.setName(("alert1"));
+                    alerts.setSchedule("10s");
+                    alerts.setType("jvm_memory");
                     es.setElasticAlerts(alerts);
                     tenantServices.getTenantServices().add(es);
                     return tenantServices;
