@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,14 +95,6 @@ public class BundleProvisioner {
          * @return Location that should be used while installing this jar as a bundle
          */
         String makeLocation(Jar jar);
-
-        /**
-         * Is this URI a directory?
-         *
-         * @param uri URI to be checked
-         * @return true if this URI represents a directory, else false.
-         */
-        boolean isDirectory(URI uri);
 
         /**
          * Is this jar managed by us?
@@ -664,8 +656,13 @@ public class BundleProvisioner {
             return jar.getURI().toString();
         }
 
-        @Override
-        public boolean isDirectory(URI uri) {
+        /**
+         * Is this URI a directory?
+         *
+         * @param uri URI to be checked
+         * @return true if this URI represents a directory, else false.
+         */
+        protected boolean isDirectory(URI uri) {
             try {
                 return new File(uri).isDirectory();
             } catch (Exception e) {
@@ -677,7 +674,7 @@ public class BundleProvisioner {
          * @param aDirectoryURI uri corresponding to a directory location which will be searched.
          * @return URIs corresponding to jar files in a given directory location.
          */
-        protected Collection<? extends URI> listJarFiles(URI aDirectoryURI) {
+        protected List<? extends URI> listJarFiles(URI aDirectoryURI) {
             // currently we only support file type directory URI. In future, we should be able to handle
             // directories inside jar files as well.
             assert (FILE_SCHEME.equalsIgnoreCase(aDirectoryURI.getScheme()));
