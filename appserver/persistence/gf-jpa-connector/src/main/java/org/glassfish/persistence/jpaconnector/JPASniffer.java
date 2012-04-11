@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -141,12 +141,6 @@ public class JPASniffer  extends GenericSniffer implements  SecondarySniffer {
 
     public String[] getContainersNames() {
         return containers;
-    }
-
-    @Override
-    protected String[] getContainerModuleNames() {
-        // The fragment must be ahead of regular bundle, otherwise it won't be attached
-        return new String[] {"org.eclipse.persistence.oracle", "org.eclipse.persistence.jpa"};
     }
 }
 
