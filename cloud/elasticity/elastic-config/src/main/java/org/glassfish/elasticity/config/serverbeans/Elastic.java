@@ -21,7 +21,9 @@ import java.beans.PropertyVetoException;
 @Configured
 public interface Elastic extends TenantService {
 
+
     @Element
     ElasticAlerts getElasticAlerts();
     void setElasticAlerts(ElasticAlerts elasticAlerts);
+
 }

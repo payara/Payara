@@ -25,7 +25,7 @@ import org.glassfish.api.admin.RestEndpoints;
  * User: cmott
  * Date: 4/10/12
  */
-@Service(name = "create-jvm-alert2")
+@Service(name = "create-jvm-alert")
 @I18n("create.jvm.alert")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})
@@ -33,7 +33,7 @@ import org.glassfish.api.admin.RestEndpoints;
 public class CreateJVMAlertCommand implements AdminCommand{
 
   @Inject
-    TenantManager tenantManager;
+   TenantManager tenantManager;
 
   @Inject
   ElasticEngine elasticEngine;
@@ -53,7 +53,8 @@ public class CreateJVMAlertCommand implements AdminCommand{
   @Param(name="enabled", defaultValue = "true", optional = true)
   boolean enabled;
 
-   String serviceName = "gf-service-";
+  @Param(name="tenantid")
+  String tenantid;
 
     Elastic elastic=null;
 
@@ -64,51 +65,51 @@ public class CreateJVMAlertCommand implements AdminCommand{
         ActionReport report = context.getActionReport();
         Logger logger= context.logger;
 
-        tenantManager.setCurrentTenant("t1");
+        tenantManager.setCurrentTenant(tenantid);
         tenant = tenantManager.get(Tenant.class);
-         System.out.println("tenant " +tenant.getName());
         TenantServices ts = tenant.getServices();
-        elastic =  (Elastic)ts.getServiceByType (Elastic.class);
-        if (elastic == null) {
-            System.out.println("Elastic needs to be created");
+        elastic =  (Elastic)ts.getServiceByType(Elastic.class);
+        if (elastic != null) {
+            System.out.println("Elastic element already exists");
             return;
         }
-        serviceName = serviceName+envname;
-
         try {
-            createAlertElement(name);
-        } catch(TransactionFailure e) {
-            logger.warning("failed.to.create.alert " + name);
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(e.getMessage());
+
+            createESElement();
+         } catch(TransactionFailure e) {
+            e.printStackTrace();
+        }
+        elastic =  (Elastic)ts.getServiceByType(Elastic.class);
+         ElasticAlerts ea = elastic.getElasticAlerts();
+        ElasticAlert alert = ea.getElasticAlert("alert1");
+
+        elasticEngine.getElasticEnvironment(envname).addAlert(alert);
         }
 
-        //notify elastic container to run this alert
-        ElasticAlerts ea = elastic.getElasticAlerts();
-//        AlertConfig alert  = elasticServices.getElasticService(serviceName).getAlerts().getAlert(name);
-//        elasticEngine.getElasticEnvironment(envname).addAlert(ea);
-    }
+        public void createESElement() throws TransactionFailure {
 
-    public void createAlertElement(final String alertName) throws TransactionFailure {
-         TenantServices ts = tenant.getServices();
-        elastic =  (Elastic)ts.getServiceByType (Elastic.class);
-        ConfigSupport.apply(new SingleConfigCode<Elastic>() {
-            @Override
-            public Object run(Elastic elastic) throws PropertyVetoException, TransactionFailure {
-                    ElasticAlerts alert = elastic.createChild(ElasticAlerts.class);
-                    if (name != null)
-                        alert.setName(name);
-                    if (schedule != null)
-                        alert.setSchedule(schedule);
-                    if (sampleInterval != 0)
-                        alert.setSampleInterval(sampleInterval);
-                    if (!enabled)
-                        alert.setEnabled(enabled);
+        TenantServices services = tenant.getServices();
+        try {
+            ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
+                @Override
+                public Object run(TenantServices tenantServices) throws TransactionFailure {
+
+                    Elastic es = tenantServices.createChild(Elastic.class);
+
+                    ElasticAlerts alerts=es.createChild((ElasticAlerts.class));
+                    ElasticAlert alert = alerts.createChild(ElasticAlert.class);
+                    alert.setName((name));
+                    alert.setSchedule("10s");
                     alert.setType("jvm_memory");
-                    elastic.setElasticAlerts(alert);
-                    return elastic;
-            }
-
-        }, elastic);
+                    alerts.getElasticAlert().add(alert);
+                    es.setElasticAlerts(alerts);
+                    tenantServices.getTenantServices().add(es);
+                    return tenantServices;
+                }
+            }, services);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
