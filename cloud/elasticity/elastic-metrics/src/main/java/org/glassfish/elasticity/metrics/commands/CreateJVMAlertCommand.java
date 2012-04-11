@@ -25,7 +25,7 @@ import org.glassfish.api.admin.RestEndpoints;
  * User: cmott
  * Date: 4/10/12
  */
-@Service(name = "create-jvm-alert")
+@Service(name = "create-jvm-alert2")
 @I18n("create.jvm.alert")
 @Scoped(PerLookup.class)
 @ExecuteOn({RuntimeType.DAS})

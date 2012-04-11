@@ -1,5 +1,6 @@
 package org.glassfish.elasticity.engine.commands;
 
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.elasticity.api.ElasticEngine;
 import org.glassfish.elasticity.config.serverbeans.ElasticAlerts;
@@ -25,7 +26,7 @@ import org.jvnet.hk2.component.Habitat;
  * Time: 8:43 PM
  * To change this template use File | Settings | File Templates.
  */
-@Service(name="create-elastic")
+@Service(name="create-jvm-alert")
 @Scoped(PerLookup.class)
 public class CreateMyConfig implements AdminCommand{
 
@@ -38,6 +39,9 @@ public class CreateMyConfig implements AdminCommand{
     Elastic elastic=null;
 
     Tenant tenant;
+
+    @Param(name="environment", primary = true)
+    String envname;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -60,7 +64,7 @@ public class CreateMyConfig implements AdminCommand{
         elastic =  (Elastic)ts.getServiceByType(Elastic.class);
          ElasticAlerts ea = elastic.getElasticAlerts();
 
-        elasticEngine.getElasticEnvironment("SimpleSessionDemo").addAlert(ea);
+        elasticEngine.getElasticEnvironment(envname).addAlert(ea);
         }
 
         public void createESElement() throws TransactionFailure {
