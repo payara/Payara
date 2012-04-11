@@ -159,7 +159,7 @@ public class WindowsService extends NonSMFServiceAdapter {
     }
 
     /**
-     * Byron Nevins MArch 2011
+     * Byron Nevins March 2012
      * There is a bug in the older version of winsw.  We MUST double-quote paths.
      * winsw does this automatically for "executable" since it knows that it has
      * to be a path.  But not for start/stop arg paths
