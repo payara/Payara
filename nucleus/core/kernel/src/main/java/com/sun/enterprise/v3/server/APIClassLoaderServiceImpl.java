@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleLifecycleListener;
 import com.sun.enterprise.module.common_impl.CompositeEnumeration;
@@ -76,7 +77,10 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
      * 2. APIClassLoader maintains a blacklist, i.e., classes and resources that could not be loaded to avoid
      * unnecessary delegation. It flushes that list everytime a new bundle is installed in the system.
      * This takes care of performance problem in typical production use of GlassFish.
-     * TODO: We need to add an upper threshold for blacklist to avoid excessive use of memory.
+     *
+     * TODO:
+     * 1. We need to add an upper threshold for blacklist to avoid excessive use of memory.
+     * 2. Externalize punch-in facility. We don't want to know about things like MAILCAP file in this class.
      */
 
     private ClassLoader theAPIClassLoader;
@@ -86,6 +90,14 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             "GlassFish-Application-Common-Module"; // NOI18N
     private static final String MAILCAP = "META-INF/mailcap";
     private static final String META_INF_SERVICES = "META-INF/services/";
+
+    private static final String PUNCHIN_MODULE_STATE_PROP =
+            "glassfish.kernel.apicl.punchin.module.state";
+
+    // set to NEW to maintain backward compatibility. We should change it to RESOLVED after we have
+    // done enough testing to make susre there are no regressions.
+    public final ModuleState PUNCHIN_MODULE_STATE_DEFAULT_VALUE = ModuleState.NEW;
+
     private static final Enumeration<URL> EMPTY_URLS = new Enumeration<URL>() {
 
         public boolean hasMoreElements() {
@@ -150,6 +162,8 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         // the string represents resource name, so foo/Bar.class for foo.Bar
         private Set<String> blacklist;
         private final ClassLoader apiModuleLoader;
+        private ModuleState punchInModuleState = ModuleState.valueOf(System.getProperty(PUNCHIN_MODULE_STATE_PROP,
+                PUNCHIN_MODULE_STATE_DEFAULT_VALUE.toString()));
 
         /**
          * This method takes two classloaders which is unusual. Both the class loaders are consulted,
@@ -212,7 +226,13 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                         // punch in. find the provider class, no matter where we are.
                         Module m = mr.getProvidingModule(name);
                         if (m != null) {
-                            return m.getClassLoader().loadClass(name); // abort search if we fail to load.
+                            if(select(m)) {
+                                return m.getClassLoader().loadClass(name); // abort search if we fail to load.
+                            } else {
+                                logger.logp(Level.FINE, "APIClassLoaderServiceImpl$APIClassLoader", "loadClass",
+                                        "Skipping loading {0} from module {1} as this module is not yet resolved.",
+                                        new Object[]{name, m});
+                            }
                         }
                     }
                 }
@@ -230,6 +250,19 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             return c;
         }
 
+        /**
+         * Select this module if it meets punch-in criteria. At this point of implementation, the criteria is
+         * very simple. It checks to see if the module's state is greater than equal to what is configured in
+         * {@link #punchInModuleState}.
+         * 
+         * @param m
+         * @return
+         */
+        private boolean select(Module m) {
+            ModuleState state = m.getState();
+            return state.compareTo(punchInModuleState) >= 0 && state != ModuleState.ERROR;
+        }
+
         @Override
         public URL getResource(String name) {
             if (isBlackListed(name)) return null;
@@ -245,6 +278,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     // punch in for META-INF/mailcap files.
                     // see issue #8426
                     for (Module m : mr.getModules()) {
+                        if (!select(m)) continue;
                         if ((url = m.getClassLoader().getResource(name)) != null) {
                             return url;
                         }
@@ -257,6 +291,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                             META_INF_SERVICES.length());
 
                     for( Module m : mr.getModules() ) {
+                        if (!select(m)) continue;
                         List<URL> list = m.getMetadata().getDescriptors(
                                 serviceName);
                         if(!list.isEmpty()) {
@@ -317,6 +352,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                 if (name.equals(MAILCAP)) {
                      // punch in for META-INF/mailcap files. see issue #8426
                     for (Module m : mr.getModules()) {
+                        if (!select(m)) continue; // We don't look in unresolved modules
                         if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
                         enumerations.add(m.getClassLoader().getResources(name));
                     }
@@ -325,6 +361,7 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
                     String serviceName = name.substring(META_INF_SERVICES.length());
                     List<URL> punchedInURLs = new ArrayList<URL>();
                     for (Module m : mr.getModules()) {
+                        if (!select(m)) continue; // We don't look in modules that don't meet punch in criteria
                         if (m == APIModule) continue; // we have already looked up resources in apiModuleLoader
                         punchedInURLs.addAll(m.getMetadata().getDescriptors(serviceName));
                     }
