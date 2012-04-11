@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.web.accesslog;
 
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.web.Constants;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Container;
@@ -150,6 +151,10 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
         super();
 
         this.patternComponents = parsePattern(pattern);
+        if (patternComponents == null) {
+            // Use default format if error in pattern
+            patternComponents = parsePattern(ConfigBeansUtilities.getDefaultFormat());
+        }
         this.container = container;
 
         final TimeZone timeZone = tz;
@@ -307,11 +312,13 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
         int from = 0;
         int end = -1;
         int index = -1;
+        boolean errorInPattern = false;
 
         if (pattern == null || pattern.indexOf('%') < 0) {
             _logger.log(Level.SEVERE,
                         "peaccesslogvalve.invalidAccessLogPattern",
                         pattern);
+            errorInPattern = true;
         }
 
         while ((index = pattern.indexOf('%', from)) >= 0) {
@@ -321,6 +328,9 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                     Level.SEVERE,
                     "peaccesslogvalve.missingAccessLogPatternEndDelimiter",
                     pattern);
+                errorInPattern = true;
+                break;
+
             }
             String component = pattern.substring(index+1, end);
 
@@ -359,6 +369,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                     Level.SEVERE,
                     "peaccesslogvalve.invalidAccessLogPatternComponent",
                     new Object[] { component, pattern });
+                errorInPattern = true;
             }
 
             if (TIME_TAKEN.equals(component)) {
@@ -369,7 +380,11 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
             from = end + 1;    
         }
 
-        return list;
+        if (errorInPattern) {
+            return null;
+        } else {
+            return list;
+        }
     }
 
     /*
