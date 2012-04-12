@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.tenantmanager.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -86,18 +87,53 @@ public interface Tenant extends ConfigBeanProxy {
     @DuckTyped
     <T extends TenantExtension> T getExtensionByType(Class<T> type);
 
-    class Duck {
-      public static boolean hasCreatedEnvironment(Tenant tenant) {
-         return tenant.getEnvironments().getEnvironments().size() != 0;
-      }
+    /**
+     * Internal utility class for extension points to select any or many extensions by type. 
+     */
+    class Extensible {
+        /**
+         * Select extensions by type.
+         * 
+         * @param extensions 
+         * @param type
+         * @return list, may be empty.
+         */
+        public static <T extends ConfigBeanProxy, P extends T> List<P> getExtensionsByType(List<T> extensions, Class<P> type) {
+            List<P> result = new ArrayList<P>();
+            for (T extension: extensions) {
+                if (type.isInstance(extension)) {
+                    result.add(type.cast(extension));
+                }
+            }
+            return result;
+        }
 
-     public static <T extends TenantExtension> T getExtensionByType(Tenant t, Class<T> type) {
-            for (TenantExtension extension : t.getExtensions()) {
+        /**
+         * Select first extension by type.
+         * 
+         * @param extensions
+         * @param type
+         * @return extension or null.
+         */
+        public static <T extends ConfigBeanProxy, P extends T> P getExtensionByType(List<T> extensions, Class<P> type) {
+            for (T extension: extensions) {
                 if (type.isInstance(extension)) {
                     return type.cast(extension);
                 }
             }
             return null;
         }
-     }
+    }
+
+    class Duck extends Extensible {
+        public static boolean hasCreatedEnvironment(Tenant tenant) {
+            return tenant.getEnvironments().getEnvironments().size() != 0;
+        }
+
+        public static <T extends TenantExtension> T getExtensionByType(
+                Tenant t, Class<T> type) {
+
+            return getExtensionByType(t.getExtensions(), type);
+        }
+    }    
 }

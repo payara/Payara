@@ -119,7 +119,7 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertNotNull("currentTenant", tenant);
         Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
         Assert.assertNotNull("Zero Services", tenant.getServices());
-        //Assert.assertNotNull("Zero Extensions", tenant.getExtensions());
+        Assert.assertNotNull("Zero Extensions", tenant.getExtensions());
         tenantManager.setCurrentTenant("tenant2");
         tenant = tenantManager.get(Tenant.class);
         Assert.assertNotNull("currentTenant", tenant);
@@ -130,7 +130,7 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertEquals("Shared Services", 1, tenant.getServices().getSharedServices().size());
         Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
         Assert.assertNotNull("Specific Service", tenant.getServices().getServiceByType(DefaultService.class));
-        Assert.assertNotNull("Domain Extensions", tenant.getExtensions());
+        Assert.assertNotNull("Tenant Extensions", tenant.getExtensions());
     }
 
     // Update exsisting tenant1, verify tenant xml is updated.

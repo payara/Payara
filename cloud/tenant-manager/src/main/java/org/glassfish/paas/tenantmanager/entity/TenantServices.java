@@ -39,7 +39,6 @@
  */
 package org.glassfish.paas.tenantmanager.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.glassfish.paas.tenantmanager.api.TenantScoped;
@@ -108,7 +107,7 @@ public interface TenantServices extends ConfigBeanProxy {
     @DuckTyped
     <T extends TenantService> T getServiceByType(Class<T> type);
 
-    class Duck {
+    class Duck extends Tenant.Extensible {
         public static List<DefaultService> getDefaultServices(TenantServices tenantServices) {
             return getServices(tenantServices, DefaultService.class);
         }
@@ -122,23 +121,11 @@ public interface TenantServices extends ConfigBeanProxy {
         }
 
         public static <T extends TenantService> T getServiceByType(TenantServices tenantServices, Class<T> type) {
-            List<T> services = getServices(tenantServices, type);
-            if (services.size() > 0) {
-                return services.get(0);
-            }
-            return null;
+            return getExtensionByType(tenantServices.getTenantServices(), type);
         }
 
-
         private static <T extends TenantService> List<T> getServices(TenantServices tenantServices, Class<T> type) {
-            List<T> services = new ArrayList<T>();
-            for (TenantService service : tenantServices.getTenantServices()) {
-                if (type.isInstance(service)) {
-                    services.add(type.cast(service));
-                }
-            }
-            return services;
-            
+            return getExtensionsByType(tenantServices.getTenantServices(), type);
         }
     }
     

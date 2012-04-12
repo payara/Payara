@@ -44,6 +44,7 @@ import java.util.List;
 import org.glassfish.paas.tenantmanager.api.TenantScoped;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
 /**
@@ -59,4 +60,17 @@ public interface Environments extends ConfigBeanProxy {
     @Element("*")
     List<TenantEnvironment> getEnvironments();
 
+    /**
+     * Get particular environments by type.
+     * 
+     * @return Service. May be <code>null</code>.
+     */
+    @DuckTyped
+    <T extends TenantEnvironment> T getEnvironmentsByType(Class<T> type);
+
+    class Duck extends Tenant.Extensible {
+        public static <T extends TenantEnvironment> List<T> getEnvironmentsByType(Environments environments, Class<T> type) {
+            return getExtensionsByType(environments.getEnvironments(), type);
+        }
+    }
 }
