@@ -81,7 +81,7 @@ public class CreateJVMAlertCommand implements AdminCommand{
         }
         elastic =  (Elastic)ts.getServiceByType(Elastic.class);
          ElasticAlerts ea = elastic.getElasticAlerts();
-        ElasticAlert alert = ea.getElasticAlert("alert1");
+        ElasticAlert alert = ea.getElasticAlert(name);
 
         elasticEngine.getElasticEnvironment(envname).addAlert(alert);
         }
