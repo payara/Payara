@@ -56,6 +56,8 @@ import org.jvnet.hk2.config.DomDocument;
  * @author Andriy Zhdanov
  * 
  */
+// TODO: GlassfishConfigBean to translate configured attributes containing
+// properties like ${foo.bar} into system properties values?
 public class TenantDocument extends DomDocument<ConfigBean> {
 
     public TenantDocument(final Habitat habitat, URL resource) {

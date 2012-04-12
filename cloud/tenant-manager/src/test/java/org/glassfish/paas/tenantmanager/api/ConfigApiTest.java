@@ -41,9 +41,9 @@ package org.glassfish.paas.tenantmanager.api;
 
 import javax.xml.stream.XMLStreamReader;
 
+import org.glassfish.config.support.GlassFishConfigBean;
 import org.junit.Ignore;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -55,7 +55,7 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
     }
 
     @Override
-    public DomDocument<ConfigBean> getDocument(Habitat habitat) {
+    public DomDocument<GlassFishConfigBean> getDocument(Habitat habitat) {
         TestDocument doc = habitat.getByType(TestDocument.class);
         if (doc == null) {
             doc = new TestDocument(habitat);
@@ -64,16 +64,16 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
     }
 
     // TODO: make it reusable, move to ConfigApiTest?
-    class TestDocument extends DomDocument<ConfigBean> {
+    class TestDocument extends DomDocument<GlassFishConfigBean> {
 
         public TestDocument(Habitat habitat) {
             super(habitat);
         }
         
         @Override
-        public ConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
-                ConfigBean dom, ConfigModel configModel) {
-            return new ConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+        public GlassFishConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
+                GlassFishConfigBean dom, ConfigModel configModel) {
+            return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
         }
     }
 

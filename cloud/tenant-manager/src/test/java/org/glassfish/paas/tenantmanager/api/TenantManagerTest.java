@@ -44,7 +44,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.DefaultService;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
@@ -54,7 +57,6 @@ import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
@@ -64,29 +66,21 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 
 public class TenantManagerTest extends ConfigApiTest {
-    TenantManagerEx tenantManager;
+    Habitat habitat = getHabitat();
+    TenantManagerEx tenantManager = habitat.getComponent(TenantManagerEx.class);
+    Config config = habitat.getComponent(Config.class);
+    CloudServices cs = config.getExtensionByType(CloudServices.class);
+    TenantManagerConfig tenantManagerConfig = cs.getCloudServiceByType(TenantManagerConfig.class);
+    String fileStore = tenantManagerConfig.getFileStore();
+    String sourcePath = TenantManagerTest.class.getResource("/").getPath();
 
-    @Before
-    public void before() {
-        Habitat habitat = getHabitat();
-        tenantManager = habitat.getComponent(TenantManagerEx.class);
-        // change file store to point to test files for testGet
-        TenantManagerConfig tenantManagerConfig = tenantManager.getTenantManagerConfig();
-        try {
-            ConfigSupport.apply(new SingleConfigCode<TenantManagerConfig>() {
-                @Override
-                public Object run(TenantManagerConfig tmc) throws TransactionFailure {
-                    String fileStore = TenantManagerTest.class.getResource("/").getPath();
-                    tmc.setFileStore(fileStore);
-                    return tmc;
-                }
-            }, tenantManagerConfig);
-        } catch (TransactionFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();            
+    private void setupTest(String ... tenantNames) throws IOException {
+        for (String tenantName : tenantNames) {
+            FileUtils.copyTree(new File(sourcePath + tenantName), new File(fileStore + "/" + tenantName));
         }
     }
 
@@ -111,7 +105,8 @@ public class TenantManagerTest extends ConfigApiTest {
 
     // Verify tenant1 and tenant2 can be retrieved.
     @Test
-    public void testGet() {
+    public void testGet() throws IOException {
+        setupTest("tenant1", "tenant2");
         Assert.assertNotNull("tenantManager", tenantManager);
         tenantManager.setCurrentTenant("tenant1");
         Assert.assertEquals("currentTenant", "tenant1", tenantManager.getCurrentTenant());
@@ -133,14 +128,14 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertNotNull("Tenant Extensions", tenant.getExtensions());
     }
 
-    // Update exsisting tenant1, verify tenant xml is updated.
+    // Update existing tenant1, verify tenant xml is updated.
     @Test
     public void testUpdate() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
+        setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
         tenantManager.setCurrentTenant("tenant1");
-        // safe to update tenant1 nested elements not used in testGet.
         Tenant tenant = tenantManager.get(Tenant.class);
-        // and actually it's not possible to update root element,
+        // Note, it's not possible to update root element,
         //  see WriteableView.setter(WriteableView.java:235).
         TenantAdmin admin = tenant.getTenantAdmin();
         ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
@@ -152,6 +147,139 @@ public class TenantManagerTest extends ConfigApiTest {
         }, admin);
         assertConfigXml("Updated tenant xml", "tenant1", tenant);
     }
+
+    // verify restricted access to the configuration - can't modify the same object simultaneously.
+    @Test
+    public void testLockingSameElement() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
+        setupTest("tenant1");
+        Assert.assertNotNull("tenantManager", tenantManager);
+        tenantManager.setCurrentTenant("tenant1");
+        final Tenant tenant = tenantManager.get(Tenant.class);
+        TenantAdmin admin = tenant.getTenantAdmin();
+        ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+            @Override
+            public Object run(TenantAdmin admin) throws TransactionFailure {
+                TenantAdmin conflict = tenant.getTenantAdmin();
+
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+                        @Override
+                        public Object run(TenantAdmin admin) throws TransactionFailure {
+                            return admin;
+                        }
+                    }, conflict);
+                    Assert.fail("Failure expected");
+                } catch (TransactionFailure e) {
+                    Assert.assertTrue("Failure expected", true);
+                }
+                return admin;
+            }
+        }, admin);
+    }
+
+    // verify can modify different elements of tenant concurrently.
+    @Test
+    public void testNonLockingTenant() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
+        setupTest("tenant1");
+        Assert.assertNotNull("tenantManager", tenantManager);
+        tenantManager.setCurrentTenant("tenant1");
+        Tenant tenant = tenantManager.get(Tenant.class);
+        final TenantAdmin admin = tenant.getTenantAdmin();
+        // modify extensions element
+        ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+            @Override
+            public Object run(Tenant tenant) throws TransactionFailure {
+                TenantExtension extension = tenant
+                        .createChild(TenantExtension.class);
+                tenant.getExtensions().add(extension);
+                // modify admin element
+                ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+                    @Override
+                    public Object run(TenantAdmin admin)
+                            throws TransactionFailure {
+                        admin.setName("test");
+                        return admin;
+                    }
+                }, admin);
+                // verify file is written without changes to extensions!
+                try {
+                    assertConfigXml("Updated tenant xml", "tenant1", tenant);
+                } catch (Exception e) {
+                    throw new TransactionFailure("fake", e);
+                }
+
+                return tenant;
+            }
+        }, tenant);
+        // verify file is written with both changes!
+        assertConfigXml("Updated tenant xml", "tenant1-nonlocking", tenant);
+    }
+
+    // verify can modify different elements of tenant simultaneously.
+    //TODO: @Test when file locking is implemented
+    public void testLockingFile() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException, InterruptedException  {
+        setupTest("tenant1");
+        Assert.assertNotNull("tenantManager", tenantManager);
+        tenantManager.setCurrentTenant("tenant1");
+        final Tenant tenant = tenantManager.get(Tenant.class);
+        final List<String> errors = new ArrayList<String>(); 
+        // modify extensions element
+        Thread t1 = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                        @Override
+                        public Object run(Tenant tenant) throws TransactionFailure {
+                            TenantExtension extension = tenant
+                                    .createChild(TenantExtension.class);
+                            tenant.getExtensions().add(extension);
+                            return tenant;
+                        }
+                    }, tenant);
+                } catch (TransactionFailure e) {
+                    synchronized(errors) {
+                        errors.add(e.getMessage());
+                    }
+                }
+            }
+            
+        };
+        Thread t2 = new Thread() {
+
+            @Override
+            public void run() {
+                // modify admin element
+                TenantAdmin admin = tenant.getTenantAdmin();
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+                        @Override
+                        public Object run(TenantAdmin admin)
+                                throws TransactionFailure {
+                            admin.setName("test");
+                            return admin;
+                        }
+                    }, admin);
+                } catch (TransactionFailure e) {
+                    synchronized(errors) {
+                        errors.add(e.getMessage());
+                    }
+                }
+            }
+            
+        };
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        Assert.assertEquals("No errors", new ArrayList<String>(), errors);
+        
+        // verify file is written with both changes!
+        assertConfigXml("Updated tenant xml", "tenant1-nonlocking", tenant);
+    }
+
+    // TODO: verify adding extensions elements in its transaction
 
     // Create verify created tenant.xml literally
     // Update newly created tenenat (add service)
