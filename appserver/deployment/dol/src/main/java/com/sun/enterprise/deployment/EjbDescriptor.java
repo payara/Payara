@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -518,9 +518,19 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
      */
     public void applyDefaultClassToLifecycleMethods() {
         Set<LifecycleCallbackDescriptor> lifecycleMethods =
-                new HashSet<LifecycleCallbackDescriptor>();
+                getLifecycleCallbackDescriptors();
         lifecycleMethods.addAll(getAroundInvokeDescriptors());
         lifecycleMethods.addAll(getAroundTimeoutDescriptors());
+        for (LifecycleCallbackDescriptor next : lifecycleMethods) {
+            if (next.getLifecycleCallbackClass() == null) {
+                next.setLifecycleCallbackClass(getEjbClassName());
+            }
+        }
+    }
+
+    public Set<LifecycleCallbackDescriptor> getLifecycleCallbackDescriptors() {
+        Set<LifecycleCallbackDescriptor> lifecycleMethods =
+                new HashSet<LifecycleCallbackDescriptor>();
         lifecycleMethods.addAll(getPostConstructDescriptors());
         lifecycleMethods.addAll(getPreDestroyDescriptors());
         if (getType().equals(EjbSessionDescriptor.TYPE)) {
@@ -528,11 +538,8 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
             lifecycleMethods.addAll(sfulDesc.getPrePassivateDescriptors());
             lifecycleMethods.addAll(sfulDesc.getPostActivateDescriptors());
         }
-        for (LifecycleCallbackDescriptor next : lifecycleMethods) {
-            if (next.getLifecycleCallbackClass() == null) {
-                next.setLifecycleCallbackClass(getEjbClassName());
-            }
-        }
+
+        return lifecycleMethods;
     }
 
     /**

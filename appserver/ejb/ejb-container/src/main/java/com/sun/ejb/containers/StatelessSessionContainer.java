@@ -178,7 +178,7 @@ public class StatelessSessionContainer
     }
 
     @Override
-    protected boolean suspendedTransaction(EjbInvocation inv) throws Exception {
+    protected boolean suspendTransaction(EjbInvocation inv) throws Exception {
         // EJB2.0 section 7.5.7 says that ejbCreate/ejbRemove etc are called
         // without a Tx. So suspend the client's Tx if any.
 
@@ -186,45 +186,12 @@ public class StatelessSessionContainer
         // a Tx, according to EJB2.0 section 7.6.4. This check is done in
         // the container's implementation of removeBean().
 
-        boolean rc = false;
-        if ( !inv.invocationInfo.isBusinessMethod ) {
-            Integer preInvokeTxStatus = inv.getPreInvokeTxStatus();
-            int status = (preInvokeTxStatus != null) ?
-                    preInvokeTxStatus.intValue() : transactionManager.getStatus();
-
-            if ( status != Status.STATUS_NO_TRANSACTION ) {
-                // client request is associated with a Tx
-                try {
-                    inv.clientTx = transactionManager.suspend();
-                } catch (SystemException ex) {
-                    throw new EJBException(ex);
-                }
-            }
-
-            rc = true;
-        }
-
-        return rc;
+        return !inv.invocationInfo.isBusinessMethod;
     }
 
     @Override
-    protected boolean resumedTransaction(EjbInvocation inv) throws Exception {
-
-        boolean rc = false;
-        if ( !inv.invocationInfo.isBusinessMethod ) {
-            // check if there was a suspended client Tx
-            if ( inv.clientTx != null )
-                transactionManager.resume(inv.clientTx);
-
-            if ( inv.exception != null
-                     && inv.exception instanceof PreInvokeException ) {
-                inv.exception = ((PreInvokeException)inv.exception).exception;
-            }
-
-            rc = true;
-        }
-
-        return rc;
+    protected boolean resumeTransaction(EjbInvocation inv) throws Exception {
+        return !inv.invocationInfo.isBusinessMethod;
     }
 
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(

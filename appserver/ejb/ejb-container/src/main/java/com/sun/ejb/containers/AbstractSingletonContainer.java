@@ -218,6 +218,12 @@ public abstract class AbstractSingletonContainer
         this.singletonCtxFactory = new SingletonContextFactory();
     }
 
+    private int getTxAttrForLifecycleCallback(
+             Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
+        return getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors, 
+                Container.TX_REQUIRES_NEW, Container.TX_NOT_SUPPORTED);
+    }
+
     protected void registerMonitorableComponents() {
         super.registerMonitorableComponents();
         _logger.log(Level.FINE, "[Singleton Container] registered monitorable");

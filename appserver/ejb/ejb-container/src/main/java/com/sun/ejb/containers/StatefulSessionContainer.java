@@ -225,7 +225,8 @@ public final class StatefulSessionContainer
         InvocationInfo inv = new InvocationInfo();
         inv.ejbName = ejbDescriptor.getName();
         inv.methodIntf = MethodDescriptor.EJB_BEAN;
-        inv.txAttr = getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors);
+        inv.txAttr = getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors, 
+                Container.TX_NOT_SUPPORTED, Container.TX_REQUIRES_NEW);
 
         return inv;
     }
@@ -597,6 +598,18 @@ public final class StatefulSessionContainer
     protected Object _constructEJBInstance() throws Exception {
 	return  (sfsbSerializedClass != null) ?
 	    sfsbSerializedClass.newInstance() : ejbClass.newInstance();
+    }
+
+    @Override
+    protected boolean suspendTransaction(EjbInvocation inv) throws Exception {
+        SessionContextImpl sc = (SessionContextImpl) inv.context;
+        return !inv.invocationInfo.isBusinessMethod && !sc.getInLifeCycleCallback();
+    }
+
+    @Override
+    protected boolean resumeTransaction(EjbInvocation inv) throws Exception {
+        SessionContextImpl sc = (SessionContextImpl) inv.context;
+        return !inv.invocationInfo.isBusinessMethod && !sc.getInLifeCycleCallback();
     }
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,12 +45,16 @@ import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.*;
 
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.ContainerTransaction;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 
 import org.glassfish.apf.AnnotationHandlerFor;
@@ -99,6 +103,39 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
                         // override by xml
                         ejbDesc.setContainerTransactionFor
                             (nextDesc, containerTransaction);
+                    }
+                }
+
+                if (ejbDesc instanceof EjbSessionDescriptor) {
+                    EjbSessionDescriptor sd = (EjbSessionDescriptor)ejbDesc;
+                    if ( sd.isStateful() || sd.isSingleton() ) {
+                        ClassLoader loader = ejbDesc.getEjbBundleDescriptor().getClassLoader();
+                        Set<LifecycleCallbackDescriptor> lcds = ejbDesc.getLifecycleCallbackDescriptors();
+                        for(LifecycleCallbackDescriptor lcd : lcds) {
+                            if( lcd.getLifecycleCallbackClass().equals(ejbDesc.getEjbClassName())
+                                    && lcd.getLifecycleCallbackMethod().equals(annMethod.getName()) ) {
+                                try {
+                                    Method m = lcd.getLifecycleCallbackMethodObject(loader);
+                                    MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                                    if( TypeUtil.sameMethodSignature(m, annMethod) &&
+                                            ejbDesc.getContainerTransactionFor(md) == null ) {
+                                        // override by xml
+                                        ejbDesc.setContainerTransactionFor(md, containerTransaction);
+                                        if (logger.isLoggable(Level.FINE)) {
+                                             logger.log(Level.FINE, "Found matching callback method " + ejbDesc.getEjbClassName() 
+                                                     + "<>" + md + " : " + containerTransaction);
+                                        }
+                                    }
+                                } catch(Exception e) {
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.log(Level.FINE,
+                                        "Transaction attribute for a lifecycle callback annotation processing error", e);
+                                    }
+                                }
+
+                            }
+                        }
+
                     }
                 }
             }

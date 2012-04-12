@@ -4456,7 +4456,22 @@ public abstract class BaseContainer
         // For StatelessSessionBeans, ejbCreate/ejbRemove must be called without a Tx.
         // For StatefullSessionBeans ejbCreate/ejbRemove/ejbFind can be called with or without a Tx.
         // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx so no special work needed.
-        if ( suspendedTransaction(inv) ) {
+        if ( suspendTransaction(inv) ) {
+            // EJB2.0 section 7.5.7 says that ejbCreate/ejbRemove etc are called
+            // without a Tx. So suspend the client's Tx if any.
+    
+            // Note: ejbRemove cannot be called when EJB is associated with
+            // a Tx, according to EJB2.0 section 7.6.4. This check is done in
+            // the container's implementation of removeBean().
+
+            if ( status != Status.STATUS_NO_TRANSACTION ) {
+                // client request is associated with a Tx
+                try {
+                    inv.clientTx = transactionManager.suspend();
+                } catch (SystemException ex) {
+                    throw new EJBException(ex);
+                }
+            }
             return;
         }
         
@@ -4614,14 +4629,14 @@ public abstract class BaseContainer
         afterBegin(context);
     }
     
-    // Called from preInvokeTx to suspend transaction if necessary
-    protected boolean suspendedTransaction(EjbInvocation inv) throws Exception {
+    // Called from preInvokeTx to check if transaction needs to be suspended 
+    protected boolean suspendTransaction(EjbInvocation inv) throws Exception {
         // Overridden in subclass that needs it
         return false;
     }
     
-    // Called from postInvokeTx to resume transaction if necessary
-    protected boolean resumedTransaction(EjbInvocation inv) throws Exception {
+    // Called from postInvokeTx if transaction needs to be resumed
+    protected boolean resumeTransaction(EjbInvocation inv) throws Exception {
         // Overridden in subclass that needs it
         return false;
     }
@@ -4748,7 +4763,16 @@ public abstract class BaseContainer
         // so resume client's Tx if needed.
         // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx 
         // so no special processing needed.
-        if ( resumedTransaction(inv) ) {
+        if ( resumeTransaction(inv) ) {
+           // check if there was a suspended client Tx
+            if ( inv.clientTx != null )
+                transactionManager.resume(inv.clientTx);
+
+            if ( inv.exception != null
+                     && inv.exception instanceof PreInvokeException ) {
+                inv.exception = ((PreInvokeException)exception).exception;
+            }
+
             return;
         }
         
@@ -5200,9 +5224,10 @@ public abstract class BaseContainer
         return hasLocalHomeView;
     }
     
-    protected int getTxAttrForLifecycleCallback(Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors) throws Exception {
+    protected int getTxAttrForLifecycleCallback(Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors, 
+            int defaultTxAttr, int validateTxAttr) throws Exception {
         int txAttr =  isBeanManagedTran ?
-                Container.TX_BEAN_MANAGED : Container.TX_REQUIRES_NEW;
+                Container.TX_BEAN_MANAGED : defaultTxAttr;
 
         if( !isBeanManagedTran ) {
             for(LifecycleCallbackDescriptor lcd : lifecycleCallbackDescriptors) {
@@ -5211,14 +5236,20 @@ public abstract class BaseContainer
                     Method callbackMethod = lcd.getLifecycleCallbackMethodObject(loader);
                     int lcTxAttr = findTxAttr(
                         new MethodDescriptor(callbackMethod, MethodDescriptor.EJB_BEAN));
-                    // Since REQUIRED and REQUIRES_NEW are already taken care of, only
-                    // override the value if it's TX_NOT_SUPPORTED.
-                    if( lcTxAttr == Container.TX_NOT_SUPPORTED ) {
-                        txAttr = lcTxAttr;
+                    // Since default attribute is set up, override the value if it's validateTxAttr
+                    if( lcTxAttr == validateTxAttr ) {
+                        txAttr = validateTxAttr;
+                        if (_logger.isLoggable(Level.FINE)) {
+	                    _logger.log(Level.FINE, "Found callback method " + ejbDescriptor.getEjbClassName() + 
+                                    "<>" + callbackMethod + " : " + txAttr);
+                        }
                     }
                     break;
                 }
             }
+        }
+        if (_logger.isLoggable(Level.FINE)) {
+             _logger.log(Level.FINE, "Returning attr for " + ejbDescriptor.getEjbClassName() + " : " + txAttr);
         }
 
         return txAttr;
