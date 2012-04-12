@@ -80,6 +80,7 @@ public class TenantManagerTest extends ConfigApiTest {
 
     private void setupTest(String ... tenantNames) throws IOException {
         for (String tenantName : tenantNames) {
+            tenantManager.delete(tenantName); // dispose for clean test
             FileUtils.copyTree(new File(sourcePath + tenantName), new File(fileStore + "/" + tenantName));
         }
     }
