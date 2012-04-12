@@ -66,9 +66,6 @@ public abstract class DatabaseCommand extends CLICommand {
     //protected final static String DB_PASSWORD   = "dbpassword";
     protected final static String DB_PASSWORDFILE   = "dbpasswordfile";
 
-    private static final String[] MODULES_IN_CLASSPATH =
-                { "glassfish", "admin-cli", "cli-framework", "common-util" };
-
     @Param(name = "dbhost", optional = true, defaultValue = DB_HOST_DEFAULT)
     protected String dbHost;
 
@@ -78,7 +75,6 @@ public abstract class DatabaseCommand extends CLICommand {
     protected File dbLocation;
     protected File sJavaHome;
     protected File sInstallRoot;
-    protected File installModules;
     protected final ClassPathBuilder sClasspath = new ClassPathBuilder();
     protected final ClassPathBuilder sDatabaseClasspath =
                                                 new ClassPathBuilder();
@@ -98,21 +94,10 @@ public abstract class DatabaseCommand extends CLICommand {
         else
             checkIfPortIsValid(dbPort);
         sJavaHome = new File(getSystemProperty(JAVA_ROOT_PROPERTY));
-        installModules = new File(sInstallRoot, "modules");
         dbLocation = new File(getSystemProperty(DERBY_ROOT_PROPERTY));
         checkIfDbInstalled(dbLocation);
         
-	sClasspath.addAll(installModules, new FileFilter() {
-            public boolean accept(File f) {
-                String n = f.getName();
-                for (String prefix : MODULES_IN_CLASSPATH) {
-                    if (n.startsWith(prefix) && n.endsWith(".jar"))
-                        return true;
-                }
-                return false;
-            }
-        });
-
+	sClasspath.add(new File(sInstallRoot, "lib/asadmin/cli-optional.jar"));
         sDatabaseClasspath
                 .add(dbLocation,"lib","derby.jar")
                 .add(dbLocation,"lib","derbytools.jar")

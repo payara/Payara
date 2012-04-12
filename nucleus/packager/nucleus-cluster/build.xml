@@ -51,6 +51,12 @@
        <antcall target="filter-module-artifacts"/>
        
        <stage-module-jars/>
+       <!-- move asadmin extensions to asadmin directory -->
+       <move file="target/stage/${install.dir.name}/modules/cluster-cli.jar"
+             todir="target/stage/${install.dir.name}/lib/asadmin"/>
+       <move file="target/stage/${install.dir.name}/modules/server-mgmt.jar"
+             todir="target/stage/${install.dir.name}/lib/asadmin"/>
+
        <stage-distribution-fragments/>
 
 

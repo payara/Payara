@@ -67,7 +67,7 @@
                     <archive>
                         <!-- XXX - which of these are needed? -->
                         <manifestEntries>
-                               <Class-Path>config-api.jar internal-api.jar config-types.jar cluster-l10n.jar</Class-Path>
+                               <Class-Path>../../modules/cluster-common.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar cluster-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>

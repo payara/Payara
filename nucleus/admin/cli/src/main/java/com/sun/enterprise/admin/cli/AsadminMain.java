@@ -40,37 +40,39 @@
 
 package com.sun.enterprise.admin.cli;
 
-import java.io.*;
-import java.net.URISyntaxException;
-import java.text.*;
-import java.util.*;
-import java.util.logging.*;
-import org.glassfish.common.util.admin.AsadminInput;
-
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.*;
-import org.glassfish.api.admin.*;
-import com.sun.enterprise.module.*;
+import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-
-import com.sun.enterprise.admin.cli.remote.*;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
-import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.api.admin.InvalidCommandException;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.common.util.admin.AsadminInput;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * The asadmin main program.
  */
 public class AsadminMain {
 
-    private       static String classPath;
-    private       static String className;
-    private       static String command;
-    private       static ProgramOptions po;
-    private       static Habitat habitat;
-    private       static Logger logger;
+    private       String classPath;
+    private       String className;
+    private       String command;
+    private       ProgramOptions po;
+    private       Habitat habitat;
+    protected     Logger logger;
 
     private final static int ERROR = 1;
     private final static int CONNECTION_ERROR = 2;
@@ -78,7 +80,6 @@ public class AsadminMain {
     private final static int SUCCESS = 0;
     private final static int WARNING = 4;
 
-    // XXX - move this to LogDomains?
     private final static String ADMIN_CLI_LOGGER =
                                     "com.sun.enterprise.admin.cli";
 
@@ -102,6 +103,47 @@ public class AsadminMain {
                 System.setProperty(prop, val);
         }
     }
+
+    /*
+     * Skinning Methods
+     * 
+     * The AsadminMain class can be "skinned" to present different CLI interface
+     * for different products.  Skinning is achieved by extending AsadminMain
+     * and redefining the methods in this section.
+     */
+    
+    /**
+     * Get the class loader that is used to load local commands. 
+     * 
+     * @return a class loader used to load local commands
+     */
+    protected ClassLoader getExtensionClassLoader() {
+        /*
+         * Create a ClassLoader to load from all the jar files in the
+         * lib/asadmin directory.  This directory can contain extension
+         * jar files with new local asadmin commands.
+         */
+        ClassLoader ecl = AsadminMain.class.getClassLoader();
+        try {
+            File inst = new File(System.getProperty(
+                                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+            File ext = new File(new File(inst, "lib"), "asadmin");
+            logger.log(Level.FINER, "asadmin extension directory: {0}", ext);
+            if (ext.isDirectory())
+                ecl = new DirectoryClassLoader(ext, ecl);
+            else
+                logger.info(strings.get("ExtDirMissing", ext));
+        } catch (IOException ex) {
+            // any failure here is fatal
+            logger.info(strings.get("ExtDirFailed", ex));
+            System.exit(1);
+        }
+        return ecl;
+    }
+    
+    /*
+     * End of skinning methods -------------------------------------------------
+     */
 
     /**
      * A ConsoleHandler that prints all non-SEVERE messages to System.out
@@ -131,6 +173,10 @@ public class AsadminMain {
     }
 
     public static void main(String[] args) {
+        new AsadminMain().doMain(args);
+    }
+    
+    protected void doMain(String[] args) {
         int minor = JDK.getMinor();
 
         if (minor < 6) {
@@ -177,35 +223,12 @@ public class AsadminMain {
         if (CLIConstants.debugMode) {
             System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                 "" + System.currentTimeMillis());
-            logger.finer("CLASSPATH= " +
-                    System.getProperty("java.class.path") +
-                    "\nCommands: " + Arrays.toString(args));
+            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}", 
+                    new Object[]{System.getProperty("java.class.path"), 
+                                 Arrays.toString(args)});
         }
 
-        /*
-         * Create a ClassLoader to load from all the jar files in the
-         * lib/asadmin directory.  This directory can contain extension
-         * jar files with new local asadmin commands.
-         */
-        ClassLoader ecl = AsadminMain.class.getClassLoader();
-        try {
-            File inst = new File(System.getProperty(
-                                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File ext = new File(new File(inst, "lib"), "asadmin");
-            logger.finer(
-                                    "asadmin extension directory: " + ext);
-            if (ext.isDirectory())
-                ecl = new DirectoryClassLoader(ext, ecl);
-            else
-                logger.info(
-                                            strings.get("ExtDirMissing", ext));
-        } catch (IOException ex) {
-            // any failure here is fatal
-            logger.info(
-                                    strings.get("ExtDirFailed", ex));
-            System.exit(1);
-        }
-
+        ClassLoader ecl = getExtensionClassLoader();
         /*
          * Set the thread's context class laoder so that everyone can
          * load from our extension directory.
@@ -262,7 +285,7 @@ public class AsadminMain {
         System.exit(exitCode);
     }
 
-    public static int executeCommand(String[] argv) {
+    public int executeCommand(String[] argv) {
         CLICommand cmd = null;
         Environment env = new Environment();
         try {
@@ -280,8 +303,9 @@ public class AsadminMain {
                 readAndMergeOptionsFromAuxInput(po);
                 List<String> operands = rcp.getOperands();
                 argv = operands.toArray(new String[operands.size()]);
-            } else
+            } else {
                 po = new ProgramOptions(env);
+            }
             po.toEnvironment(env);
             po.setClassPath(classPath);
             po.setClassName(className);
@@ -362,70 +386,11 @@ public class AsadminMain {
      * Print usage message for asadmin command.
      * XXX - should be derived from ProgramOptions.
      */
-    private static void printUsage() {
+    private void printUsage() {
         logger.severe(strings.get("Asadmin.usage"));
     }
 
     private static boolean ok(String s) {
         return s!= null && s.length() > 0;
     }
-
-    /** Turned off for now -- it takes ~200 msec on a laptop!
-    private final static boolean foundClass(String s) {
-        try {
-            Class.forName(s);
-            return true;
-        } catch (Throwable t) {
-            System.out.println("Can not find class: " + s);
-            return false;
-        }
-    }
-
-    private final static String[] requiredClassnames = {
-        // one from launcher jar        
-        "com.sun.enterprise.admin.launcher.GFLauncher",
-        // one from universal jar
-        "com.sun.enterprise.universal.xml.MiniXmlParser",
-        // one from glassfish bootstrap jar
-        "com.sun.enterprise.glassfish.bootstrap.ASMain",
-        // one from stax-api
-        "javax.xml.stream.XMLInputFactory",
-        // one from server-mgmt
-        "com.sun.enterprise.admin.servermgmt.RepositoryException",
-        // one from common-utils
-        "com.sun.enterprise.util.net.NetUtils",
-        // one from admin/util
-        "com.sun.enterprise.admin.util.TokenValueSet",
-        // here's one that server-mgmt is dependent on
-        "com.sun.enterprise.security.auth.realm.file.FileRealm",
-        // dol
-        "com.sun.enterprise.deployment.PrincipalImpl",
-        // kernel
-        //"com.sun.appserv.server.util.Version",
-    };
-
-    static {
-        // check RIGHT NOW to make sure all the classes we need are
-        // available
-        long start = System.currentTimeMillis();
-        boolean gotError = false;
-        for (String s : requiredClassnames) {
-            if (!foundClass(s))
-                gotError = true;
-        }
-        // final test -- see if sjsxp is available
-        try {
-            javax.xml.stream.XMLInputFactory.newInstance().getXMLReporter();
-        } catch(Throwable t) {
-            gotError = true;
-            System.out.println("Can't access STAX classes");
-        }
-        if (gotError) {
-            // messages already sent to stdout...
-            System.exit(1);
-        }
-        long stop = System.currentTimeMillis();
-        System.out.println("Time to pre-load classes = " + (stop-start) + " msec");
-    }
-     */
 }

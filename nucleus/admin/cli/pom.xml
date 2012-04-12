@@ -123,7 +123,7 @@
                             <mainClass>com.sun.enterprise.admin.cli.AsadminMain</mainClass>
                         </manifest>
                         <manifestEntries>
-				<Class-Path>cli-optional.jar cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar</Class-Path>
+				<Class-Path>cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar</Class-Path>
                         <!-- 5776: we do not need backup jar entry, but I retain it, Kedar -->
                         </manifestEntries>
                     </archive>

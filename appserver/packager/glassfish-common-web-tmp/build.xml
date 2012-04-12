@@ -51,6 +51,10 @@
        <antcall target="filter-module-artifacts"/>
         
        <stage-module-jars/>
+       <!-- move asadmin extensions to asadmin directory -->
+       <move file="target/stage/${install.dir.name}/glassfish/modules/cli-optional.jar"
+             todir="target/stage/${install.dir.name}/glassfish/lib/asadmin"/>
+
        <stage-distribution-fragments/>
 
        <!-- overriding nucleus-base content with appserver-base -->
