@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,28 +38,25 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.impl;
+package org.glassfish.enterprise.iiop.impl;
 
-import java.util.logging.Level;
-import com.sun.logging.LogDomains;
-import java.util.logging.Logger;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.net.InetAddress;
-
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
-
-import com.sun.jndi.cosnaming.IiopUrl;
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.SocketInfo;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import java.net.Inet4Address;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import com.sun.jndi.cosnaming.IiopUrl;
+import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.ORBLocator;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.api.naming.NamingClusterInfo.*;
 
 /**
  * The list of endpoints are randomized the very first time.
@@ -102,7 +99,6 @@ import org.glassfish.internal.api.ORBLocator;
  * For simple Round Robin, we can assume the same weight for all endpointsand 
  * perform the above.
  * @author Sheetal Vartak
- * @date 8/2/05
  **/
 
 public class RoundRobinPolicy {
@@ -157,16 +153,12 @@ public class RoundRobinPolicy {
     }
 
     private boolean isWeighted() {
-	String policy = System.getProperty(
-            SerialInitContextFactory.LOAD_BALANCING_PROPERTY,
-            SerialInitContextFactory.IC_BASED );
-	if (!policy.equals(SerialInitContextFactory.IC_BASED)) {
+	String policy = System.getProperty(LOAD_BALANCING_PROPERTY, IC_BASED );
+	if (!policy.equals(IC_BASED)) {
 	    warnLog("loadbalancing.polibeforecy.incorrect");
         }
 
-	final boolean isw = policy.equals(
-            SerialInitContextFactory.IC_BASED_WEIGHTED);
-        return isw ;
+        return policy.equals(IC_BASED_WEIGHTED);
     }
 
     private List<ClusterInstanceInfo> filterClusterInfo(
@@ -291,9 +283,7 @@ public class RoundRobinPolicy {
         List<SocketInfo> sil = new ArrayList<SocketInfo>(1) ;
         sil.add( socketInfo ) ;
 
-	ClusterInstanceInfo instanceInfo = new ClusterInstanceInfo(
-            server_identifier, weight, sil ) ;
-	return instanceInfo;
+        return new ClusterInstanceInfo(server_identifier, weight, sil);
     }
 
     /*
@@ -352,7 +342,7 @@ public class RoundRobinPolicy {
             // totalWeight);
 	while( random == 0) {
 	    random = rand.nextInt(totalWeight);
-	    if ( random != 0) {
+	    if (random != 0) {
 		break;
 	    }
 	}

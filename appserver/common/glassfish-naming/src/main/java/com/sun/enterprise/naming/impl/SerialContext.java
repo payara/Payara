@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package com.sun.enterprise.naming.impl;
 
 import com.sun.enterprise.naming.util.LogFacade;
+import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.hk2.Services;
 
@@ -286,7 +287,7 @@ public class SerialContext implements Context {
         // to be 'final'.
         JavaURLContext urlContextTemp = null;
 
-        if (myEnv.get(SerialInitContextFactory.IIOP_URL_PROPERTY) != null) {
+        if (myEnv.get(NamingClusterInfo.IIOP_URL_PROPERTY) != null) {
             urlContextTemp = new JavaURLContext(myEnv, this);
         } else {
             urlContextTemp = new JavaURLContext(myEnv, null);
@@ -376,7 +377,7 @@ public class SerialContext implements Context {
         String eplist = null ;
         if (myEnv != null) {
             eplist = (String)myEnv.get(
-                SerialInitContextFactory.IIOP_URL_PROPERTY) ;
+                    NamingClusterInfo.IIOP_URL_PROPERTY) ;
         }
 
         if (eplist != null) {
@@ -474,7 +475,7 @@ public class SerialContext implements Context {
          *
          */
         final boolean useSticky = myEnv.get(
-            SerialInitContextFactory.IIOP_URL_PROPERTY) != null ;
+                NamingClusterInfo.IIOP_URL_PROPERTY) != null ;
 
         if (useSticky) {
             grabSticky() ;

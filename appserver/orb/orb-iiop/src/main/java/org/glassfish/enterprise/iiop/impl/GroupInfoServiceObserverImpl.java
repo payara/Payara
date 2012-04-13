@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,17 +39,16 @@
  */
 
 
-package com.sun.enterprise.naming.impl;
+package org.glassfish.enterprise.iiop.impl;
+
+import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
+import com.sun.corba.ee.spi.folb.GroupInfoService;
+import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
+import com.sun.logging.LogDomains;
 
 import java.util.List;
-
-import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
-import com.sun.corba.ee.spi.folb.GroupInfoService;
-import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
+import java.util.logging.Logger;
 
 
 /**
@@ -105,7 +104,7 @@ public class GroupInfoServiceObserverImpl
     private void doMembershipChange() {
 	try {
 	    List<ClusterInstanceInfo> instanceInfoList =
-                gis.getClusterInstanceInfo((String[])null, rr.getHostPortList() );
+                gis.getClusterInstanceInfo(null, rr.getHostPortList() );
 	    if (instanceInfoList != null && instanceInfoList.size() > 0) {
                 rr.setClusterInstanceInfo(instanceInfoList);
 	    }

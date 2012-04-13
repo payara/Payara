@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.corba.ee.spi.folb.GroupInfoService;
 import com.sun.logging.LogDomains;
-import java.util.ArrayList;
-import org.glassfish.api.naming.NamingObjectsProvider;
-import org.glassfish.hk2.Provider;
+import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.hk2.Services;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ORBLocator;
+import org.omg.CORBA.ORB;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -56,34 +56,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.ORBLocator;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.ORBPackage.InvalidName;
+import static org.glassfish.api.naming.NamingClusterInfo.*;
 
 public class SerialInitContextFactory implements InitialContextFactory {
-    public static final String LOAD_BALANCING_PROPERTY =
-            "com.sun.appserv.iiop.loadbalancingpolicy";
-
-    public static final String IIOP_ENDPOINTS_PROPERTY =
-            "com.sun.appserv.iiop.endpoints";
-
-    public static final String IIOP_URL_PROPERTY =
-            "com.sun.appserv.ee.iiop.endpointslist";
-
-    public static final String IC_BASED_WEIGHTED = "ic-based-weighted";
-
-    public static final String IC_BASED = "ic-based";
-
-    public static final String IIOP_URL = "iiop:1.2@";
-
-    public static final String CORBALOC = "corbaloc:";
-
     private static volatile boolean initialized = false ;
-
-    private static volatile RoundRobinPolicy rrPolicy ;
-
-    private static volatile GroupInfoServiceObserverImpl giso ;
 
     protected static final Logger _logger = LogDomains.getLogger(
         SerialInitContextFactory.class, LogDomains.JNDI_LOGGER );
@@ -121,8 +97,6 @@ public class SerialInitContextFactory implements InitialContextFactory {
         return defaultServices;
     }
 
-    private boolean useLB ;
-
     private final Services services;
 
 
@@ -131,79 +105,12 @@ public class SerialInitContextFactory implements InitialContextFactory {
         return value != null && !value.isEmpty() ;
     }
 
-    private List<String> splitOnComma( String arg ) {
-        final List<String> result = new ArrayList<String>() ;
-        if (arg != null) {
-            final String[] splits = arg.split( "," ) ;
-            if (splits != null) {
-                for (String str : splits) {
-                    result.add( str.trim() ) ;
-                }
-            }
-        }
-
-        return result ;
-    }
-
     private String getEnvSysProperty( Hashtable env, String pname ) {
         String value = (String)env.get( pname ) ;
         if (value == null) {
             value = System.getProperty( pname ) ;
         }
         return value ;
-    }
-
-    private List<String> getEndpointList( Hashtable env ) {
-        final List<String> list = new ArrayList<String>() ;
-        final String lbpv = getEnvSysProperty( env, LOAD_BALANCING_PROPERTY);
-        final List<String> lbList = splitOnComma(lbpv) ;
-        if (lbList.size() > 0) {
-            final String first = lbList.remove( 0 ) ;
-            if (first.equals(IC_BASED) || first.equals(IC_BASED_WEIGHTED)) {
-                // XXX concurrency issue here:  possible race on global
-                System.setProperty(LOAD_BALANCING_PROPERTY, first );
-            }
-        }
-        list.addAll( lbList ) ;
-
-        if (list.isEmpty()) {
-            final String iepv = getEnvSysProperty( env, IIOP_ENDPOINTS_PROPERTY);
-            final List<String> epList = splitOnComma(iepv) ;
-            list.addAll( epList ) ;
-        }
-
-        if (list.isEmpty()) {
-            final String urlValue = (String)env.get(
-                ORBLocator.JNDI_PROVIDER_URL_PROPERTY) ;
-            list.addAll( rrPolicy.getEndpointForProviderURL( urlValue ) ) ;
-        }
-
-        if (list.isEmpty()) {
-            String host = getEnvSysProperty( env,
-                ORBLocator.OMG_ORB_INIT_HOST_PROPERTY) ;
-            String port = getEnvSysProperty( env,
-                ORBLocator.OMG_ORB_INIT_PORT_PROPERTY) ;
-
-            if (host != null && port != null) {
-                list.addAll(
-                    rrPolicy.getAddressPortList(host, port) ) ;
-                _logger.log(Level.WARNING, "no.endpoints.selected",
-                        new Object[] {host, port});
-            }
-        }
-
-        if (list.isEmpty()) {
-            if (defaultHost != null && defaultPort != null) {
-                list.add( defaultHost + ":" + defaultPort ) ;
-            }
-        }
-
-        if (list.isEmpty()) {
-            _logger.log(Level.SEVERE, "no.endpoints");
-            throw new RuntimeException("Cannot Proceed. No Endpoints specified.");
-        }
-
-        return list ;
     }
 
     private String getCorbalocURL( final List<String> list) {
@@ -261,53 +168,17 @@ public class SerialInitContextFactory implements InitialContextFactory {
         boolean membershipChangeForced = false ;
 
         fineLog( "getInitialContext: env={0}", env ) ;
-        useLB = propertyIsSet(myEnv, IIOP_ENDPOINTS_PROPERTY)
+        boolean useLB = propertyIsSet(myEnv, IIOP_ENDPOINTS_PROPERTY)
             || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
+        NamingClusterInfo namingClusterInfo = null;
 
         if (useLB && !initialized) {
             synchronized( SerialInitContextFactory.class ) {
                 if (!initialized) {
-                    // Always create one rrPolicy to be shared, if needed.
-                    final List<String> epList = getEndpointList( myEnv ) ;
-                    rrPolicy = new RoundRobinPolicy(epList);
-
-                    GroupInfoService gis = null ;
-                    try {
-                        gis = (GroupInfoService) (getORB().resolve_initial_references(
-                            ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE));
-                    } catch (InvalidName ex) {
-                        doLog(Level.SEVERE,
-                            "Exception in SerialInitContextFactory constructor {0}",
-                                ex);
-                    }
-
-                    giso = new GroupInfoServiceObserverImpl( gis, rrPolicy );
-
-                    gis.addObserver(giso);
-
-                    // fineLog( "getInitialContext: rrPolicy = {0}", rrPolicy );
-
-                    // this should force the initialization of the resources providers
-                    if (services !=null) {
-                        for (Provider<NamingObjectsProvider> provider : services.forContract(NamingObjectsProvider.class).all()) {
-                            provider.get();
-                            // no - op. Do nothing with the provided object
-                        }
-//                        for (NamingObjectsProvider provider :
-//                            services.getAllByContract(NamingObjectsProvider.class)) {
-//                            // no-op
-//                        }
-                    }
-
-                    // Get the actual content, not just the configured
-                    // endpoints.
-                    giso.forceMembershipChange();
+                    namingClusterInfo = services.forContract(NamingClusterInfo.class).get();
+                    namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services);
                     membershipChangeForced = true ;
-
                     initialized = true ;
-
-                    fineLog( "getInitialContext(initial): rrPolicy = {0}",
-                        rrPolicy );
                 }
             }
         }
@@ -325,23 +196,19 @@ public class SerialInitContextFactory implements InitialContextFactory {
                 // If the IIOP endpoint list is explicitly set in the env,
                 // update rrPolicy to use that information, otherwise just
                 // rotate rrPolicy to the next element.
+                if(namingClusterInfo == null) {
+                    namingClusterInfo = services.forContract(NamingClusterInfo.class).get();
+                }
                 if (myEnv.containsKey( IIOP_ENDPOINTS_PROPERTY ) ||
                     myEnv.containsKey( LOAD_BALANCING_PROPERTY )) {
                     synchronized( SerialInitContextFactory.class ) {
-                        final List<String> list = getEndpointList( myEnv ) ;
-                        rrPolicy.setClusterInstanceInfoFromString(list);
-                        if (!membershipChangeForced) {
-                            giso.forceMembershipChange() ;
-                        }
+                        namingClusterInfo.setClusterInstanceInfo(myEnv, defaultHost, defaultPort, membershipChangeForced);
                     }
                 }
 
-                List<String> rrList = rrPolicy.getNextRotation();
-                fineLog( "getInitialContext: rrPolicy = {0}", rrPolicy );
-
-                String corbalocURL = getCorbalocURL(rrList);
-
-                myEnv.put(IIOP_URL_PROPERTY, corbalocURL);
+                List<String> rrList = namingClusterInfo.getNextRotation();
+                fineLog( "getInitialContext: RoundRobinPolicy list = {0}", rrList);
+                myEnv.put(IIOP_URL_PROPERTY, getCorbalocURL(rrList));
             }
 
             myEnv.put(ORBLocator.JNDI_CORBA_ORB_PROPERTY, getORB());
