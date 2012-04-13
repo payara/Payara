@@ -40,6 +40,7 @@
 package org.glassfish.paas.orchestrator.provisioning.cli;
 
 
+import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
 import org.glassfish.hk2.scopes.Singleton;
@@ -84,6 +85,8 @@ public class ServiceUtil {
     private Habitat habitat;
 
     private static Logger logger = LogDomains.getLogger(ServiceOrchestratorImpl.class,LogDomains.PAAS_LOGGER);
+
+    protected final static StringManager localStrings = StringManager.getManager(ServiceOrchestratorImpl.class);
 
     public static ExecutorService getThreadPool() {
         return threadPool;
@@ -782,7 +785,13 @@ public class ServiceUtil {
     public void fireServiceChangeEvent(ServiceChangeEvent.Type type,
                                           org.glassfish.paas.orchestrator.service.spi.Service ps) {
         for(ServiceChangeListener listener : getServiceChangeListeners()) {
+            try{
             listener.onEvent(new ServiceChangeEvent(type, this, null, ps));
+            }catch(Exception e){
+                if(logger.isLoggable(Level.FINEST)){
+                 logger.log(Level.FINEST,localStrings.getString("failure.listener.event"), e);
+                }
+            }
         }
     }
 
