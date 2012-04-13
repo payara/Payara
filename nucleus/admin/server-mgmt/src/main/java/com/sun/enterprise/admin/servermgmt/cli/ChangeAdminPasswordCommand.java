@@ -89,8 +89,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ChangeAdminPasswordCommand.class);
 
-    private static final String oldpwName = Environment.AS_ADMIN_ENV_PREFIX + "PASSWORD";
-    private static final String newpwName = Environment.AS_ADMIN_ENV_PREFIX + "NEWPASSWORD";
+    private static final String oldpwName = Environment.PREFIX + "PASSWORD";
+    private static final String newpwName = Environment.PREFIX + "NEWPASSWORD";
     
     @Param(name = "domain_name", optional = true)
     private String userArgDomainName;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,15 +52,11 @@ public class CLIConstants {
     public static final String  DEFAULT_HOSTNAME                = "localhost";
     public static final String  EOL                             = System.getProperty("line.separator");
 
-    // sent in as a System Property for restarts
-    public static final String  RESTART_FLAG_PARENT_PID         = "AS_RESTART";
     public static final long    WAIT_FOR_DAS_TIME_MS            = 10 * 60 * 1000; // 10 minutes
     public static final int     RESTART_NORMAL                  = 10;
     public static final int     RESTART_DEBUG_ON                = 11;
     public static final int     RESTART_DEBUG_OFF               = 12;
     public static final String  WALL_CLOCK_START_PROP           = "WALL_CLOCK_START";
-    public static final boolean debugMode;
-    public static final String  CLI_RECORD_ALL_COMMANDS_PROP    = "AS_LOGFILE";
     public static final String  MASTER_PASSWORD                 = "AS_ADMIN_MASTERPASSWORD";
     public static final int     SUCCESS                         = 0;
     public static final int     ERROR                           = 1;
@@ -96,17 +92,8 @@ public class CLIConstants {
     ///////       private                   ////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
-    private static final String CLI_DEBUG_MODE_PROP             = "AS_DEBUG";
-
-    static {
-        debugMode = Boolean.parseBoolean(System.getenv(CLI_DEBUG_MODE_PROP)) ||
-                    Boolean.getBoolean(CLI_DEBUG_MODE_PROP);
-    }
 
     private CLIConstants() {
        // no instances allowed!
-    }
-    public static final boolean debug() {
-        return debugMode;
     }
 }

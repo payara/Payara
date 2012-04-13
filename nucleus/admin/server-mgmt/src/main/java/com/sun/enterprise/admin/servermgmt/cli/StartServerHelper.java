@@ -40,6 +40,7 @@
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
+import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.util.OS;
 import java.io.File;
 import java.io.IOException;
@@ -250,7 +251,7 @@ public class StartServerHelper {
     private void waitForParentToDie() throws CommandException {
         // we also come here with just a regular start in which case there is
         // no parent, and the System Property is NOT set to anything...
-        String pids = System.getProperty(CLIConstants.RESTART_FLAG_PARENT_PID);
+        String pids = System.getProperty("AS_RESTART");
 
         if (!ok(pids))
             return;
@@ -360,7 +361,7 @@ public class StartServerHelper {
         // There are **three** JVMs in a restart -- old server, new server, cli
         // we will not even see AS_DEBUG!
         if (DEBUG_MESSAGES_ON)
-            CLIUtil.writeCommandToDebugLog(new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
+            CLIUtil.writeCommandToDebugLog(new Environment(), new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
     }
     private final boolean terse;
     private final GFLauncher launcher;

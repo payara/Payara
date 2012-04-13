@@ -191,7 +191,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                             return returnValue;
                     }
                     
-                    if (CLIConstants.debugMode)
+                    if (env.debug())
                         System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                                             "" + System.currentTimeMillis());
                     launcher.relaunch();

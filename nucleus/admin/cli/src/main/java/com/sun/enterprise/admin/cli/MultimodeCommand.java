@@ -278,7 +278,7 @@ public class MultimodeCommand extends CLICommand {
                     strings.get("CommandUnSuccessful", command));
                 break;
             }
-            CLIUtil.writeCommandToDebugLog(args, rc);
+            CLIUtil.writeCommandToDebugLog(env, args, rc);
         }
         return rc;
     }

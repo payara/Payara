@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,9 +79,9 @@ public class CLIUtil {
             prop.load(is);
             for (Object key : prop.keySet()) {
                 final String entry = (String)key;
-                if (entry.startsWith(Environment.AS_ADMIN_ENV_PREFIX)) {
+                if (entry.startsWith(Environment.PREFIX)) {
                     final String optionName = withPrefix ? entry :
-                      entry.substring(Environment.AS_ADMIN_ENV_PREFIX.length()).
+                      entry.substring(Environment.PREFIX.length()).
                             toLowerCase(Locale.ENGLISH);
                     final String optionValue = prop.getProperty(entry);
                     passwordOptions.put(optionName, optionValue);
@@ -275,8 +275,8 @@ public class CLIUtil {
     /**
      * Log the command, for debugging.
      */
-    public static void writeCommandToDebugLog(String[] args, int exit) {
-        File log = getDebugLogfile();
+    public static void writeCommandToDebugLog(Environment env, String[] args, int exit) {
+        File log = env.getDebugLogfile();
 
         if (log == null)
             return;
@@ -330,23 +330,4 @@ public class CLIUtil {
 
         return "....." + arg.substring(len - max);
     }
-
-    private static File getDebugLogfile() {
-        // System Prop trumps environmental variable
-        String fname =
-            System.getProperty(CLIConstants.CLI_RECORD_ALL_COMMANDS_PROP);
-        if (fname == null)
-            fname = System.getenv(CLIConstants.CLI_RECORD_ALL_COMMANDS_PROP);
-        if (fname == null)
-            return null;
-
-        File f = new File(fname);
-
-        try {
-            if ((f.exists() || f.createNewFile()) && f.isFile() && f.canWrite())
-                return f;
-        } catch (IOException e) { /* ignore */ }
-        return null;
-    }
-
 }

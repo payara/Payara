@@ -87,7 +87,7 @@ public final class StopDatabaseCommand extends DatabaseCommand {
         if (dbPasswordFile != null) {
             passwords =
                 CLIUtil.readPasswordFileOptions(dbPasswordFile.getPath(), true);
-            dbPassword = passwords.get(Environment.AS_ADMIN_ENV_PREFIX + "DBPASSWORD");
+            dbPassword = passwords.get(Environment.PREFIX + "DBPASSWORD");
         }
         if (dbUser == null && dbPassword == null) {
             if (OS.isDarwin()) {

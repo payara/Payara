@@ -89,7 +89,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             new LocalStringsImpl(StartDomainCommand.class);
     // the name of the master password option
     private StartServerHelper helper;
-    private static final String newpwName = Environment.AS_ADMIN_ENV_PREFIX + "NEWPASSWORD";
+    private String newpwName = Environment.PREFIX + "NEWPASSWORD";
 
     @Override
     public List<String> getLauncherArgs() {
@@ -170,7 +170,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
                             return returnValue;
                     }
 
-                    if (CLIConstants.debugMode)
+                    if (env.debug())
                         System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                                 "" + System.currentTimeMillis());
 

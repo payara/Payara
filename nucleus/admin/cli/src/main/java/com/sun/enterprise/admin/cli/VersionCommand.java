@@ -47,6 +47,7 @@ import org.glassfish.api.admin.*;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import java.util.logging.Level;
 
 /**
  * A local version command.
@@ -110,12 +111,14 @@ public class VersionCommand extends CLICommand {
     }
 
     private void printRemoteException(Exception e) {
-        if (CLIConstants.debug())
-            logger.info(strings.get("remote.version.failed.debug",
+        logger.info(strings.get("remote.version.failed",
                 programOpts.getHost(), programOpts.getPort() + ""));
-        else
-            logger.info(strings.get("remote.version.failed.non-debug", 
-                programOpts.getHost(), programOpts.getPort() + ""));
-        logger.finer(e.getMessage());
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer(e.getMessage());
+        }
+        else {
+            logger.info(strings.get("remote.version.failed.debug", 
+                Environment.getDebugVar()));
+        }
     }
 }

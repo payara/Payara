@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,6 +72,7 @@ public class AsadminMain {
     private       String command;
     private       ProgramOptions po;
     private       Habitat habitat;
+    private       Environment env = new Environment();
     protected     Logger logger;
 
     private final static int ERROR = 1;
@@ -82,9 +83,6 @@ public class AsadminMain {
 
     private final static String ADMIN_CLI_LOGGER =
                                     "com.sun.enterprise.admin.cli";
-
-    private final static String DEBUG_FLAG = "Debug";
-    private final static String ENV_DEBUG_FLAG = "AS_DEBUG";
 
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
@@ -184,15 +182,8 @@ public class AsadminMain {
             System.exit(ERROR);
         }
 
-        // bnevins 4-18-08 A quickly added trace. should clean up later.
-        // TODO TODO TODO TODO
-
-        // System Prop just needs to exist
-        // Env Var. needs to be set to "true"
-        String sys = System.getProperty(DEBUG_FLAG);
-        boolean env = Boolean.parseBoolean(System.getenv(ENV_DEBUG_FLAG));
-        boolean trace = Boolean.parseBoolean(System.getenv("AS_TRACE"));
-        boolean debug = sys != null || env;
+        boolean trace = env.trace();
+        boolean debug = env.debug();
 
         /*
          * Use a logger associated with the top-most package that we
@@ -220,7 +211,7 @@ public class AsadminMain {
             rlogger.removeHandler(lh);
         rlogger.addHandler(h);
 
-        if (CLIConstants.debugMode) {
+        if (debug) {
             System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                 "" + System.currentTimeMillis());
             logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}", 
@@ -281,13 +272,12 @@ public class AsadminMain {
                 strings.get("CommandUnSuccessful", command));
             break;
         }
-        CLIUtil.writeCommandToDebugLog(args, exitCode);
+        CLIUtil.writeCommandToDebugLog(env, args, exitCode);
         System.exit(exitCode);
     }
 
     public int executeCommand(String[] argv) {
         CLICommand cmd = null;
-        Environment env = new Environment();
         try {
 
             // if the first argument is an option, we're using the new form

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.admin.cli;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -55,10 +57,39 @@ import java.util.*;
 public final class Environment {
     // XXX - should Environment just extend HashMap?
 
-    public static final String AS_ADMIN_ENV_PREFIX = "AS_ADMIN_";
+    // commands that extend AsadminMain may set this as desired
+    public static String PREFIX = "AS_ADMIN_";
+    private static String SHORT_PREFIX = "AS_";
 
     private Map<String, String> env = new HashMap<String, String>();
+    private boolean debug = false;
+    private boolean trace = false;
+    private File logfile = null;
 
+    /**
+     * Set the prefix for environment variables referenced from the system 
+     * environment by Environment objects.
+     * @param p the new prefix
+     */
+    public static void setPrefix(String p) {
+        PREFIX = p;
+    }
+    
+    /**
+     * Set the short prefix for environment variables referenced from the system
+     * enviornment by Environment objects. This effects methods such as debug(), trace(), etc.
+     */
+    public static void setShortPrefix(String p) {
+        SHORT_PREFIX = p;
+    }
+    
+    /** 
+     * Get the name of the environment variable used to set debugging on
+     */
+    public static String getDebugVar() {
+        return SHORT_PREFIX + "DEBUG";
+    }
+    
     /**
      * Initialize the enviroment with all relevant system environment entries.
      */
@@ -75,9 +106,33 @@ public final class Environment {
             return;
         // initialize it with all relevant system environment entries
         for (Map.Entry<String, String> e : System.getenv().entrySet()) {
-            if (e.getKey().startsWith(AS_ADMIN_ENV_PREFIX)) {
+            if (e.getKey().startsWith(PREFIX)) {
                 env.put(e.getKey().toUpperCase(Locale.ENGLISH), e.getValue());
             }
+        }
+        String debugFlag = "Debug";
+        String debugProp = getDebugVar();
+        debug = System.getProperty(debugFlag) != null ||
+                Boolean.parseBoolean(System.getenv(debugProp)) ||
+                Boolean.getBoolean(debugProp);
+
+        String traceProp = SHORT_PREFIX + "TRACE";
+        trace = System.getProperty(traceProp) != null ||
+                Boolean.parseBoolean(System.getenv(traceProp)) ||
+                Boolean.getBoolean(traceProp);
+               
+        // System Prop trumps environmental variable
+        String logProp = SHORT_PREFIX + "LOGFILE";
+        String fname = System.getProperty(logProp);
+        if (fname == null) fname = System.getenv(logProp);
+        if (fname != null) {
+            File f = new File(fname);
+
+            try {
+                if ((f.exists() || f.createNewFile()) && f.isFile() && f.canWrite()) {
+                    logfile = f;
+                }
+            } catch (IOException e) { /* ignore */ }
         }
     }
 
@@ -170,7 +225,19 @@ public final class Environment {
      * @return the environment variable name
      */
     private String optionToEnv(String name) {
-        return AS_ADMIN_ENV_PREFIX +
+        return PREFIX +
             name.replace('-', '_').toUpperCase(Locale.ENGLISH);
+    }
+    
+    public boolean debug() {
+        return debug;
+    }
+    
+    public boolean trace() { 
+        return trace;
+    }
+    
+    public File getDebugLogfile() {
+        return logfile;
     }
 }
