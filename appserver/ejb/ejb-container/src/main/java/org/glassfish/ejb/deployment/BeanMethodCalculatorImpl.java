@@ -41,9 +41,12 @@
 package org.glassfish.ejb.deployment;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.lang.reflect.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.BeanMethodCalculator;
+import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -59,7 +62,9 @@ import org.jvnet.hk2.component.PerLookup;
 @Scoped(PerLookup.class)
 public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
     
-    
+    // TODO - change logger if/when other EJB deployment classes are changed
+    static final protected Logger _logger = LogDomains.getLogger(BeanMethodCalculator.class, LogDomains.DPL_LOGGER);
+
     public Vector getPossibleCmpCmrFields(ClassLoader cl,
                                                  String className)
         throws ClassNotFoundException {
@@ -150,6 +155,9 @@ public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
             statefulSessionBean = 
                 ((EjbSessionDescriptor) ejbDescriptor).isStateful();
             
+            boolean singletonSessionBean = 
+                ((EjbSessionDescriptor) ejbDescriptor).isSingleton();
+            
 	    // Session Beans
             if (ejbDescriptor.isRemoteInterfacesSupported()) {                
                 Collection disallowedMethods = extractDisallowedMethodsFor(javax.ejb.EJBObject.class, sessionBeanMethodsDisallowed);
@@ -214,6 +222,24 @@ public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
                 }
             }
 
+            // SFSB and Singleton can have lifecycle callbacks transactional
+            if (statefulSessionBean || singletonSessionBean) {
+                Set<LifecycleCallbackDescriptor> lcds = ejbDescriptor.getLifecycleCallbackDescriptors();
+                for(LifecycleCallbackDescriptor lcd : lcds) {
+                    try {
+                        Method m = lcd.getLifecycleCallbackMethodObject(loader);
+                        MethodDescriptor md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                        methods.add(md);
+                    } catch(Exception e) {
+                        if (_logger.isLoggable(Level.FINE)) {
+                            _logger.log(Level.FINE,
+                            "Lifecycle callback processing error", e);
+                        }
+                    }
+                }
+            }
+
+
         } else {
             // entity beans local interfaces
             String homeIntf = ejbDescriptor.getHomeClassName();
@@ -244,7 +270,7 @@ public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
         }
 
         if( !statefulSessionBean ) {
-            if( ejbDescriptor.isTimedObject() ) {
+            if( ejbDescriptor.isTimedObject() && ejbDescriptor.getEjbTimeoutMethod() != null) {
                 methods.add(ejbDescriptor.getEjbTimeoutMethod());
             }
         }
