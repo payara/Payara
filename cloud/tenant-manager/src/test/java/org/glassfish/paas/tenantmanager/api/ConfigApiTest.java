@@ -47,6 +47,9 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
 
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+
 @Ignore
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
     @Override
@@ -63,6 +66,26 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
         return doc;
     }
 
+    /**
+     * Gets absolute path to test directory.
+     * 
+     * @return path.
+     */
+    public String rootPath() {
+        return getClass().getResource("/").getPath();
+    }
+
+    @Override
+    public Habitat getHabitat() {
+        Habitat habitat = super.getHabitat();
+        // FIXME: glasfish.test.utils.Utils.getNewHabitat()
+        StartupContext startupContext = habitat.getComponent(StartupContext.class);
+        String tmpdir = rootPath(); // System.getProperty("java.io.tmpdir")
+        startupContext.getArguments().put(Constants.INSTALL_ROOT_PROP_NAME, tmpdir);
+        startupContext.getArguments().put(Constants.INSTANCE_ROOT_PROP_NAME, tmpdir);
+        return habitat;
+    }
+
     // TODO: make it reusable, move to ConfigApiTest?
     class TestDocument extends DomDocument<GlassFishConfigBean> {
 
@@ -76,5 +99,4 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
             return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
         }
     }
-
 }
