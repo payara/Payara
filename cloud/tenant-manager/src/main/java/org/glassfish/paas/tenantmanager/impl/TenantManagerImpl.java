@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -49,6 +50,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -63,6 +66,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -92,6 +97,44 @@ public class TenantManagerImpl implements TenantManagerEx {
     public <T> T get(Class<T> config) {
         String name = getCurrentTenant();
         return get(config, name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends ConfigBeanProxy> Object executeUpdate(
+            final SingleConfigCode<T> code, T param) throws TransactionFailure {
+        ConfigBeanProxy[] objects = { param };
+        return excuteUpdate((new ConfigCode() {
+            @SuppressWarnings("unchecked")
+            public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
+                return code.run((T) objects[0]);
+            }
+        }), objects);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object excuteUpdate(ConfigCode configCode, ConfigBeanProxy ... objects) throws TransactionFailure {
+        // assume there is an object and all objects are for one document
+        ConfigBeanProxy source = objects[0];
+        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(source);
+        Lock lock = configBean.getDocument().getLock();
+        try {
+            if (lock.tryLock(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS)) {
+                try {
+                    return configSupport._apply(configCode, objects);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            // ignore, will throw TransactionFailure
+        }
+        throw new TransactionFailure("Can't acquire global lock");
     }
 
     /**
@@ -304,4 +347,7 @@ public class TenantManagerImpl implements TenantManagerEx {
 
     @Inject
     private ModulesRegistry modulesRegistry;
+
+    @Inject
+    private ConfigSupport configSupport;
 }

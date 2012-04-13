@@ -70,7 +70,13 @@ import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 
-@Ignore
+/**
+ * Tests for TestManagerEx.
+ * 
+ * @author Andriy Zhdanov
+ *
+ */
+@Ignore // FIXME: broken on windows
 public class TenantManagerTest extends ConfigApiTest {
     Habitat habitat = getHabitat();
     TenantManagerEx tenantManager = habitat.getComponent(TenantManagerEx.class);
@@ -141,7 +147,7 @@ public class TenantManagerTest extends ConfigApiTest {
         // Note, it's not possible to update root element,
         //  see WriteableView.setter(WriteableView.java:235).
         TenantAdmin admin = tenant.getTenantAdmin();
-        ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+        tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
             @Override
             public Object run(TenantAdmin admin) throws TransactionFailure {
                 admin.setName("test");
@@ -159,12 +165,13 @@ public class TenantManagerTest extends ConfigApiTest {
         tenantManager.setCurrentTenant("tenant1");
         final Tenant tenant = tenantManager.get(Tenant.class);
         TenantAdmin admin = tenant.getTenantAdmin();
-        ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+        tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
             @Override
             public Object run(TenantAdmin admin) throws TransactionFailure {
                 TenantAdmin conflict = tenant.getTenantAdmin();
 
                 try {
+                    // ConfigSupport.apply inside tenantManager.executeUpdate is OK
                     ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                         @Override
                         public Object run(TenantAdmin admin) throws TransactionFailure {
@@ -189,14 +196,15 @@ public class TenantManagerTest extends ConfigApiTest {
         Tenant tenant = tenantManager.get(Tenant.class);
         final TenantAdmin admin = tenant.getTenantAdmin();
         // modify extensions element
-        ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+        tenantManager.executeUpdate(new SingleConfigCode<Tenant>() {
             @Override
             public Object run(Tenant tenant) throws TransactionFailure {
                 TenantExtension extension = tenant
                         .createChild(TenantExtension.class);
                 tenant.getExtensions().add(extension);
                 // modify admin element
-                ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+                // make sure tenantManager.executeUdpate does not break behavior 
+                tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
                     @Override
                     public Object run(TenantAdmin admin)
                             throws TransactionFailure {
@@ -219,7 +227,8 @@ public class TenantManagerTest extends ConfigApiTest {
     }
 
     // verify can modify different elements of tenant simultaneously.
-    //TODO: @Test when file locking is implemented
+    // note, tenantManager.executeUpdate works in a manner of locking file.
+    @Test
     public void testLockingFile() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException, InterruptedException  {
         setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -232,7 +241,7 @@ public class TenantManagerTest extends ConfigApiTest {
             @Override
             public void run() {
                 try {
-                    ConfigSupport.apply(new SingleConfigCode<Tenant>() {
+                    tenantManager.executeUpdate(new SingleConfigCode<Tenant>() {
                         @Override
                         public Object run(Tenant tenant) throws TransactionFailure {
                             TenantExtension extension = tenant
@@ -256,7 +265,7 @@ public class TenantManagerTest extends ConfigApiTest {
                 // modify admin element
                 TenantAdmin admin = tenant.getTenantAdmin();
                 try {
-                    ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
+                    tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
                         @Override
                         public Object run(TenantAdmin admin)
                                 throws TransactionFailure {

@@ -40,11 +40,17 @@
 package org.glassfish.paas.tenantmanager.api;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigCode;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * TenantManager provides access to information about all tenants. It is
  * designed for multi-tenant environment, so keeps track of the currently active
- * tenant, and guarantees access to currently active tenant information only.
+ * tenant, and guarantees access to currently active tenant information. It also provides
+ * restricted write access to tenant information as whole. Its implementation uses
+ * reentrant lock.
  * CAUTION: Interface is currently evolving and may be changed.
  * 
  * @author Andriy Zhdanov
@@ -62,6 +68,30 @@ public interface TenantManager {
      * @return Config.
      */
     <T> T get(Class<T> config);
+
+    /**
+     * Executes code on object protected by a transaction. It is wrapper to
+     * <code>ConfigBeanSupport.apply</code> and ensures restricted access to
+     * tenant information as whole.
+     * 
+     * @param code
+     * @param object
+     * @return
+     * @throws TransactionFailure
+     */
+    <T extends ConfigBeanProxy> Object executeUpdate(final SingleConfigCode<T> code, T object) throws TransactionFailure;
+
+    /**
+     * Executes code on objects protected by a transaction. It is wrapper to
+     * <code>ConfigBeanSupport.apply</code> and ensures restricted access to
+     * tenant information as whole.
+     * 
+     * @param code
+     * @param objects configurations
+     * @return
+     * @throws TransactionFailure  
+     */
+    Object excuteUpdate(ConfigCode code, ConfigBeanProxy ... objects) throws TransactionFailure;
 
     /**
      * Get current tenant.

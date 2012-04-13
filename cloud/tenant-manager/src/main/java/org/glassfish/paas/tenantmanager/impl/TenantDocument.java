@@ -40,11 +40,11 @@
 package org.glassfish.paas.tenantmanager.impl;
 
 import java.net.URL;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.xml.stream.XMLStreamReader;
 
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -56,9 +56,7 @@ import org.jvnet.hk2.config.DomDocument;
  * @author Andriy Zhdanov
  * 
  */
-// TODO: GlassfishConfigBean to translate configured attributes containing
-// properties like ${foo.bar} into system properties values?
-public class TenantDocument extends DomDocument<ConfigBean> {
+public class TenantDocument extends DomDocument<TenantConfigBean> {
 
     public TenantDocument(final Habitat habitat, URL resource) {
         super(habitat);
@@ -70,9 +68,9 @@ public class TenantDocument extends DomDocument<ConfigBean> {
      * {@inheritDoc}
      */
     @Override
-    public ConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
-            ConfigBean dom, ConfigModel configModel) {
-        return new ConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+    public TenantConfigBean make(final Habitat habitat, XMLStreamReader xmlStreamReader,
+            TenantConfigBean dom, ConfigModel configModel) {
+        return new TenantConfigBean(habitat,this, dom, configModel, xmlStreamReader);
     }
 
     /**
@@ -83,6 +81,18 @@ public class TenantDocument extends DomDocument<ConfigBean> {
     public URL getResource() {
         return resource;
     }
+
+    /**
+     * Get document lock.
+     * 
+     * @return Lock.
+     */
+    public ReentrantLock getLock() {
+        return lock;
+    }
+
+    // FIXME: file lock, but keep it reentrant for TenantConfigBean
+    final private ReentrantLock lock = new ReentrantLock();
 
     private URL resource;
 
