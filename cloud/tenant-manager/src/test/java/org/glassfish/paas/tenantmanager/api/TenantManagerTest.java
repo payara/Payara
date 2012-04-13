@@ -57,6 +57,7 @@ import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
@@ -69,6 +70,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.io.FileUtils;
 
+@Ignore
 public class TenantManagerTest extends ConfigApiTest {
     Habitat habitat = getHabitat();
     TenantManagerEx tenantManager = habitat.getComponent(TenantManagerEx.class);
