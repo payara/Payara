@@ -57,7 +57,6 @@ import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
@@ -76,7 +75,6 @@ import com.sun.enterprise.util.io.FileUtils;
  * @author Andriy Zhdanov
  *
  */
-@Ignore // FIXME: broken on windows
 public class TenantManagerTest extends ConfigApiTest {
     Habitat habitat = getHabitat();
     TenantManagerEx tenantManager = habitat.getComponent(TenantManagerEx.class);
@@ -84,7 +82,7 @@ public class TenantManagerTest extends ConfigApiTest {
     CloudServices cs = config.getExtensionByType(CloudServices.class);
     TenantManagerConfig tenantManagerConfig = cs.getCloudServiceByType(TenantManagerConfig.class);
     String fileStore = tenantManagerConfig.getFileStore();
-    String sourcePath = rootPath();
+    String sourcePath = getClass().getResource("/").getPath();
 
     private void setupTest(String ... tenantNames) throws IOException {
         for (String tenantName : tenantNames) {

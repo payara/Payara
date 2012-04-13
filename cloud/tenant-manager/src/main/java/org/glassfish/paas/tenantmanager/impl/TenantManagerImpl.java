@@ -310,7 +310,7 @@ public class TenantManagerImpl implements TenantManagerEx {
         ConfigParser parser = new ConfigParser(habitat);
         URL fileUrl = null;
         try {
-            fileUrl = new URL("file://" + filePath);
+            fileUrl = new File(filePath).toURI().toURL();
         } catch (MalformedURLException e) {
             // should not happen
             // TODO Auto-generated catch block
