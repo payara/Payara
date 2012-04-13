@@ -54,9 +54,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.paas.lbplugin.cli.GlassFishLBProvisionedService;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
@@ -77,9 +75,9 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.ApplicationFactory;
+import java.util.Enumeration;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.paas.orchestrator.provisioning.ServiceScope;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
@@ -469,43 +467,59 @@ public class LBPlugin implements ServicePlugin {
     }
 
 
-    public Set<ServiceDescription> getImplicitServiceDescriptions(
-            ReadableArchive cloudArchive, String appName, PaaSDeploymentContext context) {
-        //no-op. Just by looking at a orchestration archive
-        //the LB plugin cannot say that an LB needs to be provisioned.
+        public Set<ServiceDescription> getImplicitServiceDescriptions(ReadableArchive cloudArchive,
+            String appName, PaaSDeploymentContext context) {
         HashSet<ServiceDescription> defs = new HashSet<ServiceDescription>();
-
-        Application application = null;
-        DeploymentContext dc = context.getDeploymentContext();
-        String archiveType = dc.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
+        boolean isWebArchive = false;
         try {
-            application = applicationFactory.openArchive(cloudArchive.getURI(), archiveType);
-        } catch(Exception ex) {
-            LBPluginLogger.getLogger().log(Level.INFO,"exception",ex);
+            isWebArchive = isWebArchive(cloudArchive);
+        } catch (IOException ex) {
+            Logger.getLogger(LBPlugin.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        if(application != null ) {
-            boolean isWebApp = (application.getBundleDescriptors(
-                    WebBundleDescriptor.class).size() > 0);
-            if(isWebApp) {
-                TemplateInstance template = getLBTemplate();
-                if(template == null){
-                    LBPluginLogger.getLogger().log(Level.SEVERE,
-                            "No LB template exists, so LB service cannot be provisioned.");
-                    return defs;
-                }
-                //List<Property> properties = getDefaultServiceProperties(template);
-                List<Property> configurations = getDefaultServiceConfigurations(template);
-                TemplateIdentifier identifier = new TemplateIdentifier();
-                identifier.setId(template.getConfig().getName());
-                // TODO :: check if the cloudArchive.getName() is okay.
-                ServiceDescription sd = new ServiceDescription(
-                        getDefaultServiceName(cloudArchive.getName()), appName, "lazy",
-                        identifier, configurations);
-                defs.add(sd);
+        if (isWebArchive) {
+            TemplateInstance template = getLBTemplate();
+            if (template == null) {
+                LBPluginLogger.getLogger().log(Level.SEVERE,
+                        "No LB template exists, so LB service cannot be provisioned.");
+                return defs;
             }
+            //List<Property> properties = getDefaultServiceProperties(template);
+            List<Property> configurations = getDefaultServiceConfigurations(template);
+            TemplateIdentifier identifier = new TemplateIdentifier();
+            identifier.setId(template.getConfig().getName());
+            // TODO :: check if the cloudArchive.getName() is okay.
+            ServiceDescription sd = new ServiceDescription(
+                    getDefaultServiceName(cloudArchive.getName()), appName, "lazy",
+                    identifier, configurations);
+            defs.add(sd);
         }
         return defs;
+    }
+
+    private boolean isWebArchive(ReadableArchive cloudArchive) throws IOException {
+        boolean isWebArchive = DeploymentUtils.isWebArchive(cloudArchive);
+        if (!isWebArchive) {
+            if (DeploymentUtils.isEAR(cloudArchive)) {
+                //Copying the code from DeploymentUtils as it not provide
+                //single method to check whether ear contains a web archive
+                Enumeration<String> entries = cloudArchive.entries();
+                while (entries.hasMoreElements()) {
+                    String entryName = entries.nextElement();
+                    if (entryName.endsWith(".war")) {
+                        isWebArchive = true;
+                        break;
+                    }
+                }
+                if (!isWebArchive) {
+                    for (String entryName : cloudArchive.getDirectories()) {
+                        if (entryName.endsWith("_war")) {
+                            isWebArchive = true;
+                        }
+                    }
+                }
+            }
+        }
+        return isWebArchive;
     }
 
     public boolean unprovisionService(ServiceDescription serviceDescription, PaaSDeploymentContext dc){
