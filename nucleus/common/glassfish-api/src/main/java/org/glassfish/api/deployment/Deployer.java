@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@ import org.glassfish.api.container.Container;
 public interface Deployer<T extends Container, U extends ApplicationContainer> {
 
     /**
-     * Returns the meta data assocated with this Deployer
+     * Returns the meta data associated with this Deployer
      *
      * @return the meta data for this Deployer
      */
