@@ -43,7 +43,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.appclient</groupId>
+        <groupId>org.glassfish.main.appclient</groupId>
         <artifactId>client</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
@@ -139,7 +139,7 @@
                        <goal>unpack-dependencies</goal>
                      </goals>
                      <configuration>
-                       <includeGroupIds>org.glassfish.deployment</includeGroupIds>
+                       <includeGroupIds>org.glassfish.main.deployment</includeGroupIds>
                        <includeArtifactIds>schemas,dtds</includeArtifactIds>
                        <includes>**/*.dtd,**/*.xsd</includes>
                      </configuration>
@@ -173,7 +173,7 @@
                             <archive>
 
                                 <manifest>
-                                    <mainClass>org.glassfish.appclient.client.acc.AppClientCommand</mainClass>
+                                    <mainClass>org.glassfish.main.appclient.client.acc.AppClientCommand</mainClass>
                                 </manifest>
                                 <!--
                                     It's discouraging to have to specify the class path
@@ -200,13 +200,13 @@
             required for annotation processing support
         -->
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.ejb</groupId>
+            <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -219,7 +219,7 @@
         -->
         <dependency>
             <scope>provided</scope>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dtds</artifactId>
             <type>zip</type>
             <version>${project.version}</version>
@@ -227,7 +227,7 @@
 
         <dependency>
             <scope>provided</scope>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>schemas</artifactId>
             <type>zip</type>
             <version>${project.version}</version>
@@ -236,7 +236,7 @@
 
         <!-- required for InjectionManager -->
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -244,7 +244,7 @@
             Required for AnnotationDetector, AnnotationScanner, PersistenceUnitDescriptor
         -->
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -253,7 +253,7 @@
             Required for security.
         -->
         <dependency>
-            <groupId>org.glassfish.security</groupId>
+            <groupId>org.glassfish.main.security</groupId>
             <artifactId>appclient.security</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -261,45 +261,45 @@
             Required for ClientNamingConfigurator
         -->
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- required for ClientPipeCloser -->
         <dependency>
-            <groupId>org.glassfish.security</groupId>
+            <groupId>org.glassfish.main.security</groupId>
             <artifactId>webservices.security</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-naming</artifactId>
             <version>${project.version}</version>
         </dependency>
         
 	 <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>work-management</artifactId>
             <version>${project.version}</version>
         </dependency>
 
  	<dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         
         <dependency>
-            <groupId>org.glassfish.orb</groupId>
+            <groupId>org.glassfish.main.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>webservices-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -317,39 +317,39 @@
 
         <dependency>
             <scope>runtime</scope>
-            <groupId>org.glassfish.orb</groupId>
+            <groupId>org.glassfish.main.orb</groupId>
             <artifactId>orb-iiop</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.core</groupId>
+            <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.appclient</groupId>
+            <groupId>org.glassfish.main.appclient</groupId>
             <artifactId>acc-config</artifactId>
             <version>${project.version}</version>
         </dependency>
 
      <dependency>
-         <groupId>org.glassfish.transaction</groupId>
+         <groupId>org.glassfish.main.transaction</groupId>
          <artifactId>jts</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish.jms</groupId>
+         <groupId>org.glassfish.main.jms</groupId>
          <artifactId>jms-core</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish</groupId>
+         <groupId>org.glassfish.main</groupId>
          <artifactId>javax.jms</artifactId>
          <version>${project.version}</version>
      </dependency>
@@ -358,20 +358,20 @@
      <dependency>
          <type>pom</type>
          <scope>runtime</scope>
-         <groupId>org.glassfish.persistence</groupId>
+         <groupId>org.glassfish.main.persistence</groupId>
          <artifactId>eclipselink-wrapper</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
-         <groupId>org.glassfish.persistence</groupId>
+         <groupId>org.glassfish.main.persistence</groupId>
          <artifactId>jpa-container</artifactId>
          <version>${project.version}</version>
      </dependency>
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish.persistence.cmp</groupId>
+         <groupId>org.glassfish.main.persistence.cmp</groupId>
          <artifactId>cmp-internal-api</artifactId>
          <version>${project.version}</version>
      </dependency>
@@ -380,7 +380,7 @@
 
      <!-- endorsed: javax.annotation.jar -->
      <dependency>
-         <groupId>org.glassfish</groupId>
+         <groupId>org.glassfish.main</groupId>
          <artifactId>javax.annotation</artifactId>
          <version>${project.version}</version>
      </dependency>
@@ -407,7 +407,7 @@
         This is needed because it provides the sniffer/detector/moduletype
         -->
         <dependency>
-            <groupId>org.glassfish.appclient.server</groupId>
+            <groupId>org.glassfish.main.appclient.server</groupId>
             <artifactId>appclient-connector</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>

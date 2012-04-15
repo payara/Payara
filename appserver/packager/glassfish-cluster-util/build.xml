@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,7 @@
     <target name="create.package">
 	    <mkdir dir="target/stage/${install.dir.name}/glassfish/lib" />
 
-	<resolveArtifact artifactId="cladmin-scripts" groupId="org.glassfish.cluster-admin" property="scripts.zip"/>
+	<resolveArtifact artifactId="cladmin-scripts" groupId="org.glassfish.main.cluster-admin" property="scripts.zip"/>
    
 
         <unzip src="${scripts.zip}"
@@ -58,7 +58,7 @@
 
   	<chmod file="target/stage/${install.dir.name}/bin/*" perm="ugo+rx"/>
 
-	<resolveArtifact artifactId="cluster-admin-jar" groupId="org.glassfish.cluster-admin" tofile="target/stage/${install.dir.name}/glassfish/lib/cladmin.jar"/>
+	<resolveArtifact artifactId="cluster-admin-jar" groupId="org.glassfish.main.cluster-admin" tofile="target/stage/${install.dir.name}/glassfish/lib/cladmin.jar"/>
 
        <zip file="target/glassfish-cluster-util.zip" basedir="target/stage"/>
            

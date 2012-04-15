@@ -44,7 +44,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.glassfish.elasticity</groupId>
+		<groupId>org.glassfish.main.elasticity</groupId>
 		<artifactId>elasticity</artifactId>
 		<version>4.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
@@ -70,19 +70,19 @@
 			<artifactId>hk2</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.admin</groupId>
+			<groupId>org.glassfish.main.admin</groupId>
 			<artifactId>config-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>paas.tenant-manager</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- test dependencies -->
         <dependency>
-            <groupId>org.glassfish.tests</groupId>
+            <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

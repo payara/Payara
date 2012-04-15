@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.connectors.inbound-runtime; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.connectors.inbound-runtime; bundle-version=${project.osgi.version}

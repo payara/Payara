@@ -45,7 +45,7 @@
 
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish</groupId>
+        <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
@@ -69,7 +69,7 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.glassfish.distributions</groupId>
+                  <groupId>org.glassfish.main.distributions</groupId>
                   <artifactId>web</artifactId>
                   <version>${project.version}</version>
                   <type>zip</type>
@@ -97,7 +97,7 @@
             </activation>
             <dependencies>
                 <dependency>
-                    <groupId>org.glassfish.extras</groupId>
+                    <groupId>org.glassfish.main.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
                     <version>4.0-SNAPSHOT</version>
                 </dependency>                
@@ -113,7 +113,7 @@
             </activation>
             <dependencies>                
                 <dependency>
-                    <groupId>org.glassfish.extras</groupId>
+                    <groupId>org.glassfish.main.extras</groupId>
                     <artifactId>glassfish-embedded-static-shell</artifactId>
                     <version>${project.version}</version>
                     <scope>system</scope>
@@ -130,7 +130,7 @@
 			<version>4.3.1</version>
 		</dependency>
         <dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-embed-api</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -146,7 +146,7 @@
         	<version>1.14</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.tests.embedded</groupId>
+            <groupId>org.glassfish.main.tests.embedded</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

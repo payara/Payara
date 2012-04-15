@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.distributions</groupId>
+        <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -150,7 +150,7 @@
 
         <!-- web distribution -->
         <dependency>
-            <groupId>org.glassfish.distributions</groupId>
+            <groupId>org.glassfish.main.distributions</groupId>
             <artifactId>web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -159,7 +159,7 @@
 
 	<!-- commons full package -->       
         <dependency>
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-common-full</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
@@ -169,7 +169,7 @@
 
         <!-- ejb full package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ejb</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -178,7 +178,7 @@
 	
 	<!-- CMP package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -187,7 +187,7 @@
 
         <!--corba package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-corba</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -196,7 +196,7 @@
 
         <!-- metro package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>metro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -205,7 +205,7 @@
 
      <!-- appclient package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
 	    <artifactId>glassfish-appclient</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -214,7 +214,7 @@
 
         <!-- jms package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
 	    <artifactId>glassfish-jms</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -223,7 +223,7 @@
 
         <!-- mq package -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
 	    <artifactId>mq</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -232,7 +232,7 @@
 
         <!-- additional servicetag registry dependency -->
         <dependency>
-            <groupId>org.glassfish.registration</groupId>
+            <groupId>org.glassfish.main.registration</groupId>
             <artifactId>servicetag-registry</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
@@ -241,7 +241,7 @@
         
         <!-- additional legal content dependency -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>legal-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

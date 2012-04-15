@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.common.annotation-framework; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.common.annotation-framework; bundle-version=${project.osgi.version}

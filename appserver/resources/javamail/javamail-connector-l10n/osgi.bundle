@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.resources.javamail-connector; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.resources.javamail-connector; bundle-version=${project.osgi.version}

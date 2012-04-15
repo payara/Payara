@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.orb</groupId>
+        <groupId>org.glassfish.main.orb</groupId>
         <artifactId>orb</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -71,7 +71,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.cluster</groupId>
+            <groupId>org.glassfish.main.cluster</groupId>
             <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -85,7 +85,7 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -115,32 +115,32 @@
             <artifactId>pfl-asm</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.orb</groupId>
+            <groupId>org.glassfish.main.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.ejb</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -45,12 +45,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.common</groupId>
+        <groupId>org.glassfish.main.common</groupId>
         <artifactId>nucleus-common</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.flashlight</groupId>
+    <groupId>org.glassfish.main.flashlight</groupId>
     <artifactId>flashlight-framework</artifactId>
     <packaging>hk2-jar</packaging>
     <name>flashlight-framework</name>
@@ -129,7 +129,7 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

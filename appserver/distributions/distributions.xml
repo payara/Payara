@@ -267,8 +267,8 @@
 
 <!-- get artifacts required to create default domain -->
 <target name="fetch-domain-creation-artifacts">
-    <resolveArtifact artifactId="cli-optional" groupId="org.glassfish.admin" property="cli-optional.jar"/>
-    <resolveArtifact artifactId="server-mgmt" groupId="org.glassfish.admin" property="server-mgmt.jar"/>
+    <resolveArtifact artifactId="cli-optional" groupId="org.glassfish.main.admin" property="cli-optional.jar"/>
+    <resolveArtifact artifactId="server-mgmt" groupId="org.glassfish.main.admin" property="server-mgmt.jar"/>
 
     <echo message="cli-optional jar: ${cli-optional.jar}"/>
     <echo message="server-mgmt jar: ${server-mgmt.jar}"/>

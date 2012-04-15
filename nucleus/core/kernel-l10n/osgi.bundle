@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.core.kernel; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.core.kernel; bundle-version=${project.osgi.version}

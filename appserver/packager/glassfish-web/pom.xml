@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -68,28 +68,48 @@
                     </tasks>
                 </configuration>               
              </plugin>
+
              <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <goals>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-dependency-plugin</artifactId>
+                 <executions>
+                     <execution>
+                         <id>copy-external-dependencies</id>
+                         <goals>
                             <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
+                         </goals>
+                         <configuration>
                             <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>                           
+                            <includeScope>compile</includeScope>
+                            <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <excludeGroupIds>org.glassfish.main,org.jboss.weld</excludeGroupIds>
+                            <stripVersion>true</stripVersion>
+                         </configuration>
+                     </execution>
+                     <execution>
+                         <id>copy-dependencies</id>
+                         <goals>
+                             <goal>copy-dependencies</goal>
+                         </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
+                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
+                            <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>                            
+                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <excludeGroupIds>org.jboss.weld</excludeGroupIds>
+                            <includeGroupIds>org.glassfish.main,org.glassfish.main.web</includeGroupIds>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>                  
-               </executions>
-           </plugin>
+                     </execution>                           
+                 </executions>
+             </plugin>
         </plugins>
     </build>
 
@@ -98,7 +118,7 @@
           modules to be included in this bundle
         -->       
 	<dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish.main.web</groupId>
             <artifactId>webtier-all</artifactId>
 	    <version>${project.version}</version>
 	    <type>pom</type>
@@ -108,7 +128,7 @@
              can be excluded during staging -->	
  
         <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-jmx</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>

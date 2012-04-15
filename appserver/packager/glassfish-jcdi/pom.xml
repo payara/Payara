@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -100,12 +100,12 @@
 	later
         -->       
         <dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish.main.web</groupId>
             <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish.main.web</groupId>
             <artifactId>gf-weld-connector</artifactId>
             <version>${project.version}</version>
         </dependency> 
@@ -114,7 +114,7 @@
             <artifactId>weld-osgi-bundle</artifactId>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.web</groupId>
+            <groupId>org.glassfish.main.web</groupId>
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
         </dependency>   
@@ -123,7 +123,7 @@
              can be excluded during staging -->	
  
         <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-jsf</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>

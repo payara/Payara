@@ -44,12 +44,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.web</groupId>
+        <groupId>org.glassfish.main.web</groupId>
         <artifactId>web</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>    
-    <groupId>org.glassfish.web</groupId>
     <artifactId>jstl-connector</artifactId>
     <packaging>hk2-jar</packaging>
     <name>JSTL implementation connector module</name>
@@ -80,12 +79,12 @@
             <artifactId>javax.servlet.jsp.jstl-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>

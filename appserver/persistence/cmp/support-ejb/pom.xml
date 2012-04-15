@@ -45,7 +45,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.persistence.cmp</groupId>
+        <groupId>org.glassfish.main.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,42 +99,42 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.persistence.cmp</groupId>
+            <groupId>org.glassfish.main.persistence.cmp</groupId>
             <artifactId>cmp-support-sqlstore</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.persistence.cmp</groupId>
+            <groupId>org.glassfish.main.persistence.cmp</groupId>
             <artifactId>cmp-model</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.persistence.cmp</groupId>
+            <groupId>org.glassfish.main.persistence.cmp</groupId>
             <artifactId>cmp-ejb-mapping</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.persistence.cmp</groupId>
+            <groupId>org.glassfish.main.persistence.cmp</groupId>
             <artifactId>cmp-enhancer</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.ejb</groupId>
+            <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.external</groupId>
+            <groupId>org.glassfish.main.external</groupId>
             <artifactId>antlr-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

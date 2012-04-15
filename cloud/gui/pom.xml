@@ -45,7 +45,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
+        <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-cloud-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -78,24 +78,24 @@
         <dependencies>
             <!-- Compile-time -->
             <dependency>
-                <groupId>org.glasfish.external.trinidad</groupId>
+                <groupId>org.glasfish.main.external.trinidad</groupId>
                 <artifactId>trinidad-api</artifactId>
                 <version>${version.trinidad}</version>
             </dependency>
             <dependency>
-                <groupId>org.glasfish.external.trinidad</groupId>
+                <groupId>org.glasfish.main.external.trinidad</groupId>
                 <artifactId>trinidad-impl</artifactId>
                 <version>${version.trinidad}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.admingui</groupId>
+                <groupId>org.glassfish.main.admingui</groupId>
                 <artifactId>plugin-system-jsf</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Runtime/provided -->
             <dependency>
-                <groupId>org.glassfish.admingui</groupId>
+                <groupId>org.glassfish.main.admingui</groupId>
                 <artifactId>plugin-system</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>

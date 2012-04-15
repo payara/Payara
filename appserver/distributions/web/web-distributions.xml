@@ -160,7 +160,7 @@
 
     <!-- stage servicetag registry file and set source value -->
 
-    <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.registration" property="servicetag-registry.zip"/>
+    <resolveArtifact artifactId="servicetag-registry" groupId="org.glassfish.main.registration" property="servicetag-registry.zip"/>
 
 
     <unzip src="${servicetag-registry.zip}"

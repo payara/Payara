@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.distributions</groupId>
+        <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>nucleus-distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -124,7 +124,7 @@
 
         <!-- atomic distribution -->
         <dependency>
-            <groupId>org.glassfish.distributions</groupId>
+            <groupId>org.glassfish.main.distributions</groupId>
             <artifactId>atomic</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -133,49 +133,49 @@
  
 	<!-- all other nucleus distribution packages -->
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-shoal</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-cluster</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-virtualization</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>        
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-jersey</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-management</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
        <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-corba-base</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+   Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+   The contents of this file are subject to the terms of either the GNU
+   General Public License Version 2 only ("GPL") or the Common Development
+   and Distribution License("CDDL") (collectively, the "License").  You
+   may not use this file except in compliance with the License.  You can
+   obtain a copy of the License at
+   https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+   or packager/legal/LICENSE.txt.  See the License for the specific
+   language governing permissions and limitations under the License.
+
+   When distributing the software, include this License Header Notice in each
+   file and include the License file at packager/legal/LICENSE.txt.
+
+   GPL Classpath Exception:
+   Oracle designates this particular file as subject to the "Classpath"
+   exception as provided by Oracle in the GPL Version 2 section of the License
+   file that accompanied this code.
+
+   Modifications:
+   If applicable, add the following below the License Header, with the fields
+   enclosed by brackets [] replaced by your own identifying information:
+   "Portions Copyright [year] [name of copyright owner]"
+
+   Contributor(s):
+   If you wish your version of this file to be governed by only the CDDL or
+   only the GPL Version 2, indicate your decision by adding "[Contributor]
+   elects to include this software in this distribution under the [CDDL or GPL
+   Version 2] license."  If you don't indicate a single choice of license, a
+   recipient has the option to distribute your version of this file under
+   either the CDDL, the GPL Version 2 or to extend the choice of license to
+   its licensees as provided above.  However, if you add GPL Version 2 code
+   and therefore, elected the GPL Version 2 license, then the option applies
+   only if the new code is made subject to such option by the copyright
+   holder.
+
+
+   This file incorporates work covered by the following copyright and
+   permission notice:
+
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+-->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <!-- prototype for border-->
+  <rect id="borderPrototype" stroke="#FFFFFF" stroke-width="0" fill="none"/>
+
+  <!-- START Prototypes for chart grid-->
+    <rect id="gridRectPrototype" stroke="#CCD6E8" stroke-width="1"/>
+    <path id="gridPathPrototype" stroke="#CCD6E8" stroke-width="1" fill="none"/>
+    <path id="gridPath3dRectPrototype" stroke="#000000" stroke-width="1"/>
+      <!-- Used for Radar Chart -->
+    <circle id="radarCirclePrototype" stroke="#000000" stroke-width="1"/>
+    <circle id="radarInnerCirclePrototype" stroke="#A0A0A0" fill="none"/>
+    <path id="radarGridPathPrototype" stroke="#A0A0A0" stroke-width="1" fill="none"/>
+  <!-- END Prototypes for chart grid-->
+
+  <!-- START DATA Elements Prototypes-->
+    <rect id="barRectPrototype" stroke-opacity="1.0"/>
+    <path id="barPathPrototype" stroke-opacity="1.0"/>
+    <path id="piePathPrototype" stroke-opacity="1.0"/>
+    <path id="areaPathPrototype" stroke-width="1"  stroke-opacity="1.0"/>
+    <path id="linePathPrototype" fill="none" stroke-width="2" stroke-opacity="1.0"/>
+    <path id="linePath3dPrototype" stroke-width="1"  stroke-opacity="1.0"/>
+    <circle id="lineDotPrototype" r="4" stroke-width="1" />
+    <circle id="scatter3dDotPrototype" r="4" stroke-width="1"/>
+    <circle id="scatterDotPrototype" r="2" stroke-width="1" />
+    <path id="funnelPathPrototype" stroke-opacity="1.0"/>
+  <!-- END DATA Elements Prototypes -->
+
+  <!-- START LABEL Elements Prototypes-->
+    <text xml:space="preserve" id="yLabelPrototype" style="font:11px Tahoma, Verdana, Helvetica, sans-serif" fill="#666666">label</text>
+    <text xml:space="preserve" id="groupLabelPrototype" style="font:11px Tahoma, Verdana, Helvetica, sans-serif" fill="#666666">label</text>
+    <text xml:space="preserve" id="legendTextPrototype" style="font:11px Tahoma, Verdana, Helvetica, sans-serif" fill="#666666">legend</text>
+    <rect id="legendRectPrototype" width="8" height="8"/>
+    <text xml:space="preserve" id="titleTextPrototype" style="font:14px Tahoma, Verdana, Helvetica, sans-serif; font-weight:bold" fill="#000000">title</text>
+    <text xml:space="preserve" id="subTitleTextPrototype" style="font:11px Tahoma, Verdana, Helvetica, sans-serif" fill="#666666">sub-title</text>
+    <text xml:space="preserve" id="footNoteTextPrototype" style="font:9px Tahoma, Verdana, Helvetica, sans-serif" fill="#666666">foot note</text>
+  <!-- END LABEL Elements Prototypes -->
+
+  <!-- START Gradients-->
+    <g id="gradients">
+      <linearGradient id="gradient0">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient1">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient2">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient3">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient4">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient5">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient6">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+      <linearGradient id="gradient7">
+        <stop stop-opacity=".9" offset="0.0"/>
+        <stop stop-opacity=".9" offset="1.0"/>
+      </linearGradient>
+    </g>
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="pieChartFixedLabel">
+      <stop offset="0.0"/>
+      <stop offset="1.0"/>
+    </linearGradient>
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="gridGradient">
+      <stop stop-opacity=".7" offset="0.0" stop-color="#E4ECF7"/>
+      <stop stop-opacity=".7" offset="1.0" stop-color="#FFFFFF"/>
+    </linearGradient>
+  <!-- END Gradients-->
+
+  <!-- START Gradients used by guagues -->
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="gaugeRingGradient">
+      <stop offset="0.0" stop-color="#E9EDF4"/>
+      <stop offset="0.2" stop-color="#5B7193"/>
+      <stop offset="0.8" stop-color="#5B7193"/>
+      <stop offset="1.0" stop-color="#E9EDF4"/>
+    </linearGradient>
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="gaugeGradient">
+      <stop stop-opacity=".7" offset="0.0" stop-color="#E4ECF7"/>
+      <stop stop-opacity=".7" offset="1.0" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="gaugeIndicatorCircle">
+      <stop offset="0.0" stop-color="#EAEAFA"/>
+      <stop offset="1.0" stop-color="#8A8A8A"/>
+    </linearGradient>
+    <linearGradient x1="0%" y1="0%" x2="0%" y2="100%" id="gaugeIndicatorRect">
+      <stop offset="0.0" stop-color="#EE9999"/>
+      <stop offset="1.0" stop-color="#FF0000"/>
+    </linearGradient>
+    <linearGradient id="gaugeMarkerContainer">
+      <stop offset="0.0" stop-color="#F0F3F8"/>
+      <stop offset="0.2" stop-color="#B5D1F8"/>
+      <stop offset="0.8" stop-color="#B5D1F8"/>
+      <stop offset="1.0" stop-color="#F0F3F8"/>
+    </linearGradient>
+    <linearGradient id="gaugeRedline">
+      <stop stop-opacity="0.5" offset="0.0" stop-color="#F0F3F8"/>
+      <stop stop-opacity="0.7" offset="1.0" stop-color="#E3656C"/>
+    </linearGradient>
+    <linearGradient id="gaugeGreenline">
+      <stop stop-opacity="0.7" offset="0.0" stop-color="#00FF00"/>
+      <stop stop-opacity="0.5" offset="1.0" stop-color="#99EE99"/>
+    </linearGradient>
+  <!-- END Gradients used by guagues -->
+
+  <!-- START prototypes used by gauges -->
+    <text xml:space="preserve" id="gaugeTextPrototype"
+        style="font:24px Tahoma, Verdana, Helvetica, sans-serif" fill="#000000">10</text>
+    <path xml:space="preserve" id="gaugeMarkerMajor" d="M0,0 l-30,2 l0,-6 l30,2z" fill-opacity=".8" fill="#1E3B71"/>
+    <path xml:space="preserve" id="gaugeMarkerMinor" d="M-8,1 l-15,0 l0,2 l15,0z" fill-opacity=".7" fill="#1E3B71"/>
+
+    <!-- Note "_markerRadius is  used to draw the markers-->
+    <g id="semiGauge" _markerRadius="165">
+      <!-- The dial shell -->
+      <path d="M0,225A225,225 0 1,1 450,225 A30,30 0 0,1 420,255
+            l-150,0 a80,80 0 0,1 -90,0 l-150,0 a30,30 0 0,1 -30,-30"
+          stroke="#518EEB" stroke-linejoin="round" fill="url(#gaugeGradient)" stroke-width="4"/>
+
+
+      <!-- The container can be customized for e.g. Redline -->
+      <path d="M370,80 l10,0 A215,215 0 0,1 440,225 l-10 0 A205,205 0 0,0 370,80"
+            stroke-linejoin="round" fill="url(#gaugeRedline)"/>
+
+      <!-- The last Path element must be the Gauge Marker container -->
+      <path d="M60,225 l-30,0 A195,195 0 1,1 420,225 l-30 0 A165,165 0 1,0 60,225"
+            fill="url(#gaugeMarkerContainer)"/>
+
+      <!-- The last g must always be the gauge indicator.
+           The "_pivotCenterX,Y" is the center of rotation-->
+      <g _pivotCenterX="225" _pivotCenterY="225">
+        <rect x="40" y="221" width="185" height="6" fill="url(#gaugeIndicatorRect)" stroke="#000000" stroke-width="1" />
+        <circle r="16" cx="227" cy="227" stroke-width="0" fill="#666666" opacity=".5"/>
+          <!-- NOTE: The center of last circle is the pivot for rotation -->
+        <circle r="16" cx="225" cy="225" fill="url(#gaugeIndicatorCircle)" stroke="#000000" stroke-width="1" />
+      </g>
+    </g>
+
+    <!-- Note "_markerRadius is  used to draw the markers-->
+    <g id="circularGauge" _markerRadius="165">
+      <!-- The dial shell -->
+      <g>
+        <circle cx="225" cy="225" r="225" fill="url(#gaugeRingGradient)"/>
+        <circle cx="225" cy="225" r="215" stroke-width="0" fill="#203D57" opacity=".4"/>
+        <circle cx="225" cy="225" r="210" fill="url(#gaugeGradient)" />
+      </g>
+
+      <!-- The container can be customized for e.g. GreenLine -->
+      <path d="M427,225 l6,0 A208,208 0 0,1 329,405 L326,400 A202,202 0 0,0 427,225"
+            fill="url(#gaugeGreenline)"/>
+
+      <!-- The last Path element must be the Gauge Marker container -->
+      <path d="M143,368 L127,394 A195,195 0 1,1 323,394 L308,368 A165,165 0 1,0 143,368"
+            fill="url(#gaugeMarkerContainer)"/>
+
+      <!-- The last g must always be the gauge indicator.
+           The "_pivotCenterX,Y" is the center of rotation-->
+      <g transform="rotate(300 225 225)" _pivotCenterX="225" _pivotCenterY="225">
+        <rect x="40" y="221" width="185" height="6" fill="url(#gaugeIndicatorRect)" stroke="#000000" stroke-width="1" />
+        <circle r="16" cx="227" cy="227" stroke-width="0" fill="#666666" opacity=".5"/>
+        <circle r="16" cx="225" cy="225" fill="url(#gaugeIndicatorCircle)"
+          stroke="#000000" stroke-width="1" />
+      </g>
+    </g>
+  <!-- END prototypes used by gauges -->
+
+  <!-- START Tooltip Prototype-->
+  <g id="toolTip" style="font:9px Tahoma, Verdana, Helvetica, sans-serif;">
+    <circle cx="0" cy="20" r="3" fill="#fefee6" stroke-width="2" stroke="#000000"/>
+    <rect height="25" rx="2" ry="2" style="opacity:.8;" fill="#fefee6" stroke-width="1" stroke="#000000"/>
+    <text x="5" y="10" fill="#000000">Series(Group)</text>
+    <text y="20" fill="#000000">Value</text>
+  </g>
+  <!-- END Tooltip Prototype-->
+
+</defs>
+<g>
+  <g id="chartRoot"></g>
+</g>
+</svg>

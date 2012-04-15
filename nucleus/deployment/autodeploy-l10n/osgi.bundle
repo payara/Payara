@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.deployment.autodeploy; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.deployment.autodeploy; bundle-version=${project.osgi.version}

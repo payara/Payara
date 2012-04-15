@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.loadbalancer.load-balancer-admin; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.loadbalancer.load-balancer-admin; bundle-version=${project.osgi.version}

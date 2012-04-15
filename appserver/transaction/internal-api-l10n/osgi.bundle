@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.transaction.internal-api; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.transaction.internal-api; bundle-version=${project.osgi.version}

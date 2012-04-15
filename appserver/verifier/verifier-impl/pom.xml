@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
+        <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>        
@@ -97,56 +97,56 @@
              don't automatically see verifier's dependency, nor these
              jars appear in Class-Path manifest.-->
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>        
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.ejb</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.ejb</groupId>
+            <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
          <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.persistence.cmp</groupId>
+            <groupId>org.glassfish.main.persistence.cmp</groupId>
             <artifactId>cmp-support-ejb</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.persistence</groupId>
+            <groupId>org.glassfish.main.persistence</groupId>
             <artifactId>jpa-container</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
         </dependency>
         <dependency> <!-- depends on bootstrap classes like ASMainFelix -->
-            <groupId>org.glassfish.core</groupId>
+            <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
@@ -171,7 +171,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.jms</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>

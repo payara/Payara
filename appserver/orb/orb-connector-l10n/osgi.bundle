@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.orb.connector; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.orb.connector; bundle-version=${project.osgi.version}

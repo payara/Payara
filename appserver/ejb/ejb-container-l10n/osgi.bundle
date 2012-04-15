@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.ejb.ejb-container; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.ejb.ejb-container; bundle-version=${project.osgi.version}

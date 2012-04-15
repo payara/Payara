@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.persistence.cmp.utility; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.persistence.cmp.utility; bundle-version=${project.osgi.version}

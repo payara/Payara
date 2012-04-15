@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,32 +99,32 @@
           modules to be included in this bundle
         -->       
     	<dependency>
-           <groupId>org.glassfish.deployment</groupId>
+           <groupId>org.glassfish.main.deployment</groupId>
            <artifactId>nucleus-dtds</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.deployment</groupId>
+           <groupId>org.glassfish.main.deployment</groupId>
            <artifactId>nucleus-schemas</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
        </dependency>
         <dependency>
-    	    <groupId>org.glassfish.admin</groupId>
+    	    <groupId>org.glassfish.main.admin</groupId>
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
  
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>paas.orchestrator</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>
-            <groupId>org.glassfish.security</groupId>
+            <groupId>org.glassfish.main.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -132,7 +132,7 @@
  
         <!-- gms-bootstrap module -->
        <dependency>
-            <groupId>org.glassfish.cluster</groupId>
+            <groupId>org.glassfish.main.cluster</groupId>
             <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
        </dependency>
@@ -150,7 +150,7 @@
 	<!-- package level dependency -->
 
  	<dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-corba-base</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>

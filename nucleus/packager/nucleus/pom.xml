@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -103,22 +103,22 @@
            <artifactId>osgi-adapter</artifactId>
        </dependency>
         <dependency>
-           <groupId>org.glassfish.core</groupId>
+           <groupId>org.glassfish.main.core</groupId>
            <artifactId>glassfish-extra-jre-packages</artifactId>
            <version>${project.version}</version>
        </dependency>
         <dependency>
-           <groupId>org.glassfish.core</groupId>
+           <groupId>org.glassfish.main.core</groupId>
            <artifactId>api-exporter</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.core</groupId>
+           <groupId>org.glassfish.main.core</groupId>
            <artifactId>glassfish</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>org.glassfish.core</groupId>
+           <groupId>org.glassfish.main.core</groupId>
            <artifactId>kernel</artifactId>
 	   <version>${project.version}</version>
 	    <exclusions>
@@ -129,29 +129,29 @@
             </exclusions>
   	</dependency>  
 	<dependency>
-           <groupId>org.glassfish.admin</groupId>
+           <groupId>org.glassfish.main.admin</groupId>
            <artifactId>admin-cli</artifactId>
            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-autodeploy</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
 	    <version>${project.version}</version>
         </dependency> 
         
         <dependency>
            <!-- base distribution image, move assembly here later -->
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-base</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
@@ -167,17 +167,17 @@
 	    <artifactId>management-api</artifactId>
 	 </dependency>
        <dependency>
-            <groupId>org.glassfish.flashlight</groupId>
+            <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.flashlight</groupId>
+            <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-agent</artifactId>
             <version>${project.version}</version>
         </dependency>   	
         <dependency>
-            <groupId>org.glassfish.flashlight</groupId>
+            <groupId>org.glassfish.main.flashlight</groupId>
             <artifactId>flashlight-extra-jdk-packages</artifactId>
             <version>${project.version}</version>
         </dependency> 
@@ -186,7 +186,7 @@
              can be excluded during staging -->	
 	<!-- package level dependency -->
         <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-grizzly</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>

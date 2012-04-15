@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,22 +99,22 @@
           modules to be included in this bundle
 	  --> 
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>metro-glue</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>webservices-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>jsr109-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>soap-tcp</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -143,18 +143,18 @@
             <artifactId>webservices-api-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.security</groupId>
+            <groupId>org.glassfish.main.security</groupId>
             <artifactId>webservices.security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>webservices-scripts</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.webservices</groupId>
+            <groupId>org.glassfish.main.webservices</groupId>
             <artifactId>metro-fragments</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
@@ -167,7 +167,7 @@
              can be excluded during staging -->	
      
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <classifier>artifacts</classifier>

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,13 +47,12 @@
          http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.glassfish.transaction</groupId>
+        <groupId>org.glassfish.main.transaction</groupId>
         <artifactId>transaction</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.transaction</groupId>
     <artifactId>jts</artifactId>
     <packaging>hk2-jar</packaging>
     <name>JTS Implementation for Glassfish</name>
@@ -121,37 +120,37 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.transaction</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.resource</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.transaction</groupId>
+            <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.transaction</groupId>
+            <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -173,19 +172,19 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.orb</groupId>
+            <groupId>org.glassfish.main.orb</groupId>
             <artifactId>orb-connector</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.cluster</groupId>
+            <groupId>org.glassfish.main.cluster</groupId>
             <artifactId>gms-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

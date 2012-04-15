@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -100,39 +100,39 @@
         -->       
 
           <dependency>
-              <groupId>org.glassfish.cluster</groupId>
+              <groupId>org.glassfish.main.cluster</groupId>
               <artifactId>cluster-cli</artifactId>
               <version>${project.version}</version>
           </dependency>
           <dependency>
-              <groupId>org.glassfish.cluster</groupId>
+              <groupId>org.glassfish.main.cluster</groupId>
               <artifactId>cluster-admin</artifactId>
               <version>${project.version}</version>
           </dependency>
           <dependency>
-              <groupId>org.glassfish.cluster</groupId>
+              <groupId>org.glassfish.main.cluster</groupId>
               <artifactId>cluster-common</artifactId>
               <version>${project.version}</version>
           </dependency>
           <dependency>
-              <groupId>org.glassfish.cluster</groupId>
+              <groupId>org.glassfish.main.cluster</groupId>
               <artifactId>gms-adapter</artifactId>
               <version>${project.version}</version>
           </dependency>
           <!-- adding elasticity modules here since it fits dependency
                chain, may move to dedicated elasticity package later -->
           <dependency>
-             <groupId>org.glassfish.elasticity</groupId>
+             <groupId>org.glassfish.main.elasticity</groupId>
              <artifactId>elastic-api</artifactId>
 	     <version>${project.version}</version>
           </dependency> 
           <dependency>
-             <groupId>org.glassfish.elasticity</groupId>
+             <groupId>org.glassfish.main.elasticity</groupId>
              <artifactId>elastic-config</artifactId>
 	     <version>${project.version}</version>
           </dependency>
           <dependency>
-             <groupId>org.glassfish.elasticity</groupId>
+             <groupId>org.glassfish.main.elasticity</groupId>
              <artifactId>elastic-engine</artifactId>
 	     <version>${project.version}</version>
           </dependency>
@@ -141,7 +141,7 @@
 	<!-- package level dependency -->
 
   	<dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-shoal</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>

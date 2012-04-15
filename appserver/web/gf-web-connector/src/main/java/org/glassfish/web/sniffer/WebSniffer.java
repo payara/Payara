@@ -135,7 +135,7 @@ public class WebSniffer  extends GenericSniffer {
         return new String[] {"connector"};
     }
 
-    private String[] containerModuleNames = {"org.glassfish.web.glue"};
+    private String[] containerModuleNames = {"org.glassfish.main.web.glue"};
 
     @Override
     protected String[] getContainerModuleNames() {

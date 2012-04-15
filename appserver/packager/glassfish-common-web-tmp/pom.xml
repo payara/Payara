@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -100,7 +100,7 @@
         -->       
         
        <dependency>
-            <groupId>org.glassfish.security</groupId>
+            <groupId>org.glassfish.main.security</groupId>
             <artifactId>security-all</artifactId>
             <version>${project.version}</version>
             <type>pom</type> 
@@ -110,82 +110,82 @@
             <artifactId>pkg-client</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.common</groupId>
+           <groupId>org.glassfish.main.common</groupId>
             <artifactId>amx-javaee</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.common</groupId>
+           <groupId>org.glassfish.main.common</groupId>
            <artifactId>annotation-framework</artifactId>
            <version>${project.version}</version>
        </dependency>
         <dependency>
-           <groupId>org.glassfish.common</groupId>
+           <groupId>org.glassfish.main.common</groupId>
            <artifactId>container-common</artifactId>
            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-client</artifactId>
             <version>${project.version}</version>
    	 </dependency>
     	<dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>
-            <groupId>org.glassfish.deployment</groupId>
+            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>cli-optional</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.ejb</groupId>
+            <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-             <groupId>org.glassfish.orb</groupId>
+             <groupId>org.glassfish.main.orb</groupId>
              <artifactId>orb-connector</artifactId>
              <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.extras</groupId>
+            <groupId>org.glassfish.main.extras</groupId>
             <artifactId>osgi-container</artifactId>
             <version>${project.version}</version>
         </dependency>	
         <dependency>
-    	    <groupId>org.glassfish</groupId>
+    	    <groupId>org.glassfish.main</groupId>
             <artifactId>paas.gfplugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-    	    <groupId>org.glassfish</groupId>
+    	    <groupId>org.glassfish.main</groupId>
             <artifactId>paas.javadbplugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-    	    <groupId>org.glassfish</groupId>
+    	    <groupId>org.glassfish.main</groupId>
             <artifactId>paas.lbplugin</artifactId>
             <version>${project.version}</version>
         </dependency>    
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>paas.dnsplugin</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -196,14 +196,14 @@
             <artifactId>ha-api</artifactId>
         </dependency>    
         <dependency>
-           <groupId>org.glassfish.ha</groupId>
+           <groupId>org.glassfish.main.ha</groupId>
            <artifactId>ha-file-store</artifactId>
            <version>${project.version}</version>
        </dependency>
         <!-- TODO: move to glassfish-nucleus after nucleus distro build moves
              to its own workspace -->
         <dependency>
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>appserver-base</artifactId>
            <version>${project.version}</version>
            <type>zip</type>
@@ -211,7 +211,7 @@
         <!-- TODO: move to glassfish-cluster after nucleus distro build moves
              to its own workspace or create dedicated cluster package-->
         <dependency>
-              <groupId>org.glassfish.loadbalancer</groupId>
+              <groupId>org.glassfish.main.loadbalancer</groupId>
               <artifactId>load-balancer-admin</artifactId>
               <version>${project.version}</version>
         </dependency>
@@ -228,7 +228,7 @@
         </dependency>          
         <!-- javaee.jar containing Manifest Classpath of JavaEE API jars -->
         <dependency>
-           <groupId>org.glassfish.extras</groupId>
+           <groupId>org.glassfish.main.extras</groupId>
            <artifactId>javaee-frag</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
@@ -236,7 +236,7 @@
 
         <!-- appserv-rt.jar containing Manifest Classpath of gf-client.jar -->
         <dependency>
-           <groupId>org.glassfish.extras</groupId>
+           <groupId>org.glassfish.main.extras</groupId>
            <artifactId>appserv-rt-frag</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
@@ -244,7 +244,7 @@
 
         <!-- embedded shell fragment -->
         <dependency>
-           <groupId>org.glassfish.extras</groupId>
+           <groupId>org.glassfish.main.extras</groupId>
            <artifactId>glassfish-embedded-shell-frag</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
@@ -252,7 +252,7 @@
         <!-- TODO: move out of this package when PaaS DB plugin removes the
              runtime dependency -->
         <dependency>
-            <groupId>org.glassfish.external</groupId>
+            <groupId>org.glassfish.main.external</groupId>
             <artifactId>ant</artifactId>
             <version>${project.version}</version>
        </dependency>  
@@ -262,7 +262,7 @@
              can be excluded during staging -->	
       
        <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-grizzly-full</artifactId>
            <version>${project.version}</version>
 	   <classifier>artifacts</classifier>

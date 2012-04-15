@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.distributions</groupId>
+        <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>nucleus-distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -129,42 +129,42 @@
         <!-- nucleus packages -->
 
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-felix</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-osgi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-hk2</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-grizzly</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.packager</groupId>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-jmx</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -173,7 +173,7 @@
 
         <!-- additional dependencies required to create default domain -->
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>server-mgmt</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

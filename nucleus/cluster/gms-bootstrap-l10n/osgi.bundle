@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.cluster.gms-bootstrap; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.cluster.gms-bootstrap; bundle-version=${project.osgi.version}

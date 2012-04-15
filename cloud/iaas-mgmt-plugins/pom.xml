@@ -45,12 +45,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish</groupId>
+        <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-cloud-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.virtualization</groupId>
+    <groupId>org.glassfish.main.virtualization</groupId>
     <artifactId>virtualization-plugin</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Virtualization Plugins</name>  

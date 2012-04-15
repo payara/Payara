@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,12 +99,12 @@
           modules to be included in this bundle
         -->       
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>dataprovider</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -113,7 +113,7 @@
             <artifactId>jsftemplating</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -122,17 +122,17 @@
             <artifactId>console-common-help</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-updatecenter-plugin</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
 	    <artifactId>console-community-branding-plugin</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>        
-           <groupId>org.glassfish.admingui</groupId>
+           <groupId>org.glassfish.main.admingui</groupId>
            <artifactId>dist-fragment</artifactId>
            <version>${project.version}</version>
            <type>distribution-fragment</type>
@@ -140,7 +140,7 @@
         <!-- TODO: move cluster plugin jars back to glassfish-cluster package
              once nucleus distro assembly moves to its own workspace -->
         <dependency>
-           <groupId>org.glassfish.admingui</groupId>
+           <groupId>org.glassfish.main.admingui</groupId>
            <artifactId>console-cluster-plugin</artifactId>
            <version>${project.version}</version>
         </dependency>
@@ -149,7 +149,7 @@
            <artifactId>console-cluster-plugin-help</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-web-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -158,7 +158,7 @@
             <artifactId>console-web-plugin-help</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-jdbc-plugin</artifactId>
             <version>${project.version}</version>
         </dependency> 
@@ -167,7 +167,7 @@
             <artifactId>console-jdbc-plugin-help</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>console-jca-plugin</artifactId>
             <version>${project.version}</version>
         </dependency> 
@@ -180,7 +180,7 @@
              can be excluded during staging -->	
    
        <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-jdbc</artifactId>
            <version>${project.version}</version>
 	   <classifier>artifacts</classifier>

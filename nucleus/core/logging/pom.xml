@@ -43,7 +43,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.core</groupId>
+        <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -56,28 +56,28 @@
 
     <dependencies>
       <dependency>
-        <groupId>org.glassfish.common</groupId>
+        <groupId>org.glassfish.main.common</groupId>
         <artifactId>glassfish-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.glassfish.common</groupId>
+        <groupId>org.glassfish.main.common</groupId>
         <artifactId>common-util</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.glassfish.admin</groupId>
+        <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin-util</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.glassfish.cluster</groupId>
+        <groupId>org.glassfish.main.cluster</groupId>
         <artifactId>cluster-ssh</artifactId>
         <version>${project.version}</version>
 	<scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.glassfish.common</groupId>
+        <groupId>org.glassfish.main.common</groupId>
         <artifactId>internal-api</artifactId>
         <version>${project.version}</version>
       </dependency>

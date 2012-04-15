@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.web.glue; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.web.glue; bundle-version=${project.osgi.version}

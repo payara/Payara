@@ -47,7 +47,7 @@
 
     <parent>
 
-        <groupId>org.glassfish.admin.jmx-remote</groupId>
+        <groupId>org.glassfish.main.admin.jmx-remote</groupId>
 
         <artifactId>jmx-remote</artifactId>
 
@@ -90,7 +90,7 @@
 
         <dependency>
 
-            <groupId>org.glassfish.external</groupId>
+            <groupId>org.glassfish.main.external</groupId>
 
             <artifactId>jmxremote_optional-repackaged</artifactId>
 
@@ -108,7 +108,7 @@
 
         <dependency>
 
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
 
             <artifactId>glassfish-api</artifactId>
 
@@ -117,7 +117,7 @@
 
         <dependency>
 
-            <groupId>org.glassfish.core</groupId>
+            <groupId>org.glassfish.main.core</groupId>
 
             <artifactId>kernel</artifactId>
 
@@ -127,7 +127,7 @@
 
         <dependency>    
 
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
 
             <artifactId>common-util</artifactId>
 

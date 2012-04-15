@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -108,7 +108,7 @@
           reusing nucleus-osgi staged content as-is
         -->       
         <dependency>
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>nucleus-osgi</artifactId>
            <version>${project.version}</version>
            <scope>provided</scope>
@@ -118,6 +118,7 @@
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-javaee-base</artifactId>
+            <optional>true</optional>
         </dependency>
 <!-- disabling due to config bean changes for jdbc and connector resources -->
 <!--       <dependency>
@@ -127,30 +128,37 @@
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-jpa</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-jpa-extension</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-jta</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>        
            <groupId>org.glassfish.fighterfish</groupId>
            <artifactId>osgi-jdbc</artifactId>
+           <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-cdi</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-ejb-container</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.glassfish.fighterfish</groupId>
             <artifactId>osgi-web-container</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <!-- Add the dependency here so that packager bundles this as well. 

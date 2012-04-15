@@ -44,13 +44,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish</groupId>
+        <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-cloud-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish</groupId>
     <artifactId>paas.orchestrator</artifactId>
     <packaging>hk2-jar</packaging>
     <version>4.0-SNAPSHOT</version>
@@ -73,7 +72,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.virtualization</groupId>
+            <groupId>org.glassfish.main.virtualization</groupId>
             <artifactId>virt-core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -82,17 +81,17 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admin</groupId>
+            <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.cluster</groupId>
+            <groupId>org.glassfish.main.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
             <version>${project.version}</version>
         </dependency>

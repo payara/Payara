@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.admingui.glassfish-osgi-console-plugin; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.admingui.glassfish-osgi-console-plugin; bundle-version=${project.osgi.version}

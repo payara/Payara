@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.admin.jmx-remote.jmx-remote-client; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.admin.jmx-remote.jmx-remote-client; bundle-version=${project.osgi.version}

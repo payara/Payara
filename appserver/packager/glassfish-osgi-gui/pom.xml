@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -102,12 +102,12 @@
             <artifactId>org.apache.felix.webconsole</artifactId>
         </dependency>      
         <dependency>
-            <groupId>org.glassfish.osgi-platforms</groupId>
+            <groupId>org.glassfish.main.osgi-platforms</groupId>
             <artifactId>felix-webconsole-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.admingui</groupId>
+            <groupId>org.glassfish.main.admingui</groupId>
             <artifactId>glassfish-osgi-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>

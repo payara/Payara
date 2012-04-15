@@ -38,4 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.registration.registration-impl; bundle-version=${project.osgi.version}
+Fragment-Host: org.glassfish.main.registration.registration-impl; bundle-version=${project.osgi.version}

@@ -44,7 +44,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.packager</groupId>
+        <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -99,43 +99,43 @@
           modules to be included in this bundle
 	  -->   
          <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>descriptors</artifactId>
             <version>${project.version}</version>
             <type>distribution-fragment</type>
         </dependency>
         <dependency>
-           <groupId>org.glassfish.connectors</groupId>
+           <groupId>org.glassfish.main.connectors</groupId>
            <artifactId>gf-connectors-connector</artifactId>
            <version>${project.version}</version>
         </dependency>	  
         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>work-management</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.resources</groupId>
+            <groupId>org.glassfish.main.resources</groupId>
             <artifactId>resources-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.resources</groupId>
+            <groupId>org.glassfish.main.resources</groupId>
             <artifactId>javamail-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.resources</groupId>
+            <groupId>org.glassfish.main.resources</groupId>
             <artifactId>javamail-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
     	<dependency>
-            <groupId>org.glassfish.connectors</groupId>
+            <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-admin</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -143,7 +143,7 @@
 	<!-- now, listing package dependencies so that their content
              can be excluded during staging -->	
         <dependency>        
-           <groupId>org.glassfish.packager</groupId>
+           <groupId>org.glassfish.main.packager</groupId>
            <artifactId>glassfish-ha</artifactId>
            <version>${project.version}</version>
            <classifier>artifacts</classifier>
