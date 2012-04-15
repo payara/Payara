@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.File;
@@ -55,12 +54,11 @@ import com.sun.enterprise.util.io.DomainDirs;
 import com.sun.enterprise.util.HostAndPort;
 
 /**
- *  This is a local command that lists the domains.
+ * This is a local command that lists the domains.
  */
 @Service(name = "list-domains")
 @Scoped(PerLookup.class)
 public final class ListDomainsCommand extends LocalDomainCommand {
-
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ListDomainsCommand.class);
     private String domainsRoot = null;
@@ -75,11 +73,10 @@ public final class ListDomainsCommand extends LocalDomainCommand {
     }
 
     @Override
-    protected int executeCommand()
-            throws CommandException, CommandValidationException {
+    protected int executeCommand() throws CommandException, CommandValidationException {
         try {
-            File domainsDirFile = ok(domainDirParam) ? 
-                new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
+            File domainsDirFile = ok(domainDirParam)
+                    ? new File(domainDirParam) : DomainDirs.getDefaultDomainsDir();
 
             DomainConfig domainConfig = new DomainConfig(null, domainsDirFile.getAbsolutePath());
             DomainsManager manager = new PEDomainsManager();
@@ -90,10 +87,12 @@ public final class ListDomainsCommand extends LocalDomainCommand {
                     String status = getStatus(dn);
                     logger.info(status);
                 }
-            } else {
+            }
+            else {
                 logger.fine(strings.get("NoDomainsToList"));
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new CommandException(ex.getLocalizedMessage());
         }
         return 0;
@@ -108,16 +107,18 @@ public final class ListDomainsCommand extends LocalDomainCommand {
         if (status) {
             try {
                 RemoteCommand cmd =
-                    new RemoteCommand("_get-restart-required",
-                                        programOpts, env);
+                        new RemoteCommand("_get-restart-required",
+                        programOpts, env);
                 String restartRequired =
-                    cmd.executeAndReturnOutput("_get-restart-required");
+                        cmd.executeAndReturnOutput("_get-restart-required");
                 if (Boolean.parseBoolean(restartRequired.trim()))
                     return strings.get("list.domains.StatusRestartRequired", dn);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
             }
             return strings.get("list.domains.StatusRunning", dn);
-        } else
+        }
+        else
             return strings.get("list.domains.StatusNotRunning", dn);
     }
 }
