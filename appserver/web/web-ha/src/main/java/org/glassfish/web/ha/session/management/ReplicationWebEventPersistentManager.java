@@ -48,7 +48,6 @@
 package org.glassfish.web.ha.session.management;
 
 import com.sun.logging.LogDomains;
-import org.apache.catalina.Context;
 import org.apache.catalina.Session;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.common.GlassFishHAReplicaPredictor;
@@ -58,6 +57,7 @@ import org.glassfish.ha.common.NoopHAReplicaPredictor;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
+import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -66,8 +66,6 @@ import org.jvnet.hk2.component.PerLookup;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,7 +80,7 @@ import java.util.logging.Logger;
  */
 @Service
 @Scoped(PerLookup.class)
-public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
+public class ReplicationWebEventPersistentManager<T extends Storeable> extends ReplicationManagerBase<T>
         implements WebEventPersistentManager {
     
 
@@ -253,7 +251,7 @@ public class ReplicationWebEventPersistentManager extends ReplicationManagerBase
 
 
     @Override
-    public <T extends Serializable> void  createBackingStore(String persistenceType, String storeName, Class<T> metadataClass, HashMap vendorMap) {
+    public void createBackingStore(String persistenceType, String storeName, Class<T> metadataClass, Map<String, Object> vendorMap) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("Create backing store invoked with persistence type " + persistenceType + " and store name " + storeName);
         }

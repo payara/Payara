@@ -124,7 +124,8 @@ public class ReplicationAttributeStore extends ReplicationStore {
      * @param session Session to be saved
      *
      * @exception IOException if an input/output error occurs
-     */    
+     */
+    @Override
     public void doValveSave(Session session) throws IOException {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationAttributeStore>>doValveSave:valid =" + ((StandardSession)session).getIsValid());
@@ -142,10 +143,8 @@ public class ReplicationAttributeStore extends ReplicationStore {
         if(session.getPrincipal() !=null){
             userName = session.getPrincipal().getName();
             ((BaseHASession)session).setUserName(userName);
-        }        
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();                    
+        }
+        BackingStore<String, CompositeMetadata> replicator = getCompositeMetadataBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationAttributeStore>>save: replicator: " + replicator);                    
         }         
@@ -173,7 +172,8 @@ public class ReplicationAttributeStore extends ReplicationStore {
      * @param session Session to be saved
      *
      * @exception IOException if an input/output error occurs
-     */    
+     */
+    @Override
     public void doSave(Session session) throws IOException {
         // begin 6470831 do not save if session is not valid
         if( !((StandardSession)session).getIsValid() ) {
@@ -182,9 +182,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
         // end 6470831        
         ModifiedAttributeHASession modAttrSession
                 = (ModifiedAttributeHASession)session;
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
+        BackingStore<String, CompositeMetadata> replicator = getCompositeMetadataBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationAttributeStore>>doSave: replicator: " + replicator);                    
         }         
@@ -204,33 +202,20 @@ public class ReplicationAttributeStore extends ReplicationStore {
             //FIXME
         }
     }
-    
-    private BackingStore getCompositeBackingStore() {
-        ReplicationManagerBase mgr
-                = (ReplicationManagerBase) this.getManager();
-        BackingStore backingStore = mgr.getBackingStore();
-        return backingStore;
+
+    @SuppressWarnings("unchecked")
+    private BackingStore<String, CompositeMetadata> getCompositeMetadataBackingStore() {
+        ReplicationManagerBase<CompositeMetadata> mgr
+                = (ReplicationManagerBase<CompositeMetadata>) this.getManager();
+        return mgr.getBackingStore();
     }
 
-    /**
-    * Load and return the Session associated with the specified session
-    * identifier from this Store, without removing it.  If there is no
-    * such stored Session, return <code>null</code>.
-    *
-    * @param id Session identifier of the session to load
-    *
-    * @exception ClassNotFoundException if a deserialization error occurs
-    * @exception IOException if an input/output error occurs
-    */
-    public Session load(String id) throws ClassNotFoundException, IOException {
-        return load(id, null);
-    }
-
+    @Override
     public Session load(String id, String version)
             throws ClassNotFoundException, IOException {
         try {
             CompositeMetadata metaData =
-                    (CompositeMetadata) getCompositeBackingStore().load(id, version);
+                    getCompositeMetadataBackingStore().load(id, version);
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.fine("ReplicationAttributeStore>>load:id=" + id + ", metaData=" + metaData);
             }
@@ -656,8 +641,7 @@ public class ReplicationAttributeStore extends ReplicationStore {
     protected Object getAttributeValueCollection(byte[] state) 
         throws IOException, ClassNotFoundException 
     {
-        Collection attributeValueList = new ArrayList();
-        Object attributeValue = null;
+        Collection<Object> attributeValueList = new ArrayList<Object>();
         BufferedInputStream bis = null;
         ByteArrayInputStream bais = null;
         Loader loader = null;    

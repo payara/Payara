@@ -45,19 +45,20 @@ import org.apache.catalina.Session;
 import org.apache.catalina.session.PersistentManagerBase;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.api.Storeable;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Rajiv Mordani
  */
-public abstract class ReplicationManagerBase extends PersistentManagerBase {
+public abstract class ReplicationManagerBase<T extends Storeable> extends PersistentManagerBase {
 
-    protected BackingStore backingStore;
+    protected BackingStore<String, T> backingStore;
     protected SessionFactory sessionFactory;
 
     protected static final String name = "ReplicationManagerBase";
@@ -67,11 +68,11 @@ public abstract class ReplicationManagerBase extends PersistentManagerBase {
     protected boolean relaxCacheVersionSemantics = false;
     protected boolean disableJreplica = false;
 
-    public BackingStore getBackingStore() {
+    public BackingStore<String, T> getBackingStore() {
         return this.backingStore;
     }
 
-    public abstract <T extends Serializable> void createBackingStore(String persistenceType, String storeName, Class<T> metadataClass, HashMap vendorMap);
+    public abstract void createBackingStore(String persistenceType, String storeName, Class<T> metadataClass, Map<String, Object> vendorMap);
     
     public Session createNewSession() {
         return sessionFactory.createSession(this);
@@ -87,7 +88,7 @@ public abstract class ReplicationManagerBase extends PersistentManagerBase {
         this.sessionFactory = sessionFactory;
     }
 
-    public void setBackingStore(BackingStore backingStore) {
+    public void setBackingStore(BackingStore<String, T> backingStore) {
         this.backingStore = backingStore;
     }
 

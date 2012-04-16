@@ -57,6 +57,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Loader;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
 
 import java.io.*;
@@ -155,9 +156,7 @@ public class ReplicationStore extends HAStoreBase {
             sb.append("}");
             _logger.finest(sb.toString());
         }
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
+        BackingStore<String, SimpleMetadata> replicator = getSimpleMetadataBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>doValveSave replicator: " + replicator);
             _logger.fine("ReplicationStore>>doValveSave version:" + session.getVersion());                       
@@ -186,7 +185,6 @@ public class ReplicationStore extends HAStoreBase {
         }
     }
 
-
     public void cleanup() {
         //FIXME;
     }
@@ -204,9 +202,7 @@ public class ReplicationStore extends HAStoreBase {
     public void stop() {
         try {
             super.stop();
-            ReplicationManagerBase mgr
-             = (ReplicationManagerBase)this.getManager();
-            BackingStore backingStore = mgr.getBackingStore();
+            BackingStore<String, ? extends Storeable> backingStore = getStoreableBackingStore();
             backingStore.destroy();
         } catch (BackingStoreException e) {
 
@@ -252,9 +248,7 @@ public class ReplicationStore extends HAStoreBase {
      */
     public void doSave(Session session) throws IOException {
         byte[] sessionState = this.getByteArray(session, isReplicationCompressionEnabled());
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore backingStore = mgr.getBackingStore();
+        BackingStore<String, SimpleMetadata> backingStore = getSimpleMetadataBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>save: backing store : " + backingStore);
         }
@@ -297,9 +291,7 @@ public class ReplicationStore extends HAStoreBase {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>doRemove");
         }
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
+        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>doRemove: replicator: " + replicator);                       
         }        
@@ -322,10 +314,8 @@ public class ReplicationStore extends HAStoreBase {
     public synchronized void removeSynchronized(String id) throws IOException  {
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>removeSynchronized");                       
-        }         
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
+        }
+        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>removeSynchronized: replicator: " + replicator);                       
         }        
@@ -356,12 +346,11 @@ public class ReplicationStore extends HAStoreBase {
             _logger.fine("IN ReplicationStore>>removeExpiredSessions");
         }
         int result = 0;
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
+        ReplicationManagerBase<? extends Storeable> mgr = getStoreableReplicationManager();
         if(mgr == null) {
             return result;
         }
-        BackingStore backingStore = mgr.getBackingStore();
+        BackingStore<String, ? extends Storeable> backingStore = mgr.getBackingStore();
         if (backingStore != null) {
             try {
                 result = backingStore.removeExpired(mgr.getMaxInactiveInterval());
@@ -402,9 +391,9 @@ public class ReplicationStore extends HAStoreBase {
     }
 
 
-    public Session loadFromBackingStore(String id, String version)
+    private Session loadFromBackingStore(String id, String version)
             throws IOException, ClassNotFoundException, BackingStoreException {
-        SimpleMetadata metaData = (SimpleMetadata) getBackingStore().load(id, version);
+        SimpleMetadata metaData = getSimpleMetadataBackingStore().load(id, version);
         if(_logger.isLoggable(Level.FINEST)) {
             _logger.finest("ReplicationStore>>loadFromBackingStore:id=" +
                     id + ", metaData=" + metaData);
@@ -418,16 +407,24 @@ public class ReplicationStore extends HAStoreBase {
         return session;
     }
 
-    BackingStore getBackingStore() {
-        ReplicationManagerBase mgr
-                = (ReplicationManagerBase) this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
-        return replicator;
+
+    private BackingStore<String, ? extends Storeable> getStoreableBackingStore() {
+        ReplicationManagerBase<? extends Storeable> mgr
+                = (ReplicationManagerBase<? extends Storeable>) this.getManager();
+        return getStoreableReplicationManager().getBackingStore();
     }
 
+    @SuppressWarnings("unchecked")
+    private BackingStore<String, SimpleMetadata> getSimpleMetadataBackingStore() {
+        ReplicationManagerBase<SimpleMetadata> mgr
+                = (ReplicationManagerBase<SimpleMetadata>) this.getManager();
+        return mgr.getBackingStore();
+    }
 
-
-
+    @SuppressWarnings("unchecked")
+    private ReplicationManagerBase<? extends Storeable> getStoreableReplicationManager() {
+        return (ReplicationManagerBase<? extends Storeable>)this.getManager();
+    }
 
 
     /**
@@ -439,9 +436,7 @@ public class ReplicationStore extends HAStoreBase {
      */    
     public void updateLastAccessTime(Session session) throws IOException {
         
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore backingStore = mgr.getBackingStore();
+        BackingStore<String, ? extends Storeable> backingStore = getStoreableBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>updateLastAccessTime: replicator: " + backingStore);                       
         }         
@@ -467,9 +462,7 @@ public class ReplicationStore extends HAStoreBase {
     
     public int getSize() throws IOException {
         int result = 0;
-        ReplicationManagerBase mgr
-            = (ReplicationManagerBase)this.getManager();
-        BackingStore replicator = mgr.getBackingStore();
+        BackingStore<String, ? extends Storeable> replicator = getStoreableBackingStore();
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("ReplicationStore>>getSize: replicator: " + replicator);                       
         }         

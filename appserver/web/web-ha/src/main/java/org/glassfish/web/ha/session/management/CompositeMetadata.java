@@ -71,10 +71,7 @@ public final class CompositeMetadata implements Storeable {
 
     private Map<String, SessionAttributeMetadata> attributesMap = new HashMap<String, SessionAttributeMetadata>();
 
-
     private transient Collection<SessionAttributeMetadata> entries;
-
-    private transient Map<String, byte[]> storeableEntryMap;
 
     private transient Set<String> _dirtyAttributeNames = new HashSet<String>();
 
@@ -145,10 +142,6 @@ public final class CompositeMetadata implements Storeable {
     public void setStringExtraParam(String stringExtraParam) {
         this.stringExtraParam = stringExtraParam;
         dirtyBits[1] = true;
-    }
-
-    public Map<String, byte[]> getSessionAttributes() {
-        return storeableEntryMap == null ? new SessionAttributesMapImpl(entries) : storeableEntryMap;
     }
 
     /**
@@ -357,48 +350,7 @@ public final class CompositeMetadata implements Storeable {
                 ", lastAccessTime=" + lastAccessTime +
                 ", state=" + (state ==null ? 0 : state.length) +
                 ", _dirtyAttributeNames=" + _dirtyAttributeNames +
-                ", storeableEntryMap=" + storeableEntryMap +
                 '}';
-    }
-
-    private static class SessionAttributesMapImpl
-            extends HashMap<String, byte[]>
-            implements StorableMap<Object, byte[]> {
-
-        Set<String> newKeys = new HashSet<String>();
-        Set<String> modifiedKeys = new HashSet<String>();
-        Set<String> deletedKeys = new HashSet<String>();
-        Map<String, byte[]> map = new HashMap<String, byte[]>();
-
-        SessionAttributesMapImpl() {
-            super();
-        }
-
-        SessionAttributesMapImpl(Collection<SessionAttributeMetadata> attrs) {
-            super();
-            for (SessionAttributeMetadata attr : attrs) {
-                super.put(attr.getAttributeName(), attr.getState());
-                if (attr.getOperation() == SessionAttributeMetadata.Operation.ADD) {
-                    newKeys.add(attr.getAttributeName());
-                } else if (attr.getOperation() == SessionAttributeMetadata.Operation.UPDATE) {
-                    modifiedKeys.add(attr.getAttributeName());
-                } else {
-                    deletedKeys.add(attr.getAttributeName());
-                }
-            }
-        }
-
-        public Collection getDeletedKeys() {
-            return deletedKeys;
-        }
-
-        public Collection getModifiedKeys() {
-            return modifiedKeys;
-        }
-
-        public Collection getNewKeys() {
-            return deletedKeys;
-        }
     }
 
 }

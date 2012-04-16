@@ -47,6 +47,7 @@ import com.sun.enterprise.web.BasePersistenceStrategyBuilder;
 import com.sun.enterprise.web.ServerConfigLookup;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
+import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.web.ha.session.management.*;
 import org.glassfish.web.valve.GlassFishValve;
@@ -56,6 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Rajiv Mordani
@@ -82,39 +84,24 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
 
         super.initializePersistenceStrategy(ctx, smBean, serverConfigLookup);
         //super.setPassedInPersistenceType("replicated");
-        ReplicationStore store = null;
-        HashMap<String, Object> vendorMap = new HashMap<String, Object>();
-        boolean asyncReplicationValue = serverConfigLookup.getAsyncReplicationFromConfig((WebModule)ctx);
-        boolean disableJreplica = serverConfigLookup.getDisableJreplicaFromConfig();
-        vendorMap.put("async.replication", asyncReplicationValue);
-        vendorMap.put("broadcast.remove.expired", false);
-        vendorMap.put("value.class.is.thread.safe", true);
         if (this.getPersistenceScope().equals("session")) {
-            rwepMgr.setSessionFactory(new FullSessionFactory());
-            store = new ReplicationStore(serverConfigLookup, ioUtils);
-            rwepMgr.createBackingStore(this.getPassedInPersistenceType(), ctx.getPath(), SimpleMetadata.class, vendorMap);
+            setupReplicationWebEventPersistentManager(SimpleMetadata.class,
+                    new FullSessionFactory(),
+                    new ReplicationStore(serverConfigLookup, ioUtils),
+                    ctx, serverConfigLookup);
         } else if (this.getPersistenceScope().equals("modified-session")) {
-            rwepMgr.setSessionFactory(new ModifiedSessionFactory());
-            store = new ReplicationStore(serverConfigLookup, ioUtils);
-            rwepMgr.createBackingStore(this.getPassedInPersistenceType(), ctx.getPath(), SimpleMetadata.class, vendorMap);
+            setupReplicationWebEventPersistentManager(SimpleMetadata.class,
+                    new ModifiedSessionFactory(),
+                    new ReplicationStore(serverConfigLookup, ioUtils),
+                    ctx, serverConfigLookup);
         } else if (this.getPersistenceScope().equals("modified-attribute")) {
-            rwepMgr.setSessionFactory(new ModifiedAttributeSessionFactory());
-            store = new ReplicationAttributeStore(serverConfigLookup, ioUtils);
-            rwepMgr.createBackingStore(this.getPassedInPersistenceType(), ctx.getPath(), CompositeMetadata.class, vendorMap);
+            setupReplicationWebEventPersistentManager(CompositeMetadata.class,
+                    new ModifiedAttributeSessionFactory(),
+                    new ReplicationAttributeStore(serverConfigLookup, ioUtils),
+                    ctx, serverConfigLookup);
+        } else {
+            throw new IllegalArgumentException(this.getPersistenceScope());
         }
-
-
-        rwepMgr.setMaxActiveSessions(maxSessions);
-        rwepMgr.setMaxIdleBackup(0);
-        rwepMgr.setRelaxCacheVersionSemantics(relaxCacheVersionSemantics);
-        rwepMgr.setStore(store);
-        rwepMgr.setDisableJreplica(disableJreplica);
-        
-        ctx.setManager(rwepMgr);
-        if(!((StandardContext)ctx).isSessionTimeoutOveridden()) {
-            rwepMgr.setMaxInactiveInterval(sessionMaxInactiveInterval);
-        }
-
 
         HASessionStoreValve haValve = new HASessionStoreValve();
         StandardContext stdCtx = (StandardContext) ctx;
@@ -122,4 +109,35 @@ public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceSt
 
     }
 
+    private <T extends Storeable> void setupReplicationWebEventPersistentManager(
+            Class<T> metadataClass, SessionFactory sessionFactory, ReplicationStore store,
+            Context ctx, ServerConfigLookup serverConfigLookup) {
+
+        Map<String, Object> vendorMap = new HashMap<String, Object>();
+        boolean asyncReplicationValue = serverConfigLookup.getAsyncReplicationFromConfig((WebModule)ctx);
+        vendorMap.put("async.replication", asyncReplicationValue);
+        vendorMap.put("broadcast.remove.expired", false);
+        vendorMap.put("value.class.is.thread.safe", true);
+        ReplicationWebEventPersistentManager<T> rwepMgr = getReplicationWebEventPersistentManager();
+        rwepMgr.setSessionFactory(sessionFactory);
+        rwepMgr.createBackingStore(this.getPassedInPersistenceType(), ctx.getPath(), metadataClass, vendorMap);
+
+        boolean disableJreplica = serverConfigLookup.getDisableJreplicaFromConfig();
+        rwepMgr.setMaxActiveSessions(maxSessions);
+        rwepMgr.setMaxIdleBackup(0);
+        rwepMgr.setRelaxCacheVersionSemantics(relaxCacheVersionSemantics);
+        rwepMgr.setStore(store);
+        rwepMgr.setDisableJreplica(disableJreplica);
+
+        ctx.setManager(rwepMgr);
+        if(!((StandardContext)ctx).isSessionTimeoutOveridden()) {
+            rwepMgr.setMaxInactiveInterval(sessionMaxInactiveInterval);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Storeable>  ReplicationWebEventPersistentManager<T> getReplicationWebEventPersistentManager() {
+ 
+        return rwepMgr;
+    }
 }
