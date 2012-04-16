@@ -355,7 +355,20 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         super.loadRAConfiguration();
         postRAConfiguration();
     }
-    
+
+    @Override
+    public void destroy() {
+        JmsService jmsService = getJmsService();
+        if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
+                && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
+            GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+            if (grizzlyService != null)
+                grizzlyService.removeNetworkProxy(JMS_SERVICE);
+            grizzlyListenerInit = false;
+        }
+        super.destroy();
+    }
+
     /**
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
