@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -100,9 +100,9 @@
 		<resolveArtifact groupID="com.sun.pkg" artifactId="pkg-client" property="pkg-client.jar" />
 
 		<echo message="Setting up required registration module dependencies" />
-		<resolveArtifact groupID="org.glassfish.registration" artifactId="registration-api" property="registration-api.jar" />
-		<resolveArtifact groupID="org.glassfish.registration" artifactId="registration-impl" property="registration-impl.jar" />
-                <resolveArtifact groupID="org.glassfish.common" artifactId="common-util" property="common-util.jar" />
+		<resolveArtifact groupID="org.glassfish.main.registration" artifactId="registration-api" property="registration-api.jar" />
+		<resolveArtifact groupID="org.glassfish.main.registration" artifactId="registration-impl" property="registration-impl.jar" />
+                <resolveArtifact groupID="org.glassfish.main.common" artifactId="common-util" property="common-util.jar" />
 
 		<echo message="Setting up required OpenInstaller dependencies" />
 		<resolveArtifact groupID="org.openinstaller" artifactId="resources" property="resources.zip" />
