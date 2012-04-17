@@ -132,6 +132,8 @@ public class JVMMemoryMetricHolder
 
             instancesTable.put(instanceName,jvmInstanceHolder);
             turnOnMonitoring(instanceName);
+            System.out.println("Starting JVM Memory Metric Gatherer for  "+instanceName+" in service "+serviceName);
+
         }
     }
 
