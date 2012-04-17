@@ -226,7 +226,9 @@ public class WebModuleConfig {
      * Gets the deployment context of this web application.
      */
     public DeploymentContext getDeploymentContext() {
-        return deploymentContext;
+        synchronized (this) {
+            return deploymentContext;
+        }
     }
 
     /**
