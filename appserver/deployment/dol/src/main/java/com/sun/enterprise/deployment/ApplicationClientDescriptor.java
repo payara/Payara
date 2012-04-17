@@ -69,7 +69,7 @@ public class ApplicationClientDescriptor extends BundleDescriptor
 {
     private Set environmentProperties;
     private Set ejbReferences;
-    private Set jmsDestReferences;
+    private Set resourceEnvReferences;
     private Set messageDestReferences;
     private Set resourceReferences;
     private Set serviceReferences;
@@ -388,22 +388,22 @@ public class ApplicationClientDescriptor extends BundleDescriptor
     }
 
    /**
-	* Return the set of JMS destination references this ejb declares.
+	* Return the set of resource environment references this ejb declares.
 	*/
-    public Set getJmsDestinationReferenceDescriptors() {
-	if (this.jmsDestReferences == null) {
-	    this.jmsDestReferences = new OrderedSet();
+    public Set getResourceEnvReferenceDescriptors() {
+	if (this.resourceEnvReferences == null) {
+	    this.resourceEnvReferences = new OrderedSet();
 	}
-	return this.jmsDestReferences = new OrderedSet(this.jmsDestReferences);
+	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
     }
 
-    public void addJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-	this.getJmsDestinationReferenceDescriptors().add(jmsDestReference);
+    public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
+	this.getResourceEnvReferenceDescriptors().add(resourceEnvReference);
 
     }
     
-    public void removeJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-	this.getJmsDestinationReferenceDescriptors().remove(jmsDestReference);
+    public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
+	this.getResourceEnvReferenceDescriptors().remove(resourceEnvReference);
 
     }
     
@@ -524,17 +524,17 @@ public class ApplicationClientDescriptor extends BundleDescriptor
     }    
 
     /**
-    * Return a JMS destination reference by the same name or throw an IllegalArgumentException.
+    * Return a resource environment reference by the same name or throw an IllegalArgumentException.
     */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name) {
-	for (Iterator itr = this.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
-	    JmsDestinationReferenceDescriptor jdr = (JmsDestinationReferenceDescriptor) itr.next();
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
+	for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+	    ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
 	    if (jdr.getName().equals(name)) {
 		return jdr;   
 	    }
 	}
 	throw new IllegalArgumentException(localStrings.getLocalString(
-	    "enterprise.deployment.exceptionappclienthasnojmsdestrefbyname",
+	    "enterprise.deployment.exceptionappclienthasnoesourceenvrefbyname",
 	    "This application client [{0}] has no resource environment reference by the name of [{1}]", 
             new Object[] {getName(), name}));
     }
@@ -615,9 +615,9 @@ public class ApplicationClientDescriptor extends BundleDescriptor
 	toStringBuffer.append("\n ejbReferences ");
         if(ejbReferences != null)
             printDescriptorSet(ejbReferences,toStringBuffer);
-        toStringBuffer.append("\n jmsDestReferences ");
-        if(jmsDestReferences != null)
-            printDescriptorSet(jmsDestReferences,toStringBuffer);
+        toStringBuffer.append("\n resourceEnvReferences ");
+        if(resourceEnvReferences != null)
+            printDescriptorSet(resourceEnvReferences,toStringBuffer);
         toStringBuffer.append("\n messageDestReferences ");
         if(messageDestReferences != null)
             printDescriptorSet(messageDestReferences,toStringBuffer);

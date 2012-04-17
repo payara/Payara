@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.InjectionTarget;
-import com.sun.enterprise.deployment.JmsDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
@@ -86,7 +86,7 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode  {
      * @param the descriptor to write
      * @return the DOM tree top node
      */
-    public Node writeDescriptor(Node parent, String nodeName, JmsDestinationReferenceDescriptor descriptor) {    
+    public Node writeDescriptor(Node parent, String nodeName, ResourceEnvReferenceDescriptor descriptor) {    
         Node ejbResNode = appendChild(parent, nodeName);
         
         writeLocalizedDescriptions(ejbResNode,descriptor);        

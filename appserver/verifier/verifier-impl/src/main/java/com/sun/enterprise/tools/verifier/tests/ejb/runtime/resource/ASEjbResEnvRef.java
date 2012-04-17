@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,7 +76,7 @@ public class ASEjbResEnvRef extends EjbTest implements EjbCheck
                 String refName = getXPathValue("/sun-ejb-jar/enterprise-beans/ejb[ejb-name=\""+descriptor.getName()+"\"]/resource-env-ref["+i+"]/resource-env-ref-name");
                 try
                 {
-                    descriptor.getJmsDestinationReferenceByName(refName);
+                    descriptor.getResourceEnvReferenceByName(refName);
                     result.passed(smh.getLocalString
                             ("tests.componentNameConstructor",
                                     "For [ {0} ]",

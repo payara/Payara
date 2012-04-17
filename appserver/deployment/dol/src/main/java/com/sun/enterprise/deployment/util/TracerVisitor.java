@@ -193,9 +193,9 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
             accept(next);
         }
 
-        for (Iterator it = ejb.getJmsDestinationReferenceDescriptors().iterator(); it.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                    (JmsDestinationReferenceDescriptor) it.next();
+        for (Iterator it = ejb.getResourceEnvReferenceDescriptors().iterator(); it.hasNext();) {
+            ResourceEnvReferenceDescriptor next =
+                    (ResourceEnvReferenceDescriptor) it.next();
             accept(next);
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,7 +73,7 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
 
     protected Set environmentProperties;
     protected Set ejbReferences;
-    protected Set jmsDestReferences;
+    protected Set resourceEnvReferences;
     protected Set messageDestReferences;
     protected Set resourceReferences;
     protected Set serviceReferences;
@@ -355,35 +355,35 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
 	this.getResourceReferenceDescriptors().remove(resourceReference);
     }
 
-    // jms destination ref
-    public void addJmsDestinationReferenceDescriptor(
-		JmsDestinationReferenceDescriptor jmsDestinationReference) {
-	this.getJmsDestinationReferenceDescriptors().add(jmsDestinationReference);
+    // resource environment ref
+    public void addResourceEnvReferenceDescriptor(
+		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
+	this.getResourceEnvReferenceDescriptors().add(resourceEnvinationReference);
     }
 
-    public Set getJmsDestinationReferenceDescriptors() {
-	if (this.jmsDestReferences == null) {
-	    this.jmsDestReferences = new OrderedSet();
+    public Set getResourceEnvReferenceDescriptors() {
+	if (this.resourceEnvReferences == null) {
+	    this.resourceEnvReferences = new OrderedSet();
 	}
-	return this.jmsDestReferences = new OrderedSet(this.jmsDestReferences);
+	return this.resourceEnvReferences = new OrderedSet(this.resourceEnvReferences);
     }
 
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name) {
-	for (Iterator itr = this.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
-	    JmsDestinationReferenceDescriptor jdr = (JmsDestinationReferenceDescriptor) itr.next();
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
+	for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+	    ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
 	    if (jdr.getName().equals(name)) {
 		return jdr;   
 	    }
 	}
 	throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionhasnojmsdestrefbyname",
+                "enterprise.deployment.exceptionhasnoresourceenvrefbyname",
                 "This class has no resource environment reference by the name of {0}",
                 new Object[] {name}));
     }
 
-    public void removeJmsDestinationReferenceDescriptor(
-		JmsDestinationReferenceDescriptor jmsDestinationReference) {
-	this.getJmsDestinationReferenceDescriptors().remove(jmsDestinationReference);
+    public void removeResourceEnvReferenceDescriptor(
+		ResourceEnvReferenceDescriptor resourceEnvinationReference) {
+	this.getResourceEnvReferenceDescriptors().remove(resourceEnvinationReference);
     }
 
     // entity manager factory ref 

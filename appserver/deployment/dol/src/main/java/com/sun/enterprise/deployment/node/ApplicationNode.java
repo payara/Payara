@@ -165,7 +165,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE),
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
-                                                            ResourceEnvRefNode.class, "addJmsDestinationReferenceDescriptor");
+                                                            ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), MessageDestinationRefNode.class, "addMessageDestinationReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_CONTEXT_REF), EntityManagerReferenceNode.class, "addEntityManagerReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_UNIT_REF), EntityManagerFactoryReferenceNode.class, "addEntityManagerFactoryReferenceDescriptor");
@@ -298,7 +298,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         writeResourceRefDescriptors(appNode, application.getResourceReferenceDescriptors().iterator());
 
         // resource-env-ref*
-        writeResourceEnvRefDescriptors(appNode, application.getJmsDestinationReferenceDescriptors().iterator());
+        writeResourceEnvRefDescriptors(appNode, application.getResourceEnvReferenceDescriptors().iterator());
 
         // message-destination-ref*
         writeMessageDestinationRefDescriptors(appNode, application.getMessageDestinationReferenceDescriptors().iterator());

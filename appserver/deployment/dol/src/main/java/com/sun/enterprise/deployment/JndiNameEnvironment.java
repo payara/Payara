@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,21 +102,21 @@ public interface JndiNameEnvironment {
     
      
     /** 
-     * Return a set of JMS destination reference descriptors.
+     * Return a set of resource environment reference descriptors.
      *
-     * @return java.util.Set of JmsDestinationReferenceDescriptor objects
+     * @return java.util.Set of ResourceEnvReferenceDescriptor objects
      */
 	
-    public Set getJmsDestinationReferenceDescriptors();
+    public Set getResourceEnvReferenceDescriptors();
 
 
     /** 
-     * Return the JMS destination reference descriptor corresponding to 
+     * Return the resource environment reference descriptor corresponding to 
      * the given name.
      *
-     * @return JmsDestinationReferenceDescriptor object
+     * @return ResourceEnvReferenceDescriptor object
      */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name);
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name);
 
     /** 
      * Return a set of message destination reference descriptors.

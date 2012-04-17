@@ -189,7 +189,7 @@ public class MessageDrivenBeanNode extends EjbNode {
         writeResourceRefDescriptors(ejbNode, ejbDesc.getResourceReferenceDescriptors().iterator());
         
         // resource-env-ref*
-        writeResourceEnvRefDescriptors(ejbNode, ejbDesc.getJmsDestinationReferenceDescriptors().iterator());        
+        writeResourceEnvRefDescriptors(ejbNode, ejbDesc.getResourceEnvReferenceDescriptors().iterator());        
         
         // message-destination-ref*
         writeMessageDestinationRefDescriptors(ejbNode, ejbDesc.getMessageDestinationReferenceDescriptors().iterator());

@@ -366,9 +366,9 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             accept(next);
         }
 
-        for (Iterator it = ejb.getJmsDestinationReferenceDescriptors().iterator(); it.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                    (JmsDestinationReferenceDescriptor) it.next();
+        for (Iterator it = ejb.getResourceEnvReferenceDescriptors().iterator(); it.hasNext();) {
+            ResourceEnvReferenceDescriptor next =
+                    (ResourceEnvReferenceDescriptor) it.next();
             accept(next);
         }
 

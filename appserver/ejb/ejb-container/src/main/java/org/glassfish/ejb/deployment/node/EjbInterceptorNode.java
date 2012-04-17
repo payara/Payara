@@ -83,7 +83,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode {
         registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), 
                ResourceRefNode.class, "addResourceReferenceDescriptor");   
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
-               ResourceEnvRefNode.class, "addJmsDestinationReferenceDescriptor");               
+               ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), MessageDestinationRefNode.class);
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_CONTEXT_REF), EntityManagerReferenceNode.class, "addEntityManagerReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_UNIT_REF), EntityManagerFactoryReferenceNode.class, "addEntityManagerFactoryReferenceDescriptor");

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,23 +106,23 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
 
 
     /**  
-     * Adds the specified JMS destination reference to the receiver.
+     * Adds the specified resource environment reference to the receiver.
      *   
-     * @param the JmsDestinationReferenceDescriptor to add.  
+     * @param the ResourceEnvReferenceDescriptor to add.  
      *
      */
-    public void addJmsDestinationReferenceDescriptor(
-		JmsDestinationReferenceDescriptor jmsDestinationReference);
+    public void addResourceEnvReferenceDescriptor(
+		ResourceEnvReferenceDescriptor resourceEnvReference);
 
 
     /**  
-     * Removes the specified JMS destination reference from the receiver.
+     * Removes the specified resource environment reference from the receiver.
      *   
-     * @param the JmsDestinationReferenceDescriptor to remove.
+     * @param the ResourceEnvReferenceDescriptor to remove.
      *
      */
-    public void removeJmsDestinationReferenceDescriptor(
-		JmsDestinationReferenceDescriptor jmsDestinationReference);
+    public void removeResourceEnvReferenceDescriptor(
+		ResourceEnvReferenceDescriptor resourceEnvReference);
 
     /**  
      * Adds the specified message destination reference to the receiver.

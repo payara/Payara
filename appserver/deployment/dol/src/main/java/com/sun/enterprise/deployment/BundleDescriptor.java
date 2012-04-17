@@ -367,9 +367,9 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
             EjbReferenceDescriptor ejbReference = (EjbReferenceDescriptor) itr.next();
             namedDescriptors.add(ejbReference);
         }
-        for (Iterator itr = nameEnvironment.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
-            JmsDestinationReferenceDescriptor resourceEnvRef =
-                    (JmsDestinationReferenceDescriptor) itr.next();
+        for (Iterator itr = nameEnvironment.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+            ResourceEnvReferenceDescriptor resourceEnvRef =
+                    (ResourceEnvReferenceDescriptor) itr.next();
             namedDescriptors.add(resourceEnvRef);
         }
 
@@ -389,9 +389,9 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
             EjbReferenceDescriptor ejbReference = (EjbReferenceDescriptor) itr.next();
             pairs.add(NamedReferencePair.createEjbRefPair((Descriptor) nameEnvironment, ejbReference));
         }
-        for (Iterator itr = nameEnvironment.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
-            JmsDestinationReferenceDescriptor resourceEnvRef =
-                    (JmsDestinationReferenceDescriptor) itr.next();
+        for (Iterator itr = nameEnvironment.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+            ResourceEnvReferenceDescriptor resourceEnvRef =
+                    (ResourceEnvReferenceDescriptor) itr.next();
             pairs.add(NamedReferencePair.createResourceEnvRefPair((Descriptor) nameEnvironment, resourceEnvRef));
         }
 
@@ -518,7 +518,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         allEnvProps.addAll(jndiNameEnv.getEjbReferenceDescriptors());
         allEnvProps.addAll(jndiNameEnv.getServiceReferenceDescriptors());
         allEnvProps.addAll(jndiNameEnv.getResourceReferenceDescriptors());
-        allEnvProps.addAll(jndiNameEnv.getJmsDestinationReferenceDescriptors());
+        allEnvProps.addAll(jndiNameEnv.getResourceEnvReferenceDescriptors());
         allEnvProps.addAll(jndiNameEnv.getMessageDestinationReferenceDescriptors());
 
         allEnvProps.addAll(jndiNameEnv.getEntityManagerFactoryReferenceDescriptors());

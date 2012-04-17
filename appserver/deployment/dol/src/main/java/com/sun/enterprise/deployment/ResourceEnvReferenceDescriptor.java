@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,12 +43,11 @@ package com.sun.enterprise.deployment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
- * I am an object representing a dependency on a JMS Destination
- * (Queue/Topic)
+ * I am an object representing a dependency on a resource environment
  * @author Kenneth Saks
  */
 
-public class JmsDestinationReferenceDescriptor extends EnvironmentProperty implements NamedDescriptor, JmsDestinationReference { 
+public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implements NamedDescriptor, ResourceEnvReference { 
 
     private String refType;
 
@@ -65,10 +64,10 @@ public class JmsDestinationReferenceDescriptor extends EnvironmentProperty imple
 
     private static final String CDI_BEAN_MANAGER_TYPE = "javax.enterprise.inject.spi.BeanManager";
 
-    public JmsDestinationReferenceDescriptor() {
+    public ResourceEnvReferenceDescriptor() {
     }
     
-    public JmsDestinationReferenceDescriptor(String name, String description, String refType) {
+    public ResourceEnvReferenceDescriptor(String name, String description, String refType) {
         super(name, "", description);
         this.refType = refType;
     }
@@ -154,8 +153,8 @@ public class JmsDestinationReferenceDescriptor extends EnvironmentProperty imple
 
     /* Equality on name. */
     public boolean equals(Object object) {
-        if (object instanceof JmsDestinationReference) {
-            JmsDestinationReference destReference = (JmsDestinationReference) object;
+        if (object instanceof ResourceEnvReference) {
+            ResourceEnvReference destReference = (ResourceEnvReference) object;
             return destReference.getName().equals(this.getName());
         }
         return false;

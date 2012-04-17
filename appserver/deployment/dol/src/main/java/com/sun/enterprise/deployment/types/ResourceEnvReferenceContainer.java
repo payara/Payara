@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.types;
 
-import com.sun.enterprise.deployment.JmsDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 
 import java.util.Set;
 
@@ -54,23 +54,23 @@ import java.util.Set;
 public interface ResourceEnvReferenceContainer {
     
     /**
-     * Add a JMS destination reference to myself
+     * Add a resource environment reference to myself
      * 
-     * @param the new JMS destination ref
+     * @param the new resource environment ref
      */
-    public void addJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference);
+    public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference);
     
     /**
-     * Return a JMS destination reference by the same name or throw an IllegalArgumentException.
+     * Return a resource environment reference by the same name or throw an IllegalArgumentException.
      *
-     * @param the resource env reference name
+     * @param the resource environment reference name
      */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name);
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name);
     
    /**
-    * Return the set of JMS destination references this ejb declares.
+    * Return the set of resource environment references
     */
-    public Set getJmsDestinationReferenceDescriptors();
+    public Set getResourceEnvReferenceDescriptors();
    
 }
 

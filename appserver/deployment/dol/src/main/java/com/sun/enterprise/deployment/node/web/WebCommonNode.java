@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,7 +80,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
                                                             ResourceRefNode.class, "addResourceReferenceDescriptor");   
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 
-                                                            ResourceEnvRefNode.class, "addJmsDestinationReferenceDescriptor");               
+                                                            ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), MessageDestinationRefNode.class, "addMessageDestinationReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_CONTEXT_REF), EntityManagerReferenceNode.class, "addEntityManagerReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_UNIT_REF), EntityManagerFactoryReferenceNode.class, "addEntityManagerFactoryReferenceDescriptor");
@@ -386,7 +386,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         writeResourceRefDescriptors(jarNode, webBundleDesc.getResourceReferenceDescriptors().iterator());
                 
         // resource-env-ref*
-        writeResourceEnvRefDescriptors(jarNode, webBundleDesc.getJmsDestinationReferenceDescriptors().iterator());        
+        writeResourceEnvRefDescriptors(jarNode, webBundleDesc.getResourceEnvReferenceDescriptors().iterator());        
 
         // message-destination-ref*
         writeMessageDestinationRefDescriptors(jarNode, webBundleDesc.getMessageDestinationReferenceDescriptors().iterator());

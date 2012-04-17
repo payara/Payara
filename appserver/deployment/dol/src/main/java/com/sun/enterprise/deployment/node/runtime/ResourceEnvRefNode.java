@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.JmsDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
@@ -60,7 +60,7 @@ import java.util.Map;
  */
 public class ResourceEnvRefNode extends DeploymentDescriptorNode {
 
-    private JmsDestinationReferenceDescriptor descriptor;
+    private ResourceEnvReferenceDescriptor descriptor;
     
        /**
     * @return the descriptor instance to associate with this XMLNode
@@ -92,7 +92,7 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode {
             Object parentDesc = getParentNode().getDescriptor();
             if (parentDesc instanceof ResourceEnvReferenceContainer) {
                 try {
-                    descriptor = ((ResourceEnvReferenceContainer) parentDesc).getJmsDestinationReferenceByName(value);
+                    descriptor = ((ResourceEnvReferenceContainer) parentDesc).getResourceEnvReferenceByName(value);
                 } catch (IllegalArgumentException iae) {
                     DOLUtils.getDefaultLogger().warning(iae.getMessage());
                 }
@@ -108,7 +108,7 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
-    public Node writeDescriptor(Node parent, String nodeName, JmsDestinationReferenceDescriptor ejbRef) {          
+    public Node writeDescriptor(Node parent, String nodeName, ResourceEnvReferenceDescriptor ejbRef) {          
         Node resRefNode = super.writeDescriptor(parent, nodeName, ejbRef);
         appendTextChild(resRefNode, RuntimeTagNames.RESOURCE_ENV_REFERENCE_NAME, ejbRef.getName());
         appendTextChild(resRefNode, RuntimeTagNames.JNDI_NAME, ejbRef.getJndiName());
@@ -116,19 +116,19 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode {
     }  
     
     /**
-     * writes all the runtime information for JMS destination references
+     * writes all the runtime information for resource environment references
      * 
      * @param parent node to add the runtime xml info
      * @param the J2EE component containing ejb references
      */        
     public static void writeResoureEnvReferences(Node parent, ResourceEnvReferenceContainer descriptor) {
         // resource-env-ref*
-        Iterator resRefs = descriptor.getJmsDestinationReferenceDescriptors().iterator();
+        Iterator resRefs = descriptor.getResourceEnvReferenceDescriptors().iterator();
         if (resRefs.hasNext()) {
             ResourceEnvRefNode resourceEnvRefNode = new ResourceEnvRefNode();
             while (resRefs.hasNext()) {
                 resourceEnvRefNode.writeDescriptor(parent, RuntimeTagNames.RESOURCE_ENV_REFERENCE, 
-                    (JmsDestinationReferenceDescriptor) resRefs.next());
+                    (ResourceEnvReferenceDescriptor) resRefs.next());
             }
         }       
     }

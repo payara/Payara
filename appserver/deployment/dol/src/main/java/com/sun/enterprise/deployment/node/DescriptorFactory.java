@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,7 +90,7 @@ public class DescriptorFactory {
         register(new XMLElement(EjbTagNames.QUERY), QueryDescriptor.class);
         register(new XMLElement(EjbTagNames.QUERY_METHOD), MethodDescriptor.class);    
         register(new XMLElement(RuntimeTagNames.JAVA_METHOD), MethodDescriptor.class);
-        register(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), JmsDestinationReferenceDescriptor.class);
+        register(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), ResourceEnvReferenceDescriptor.class);
         register(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), MessageDestinationReferenceDescriptor.class);
         register(new XMLElement(EjbTagNames.EJB_RELATION), RelationshipDescriptor.class);
         register(new XMLElement(EjbTagNames.EJB_RELATIONSHIP_ROLE), RelationRoleDescriptor.class);

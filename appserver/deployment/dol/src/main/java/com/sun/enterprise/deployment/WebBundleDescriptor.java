@@ -94,7 +94,7 @@ public class WebBundleDescriptor extends BundleDescriptor
     private Set<ContextParameter> contextParameters;
     private Set<EjbReference> ejbReferences;
     private Set<ResourceReferenceDescriptor> resourceReferences;
-    private Set<JmsDestinationReferenceDescriptor> jmsDestReferences;
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvRefReferences;
     private Set<MessageDestinationReferenceDescriptor> messageDestReferences;
     private Set<ServiceReferenceDescriptor> serviceReferences;
 
@@ -149,7 +149,7 @@ public class WebBundleDescriptor extends BundleDescriptor
     protected boolean conflictEjbReference = false;
     protected boolean conflictServiceReference = false;
     protected boolean conflictResourceReference = false;
-    protected boolean conflictJmsDestinationReference = false;
+    protected boolean conflictResourceEnvReference = false;
     protected boolean conflictMessageDestinationReference = false;
     protected boolean conflictEntityManagerReference = false;
     protected boolean conflictEntityManagerFactoryReference = false;
@@ -283,7 +283,7 @@ public class WebBundleDescriptor extends BundleDescriptor
         combineEjbReferenceDescriptors(env);
         combineServiceReferenceDescriptors(env);
         // resource-env-ref
-        combineJmsDestinationReferenceDescriptors(env);
+        combineResourceEnvReferenceDescriptors(env);
         combineMessageDestinationReferenceDescriptors(env);
         // persistence-context-ref
         combineEntityManagerReferenceDescriptors(env);
@@ -518,45 +518,45 @@ public class WebBundleDescriptor extends BundleDescriptor
     }
 
     /**
-     * @return the set of JMS destination references this ejb declares.
+     * @return the set of resource environment references this ejb declares.
      */
-    public Set<JmsDestinationReferenceDescriptor> getJmsDestinationReferenceDescriptors() {
-        if (jmsDestReferences == null) {
-            jmsDestReferences = new OrderedSet<JmsDestinationReferenceDescriptor>();
+    public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
+        if (resourceEnvRefReferences == null) {
+            resourceEnvRefReferences = new OrderedSet<ResourceEnvReferenceDescriptor>();
         }
-        return jmsDestReferences;
+        return resourceEnvRefReferences;
     }
 
     /**
-     * adds a JMS destination reference to the bundle
+     * adds a resource environment reference to the bundle
      */
-    public void addJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-        getJmsDestinationReferenceDescriptors().add(jmsDestReference);
+    public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference) {
+        getResourceEnvReferenceDescriptors().add(resourceEnvRefReference);
     }
 
     /**
-     * removes a existing JMS destination reference from the bundle
+     * removes a existing resource environment reference from the bundle
      */
-    public void removeJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-        getJmsDestinationReferenceDescriptors().remove(jmsDestReference);
+    public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvRefReference) {
+        getResourceEnvReferenceDescriptors().remove(resourceEnvRefReference);
     }
 
     /**
-     * @return a JMS destination reference by the same name or throw an IllegalArgumentException.
+     * @return a resource environment reference by the same name or throw an IllegalArgumentException.
      */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name) {
-        JmsDestinationReferenceDescriptor jrd = _getJmsDestinationReferenceByName(name);
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
+        ResourceEnvReferenceDescriptor jrd = _getResourceEnvReferenceByName(name);
         if (jrd != null) {
             return jrd;
         }
 
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionwebapphasnojmsdestrefbyname",
+                "enterprise.deployment.exceptionwebapphasnoresourceenvrefbyname",
                 "This web app [{0}] has no resource environment reference by the name of [{1}]", new Object[]{getName(), name}));
     }
 
-    protected JmsDestinationReferenceDescriptor _getJmsDestinationReferenceByName(String name) {
-        for (JmsDestinationReferenceDescriptor jdr : getJmsDestinationReferenceDescriptors()) {
+    protected ResourceEnvReferenceDescriptor _getResourceEnvReferenceByName(String name) {
+        for (ResourceEnvReferenceDescriptor jdr : getResourceEnvReferenceDescriptors()) {
             if (jdr.getName().equals(name)) {
                 return jdr;
             }
@@ -564,21 +564,21 @@ public class WebBundleDescriptor extends BundleDescriptor
         return null;
     }
 
-    protected void combineJmsDestinationReferenceDescriptors(JndiNameEnvironment env) {
-        for (Object ojdRef: env.getJmsDestinationReferenceDescriptors()) {
-            JmsDestinationReferenceDescriptor jdRef =
-                (JmsDestinationReferenceDescriptor)ojdRef;
-            JmsDestinationReferenceDescriptor jdr = _getJmsDestinationReferenceByName(jdRef.getName());
+    protected void combineResourceEnvReferenceDescriptors(JndiNameEnvironment env) {
+        for (Object ojdRef: env.getResourceEnvReferenceDescriptors()) {
+            ResourceEnvReferenceDescriptor jdRef =
+                (ResourceEnvReferenceDescriptor)ojdRef;
+            ResourceEnvReferenceDescriptor jdr = _getResourceEnvReferenceByName(jdRef.getName());
             if (jdr != null) {
                 combineInjectionTargets(jdr, jdRef);
             } else {
                 if (env instanceof WebBundleDescriptor &&
-                        ((WebBundleDescriptor)env).conflictJmsDestinationReference) {
+                        ((WebBundleDescriptor)env).conflictResourceEnvReference) {
                     throw new IllegalArgumentException(localStrings.getLocalString(
                             "enterprise.deployment.exceptionconflictresourceenvref",
                             "There are more than one resource env references defined in web fragments with the same name, but not overrided in web.xml"));
                 } else {
-                    addJmsDestinationReferenceDescriptor(jdRef);
+                    addResourceEnvReferenceDescriptor(jdRef);
                 }
 
             }
@@ -2092,9 +2092,9 @@ public class WebBundleDescriptor extends BundleDescriptor
         toStringBuffer.append("\n ejbReferences ");
         if (ejbReferences != null)
             printDescriptorSet(ejbReferences, toStringBuffer);
-        toStringBuffer.append("\n jmsDestReferences ");
-        if (jmsDestReferences != null)
-            printDescriptorSet(jmsDestReferences, toStringBuffer);
+        toStringBuffer.append("\n resourceEnvRefReferences ");
+        if (resourceEnvRefReferences != null)
+            printDescriptorSet(resourceEnvRefReferences, toStringBuffer);
         toStringBuffer.append("\n messageDestReferences ");
         if (messageDestReferences != null)
             printDescriptorSet(messageDestReferences, toStringBuffer);

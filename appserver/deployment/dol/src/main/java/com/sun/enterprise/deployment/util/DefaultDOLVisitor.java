@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,7 @@ public class DefaultDOLVisitor implements DescriptorVisitor {
                 accept(itr.next());
             }
 
-            for (Iterator<JmsDestinationReferenceDescriptor> itr= nameEnvironment.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
+            for (Iterator<ResourceEnvReferenceDescriptor> itr= nameEnvironment.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
                 accept(itr.next());
             }
 
@@ -123,10 +123,10 @@ public class DefaultDOLVisitor implements DescriptorVisitor {
     }
 
     /**
-     * visits an jms destination reference for the last J2EE component visited
-     * @param the jms destination reference
+     * visits an resource environment reference for the last J2EE component visited
+     * @param the resource environment reference
      */
-    protected void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
+    protected void accept(ResourceEnvReferenceDescriptor resourceEnvRef) {
     }
 
     protected void accept(MessageDestinationReferencer msgDestReferencer) {

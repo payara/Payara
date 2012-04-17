@@ -206,9 +206,9 @@ public class ApplicationValidator extends EjbBundleValidator
             accept(next);
         }
 
-        for (Iterator it = managedBean.getJmsDestinationReferenceDescriptors().iterator(); it.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                    (JmsDestinationReferenceDescriptor) it.next();
+        for (Iterator it = managedBean.getResourceEnvReferenceDescriptors().iterator(); it.hasNext();) {
+            ResourceEnvReferenceDescriptor next =
+                    (ResourceEnvReferenceDescriptor) it.next();
             accept(next);
         }
 

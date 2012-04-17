@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -223,18 +223,18 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
     }
 
     @Override
-    protected void combineJmsDestinationReferenceDescriptors(JndiNameEnvironment env) {
-        for (Object ojdRef : env.getJmsDestinationReferenceDescriptors()) {
-            JmsDestinationReferenceDescriptor jdRef =
-                (JmsDestinationReferenceDescriptor)ojdRef;
-            JmsDestinationReferenceDescriptor jdr = _getJmsDestinationReferenceByName(jdRef.getName());
+    protected void combineResourceEnvReferenceDescriptors(JndiNameEnvironment env) {
+        for (Object ojdRef : env.getResourceEnvReferenceDescriptors()) {
+            ResourceEnvReferenceDescriptor jdRef =
+                (ResourceEnvReferenceDescriptor)ojdRef;
+            ResourceEnvReferenceDescriptor jdr = _getResourceEnvReferenceByName(jdRef.getName());
             if (jdr != null) {
-                if (jdr.isConflict((JmsDestinationReferenceDescriptor)jdRef)) {
-                    conflictJmsDestinationReference = true;
+                if (jdr.isConflict((ResourceEnvReferenceDescriptor)jdRef)) {
+                    conflictResourceEnvReference = true;
                 }
                 combineInjectionTargets(jdr, jdRef);   
             } else {
-                addJmsDestinationReferenceDescriptor(jdRef);
+                addResourceEnvReferenceDescriptor(jdRef);
             }
         }
     }

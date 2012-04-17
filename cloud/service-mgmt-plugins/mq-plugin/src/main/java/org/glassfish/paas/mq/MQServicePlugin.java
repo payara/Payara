@@ -224,10 +224,10 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
             }
 
             // resource-env-ref
-            for (Object jmsDestRef : jndiEnv.getJmsDestinationReferenceDescriptors()) {
-                JmsDestinationReferenceDescriptor jmsDestRefDesc = (JmsDestinationReferenceDescriptor) jmsDestRef;
-                if (serviceReferenceTypes.contains(jmsDestRefDesc.getRefType())) {
-                    ServiceReference serviceRef = new ServiceReference(jmsDestRefDesc.getJndiName(), jmsDestRefDesc.getRefType(), null);
+            for (Object resourceEnvRef : jndiEnv.getResourceEnvReferenceDescriptors()) {
+                ResourceEnvReferenceDescriptor resourceEnvRefDesc = (ResourceEnvReferenceDescriptor) resourceEnvRef;
+                if (serviceReferenceTypes.contains(resourceEnvRefDesc.getRefType())) {
+                    ServiceReference serviceRef = new ServiceReference(resourceEnvRefDesc.getJndiName(), resourceEnvRefDesc.getRefType(), null);
                     if (!isDuplicate(serviceRef, serviceReferences)) {
                         serviceReferences.add(serviceRef);
                     }

@@ -246,7 +246,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
 	    ResourceEnvRef resourceEnvRef = (ResourceEnvRef) newDescriptor;
 	    descriptor.getSunDescriptor().addResourceEnvRef(resourceEnvRef);
             try {
-	        JmsDestinationReferenceDescriptor  rrd = descriptor.getJmsDestinationReferenceByName(resourceEnvRef.getResourceEnvRefName());
+	        ResourceEnvReferenceDescriptor  rrd = descriptor.getResourceEnvReferenceByName(resourceEnvRef.getResourceEnvRefName());
 	        rrd.setJndiName(resourceEnvRef.getJndiName());
             } catch (IllegalArgumentException iae) {
                 DOLUtils.getDefaultLogger().warning(iae.getMessage());

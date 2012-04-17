@@ -737,7 +737,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         
         ResourceEnvRefNode subNode = new ResourceEnvRefNode();
         for (;resRefs.hasNext();) {
-            JmsDestinationReferenceDescriptor aResRef = (JmsDestinationReferenceDescriptor) resRefs.next();
+            ResourceEnvReferenceDescriptor aResRef = (ResourceEnvReferenceDescriptor) resRefs.next();
             subNode.writeDescriptor(parentNode, TagNames.RESOURCE_ENV_REFERENCE, aResRef);
         }        
     }    
@@ -938,7 +938,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
                    type="javaee:resource-env-refType"
                    minOccurs="0" maxOccurs="unbounded"/>
          */
-         writeResourceEnvRefDescriptors(node, descriptor.getJmsDestinationReferenceDescriptors().iterator());
+         writeResourceEnvRefDescriptors(node, descriptor.getResourceEnvReferenceDescriptors().iterator());
          
         /*      <xsd:element name="message-destination-ref"
                    type="javaee:message-destination-refType"

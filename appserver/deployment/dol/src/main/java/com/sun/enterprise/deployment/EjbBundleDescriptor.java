@@ -114,8 +114,8 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
               new HashSet<EnvironmentProperty>();
     private Set<EjbReference> ejbReferences =
               new HashSet<EjbReference>();
-    private Set<JmsDestinationReferenceDescriptor> jmsDestReferences =
-              new HashSet<JmsDestinationReferenceDescriptor>();
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences =
+              new HashSet<ResourceEnvReferenceDescriptor>();
     private Set<MessageDestinationReferenceDescriptor> messageDestReferences =
               new HashSet<MessageDestinationReferenceDescriptor>();
     private Set<ResourceReferenceDescriptor> resourceReferences =
@@ -948,26 +948,26 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
     }
 
     /**
-     * Return the set of JMS destination references this ejb declares.
+     * Return the set of resource environment references this ejb declares.
      */
-    public Set<JmsDestinationReferenceDescriptor> getJmsDestinationReferenceDescriptors() {
-        return jmsDestReferences;
+    public Set<ResourceEnvReferenceDescriptor> getResourceEnvReferenceDescriptors() {
+        return resourceEnvReferences;
     }
 
-    public void addJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-        jmsDestReferences.add(jmsDestReference);
+    public void addResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
+        resourceEnvReferences.add(resourceEnvReference);
     }
 
-    public void removeJmsDestinationReferenceDescriptor(JmsDestinationReferenceDescriptor jmsDestReference) {
-        jmsDestReferences.remove(jmsDestReference);
+    public void removeResourceEnvReferenceDescriptor(ResourceEnvReferenceDescriptor resourceEnvReference) {
+        resourceEnvReferences.remove(resourceEnvReference);
     }
 
     /**
      * Return a reference to another ejb by the same name or throw an IllegalArgumentException.
      */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(String name) {
-        for (Iterator itr = this.getJmsDestinationReferenceDescriptors().iterator(); itr.hasNext();) {
-            JmsDestinationReferenceDescriptor jdr = (JmsDestinationReferenceDescriptor) itr.next();
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(String name) {
+        for (Iterator itr = this.getResourceEnvReferenceDescriptors().iterator(); itr.hasNext();) {
+            ResourceEnvReferenceDescriptor jdr = (ResourceEnvReferenceDescriptor) itr.next();
             if (jdr.getName().equals(name)) {
                 return jdr;
 

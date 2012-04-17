@@ -191,18 +191,18 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return (MessageDestinationReferenceContainer)descriptor;
     }
 
-    public void addJmsDestinationReferenceDescriptor
-        (JmsDestinationReferenceDescriptor jmsDestReference) {
-        getJmsDestinationReferenceContainer(
-        ).addJmsDestinationReferenceDescriptor(jmsDestReference);
+    public void addResourceEnvReferenceDescriptor
+        (ResourceEnvReferenceDescriptor resourceEnvReference) {
+        getResourceEnvReferenceContainer(
+        ).addResourceEnvReferenceDescriptor(resourceEnvReference);
     }
                                                
-    public JmsDestinationReferenceDescriptor getJmsDestinationReference
+    public ResourceEnvReferenceDescriptor getResourceEnvReference
         (String name) {
-        JmsDestinationReferenceDescriptor jmsDestRef = null;
+        ResourceEnvReferenceDescriptor resourceEnvRef = null;
         try {
-            jmsDestRef = getJmsDestinationReferenceContainer().
-                getJmsDestinationReferenceByName(name);
+            resourceEnvRef = getResourceEnvReferenceContainer().
+                getResourceEnvReferenceByName(name);
             // annotation has a corresponding resource-env-ref
             // in xml.  Just add annotation info and continue.
             // This logic might change depending on overriding rules
@@ -218,17 +218,17 @@ public class ResourceContainerContextImpl extends AnnotationContext
             if( app != null ) {
                 try {
                     // Check for java:app/java:global dependencies at app-level
-                    jmsDestRef = app.getJmsDestinationReferenceByName(name);
+                    resourceEnvRef = app.getResourceEnvReferenceByName(name);
                       // Make sure it's added to the container context.
-                    addJmsDestinationReferenceDescriptor(jmsDestRef);
+                    addResourceEnvReferenceDescriptor(resourceEnvRef);
                 } catch(IllegalArgumentException ee) {}
             }
         }
-        return jmsDestRef;
+        return resourceEnvRef;
     }
 
     protected WritableJndiNameEnvironment 
-        getJmsDestinationReferenceContainer()
+        getResourceEnvReferenceContainer()
     {
         return (WritableJndiNameEnvironment)descriptor;
     }

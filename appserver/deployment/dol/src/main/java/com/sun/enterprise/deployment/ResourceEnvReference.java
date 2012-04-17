@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,14 +42,13 @@ package com.sun.enterprise.deployment;
 
     
 /**
- * I am an object representing a dependency on a JMS Destination
- * (Queue/Topic)
+ * I am an object representing a dependency on a resource environment.
  * @author Kenneth Saks
  */
 
 import com.sun.enterprise.deployment.web.ContextParameter;
 
-public interface JmsDestinationReference extends ContextParameter {
+public interface ResourceEnvReference extends ContextParameter {
 
     /* Gets the logical name of the destination reference */
     public String getName();

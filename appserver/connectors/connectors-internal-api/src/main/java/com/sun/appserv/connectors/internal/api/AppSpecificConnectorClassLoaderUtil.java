@@ -218,9 +218,9 @@ public class AppSpecificConnectorClassLoaderUtil {
             }
 
             // resource-env-ref
-            for (Object jmsDestRef : jndiEnv.getJmsDestinationReferenceDescriptors()) {
-                JmsDestinationReferenceDescriptor jmsDestRefDesc = (JmsDestinationReferenceDescriptor) jmsDestRef;
-                String jndiName = jmsDestRefDesc.getJndiName();
+            for (Object resourceEnvRef : jndiEnv.getResourceEnvReferenceDescriptors()) {
+                ResourceEnvReferenceDescriptor resourceEnvRefDesc = (ResourceEnvReferenceDescriptor) resourceEnvRef;
+                String jndiName = resourceEnvRefDesc.getJndiName();
                 //ignore refs where jndi-name is not available
                 if(jndiName != null){
                     detectResourceInRA(app, moduleName, jndiName);

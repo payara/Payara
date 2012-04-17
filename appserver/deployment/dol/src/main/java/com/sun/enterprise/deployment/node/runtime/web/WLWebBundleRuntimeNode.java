@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.node.runtime.web;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.JmsDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
@@ -232,7 +232,7 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
             ResourceEnvRef resourceEnvRef = (ResourceEnvRef)newDescriptor;
             descriptor.getSunDescriptor().addResourceEnvRef(resourceEnvRef);
             try {
-                JmsDestinationReferenceDescriptor rrd = descriptor.getJmsDestinationReferenceByName(resourceEnvRef.getResourceEnvRefName());
+                ResourceEnvReferenceDescriptor rrd = descriptor.getResourceEnvReferenceByName(resourceEnvRef.getResourceEnvRefName());
                 rrd.setJndiName(resourceEnvRef.getJndiName());
             } catch (IllegalArgumentException iae) {
                 DOLUtils.getDefaultLogger().warning(iae.getMessage());

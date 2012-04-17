@@ -492,10 +492,10 @@ public class ComponentEnvManagerImpl
         addEnvironmentProperties(scope, env.getEnvironmentProperties().iterator(), jndiBindings);
 
         for (Iterator itr =
-             env.getJmsDestinationReferenceDescriptors().iterator();
+             env.getResourceEnvReferenceDescriptors().iterator();
              itr.hasNext();) {
-            JmsDestinationReferenceDescriptor next =
-                (JmsDestinationReferenceDescriptor) itr.next();
+            ResourceEnvReferenceDescriptor next =
+                (ResourceEnvReferenceDescriptor) itr.next();
 
             if( !dependencyAppliesToScope(next, scope)) {
                 continue;
@@ -613,7 +613,7 @@ public class ComponentEnvManagerImpl
         return;
     }
 
-    private CompEnvBinding getCompEnvBinding(final JmsDestinationReferenceDescriptor next) {
+    private CompEnvBinding getCompEnvBinding(final ResourceEnvReferenceDescriptor next) {
         final String name = descriptorToLogicalJndiName(next);
             Object value = null;
             if (next.isEJBContext()) {

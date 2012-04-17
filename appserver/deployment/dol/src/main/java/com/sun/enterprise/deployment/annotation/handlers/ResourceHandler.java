@@ -326,7 +326,7 @@ public class ResourceHandler extends AbstractResourceHandler {
                 DOLUtils.isRAConnectionFactory(habitat, resourceType.getName(), ((ResourceContainerContextImpl)rcContexts[0]).getAppFromDescriptor()) ) {
             return getResourceReferenceDescriptors(logicalName, rcContexts);
         } else {
-            return getJmsDestinationReferenceDescriptors(logicalName,
+            return getResourceEnvReferenceDescriptors(logicalName,
                                                             rcContexts);
         }
     }
@@ -383,30 +383,30 @@ public class ResourceHandler extends AbstractResourceHandler {
     }
 
     /**
-     * Return JmsDestinationReferenceDescriptors with given name
+     * Return ResourceEnvReferenceDescriptors with given name
      * if exists or a new one without name being set.
      * @param logicName
      * @param rcContexts
      * @return an array of resource env reference descriptors
      */
-    private JmsDestinationReferenceDescriptor[]
-        getJmsDestinationReferenceDescriptors
+    private ResourceEnvReferenceDescriptor[]
+        getResourceEnvReferenceDescriptors
         (String logicName, ResourceContainerContext[] rcContexts) {
 
-        JmsDestinationReferenceDescriptor jmsDestRefs[] =
-                new JmsDestinationReferenceDescriptor[rcContexts.length];
+        ResourceEnvReferenceDescriptor resourceEnvRefs[] =
+                new ResourceEnvReferenceDescriptor[rcContexts.length];
         for (int i = 0; i < rcContexts.length; i++) {
-            JmsDestinationReferenceDescriptor jmsDestRef =
-                rcContexts[i].getJmsDestinationReference(logicName);
-            if (jmsDestRef == null) {
-               jmsDestRef = new JmsDestinationReferenceDescriptor();
-               rcContexts[i].addJmsDestinationReferenceDescriptor(
-                   jmsDestRef);
+            ResourceEnvReferenceDescriptor resourceEnvRef =
+                rcContexts[i].getResourceEnvReference(logicName);
+            if (resourceEnvRef == null) {
+               resourceEnvRef = new ResourceEnvReferenceDescriptor();
+               rcContexts[i].addResourceEnvReferenceDescriptor(
+                   resourceEnvRef);
             }
-            jmsDestRefs[i] = jmsDestRef;
+            resourceEnvRefs[i] = resourceEnvRef;
         }
 
-        return jmsDestRefs;
+        return resourceEnvRefs;
     }
 
     /**

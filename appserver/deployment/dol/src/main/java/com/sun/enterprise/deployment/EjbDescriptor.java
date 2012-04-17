@@ -95,8 +95,8 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
             new HashSet<EnvironmentProperty>();
     private Set<EjbReference> ejbReferences =
             new HashSet<EjbReference>();
-    private Set<JmsDestinationReferenceDescriptor> jmsDestReferences =
-            new HashSet<JmsDestinationReferenceDescriptor>();
+    private Set<ResourceEnvReferenceDescriptor> resourceEnvReferences =
+            new HashSet<ResourceEnvReferenceDescriptor>();
     private Set<MessageDestinationReferenceDescriptor> messageDestReferences =
             new HashSet<MessageDestinationReferenceDescriptor>();
     private Set<ResourceReferenceDescriptor> resourceReferences =
@@ -233,7 +233,7 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
 	    // the other EjbDescriptor
 	    this.getEnvironmentProperties().addAll(other.getEnvironmentProperties());
 	    this.getEjbReferenceDescriptors().addAll(other.getEjbReferenceDescriptors());
-	    this.getJmsDestinationReferenceDescriptors().addAll(other.getJmsDestinationReferenceDescriptors());
+	    this.getResourceEnvReferenceDescriptors().addAll(other.getResourceEnvReferenceDescriptors());
 	    this.getMessageDestinationReferenceDescriptors().addAll(other.getMessageDestinationReferenceDescriptors());
 	    this.getResourceReferenceDescriptors().addAll(other.getResourceReferenceDescriptors());
 	    this.getServiceReferenceDescriptors().addAll(other.getServiceReferenceDescriptors());
@@ -594,10 +594,10 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
                         (ResourceReferenceDescriptor) resRefObj);
             }
 
-            for (Object jmsDestRefObj :
-                    interceptor.getJmsDestinationReferenceDescriptors()) {
-                addJmsDestinationReferenceDescriptor(
-                        (JmsDestinationReferenceDescriptor) jmsDestRefObj);
+            for (Object resourceEnvRefObj :
+                    interceptor.getResourceEnvReferenceDescriptors()) {
+                addResourceEnvReferenceDescriptor(
+                        (ResourceEnvReferenceDescriptor) resourceEnvRefObj);
             }
 
             for (EntityManagerFactoryReferenceDescriptor entMgrFacRef :
@@ -1708,58 +1708,58 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
     }
 
     /**
-     * Return the set of JMS destination references this ejb declares.
+     * Return the set of resource environment references this ejb declares.
      */
     @Override
-    public Set<JmsDestinationReferenceDescriptor>
-            getJmsDestinationReferenceDescriptors() {
+    public Set<ResourceEnvReferenceDescriptor>
+            getResourceEnvReferenceDescriptors() {
         if (env != null)
-            return env.getJmsDestinationReferenceDescriptors();
+            return env.getResourceEnvReferenceDescriptors();
         else
-            return jmsDestReferences;
+            return resourceEnvReferences;
     }
 
     @Override
-    public void addJmsDestinationReferenceDescriptor(
-                        JmsDestinationReferenceDescriptor jmsDestReference) {
+    public void addResourceEnvReferenceDescriptor(
+                        ResourceEnvReferenceDescriptor resourceEnvReference) {
 
         try {
-            JmsDestinationReferenceDescriptor existing =
-                getJmsDestinationReferenceByName(jmsDestReference.getName());
-            for (InjectionTarget next : jmsDestReference.getInjectionTargets()) {
+            ResourceEnvReferenceDescriptor existing =
+                getResourceEnvReferenceByName(resourceEnvReference.getName());
+            for (InjectionTarget next : resourceEnvReference.getInjectionTargets()) {
                 existing.addInjectionTarget(next);
             }
         } catch(IllegalArgumentException e) {
             if (env != null)
-                env.addJmsDestinationReferenceDescriptor(jmsDestReference);
+                env.addResourceEnvReferenceDescriptor(resourceEnvReference);
             else
-                jmsDestReferences.add(jmsDestReference);
+                resourceEnvReferences.add(resourceEnvReference);
         }
 
     }
 
     @Override
-    public void removeJmsDestinationReferenceDescriptor(
-                        JmsDestinationReferenceDescriptor jmsDestReference) {
+    public void removeResourceEnvReferenceDescriptor(
+                        ResourceEnvReferenceDescriptor resourceEnvReference) {
         if (env != null)
-            env.removeJmsDestinationReferenceDescriptor(jmsDestReference);
+            env.removeResourceEnvReferenceDescriptor(resourceEnvReference);
         else
-            jmsDestReferences.remove(jmsDestReference);
+            resourceEnvReferences.remove(resourceEnvReference);
     }
 
     @Override
-    public JmsDestinationReferenceDescriptor getJmsDestinationReferenceByName(
+    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(
                                                                 String name) {
-        for (Iterator itr = getJmsDestinationReferenceDescriptors().iterator();
+        for (Iterator itr = getResourceEnvReferenceDescriptors().iterator();
                 itr.hasNext();) {
-            JmsDestinationReferenceDescriptor jdr =
-                (JmsDestinationReferenceDescriptor) itr.next();
+            ResourceEnvReferenceDescriptor jdr =
+                (ResourceEnvReferenceDescriptor) itr.next();
             if (jdr.getName().equals(name)) {
                 return jdr;
             }
         }
         throw new IllegalArgumentException(localStrings.getLocalString(
-                "enterprise.deployment.exceptionbeanhasnojmsdestrefbyname",
+                "enterprise.deployment.exceptionbeanhasnoresourceenvrefbyname",
                 "This bean {0} has no resource environment reference by the name of {1}",
                 new Object[] {getName(), name}));
     }
@@ -2179,7 +2179,7 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
         // clear our entries
         environmentProperties.clear();
         ejbReferences.clear();
-        jmsDestReferences.clear();
+        resourceEnvReferences.clear();
         messageDestReferences.clear();
         resourceReferences.clear();
         serviceReferences.clear();
@@ -2513,9 +2513,9 @@ public abstract class EjbDescriptor extends EjbAbstractDescriptor
         toStringBuffer.append("\n ejbReferences ");
         if (ejbReferences != null)
             printDescriptorSet(ejbReferences, toStringBuffer);
-        toStringBuffer.append("\n jmsDestReferences ");
-        if (jmsDestReferences != null)
-            printDescriptorSet(jmsDestReferences, toStringBuffer);
+        toStringBuffer.append("\n resourceEnvReferences ");
+        if (resourceEnvReferences != null)
+            printDescriptorSet(resourceEnvReferences, toStringBuffer);
         toStringBuffer.append("\n messageDestReferences ");
         if (messageDestReferences != null)
             printDescriptorSet(messageDestReferences, toStringBuffer);

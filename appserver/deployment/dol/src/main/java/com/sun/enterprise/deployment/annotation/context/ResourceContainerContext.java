@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -104,10 +104,10 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
    /**
      * Add a resource-env-ref
      *
-     * @param the jmsDestRef
+     * @param the resourceEnvRef
      */
-    public void addJmsDestinationReferenceDescriptor
-        (JmsDestinationReferenceDescriptor jmsDestRef);
+    public void addResourceEnvReferenceDescriptor
+        (ResourceEnvReferenceDescriptor resourceEnvRef);
 
 
     /**
@@ -116,7 +116,7 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      *
      * @param the name of the resource-env-ref
      */
-    public JmsDestinationReferenceDescriptor getJmsDestinationReference
+    public ResourceEnvReferenceDescriptor getResourceEnvReference
         (String name);
 
     /**

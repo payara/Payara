@@ -153,12 +153,12 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
         computeRuntimeDefault(resRef);
     }
 
-    protected void accept(JmsDestinationReferenceDescriptor jmsDestRef) {
+    protected void accept(ResourceEnvReferenceDescriptor resourceEnvRef) {
 
-        if (jmsDestRef.getJndiName() == null ||
-                jmsDestRef.getJndiName().length() == 0) {
+        if (resourceEnvRef.getJndiName() == null ||
+                resourceEnvRef.getJndiName().length() == 0) {
             Map<String, ManagedBeanDescriptor> managedBeanMap = getManagedBeanMap();
-            String refType = jmsDestRef.getRefType();
+            String refType = resourceEnvRef.getRefType();
             if( managedBeanMap.containsKey(refType) ) {
                 ManagedBeanDescriptor desc = managedBeanMap.get(refType);
 
@@ -167,13 +167,13 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 String jndiName = ( bundleDescriptor.getModuleType() == org.glassfish.deployment.common.DeploymentUtils.carType() )
                         ?  desc.getAppJndiName() : desc.getGlobalJndiName();
 
-                jmsDestRef.setJndiName(jndiName);
-                jmsDestRef.setIsManagedBean(true);
-                jmsDestRef.setManagedBeanDescriptor(desc);
+                resourceEnvRef.setJndiName(jndiName);
+                resourceEnvRef.setIsManagedBean(true);
+                resourceEnvRef.setManagedBeanDescriptor(desc);
             }
         }
 
-        computeRuntimeDefault(jmsDestRef);
+        computeRuntimeDefault(resourceEnvRef);
     }
 
     protected void accept(MessageDestinationReferenceDescriptor msgDestRef) {
@@ -386,22 +386,22 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
     }
 
     /**
-     * Set runtime default value for JmsDestinationReferenceDescriptor.
+     * Set runtime default value for ResourceEnvReferenceDescriptor.
      */
-    private void computeRuntimeDefault(JmsDestinationReferenceDescriptor jmsDestRef) {
-        if (jmsDestRef.getRefType() != null && jmsDestRef.getRefType().equals(
+    private void computeRuntimeDefault(ResourceEnvReferenceDescriptor resourceEnvRef) {
+        if (resourceEnvRef.getRefType() != null && resourceEnvRef.getRefType().equals(
             "javax.transaction.UserTransaction")) {
-            jmsDestRef.setJndiName("java:comp/UserTransaction");
+            resourceEnvRef.setJndiName("java:comp/UserTransaction");
         }
 
-        else if (jmsDestRef.getRefType() != null && jmsDestRef.getRefType().equals("javax.transaction.TransactionSynchronizationRegistry")) {
-            jmsDestRef.setJndiName(
+        else if (resourceEnvRef.getRefType() != null && resourceEnvRef.getRefType().equals("javax.transaction.TransactionSynchronizationRegistry")) {
+            resourceEnvRef.setJndiName(
                 "java:comp/TransactionSynchronizationRegistry");
         }
 
-        else if (jmsDestRef.getJndiName() == null ||
-                jmsDestRef.getJndiName().length() == 0) {
-            jmsDestRef.setJndiName(getDefaultResourceJndiName(jmsDestRef.getName()));
+        else if (resourceEnvRef.getJndiName() == null ||
+                resourceEnvRef.getJndiName().length() == 0) {
+            resourceEnvRef.setJndiName(getDefaultResourceJndiName(resourceEnvRef.getName()));
         }
     }
 
