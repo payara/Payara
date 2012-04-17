@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -415,6 +415,7 @@ public class RemoteCommand extends CLICommand {
      *
      * @return usage text
      */
+    @Override
     public String getUsage() {
         if (usage == null) {
             if (rac == null) {
@@ -425,7 +426,7 @@ public class RemoteCommand extends CLICommand {
                  * we can't provide any command-specific usage information.
                  * Sigh.
                  */
-                return strings.get("Usage.asadmin.full", getName());
+                return getCommandUsage();
             }
             usage = rac.getUsage();
         }
@@ -433,7 +434,7 @@ public class RemoteCommand extends CLICommand {
             return super.getUsage();
 
         StringBuilder usageText = new StringBuilder();
-        usageText.append(strings.get("Usage", strings.get("Usage.asadmin")));
+        usageText.append(strings.get("Usage", getBriefCommandUsage()));
         usageText.append(" ");
         usageText.append(usage);
         return usageText.toString();

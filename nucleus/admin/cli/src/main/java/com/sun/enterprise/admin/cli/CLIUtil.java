@@ -275,7 +275,7 @@ public class CLIUtil {
     /**
      * Log the command, for debugging.
      */
-    public static void writeCommandToDebugLog(Environment env, String[] args, int exit) {
+    public static void writeCommandToDebugLog(ProgramOptions po, Environment env, String[] args, int exit) {
         File log = env.getDebugLogfile();
 
         if (log == null)
@@ -289,7 +289,7 @@ public class CLIUtil {
             out.write(dateFormat.format(date));
             out.write(" EXIT: " + exit);
 
-            out.write(" asadmin ");
+            out.write(" " + po.getCommandName() + " ");
 
             if (args != null) {
                 final int maxPath = 22;

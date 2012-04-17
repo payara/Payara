@@ -162,7 +162,7 @@ public class MultimodeCommand extends CLICommand {
      */
     private int executeCommands(BufferedReader reader)
             throws CommandException, CommandValidationException, IOException {
-        String line = null;
+        String line;
         int rc = 0;
 
         /*
@@ -171,9 +171,10 @@ public class MultimodeCommand extends CLICommand {
          * command an empty program options.
          */
         programOpts.toEnvironment(env);
+        String prompt = programOpts.getCommandName() + "> ";
         for (;;) {
             if (printPrompt) {
-                System.out.print("asadmin> ");
+                System.out.print(prompt);
                 System.out.flush();
             }
             if ((line = reader.readLine()) == null) {
@@ -185,7 +186,7 @@ public class MultimodeCommand extends CLICommand {
             if (line.trim().startsWith("#"))   // ignore comment lines
                 continue;
 
-            String[] args = null;
+            String[] args;
             try {
                 args = getArgs(line);
             } catch (ArgumentTokenizer.ArgumentException ex) {
@@ -278,7 +279,7 @@ public class MultimodeCommand extends CLICommand {
                     strings.get("CommandUnSuccessful", command));
                 break;
             }
-            CLIUtil.writeCommandToDebugLog(env, args, rc);
+            CLIUtil.writeCommandToDebugLog(programOpts, env, args, rc);
         }
         return rc;
     }

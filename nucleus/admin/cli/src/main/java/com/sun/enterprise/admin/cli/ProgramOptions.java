@@ -97,6 +97,7 @@ public class ProgramOptions {
     private boolean                         optionsSet;
     private String                          password;
     private PasswordLocation                location;
+    private String                          commandName;
 
     /*
      * Information passed in from AsadminMain and used by start-domain.
@@ -592,6 +593,21 @@ public class ProgramOptions {
     public void setClassName(String className) {
         this.className = className;
     }
+    
+    /** 
+     * @return the name of the command (not the subcommand)
+     */
+    public String getCommandName() {
+        return commandName;
+    }
+
+    /**
+     * @param commandName the name of the command (not the subcommand)
+     */
+    public void setCommandName(String commandName) {
+        this.commandName = commandName;
+    }
+    
 
     /**
      * String representation of the asadmin program options.

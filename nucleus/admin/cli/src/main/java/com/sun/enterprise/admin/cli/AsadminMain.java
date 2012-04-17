@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -50,6 +49,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -67,101 +68,112 @@ import org.jvnet.hk2.component.Habitat;
  */
 public class AsadminMain {
 
-    private       String classPath;
-    private       String className;
-    private       String command;
-    private       ProgramOptions po;
-    private       Habitat habitat;
-    private       Environment env = new Environment();
-    protected     Logger logger;
-
+    private String classPath;
+    private String className;
+    private String command;
+    private ProgramOptions po;
+    private Habitat habitat;
+    private Environment env = new Environment();
+    protected Logger logger;
     private final static int ERROR = 1;
     private final static int CONNECTION_ERROR = 2;
     private final static int INVALID_COMMAND_ERROR = 3;
     private final static int SUCCESS = 0;
     private final static int WARNING = 4;
-
     private final static String ADMIN_CLI_LOGGER =
-                                    "com.sun.enterprise.admin.cli";
-
+            "com.sun.enterprise.admin.cli";
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,
         SystemPropertyConstants.PRODUCT_ROOT_PROPERTY
     };
-
     private static final LocalStringsImpl strings =
-                                new LocalStringsImpl(AsadminMain.class);
+            new LocalStringsImpl(AsadminMain.class);
 
     static {
         Map<String, String> systemProps = new ASenvPropertyReader().getProps();
         for (String prop : copyProps) {
             String val = systemProps.get(prop);
-            if (ok(val))
+            if (ok(val)) {
                 System.setProperty(prop, val);
+            }
         }
     }
 
     /*
      * Skinning Methods
-     * 
+     *
      * The AsadminMain class can be "skinned" to present different CLI interface
-     * for different products.  Skinning is achieved by extending AsadminMain
-     * and redefining the methods in this section.
+     * for different products. Skinning is achieved by extending AsadminMain and
+     * redefining the methods in this section.
      */
-    
     /**
-     * Get the class loader that is used to load local commands. 
-     * 
+     * Get the class loader that is used to load local commands.
+     *
      * @return a class loader used to load local commands
      */
     protected ClassLoader getExtensionClassLoader() {
         /*
          * Create a ClassLoader to load from all the jar files in the
-         * lib/asadmin directory.  This directory can contain extension
-         * jar files with new local asadmin commands.
+         * lib/asadmin directory. This directory can contain extension jar files
+         * with new local asadmin commands.
          */
-        ClassLoader ecl = AsadminMain.class.getClassLoader();
-        try {
-            File inst = new File(System.getProperty(
-                                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
-            File ext = new File(new File(inst, "lib"), "asadmin");
-            logger.log(Level.FINER, "asadmin extension directory: {0}", ext);
-            if (ext.isDirectory())
-                ecl = new DirectoryClassLoader(ext, ecl);
-            else
-                logger.info(strings.get("ExtDirMissing", ext));
-        } catch (IOException ex) {
-            // any failure here is fatal
-            logger.info(strings.get("ExtDirFailed", ex));
-            System.exit(1);
+        final ClassLoader ecl = AsadminMain.class.getClassLoader();
+        
+        File inst = new File(System.getProperty(
+                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        final File ext = new File(new File(inst, "lib"), "asadmin");
+        logger.log(Level.FINER, "asadmin extension directory: {0}", ext);
+        if (ext.isDirectory()) {
+            return (ClassLoader) AccessController.doPrivileged(
+                    new PrivilegedAction() {
+                        @Override
+                        public Object run() {
+                            try {
+                                return new DirectoryClassLoader(ext, ecl);
+                            } catch (IOException ex) {
+                                // any failure here is fatal
+                                logger.info(strings.get("ExtDirFailed", ex));
+                            }
+                            return ecl;
+                        }
+                    });
+        } else {
+            logger.info(strings.get("ExtDirMissing", ext));
         }
+
         return ecl;
     }
     
+    
+
+    protected String getCommandName() {
+        return "asadmin";
+    }
     /*
      * End of skinning methods -------------------------------------------------
      */
 
     /**
-     * A ConsoleHandler that prints all non-SEVERE messages to System.out
-     * and all SEVERE messages to System.err.
+     * A ConsoleHandler that prints all non-SEVERE messages to System.out and
+     * all SEVERE messages to System.err.
      */
     private static class CLILoggerHandler extends ConsoleHandler {
-        
+
         private CLILoggerHandler() {
             setFormatter(new CLILoggerFormatter());
         }
-        
+
         @Override
         public void publish(java.util.logging.LogRecord logRecord) {
-            if (!isLoggable(logRecord))
+            if (!isLoggable(logRecord)) {
                 return;
+            }
             final PrintStream ps = (logRecord.getLevel() == Level.SEVERE) ? System.err : System.out;
             ps.println(getFormatter().format(logRecord));
         }
     }
-    
+
     private static class CLILoggerFormatter extends SimpleFormatter {
 
         @Override
@@ -171,32 +183,32 @@ public class AsadminMain {
     }
 
     public static void main(String[] args) {
-        new AsadminMain().doMain(args);
+        System.exit(new AsadminMain().doMain(args));
     }
-    
-    protected void doMain(String[] args) {
+
+    protected int doMain(String[] args) {
         int minor = JDK.getMinor();
 
         if (minor < 6) {
             System.err.println(strings.get("OldJdk", "" + minor));
-            System.exit(ERROR);
+            return ERROR;
         }
 
         boolean trace = env.trace();
         boolean debug = env.debug();
 
         /*
-         * Use a logger associated with the top-most package that we
-         * expect all admin commands to share.  Only this logger and
-         * its children obey the conventions that map terse=false to
-         * the INFO level and terse=true to the FINE level.
+         * Use a logger associated with the top-most package that we expect all
+         * admin commands to share. Only this logger and its children obey the
+         * conventions that map terse=false to the INFO level and terse=true to
+         * the FINE level.
          */
         logger = Logger.getLogger(ADMIN_CLI_LOGGER);
-        if (trace)
+        if (trace) {
             logger.setLevel(Level.FINEST);
-        else if (debug)
+        } else if (debug) {
             logger.setLevel(Level.FINER);
-        else {
+        } else {
             logger.setLevel(Level.FINE);
         }
         logger.setUseParentHandlers(false);
@@ -207,22 +219,23 @@ public class AsadminMain {
         // make sure the root logger uses our handler as well
         Logger rlogger = Logger.getLogger("");
         rlogger.setUseParentHandlers(false);
-        for (Handler lh : rlogger.getHandlers())
+        for (Handler lh : rlogger.getHandlers()) {
             rlogger.removeHandler(lh);
+        }
         rlogger.addHandler(h);
 
         if (debug) {
             System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
-                "" + System.currentTimeMillis());
-            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}", 
-                    new Object[]{System.getProperty("java.class.path"), 
-                                 Arrays.toString(args)});
+                    "" + System.currentTimeMillis());
+            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}",
+                    new Object[]{System.getProperty("java.class.path"),
+                        Arrays.toString(args)});
         }
 
         ClassLoader ecl = getExtensionClassLoader();
         /*
-         * Set the thread's context class laoder so that everyone can
-         * load from our extension directory.
+         * Set the thread's context class laoder so that everyone can load from
+         * our extension directory.
          */
         Thread.currentThread().setContextClassLoader(ecl);
 
@@ -233,47 +246,50 @@ public class AsadminMain {
         habitat = registry.createHabitat("default");
 
         classPath =
-            SmartFile.sanitizePaths(System.getProperty("java.class.path"));
+                SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AsadminMain.class.getName();
 
         /*
          * Special case: no arguments is the same as "multimode".
          */
-        if (args.length == 0)
-             args = new String[] { "multimode" };
+        if (args.length == 0) {
+            args = new String[]{"multimode"};
+        }
 
         /*
          * Special case: -V argument is the same as "version".
          */
-        if (args[0].equals("-V"))
-             args = new String[] { "version" };
+        if (args[0].equals("-V")) {
+            args = new String[]{"version"};
+        }
 
         command = args[0];
         int exitCode = executeCommand(args);
 
         switch (exitCode) {
-        case SUCCESS:
-            if (!po.isTerse())
+            case SUCCESS:
+                if (!po.isTerse()) {
+                    logger.fine(
+                            strings.get("CommandSuccessful", command));
+                }
+                break;
+
+            case WARNING:
                 logger.fine(
-                    strings.get("CommandSuccessful", command));
-            break;
+                        strings.get("CommandSuccessfulWithWarnings", command));
+                exitCode = SUCCESS;
+                break;
 
-        case WARNING:
-            logger.fine(
-                strings.get("CommandSuccessfulWithWarnings", command));
-            exitCode = SUCCESS;
-            break;
-
-        case ERROR:
-        case INVALID_COMMAND_ERROR:
-        case CONNECTION_ERROR:
-        default:
-            logger.fine(
-                strings.get("CommandUnSuccessful", command));
-            break;
+            case ERROR:
+            case INVALID_COMMAND_ERROR:
+            case CONNECTION_ERROR:
+            default:
+                logger.fine(
+                        strings.get("CommandUnSuccessful", command));
+                break;
         }
-        CLIUtil.writeCommandToDebugLog(env, args, exitCode);
-        System.exit(exitCode);
+        CLIUtil.writeCommandToDebugLog(po, env, args, exitCode);
+        return exitCode;
     }
 
     public int executeCommand(String[] argv) {
@@ -287,7 +303,7 @@ public class AsadminMain {
                  * non-option, which is the command name.
                  */
                 Parser rcp = new Parser(argv, 0,
-                                ProgramOptions.getValidOptions(), false);
+                        ProgramOptions.getValidOptions(), false);
                 ParameterMap params = rcp.getOptions();
                 po = new ProgramOptions(params, env);
                 readAndMergeOptionsFromAuxInput(po);
@@ -299,11 +315,13 @@ public class AsadminMain {
             po.toEnvironment(env);
             po.setClassPath(classPath);
             po.setClassName(className);
+            po.setCommandName(getCommandName());
             if (argv.length == 0) {
-                if (po.isHelp())
-                    argv = new String[] { "help" };
-                else
-                    argv = new String[] { "multimode" };
+                if (po.isHelp()) {
+                    argv = new String[]{"help"};
+                } else {
+                    argv = new String[]{"multimode"};
+                }
             }
             command = argv[0];
 
@@ -313,18 +331,20 @@ public class AsadminMain {
             return cmd.execute(argv);
         } catch (CommandValidationException cve) {
             logger.severe(cve.getMessage());
-            if (cmd == null)    // error parsing program options
+            if (cmd == null) // error parsing program options
+            {
                 printUsage();
-            else
+            } else {
                 logger.severe(cmd.getUsage());
+            }
             return ERROR;
         } catch (InvalidCommandException ice) {
             // find closest match with local or remote commands
             logger.severe(ice.getMessage());
             try {
                 CLIUtil.displayClosestMatch(command,
-                    CLIUtil.getAllCommands(habitat, po, env),
-                    strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
+                        CLIUtil.getAllCommands(habitat, po, env),
+                        strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
             } catch (InvalidCommandException e) {
                 // not a big deal if we cannot help
             }
@@ -335,19 +355,20 @@ public class AsadminMain {
                 logger.severe(ce.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getLocalCommands(habitat),
-                        strings.get("ClosestMatchedLocalCommands"), logger);
+                            CLIUtil.getLocalCommands(habitat),
+                            strings.get("ClosestMatchedLocalCommands"), logger);
                 } catch (InvalidCommandException e) {
                     logger.info(
                             strings.get("InvalidRemoteCommand", command));
                 }
-            } else
+            } else {
                 logger.severe(ce.getMessage());
+            }
             return ERROR;
         }
     }
 
-    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts) 
+    private static void readAndMergeOptionsFromAuxInput(final ProgramOptions progOpts)
             throws CommandException {
         final String auxInput = progOpts.getAuxInput();
         if (auxInput == null || auxInput.length() == 0) {
@@ -371,16 +392,16 @@ public class AsadminMain {
             throw new RuntimeException(ex);
         }
     }
-    
+
     /**
-     * Print usage message for asadmin command.
-     * XXX - should be derived from ProgramOptions.
+     * Print usage message for asadmin command. XXX - should be derived from
+     * ProgramOptions.
      */
     private void printUsage() {
-        logger.severe(strings.get("Asadmin.usage"));
+        logger.severe(strings.get("Asadmin.usage", getCommandName()));
     }
 
     private static boolean ok(String s) {
-        return s!= null && s.length() > 0;
+        return s != null && s.length() > 0;
     }
 }

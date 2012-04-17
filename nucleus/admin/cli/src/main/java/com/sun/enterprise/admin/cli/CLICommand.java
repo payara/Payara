@@ -289,9 +289,9 @@ public abstract class CLICommand implements PostConstruct {
         if (commandName.length() == 0)
             throw new IllegalArgumentException("Command name cannot be empty");
 
-        // special case "help" --> "asadmin"
+        // special case "help" --> help for the command
         if (commandName.equals("help"))
-            commandName = "asadmin";
+            commandName = programOpts.getCommandName();
 
         return ManPageFinder.getCommandManPage(
                                 commandName,
@@ -302,7 +302,9 @@ public abstract class CLICommand implements PostConstruct {
     }
 
     /**
-     * Get the usage text.
+     * Get the usage text for the subcommand. This method shows the details for
+     * the subcommand options but does not provide details about the command 
+     * options.
      *
      * @return usage text
      */
@@ -311,7 +313,7 @@ public abstract class CLICommand implements PostConstruct {
         if (commandModel != null && ok(usage = commandModel.getUsageText())) {
             StringBuffer usageText = new StringBuffer();
             usageText.append(
-                strings.get("Usage", strings.get("Usage.asadmin")));
+                strings.get("Usage", strings.get("Usage.brief")));
             usageText.append(" ");
             usageText.append(usage);
             return usageText.toString();
@@ -322,7 +324,7 @@ public abstract class CLICommand implements PostConstruct {
 
     private String generateUsageText() {
         StringBuilder usageText = new StringBuilder();
-        usageText.append(strings.get("Usage", strings.get("Usage.asadmin")));
+        usageText.append(strings.get("Usage", strings.get("Usage.brief")));
         usageText.append(" ");
         usageText.append(getName());
         int len = usageText.length();
@@ -445,6 +447,21 @@ public abstract class CLICommand implements PostConstruct {
     protected Collection<ParamModel> usageOptions() {
         return commandModel.getParameters();
     }
+    
+    /**
+     * Get the usage text for the command.  This usage text shows the details
+     * of the command options but does not show the details for the subcommand
+     * options. The subcommand argument is used to fill in the subcommand name
+     * in the usage text.
+     * @return usage text for the command
+     */
+    public String getCommandUsage() {
+        return strings.get("Usage.full", programOpts.getCommandName());
+    }
+    
+    public String getBriefCommandUsage() {
+        return strings.get("Usage.brief", programOpts.getCommandName());
+    }
 
     @Override
     public String toString() {
@@ -459,7 +476,8 @@ public abstract class CLICommand implements PostConstruct {
         StringBuilder sb = new StringBuilder();
 
         // first, the program options
-        sb.append("asadmin ");
+        sb.append(programOpts.getCommandName());
+        sb.append(' ');
         sb.append(programOpts.toString()).append(' ');
 
         // now the subcommand options and operands
@@ -593,7 +611,7 @@ public abstract class CLICommand implements PostConstruct {
                     Collection<ParamModel> programOptions =
                             ProgramOptions.getValidOptions();
                     StringBuilder sb = new StringBuilder();
-                    sb.append("asadmin");
+                    sb.append(programOpts.getCommandName());
                     for (Map.Entry<String,List<String>> p : params.entrySet()) {
                         // find the corresponding ParamModel
                         ParamModel opt = null;
@@ -709,7 +727,7 @@ public abstract class CLICommand implements PostConstruct {
 
     /**
      * Check if the current request is a help request, either because
-     * --help was specified as a programoption or a command option.
+     * --help was specified as a program option or a command option.
      * If so, get the man page using the getManPage method, copy the
      * content to System.out, and return true.  Otherwise return false.
      * Subclasses may override this method to perform a different check
