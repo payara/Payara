@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Date;
 
 @Service(name = "jvm_memory")
 @Scoped(PerLookup.class)
@@ -83,8 +84,10 @@ public class JVMMemoryAlert
                     Iterator<TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat>> iter = instMetric.table.iterator(30, TimeUnit.SECONDS);
                     while (iter.hasNext()) {
                         TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat> data = iter.next();
-                        sb.append(" {").append(data.getTimestamp() % 1000000).append(": ")
-                                .append(data.getV().getUsed()).append("}");
+                       Date date = new Date(data.getTimestamp());
+                        sb.append("{").append(date.getHours()).append(":").append(date.getMinutes()).append(":").append(date.getSeconds()).append(":");
+                        //sb.append(" {").append(data.getTimestamp() % 1000000).append(": ")
+                               sb .append(data.getV().getUsed()).append("}");
                         avg.accept(data.getV().getUsed());
                     }
 
