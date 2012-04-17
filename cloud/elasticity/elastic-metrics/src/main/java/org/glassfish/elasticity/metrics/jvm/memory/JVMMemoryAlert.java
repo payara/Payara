@@ -80,14 +80,13 @@ public class JVMMemoryAlert
             } else {
                 Average avg = services.forContract(Average.class).get();
                 try {
-                    sb.append("\n\t").append(inst).append("(").append(instMetric.maxHeap).append("): ");
+                    sb.append("\n\t").append(inst).append("(Max: ").append(instMetric.maxHeap/1000000).append("Mb): ");
                     Iterator<TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat>> iter = instMetric.table.iterator(30, TimeUnit.SECONDS);
                     while (iter.hasNext()) {
                         TabularMetricEntry<JVMMemoryMetricHolder.MemoryStat> data = iter.next();
                        Date date = new Date(data.getTimestamp());
-                        sb.append("{").append(date.getHours()).append(":").append(date.getMinutes()).append(":").append(date.getSeconds()).append(":");
-                        //sb.append(" {").append(data.getTimestamp() % 1000000).append(": ")
-                               sb .append(data.getV().getUsed()).append("}");
+                        sb.append("{").append(date.getHours()).append(":").append(date.getMinutes()).append(":").append(date.getSeconds()).append(":")
+                            .append(" ").append(data.getV().getUsed()/1000000).append("Mb} ");
                         avg.accept(data.getV().getUsed());
                     }
 
