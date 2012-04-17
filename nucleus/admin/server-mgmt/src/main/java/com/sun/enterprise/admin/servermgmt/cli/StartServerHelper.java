@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.cli.Environment;
+import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.util.OS;
 import java.io.File;
 import java.io.IOException;
@@ -360,8 +361,15 @@ public class StartServerHelper {
         // Normally there is no console.
         // There are **three** JVMs in a restart -- old server, new server, cli
         // we will not even see AS_DEBUG!
-        if (DEBUG_MESSAGES_ON)
-            CLIUtil.writeCommandToDebugLog(new Environment(), new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
+        if (DEBUG_MESSAGES_ON) {
+            Environment env = new Environment();
+            try {
+                CLIUtil.writeCommandToDebugLog(new ProgramOptions(env), env, new String[]{"DEBUG MESSAGE FROM RESTART JVM", s}, 99999);
+            } catch (CommandException ce) {
+                // ignore
+            }
+        
+        }
     }
     private final boolean terse;
     private final GFLauncher launcher;
