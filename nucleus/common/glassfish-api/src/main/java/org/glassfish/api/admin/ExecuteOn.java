@@ -66,7 +66,7 @@ public @interface ExecuteOn {
      *
      * @return array of target process types
      */
-    RuntimeType[] value() default { RuntimeType.DAS, RuntimeType.INSTANCE};
+    RuntimeType[] value() default { RuntimeType.DAS, RuntimeType.INSTANCE,RuntimeType.SINGLE_INSTANCE};
 
     /**
      * Identifies the {@link ClusterExecutor} that is responsible for remotely executing

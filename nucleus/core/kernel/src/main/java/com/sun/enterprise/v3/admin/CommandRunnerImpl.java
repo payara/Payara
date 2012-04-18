@@ -933,6 +933,23 @@ public class CommandRunnerImpl implements CommandRunner {
                         fp = clAnnotation.ifFailure();
                     }
                 }
+                TargetType tgtTypeAnnotation = command.getClass().getAnnotation(TargetType.class);
+
+                //@ExecuteOn(RuntimeType.SINGLE_INSTANCE) cannot be combined with
+                //@TargetType since we do not want to replicate the command
+                if (runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE)) {
+                   if (tgtTypeAnnotation != null) {
+
+                       report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                       report.setMessage(adminStrings.getLocalString("commandrunner.executor.targettype.unallowed",
+                               "Target type is not allowed on single instance command {0}  ,"
+                                       , model.getCommandName()));
+                       return;
+                   }
+                   //Do not replicate the command when there is
+                   //@ExecuteOn(RuntimeType.SINGLE_INSTANCE)
+                   doReplication = false;
+                }
 
                 String targetName = parameters.getOne("target");
                 if (targetName == null || model.getModelFor("target").getParam().obsolete()) {
@@ -948,9 +965,21 @@ public class CommandRunnerImpl implements CommandRunner {
 
                 if (serverEnv.isDas()) {
 
+                    //Do not replicate this command if it has @ExecuteOn(RuntimeType.SINGLE_INSTANCE)
+                    //and the user is authorized to execute on DAS
+                    // TODO add authorization check
+                    /*if (runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE)) {
+                        //If authorization fails
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.das.unallowed",
+                                "Not authorized to execute command {0} on DAS"
+                                        , model.getCommandName()));
+                        return;
+                    }*/
+
                     // Check if the command allows this target type; first read the annotation
                     //TODO : See is @TargetType can also be moved to the CommandModel
-                    TargetType tgtTypeAnnotation = command.getClass().getAnnotation(TargetType.class);
+
                     if (tgtTypeAnnotation != null) {
                         for (CommandTarget c : tgtTypeAnnotation.value()) {
                             targetTypesAllowed.add(c);

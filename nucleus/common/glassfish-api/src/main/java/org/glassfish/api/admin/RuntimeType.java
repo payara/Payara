@@ -68,6 +68,11 @@ public enum RuntimeType {
     EMBEDDED,
 
     /**
+     * The local single instance on which the command will run
+     */
+    SINGLE_INSTANCE,
+
+    /**
      * All instances in the domain
      */
     ALL;
@@ -90,6 +95,10 @@ public enum RuntimeType {
 
     public final boolean isBroadcast() {
         return this == ALL;
+    }
+
+    public final boolean isSingleInstance() {
+        return this == SINGLE_INSTANCE;
     }
     
     public final static RuntimeType getDefault() {
