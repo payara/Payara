@@ -313,7 +313,7 @@ public abstract class CLICommand implements PostConstruct {
         if (commandModel != null && ok(usage = commandModel.getUsageText())) {
             StringBuffer usageText = new StringBuffer();
             usageText.append(
-                strings.get("Usage", strings.get("Usage.brief")));
+                strings.get("Usage", strings.get("Usage.brief", programOpts.getCommandName())));
             usageText.append(" ");
             usageText.append(usage);
             return usageText.toString();
@@ -324,7 +324,7 @@ public abstract class CLICommand implements PostConstruct {
 
     private String generateUsageText() {
         StringBuilder usageText = new StringBuilder();
-        usageText.append(strings.get("Usage", strings.get("Usage.brief")));
+        usageText.append(strings.get("Usage", strings.get("Usage.brief", programOpts.getCommandName())));
         usageText.append(" ");
         usageText.append(getName());
         int len = usageText.length();
