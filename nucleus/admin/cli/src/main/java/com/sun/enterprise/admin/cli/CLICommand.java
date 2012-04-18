@@ -58,8 +58,13 @@ import org.glassfish.common.util.admin.ManPageFinder;
 
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
+import com.sun.enterprise.admin.util.LineTokenReplacer;
+import com.sun.enterprise.admin.util.TokenValue;
+import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
+import com.sun.appserv.server.util.Version;
+
 import com.sun.logging.LogDomains;
 
 
@@ -108,6 +113,18 @@ public abstract class CLICommand implements PostConstruct {
     // InjectionManager is completely stateless with only one method that
     // operates on its arguments, so we can share a single instance.
     private static final InjectionManager injectionMgr = new InjectionManager();
+
+    // tokens that are substituted in manual pages
+    // the tokens are delimited with {}
+    // the tokens and tokenValues arrays must be kept in sync.  See the 
+    // expandManPage method for where the tokenValues are assigned.
+    private static String manpageTokens[] = { 
+        "cname",            // the command name
+        "cprefix",          // the environment variable prefix
+        "product---name",   // the product name
+    };
+    private String manpageTokenValues[] = new String[manpageTokens.length];
+
 
     /**
      * The name of the command.
@@ -299,6 +316,20 @@ public abstract class CLICommand implements PostConstruct {
                                 Locale.getDefault(),
                                 getClass().getClassLoader(),
                                 logger);
+    }
+    
+    /**
+     * Return a man page for this command that has the tokens substituted
+     */
+    public BufferedReader expandManPage(Reader r) {
+        manpageTokenValues[0] = programOpts.getCommandName();
+        manpageTokenValues[1] = Environment.PREFIX;
+        manpageTokenValues[2] = Version.getBriefProductName();
+        TokenValueSet tvs = new TokenValueSet();
+        for (int i = 0; i < manpageTokens.length; i++) {
+            tvs.add(new TokenValue(manpageTokens[i], manpageTokenValues[i], "{", "}"));
+        }
+        return new BufferedReader(new LineTokenReplacer(tvs).getReader(r));
     }
 
     /**
@@ -740,6 +771,7 @@ public abstract class CLICommand implements PostConstruct {
             BufferedReader br = getManPage();
             if (br == null)
                 throw new CommandException(strings.get("ManpageMissing", name));
+            br = expandManPage(br);
             String line;
             try {
                 while ((line = br.readLine()) != null)

@@ -116,6 +116,7 @@
         <hk2.plugin.version>2.0.1</hk2.plugin.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <product.name>GlassFish Server Open Source Edition</product.name>
+        <brief_product_name>GlassFish Server</brief_product_name>
         <abbrev_product_name>glassfish</abbrev_product_name>
         <version_prefix></version_prefix>
         <major_version>4</major_version>

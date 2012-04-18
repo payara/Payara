@@ -38,6 +38,7 @@
 # holder.
 #
 product_name=@PRODUCT_NAME@
+brief_product_name=@BRIEF_PRODUCT_NAME@
 abbrev_product_name=@ABBREV_PRODUCT_NAME@
 major_version=@MAJOR_VERSION@
 minor_version=@MINOR_VERSION@

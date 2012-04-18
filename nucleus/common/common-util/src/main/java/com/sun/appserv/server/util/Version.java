@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ public class Version {
 
     private static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot";
     private static final String PRODUCT_NAME_KEY = "product_name";
+    private static final String BRIEF_PRODUCT_NAME_KEY = "brief_product_name"; 
     private static final String ABBREV_PRODUCT_NAME_KEY = "abbrev_product_name";
     private static final String MAJOR_VERSION_KEY = "major_version";
     private static final String MINOR_VERSION_KEY = "minor_version";
@@ -239,6 +240,13 @@ public class Version {
     public static String getProductName() {
         return getProperty(PRODUCT_NAME_KEY,
                 "Undefined Product Name - define product and version info in config/branding");
+    }
+
+    /**
+    * Returns Brief Product Name (used in manual pages)
+    */
+    public static String getBriefProductName() {
+        return getProperty(BRIEF_PRODUCT_NAME_KEY, "Undefined Product Name");
     }
 
     /**

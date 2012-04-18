@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ public class HelpCommand extends CLICommand {
     private static final int DEFAULT_PAGE_LENGTH = 50;
     private static final int NO_PAGE_LENGTH = -1;
     private static final String DEFAULT_HELP_PAGE = "help";
-
+    
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(HelpCommand.class);
 
@@ -115,7 +115,7 @@ public class HelpCommand extends CLICommand {
         if (r == null)
             throw new CommandException(
                         strings.get("ManpageMissing", getCommandName()));
-        return r;
+        return expandManPage(r);
     }
 
     private Reader getUserInput() {

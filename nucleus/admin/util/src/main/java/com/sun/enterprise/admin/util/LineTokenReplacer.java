@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package com.sun.enterprise.admin.util;
 
 import java.io.File;
 import java.io.Reader;
-import java.io.Writer;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.BufferedReader;
@@ -51,8 +50,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
-import com.sun.enterprise.admin.util.TokenValue;
-import com.sun.enterprise.admin.util.TokenValueSet;
+import java.io.*;
 
 /**
  */
@@ -72,6 +70,43 @@ public final class LineTokenReplacer {
             this.tokenArray = new TokenValue[length];
             System.arraycopy(tmp, 0, tokenArray, 0, length);
             this.charsetName = charset;
+    }
+    
+    /**
+     * Get a Reader that substitutes the tokens in the content that it returns.
+     * @param in the content in which tokens are to be substituted
+     * @return a Reader that returns the substituted content
+     */
+    public Reader getReader(final Reader in) {
+        return new Reader() {
+            BufferedReader reader = new BufferedReader(in);
+            String line = null;
+            final String eol = System.getProperty("line.separator");
+
+            @Override
+            public int read(char[] cbuf, int off, int len) throws IOException {
+                if (line == null || line.isEmpty()) {
+                    line = reader.readLine();
+                    if (line == null) {
+                        return -1;
+                    }
+                    line = replaceLine(line) + eol;
+                }
+                int copySize = len - off;
+                if (copySize > line.length()) {
+                    copySize = line.length();
+                }
+                line.getChars(0, copySize, cbuf, off);
+                line = line.substring(copySize);
+                return copySize;
+            }
+
+            @Override
+            public void close() throws IOException {
+                reader.close();
+            }
+        };
+
     }
 
     public void replace(File inputFile, File outputFile) {

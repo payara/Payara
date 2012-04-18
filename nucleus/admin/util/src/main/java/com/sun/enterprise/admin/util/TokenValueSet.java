@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,9 @@
 
 package com.sun.enterprise.admin.util;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.HashSet;
-import com.sun.enterprise.admin.util.TokenValue;
 
 /** Represents the Set of TokenValue objects.
  *
@@ -67,7 +66,7 @@ public class TokenValueSet implements Cloneable {
     }
     
     public void add(final TokenValue tokenValue) {
-        boolean added = this.values.add(tokenValue);
+        this.values.add(tokenValue);
     }
     
     public void addAll(final Set<TokenValue> more) {
@@ -98,18 +97,20 @@ public class TokenValueSet implements Cloneable {
         return ( this.values.size() );
     }
     
+    @Override
     public Object clone() throws CloneNotSupportedException {
         return ( super.clone() );
     }
     
+    @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Iterator<TokenValue> iter = this.iterator();
         while(iter.hasNext()) {
             TokenValue tv = iter.next();
             buf.append(tv.toString());
             buf.append(System.getProperty("line.separator"));
         }
-        return ( buf.toString() );
+        return buf.toString();
     }
 }

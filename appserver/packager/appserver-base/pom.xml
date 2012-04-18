@@ -70,6 +70,7 @@
                                     <filterset>
                                         <filter token="BRAND_NAME" value="${brand_name}"/>
                                         <filter token="PRODUCT_NAME" value="${product.name}"/>
+                                        <filter token="BRIEF_PRODUCT_NAME" value="${brief_product_name}"/>
                                         <filter token="ABBREV_PRODUCT_NAME" value="${abbrev_product_name}"/>
                                         <filter token="FULL_VERSION" value="${project.version}"/>
                                         <filter token="MAJOR_VERSION" value="${major_version}"/>

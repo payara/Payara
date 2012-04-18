@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,8 @@ public final class TokenValue implements Comparable {
     
     public final String token;
     public final String value;
-    public final String delimiter;
+    public final String preDelimiter;
+    public final String postDelimiter;
     public final String delimitedToken;
     
     public static final String DEFAULT_DELIMITER = "%%%";
@@ -70,62 +71,73 @@ public final class TokenValue implements Comparable {
     }
     
     public TokenValue(String token, String value, String delimiter) {
-        if (token == null || value == null || delimiter == null) {
+        this(token, value, delimiter, delimiter);
+    }
+    
+    public TokenValue(String token, String value, String preDelimiter, String postDelimiter) {
+        if (token == null || value == null || preDelimiter == null || postDelimiter == null) {
             throw new IllegalArgumentException("Null Argument");
         }
-        this.token          = token;
+        this.token = token;
 	/* Because of escaping process of a '\' by Java's bytecode
 	 * interpreter in string literals */
-        this.value          = escapeBackslashes(value);
-        this.delimiter      = delimiter;
-        this.delimitedToken = delimiter + token + delimiter;
+        this.value = escapeBackslashes(value);
+        this.preDelimiter = preDelimiter;
+        this.postDelimiter = postDelimiter;
+        this.delimitedToken = preDelimiter + token + postDelimiter;
     }
     
     public TokenValue(TokenValue other) {
-        this.token                  = other.token;
-        this.value                  = other.value;
-        this.delimiter              = other.delimiter;
-        this.delimitedToken         = other.delimitedToken;
+        this.token = other.token;
+        this.value = other.value;
+        this.preDelimiter = other.preDelimiter;
+        this.postDelimiter = other.postDelimiter;
+        this.delimitedToken = other.delimitedToken;
     }
     
+    @Override
     public int compareTo(Object other) {
         final TokenValue otherTokenValue = (TokenValue) other;
         return (this.token.compareTo(otherTokenValue.token));
     }
 
+    @Override
     public boolean equals(Object other) {
         boolean same = false;
         if (other instanceof TokenValue) {
-            same = token.equals(((TokenValue)other).token) &&
-                   delimiter.equals(((TokenValue)other).value);
+            same = delimitedToken.equals(((TokenValue)other).delimitedToken) &&
+                   value.equals(((TokenValue)other).value);
         }
-        return (same);
+        return same;
     }
     
+    @Override
     public int hashCode() {
         int result = 43;
         result = 17 * result + token.hashCode();
-        result = 17 * result + delimiter.hashCode();
+        result = 17 * result + preDelimiter.hashCode();
+        result = 17 * result + postDelimiter.hashCode();
         result = 17 * result + value.hashCode();
         
         return ( result );
     }
     
+    @Override
     public String toString() {
-        return ( delimiter + token + delimiter + "=" + value);
+        return delimitedToken + "=" + value;
     }
 
     /** Just appends additional '\' characters in the passed string. */
     private String escapeBackslashes(String anyString) {
-	    final char 		BACK_SLASH 	= '\\';
-	    final StringBuffer 	escaped 	= new StringBuffer();
-	    for(int i = 0 ;  i < anyString.length() ; i++) {
-		    final char ch = anyString.charAt(i);
-		    escaped.append(ch);
-		    if (ch == BACK_SLASH) {
-			    escaped.append(BACK_SLASH);
-		    }
-	    }
-	    return ( escaped.toString() );
+        final char BACK_SLASH = '\\';
+        final StringBuffer escaped = new StringBuffer();
+        for (int i = 0; i < anyString.length(); i++) {
+            final char ch = anyString.charAt(i);
+            escaped.append(ch);
+            if (ch == BACK_SLASH) {
+                escaped.append(BACK_SLASH);
+            }
+        }
+        return escaped.toString();
     }
 }
