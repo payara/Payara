@@ -261,54 +261,50 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
             // Perform 2.x style TimedObject processing if the class 
             // hasn't already been identified as a timed object.  
             AnnotationTypesProvider provider = Globals.getDefaultHabitat().getComponent(AnnotationTypesProvider.class, "EJB");
-            if( !ejb.isTimedObject() ) {
+            if (provider == null) {
+                throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
+            }
 
-                if (provider!=null) {
-                    if( provider.getType("javax.ejb.TimedObject").isAssignableFrom(ejbClass) ) {
-                        MethodDescriptor timedObjectMethod =
-                            new MethodDescriptor("ejbTimeout",
+            if( ejb.getEjbTimeoutMethod() == null && 
+                    provider.getType("javax.ejb.TimedObject").isAssignableFrom(ejbClass) ) {
+                MethodDescriptor timedObjectMethod =
+                        new MethodDescriptor("ejbTimeout",
                                                  "TimedObject timeout method",
                                                  new String[] {"javax.ejb.Timer"},
                                                  MethodDescriptor.EJB_BEAN);
-                        ejb.setEjbTimeoutMethod(timedObjectMethod);
-                    }
-                } else {
-                    throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
-                }
+                ejb.setEjbTimeoutMethod(timedObjectMethod);
 
-            } else {
+            } else if (ejb.getEjbTimeoutMethod() != null) {
                 // If timeout-method was only processed from the descriptor,
                 // we need to create a MethodDescriptor using the actual
                 // Method object corresponding to the timeout method.  The
                 // timeout method can have any access type and be anywhere
                 // in the bean class hierarchy.
-                if (ejb.getEjbTimeoutMethod() != null) {
-                    MethodDescriptor timeoutMethodDescOrig = ejb.getEjbTimeoutMethod();
-                    MethodDescriptor timeoutMethodDesc = 
-                            processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
-                    ejb.setEjbTimeoutMethod(timeoutMethodDesc);
-                }
+                MethodDescriptor timeoutMethodDescOrig = ejb.getEjbTimeoutMethod();
+                MethodDescriptor timeoutMethodDesc = 
+                        processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
+                ejb.setEjbTimeoutMethod(timeoutMethodDesc);
+            }
 
-                ScheduledTimerValidator validator = Globals.getDefaultHabitat().
-                        getComponent(ScheduledTimerValidator.class);
-                for (ScheduledTimerDescriptor sd : ejb.getScheduledTimerDescriptors()) {
-                    if (validator != null) {
-                        try {
-                            validator.validateScheduledTimerDescriptor(sd);
-                        } catch (Exception e) {
-                            throw new RuntimeException(ejb.getName() + ": Invalid schedule " + 
+            ScheduledTimerValidator validator = Globals.getDefaultHabitat().
+                    getComponent(ScheduledTimerValidator.class);
+            for (ScheduledTimerDescriptor sd : ejb.getScheduledTimerDescriptors()) {
+                if (validator != null) {
+                    try {
+                        validator.validateScheduledTimerDescriptor(sd);
+                    } catch (Exception e) {
+                        throw new RuntimeException(ejb.getName() + ": Invalid schedule " + 
                                 "defined on method " + sd.getTimeoutMethod().getFormattedString() + 
                                 ": " + e.getMessage());
-                        }
                     }
-
-                    MethodDescriptor timeoutMethodDescOrig = sd.getTimeoutMethod();
-                    MethodDescriptor timeoutMethodDesc = 
-                            processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
-                    sd.setTimeoutMethod(timeoutMethodDesc);
                 }
 
+                MethodDescriptor timeoutMethodDescOrig = sd.getTimeoutMethod();
+                MethodDescriptor timeoutMethodDesc = 
+                        processTimeoutMethod(ejb, timeoutMethodDescOrig, provider, ejbClass);
+                sd.setTimeoutMethod(timeoutMethodDesc);
             }
+
 
         } catch(Exception e) {
             RuntimeException re = new RuntimeException

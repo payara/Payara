@@ -191,7 +191,12 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
                  MethodDescriptor.EJB_BEAN);
 
             if (isTimedObject()) {
-                methods.add(getEjbTimeoutMethod());
+                if( getEjbTimeoutMethod() != null) {
+                    methods.add(getEjbTimeoutMethod());
+                }
+                for (ScheduledTimerDescriptor schd : getScheduledTimerDescriptors()) {
+                    methods.add(schd.getTimeoutMethod());
+                }
             }
 
         } catch (Throwable t) { 
