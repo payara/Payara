@@ -242,7 +242,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.security.auth.message</artifactId>
             <version>${project.version}</version>
         </dependency>
