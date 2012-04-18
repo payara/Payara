@@ -270,8 +270,13 @@ public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
         }
 
         if( !statefulSessionBean ) {
-            if( ejbDescriptor.isTimedObject() && ejbDescriptor.getEjbTimeoutMethod() != null) {
-                methods.add(ejbDescriptor.getEjbTimeoutMethod());
+            if( ejbDescriptor.isTimedObject() ) {
+                if( ejbDescriptor.getEjbTimeoutMethod() != null) {
+                    methods.add(ejbDescriptor.getEjbTimeoutMethod());
+                }
+                for (ScheduledTimerDescriptor schd : ejbDescriptor.getScheduledTimerDescriptors()) {
+                    methods.add(schd.getTimeoutMethod());
+                }
             }
         }
 
