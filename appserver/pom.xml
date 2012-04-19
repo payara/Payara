@@ -133,7 +133,6 @@
                 <module>extras/embedded/shell</module>
                 <module>packager</module>
                 <module>distributions</module>
-                <module>paas</module>
                 <module>security</module>
                 <module>registration</module>
                 <module>tests</module>
@@ -194,7 +193,6 @@
                 <module>connectors</module>
                 <module>load-balancer</module> 
                 <module>jdbc</module>
-                <module>paas</module>
                 <module>extras</module>
                 <module>distributions</module>
                 <module>security</module>
@@ -261,7 +259,6 @@
                 <module>flashlight</module>
                 <module>grizzly</module>
                 <module>webservices</module>
-                <module>paas</module>
                 <module>orb</module>
                 <module>installer</module>
                 <module>appclient</module>
@@ -301,7 +298,6 @@
                 <module>admingui</module>
                 <module>extras/embedded/shell</module>
                 <module>packager</module>
-                <module>paas</module>
                 <module>distributions</module>
                 <module>security</module>
                 <module>registration</module>
