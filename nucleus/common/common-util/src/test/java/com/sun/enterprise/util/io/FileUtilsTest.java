@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.util.io;
 
+import com.sun.enterprise.universal.io.SmartFile;
 import java.io.File;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -70,12 +70,28 @@ public class FileUtilsTest {
         assertTrue(FileUtils.mkdirsMaybe(d2));
         assertFalse(d2.mkdirs());
 
-        if(!d1.delete())
+        if (!d1.delete())
             d1.deleteOnExit();
 
-        if(!d2.delete())
+        if (!d2.delete())
             d2.deleteOnExit();
 
     }
+    @Test
+    public void testParent() {
+        File f = null;
+        assertNull(FileUtils.getParentFile(f));
+        f = new File("/foo/././././.");
+        File wrongGrandParent = f.getParentFile().getParentFile();
+        File correctParent = FileUtils.getParentFile(f);
+        File sanitizedChild = SmartFile.sanitize(f);
+        File sanitizedWrongGrandParent = SmartFile.sanitize(wrongGrandParent);
+        File shouldBeSameAsChild = new File(correctParent, "foo");
+
+        // check this out -- surprise!!!!
+        assertEquals(sanitizedWrongGrandParent, sanitizedChild);
+        assertEquals(shouldBeSameAsChild, sanitizedChild);
+    }
+
 
 }

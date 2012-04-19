@@ -45,6 +45,7 @@
 
 package com.sun.enterprise.util.io;
 
+import com.sun.enterprise.universal.io.SmartFile;
 import java.io.*;
 import java.util.*;
 
@@ -61,6 +62,23 @@ import java.util.Locale;
 public class FileUtils {
     final static Logger _logger = Logger.getLogger("javax.enterprise.system.util");
     final static Logger _utillogger = com.sun.logging.LogDomains.getLogger(FileUtils.class,com.sun.logging.LogDomains.UTIL_LOGGER);
+
+    /**
+     * The method, java.io.File.getParentFile() does not necessarily do what
+     * you would think it does.  What it really does is to simply chop off the
+     * final element in the path and return what is left-over.  E.g.
+     * if the file is /foo/.  then the "parent" that is returned is /foo
+     * which is probably not what you expected.
+     * This method really returns the parent directory - or null if there is none.
+     * @param f
+     * @return
+     */
+    public static File getParentFile(File f) {
+        if (f == null)
+            return null;
+
+        return SmartFile.sanitize(f).getParentFile();
+    }
 
     /**
      * Wrapper for File.mkdirs
@@ -624,7 +642,7 @@ public class FileUtils {
 
 	return new File(relative);
     }
-    
+
 
     /**
      * Executes the supplied work object until the work is done or the max.
@@ -692,7 +710,7 @@ public class FileUtils {
             f = File.createTempFile(TMPFILENAME, "jar", directory);
         }
         catch (IOException ioe) {
-//Bug 4677074			ioe.printStackTrace(); 
+//Bug 4677074			ioe.printStackTrace();
 //Bug 4677074 begin
             _logger.log(Level.SEVERE, "iplanet_util.io_exception", ioe);
 //Bug 4677074 end
@@ -986,7 +1004,7 @@ public class FileUtils {
                             _utillogger.log(Level.FINE, Strings.get("enterprise_util.rename_initial_success", new Object [] {
                                 fromFilePath, toFilePath } ));
                         }
-                    } else {        
+                    } else {
                         _utillogger.log(FILE_OPERATION_LOG_LEVEL, Strings.get("enterprise_util.retry_rename_success", new Object []
                             { fromFilePath, toFilePath, Integer.valueOf(retries) } ));
                     }
@@ -999,7 +1017,7 @@ public class FileUtils {
                     { fromFilePath, toFilePath, Integer.valueOf(retries) } ));
             }
             return result;
-        }    
+        }
 
     /** Appends the given line at the end of given text file. If the given
      * file does not exist, an attempt is made to create it.
@@ -1038,7 +1056,7 @@ public class FileUtils {
         appendText(fileName, buffer.toString());
     }
     ///////////////////////////////////////////////////////////////////////////
-    
+
     /** A utility routine to read a <b> text file </b> efficiently and return
      * the contents as a String. Sometimes while reading log files of spawned
      * processes this kind of facility is handy. Instead of opening files, coding
@@ -1049,12 +1067,12 @@ public class FileUtils {
      * @throws java.io.IOException if there is an i/o error.
      * @throws java.io.FileNotFoundException if the file could not be found
      */
-    public static String readSmallFile(final String fileName) 
+    public static String readSmallFile(final String fileName)
             throws IOException, FileNotFoundException {
         return (readSmallFile(new File(fileName)) );
     }
-    
-    public static String readSmallFile(final File file) 
+
+    public static String readSmallFile(final File file)
             throws IOException {
         final BufferedReader bf = new BufferedReader(new FileReader(file));
         final StringBuilder sb = new StringBuilder(); //preferred over StringBuffer, no need to synchronize
@@ -1173,7 +1191,7 @@ public class FileUtils {
         }
         return new File[0];
     }
-    
+
     /**
      * Represents a unit of work that should be retried, if needed, until it
      * succeeds or the configured retry limit is reached.
