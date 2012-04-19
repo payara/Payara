@@ -40,6 +40,7 @@
 package org.glassfish.elasticity.engine.container;
 
 import java.util.Collection;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -123,6 +124,9 @@ public class ElasticEnvironmentContainer
         switch (event.getType()) {
             case CREATED:
                 this.envName = envName;
+                //check system property to see if should start elasticity related code
+                if (System.getProperty("start.elasticity") == null)
+                        return;
                 System.out.println("Created elastic environment "+ envName);
                 serviceContainer = services.forContract(ElasticServiceContainer.class).get();
                 addElasticServiceContainer(event.getNewValue().getName(), serviceContainer);

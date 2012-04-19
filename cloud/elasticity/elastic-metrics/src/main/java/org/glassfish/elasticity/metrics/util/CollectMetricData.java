@@ -40,6 +40,7 @@
 package org.glassfish.elasticity.metrics.util;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.Client;
 import org.glassfish.elasticity.metrics.util.MarshallingUtils;
 
 import javax.ws.rs.core.MediaType;
@@ -65,31 +66,33 @@ public class CollectMetricData {
         Map<String, Object> res= null;
 
         try {
+            /*
             URL dataURL = new URL(url + ".json");
             URLConnection conn = dataURL.openConnection();
-
             String json = "";
+
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             for (String line = br.readLine(); line != null; line = br.readLine()) {
 //                System.out.println("** Got line: " + line);
                 json = line;
             }
-
-//            Client client = Client.create();
-//            ClientResponse response = client.resource(url).accept(RESPONSE_TYPE).get(ClientResponse.class);
-//
-//            res = getEntityValues(response);
-
-        Map responseMap = MarshallingUtils.buildMapFromDocument(json);
-        Object obj = responseMap.get("extraProperties");
-        if (obj != null) {
-            res = (Map) ((Map) obj).get("entity");
-        } else {
-            res = responseMap;
-        }
-        
+ */
 
 
+            Client client = Client.create();
+            ClientResponse response = client.resource(url).accept(RESPONSE_TYPE).get(ClientResponse.class);
+
+            res = getEntityValues(response);
+/*
+            Map responseMap = MarshallingUtils.buildMapFromDocument(json);
+
+            Object obj = responseMap.get("extraProperties");
+            if (obj != null) {
+                res = (Map) ((Map) obj).get("entity");
+            } else {
+                res = responseMap;
+            }
+ */
         } catch (Exception ex){
                 ex.printStackTrace();
         }
