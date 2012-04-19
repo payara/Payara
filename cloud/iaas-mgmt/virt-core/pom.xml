@@ -52,7 +52,7 @@
     </parent>
     <artifactId>virt-core</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Virtualization Core Classes</name>
+    <name>IaaS Management Core</name>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.virtualization</groupId>

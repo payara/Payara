@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>native-files</artifactId>
-    <name>Glassfish Virtualization native specific files</name>
+    <name>IaaS Plugin native specific files</name>
     <description>This pom describes how to assemble add the native virtualization specific files to a Glassfish build</description>
     <packaging>distribution-base-zip</packaging>
 

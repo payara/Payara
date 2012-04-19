@@ -53,7 +53,7 @@
     </parent>
     <artifactId>virtualbox</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>VirtualBox Virtualization Plugin</name>
+    <name>IaaS Plugin virtualbox</name>
     <repositories>
 
     </repositories>

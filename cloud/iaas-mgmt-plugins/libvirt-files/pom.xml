@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>libvirt-files</artifactId>
-    <name>Glassfish Virtualization libvirt specific files</name>
+    <name>IaaS Plugin libvirt specific files</name>
     <description>This pom describes how to assemble add the libvirt virtualization specific files to a Glassfish build</description>
     <packaging>distribution-base-zip</packaging>
 

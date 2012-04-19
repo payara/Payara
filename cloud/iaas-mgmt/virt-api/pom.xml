@@ -52,7 +52,7 @@
     </parent>
     <artifactId>virt-api</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Virtualization Bootstrap and Config Classes</name>
+    <name>IaaS Management API and Config</name>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>

@@ -53,7 +53,7 @@
     </parent>
     <artifactId>libvirt</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>libvirt plugin</name>
+    <name>IaaS Plugin libvirt</name>
 
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
