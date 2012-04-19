@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -456,6 +456,12 @@ public class JmsRaUtil {
 
         SystemProperty sp = as.getSystemProperty("JMS_PROVIDER_PORT");
         if (sp != null) return sp.getValue();
+
+        Cluster cluster = as.getCluster();
+        if (cluster != null) {
+            sp = cluster.getSystemProperty("JMS_PROVIDER_PORT");
+            if (sp != null) return sp.getValue();
+        }
 
         Config config = as.getConfig();
         if (config != null)
