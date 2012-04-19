@@ -208,7 +208,6 @@
                     <plugin>
                         <groupId>org.glassfish.build</groupId>
                         <artifactId>maven-glassfishbuild-plugin</artifactId>
-                        <version>${glassfishbuild.version}</version>
                         <executions>
                             <execution>
                                 <id>echo</id>
@@ -378,11 +377,17 @@
                         </distribution>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.glassfish.build</groupId>
+                    <artifactId>maven-glassfishbuild-extension</artifactId>
+                    <version>${glassfishbuild.version}</version>                            
+                    <extensions>true</extensions>
+                </plugin>                
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version> 2.2 </version>
+                    <version> 2.8 </version>
                 </plugin>
 
                 <plugin>
@@ -444,6 +449,21 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.8.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>jaxws-maven-plugin</artifactId>
+                    <version>1.12</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -621,34 +641,37 @@
                     </dependency>
                 </dependencies>
             </plugin>
-        </plugins>
-    </build>
-
-    <reporting>
-        <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${findbugs.version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
                 <configuration>
-                    <skip>${findbugs.skip}</skip>
-                    <threshold>${findbugs.threshold}</threshold>
-                    <excludeFilterFile>
-                        exclude-common.xml,${findbugs.exclude}
-                    </excludeFilterFile>
+                    <reportPlugins>
+                        <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>findbugs-maven-plugin</artifactId>
+                            <version>${findbugs.version}</version>
+                            <configuration>
+                                <skip>${findbugs.skip}</skip>
+                                <threshold>${findbugs.threshold}</threshold>
+                                <excludeFilterFile>
+                                    exclude-common.xml,${findbugs.exclude}
+                                </excludeFilterFile>
+                            </configuration>
+                            <!--
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.glassfish.main</groupId>
+                                    <artifactId>findbugs</artifactId>
+                                    <version>${project.version}</version>
+                                </dependency>
+                            </dependencies>
+                            -->
+                        </plugin>
+                    </reportPlugins>
                 </configuration>
-                <!--
-                <dependencies>
-                    <dependency>
-                        <groupId>org.glassfish.main</groupId>
-                        <artifactId>findbugs</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
-                -->
             </plugin>
         </plugins>
-    </reporting>
+    </build>
 
     <!--  Begin: Dependency management -->
     <dependencyManagement>
@@ -796,17 +819,17 @@
                 <version>${eclipselink.version}</version>
             </dependency>
 
-			<dependency>
-				<groupId>org.eclipse.persistence</groupId>
-				<artifactId>org.eclipse.persistence.core.jpql</artifactId>
-				<version>${eclipselink.version}</version>
-			</dependency>
+            <dependency>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>org.eclipse.persistence.core.jpql</artifactId>
+                    <version>${eclipselink.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.eclipse.persistence</groupId>
-				<artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
-				<version>${eclipselink.version}</version>
-			</dependency>
+            <dependency>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
+                    <version>${eclipselink.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -908,12 +931,12 @@
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.compendium</artifactId>
                 <version>4.2.0</version>
-								<exclusions>
-									<exclusion>
-										<groupId>org.apache.felix</groupId>
-										<artifactId>javax.servlet</artifactId>
-									</exclusion>
-								</exclusions>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>javax.servlet</artifactId>
+                    </exclusion>
+                </exclusions>
                 <!-- This jar should never be part of runtime. -->
                 <scope>provided</scope>
             </dependency>
@@ -928,12 +951,12 @@
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.enterprise</artifactId>
                 <version>4.2.0</version>
-								<exclusions>
-									<exclusion>
-										<groupId>org.apache.felix</groupId>
-										<artifactId>javax.servlet</artifactId>
-									</exclusion>
-								</exclusions>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>javax.servlet</artifactId>
+                    </exclusion>
+                </exclusions>
                 <!-- This jar should never be part of runtime. -->
                 <scope>provided</scope>
             </dependency>
@@ -1455,7 +1478,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.3.1</version>
             <scope>test</scope>
             <optional>true</optional>
       </dependency>

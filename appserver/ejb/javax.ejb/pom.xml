@@ -89,7 +89,7 @@
                         plugin in creating manifest file entries for an embedded
                         dependencies
                     -->
-                    <manifestLocation>${pom.build.directory}</manifestLocation>
+                    <manifestLocation>${project.build.directory}</manifestLocation>
 
                     <!-- Maven uses the output directory (target/classes)
                     rather than the final bundle, when compiling against

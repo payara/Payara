@@ -168,10 +168,5 @@
             <artifactId>gf-load-balancer-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>

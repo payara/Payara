@@ -76,7 +76,7 @@
                         <!-- Make it an HK2 module, as GlassFish needs it to be HK2 module.
                          This is needed because we don't want to change the packaging type to
                          hk2-jar. -->
-                        <HK2-Bundle-Name>${pom.groupId}:${pom.artifactId}</HK2-Bundle-Name>
+                        <HK2-Bundle-Name>${project.groupId}:${project.artifactId}</HK2-Bundle-Name>
                     </instructions>
                     <!-- Maven uses the output directory (target/classes)
                     rather than the final bundle, when compiling against
