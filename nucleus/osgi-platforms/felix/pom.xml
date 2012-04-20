@@ -100,15 +100,13 @@
                                <outputDirectory>${felix.outdir}/bin</outputDirectory>
                                <destFileName>felix.jar</destFileName>
                              </artifactItem>
-                             <!-- We don't ship this, as it affects startup benchmark by 1%.
                              <artifactItem>
                                <groupId>org.apache.felix</groupId>
                                <artifactId>org.apache.felix.bundlerepository</artifactId>
-                               <version>1.6.2</version>
+                               <version>1.6.6</version>
                                <type>jar</type>
-                               <outputDirectory>${glassfish.modulesdir}/autostart/</outputDirectory>
+                               <outputDirectory>${glassfish.modulesdir}</outputDirectory>
                              </artifactItem>
-                             -->
                            </artifactItems>
                          </configuration>
                     </execution>

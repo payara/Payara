@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import static com.sun.enterprise.glassfish.bootstrap.Constants.HK2_CACHE_DIR;
 import static com.sun.enterprise.glassfish.bootstrap.Constants.INHABITANTS_CACHE;
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.*;
+import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.PROVISIONING_OPTIONS_PREFIX;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN;
 import static org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT;
 
@@ -135,7 +136,8 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             } else {
                 reconfigure(); // this will reconfigure if any provisioning options have changed.
             }
-            BundleProvisioner bundleProvisioner = new BundleProvisioner(framework.getBundleContext(), properties);
+            BundleProvisioner bundleProvisioner = BundleProvisioner.createBundleProvisioner(
+                    framework.getBundleContext(), properties);
             List<Long> bundleIds = bundleProvisioner.installBundles();
 
             if (bundleProvisioner.hasAnyThingChanged()) {
@@ -147,6 +149,9 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             if (bundleProvisioner.isSystemBundleUpdationRequired()) {
                 logger.logp(Level.INFO, "OSGiFrameworkLauncher", "launchOSGiFrameWork", "Updating system bundle");
                 framework.update();
+                framework.waitForStop(0);
+                framework.init();
+                bundleProvisioner.setBundleContext(framework.getBundleContext());
             }
 
             // Step 2: Start bundles
@@ -311,12 +316,9 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         if (newProvisioningOptions == null) {
             Properties props = new Properties();
             for (String key : properties.stringPropertyNames()) {
-                if (key.equals(AUTO_INSTALL_PROP) ||
-                        key.equals(AUTO_START_PROP) ||
-                        key.startsWith(AUTO_START_LEVEL_PROP)) {
+                if (key.startsWith(PROVISIONING_OPTIONS_PREFIX)) {
                     props.setProperty(key, properties.getProperty(key));
                 }
-                // Should we also include default start level of bundles?
             }
             newProvisioningOptions = props;
         }

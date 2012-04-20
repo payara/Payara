@@ -52,6 +52,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -133,8 +134,6 @@ public class BundleProvisioner {
         Integer getStartLevel(Jar jar);
     }
 
-    private static final String FILE_SCHEME = "file";
-
     private static Logger logger = Logger.getLogger(BundleProvisioner.class.getPackage().getName());
 
     private BundleContext bundleContext;
@@ -161,8 +160,12 @@ public class BundleProvisioner {
                 getBundleContext().getService(reference));
     }
 
-    private BundleContext getBundleContext() {
+    public BundleContext getBundleContext() {
         return bundleContext;
+    }
+
+    public void setBundleContext(BundleContext bundleContext) {
+        this.bundleContext = bundleContext;
     }
 
     /**
@@ -299,7 +302,7 @@ public class BundleProvisioner {
         return jars;
     }
 
-    private int uninstall(Collection<Jar> bundles) {
+    protected int uninstall(List<Jar> bundles) {
         for (Jar jar : bundles) {
             Bundle bundle = getBundle(jar);
             if (bundle == null) {
@@ -337,7 +340,7 @@ public class BundleProvisioner {
                 }
                 try {
                     if (isFrameworkExtensionBundle(bundle)) {
-                        systemBundleUpdationRequired = true;
+                        setSystemBundleUpdationRequired(true);
                     }
                     bundle.update();
                     noOfUpdatedBundles++;
@@ -494,6 +497,10 @@ public class BundleProvisioner {
         return systemBundleUpdationRequired;
     }
 
+    protected void setSystemBundleUpdationRequired(boolean systemBundleUpdationRequired) {
+        this.systemBundleUpdationRequired = systemBundleUpdationRequired;
+    }
+
     /**
      * @return no of bundles uninstalled
      */
@@ -513,6 +520,10 @@ public class BundleProvisioner {
      */
     public int getNoOfInstalledBundles() {
         return noOfInstalledBundles;
+    }
+
+    public Customizer getCustomizer() {
+        return customizer;
     }
 
     /**
@@ -677,7 +688,7 @@ public class BundleProvisioner {
         protected List<? extends URI> listJarFiles(URI aDirectoryURI) {
             // currently we only support file type directory URI. In future, we should be able to handle
             // directories inside jar files as well.
-            assert (FILE_SCHEME.equalsIgnoreCase(aDirectoryURI.getScheme()));
+            assert (Constants.FILE_SCHEME.equalsIgnoreCase(aDirectoryURI.getScheme()));
             final List<URI> jarURIs = new ArrayList<URI>();
 //            File dir = new File(aDirectoryURI);
             new File(aDirectoryURI).listFiles(new FileFilter() {
@@ -749,7 +760,7 @@ public class BundleProvisioner {
         long t2 = System.currentTimeMillis();
         logger.logp(Level.INFO, "BundleProvisioner", "main", "timeTaken to initialize OSGi framework = {0} ms",
                 new Object[]{t2 - t1});
-        BundleProvisioner bundleProvisioner = new BundleProvisioner(f.getBundleContext(), props);
+        BundleProvisioner bundleProvisioner = createBundleProvisioner(f.getBundleContext(), props);
         bundleProvisioner.installBundles();
         long t3 = System.currentTimeMillis();
         logger.logp(Level.INFO, "BundleProvisioner", "main", "timeTaken to finish installation of bundles = {0} ms",
@@ -757,7 +768,7 @@ public class BundleProvisioner {
         int installed = bundleProvisioner.getNoOfInstalledBundles();
         int updated = bundleProvisioner.getNoOfUpdatedBundles();
         int uninstalled = bundleProvisioner.getNoOfUninstalledBundles();
-        System.out.printf("installed %d, updated = %d, uninstalled = %d\n", installed, updated, uninstalled);
+        System.out.printf("installed = %d, updated = %d, uninstalled = %d\n", installed, updated, uninstalled);
         if (bundleProvisioner.hasAnyThingChanged()) {
             System.out.println("Refreshing framework");
             bundleProvisioner.refresh();
@@ -779,4 +790,17 @@ public class BundleProvisioner {
         logger.logp(Level.INFO, "BundleProvisioner", "main", "Total time taken = {0}", new Object[]{t5-t0});
         out.printf("%d,%d,%d,%d,%d,%d,%d\n", t1-t0, t2-t1, t3-t2, t4-t3, t4-t0, t5-t4, t5-t0);
     }
+
+    static BundleProvisioner createBundleProvisioner(BundleContext bctx, Properties props) {
+        Class clazz = Boolean.valueOf(props.getProperty(Constants.ONDEMAND_BUNDLE_PROVISIONING)) ?
+                MinimalBundleProvisioner.class : BundleProvisioner.class;
+        logger.logp(Level.INFO, "BundleProvisioner", "createBundleProvisioner", "clazz = {0}", new Object[]{clazz});
+        try {
+            final Constructor constructor = clazz.getConstructor(BundleContext.class, Properties.class);
+            return (BundleProvisioner) constructor.newInstance(bctx, props);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

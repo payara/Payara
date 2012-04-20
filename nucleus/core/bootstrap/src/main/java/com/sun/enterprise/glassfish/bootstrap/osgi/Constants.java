@@ -47,26 +47,32 @@ package com.sun.enterprise.glassfish.bootstrap.osgi;
 public class Constants {
     static final String BUNDLEIDS_FILENAME = "glassfish.bundleids";
     static final String PROVISIONING_OPTIONS_FILENAME = "provisioning.properties";
+    static final String PROVISIONING_OPTIONS_PREFIX = "glassfish.osgi";
     /**
      * The property name for the auto processor's auto-install property.
      */
-    static final String AUTO_INSTALL_PROP = "glassfish.osgi.auto.install";
+    static final String AUTO_INSTALL_PROP = PROVISIONING_OPTIONS_PREFIX + ".auto.install";
     /**
      * The property name for the auto processor's auto-start property.
      */
-    static final String AUTO_START_PROP = "glassfish.osgi.auto.start";
+    static final String AUTO_START_PROP = PROVISIONING_OPTIONS_PREFIX + ".auto.start";
     /**
      * The property name for auto processor's auto-start options property
      * The value of this property is the integer argument to Bundle.start()
      */
-    static final String AUTO_START_OPTIONS_PROP = "glassfish.osgi.auto.start.options";
+    static final String AUTO_START_OPTIONS_PROP = PROVISIONING_OPTIONS_PREFIX + ".auto.start.options";
     /**
      * Prefix for the property name to specify bundle's start level
      */
-    static final String AUTO_START_LEVEL_PROP = "glassfish.osgi.auto.start.level";
+    static final String AUTO_START_LEVEL_PROP = PROVISIONING_OPTIONS_PREFIX + ".auto.start.level";
     /**
      * The property name for final start level of framework
      */
-    static final String FINAL_START_LEVEL_PROP = "glassfish.osgi.start.level.final";
-    static final int INITIAL_START_LEVEL = 1;
+    static final String FINAL_START_LEVEL_PROP = PROVISIONING_OPTIONS_PREFIX + ".start.level.final";
+    /**
+     * The property name to configure if bundles should be provisioned on demand.
+     */
+    static final String ONDEMAND_BUNDLE_PROVISIONING = "glassfish.osgi.ondemand";
+
+    static final String FILE_SCHEME = "file";
 }
