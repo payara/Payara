@@ -127,7 +127,7 @@ public class VBoxVirtualMachine extends AbstractVirtualMachine {
         SSHLauncher sshLauncher = new SSHLauncher();
         File home = new File(System.getProperty("user.home"));
         String keyFile = new File(home,".ssh/id_rsa").getAbsolutePath();
-        sshLauncher.init(getUser().getName(), address.getHostAddress(), 22, null, keyFile, null, Logger.getAnonymousLogger());
+        sshLauncher.init(getUser().getName(), getAddress().getHostAddress(), 22, null, keyFile, null, Logger.getAnonymousLogger());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder stringBuilder = new StringBuilder();
         for (String arg : args) {
