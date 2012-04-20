@@ -65,6 +65,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
+import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
@@ -164,8 +165,8 @@ public class WebappClassLoader
         "org.apache.commons.logging"                 // Commons logging
     };
 
-    public static final boolean ENABLE_CLEAR_REFERENCES = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.ENABLE_CLEAR_REFERENCES", "true")).booleanValue();
+    private static final boolean ENABLE_CLEAR_REFERENCES = 
+        Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.ENABLE_CLEAR_REFERENCES", "false")).booleanValue();
 
     /**
      * All permission.
@@ -343,6 +344,25 @@ public class WebappClassLoader
 
     private volatile boolean resourcesExtracted = false;
 
+    /**
+     * Should Tomcat attempt to null out any static or final fields from loaded
+     * classes when a web application is stopped as a work around for apparent
+     * garbage collection bugs and application coding errors? There have been
+     * some issues reported with log4j when this option is true. Applications
+     * without memory leaks using recent JVMs should operate correctly with this
+     * option set to <code>false</code>. If not specified, the default value of
+     * <code>false</code> will be used.
+     */
+    private boolean clearReferencesStatic = ENABLE_CLEAR_REFERENCES;
+
+    /**
+     * Name of associated context used with logging and JMX to associate with
+     * the right web application. Particularly useful for the clear references
+     * messages. Defaults to unknown but if standard Tomcat components are used
+     * it will be updated during initialisation from the resources.
+     */
+    private String contextName = "unknown";
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -443,6 +463,21 @@ public class WebappClassLoader
      */
     public void setResources(DirContext resources) {
         this.resources = resources;
+
+        
+        if (resources instanceof ProxyDirContext) {
+            contextName = ((ProxyDirContext) resources).getContextName();
+        }
+    }
+
+
+    /**
+     * Return the context name for this class loader.
+     */
+    public String getContextName() {
+
+        return (this.contextName);
+
     }
 
 
@@ -583,6 +618,24 @@ public class WebappClassLoader
             addOverridablePackage("javax.faces");
             addOverridablePackage("com.sun.faces");
         }
+    }
+
+
+    /**
+     * Return the clearReferencesStatic flag for this Context.
+     */
+    public boolean getClearReferencesStatic() {
+        return (this.clearReferencesStatic);
+    }
+
+
+    /**
+     * Set the clearReferencesStatic feature for this Context.
+     *
+     * @param clearReferencesStatic The new flag value
+     */
+    public void setClearReferencesStatic(boolean clearReferencesStatic) {
+        this.clearReferencesStatic = clearReferencesStatic;
     }
 
 
@@ -1761,105 +1814,169 @@ public class WebappClassLoader
      */
     protected void clearReferences() {
 
-        // Unregister any JDBC drivers loaded by this classloader
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            if (driver.getClass().getClassLoader() == this) {
-                try {
-                    DriverManager.deregisterDriver(driver);
-                } catch (SQLException e) {
-                    logger.log(Level.WARNING, "webappClassLoader.sqlDriverDeregistrationError", e);
-                }
-            }
-        }
+        // De-register any remaining JDBC drivers
+        clearReferencesJdbc();
 
         // Null out any static or final fields from loaded classes,
         // as a workaround for apparent garbage collection bugs
-        if (ENABLE_CLEAR_REFERENCES) {
-            Collection<ResourceEntry> values = resourceEntries.values();
-            Iterator<ResourceEntry> loadedClasses = values.iterator();
-            /*
-             * Step 1: Enumerate all classes loaded by this WebappClassLoader
-             * and trigger the initialization of any uninitialized ones.
-             * This is to prevent the scenario where the initialization of
-             * one class would call a previously cleared class in Step 2 below.
-             */
-            while(loadedClasses.hasNext()) {
-                ResourceEntry entry = loadedClasses.next();
-                Class<?> clazz = null;
-                synchronized(this) {
-                    clazz = entry.loadedClass;
-                }
-                if (clazz != null) {
-                    try {
-                        Field[] fields = clazz.getDeclaredFields();
-                        for (int i = 0; i < fields.length; i++) {
-                            if(Modifier.isStatic(fields[i].getModifiers())) {
-                                fields[i].get(null);
-                                break;
-                            }
-                        }
-                    } catch(Throwable t) {
-                    }
-                }
-            }
-
-            /**
-             * Step 2: Clear all loaded classes
-             */
-            loadedClasses = values.iterator();
-            while (loadedClasses.hasNext()) {
-                ResourceEntry entry = loadedClasses.next();
-                Class<?> clazz = null;
-                synchronized(this) {
-                    clazz = entry.loadedClass;
-                }
-                if (clazz != null) {
-                    try {
-                        Field[] fields = clazz.getDeclaredFields();
-                        for (int i = 0; i < fields.length; i++) {
-                            Field field = fields[i];
-                            int mods = field.getModifiers();
-                            if (field.getType().isPrimitive()
-                                    || (field.getName().indexOf("$") != -1)) {
-                                continue;
-                            }
-                            if (Modifier.isStatic(mods)) {
-                                try {
-                                    setAccessible(field);
-                                    if (Modifier.isFinal(mods)) {
-                                        if (!((field.getType().getName().startsWith("java."))
-                                                || (field.getType().getName().startsWith("javax.")))) {
-                                            nullInstance(field.get(null));
-                                        }
-                                    } else {
-                                        field.set(null, null);
-                                        if (logger.isLoggable(Level.FINE)) {
-                                            logger.fine("Set field " + field.getName()
-                                                    + " to null in class " + clazz.getName());
-                                        }
-                                    }
-                                } catch (Throwable t) {
-                                    if (logger.isLoggable(Level.FINE)) {
-                                        logger.log(Level.FINE, "Could not set field " + field.getName()
-                                                + " to null in class " + clazz.getName(), t);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Throwable t) {
-                            if (logger.isLoggable(Level.FINE))  {
-                                logger.log(Level.FINE, "Could not clean fields for class " + clazz.getName(), t);
-                        }
-                    }
-                }
-            }
+        if (clearReferencesStatic) {
+            clearReferencesStaticFinal();
         }
 
         // Clear the classloader reference in the VM's bean introspector
         java.beans.Introspector.flushCaches();
+    }
 
+    /**
+     * Deregister any JDBC drivers registered by the webapp that the webapp
+     * forgot. This is made unnecessary complex because a) DriverManager
+     * checks the class loader of the calling class (it would be much easier
+     * if it checked the context class loader) b) using reflection would
+     * create a dependency on the DriverManager implementation which can,
+     * and has, changed.
+     *
+     * We can't just create an instance of JdbcLeakPrevention as it will be
+     * loaded by the common class loader (since it's .class file is in the
+     * $CATALINA_HOME/lib directory). This would fail DriverManager's check
+     * on the class loader of the calling class. So, we load the bytes via
+     * our parent class loader but define the class with this class loader
+     * so the JdbcLeakPrevention looks like a webapp class to the
+     * DriverManager.
+     *
+     * If only apps cleaned up after themselves...
+     */
+    private final void clearReferencesJdbc() {
+        InputStream is = getResourceAsStream(
+                "org/glassfish/web/loader/JdbcLeakPrevention.class");
+        // We know roughly how big the class will be (~ 1K) so allow 2k as a
+        // starting point
+        byte[] classBytes = new byte[2048];
+        int offset = 0;
+        try {
+            int read = is.read(classBytes, offset, classBytes.length-offset);
+            while (read > -1) {
+                offset += read;
+                if (offset == classBytes.length) {
+                    // Buffer full - double size
+                    byte[] tmp = new byte[classBytes.length * 2];
+                    System.arraycopy(classBytes, 0, tmp, 0, classBytes.length);
+                    classBytes = tmp;
+                }
+                read = is.read(classBytes, offset, classBytes.length-offset);
+            }
+            Class<?> lpClass =
+                defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
+                    classBytes, 0, offset, this.getClass().getProtectionDomain());
+            Object obj = lpClass.newInstance();
+            @SuppressWarnings("unchecked") // clearJdbcDriverRegistrations() returns List<String>
+            List<String> driverNames = (List<String>) obj.getClass().getMethod(
+                    "clearJdbcDriverRegistrations").invoke(obj);
+            String msg = rb.getString("webappClassLoader.clearJdbc");
+            for (String name : driverNames) {
+                logger.warning(MessageFormat.format(msg, contextName, name));
+            }
+        } catch (Exception e) {
+            // So many things to go wrong above...
+            Throwable t = ExceptionUtils.unwrapInvocationTargetException(e);
+            ExceptionUtils.handleThrowable(t);
+            String msg = rb.getString("webappClassLoader.jdbcRemoveFailed");
+            logger.log(Level.WARNING, MessageFormat.format(msg, contextName), t);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ioe) {
+                    String msg = rb.getString("webappClassLoader.jdbcRemoveStreamError");
+                    logger.log(Level.WARNING, MessageFormat.format(msg, contextName), ioe);
+                }
+            }
+        }
+    }
+
+
+    private final void clearReferencesStaticFinal() {
+
+        Collection<ResourceEntry> values = resourceEntries.values();
+        Iterator<ResourceEntry> loadedClasses = values.iterator();
+        /*
+         * Step 1: Enumerate all classes loaded by this WebappClassLoader
+         * and trigger the initialization of any uninitialized ones.
+         * This is to prevent the scenario where the initialization of
+         * one class would call a previously cleared class in Step 2 below.
+         */
+        while(loadedClasses.hasNext()) {
+            ResourceEntry entry = loadedClasses.next();
+            Class<?> clazz = null;
+            synchronized(this) {
+                clazz = entry.loadedClass;
+            }
+            if (clazz != null) {
+                try {
+                    Field[] fields = clazz.getDeclaredFields();
+                    for (int i = 0; i < fields.length; i++) {
+                        if(Modifier.isStatic(fields[i].getModifiers())) {
+                            fields[i].get(null);
+                            break;
+                        }
+                    }
+                } catch(Throwable t) {
+                    // Ignore
+                }
+            }
+        }
+
+        /**
+         * Step 2: Clear all loaded classes
+         */
+        loadedClasses = values.iterator();
+        while (loadedClasses.hasNext()) {
+            ResourceEntry entry = loadedClasses.next();
+            Class<?> clazz = null;
+            synchronized(this) {
+                clazz = entry.loadedClass;
+            }
+            if (clazz != null) {
+                try {
+                    Field[] fields = clazz.getDeclaredFields();
+                    for (int i = 0; i < fields.length; i++) {
+                        Field field = fields[i];
+                        int mods = field.getModifiers();
+                        if (field.getType().isPrimitive()
+                                || (field.getName().indexOf("$") != -1)) {
+                            continue;
+                        }
+                        if (Modifier.isStatic(mods)) {
+                            try {
+                                setAccessible(field);
+                                if (Modifier.isFinal(mods)) {
+                                    if (!((field.getType().getName().startsWith("java."))
+                                            || (field.getType().getName().startsWith("javax.")))) {
+                                        nullInstance(field.get(null));
+                                    }
+                                } else {
+                                    field.set(null, null);
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("Set field " + field.getName()
+                                                + " to null in class " + clazz.getName());
+                                    }
+                                }
+                            } catch (Throwable t) {
+                                ExceptionUtils.handleThrowable(t);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.log(Level.FINE, "Could not set field " + field.getName()
+                                            + " to null in class " + clazz.getName(), t);
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable t) {
+                    ExceptionUtils.handleThrowable(t);
+                    if (logger.isLoggable(Level.FINE))  {
+                        logger.log(Level.FINE, "Could not clean fields for class " + clazz.getName(), t);
+                    }
+                }
+            }
+        }
     }
 
 
