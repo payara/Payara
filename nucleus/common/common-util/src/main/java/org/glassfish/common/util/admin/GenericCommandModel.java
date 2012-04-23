@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,20 +106,21 @@ public class GenericCommandModel extends CommandModel {
                 if (m.isAnnotationPresent(Param.class)) {
                     Param p = m.getAnnotation(Param.class);
                     if (p.name() != null && !p.name().isEmpty()) {
-                        params.put(p.name(), new ParamBasedModel(p.name(), p, paramI18n));
-                    } else {
-                        if (m.isAnnotationPresent(Attribute.class)) {
-                            Attribute attr = m.getAnnotation(Attribute.class);
-                            if (attr.value() != null && !attr.value().isEmpty()) {
-                                params.put(attr.value(), new AttributeBasedModel(attr.value(), attr, paramI18n));
-                            } else {
-                                params.put(attributeName, new AttributeBasedModel(attributeName, attr, paramI18n));
-                            }
+                        // GLASSFISH-18654: make sure password params are handled
+                        String name = CommandModel.getParamName(p, m);
+                        params.put(name, new ParamBasedModel(name, p, paramI18n));
+                    } else if (m.isAnnotationPresent(Attribute.class)) {
+                        Attribute attr = m.getAnnotation(Attribute.class);
+                        if (attr.value() != null && !attr.value().isEmpty()) {
+                            params.put(attr.value(), new AttributeBasedModel(attr.value(), attr, paramI18n));
                         } else {
-                            // use method name.
-                            String name = cm.trimPrefix(m.getName());
-                            params.put(name, new ParamBasedModel(name, p, paramI18n));
+                            params.put(attributeName, new AttributeBasedModel(attributeName, attr, paramI18n));
                         }
+                    } else {
+                            // use method name.
+                            // GLASSFISH-18654: make sure password params are handled
+                            String name = CommandModel.getParamName(p, m);
+                            params.put(name, new ParamBasedModel(name, p, paramI18n));
                     }
                 }
             }
