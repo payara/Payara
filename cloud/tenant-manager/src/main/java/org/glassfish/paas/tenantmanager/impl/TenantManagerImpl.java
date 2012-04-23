@@ -65,7 +65,6 @@ import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigParser;
@@ -74,6 +73,8 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.TransactionListener;
+import org.jvnet.hk2.config.Transactions;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -297,10 +298,8 @@ public class TenantManagerImpl implements TenantManagerEx {
             });
         }
         DomDocument<Dom> doc = populate(habitat, name);
-        // does not work! habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
-        // subscribe changeListener to particular document, 
-        // this may be even better, than subscribing "any" transactionsListener
-        ((ConfigBean)doc.getRoot()).addListener(configListener);
+        // caution, transactions here must come from newly created habitat 
+        habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
         return habitat;
     }
 
@@ -340,7 +339,8 @@ public class TenantManagerImpl implements TenantManagerEx {
     ServerEnvironment env;
 
     @Inject
-    private TenantConfigListener configListener;
+    @Named("TenantConfigListener")
+    private TransactionListener transactionsListener;
 
     @Inject
     private Logger logger;
