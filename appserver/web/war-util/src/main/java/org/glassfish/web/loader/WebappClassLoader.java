@@ -69,6 +69,8 @@ import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
+import org.glassfish.web.util.ExceptionUtils;
+import org.glassfish.web.util.IntrospectionUtils;
 import org.jvnet.hk2.component.PreDestroy;
 
 import javax.naming.Binding;
@@ -1822,6 +1824,9 @@ public class WebappClassLoader
         if (clearReferencesStatic) {
             clearReferencesStaticFinal();
         }
+
+        // Clear the IntrospectionUtils cache.
+        IntrospectionUtils.clear();
 
         // Clear the classloader reference in the VM's bean introspector
         java.beans.Introspector.flushCaches();

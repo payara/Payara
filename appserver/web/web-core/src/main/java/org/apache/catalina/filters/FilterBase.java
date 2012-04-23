@@ -66,7 +66,7 @@ import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
-import org.apache.tomcat.util.IntrospectionUtils;
+import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.util.StringManager;
 
 /**

@@ -57,7 +57,7 @@
  * limitations under the License.
  */
 
-package org.glassfish.web.loader;
+package org.glassfish.web.util;
 
 import java.lang.reflect.InvocationTargetException;
 

@@ -57,7 +57,7 @@
  * limitations under the License.
  */
 
-package org.apache.tomcat.util;
+package org.glassfish.web.util;
 
 import java.io.File;
 import java.io.FilenameFilter;

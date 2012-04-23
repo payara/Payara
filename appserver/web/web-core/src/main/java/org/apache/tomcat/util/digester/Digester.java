@@ -61,7 +61,7 @@
 package org.apache.tomcat.util.digester;
 
 
-import org.apache.tomcat.util.IntrospectionUtils;
+import org.glassfish.web.util.IntrospectionUtils;
 import org.xml.sax.*;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;

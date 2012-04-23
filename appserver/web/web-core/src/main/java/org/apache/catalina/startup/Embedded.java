@@ -59,7 +59,7 @@
 package org.apache.catalina.startup;
 
 
-import org.apache.tomcat.util.IntrospectionUtils;
+import org.glassfish.web.util.IntrospectionUtils;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
