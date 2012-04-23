@@ -57,7 +57,7 @@ import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.enterprise.deploy.shared.ModuleType;
 
@@ -380,7 +380,7 @@ public class DeploymentUtils {
      * @param habitat
      * @return status of .rar or not
      */
-    public static boolean isRAR(ReadableArchive archive, Habitat habitat) {
+    public static boolean isRAR(ReadableArchive archive, BaseServiceLocator habitat) {
         if (isRAR(archive)) {
             return true;
         }
@@ -426,7 +426,7 @@ public class DeploymentUtils {
      * @param habitat
      * @return whether the archive is an ejb archive or not
      */
-    public static boolean isEjbJar(ReadableArchive archive, Habitat habitat) {
+    public static boolean isEjbJar(ReadableArchive archive, BaseServiceLocator habitat) {
         try {
             if (archive.exists(EJB_JAR_XML) ||
                 archive.exists(SUN_EJB_JAR_XML) ||

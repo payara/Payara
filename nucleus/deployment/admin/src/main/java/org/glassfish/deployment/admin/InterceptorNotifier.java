@@ -44,7 +44,7 @@ import java.util.Collection;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -64,7 +64,7 @@ public class InterceptorNotifier {
         return result;
     }
 
-    public InterceptorNotifier(final Habitat habitat, final DeploymentContext basicDC) {
+    public InterceptorNotifier(final BaseServiceLocator habitat, final DeploymentContext basicDC) {
         if (basicDC != null) {
             if (! (basicDC instanceof ExtendedDeploymentContext)) {
                 throw new IllegalArgumentException(basicDC.getClass().getName());

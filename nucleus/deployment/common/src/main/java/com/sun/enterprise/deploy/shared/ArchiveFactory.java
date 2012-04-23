@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.File;
@@ -75,7 +75,7 @@ import java.util.logging.Logger;
 public class ArchiveFactory implements ContractProvider {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 

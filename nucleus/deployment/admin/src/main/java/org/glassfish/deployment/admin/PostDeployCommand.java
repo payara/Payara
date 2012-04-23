@@ -63,7 +63,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -84,7 +84,7 @@ import org.jvnet.hk2.component.PerLookup;
 public class PostDeployCommand extends DeployCommandParameters implements AdminCommand {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private Deployment deployment;

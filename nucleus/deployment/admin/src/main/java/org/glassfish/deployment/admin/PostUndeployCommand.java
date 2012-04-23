@@ -54,7 +54,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Runs after any replications of the undeploy command have been sent to
@@ -70,7 +70,7 @@ import org.jvnet.hk2.component.Habitat;
 public class PostUndeployCommand extends UndeployCommandParameters implements AdminCommand {
     
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {

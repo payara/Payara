@@ -58,7 +58,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.logging.Logger;
 import java.util.Collections;
@@ -117,7 +117,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand {
     ServerEnvironment env;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLifecycleModuleCommand.class);
    

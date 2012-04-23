@@ -64,7 +64,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
@@ -130,7 +130,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
     VersioningService versioningService;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     public DisableCommand() {
         origin = Origin.unload;

@@ -53,7 +53,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -82,7 +82,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
      * @return the AutoUndeploymentOperation object
      */
     static AutoUndeploymentOperation newInstance(
-            Habitat habitat,
+            BaseServiceLocator habitat,
             File appFile, 
             String name,
             String target) {

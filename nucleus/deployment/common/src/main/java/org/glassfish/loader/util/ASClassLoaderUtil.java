@@ -50,7 +50,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.ServerEnvironment;
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class ASClassLoaderUtil {
      *         "libraries" defined for the module.
      */
     public static String getModuleClassPath
-        (Habitat habitat, String moduleId, String deploymentLibs) {
+        (BaseServiceLocator habitat, String moduleId, String deploymentLibs) {
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ASClassLoaderUtil.getModuleClassPath " +
@@ -111,7 +111,7 @@ public class ASClassLoaderUtil {
 
     }
 
-    public static String getModuleClassPath (Habitat habitat, 
+    public static String getModuleClassPath (BaseServiceLocator habitat, 
         DeploymentContext context) {
         DeployCommandParameters params = 
             context.getCommandParameters(DeployCommandParameters.class);
@@ -120,7 +120,7 @@ public class ASClassLoaderUtil {
 
 
     private static void addDeployParamLibrariesForModule(StringBuilder sb, 
-        String moduleId, String deploymentLibs, Habitat habitat) {
+        String moduleId, String deploymentLibs, BaseServiceLocator habitat) {
         if (moduleId.indexOf("#") != -1) {
             moduleId = moduleId.substring(0, moduleId.indexOf("#"));
         }
@@ -146,7 +146,7 @@ public class ASClassLoaderUtil {
     }
 
     private static URL[] getDeployParamLibrariesAsURLs(String librariesStr,
-        Habitat habitat) {
+        BaseServiceLocator habitat) {
             return getDeployParamLibrariesAsURLs(librariesStr,
                 habitat.getComponent(ServerEnvironment.class));
     }
@@ -214,7 +214,7 @@ public class ASClassLoaderUtil {
         return urls;
     }
 
-    private static synchronized String getModulesClasspath(Habitat habitat) {
+    private static synchronized String getModulesClasspath(BaseServiceLocator habitat) {
         synchronized (ASClassLoaderUtil.class) {
             if (modulesClassPath == null) {
                 final StringBuilder tmpString = new StringBuilder();

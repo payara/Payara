@@ -58,7 +58,7 @@ import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 /**
@@ -88,7 +88,7 @@ public class AutoDeployer {
     
     private AtomicBoolean inProgress = new AtomicBoolean(false);
     
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private File domainRoot = null;
     
@@ -126,7 +126,7 @@ public class AutoDeployer {
             String target, 
             String directoryPath,
             String virtualServer,
-            Habitat habitat) throws AutoDeploymentException {
+            BaseServiceLocator habitat) throws AutoDeploymentException {
         this(
             target, 
             directoryPath, 
@@ -158,7 +158,7 @@ public class AutoDeployer {
             boolean renameOnSuccess,
             boolean forceDeploy,
             boolean enabled,
-            Habitat habitat) throws AutoDeploymentException {
+            BaseServiceLocator habitat) throws AutoDeploymentException {
         
         setHabitat(habitat);
         setTarget(target);
@@ -178,7 +178,7 @@ public class AutoDeployer {
             String virtualServer,
             boolean jspPrecompilationEnabled, 
             boolean verifierEnabled,
-            Habitat habitat) throws AutoDeploymentException {
+            BaseServiceLocator habitat) throws AutoDeploymentException {
         this(
             target, 
             directoryPath, 
@@ -196,7 +196,7 @@ public class AutoDeployer {
      * instances.
      * @param habitat
      */
-    public void setHabitat(Habitat habitat) {
+    public void setHabitat(BaseServiceLocator habitat) {
         this.habitat = habitat;
     }
     /**
@@ -400,7 +400,7 @@ public class AutoDeployer {
         cancelDeployment = false;
     }
 
-    private void setRetryManager(Habitat habitat) {
+    private void setRetryManager(BaseServiceLocator habitat) {
         retryManager = habitat.getComponent(AutodeployRetryManager.class);
     }
     

@@ -63,7 +63,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import static org.junit.Assert.*;
 
 /**
@@ -108,7 +108,7 @@ public class FileArchiveTest {
         return result;
     }
 
-    private static Habitat habitat;
+    private static BaseServiceLocator habitat;
     private static ArchiveFactory archiveFactory;
 
     public FileArchiveTest() {

@@ -94,7 +94,7 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.deployment.versioning.VersioningWildcardException;
 import org.glassfish.deployment.versioning.VersioningService;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Create application ref command
@@ -149,7 +149,7 @@ public class CreateApplicationRefCommand implements AdminCommand {
     protected Server server;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     Events events;
