@@ -41,6 +41,7 @@
 package org.glassfish.admin.monitor.cloudvm;
 
 import org.glassfish.api.Startup;
+import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.hk2.Services;
@@ -70,7 +71,8 @@ public class CloudVMStatsProviderBootstrap implements Startup, PostConstruct {
 
     @Override
     public void postConstruct() {
-          StatsProviderManager.register("cloudvm", PluginPoint.SERVER, "cloudvm/tenant-manager", tenantMgrStatsProvider);
+          StatsProviderManager.register("cloudvm-tenant-manager", PluginPoint.SERVER, "cloudvm/tenant-manager", 
+                  tenantMgrStatsProvider, ContainerMonitoring.LEVEL_LOW);
     }
   
 }

@@ -50,8 +50,6 @@ import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
 /* jvm.class-loading-system */
-// v2: com.sun.appserv:name=class-loading-system,type=class-loading-system,category=monitor,server=server
-// v3: 
 @AMXMetadata(type="cloudvm-system-mon", group="monitoring")
 @ManagedObject
 @Description( "Cloud VM Services Statistics" )
@@ -59,13 +57,13 @@ public class TenantManagerStatsProvider {
 
     private ClassLoadingMXBean clBean = ManagementFactory.getClassLoadingMXBean();
 
-    private CountStatisticImpl loadedClassCount = new CountStatisticImpl("LoadedClassCount", CountStatisticImpl.UNIT_COUNT,
-            "Number of classes currently loaded in the Java virtual machine");
+    private CountStatisticImpl envCount = new CountStatisticImpl("EnvironmentCount", CountStatisticImpl.UNIT_COUNT,
+            "Number of envrionments hosted by the Cloud VM instance");
 
-    @ManagedAttribute(id="loadedclass-count")
-    @Description( "number of classes currently loaded in the JVM" )
+    @ManagedAttribute(id="environment-count")
+    @Description( "Number of envrionments hosted by the Cloud VM instance" )
     public CountStatistic getLoadedClassCount() {
-        loadedClassCount.setCount(clBean.getLoadedClassCount());
-        return loadedClassCount;
+        envCount.setCount(5);
+        return envCount;
     }
 }
