@@ -54,9 +54,11 @@
     <artifactId>virtualbox</artifactId>
     <packaging>hk2-jar</packaging>
     <name>IaaS Plugin virtualbox</name>
-    <repositories>
 
-    </repositories>
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
