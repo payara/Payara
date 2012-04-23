@@ -80,7 +80,7 @@ import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.data.EngineRef;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
@@ -106,7 +106,7 @@ public final class RuntimeRootImpl extends AMXImplBase
 {
     private final ApplicationRegistry appRegistry;
 
-    private final Habitat mHabitat;
+    private final BaseServiceLocator mHabitat;
 
 
     public RuntimeRootImpl(final ObjectName parent)

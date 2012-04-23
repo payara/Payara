@@ -94,6 +94,7 @@ import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.quality.ToDo;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Units;
 import org.jvnet.hk2.config.ConfigBean;
@@ -1000,7 +1001,7 @@ class ConfigBeanJMXSupport
     /** works only for @Configured types */
     public static Class[] getTypesImplementing(final Class<?> clazz)
     {
-        final DomDocument domDoc = new DomDocument(InjectedValues.getInstance().getHabitat());
+        final DomDocument domDoc = new DomDocument((Habitat) InjectedValues.getInstance().getHabitat());
 
         try
         {

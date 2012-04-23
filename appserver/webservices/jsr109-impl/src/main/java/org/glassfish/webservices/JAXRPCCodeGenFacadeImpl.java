@@ -44,6 +44,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.webservices.codegen.JaxRpcCodegenFactory;
 import org.glassfish.internal.api.JAXRPCCodeGenFacade;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 /**
@@ -56,8 +57,8 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public class JAXRPCCodeGenFacadeImpl implements JAXRPCCodeGenFacade {
 
-public void run(Habitat habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception {
-    JaxRpcCodegenFactory.newInstance().getAdapter(processServiceReferences).run(habitat, context,cp);
+public void run(BaseServiceLocator habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception {
+    JaxRpcCodegenFactory.newInstance().getAdapter(processServiceReferences).run((Habitat) habitat, context,cp);
 }
 
 }

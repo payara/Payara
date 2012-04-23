@@ -67,7 +67,7 @@ final class JMXMPConnectorStarter extends ConnectorStarter
         final int port,
         final String authRealmName,
         final boolean securityEnabled,
-        final Habitat habitat,
+        final BaseServiceLocator habitat,
         final BootAMXListener bootListener,
         final Ssl sslConfig)
     {

@@ -55,7 +55,7 @@ import javax.management.ObjectName;
 import org.glassfish.external.amx.BootAMXMBean;
 
 import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -102,11 +102,11 @@ public final class JMXStartupService implements PostConstruct {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private AdminService mAdminService;
     @Inject
-    private Habitat mHabitat;
+    private BaseServiceLocator mHabitat;
     @Inject
     Events mEvents;
     @Inject
-    volatile static Habitat habitat;
+    volatile static BaseServiceLocator habitat;
     private volatile BootAMX mBootAMX;
     private volatile JMXConnectorsStarterThread mConnectorsStarterThread;
     private final Logger mLogger = LogDomains.getLogger(JMXStartupService.class, LogDomains.JMX_LOGGER);

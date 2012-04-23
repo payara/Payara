@@ -45,7 +45,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +68,7 @@ import javax.inject.Inject;
 public abstract class GenericHandler implements ArchiveHandler {
 
     @Inject
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     /**
      * Prepares the jar file to a format the ApplicationContainer is

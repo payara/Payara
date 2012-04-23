@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -64,7 +64,7 @@ final class BootAMX implements BootAMXMBean
 {
     private final MBeanServer mMBeanServer;
     private final ObjectName mObjectName;
-    private final Habitat mHabitat;
+    private final BaseServiceLocator mHabitat;
     private ObjectName mDomainRootObjectName;
 
 
@@ -75,7 +75,7 @@ final class BootAMX implements BootAMXMBean
 
 
     private BootAMX(
-        final Habitat habitat,
+        final BaseServiceLocator habitat,
         final MBeanServer mbeanServer)
     {
         mHabitat = habitat;
@@ -98,7 +98,7 @@ final class BootAMX implements BootAMXMBean
     /**
     Create an instance of the booter.
      */
-    public static synchronized BootAMX create(final Habitat habitat, final MBeanServer server)
+    public static synchronized BootAMX create(final BaseServiceLocator habitat, final MBeanServer server)
     {
         final BootAMX booter = new BootAMX(habitat, server);
         final ObjectName objectName = getBootAMXMBeanObjectName();

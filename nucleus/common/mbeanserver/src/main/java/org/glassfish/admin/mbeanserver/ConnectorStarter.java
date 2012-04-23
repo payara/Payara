@@ -40,7 +40,7 @@
 package org.glassfish.admin.mbeanserver;
 
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.management.MBeanServer;
 import javax.management.remote.JMXAuthenticator;
@@ -64,7 +64,7 @@ abstract class ConnectorStarter {
     protected final int mPort;
     protected final String mAuthRealmName;
     protected final boolean mSecurityEnabled;
-    private final Habitat mHabitat;
+    private final BaseServiceLocator mHabitat;
     protected final BootAMXListener mBootListener;
     protected final Ssl ssl;
     protected volatile JMXServiceURL mJMXServiceURL = null;
@@ -89,7 +89,7 @@ abstract class ConnectorStarter {
             final int port,
             final String authRealmName,
             final boolean securityEnabled,
-            final Habitat habitat,
+            final BaseServiceLocator habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) {
         mMBeanServer = mbeanServer;

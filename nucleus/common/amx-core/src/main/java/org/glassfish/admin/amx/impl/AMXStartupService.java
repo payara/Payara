@@ -68,7 +68,7 @@ import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.external.amx.AMXUtil;
 import org.glassfish.external.amx.MBeanListener;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import javax.management.*;
@@ -93,7 +93,7 @@ public final class AMXStartupService
     }
 
     @Inject
-    Habitat mHabitat;
+    BaseServiceLocator mHabitat;
     @Inject
     InjectedValues mInjectedValues;
     @Inject

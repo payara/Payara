@@ -78,7 +78,7 @@ import java.util.logging.LogRecord;
  import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 //import com.sun.enterprise.server.logging.LoggingImplHook;
 
@@ -106,7 +106,7 @@ public final class LoggingImpl extends AMXImplBase
     private final LogFilter logFilter;
     private final MessageIdCatalog msgIdCatalog;
     private final Logger logger;
-    private final Habitat mHabitat;
+    private final BaseServiceLocator mHabitat;
 
 
     final String  FILE_SEP;

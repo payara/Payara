@@ -42,7 +42,7 @@ package org.glassfish.internal.api;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * This interface acts as a facade
@@ -56,7 +56,7 @@ import org.jvnet.hk2.component.Habitat;
 @Contract
 public interface JAXRPCCodeGenFacade {
 
-     public void run(Habitat habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception ;
+     public void run(BaseServiceLocator habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception ;
 
 
 }

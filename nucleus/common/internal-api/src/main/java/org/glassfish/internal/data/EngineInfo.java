@@ -45,6 +45,7 @@ import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -140,13 +141,13 @@ public class EngineInfo<T extends Container, U extends ApplicationContainer> {
     public void stop(Logger logger)
     {
         if (getDeployer()!=null) {
-            Inhabitant i = registry.habitat.getInhabitantByType(getDeployer().getClass());
+            Inhabitant i = ((Habitat)registry.habitat).getInhabitantByType(getDeployer().getClass());
             if (i!=null) {
                 i.release();
             }
         }
         if (getContainer()!=null) {
-            Inhabitant i = registry.habitat.getInhabitantByType(getContainer().getClass());
+            Inhabitant i = ((Habitat)registry.habitat).getInhabitantByType(getContainer().getClass());
             if (i!=null) {
                 i.release();
             }

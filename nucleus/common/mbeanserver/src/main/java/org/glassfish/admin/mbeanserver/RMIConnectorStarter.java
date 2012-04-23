@@ -123,7 +123,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final String protocol,
             final String authRealmName,
             final boolean securityEnabled,
-            final Habitat habitat,
+            final BaseServiceLocator habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) throws UnknownHostException {
 
