@@ -91,7 +91,7 @@ public class PackageAppClient {
     private final static String GLASSFISH_LIB = "glassfish/lib";
 
     private final static String GLASSFISH_BIN = "glassfish/bin";
-    
+
     private final static String GLASSFISH_CONFIG = "glassfish/config";
 
     private final static String MODULES_ENDORSED_DIR = "glassfish/modules/endorsed";
@@ -101,10 +101,10 @@ public class PackageAppClient {
     private final static String DOMAIN_1_CONFIG = "glassfish/domains/domain1/config";
 
     private final static String INDENT = "  ";
-    
+
     private final static String ACC_CONFIG_FILE_DEFAULT = "/glassfish-acc.xml";
     private final static String ACC_CONFIG_FILE_DEFAULT_OLD = "/sun-acc.xml";
-    
+
 
     /* DIRS_TO_COPY entries are all relative to the installation directory */
     private final static String[] DIRS_TO_COPY = new String[] {
@@ -113,7 +113,7 @@ public class PackageAppClient {
         GLASSFISH_LIB + "/appclient"
         };
 
-    /* 
+    /*
      * relative path to the endorsed directory of the app server.  Handled
      * separately from other directorys because we do not include all files from
      * the endorsed directory.
@@ -128,9 +128,9 @@ public class PackageAppClient {
     /* default sun-acc.xml is relative to the installation directory */
     private final static String DEFAULT_ACC_XML =
             DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT;
-    private final static String OLD_ACC_XML = 
+    private final static String OLD_ACC_XML =
             DOMAIN_1_CONFIG + ACC_CONFIG_FILE_DEFAULT_OLD;
-    
+
     private final static String[] DEFAULT_ACC_CONFIG_FILES = {
         DEFAULT_ACC_XML, OLD_ACC_XML
         };
@@ -149,7 +149,7 @@ public class PackageAppClient {
 
     private final static String ASENV_CONF = GLASSFISH_CONFIG + "/asenv.conf";
     private final static String ASENV_BAT = GLASSFISH_CONFIG + "/asenv.bat";
-    
+
     private final static String[] SINGLE_FILES_TO_COPY = {
         IMQJMSRA_APP,
         IMQ_JAR,
@@ -168,7 +168,7 @@ public class PackageAppClient {
     private final static LocalStringsImpl strings = new LocalStringsImpl(PackageAppClient.class);
 
     private boolean isVerbose;
-    
+
     /**
      * @param args the command line arguments
      */
@@ -214,7 +214,7 @@ public class PackageAppClient {
          */
         for (String classPathElement : classPathElements) {
             final File classPathJAR = new File(modulesDir, classPathElement);
-            addFile(os, installDir.toURI(), 
+            addFile(os, installDir.toURI(),
                     modulesDir.toURI().resolve(classPathJAR.toURI()), outputFile,
                     "");
         }
@@ -224,7 +224,7 @@ public class PackageAppClient {
          * so resolve them against the installDir file.
          */
         for (String dirToCopy : DIRS_TO_COPY) {
-            addDir(os, installDir.toURI(), 
+            addDir(os, installDir.toURI(),
                     installDir.toURI().resolve(dirToCopy), outputFile,
                     "");
         }
@@ -246,7 +246,7 @@ public class PackageAppClient {
         for (File configFile : configFiles) {
             addFile(os, installDir.toURI(), configFile.toURI(), outputFile, "");
         }
-        
+
         os.close();
     }
 
@@ -430,7 +430,7 @@ public class PackageAppClient {
      * Returns the File to create.  The user can optionally specify the output file as
      * <code>-output outFile</code> on the command line.  The default is
      * <code>${installDir}/lib/appclient.jar</code>
-     * 
+     *
      * @param args command-line arguments
      * @return File for the file to create
      */
@@ -449,7 +449,7 @@ public class PackageAppClient {
      */
     private File chooseFile(
             final String option,
-            final String defaultRelativeURI, 
+            final String defaultRelativeURI,
             final File installDir,
             final String[] args) {
         File result = null;
@@ -488,16 +488,16 @@ public class PackageAppClient {
             System.err.println(strings.get("xmlNotFound", userSpecifiedFile.getAbsolutePath()));
         }
 
-        
+
         }
         return files;
-        
+
     }
 
     private File findInstallDir(final File currentJarFile) throws URISyntaxException {
         return currentJarFile.getParentFile().getParentFile().getParentFile();
     }
-    
+
     private boolean isVerboseOutputLevel(final String[] args) {
         for (String arg : args) {
             if (arg.equals("-verbose")) {
@@ -511,11 +511,11 @@ public class PackageAppClient {
      * Returns the value for the specified option.
      * @param option option name to search the args for
      * @param args args to search
-     * @return token after the specified optionon the command line, if any; 
+     * @return token after the specified optionon the command line, if any;
      * @throws IllegalArgumentException if there is no value on the command line for the specified option
      */
     private String argValue(final String option, final String[] args) {
-        
+
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals(option)) {
                 if (i + 1 < args.length) {
@@ -554,11 +554,17 @@ public class PackageAppClient {
      * @throws java.io.IOException
      */
     private String getJarClassPath(final File currentJarFile) throws IOException {
-        final JarFile jf = new JarFile(currentJarFile);
-        final Manifest mf = jf.getManifest();
-        final Attributes mainAttrs = mf.getMainAttributes();
-        final String classPath = mainAttrs.getValue(Name.CLASS_PATH);
-        jf.close();
-        return classPath;
+        JarFile jf = null;
+        try {
+            jf = new JarFile(currentJarFile);
+            final Manifest mf = jf.getManifest();
+            final Attributes mainAttrs = mf.getMainAttributes();
+            final String classPath = mainAttrs.getValue(Name.CLASS_PATH);
+            return classPath;
+        }
+        finally {
+            if (jf != null)
+                jf.close();
+        }
     }
 }
