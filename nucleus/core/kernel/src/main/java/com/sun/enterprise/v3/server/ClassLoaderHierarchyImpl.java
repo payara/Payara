@@ -67,10 +67,6 @@ import java.io.File;
 import java.io.IOException;
 
 import com.sun.enterprise.module.*;
-import com.sun.enterprise.module.ModuleDefinition;
-import com.sun.enterprise.module.Repository;
-import com.sun.enterprise.module.ResolveError;
-import com.sun.enterprise.module.ManifestConstants;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
 import com.sun.enterprise.module.common_impl.Tokenizer;
 

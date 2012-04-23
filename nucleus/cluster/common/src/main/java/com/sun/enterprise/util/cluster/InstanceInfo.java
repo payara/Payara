@@ -57,7 +57,7 @@ import org.glassfish.api.admin.ParameterMap;
 import com.sun.enterprise.admin.util.ColumnFormatter;
 import com.sun.enterprise.universal.Duration;
 import org.glassfish.api.admin.InstanceState;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Used to format instance state info in a standard way.
@@ -66,7 +66,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 public final class InstanceInfo {
 
-    public InstanceInfo(Habitat habitat, Server svr, int port0, String host0, String cluster0,
+    public InstanceInfo(BaseServiceLocator habitat, Server svr, int port0, String host0, String cluster0,
             Logger logger0, int timeout0, ActionReport report, InstanceStateService stateService) {
         if (svr == null )
 //            if (svr == null || host0 == null)
@@ -290,7 +290,7 @@ public final class InstanceInfo {
     private String formatTime(long uptime) {
         return Strings.get("instanceinfo.uptime", new Duration(uptime));
     }
-    private final Habitat habitat;
+    private final BaseServiceLocator habitat;
     private final String host;
     private final int port;
     private final String name;

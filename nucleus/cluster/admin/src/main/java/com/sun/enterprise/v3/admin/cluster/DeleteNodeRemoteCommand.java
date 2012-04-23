@@ -69,7 +69,7 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
 public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     @Inject
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     @Inject
     Node[] nodeList;
     @Inject

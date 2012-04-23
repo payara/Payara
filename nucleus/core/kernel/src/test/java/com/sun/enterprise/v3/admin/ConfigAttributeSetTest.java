@@ -51,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -70,7 +71,7 @@ import java.util.Properties;
 @Ignore 
 public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigListener {
 
-    Habitat habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.getNewHabitat(this);
     PropertyChangeEvent event = null;
 
     public DomDocument getDocument(Habitat habitat) {

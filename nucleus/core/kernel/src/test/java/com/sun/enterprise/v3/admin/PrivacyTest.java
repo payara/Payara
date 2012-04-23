@@ -44,7 +44,7 @@ import org.junit.Test;
 import org.junit.Assert;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.tests.utils.Utils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Test the visibility annotation
@@ -55,7 +55,7 @@ public class PrivacyTest {
     public void privacyTests() {
         AdminAdapter publicAdaper = new PublicAdminAdapter();
         AdminAdapter privateAdapter = new PrivateAdminAdapter();
-        Habitat habitat = Utils.getNewHabitat();
+        BaseServiceLocator habitat = Utils.getNewHabitat();
         AdminCommand adminCommand = habitat.getComponent(AdminCommand.class, "simple-public-command");
         Assert.assertTrue(publicAdaper.validatePrivacy(adminCommand));
         Assert.assertFalse(privateAdapter.validatePrivacy(adminCommand));

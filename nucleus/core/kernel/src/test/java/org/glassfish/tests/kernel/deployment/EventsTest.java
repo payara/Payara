@@ -53,6 +53,7 @@ import org.glassfish.tests.utils.ConfigApiTest;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.config.support.GlassFishDocument;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -78,7 +79,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
  */
 public class EventsTest extends ConfigApiTest {
 
-    static Habitat habitat;
+    static BaseServiceLocator habitat;
     static File application;
     static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
     static private EventListener listener = new EventListener() {
@@ -116,7 +117,7 @@ public class EventsTest extends ConfigApiTest {
             return;
         }
         habitat  = super.getHabitat();
-        habitat.addIndex(new ExistingSingletonInhabitant<Server>(habitat.getComponent(Server.class, "server")),
+        ((Habitat) habitat).addIndex(new ExistingSingletonInhabitant<Server>(habitat.getComponent(Server.class, "server")),
                      Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
         try {

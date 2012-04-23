@@ -56,6 +56,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
 import static org.junit.Assert.*;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.ActionReport;
 import org.glassfish.tests.utils.Utils;
@@ -72,13 +73,14 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Ignore
 public class CreateProfilerTest extends ConfigApiTest {
     // Get Resources config bean
-    Habitat habitat = Utils.instance.getHabitat(this);
+    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
     private JavaConfig javaConfig = habitat.getComponent(JavaConfig.class);
     private CreateProfiler command = null;
     private ParameterMap parameters = new ParameterMap();
     private AdminCommandContext context = null;
     private CommandRunnerImpl cr = habitat.getComponent(CommandRunnerImpl.class);
     
+    @Override
     public DomDocument getDocument(Habitat habitat) {
 
         return new TestDocument(habitat);

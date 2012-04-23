@@ -51,7 +51,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.*;

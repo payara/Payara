@@ -48,7 +48,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -80,7 +80,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
     private Target targetService;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(GlassFishClusterExecutor.class);

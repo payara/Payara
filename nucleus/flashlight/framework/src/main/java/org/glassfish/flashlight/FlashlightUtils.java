@@ -54,7 +54,7 @@ import org.glassfish.external.probe.provider.annotations.Probe;
 import org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.glassfish.flashlight.impl.core.FlashlightProbeProvider;
 import org.glassfish.flashlight.provider.FlashlightProbe;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Note that you MUST call an initilizer for this class for DTrace!
@@ -72,7 +72,7 @@ public class FlashlightUtils {
         // All static.  No instances allowed.
     }
 
-    public static void initialize(Habitat h, MonitoringService mc) {
+    public static void initialize(BaseServiceLocator h, MonitoringService mc) {
         // only do once -- ignore multiple calls...
         synchronized (LOCK) {
             if (habitat == null) {
@@ -423,7 +423,7 @@ public class FlashlightUtils {
     }
     private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(FlashlightUtils.class);
-    private static volatile Habitat habitat;
+    private static volatile BaseServiceLocator habitat;
     private static volatile MonitoringService monConfig;
     private static DTraceContract dt;
     private static boolean dtraceEnabled;

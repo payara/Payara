@@ -52,7 +52,7 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.osgi.framework.*;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -87,7 +87,7 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
             final Main main = (Main) hk2Tracker.waitForService(0);
             hk2Tracker.close();
             final ModulesRegistry mr = ModulesRegistry.class.cast(getBundleContext().getService(getBundleContext().getServiceReference(ModulesRegistry.class.getName())));
-            final Habitat habitat = main.createHabitat(mr, startupContext);
+            final BaseServiceLocator habitat = main.createHabitat(mr, startupContext);
             final ModuleStartup gfKernel = main.findStartupService(mr, habitat, null, startupContext);
             GlassFish glassFish = createGlassFish(gfKernel, habitat, gfProps.getProperties());
             ServiceRegistration registration = getBundleContext().registerService(GlassFish.class.getName(), glassFish, gfProps.getProperties());
@@ -135,7 +135,7 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
         }
     }
 
-    protected GlassFish createGlassFish(ModuleStartup gfKernel, Habitat habitat, Properties gfProps) throws GlassFishException {
+    protected GlassFish createGlassFish(ModuleStartup gfKernel, BaseServiceLocator habitat, Properties gfProps) throws GlassFishException {
         GlassFish gf = new GlassFishImpl(gfKernel, habitat, gfProps);
         return new EmbeddedOSGiGlassFishImpl(this, gf);
     }

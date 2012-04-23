@@ -90,7 +90,7 @@ import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.PostConstruct;
@@ -126,7 +126,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     protected SnifferManagerImpl snifferManager;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     ArchiveFactory archiveFactory;

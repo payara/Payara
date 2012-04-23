@@ -57,7 +57,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -72,7 +72,7 @@ import org.jvnet.hk2.component.PerLookup;
 
 public class ListCommandDescriptorsCommand implements AdminCommand {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     public void execute(AdminCommandContext context) {
         setAdminCommands();

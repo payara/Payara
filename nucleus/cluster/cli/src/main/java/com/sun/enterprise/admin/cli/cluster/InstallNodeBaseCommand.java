@@ -52,8 +52,9 @@ import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 import java.io.File;
@@ -82,7 +83,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
     @Param(name = "force", optional = true, defaultValue = "false")
     private boolean force;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private String archiveName;
     private boolean delete = true;
 

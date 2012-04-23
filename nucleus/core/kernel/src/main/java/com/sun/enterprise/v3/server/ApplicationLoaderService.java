@@ -141,7 +141,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
     ServerEnvironment env;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private String deploymentTracingEnabled = null;
 

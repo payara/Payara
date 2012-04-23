@@ -71,7 +71,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     @Inject
     private CommandRunner cr;
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     @Inject
     Nodes nodes;
     @Param(name = "name", primary = true)

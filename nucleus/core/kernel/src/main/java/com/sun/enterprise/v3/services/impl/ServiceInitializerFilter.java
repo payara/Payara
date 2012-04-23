@@ -54,7 +54,7 @@ import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * The {@link org.glassfish.grizzly.filterchain.Filter} implementation,
@@ -75,7 +75,7 @@ public class ServiceInitializerFilter extends BaseFilter {
 //    private long timeout = 60000;
 
     public ServiceInitializerFilter(final ServiceInitializerListener listener,
-            final Habitat habitat, final Logger logger) {
+            final BaseServiceLocator habitat, final Logger logger) {
         initializerImplList = habitat.getAllByContract(LazyServiceInitializer.class);
 
         if (initializerImplList == null) {

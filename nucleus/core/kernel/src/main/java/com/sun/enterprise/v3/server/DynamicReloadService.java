@@ -54,7 +54,7 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.Singleton;
@@ -83,7 +83,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
     Applications applications;
     
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     
     private Logger logger;
     

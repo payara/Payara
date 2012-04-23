@@ -48,7 +48,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 import javax.management.InstanceNotFoundException;
@@ -73,7 +73,7 @@ public class MbeanService implements Startup {
     private Target tgt;
 
     @Inject
-    private static Habitat habitat;
+    private static BaseServiceLocator habitat;
 
     @Inject
     private static ServerEnvironment env;

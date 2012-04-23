@@ -75,6 +75,7 @@ import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.security.common.MasterPassword;
@@ -329,9 +330,9 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                         );
 
                     ModulesRegistry registry = new StaticModulesRegistry(cl);
-                    Habitat habitat = registry.createHabitat("default");
+                    BaseServiceLocator habitat = registry.createHabitat("default");
 
-                    ConfigParser parser = new ConfigParser(habitat);
+                    ConfigParser parser = new ConfigParser((Habitat)habitat);
                     URL domainURL = domainXMLFile.toURI().toURL();
                     DomDocument doc = parser.parse(domainURL);
                     Dom domDomain = doc.getRoot();

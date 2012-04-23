@@ -62,7 +62,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Triggers reloads of deployed applications depending on the presence of and
@@ -103,9 +103,9 @@ public class DynamicReloader implements Runnable {
     
     private Logger logger = Logger.getLogger(getClass().getName());
     
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     
-    DynamicReloader(Applications applications, Habitat habitat) throws URISyntaxException {
+    DynamicReloader(Applications applications, BaseServiceLocator habitat) throws URISyntaxException {
         this.applications = applications;
         this.habitat = habitat;
         initAppReloadInfo(applications);

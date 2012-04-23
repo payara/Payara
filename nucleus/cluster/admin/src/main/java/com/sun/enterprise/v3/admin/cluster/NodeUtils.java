@@ -43,7 +43,7 @@ import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Level;
 import org.glassfish.cluster.ssh.util.DcomUtils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -102,10 +102,10 @@ public class NodeUtils {
     private static final String NL = System.getProperty("line.separator");
     private TokenResolver resolver = null;
     private Logger logger = null;
-    private Habitat habitat = null;
+    private BaseServiceLocator habitat = null;
     SSHLauncher sshL = null;
 
-    NodeUtils(Habitat habitat, Logger logger) {
+    NodeUtils(BaseServiceLocator habitat, Logger logger) {
         this.logger = logger;
         this.habitat = habitat;
 

@@ -69,7 +69,7 @@ import java.util.logging.Logger;
 import java.text.MessageFormat;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
 import javax.inject.Inject;
@@ -91,7 +91,7 @@ public class FlashlightProbeProviderFactory
     ProbeProviderEventManager ppem;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private List<ProbeProviderEventListener> listeners = new ArrayList<ProbeProviderEventListener>();
 

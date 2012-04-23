@@ -95,7 +95,7 @@ import org.glassfish.internal.api.Privacy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Listen to admin commands...
@@ -140,7 +140,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     ServerContext sc;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;

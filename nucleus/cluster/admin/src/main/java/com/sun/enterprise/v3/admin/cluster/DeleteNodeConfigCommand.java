@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 })
 public class DeleteNodeConfigCommand implements AdminCommand {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     Node[] nodeList;

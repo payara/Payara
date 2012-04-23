@@ -43,7 +43,7 @@ package com.sun.enterprise.glassfish.bootstrap;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Properties;
 
@@ -52,11 +52,11 @@ import java.util.Properties;
  */
 class ConfiguratorImpl implements Configurator {
 
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private static final String CONFIG_PROP_PREFIX = "embedded-glassfish-config.";
 
-    public ConfiguratorImpl(Habitat habitat) {
+    public ConfiguratorImpl(BaseServiceLocator habitat) {
         this.habitat = habitat;
     }
 

@@ -92,7 +92,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
     @Override
     public void destroy() {
-        grizzlyService.getHabitat().removeIndex(Mapper.class.getName(), (address.toString() + port));
+        ((Habitat) grizzlyService.getHabitat()).removeIndex(Mapper.class.getName(), (address.toString() + port));
         unregisterMonitoringStatsProviders();
     }
 
@@ -175,7 +175,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         containerMapper.addDocRoot(webAppRootPath);
 
         Inhabitant<Mapper> onePortMapper = new ExistingSingletonInhabitant<Mapper>(mapper);
-        grizzlyService.getHabitat().addIndex(onePortMapper, Mapper.class.getName(), address.toString() + port);
+        ((Habitat) grizzlyService.getHabitat()).addIndex(onePortMapper, Mapper.class.getName(), address.toString() + port);
 
         super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
         final Protocol protocol = http.getParent();

@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.*;
 import java.util.*;
-import java.util.Iterator;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.universal.collections.ManifestUtils;

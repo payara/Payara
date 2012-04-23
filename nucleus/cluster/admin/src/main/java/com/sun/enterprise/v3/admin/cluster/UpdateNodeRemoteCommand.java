@@ -69,7 +69,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     private CommandRunner cr;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     private Nodes nodes;

@@ -43,7 +43,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 import org.glassfish.common.util.admin.AsadminInput;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.universal.process.ProcessManager;
@@ -57,13 +57,13 @@ import org.glassfish.common.util.admin.AuthTokenManager;
 public class NodeRunner {
     private static final String NL = System.getProperty("line.separator");
     private static final String AUTH_TOKEN_STDIN_LINE_PREFIX = "option." + AuthTokenManager.AUTH_TOKEN_OPTION_NAME + "=";
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private Logger logger;
     private String lastCommandRun = null;
     private int commandStatus;
     private final AuthTokenManager authTokenManager;
 
-    public NodeRunner(Habitat habitat, Logger logger) {
+    public NodeRunner(BaseServiceLocator habitat, Logger logger) {
         this.logger = logger;
         this.habitat = habitat;
         authTokenManager = habitat.getComponent(AuthTokenManager.class);

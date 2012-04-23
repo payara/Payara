@@ -89,7 +89,7 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 public class ListInstancesCommand implements AdminCommand {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Inject
     private Domain domain;
     @Inject

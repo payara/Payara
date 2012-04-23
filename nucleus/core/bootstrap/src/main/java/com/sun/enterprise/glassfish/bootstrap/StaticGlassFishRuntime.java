@@ -49,7 +49,7 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -101,7 +101,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
 
             final StartupContext startupContext = new StartupContext(gfProps.getProperties());
             ModulesRegistry modulesRegistry = AbstractFactory.getInstance().createModulesRegistry();
-            final Habitat habitat = main.createHabitat(modulesRegistry, startupContext);
+            final BaseServiceLocator habitat = main.createHabitat(modulesRegistry, startupContext);
             final ModuleStartup gfKernel = main.findStartupService(modulesRegistry, habitat, null, startupContext);
             // create a new GlassFish instance
             GlassFishImpl gfImpl = new GlassFishImpl(gfKernel, habitat, gfProps.getProperties()) {

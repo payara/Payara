@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Remote AdminCommand to validate the connection to an SSH node.
@@ -62,7 +62,7 @@ import org.jvnet.hk2.component.Habitat;
 @Service
 public abstract class PingNodeRemoteCommand implements AdminCommand {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     @Inject
     private Nodes nodes;
     @Param(name = "name", primary = true)

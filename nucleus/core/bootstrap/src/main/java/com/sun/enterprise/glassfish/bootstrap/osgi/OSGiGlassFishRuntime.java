@@ -45,7 +45,7 @@ import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 
@@ -86,7 +86,7 @@ public class OSGiGlassFishRuntime extends EmbeddedOSGiGlassFishRuntime {
     }
 
     @Override
-    protected GlassFish createGlassFish(ModuleStartup gfKernel, Habitat habitat, Properties gfProps) throws GlassFishException {
+    protected GlassFish createGlassFish(ModuleStartup gfKernel, BaseServiceLocator habitat, Properties gfProps) throws GlassFishException {
         GlassFish gf = new GlassFishImpl(gfKernel, habitat, gfProps);
         int finalStartLevel = Integer.valueOf(gfProps.getProperty(
                 Constants.FINAL_START_LEVEL_PROP, "2"));

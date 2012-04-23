@@ -60,7 +60,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
@@ -94,7 +94,7 @@ public class ListThreadpools implements AdminCommand {
     String target;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
 

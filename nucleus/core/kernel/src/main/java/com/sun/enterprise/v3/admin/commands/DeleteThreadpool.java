@@ -56,7 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -94,7 +94,7 @@ public class DeleteThreadpool implements AdminCommand {
     Domain domain;
 
     @Inject
-    Habitat habitat;              
+    BaseServiceLocator habitat;              
 
     /**
      * Executes the command with the command parameters passed as Properties

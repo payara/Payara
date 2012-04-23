@@ -667,7 +667,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     @Inject
     ServerEnvironment serverEnv;
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     private OutputType outputType;
     private final static String DOTTED_NAME = ".dotted-name";
     private final StringBuilder cliOutput = new StringBuilder();

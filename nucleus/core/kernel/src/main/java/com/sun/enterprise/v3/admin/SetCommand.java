@@ -56,7 +56,7 @@ import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.*;
@@ -81,7 +81,7 @@ import java.util.*;
 public class SetCommand extends V2DottedNameSupport implements AdminCommand, PostConstruct {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     Domain domain;

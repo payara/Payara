@@ -51,6 +51,8 @@ import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
+
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -182,7 +184,7 @@ public class DynamicConfigListener implements ConfigListener {
                             if (proxy != null) {
                                 GrizzlyListener netListener = proxy.getUnderlyingListener();
                                 netListener.processDynamicConfigurationChange(
-                                        grizzlyService.getHabitat(), changedProperties);
+                                        (Habitat) grizzlyService.getHabitat(), changedProperties);
                                 return null;
                             }
                         }

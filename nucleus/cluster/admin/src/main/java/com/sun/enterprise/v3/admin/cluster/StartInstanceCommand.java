@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import com.sun.enterprise.config.serverbeans.Node;
 
@@ -86,7 +86,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 })
 public class StartInstanceCommand implements AdminCommand {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     private Nodes nodes;
@@ -130,7 +130,7 @@ public class StartInstanceCommand implements AdminCommand {
      * do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(Habitat habitat_, String iname_, boolean debug_, ServerEnvironment env_) {
+    StartInstanceCommand(BaseServiceLocator habitat_, String iname_, boolean debug_, ServerEnvironment env_) {
         instanceName = iname_;
         debug = debug_;
         habitat = habitat_;

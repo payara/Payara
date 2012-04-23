@@ -75,7 +75,7 @@ public class SnifferManagerImpl implements SnifferManager {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     /**
      * Returns all the presently registered sniffers

@@ -73,7 +73,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
@@ -106,7 +106,7 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
 public class StopInstanceCommand extends StopServer implements AdminCommand, PostConstruct {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Inject
     private ServerContext serverContext;
     @Inject

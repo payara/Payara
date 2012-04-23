@@ -45,7 +45,7 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Properties;
 
@@ -56,10 +56,10 @@ import java.util.Properties;
 public class GlassFishImpl implements GlassFish {
 
     private ModuleStartup gfKernel;
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     volatile Status status = Status.INIT;
 
-    public GlassFishImpl(ModuleStartup gfKernel, Habitat habitat, Properties gfProps) throws GlassFishException {
+    public GlassFishImpl(ModuleStartup gfKernel, BaseServiceLocator habitat, Properties gfProps) throws GlassFishException {
         this.gfKernel = gfKernel;
         this.habitat = habitat;
         configure(gfProps);

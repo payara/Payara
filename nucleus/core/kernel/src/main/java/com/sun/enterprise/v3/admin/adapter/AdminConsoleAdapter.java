@@ -58,7 +58,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -130,7 +130,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     @Inject
     Domain domain;
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     @Inject
     Events events;
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)

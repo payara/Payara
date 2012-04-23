@@ -84,7 +84,7 @@ public class CreateInstanceCommand implements AdminCommand {
     @Inject
     private CommandRunner cr;
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     @Inject
     Node[] nodeList;
     @Inject

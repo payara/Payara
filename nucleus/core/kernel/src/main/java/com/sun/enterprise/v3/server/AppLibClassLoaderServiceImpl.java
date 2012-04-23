@@ -45,7 +45,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 import java.net.MalformedURLException;
@@ -78,7 +78,7 @@ public class AppLibClassLoaderServiceImpl {
      */
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     CommonClassLoaderServiceImpl commonCLS;

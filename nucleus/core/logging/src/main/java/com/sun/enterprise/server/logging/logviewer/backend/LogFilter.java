@@ -53,7 +53,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -93,7 +93,7 @@ public class LogFilter {
     ServerEnvironment env;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     LoggingConfigImpl loggingConfig;

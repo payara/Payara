@@ -105,4 +105,8 @@ public class Globals implements Init {
         return defaultHabitat;
     }
 
+	public static void setDefaultHabitat(BaseServiceLocator habitat) {
+		setDefaultHabitat((Habitat)habitat);
+	}
+
 }

@@ -65,7 +65,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
@@ -117,7 +117,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 @Service
 public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener, Startup {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     
     @Inject
     Transactions transactions;

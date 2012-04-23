@@ -51,7 +51,7 @@ import org.glassfish.api.admin.CommandValidationException;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.remote.*;
@@ -68,7 +68,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
     private Boolean debug;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Override
     protected final int doRemoteCommand() throws CommandException {

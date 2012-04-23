@@ -51,7 +51,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
@@ -82,7 +82,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     @Inject
     private Target targetService;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Param(optional = true, defaultValue = "false", shortName = "m")
     private Boolean monitor;
     @Param(primary = true)

@@ -49,6 +49,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -82,7 +83,7 @@ public class DefaultConfigParser implements ConfigParser {
         org.jvnet.hk2.config.ConfigParser configParser = new org.jvnet.hk2.config.ConfigParser(habitat);
         // I don't use the GlassFish document here as I don't need persistence
         final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
-            public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
+            public Dom make(final BaseServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
                 // by default, people get the translated view.
                 return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
             }

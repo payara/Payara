@@ -44,7 +44,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.ComponentException;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;

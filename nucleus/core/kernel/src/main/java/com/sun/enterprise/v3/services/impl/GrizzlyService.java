@@ -79,7 +79,7 @@ import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.Singleton;
@@ -104,7 +104,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     Config config;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     Transactions transactions;
@@ -303,7 +303,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
      *
      * @return the habitat
      */   
-    public Habitat getHabitat() {
+    public BaseServiceLocator getHabitat() {
         return habitat;
     }
 

@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -74,7 +74,7 @@ final class InstallerThread extends Thread {
     private final ServerEnvironmentImpl env;
     private final String contextRoot;
     private final AdminConsoleAdapter adapter;
-    private final Habitat habitat;
+    private final BaseServiceLocator habitat;
     private final Logger log;
     private final List<String> vss;
 
@@ -82,7 +82,7 @@ final class InstallerThread extends Thread {
     /**
      * Constructor.
      */
-    InstallerThread(AdminConsoleAdapter adapter, Habitat habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, Logger log, List<String> vss) {
+    InstallerThread(AdminConsoleAdapter adapter, BaseServiceLocator habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, Logger log, List<String> vss) {
 
         this.adapter = adapter;
         this.habitat = habitat;
