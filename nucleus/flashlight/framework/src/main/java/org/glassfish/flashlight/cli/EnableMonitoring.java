@@ -51,12 +51,13 @@ import org.glassfish.config.support.*;
 import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
+
+import javax.inject.Inject;
 
 /**
  * @author Sreenivas Munnangi (3.0)

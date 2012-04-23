@@ -56,7 +56,6 @@ import org.glassfish.flashlight.provider.*;
 import org.glassfish.flashlight.impl.core.*;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
 import org.glassfish.external.probe.provider.annotations.*;
 
 import java.lang.reflect.Method;
@@ -73,6 +72,9 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * @author Mahesh Kannan
  * @author Byron Nevins
@@ -81,7 +83,8 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service
 public class FlashlightProbeProviderFactory
         implements ProbeProviderFactory, PostConstruct {
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     MonitoringService monitoringServiceConfig;
 
     @Inject
