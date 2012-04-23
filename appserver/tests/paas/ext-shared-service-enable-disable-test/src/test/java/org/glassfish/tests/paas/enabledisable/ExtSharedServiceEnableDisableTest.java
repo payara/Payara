@@ -307,11 +307,11 @@ public class ExtSharedServiceEnableDisableTest {
 
 
         // Create shared service of type LB
-        //asadmin create-shared-service --template LBNative --configuration http-port=50080:https-port=50081:ssl-enabled=true --servicetype LB my-shared-lb-service
+        //asadmin create-shared-service --characteristics service-type=LB --configuration http-port=50080:https-port=50081:ssl-enabled=true --servicetype LB my-shared-lb-service
         invocation = commandRunner.getCommandInvocation("create-shared-service", report);
         parameterMap = new ParameterMap();
         parameterMap.add("servicetype", "LB");
-        parameterMap.add("template", "LBNative");
+        parameterMap.add("characteristics", "service-type=LB");
         parameterMap.add("configuration", "http-port=50080:https-port=50081:ssl-enabled=true");
         parameterMap.add("DEFAULT", "my-shared-lb-service");
         invocation.parameters(parameterMap).execute();
