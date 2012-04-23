@@ -40,7 +40,7 @@
 package org.glassfish.admin.rest.utils;
 
 import com.sun.jersey.api.client.Client;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -56,7 +56,7 @@ public interface Proxy {
      * Execute request in given <code> sourceUriInfo</code> by acting as a proxy to the target instance
      * @return Result of execution as Properties object
      */
-    Properties proxyRequest(UriInfo sourceUriInfo, Client client, Habitat habitat);
+    Properties proxyRequest(UriInfo sourceUriInfo, Client client, BaseServiceLocator habitat);
 
     /**
      * Extract instance name from given <code>uriInfo</code>

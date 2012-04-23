@@ -49,7 +49,7 @@ import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.Attribute;
@@ -150,7 +150,7 @@ public interface SecureAdminPrincipal extends Injectable, ConfigBeanProxy {
         private boolean isAlias = true;
 
         @Inject
-        Habitat habitat;
+        BaseServiceLocator habitat;
 
         @Inject
         private SecureAdminHelper helper;

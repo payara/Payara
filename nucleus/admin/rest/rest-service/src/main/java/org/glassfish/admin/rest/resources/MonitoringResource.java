@@ -46,7 +46,8 @@ import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.metric.TabularMetricAttribute;
 import org.glassfish.elasticity.metric.TabularMetricEntry;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
@@ -97,7 +98,7 @@ public class MonitoringResource {
     protected UriInfo uriInfo;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     
     @GET
     @Path("domain{path:.*}")

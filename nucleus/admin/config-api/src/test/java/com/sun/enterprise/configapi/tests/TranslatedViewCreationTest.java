@@ -52,7 +52,7 @@ import org.junit.After;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -75,7 +75,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
 
     HttpService httpService = null;
     List<PropertyChangeEvent> events;
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Before
     public void setup() {
@@ -85,7 +85,7 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
     }
 
     @Override
-    public Habitat getHabitat() {
+    public BaseServiceLocator getBaseServiceLocator() {
         return habitat;
     }
 

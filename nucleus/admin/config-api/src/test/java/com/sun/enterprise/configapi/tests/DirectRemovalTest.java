@@ -43,7 +43,7 @@ package com.sun.enterprise.configapi.tests;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.tests.utils.Utils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -55,7 +55,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 public class DirectRemovalTest extends ConfigPersistence {
 
-    Habitat habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.getNewHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -68,7 +68,7 @@ public class DirectRemovalTest extends ConfigPersistence {
     }
 
     @Override
-    public Habitat getHabitat() {
+    public BaseServiceLocator getBaseServiceLocator() {
         return habitat;
     }
 

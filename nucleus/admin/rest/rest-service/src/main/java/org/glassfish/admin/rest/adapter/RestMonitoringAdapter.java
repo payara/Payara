@@ -61,7 +61,7 @@ public class RestMonitoringAdapter extends RestAdapter {
     protected Set<Class<?>> getResourceClasses() {
 //        return getLazyJersey().getResourcesConfigForMonitoring(habitat);
 //    @Override
-//    public Set<Class<?>> getResourcesConfigForMonitoring(Habitat habitat) {
+//    public Set<Class<?>> getResourcesConfigForMonitoring(BaseServiceLocator habitat) {
         final Set<Class<?>> r = new HashSet<Class<?>>();
         r.add(org.glassfish.admin.rest.resources.MonitoringResource.class);
 

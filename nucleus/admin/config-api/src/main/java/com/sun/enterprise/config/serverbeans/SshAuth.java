@@ -50,7 +50,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;

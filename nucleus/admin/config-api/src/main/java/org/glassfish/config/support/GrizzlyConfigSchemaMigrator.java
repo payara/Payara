@@ -68,7 +68,7 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transports;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -86,7 +86,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     private Configs configs;
     private Config currentConfig = null;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private static final String HTTP_THREAD_POOL = "http-thread-pool";
     private static final String ASADMIN_LISTENER = "admin-listener";
     private static final String ASADMIN_VIRTUAL_SERVER = "__asadmin";

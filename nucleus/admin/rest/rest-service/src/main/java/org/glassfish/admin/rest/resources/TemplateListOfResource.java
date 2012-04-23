@@ -54,7 +54,7 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -83,7 +83,7 @@ public abstract class TemplateListOfResource {
     @Context
     protected ResourceContext resourceContext;
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;

@@ -48,6 +48,7 @@ import com.sun.enterprise.config.serverbeans.AdminService;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -66,7 +67,7 @@ import java.util.Map;
  */
 public class DirectCreationTest extends ConfigPersistence {
 
-    Habitat habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.getNewHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -79,10 +80,15 @@ public class DirectCreationTest extends ConfigPersistence {
     }
 
     @Override
-    public Habitat getHabitat() {
+    public BaseServiceLocator getBaseServiceLocator() {
         return habitat;
     }
-
+    
+    @Override
+    public Habitat getHabitat() {
+    	return (Habitat) getBaseServiceLocator();
+    }
+    
     public void doTest() throws TransactionFailure {
 
         AdminService service = habitat.getComponent(AdminService.class);
@@ -96,7 +102,7 @@ public class DirectCreationTest extends ConfigPersistence {
             throw new RuntimeException(e);
         }
 
-        ConfigSupport support = getHabitat().getComponent(ConfigSupport.class);
+        ConfigSupport support = getBaseServiceLocator().getComponent(ConfigSupport.class);
 
         for (Class<?> subType : subTypes) {
             // TODO:  JL force compilation error to mark this probably edit point for grizzly config

@@ -59,7 +59,7 @@ import java.beans.*;
  */
 public class VetoableChangeListenerTest extends ConfigApiTest implements VetoableChangeListener {
 
-    Habitat habitat;
+    BaseServiceLocator habitat;
     boolean result = false;
 
     public String getFileName() {

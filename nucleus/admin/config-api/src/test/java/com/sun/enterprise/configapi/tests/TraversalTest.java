@@ -41,7 +41,7 @@
 package com.sun.enterprise.configapi.tests;
 
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -65,7 +65,7 @@ public class TraversalTest extends ConfigApiTest {
 
     @Test
     public void traverse() {
-        Habitat habitat = super.getHabitat();
+        BaseServiceLocator habitat = super.getHabitat();
         Domain domain = Domain.class.cast(habitat.getComponent(Domain.class.getName(), ""));
         introspect(0, Dom.unwrap(domain));
     }

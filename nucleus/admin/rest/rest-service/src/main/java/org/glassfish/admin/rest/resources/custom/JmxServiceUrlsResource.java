@@ -54,7 +54,7 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Dom;
 
 /**
@@ -64,7 +64,7 @@ import org.jvnet.hk2.config.Dom;
 public class JmxServiceUrlsResource {
     
         @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
         
     public void setEntity(Dom p) {
         // ugly no-op hack. For now.

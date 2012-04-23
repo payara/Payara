@@ -43,7 +43,7 @@ package org.glassfish.admin.rest.resources;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import javax.ws.rs.PUT;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +96,7 @@ public abstract class CollectionLeafResource {
     protected ResourceContext resourceContext;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     protected List<String> entity;
     protected Dom parent;

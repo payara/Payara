@@ -75,7 +75,7 @@ public class RestartDomainCommand extends StopDomainCommand {
     private Boolean debug;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(RestartDomainCommand.class);
 

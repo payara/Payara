@@ -53,7 +53,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
 import org.glassfish.config.support.CommandTarget;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -89,7 +89,7 @@ public class ClusterOperationUtil {
                                                    List<Server> instancesForReplication,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   Habitat habitat) {
+                                                   BaseServiceLocator habitat) {
         return replicateCommand(commandName, failPolicy, offlinePolicy, neverStartedPolicy,
                 instancesForReplication, context, parameters, habitat, null);
     }
@@ -120,7 +120,7 @@ public class ClusterOperationUtil {
                                                    List<Server> instancesForReplication,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   Habitat habitat,
+                                                   BaseServiceLocator habitat,
                                                    final File intermediateDownloadDir) {
 
         ActionReport.ExitCode returnValue = ActionReport.ExitCode.SUCCESS;
@@ -263,7 +263,7 @@ public class ClusterOperationUtil {
                                                    Collection<String> targetNames,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   Habitat habitat) {
+                                                   BaseServiceLocator habitat) {
         return replicateCommand(commandName, failPolicy, offlinePolicy, neverStartedPolicy,
                 targetNames, context, parameters, habitat, null);
     }
@@ -294,7 +294,7 @@ public class ClusterOperationUtil {
                                                    Collection<String> targetNames,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   Habitat habitat,
+                                                   BaseServiceLocator habitat,
                                                    File intermediateDownloadDir) {
 
         ActionReport.ExitCode result = ActionReport.ExitCode.SUCCESS;

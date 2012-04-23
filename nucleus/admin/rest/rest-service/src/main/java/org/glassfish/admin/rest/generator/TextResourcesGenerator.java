@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Mitesh Meswani
@@ -57,7 +57,7 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
     /* The absolute path to dir where resources are generated */
     private File generationDir;
 
-    public TextResourcesGenerator(String outputDir, Habitat habitat) {
+    public TextResourcesGenerator(String outputDir, BaseServiceLocator habitat) {
         super(habitat);
         generationDir= new File(outputDir);
         if (!generationDir.mkdirs()) {

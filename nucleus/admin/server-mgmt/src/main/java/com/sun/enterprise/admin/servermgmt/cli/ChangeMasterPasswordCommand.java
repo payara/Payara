@@ -47,7 +47,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
@@ -84,7 +84,7 @@ import java.util.Arrays;
 public class ChangeMasterPasswordCommand extends CLICommand {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
     private boolean savemp;

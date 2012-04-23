@@ -44,7 +44,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.glassfish.api.admin.config.Container;
 import org.junit.Test;
@@ -58,7 +58,7 @@ import java.util.List;
 public class ContainerExtensionTest extends ConfigApiTest {
 
 
-    Habitat habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.getNewHabitat(this);
 
     @Override
     public String getFileName() {

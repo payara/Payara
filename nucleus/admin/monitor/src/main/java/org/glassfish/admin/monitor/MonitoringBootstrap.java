@@ -134,7 +134,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     @Inject
     private org.glassfish.flashlight.provider.ProbeRegistry probeRegistry;
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     @Inject 
     Transactions transactions;
     

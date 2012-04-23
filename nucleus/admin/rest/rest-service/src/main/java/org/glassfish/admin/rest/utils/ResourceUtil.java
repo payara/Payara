@@ -96,7 +96,7 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -223,7 +223,7 @@ public class ResourceUtil {
      * @return ActionReport object with command execute status details.
      */
     public static RestActionReporter runCommand(String commandName, Map<String, String> parameters, 
-            Habitat habitat, String resultType) {
+            BaseServiceLocator habitat, String resultType) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             p.set(entry.getKey(), entry.getValue());
@@ -232,7 +232,7 @@ public class ResourceUtil {
         return runCommand(commandName, p, habitat, resultType);
     }
 
-    public static RestActionReporter runCommand(String commandName, ParameterMap parameters, Habitat habitat, String resultType) {
+    public static RestActionReporter runCommand(String commandName, ParameterMap parameters, BaseServiceLocator habitat, String resultType) {
         CommandRunner cr = habitat.getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
 //        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
@@ -295,7 +295,7 @@ public class ResourceUtil {
      * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
-    public static MethodMetaData getMethodMetaData(String command, Habitat habitat, Logger logger) {
+    public static MethodMetaData getMethodMetaData(String command, BaseServiceLocator habitat, Logger logger) {
         return getMethodMetaData(command, null, habitat, logger);
     }
 
@@ -310,7 +310,7 @@ public class ResourceUtil {
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(String command, HashMap<String, String> commandParamsToSkip,
-            Habitat habitat, Logger logger) {
+            BaseServiceLocator habitat, Logger logger) {
         MethodMetaData methodMetaData = new MethodMetaData();
 
         if (command != null) {
@@ -502,7 +502,7 @@ public class ResourceUtil {
     /*
      * test if a command really exists in the current runningVM
      */
-    public static boolean commandIsPresent(Habitat habitat, String commandName) {
+    public static boolean commandIsPresent(BaseServiceLocator habitat, String commandName) {
         try {
             habitat.getComponent(AdminCommand.class, commandName);
             return true;
@@ -522,7 +522,7 @@ public class ResourceUtil {
      * method.
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
-            String commandName, Habitat habitat, Logger logger) {
+            String commandName, BaseServiceLocator habitat, Logger logger) {
         return habitat.getComponent(CommandRunner.class).getModel(commandName, logger).getParameters();
     }
 
@@ -539,7 +539,7 @@ public class ResourceUtil {
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Collection<String> commandParamsToSkip,
-            Habitat habitat, Logger logger) {
+            BaseServiceLocator habitat, Logger logger) {
         CommandModel cm = habitat.getComponent(CommandRunner.class).getModel(commandName, logger);
         Collection<String> parameterNames = cm.getParametersNames();
 
@@ -1061,7 +1061,7 @@ public class ResourceUtil {
         ar.getExtraProperties().put("methods", methodMetaData);
     }
 
-    public static synchronized RestConfig getRestConfig(Habitat habitat) {
+    public static synchronized RestConfig getRestConfig(BaseServiceLocator habitat) {
         if (restConfig == null) {
             if (habitat == null) {
                 return null;
@@ -1083,7 +1083,7 @@ public class ResourceUtil {
      * attributes of a config bean
      */
 
-    public static boolean canShowDeprecatedItems(Habitat habitat) {
+    public static boolean canShowDeprecatedItems(BaseServiceLocator habitat) {
 
         RestConfig rg = getRestConfig(habitat);
         if ((rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"))) {
@@ -1098,7 +1098,7 @@ public class ResourceUtil {
      *
      * @return Access as granted by authenticator
      */
-    public static AdminAccessController.Access authenticateViaAdminRealm(Habitat habitat, Request req, String remoteHost) throws LoginException, IOException {
+    public static AdminAccessController.Access authenticateViaAdminRealm(BaseServiceLocator habitat, Request req, String remoteHost) throws LoginException, IOException {
         String[] up = AdminAdapter.getUserPassword(req);
         String user = up[0];
         String password = up.length > 1 ? up[1] : "";

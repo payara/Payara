@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.configapi.tests;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.junit.Before;
@@ -60,7 +60,7 @@ import java.beans.PropertyChangeEvent;
  */
 public class PropertyChangeListenerTest  extends ConfigApiTest implements ConfigListener {
 
-    Habitat habitat;
+    BaseServiceLocator habitat;
     boolean result = false;
 
     public String getFileName() {

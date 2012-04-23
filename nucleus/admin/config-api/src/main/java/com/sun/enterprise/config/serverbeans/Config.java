@@ -65,11 +65,11 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.api.admin.config.*;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Injectable;
 
 import javax.validation.Payload;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.Habitat;
 
 /**
  * The configuration defines the configuration of a server instance that can be

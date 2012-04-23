@@ -60,7 +60,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -88,7 +89,7 @@ public class SessionsResource {
     private ThreadLocal<Request> request;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     /**
      * Get a new session with GlassFish Rest service

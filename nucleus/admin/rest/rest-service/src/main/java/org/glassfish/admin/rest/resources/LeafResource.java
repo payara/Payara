@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.rest.resources;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -88,7 +88,7 @@ public abstract class LeafResource {
     protected ResourceContext resourceContext;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     protected LeafContent entity;
     protected Dom parent;

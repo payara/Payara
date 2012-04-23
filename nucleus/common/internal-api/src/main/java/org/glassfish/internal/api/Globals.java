@@ -43,6 +43,7 @@ package org.glassfish.internal.api;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.internal.api.Init;
@@ -71,6 +72,10 @@ public class Globals implements Init {
         return defaultHabitat;
     }
 
+    public static BaseServiceLocator getDefaultBaseServiceLocator() {
+    	return getDefaultHabitat();
+    }
+    
     public static Habitat getDefaultHabitat() {
         return defaultHabitat;
     }
@@ -83,6 +88,10 @@ public class Globals implements Init {
         defaultHabitat = habitat;
     }
 
+    public static BaseServiceLocator getStaticBaseServiceLocator() {
+    	return getStaticHabitat();
+    }
+    
     public static Habitat getStaticHabitat() {
         if (defaultHabitat == null) {
             synchronized (staticLock) {

@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
@@ -59,9 +59,9 @@ import org.jvnet.hk2.config.DomDocument;
 public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
     private static Set<String> alreadyGenerated = new HashSet<String>();
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
-    public ResourcesGeneratorBase(Habitat habitat) {
+    public ResourcesGeneratorBase(BaseServiceLocator habitat) {
         this.habitat = habitat;
     }
 

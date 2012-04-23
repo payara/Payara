@@ -71,7 +71,7 @@ import java.beans.PropertyVetoException;
 public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     
     Class<? extends CrudResolver> resolverType;
     GenericCommandModel model;

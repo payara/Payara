@@ -40,7 +40,7 @@
 
 package org.glassfish.admin.monitor.cli;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.ActionReport;
@@ -71,7 +71,7 @@ public class Monitor implements AdminCommand {
     private String filter;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     final private LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(Monitor.class);

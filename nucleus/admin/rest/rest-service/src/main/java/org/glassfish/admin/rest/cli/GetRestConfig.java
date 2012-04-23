@@ -48,7 +48,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.admin.rest.RestConfig;
 import org.glassfish.api.admin.*;
@@ -78,7 +78,7 @@ public class GetRestConfig implements AdminCommand {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {

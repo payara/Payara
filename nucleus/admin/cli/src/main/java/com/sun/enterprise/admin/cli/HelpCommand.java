@@ -56,7 +56,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 @Scoped(PerLookup.class)
 public class HelpCommand extends CLICommand {
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private static final int DEFAULT_PAGE_LENGTH = 50;
     private static final int NO_PAGE_LENGTH = -1;

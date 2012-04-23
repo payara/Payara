@@ -53,6 +53,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandRunner;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigModel;
@@ -95,7 +96,7 @@ public abstract class ClientGenerator {
     }
 
     public void generateClasses() {
-        Domain entity = getHabitat().getComponent(Domain.class);
+        Domain entity = getBaseServiceLocator().getComponent(Domain.class);
         Dom dom = Dom.unwrap(entity);
         document = dom.document;
         ConfigModel rootModel = dom.document.getRoot().model;
@@ -104,7 +105,7 @@ public abstract class ClientGenerator {
         generateSingle(rootModel);
     }
 
-    public Habitat getHabitat() {
+    public BaseServiceLocator getBaseServiceLocator() {
         return habitat;
     }
 
@@ -197,7 +198,7 @@ public abstract class ClientGenerator {
     }
 
     protected CommandModel getCommandModel(String commandName) {
-        CommandRunner cr = getHabitat().getComponent(CommandRunner.class);
+        CommandRunner cr = getBaseServiceLocator().getComponent(CommandRunner.class);
         return cr.getModel(commandName, RestService.logger);
     }
 

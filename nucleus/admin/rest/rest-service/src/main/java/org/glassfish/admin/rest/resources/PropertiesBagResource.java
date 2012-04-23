@@ -67,7 +67,7 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.TransactionFailure;
 
@@ -84,7 +84,7 @@ public class PropertiesBagResource {
     @Context
     protected ResourceContext resourceContext;
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     
     protected List<Dom> entity;
     protected Dom parent;

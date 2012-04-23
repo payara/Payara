@@ -62,7 +62,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -89,7 +89,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     Configs configs;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";

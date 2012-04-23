@@ -56,7 +56,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -84,7 +84,7 @@ public class SetRestConfig implements AdminCommand {
     @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Param(optional = true)
     private String debug;
     @Param(optional = true, defaultValue = "-100")

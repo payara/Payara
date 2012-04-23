@@ -50,7 +50,7 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
@@ -69,7 +69,7 @@ public class IsAnonymousUserEnabledCommand implements AdminCommand {
     Domain domain;
     
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {

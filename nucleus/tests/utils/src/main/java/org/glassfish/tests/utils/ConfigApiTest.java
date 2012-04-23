@@ -41,6 +41,7 @@
 package org.glassfish.tests.utils;
 
 import org.junit.Ignore;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -73,6 +74,9 @@ public abstract class ConfigApiTest {
         return Utils.instance.getHabitat(this);
     }
 
+    public BaseServiceLocator getBaseServiceLocator() {
+        return getHabitat();
+    }
 
     public abstract DomDocument getDocument(Habitat habitat);    
     

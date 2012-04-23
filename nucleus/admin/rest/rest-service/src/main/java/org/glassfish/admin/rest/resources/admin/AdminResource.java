@@ -56,7 +56,7 @@ import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -71,7 +71,7 @@ public class AdminResource {
     UriInfo uriInfo;
     
     @Context
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @GET
     public String dummy() {

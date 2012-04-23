@@ -55,6 +55,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
+
+import java.awt.Component.BaselineResizeBehavior;
 import java.beans.PropertyVetoException;
 import java.io.Console;
 import java.io.File;
@@ -75,7 +77,7 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.security.common.FileRealmHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
@@ -822,7 +824,7 @@ public final class CreateDomainCommand extends CLICommand {
 
         // now for every such Inhabitant, fetch the actual initial config and
         // insert it into the module that initial config was targeted for.
-        Habitat habitat = glassfish.getService(Habitat.class);
+        BaseServiceLocator habitat = glassfish.getService(BaseServiceLocator.class);
         Collection<DomainInitializer> inits =
                 habitat.getAllByContract(DomainInitializer.class);
         if (inits.isEmpty()) {

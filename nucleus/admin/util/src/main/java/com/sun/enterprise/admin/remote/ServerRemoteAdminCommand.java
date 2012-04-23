@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.MasterPassword;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * RemoteAdminCommand which is sent from a server (DAS or instance).
@@ -65,7 +65,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private final static String SSL_SOCKET_PROTOCOL = "TLS";
 
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private SecureAdmin secureAdmin;
 
@@ -75,14 +75,14 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     
     private MasterPassword masterPasswordHelper = null;
 
-    public ServerRemoteAdminCommand(Habitat habitat, String name, String host, int port,
+    public ServerRemoteAdminCommand(BaseServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
         super(name, host, port, secure, "admin", "", logger);
         completeInit(habitat);
     }
 
-    private synchronized void completeInit(final Habitat habitat) {
+    private synchronized void completeInit(final BaseServiceLocator habitat) {
         this.habitat = habitat;
         final Domain domain = habitat.getComponent(Domain.class);
         secureAdmin = domain.getSecureAdmin();

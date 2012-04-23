@@ -49,7 +49,7 @@ import java.io.IOException;
 import java.util.Vector;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * REST resource to get Log Names
@@ -60,7 +60,7 @@ import org.jvnet.hk2.component.Habitat;
 public class LogNamesResource {
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     @GET
     @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})

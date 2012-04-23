@@ -48,7 +48,7 @@ import org.glassfish.config.support.Create;
 import org.glassfish.config.support.Delete;
 import org.glassfish.config.support.Listing;
 import org.glassfish.config.support.TypeAndNameResolver;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -208,7 +208,7 @@ public interface SecureAdmin extends ConfigBeanProxy, Injectable {
         
         public static List<SecureAdminPrincipal> secureAdminPrincipals(
                 final SecureAdmin secureAdmin,
-                final Habitat habitat) {
+                final BaseServiceLocator habitat) {
             List<SecureAdminPrincipal> result = Collections.EMPTY_LIST;
             if (secureAdmin != null) {
                 result = secureAdmin.getSecureAdminPrincipal();
@@ -235,7 +235,7 @@ public interface SecureAdmin extends ConfigBeanProxy, Injectable {
             return result;
         }
         
-        private static synchronized SecureAdminHelper secureAdminHelper(final Habitat habitat) {
+        private static synchronized SecureAdminHelper secureAdminHelper(final BaseServiceLocator habitat) {
             if (_secureAdminHelper == null) {
                 _secureAdminHelper = habitat.getComponent(SecureAdminHelper.class);
             }

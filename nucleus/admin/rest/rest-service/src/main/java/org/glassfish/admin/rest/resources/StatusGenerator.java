@@ -76,6 +76,7 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -89,7 +90,7 @@ import org.jvnet.hk2.config.DomDocument;
 public class StatusGenerator {
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     protected StringBuilder status = new StringBuilder();
     private Set<String> commandsUsed = new TreeSet<String>();
     private Set<String> allCommands = new TreeSet<String>();
@@ -121,7 +122,7 @@ public class StatusGenerator {
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator((Habitat)habitat);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
@@ -203,7 +204,7 @@ public class StatusGenerator {
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
 
-            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator(habitat);
+            ResourcesGenerator resourcesGenerator = new NOOPResourcesGenerator((Habitat)habitat);
             resourcesGenerator.generateSingle(rootModel, document);
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {

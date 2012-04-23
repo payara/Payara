@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.UnexpectedTypeException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 
@@ -90,7 +90,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
         }
         Collection<RemoteKeyInfo> remoteKeys = findRemoteKeys(config);
         if (remoteKeys != null && !remoteKeys.isEmpty()) {
-            Habitat habitat = dom.getHabitat();
+            BaseServiceLocator habitat = dom.getHabitat();
             boolean result = true;
             boolean disableGlobalMessage = true;
             for (RemoteKeyInfo remoteKeyInfo : remoteKeys) {

@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.config.support.GlassFishDocument;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 import org.junit.Ignore;

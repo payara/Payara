@@ -51,7 +51,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -63,13 +63,13 @@ import org.objectweb.asm.Type;
 public class ASMClassWriter implements ClassWriter, Opcodes {
     private org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(0);
     private String className;
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private final String generatedPath;
     private Map<String, String> generatedMethods = new HashMap<String, String>();
   //  private String baseClassName;
   //  private String resourcePath;
 
-    public ASMClassWriter(Habitat habitat, String generatedPath, String className, String baseClassName, String resourcePath) {
+    public ASMClassWriter(BaseServiceLocator habitat, String generatedPath, String className, String baseClassName, String resourcePath) {
         this.habitat = habitat;
         this.className = className;
         this.generatedPath = generatedPath;

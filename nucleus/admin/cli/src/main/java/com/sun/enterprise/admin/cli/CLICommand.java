@@ -189,7 +189,7 @@ public abstract class CLICommand implements PostConstruct {
     /**
      * Get a CLICommand object representing the named command.
      */
-    public static CLICommand getCommand(Habitat habitat, String name)
+    public static CLICommand getCommand(BaseServiceLocator habitat, String name)
             throws CommandException {
 
         // first, check if it's a known unsupported command

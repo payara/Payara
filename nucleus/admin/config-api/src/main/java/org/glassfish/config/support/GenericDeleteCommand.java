@@ -64,7 +64,7 @@ import java.lang.reflect.Proxy;
 public class GenericDeleteCommand extends GenericCrudCommand implements AdminCommand {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     CommandRunner runner;

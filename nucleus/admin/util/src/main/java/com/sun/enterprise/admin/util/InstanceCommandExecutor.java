@@ -48,7 +48,7 @@ import java.util.Map;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import java.util.logging.Logger;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -70,7 +70,7 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(InstanceCommandExecutor.class);
 
-    public InstanceCommandExecutor(Habitat habitat,
+    public InstanceCommandExecutor(BaseServiceLocator habitat,
                                    String name, FailurePolicy fail, FailurePolicy offline, Server server,
                                    String host, int port, Logger logger,
                                    ParameterMap p, ActionReport r, InstanceCommandResult res) throws CommandException {

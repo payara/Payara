@@ -58,7 +58,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
@@ -584,7 +584,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
         String portbase=null;
 
         @Inject
-        Habitat habitat;
+        BaseServiceLocator habitat;
 
         @Inject
         ServerEnvironment env;

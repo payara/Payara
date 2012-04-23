@@ -60,7 +60,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.objectweb.asm.ClassReader;
 
@@ -80,7 +80,7 @@ public class GenerateDomainSchema implements AdminCommand {
     @Inject
     private Domain domain;
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Param(name = "format", defaultValue = "html", optional = true)
     private String format;
     File docDir;

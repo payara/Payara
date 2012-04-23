@@ -59,7 +59,7 @@ import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.User;
 
 import java.util.Enumeration;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.jvnet.hk2.config.types.Property;
 
@@ -293,7 +293,7 @@ public class SecurityUtil {
         }
     }
 
-    public String getAnonymousUser(Habitat habitat) {
+    public String getAnonymousUser(BaseServiceLocator habitat) {
         String user = null;
         // find the ADMIN_REALM
         AuthRealm adminFileAuthRealm = null;

@@ -41,7 +41,7 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.*;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ public enum CommandTarget implements TargetValidator {
      */
     DOMAIN {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             return target.equals("domain");
         }
 
@@ -70,7 +70,7 @@ public enum CommandTarget implements TargetValidator {
      */
     DAS {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             return target.equals("server");
         }
 
@@ -84,7 +84,7 @@ public enum CommandTarget implements TargetValidator {
      */
     CLUSTERED_INSTANCE {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             Domain domain = habitat.getComponent(Domain.class);
             return (domain.getClusterForInstance(target) != null);
         }
@@ -99,7 +99,7 @@ public enum CommandTarget implements TargetValidator {
      */
     STANDALONE_INSTANCE {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             Domain domain = habitat.getComponent(Domain.class);
             return (domain.getServerNamed(target) != null);
         }
@@ -114,7 +114,7 @@ public enum CommandTarget implements TargetValidator {
      */
     CONFIG {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             Domain domain = habitat.getComponent(Domain.class);
             return domain.getConfigNamed(target) != null;
         }
@@ -129,7 +129,7 @@ public enum CommandTarget implements TargetValidator {
      */
     CLUSTER {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             Domain domain = habitat.getComponent(Domain.class);
             return domain.getClusterNamed(target) != null;
         }
@@ -144,7 +144,7 @@ public enum CommandTarget implements TargetValidator {
      */
     NODE {
         @Override
-        public boolean isValid(Habitat habitat, String target) {
+        public boolean isValid(BaseServiceLocator habitat, String target) {
             Domain domain = habitat.getComponent(Domain.class);
             return domain.getNodeNamed(target) != null;
         }
@@ -156,7 +156,7 @@ public enum CommandTarget implements TargetValidator {
     };
 
     @Override
-    public boolean isValid(Habitat habitat, String target) {
+    public boolean isValid(BaseServiceLocator habitat, String target) {
         return false;
     }
 

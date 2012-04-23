@@ -52,7 +52,7 @@ import org.glassfish.embeddable.CommandResult;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
@@ -77,7 +77,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     CommandRunner commandRunner;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private boolean terse;
 

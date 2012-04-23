@@ -53,7 +53,7 @@ import org.glassfish.api.admin.InstanceState;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
@@ -72,7 +72,7 @@ import java.util.logging.Logger;
 public class CommandThreadPool implements Startup, PostConstruct {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private ServerEnvironment serverEnv;

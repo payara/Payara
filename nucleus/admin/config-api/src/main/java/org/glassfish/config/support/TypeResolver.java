@@ -45,6 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 

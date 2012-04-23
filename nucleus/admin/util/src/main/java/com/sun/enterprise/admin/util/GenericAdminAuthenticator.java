@@ -70,7 +70,7 @@ import org.glassfish.internal.api.*;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.security.auth.login.LoginException;
 import javax.security.auth.Subject;
@@ -104,7 +104,7 @@ import org.jvnet.hk2.component.PostConstruct;
 @ContractProvided(JMXAuthenticator.class)
 public class GenericAdminAuthenticator implements AdminAccessController, JMXAuthenticator, PostConstruct {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
     
     @Inject(name="security", optional=true)
     Sniffer snif;
@@ -307,8 +307,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                     Thread.currentThread().setContextClassLoader(sc.getCommonClassLoader());
                     hack = true;
                 }
-                Inhabitant<SecurityLifecycle> sl = habitat.getInhabitantByType(SecurityLifecycle.class);
-                sl.get();
+                
+                habitat.getByType(SecurityLifecycle.class);
+                
                 if (snif!=null) {
                     snif.setup(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY) + "/modules/security", Logger.getAnonymousLogger());
                 }

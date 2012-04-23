@@ -40,7 +40,8 @@
 package org.glassfish.admin.rest.provider;
 
 import org.glassfish.admin.rest.Constants;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.admin.rest.RestConfig;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +81,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     protected HttpHeaders requestHeaders;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     protected Class desiredType;
 

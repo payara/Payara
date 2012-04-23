@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Mitesh Meswani
@@ -55,7 +55,7 @@ import org.jvnet.hk2.component.Habitat;
 public class TextClassWriter implements ClassWriter {
 
      Writer writer;
-     Habitat habitat;
+     BaseServiceLocator habitat;
 
     /**
      * @param className Name of class to be generated
@@ -63,7 +63,7 @@ public class TextClassWriter implements ClassWriter {
      * @param baseClassName
      * @param resourcePath
      */
-    public TextClassWriter(Habitat habitat,File generationDir, String className, String baseClassName, String resourcePath) throws IOException {
+    public TextClassWriter(BaseServiceLocator habitat,File generationDir, String className, String baseClassName, String resourcePath) throws IOException {
         this.habitat = habitat;
         File file = new File(generationDir, className + ".java");
         boolean success = file.createNewFile();

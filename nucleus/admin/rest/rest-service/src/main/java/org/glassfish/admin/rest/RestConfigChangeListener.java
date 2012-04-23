@@ -53,7 +53,7 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * This test listen to a property change event only injecting the parent containing the property.
@@ -65,9 +65,9 @@ public class RestConfigChangeListener implements ConfigListener {
     private Reloader r;
     private ResourceConfig rc;
     private ServerContext sc;
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
-    public RestConfigChangeListener(Habitat habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
+    public RestConfigChangeListener(BaseServiceLocator habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
         this.r = reload;
         this.rc = rc;
         this.sc = sc;

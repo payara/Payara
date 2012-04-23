@@ -58,7 +58,7 @@ import java.util.Properties;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import org.glassfish.admin.rest.logviewer.LogRecord;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * REST resource to get Log records
@@ -69,7 +69,7 @@ import org.jvnet.hk2.component.Habitat;
 public class StructuredLogViewerResource {
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     @Context
     protected ResourceContext resourceContext;
 

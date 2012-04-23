@@ -53,7 +53,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 
@@ -91,7 +91,7 @@ public class CreateResourceRef implements AdminCommand {
     private ServerEnvironment environment;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     /**
      * Executes the command with the command parameters passed as Properties

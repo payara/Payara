@@ -43,7 +43,7 @@ package org.glassfish.admin.rest;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 
@@ -66,7 +66,7 @@ import javax.inject.Inject;
 public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID {
 
     @Inject
-    private static Habitat habitat;
+    private static BaseServiceLocator habitat;
 
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domain;

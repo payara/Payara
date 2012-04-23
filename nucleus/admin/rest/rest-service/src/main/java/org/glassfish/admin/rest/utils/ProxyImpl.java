@@ -62,7 +62,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Mitesh Meswani
@@ -70,7 +70,7 @@ import org.jvnet.hk2.component.Habitat;
 public abstract class ProxyImpl implements Proxy {
 
     @Override
-    public Properties proxyRequest(UriInfo sourceUriInfo, Client client, Habitat habitat) {
+    public Properties proxyRequest(UriInfo sourceUriInfo, Client client, BaseServiceLocator habitat) {
         Properties proxiedResponse = new Properties();
         try {
             Domain domain = habitat.getComponent(Domain.class);
@@ -130,7 +130,7 @@ public abstract class ProxyImpl implements Proxy {
     /**
      * Use SSL to authenticate
      */
-    private void addAuthenticationInfo(Client client, WebResource.Builder resourceBuilder, Server server, Habitat habitat) {
+    private void addAuthenticationInfo(Client client, WebResource.Builder resourceBuilder, Server server, BaseServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
         HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(server.getAdminHost()),

@@ -56,7 +56,7 @@ import org.jvnet.hk2.component.*;
 @Scoped(PerLookup.class)
 public class V2ToV3ConfigUpgradeTester  implements AdminCommand {
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     V2ToV3ConfigUpgrade up;

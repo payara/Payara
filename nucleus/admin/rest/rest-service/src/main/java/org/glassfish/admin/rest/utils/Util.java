@@ -60,7 +60,7 @@ import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
 
 /**
@@ -289,7 +289,7 @@ public class Util {
      * @param data The set of changes to be applied
      * @return ActionReporter containing result of "set" execution
      */
-    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, Habitat habitat) {
+    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, BaseServiceLocator habitat) {
         List<PathSegment> pathSegments = uriInfo.getPathSegments();
 
         // Discard the last segment if it is empty. This happens if some one accesses the resource
@@ -332,7 +332,7 @@ public class Util {
         }
     }
 
-    private static Map<String, String> getCurrentValues(String basePath, Habitat habitat) {
+    private static Map<String, String> getCurrentValues(String basePath, BaseServiceLocator habitat) {
         Map<String, String> values = new HashMap<String, String>();
         final String path = (basePath.endsWith(".")) ? basePath.substring(0, basePath.length()-1) : basePath;
         RestActionReporter gr = ResourceUtil.runCommand("get", new ParameterMap() {{

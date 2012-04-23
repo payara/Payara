@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.glassfish.grizzly.http.server.Request;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 import javax.inject.Inject;
@@ -62,7 +62,7 @@ import javax.inject.Inject;
 @Scoped(Singleton.class)
 public class SessionManager {
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     private RestConfig restConfig = null;
     private final SecureRandom randomGenerator = new SecureRandom();
     private Map<String, SessionData> activeSessions = new ConcurrentHashMap<String, SessionData>(); //To guard against parallel mutation corrupting the map

@@ -61,6 +61,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 

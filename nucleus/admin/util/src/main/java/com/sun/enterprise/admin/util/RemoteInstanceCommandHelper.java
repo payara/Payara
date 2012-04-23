@@ -46,7 +46,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import java.util.*;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Byron Nevins
@@ -65,7 +65,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 public final class RemoteInstanceCommandHelper {
 
-    public RemoteInstanceCommandHelper(Habitat habitatIn) {
+    public RemoteInstanceCommandHelper(BaseServiceLocator habitatIn) {
 
         try {
             habitat = habitatIn;
@@ -128,5 +128,5 @@ public final class RemoteInstanceCommandHelper {
     ///////////////////////////////////////////////////////////////////////////
 
     final private List<Server> servers;
-    final private Habitat habitat;
+    final private BaseServiceLocator habitat;
 }

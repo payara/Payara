@@ -70,7 +70,7 @@ import org.glassfish.admin.rest.logviewer.CharSpool;
 import org.glassfish.admin.rest.logviewer.LineEndNormalizingWriter;
 import org.glassfish.admin.rest.logviewer.WriterOutputStream;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Dom;
 
 /**
@@ -93,7 +93,7 @@ public class LogViewerResource {
     protected UriInfo ui;
 
     @Context
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
 
     /**
      * Represents the data source of this text.

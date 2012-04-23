@@ -48,7 +48,7 @@ import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import org.glassfish.tests.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +60,7 @@ import static org.junit.Assert.assertTrue;
  * @author Jerome Dochez 
  */
 public class DuckMethodsTest extends ConfigApiTest {
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     public String getFileName() {
         return "ClusterDomain";

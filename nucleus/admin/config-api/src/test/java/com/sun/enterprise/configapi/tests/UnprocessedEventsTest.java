@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -67,7 +67,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class UnprocessedEventsTest  extends ConfigApiTest
         implements ConfigListener, TransactionListener {
 
-    Habitat habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.getNewHabitat(this);
     UnprocessedChangeEvents unprocessed = null;
 
     /**
