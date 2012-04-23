@@ -41,4 +41,5 @@
 -exportcontents: \
                         com.sun.enterprise.glassfish.web; \
                         org.glassfish.web.loader; \
+                        org.glassfish.web.util; \
                         com.sun.logging.enterprise.system.container.web; version=${project.osgi.version}
