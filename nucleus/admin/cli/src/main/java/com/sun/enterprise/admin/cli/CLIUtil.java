@@ -79,9 +79,9 @@ public class CLIUtil {
             prop.load(is);
             for (Object key : prop.keySet()) {
                 final String entry = (String)key;
-                if (entry.startsWith(Environment.PREFIX)) {
+                if (entry.startsWith(Environment.getPrefix())) {
                     final String optionName = withPrefix ? entry :
-                      entry.substring(Environment.PREFIX.length()).
+                      entry.substring(Environment.getPrefix().length()).
                             toLowerCase(Locale.ENGLISH);
                     final String optionValue = prop.getProperty(entry);
                     passwordOptions.put(optionName, optionValue);

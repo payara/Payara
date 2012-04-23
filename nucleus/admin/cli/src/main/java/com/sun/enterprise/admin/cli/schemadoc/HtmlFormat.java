@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -170,7 +170,8 @@ public class HtmlFormat implements SchemaOutputFormat {
             println(tocWriter, "<ul>");
             println(tocWriter, "<li>" + link(def));
             for (Entry<String, String> aggType : def.getAggregatedTypes().entrySet()) {
-                if (!Property.class.getName().equals(aggType.getValue())) {
+                if (!Property.class.getName().equals(aggType.getValue()) &&
+                        defs != null) {
                     buildToc(defs.get(aggType.getValue()));
                 }
             }
@@ -197,23 +198,25 @@ public class HtmlFormat implements SchemaOutputFormat {
         copy("/index.html");
     }
 
-    @SuppressWarnings({"IOResourceOpenedButNotSafelyClosed"})
     private void copy(final String resource) throws IOException {
         InputStreamReader reader = null;
         PrintWriter writer = null;
         try {
-            InputStream stream = getClass().getClassLoader().getResourceAsStream(resource);
-            reader = new InputStreamReader(stream);
-            writer = new PrintWriter(new File(dir, resource));
-            char[] bytes = new char[8192];
-            int read;
-            while ((read = reader.read(bytes)) != -1) {
-                writer.write(bytes, 0, read);
+            try {
+                InputStream stream = getClass().getClassLoader().getResourceAsStream(resource);
+                reader = new InputStreamReader(stream);
+                writer = new PrintWriter(new File(dir, resource));
+                char[] bytes = new char[8192];
+                int read;
+                while ((read = reader.read(bytes)) != -1) {
+                    writer.write(bytes, 0, read);
+                }
+            } finally {
+                if (reader != null) {
+                    reader.close();
+                }
             }
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
             if (writer != null) {
                 writer.close();
             }

@@ -84,13 +84,12 @@ import org.glassfish.security.common.FileRealmHelper;
 @ExecuteOn({RuntimeType.DAS})
 public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private ParameterMap params;
-    
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ChangeAdminPasswordCommand.class);
 
-    private static final String oldpwName = Environment.PREFIX + "PASSWORD";
-    private static final String newpwName = Environment.PREFIX + "NEWPASSWORD";
+    private final String oldpwName = Environment.getPrefix() + "PASSWORD";
+    private final String newpwName = Environment.getPrefix() + "NEWPASSWORD";
     
     @Param(name = "domain_name", optional = true)
     private String userArgDomainName;

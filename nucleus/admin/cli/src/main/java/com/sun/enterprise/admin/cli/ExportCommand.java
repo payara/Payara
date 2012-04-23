@@ -87,8 +87,8 @@ public class ExportCommand extends CLICommand {
                 }
 
                 // check that name is legitimate
-                if (!name.startsWith(Environment.PREFIX)) {
-                    logger.info(strings.get("badEnvVarSet", name, Environment.PREFIX));
+                if (!name.startsWith(Environment.getPrefix())) {
+                    logger.info(strings.get("badEnvVarSet", name, Environment.getPrefix()));
                     ret = -1;
                     continue;
                 }

@@ -90,6 +90,7 @@ public class GenerateDomainSchema implements AdminCommand {
     @Param(name = "showDeprecated", defaultValue = "false", optional = true)
     private Boolean showDeprecated;
 
+    @Override
     public void execute(AdminCommandContext context) {
         try {
             URI uri = new URI(System.getProperty("com.sun.aas.instanceRootURI"));
@@ -111,6 +112,7 @@ public class GenerateDomainSchema implements AdminCommand {
     private List<JarFile> locateJarFiles(String modulesDir) throws IOException {
         List<JarFile> result = new ArrayList<JarFile>();
         final File[] files = new File(modulesDir).listFiles(new FilenameFilter() {
+            @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar");
             }
@@ -152,7 +154,7 @@ public class GenerateDomainSchema implements AdminCommand {
     }
 
     private ClassDef parse(InputStream is) throws IOException {
-        DocClassVisitor visitor = new DocClassVisitor(Boolean.valueOf(showDeprecated));
+        DocClassVisitor visitor = new DocClassVisitor(showDeprecated);
         new ClassReader(is).accept(visitor, 0);
         return visitor.isConfigured() ? visitor.getClassDef() : null;
     }

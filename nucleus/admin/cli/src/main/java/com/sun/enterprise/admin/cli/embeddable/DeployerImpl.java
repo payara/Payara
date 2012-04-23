@@ -285,7 +285,10 @@ public class DeployerImpl implements Deployer {
                 }
             }
             if (payloadZip != null) {
-                payloadZip.delete();
+                if (payloadZip.delete() == false) {
+                    logger.log(Level.WARNING, "Cannot delete payload: {0}", 
+                            payloadZip.toString());
+                }
             }
         }
     }

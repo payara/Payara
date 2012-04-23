@@ -58,7 +58,7 @@ public final class Environment {
     // XXX - should Environment just extend HashMap?
 
     // commands that extend AsadminMain may set this as desired
-    public static String PREFIX = "AS_ADMIN_";
+    private static String PREFIX = "AS_ADMIN_";
     private static String SHORT_PREFIX = "AS_";
 
     private Map<String, String> env = new HashMap<String, String>();
@@ -73,6 +73,14 @@ public final class Environment {
      */
     public static void setPrefix(String p) {
         PREFIX = p;
+    }
+    
+    /**
+     * Get the prefix for environment variables referenced from the system 
+     * environment by Environment objects.
+     */
+    public static String getPrefix() {
+        return PREFIX;
     }
     
     /**

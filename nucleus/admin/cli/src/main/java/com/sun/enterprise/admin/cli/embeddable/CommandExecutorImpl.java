@@ -94,8 +94,8 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
 
     ParameterMap getParameters(String command, String[] args) throws CommandException {
         CommandModel commandModel = commandRunner.getModel(command, logger);
-        if (command == null) {
-            throw new CommandException("No command called " + command);
+        if (commandModel == null) {
+            throw new CommandException("Command lookup failed for command " + command);
         }
 
         // Filter out the global options.

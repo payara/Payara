@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,13 +42,7 @@ package com.sun.enterprise.admin.cli.schemadoc;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 
 public class DocClassVisitor implements ClassVisitor {
     private boolean hasConfiguredAnnotation = false;
@@ -61,6 +55,7 @@ public class DocClassVisitor implements ClassVisitor {
         showDeprecated = showDep;
     }
 
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] intfs) {
         className = GenerateDomainSchema.toClassName(name);
         interfaces = new ArrayList<String>();
@@ -74,30 +69,37 @@ public class DocClassVisitor implements ClassVisitor {
         return interfaces;
     }
 
+    @Override
     public void visitSource(String source, String debug) {
     }
 
+    @Override
     public void visitOuterClass(String owner, String name, String desc) {
     }
 
+    @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         hasConfiguredAnnotation |= "Lorg/jvnet/hk2/config/Configured;".equals(desc);
-        if ("Ljava/lang/Deprecated;".equals(desc)) {
+        if ("Ljava/lang/Deprecated;".equals(desc) && classDef != null) {
             classDef.setDeprecated(true);
         }
         return null;
     }
 
+    @Override
     public void visitAttribute(Attribute attr) {
     }
 
+    @Override
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
     }
 
+    @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         return null;
     }
 
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature,
         String[] exceptions) {
         String type = null;
@@ -123,6 +125,7 @@ public class DocClassVisitor implements ClassVisitor {
      * Visits the end of the class. This method, which is the last one to be called, is used to inform the visitor that
      * all the fields and methods of the class have been visited.
      */
+    @Override
     public void visitEnd() {
     }
 

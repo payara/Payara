@@ -323,7 +323,7 @@ public abstract class CLICommand implements PostConstruct {
      */
     public BufferedReader expandManPage(Reader r) {
         manpageTokenValues[0] = programOpts.getCommandName();
-        manpageTokenValues[1] = Environment.PREFIX;
+        manpageTokenValues[1] = Environment.getPrefix();
         manpageTokenValues[2] = Version.getBriefProductName();
         TokenValueSet tvs = new TokenValueSet();
         for (int i = 0; i < manpageTokens.length; i++) {
@@ -702,7 +702,7 @@ public abstract class CLICommand implements PostConstruct {
             logger.finer("Passwords were read from password file: " +
                                         pwfile);
             String password = passwords.get(
-                    Environment.PREFIX + "PASSWORD");
+                    Environment.getPrefix() + "PASSWORD");
             if (password != null && programOpts.getPassword() == null)
                 programOpts.setPassword(password,
                     ProgramOptions.PasswordLocation.PASSWORD_FILE);

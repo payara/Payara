@@ -89,7 +89,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             new LocalStringsImpl(StartDomainCommand.class);
     // the name of the master password option
     private StartServerHelper helper;
-    private String newpwName = Environment.PREFIX + "NEWPASSWORD";
+    private String newpwName = Environment.getPrefix() + "NEWPASSWORD";
 
     @Override
     public List<String> getLauncherArgs() {

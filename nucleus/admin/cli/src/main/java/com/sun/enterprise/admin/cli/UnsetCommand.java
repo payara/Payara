@@ -70,8 +70,8 @@ public class UnsetCommand extends CLICommand {
         // process each operand
         for (String name : vars) {
             // check that name is legitimate
-            if (!name.startsWith(Environment.PREFIX)) {
-                logger.info(strings.get("badEnvVarUnset", name, Environment.PREFIX));
+            if (!name.startsWith(Environment.getPrefix())) {
+                logger.info(strings.get("badEnvVarUnset", name, Environment.getPrefix()));
                 ret = -1;
                 continue;
             }
