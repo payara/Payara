@@ -156,6 +156,13 @@ public class TenantManagerImpl implements TenantManagerEx {
      */
     @Override
     public void setCurrentTenant(String name) {
+        if (name != null) { // validate tenant exists sooner than later
+            String filePath = getTenantFilePath(name);
+            // TODO: i18n, better error
+            if (!new File(filePath).exists()) {
+                throw new IllegalArgumentException("Tenant does not exist");
+            }
+        }
         currentTenant.set(name);
     }
 
@@ -305,7 +312,7 @@ public class TenantManagerImpl implements TenantManagerEx {
 
     @SuppressWarnings("unchecked")
     private DomDocument<Dom> populate(Habitat habitat, String name) {
-        String filePath = getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
+        String filePath = getTenantFilePath(name);
         ConfigParser parser = new ConfigParser(habitat);
         URL fileUrl = null;
         try {
@@ -321,6 +328,10 @@ public class TenantManagerImpl implements TenantManagerEx {
             // TODO: i18n, better error
             throw new IllegalArgumentException("Tenant '" + name + "' might be deleted", e);
         }
+    }
+
+    private String getTenantFilePath(String name) {
+        return getTenantManagerConfig().getFileStore() + "/" + name + "/tenant.xml";
     }
 
     /**
