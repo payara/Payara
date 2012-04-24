@@ -224,13 +224,14 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
      * @param file path to the file
      * @return true if file is under "bin" dir, false otherwise
      */
-    private static boolean isFileWithinBinDirectory(String file) {
-        boolean ret = false;
-        File f = new File(file);
-        String s = f.getParentFile().getName();
-        if (s.equals("bin"))
-            ret = true;
-        return ret;
+    private static boolean isFileWithinBinDirectory(String file) { 
+        String parent = null;
+        //for top-level files, parent would be null
+        String pFile = new File(file).getParent();
+        if (pFile != null) {
+            parent = new File(pFile).getName();
+        }
+        return parent != null && parent.equals("bin");
     }
 
     public static String toString(InputStream ins) throws IOException {
