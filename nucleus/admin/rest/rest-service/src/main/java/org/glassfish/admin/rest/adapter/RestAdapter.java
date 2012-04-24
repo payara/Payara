@@ -41,7 +41,6 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.module.common_impl.LogHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import com.sun.jersey.api.container.ContainerFactory;
@@ -53,7 +52,11 @@ import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
@@ -307,22 +310,44 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
         return type;
     }
+    
+    public Map<String, MediaType> getMimeMappings() {
+        return new HashMap<String, MediaType>() {{
+            put("xml", MediaType.APPLICATION_XML_TYPE);
+            put("json", MediaType.APPLICATION_JSON_TYPE);
+            put("html", MediaType.TEXT_HTML_TYPE);
+            put("js", new MediaType("text", "javascript"));
+        }};
+    }
+    
+    public List<SingletonTypeInjectableProvider> getSingletons() {
+        return new ArrayList<SingletonTypeInjectableProvider>() {{
+            add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
+            add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
+            add(new SingletonTypeInjectableProvider<Context, SessionManager>(SessionManager.class, habitat.getComponent(SessionManager.class)) {});
+        }};
+    }
+    
+    public Map<String, Boolean> getFeatures() {
+        return new HashMap<String, Boolean>() {{
+           put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
+        }};
+    }
 
-    /*
+    /**
      * dynamically load the class that contains all references to Jersey APIs
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
      * gain a few 100millis at GlassFish startyp time
      */
-    public HttpHandler exposeContext(Set<Class<?>> classes, ServerContext sc, Habitat habitat) throws EndpointRegistrationException {
-
+    public HttpHandler exposeContext(final Set<Class<?>> classes, final ServerContext sc, final Habitat habitat) throws EndpointRegistrationException {
+        final ResourceConfig rc = new DefaultResourceConfig(classes);
+        final Map<String, Boolean> features = rc.getFeatures();
+        final Reloader r = new Reloader();
         HttpHandler httpHandler = null;
-        Reloader r = new Reloader();
 
-        ResourceConfig rc = new DefaultResourceConfig(classes);
-        rc.getMediaTypeMappings().put("xml", MediaType.APPLICATION_XML_TYPE);
-        rc.getMediaTypeMappings().put("json", MediaType.APPLICATION_JSON_TYPE);
-        rc.getMediaTypeMappings().put("html", MediaType.TEXT_HTML_TYPE);
-        rc.getMediaTypeMappings().put("js", new MediaType("application", "x-javascript"));
+        rc.getMediaTypeMappings().putAll(getMimeMappings());
+        rc.getSingletons().addAll(getSingletons());
+        features.putAll(getFeatures());
         
         rc.getContainerRequestFilters().add(CsrfProtectionFilter.class);
 
@@ -334,23 +359,18 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
                 rc.getContainerRequestFilters().add(LoggingFilter.class);
             }
-            if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
-                rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-            }
-        }
-        else {
-                 rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);          
+            features.put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.parseBoolean(restConf.getWadlGeneration()));
         }
 
-        rc.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_NOTIFIER, r);
         rc.getClasses().add(ReloadResource.class);
 
-        //We can only inject these 4 extra classes in Jersey resources...
+        rc.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_NOTIFIER, r);
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, Reloader>(Reloader.class, r) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, BaseServiceLocator>(BaseServiceLocator.class, habitat) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, SessionManager>(SessionManager.class, habitat.getComponent(SessionManager.class)) {});
+
 
         //Use common classloader. Jersey artifacts are not visible through
         //module classloader

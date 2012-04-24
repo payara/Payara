@@ -40,10 +40,14 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.jersey.api.json.JSONConfiguration;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
 import org.glassfish.admin.rest.generator.client.ClientGenerator;
@@ -53,6 +57,7 @@ import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.Dom;
 
 /**
@@ -81,6 +86,7 @@ public class RestManagementAdapter extends RestAdapter {
         }
 
         final Set<Class<?>> r = new HashSet<Class<?>>();
+        addCompositeResources(r);
 
         // uncomment if you need to run the generator:
 //        r.add(GeneratorResource.class);
@@ -124,6 +130,13 @@ public class RestManagementAdapter extends RestAdapter {
         return r;
     }
 
+    @Override
+    public Map<String, Boolean> getFeatures() {
+        final Map<String, Boolean> features = super.getFeatures();
+        features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        return features;
+    }
+
     private void generateASM(BaseServiceLocator habitat) {
         try {
             Domain entity = habitat.getComponent(Domain.class);
@@ -134,6 +147,13 @@ public class RestManagementAdapter extends RestAdapter {
             resourcesGenerator.endGeneration();
         } catch (Exception ex) {
             Logger.getLogger(GeneratorResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void addCompositeResources(Set<Class<?>> r) {
+        Iterator<Inhabitant<?>> iter = habitat.getInhabitantsByContract(RestResource.class.getName()).iterator();
+        while (iter.hasNext()) {
+            r.add(iter.next().type());
         }
     }
 }

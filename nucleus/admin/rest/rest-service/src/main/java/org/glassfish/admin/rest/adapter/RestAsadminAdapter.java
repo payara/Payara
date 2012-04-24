@@ -39,8 +39,12 @@
  */
 package org.glassfish.admin.rest.adapter;
 
+import com.sun.jersey.api.json.JSONConfiguration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.resources.admin.AdminResource;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
@@ -70,4 +74,19 @@ public class RestAsadminAdapter extends RestAdapter {
         return CONTEXT;
     }
     
+    @Override
+    public Map<String, MediaType> getMimeMappings() {
+        return new HashMap<String, MediaType>() {{
+            put("xml", MediaType.APPLICATION_XML_TYPE);
+            put("json", MediaType.APPLICATION_JSON_TYPE);
+        }};
+    }
+
+    @Override
+    public Map<String, Boolean> getFeatures() {
+        Map<String, Boolean> features = super.getFeatures();
+        features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        
+        return features;
+    }
 }

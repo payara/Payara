@@ -369,7 +369,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      * @param className
      * @return true if the given className is already generated. false otherwise.
      */
-    private boolean alreadyGenerated(String className) {
+    protected boolean alreadyGenerated(String className) {
         boolean retVal = true;
         if (!alreadyGenerated.contains(className)) {
             alreadyGenerated.add(className);

@@ -41,6 +41,7 @@ package org.glassfish.admin.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -56,6 +57,7 @@ import static org.junit.Assert.*;
  * Time: 2:28:27 PM
  * To change this template use File | Settings | File Templates.
  */
+@Ignore
 public class JmsTest extends RestTestBase {
     static final String URL_ADMIN_OBJECT_RESOURCE = "/domain/resources/admin-object-resource";
     static final String URL_CONNECTOR_CONNECTION_POOL = "/domain/resources/connector-connection-pool";

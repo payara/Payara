@@ -65,7 +65,7 @@ import org.jvnet.hk2.config.DomDocument;
 public class GeneratorResource {
 
     private static final String DEFAULT_OUTPUT_DIR = System.getProperty("user.home") +
-            "tmp/glassfish";
+            "/tmp/glassfish";
     @Context
     protected BaseServiceLocator habitat;
 

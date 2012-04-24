@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.resources.admin;
 
 import java.net.HttpURLConnection;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -51,10 +50,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -76,6 +78,14 @@ public class AdminResource {
     @GET
     public String dummy() {
         return "test";
+    }
+    
+    @GET
+    @Path("/{command}")
+    public Response getMetadata(@PathParam("command") String command) {
+        CommandRunner cr = habitat.getComponent(CommandRunner.class);
+        CommandModel model = cr.getModel(command, RestService.logger);
+        return Response.ok(model).build();
     }
 
     @POST

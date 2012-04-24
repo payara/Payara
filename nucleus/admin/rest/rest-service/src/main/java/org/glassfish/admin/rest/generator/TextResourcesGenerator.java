@@ -107,4 +107,9 @@ public class TextResourcesGenerator extends ResourcesGeneratorBase {
 
         return  "Code Generation done at : " + generationDir;
     }
+
+    @Override
+    protected boolean alreadyGenerated(String className) {
+        return false; // Always generate. It just overwrites the file.
+    }
 }
