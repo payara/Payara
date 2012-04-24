@@ -92,15 +92,21 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
     }
 
     // FIXME: file lock, but keep it reentrant for TenantConfigBean
-    final private ReentrantLock lock = new ReentrantLock()/* {
+    final private ReentrantLock lock = new ReentrantLock()  /* {
         private FileLock fileLock;
+        private AtomicInteger locksByThisProcess = new AtomicInteger(0);
+
 
         private static final long serialVersionUID = 3798935315905555205L;
 
         @Override
         public boolean tryLock(long time, TimeUnit unit)
                 throws InterruptedException {
-            lockFile(); // throws exception
+
+            if ( locksByThisProcess.incrementAndGet() == 1) {
+                // Physically lock the file only if we are the first one to enter
+                lockFile(); // throws exception
+            }
 
             
             // TODO Auto-generated method stub
@@ -109,16 +115,19 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
 
         @Override
         public void unlock() {
-            if (fileLock != null && fileLock.isValid()) {
-                try {
-                    fileLock.release();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+            if (locksByThisProcess.decrementAndGet() == 0) {
+                // Physically unlock the file when the last one gets out.
+                if (fileLock != null && fileLock.isValid()) {
+                    try {
+                        fileLock.release();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    fileLock = null;
                 }
-                fileLock = null;
+                super.unlock();
             }
-            super.unlock();
         }
 
         private void lockFile() {
