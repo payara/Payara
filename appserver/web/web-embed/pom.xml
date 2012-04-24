@@ -55,7 +55,6 @@
     <name>GlassFish Web container embedded related modules</name>  
     <modules>
         <module>api</module>
-        <module>impl</module>
     </modules>
 
 </project>
