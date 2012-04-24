@@ -210,7 +210,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
                     } else {
                         portInfo.addStubProperty(Stub.ENDPOINT_ADDRESS_PROPERTY, actualAddress.toExternalForm());
                     }
-                    if (serviceRef.getBundleDescriptor().getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+                    if (serviceRef.getBundleDescriptor().getModuleType().equals(DOLUtils.carType())) {
                         wsdlOverride = serviceRef.getWsdlOverride();
                         if (wsdlOverride!=null) {
                             wsdlOverriden = true;
@@ -826,17 +826,17 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
-            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
             }
 
-            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(DOLUtils.warType())) {
                 if (wbd != null) {
                     wbd.visit(getSubDescriptorVisitor(wbd));
                 }
             }
 
-            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(DOLUtils.carType())) {
                 acd.visit(getSubDescriptorVisitor(acd));
             }
         } else {

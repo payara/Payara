@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.authentication.AuthenticationService;
 import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
 import com.sun.enterprise.connectors.module.ConnectorApplication;
+import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
 import com.sun.enterprise.connectors.service.*;
 import com.sun.enterprise.connectors.util.*;
@@ -237,6 +238,9 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     @Inject
     private ResourceNamingService resourceNamingService;
+
+    @Inject
+    private RarType archiveType;
 
     private Resources globalResources;
 
@@ -1320,7 +1324,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     public ConnectorArchivist getConnectorArchvist() throws ConnectorRuntimeException {
         ArchivistFactory archivistFactory = archivistFactoryProvider.get();
-        return (ConnectorArchivist) archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.rarType());
+        return (ConnectorArchivist) archivistFactory.getArchivist(archiveType);
     }
 
     public WorkContextHandler getWorkContextHandler(){

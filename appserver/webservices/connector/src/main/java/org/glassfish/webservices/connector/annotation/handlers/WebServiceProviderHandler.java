@@ -65,6 +65,7 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 import javax.xml.namespace.QName;
 
@@ -263,7 +264,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
             endpoint.setServiceEndpointInterface(serviceEndpointIntf.getName());
         }
 
-        if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(bundleDesc.getModuleType())) {
+        if (DOLUtils.warType().equals(bundleDesc.getModuleType())) {
             if(endpoint.getServletImplClass() == null) {
                 // Set servlet impl class here
                 endpoint.setServletImplClass(((Class)annElem).getName());

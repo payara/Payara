@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.node;
 
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.deployment.xml.ApplicationTagNames;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -83,19 +84,19 @@ public class ModuleNode extends DeploymentDescriptorNode {
     public void setElementValue(XMLElement element, String value) {
         ModuleDescriptor descriptor = (ModuleDescriptor) getDescriptor();
          if (element.getQName().equals(ApplicationTagNames.WEB_URI)) {            
-            descriptor.setModuleType(org.glassfish.deployment.common.DeploymentUtils.warType());
+            descriptor.setModuleType(DOLUtils.warType());
             descriptor.setArchiveUri(value);                
         } else if (element.getQName().equals(ApplicationTagNames.EJB)) {
-            descriptor.setModuleType(org.glassfish.deployment.common.DeploymentUtils.ejbType());
+            descriptor.setModuleType(DOLUtils.ejbType());
             descriptor.setArchiveUri(value);
         } else if (element.getQName().equals(ApplicationTagNames.CONNECTOR)) {
-            descriptor.setModuleType(org.glassfish.deployment.common.DeploymentUtils.rarType());
+            descriptor.setModuleType(DOLUtils.rarType());
             descriptor.setArchiveUri(value);
         } else if (element.getQName().equals(ApplicationTagNames.APPLICATION_CLIENT)) {
-            descriptor.setModuleType(org.glassfish.deployment.common.DeploymentUtils.carType());
+            descriptor.setModuleType(DOLUtils.carType());
             descriptor.setArchiveUri(value);
         } else if (element.getQName().equals(ApplicationTagNames.WEB)) {
-            descriptor.setModuleType(org.glassfish.deployment.common.DeploymentUtils.warType());
+            descriptor.setModuleType(DOLUtils.warType());
         } else super.setElementValue(element, value);
     }    
         
@@ -110,7 +111,7 @@ public class ModuleNode extends DeploymentDescriptorNode {
     public Node writeDescriptor(Node parent, String nodeName, ModuleDescriptor descriptor) {
         
         Node module = appendChild(parent, nodeName);
-        if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(descriptor.getModuleType())) {
+        if (DOLUtils.warType().equals(descriptor.getModuleType())) {
             Node modType = appendChild(module, ApplicationTagNames.WEB);
             appendTextChild(modType, ApplicationTagNames.WEB_URI, descriptor.getArchiveUri());
             forceAppendTextChild(modType, ApplicationTagNames.CONTEXT_ROOT, descriptor.getContextRoot());
@@ -118,9 +119,9 @@ public class ModuleNode extends DeploymentDescriptorNode {
         } else {
             // default initialization if ejb...
             String type = ApplicationTagNames.EJB;
-            if (org.glassfish.deployment.common.DeploymentUtils.carType().equals(descriptor.getModuleType())) {
+            if (DOLUtils.carType().equals(descriptor.getModuleType())) {
                 type = ApplicationTagNames.APPLICATION_CLIENT;
-            } else if (org.glassfish.deployment.common.DeploymentUtils.rarType().equals(descriptor.getModuleType())) {
+            } else if (DOLUtils.rarType().equals(descriptor.getModuleType())) {
                 type = ApplicationTagNames.CONNECTOR;
             }
             appendTextChild(module, type, descriptor.getArchiveUri());

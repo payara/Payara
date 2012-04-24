@@ -139,14 +139,5 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--
-        This is needed because we have some Java EE related Descriptor classes in nucleus. When Hong moves them out,
-        she will remove this depencency as well.
-        -->
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>javax.enterprise.deploy</artifactId>
-            <version>${project.version}</version>
-        </dependency>
    </dependencies>
 </project>

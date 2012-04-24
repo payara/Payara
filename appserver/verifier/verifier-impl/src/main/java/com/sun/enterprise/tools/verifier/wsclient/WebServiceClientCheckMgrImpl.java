@@ -43,6 +43,7 @@ package com.sun.enterprise.tools.verifier.wsclient;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -74,11 +75,11 @@ public class WebServiceClientCheckMgrImpl extends CheckMgr implements JarCheck {
         ServiceReferenceDescriptor rootDescriptor = (ServiceReferenceDescriptor) descriptor;
         ArchiveType moduleType = rootDescriptor.getBundleDescriptor()
                 .getModuleType();
-        if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()))
+        if (moduleType != null && moduleType.equals(DOLUtils.ejbType()))
             moduleName = Result.EJB;
-        else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType()))
+        else if (moduleType != null && moduleType.equals(DOLUtils.warType()))
             moduleName = Result.WEB;
-        else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType()))
+        else if (moduleType != null && moduleType.equals(DOLUtils.carType()))
             moduleName = Result.APPCLIENT;
         super.check(rootDescriptor);
     }

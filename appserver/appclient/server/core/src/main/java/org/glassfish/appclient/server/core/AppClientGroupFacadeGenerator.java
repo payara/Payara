@@ -71,6 +71,7 @@ import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
+import org.glassfish.appclient.server.connector.CarType;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -104,6 +105,9 @@ public class AppClientGroupFacadeGenerator {
 
     @Inject
     private ModulesRegistry modulesRegistry;
+
+    @Inject
+    private CarType carType;
 
     private ClassLoader gfClientModuleClassLoader = null;
 
@@ -143,7 +147,7 @@ public class AppClientGroupFacadeGenerator {
 
         final Application application = dc.getModuleMetaData(Application.class);
         final Collection<ModuleDescriptor<BundleDescriptor>> appClients =
-                application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType());
+                application.getModuleDescriptorsByType(carType);
 
         final StringBuilder appClientGroupListSB = new StringBuilder();
 

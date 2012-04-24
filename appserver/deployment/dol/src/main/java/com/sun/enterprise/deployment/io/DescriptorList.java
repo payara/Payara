@@ -42,6 +42,8 @@ package com.sun.enterprise.deployment.io;
 
 import org.glassfish.api.deployment.archive.ArchiveType;
 
+import com.sun.enterprise.deployment.util.DOLUtils;
+
 /**
  * Repository of descriptors
  * This class will evolve to provide a comprhensive list of
@@ -84,15 +86,15 @@ public class DescriptorList {
 
 	public final static String [] getDescriptorsList (ArchiveType moduleType) {
 		if (moduleType == null) return null;
-		if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType())) {
+		if (moduleType.equals(DOLUtils.earType())) {
 			return (String[])earList.clone();
-		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+		} else if (moduleType.equals(DOLUtils.ejbType())) {
 			return (String[])ejbList.clone();
-		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+		} else if (moduleType.equals(DOLUtils.warType())) {
 			return (String[])warList.clone();
-		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+		} else if (moduleType.equals(DOLUtils.rarType())) {
 			return (String[])rarList.clone();
-		} else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+		} else if (moduleType.equals(DOLUtils.carType())) {
 			return (String[])carList.clone();
 		}
 		return null;

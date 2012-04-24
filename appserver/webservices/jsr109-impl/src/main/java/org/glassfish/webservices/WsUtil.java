@@ -51,6 +51,7 @@ import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.WebServerInfo;
 import com.sun.enterprise.deployment.util.VirtualServerInfo;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -340,7 +341,7 @@ public class WsUtil {
      * @return module-specific dedicated wsdl directory 
      */
     public String getWsdlDir(BundleDescriptor bundle) {
-        boolean isWar = bundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType());
+        boolean isWar = bundle.getModuleType().equals(DOLUtils.warType());
         return isWar ? "WEB-INF/wsdl" : "META-INF/wsdl";
     }
 

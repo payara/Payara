@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.archivist;
 
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.Archive;
@@ -59,7 +60,7 @@ public class WarPersistenceArchivist extends PersistenceArchivist {
 
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
-        return moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType());
+        return moduleType != null && moduleType.equals(DOLUtils.warType());
     }
 
     @Override

@@ -56,6 +56,7 @@ import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.EjbEntityDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.jvnet.hk2.annotations.Service;
@@ -260,7 +261,7 @@ public class ListSubComponentsCommand implements AdminCommand {
         for (ModuleDescriptor moduleDesc : application.getModules()) { 
             String moduleInfo = moduleDesc.getArchiveUri() + ":" + 
                 moduleDesc.getModuleType(); 
-             if (moduleDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+             if (moduleDesc.getModuleType().equals(DOLUtils.warType())) {
                  moduleInfo = moduleInfo + ":" + moduleDesc.getContextRoot(); 
              }
              moduleInfoList.add(moduleInfo);
@@ -283,13 +284,13 @@ public class ListSubComponentsCommand implements AdminCommand {
                 modules = application.getModules();
             } else if (type.equals("servlets")) {
                 modules = application.getModuleDescriptorsByType(
-                    org.glassfish.deployment.common.DeploymentUtils.warType());
+                    DOLUtils.warType());
             } else if (type.equals("ejbs")) {    
                 modules = application.getModuleDescriptorsByType(
-                    org.glassfish.deployment.common.DeploymentUtils.ejbType());
+                    DOLUtils.ejbType());
                 // ejb in war case
                 Collection<ModuleDescriptor<BundleDescriptor>> webModules = 
-                    application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.warType());
+                    application.getModuleDescriptorsByType(DOLUtils.warType());
                 for (ModuleDescriptor webModule : webModules) {
                     if (webModule.getDescriptor().getExtensionsDescriptors(EjbBundleDescriptor.class).size() > 0) {
                         modules.add(webModule);
@@ -384,13 +385,13 @@ public class ListSubComponentsCommand implements AdminCommand {
 
     private String getModuleType(ModuleDescriptor modDesc) {
         String type = null;
-        if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+        if (modDesc.getModuleType().equals(DOLUtils.ejbType())) {
             type = "EJBModule";
-        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+        } else if (modDesc.getModuleType().equals(DOLUtils.warType())) {
             type = "WebModule";
-        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+        } else if (modDesc.getModuleType().equals(DOLUtils.carType())) {
             type = "AppClientModule";
-        } else if (modDesc.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+        } else if (modDesc.getModuleType().equals(DOLUtils.rarType())) {
             type = "ConnectorModule";
         }
 

@@ -44,6 +44,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import javax.inject.Inject;
 
 
@@ -58,9 +59,9 @@ public class ServerSidePersistenceArchivist extends PersistenceArchivist {
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
         // Reads persitence.xml for ejb jars
-        return moduleType != null && (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()) ||
+        return moduleType != null && (moduleType.equals(DOLUtils.ejbType()) ||
                 // Or App client modules if running inside server
-                (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType()) && env.getProcessType().isServer()));
+                (moduleType.equals(DOLUtils.carType()) && env.getProcessType().isServer()));
     }
 
     @Override

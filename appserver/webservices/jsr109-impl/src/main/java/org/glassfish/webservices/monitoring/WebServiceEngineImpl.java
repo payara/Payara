@@ -47,6 +47,7 @@
 package org.glassfish.webservices.monitoring;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 
 import com.sun.logging.LogDomains;
@@ -182,7 +183,7 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
             String endpointURL = endpoint.getEndpointAddressUri();
             EndpointType endpointType;            
             ArchiveType moduleType = endpoint.getWebService().getWebServicesDescriptor().getModuleType();
-            if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+            if (moduleType != null && moduleType.equals(DOLUtils.ejbType())) {
                 endpointType = EndpointType.EJB_ENDPOINT;
             } else {
                 endpointType = EndpointType.SERVLET_ENDPOINT;

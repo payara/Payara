@@ -59,6 +59,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -238,17 +239,17 @@ public class EarDeployer implements Deployer {
         // artifacts that should be included in the generated app client JAR
         else {
             // first we take care of the connectors
-            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.rarType(), runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, DOLUtils.rarType(), runnable));
 
             // now the EJBs
-            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.ejbType(), runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, DOLUtils.ejbType(), runnable));
 
             // finally the war files.
-            bundles.removeAll(doOnAllTypedBundles(application, org.glassfish.deployment.common.DeploymentUtils.warType(), runnable));
+            bundles.removeAll(doOnAllTypedBundles(application, DOLUtils.warType(), runnable));
 
             // extract the app client bundles to take care of later
             Collection<ModuleDescriptor<BundleDescriptor>> appClientBundles =
-                    application.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType());
+                    application.getModuleDescriptorsByType(DOLUtils.carType());
             bundles.removeAll(appClientBundles);
             
             // now ther remaining bundles
@@ -455,13 +456,13 @@ public class EarDeployer implements Deployer {
 
 
     private String getTypeFromModuleType(ArchiveType moduleType) {
-        if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+        if (moduleType.equals(DOLUtils.warType())) {
             return "web";
-        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+        } else if (moduleType.equals(DOLUtils.ejbType())) {
             return "ejb";
-        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+        } else if (moduleType.equals(DOLUtils.carType())) {
             return "appclient";
-        } else if (moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+        } else if (moduleType.equals(DOLUtils.rarType())) {
             return "connector";
         }
         return null;

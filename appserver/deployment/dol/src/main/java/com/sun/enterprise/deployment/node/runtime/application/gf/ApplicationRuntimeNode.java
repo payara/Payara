@@ -189,7 +189,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
                     throw new RuntimeException("No bundle in application with uri " + currentWebUri);
                 }
 		currentWebUri=null;
-		if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+		if (md.getModuleType().equals(DOLUtils.warType())) {
 		    md.setContextRoot(value);
 		} else {
 		    throw new RuntimeException(currentWebUri + " uri does not point to a web bundle");
@@ -245,7 +245,7 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	
         // web*
 	for (ModuleDescriptor module : application.getModules()) {
-	    if (module.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+	    if (module.getModuleType().equals(DOLUtils.warType())) {
 		Node web = appendChild(appNode, RuntimeTagNames.WEB);
 		appendTextChild(web, RuntimeTagNames.WEB_URI, module.getArchiveUri());
 		appendTextChild(web, RuntimeTagNames.CONTEXT_ROOT, module.getContextRoot());

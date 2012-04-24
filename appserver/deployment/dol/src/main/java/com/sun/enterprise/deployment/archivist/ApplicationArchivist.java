@@ -106,7 +106,7 @@ public class ApplicationArchivist extends Archivist<Application> {
      */
     @Override
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.earType();
+        return DOLUtils.earType();
     }
     
             
@@ -334,7 +334,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                                 name.endsWith(".war")))) {
                     ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                     md.setArchiveUri(uri);
-                    md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.warType());
+                    md.setModuleType(DOLUtils.warType());
                     // the context root will be set later after 
                     // we process the sub modules
                     app.addModule(md);
@@ -346,7 +346,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                                 name.endsWith(".rar")))) {
                     ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                     md.setArchiveUri(uri);
-                    md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.rarType());
+                    md.setModuleType(DOLUtils.rarType());
                     app.addModule(md);
                 } else if ((!directory && name.endsWith(".jar"))
                         || (directory &&
@@ -361,7 +361,7 @@ public class ApplicationArchivist extends Archivist<Application> {
 
                             ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                             md.setArchiveUri(uri);
-                            md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.carType());
+                            md.setModuleType(DOLUtils.carType());
                             md.setManifest(subArchive.getManifest());
                             app.addModule(md);
                             continue;
@@ -369,13 +369,13 @@ public class ApplicationArchivist extends Archivist<Application> {
 
                         //Section EE.8.4.2.1.d.ii
                         Archivist ejbArchivist = archivistFactory.get().getArchivist(
-                                org.glassfish.deployment.common.DeploymentUtils.ejbType());
+                                DOLUtils.ejbType());
                         if (ejbArchivist.hasStandardDeploymentDescriptor(subArchive)
                                 || ejbArchivist.hasRuntimeDeploymentDescriptor(subArchive)) {
 
                             ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                             md.setArchiveUri(uri);
-                            md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.ejbType());
+                            md.setModuleType(DOLUtils.ejbType());
                             app.addModule(md);
                             continue;
                         }
@@ -415,7 +415,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                         //Section EE.8.4.2.1.d.ii, alas EJB
                         ModuleDescriptor<BundleDescriptor> md = new ModuleDescriptor<BundleDescriptor>();
                         md.setArchiveUri(uri);
-                        md.setModuleType(org.glassfish.deployment.common.DeploymentUtils.ejbType());
+                        md.setModuleType(DOLUtils.ejbType());
                         app.addModule(md);
                     }
                     /*
@@ -563,7 +563,7 @@ public class ApplicationArchivist extends Archivist<Application> {
             if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
                 DOLUtils.getDefaultLogger().fine("Opening sub-module " + aModule);
             }
-            RootDeploymentDescriptor descriptor = null;
+            BundleDescriptor descriptor = null;
             Archivist newArchivist = archivistFactory.get().getArchivist(aModule.getModuleType());
             newArchivist.initializeContext(this);
             newArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
@@ -589,7 +589,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                 }
 
                 descriptor = (BundleDescriptor) ddFile.read(is);
-                ((BundleDescriptor)descriptor).setApplication(app);
+                descriptor.setApplication(app);
                 is.close();
 
                 // TODO : JD need to be revisited for EAR files with Alternative descriptors, what does
@@ -628,7 +628,7 @@ public class ApplicationArchivist extends Archivist<Application> {
 
                         confDD.read(descriptor, is);
                         is.close();
-                        newArchivist.postRuntimeDDsRead((RootDeploymentDescriptor)descriptor, embeddedArchive);
+                        newArchivist.postRuntimeDDsRead(descriptor, embeddedArchive);
                     } else {
                         if (embeddedArchive!=null) {
                             newArchivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
@@ -659,18 +659,18 @@ public class ApplicationArchivist extends Archivist<Application> {
             if (embeddedArchive!=null) {
                 embeddedArchive.close();
             }
-            if (descriptor != null && descriptor instanceof BundleDescriptor) {
+            if (descriptor != null) {
                 descriptor.getModuleDescriptor().setArchiveUri(
                     aModule.getArchiveUri());
                 aModule.setModuleName(
                     descriptor.getModuleDescriptor().getModuleName());
-                aModule.setDescriptor((BundleDescriptor) descriptor);
-                ((BundleDescriptor) descriptor).setApplication(app);
+                aModule.setDescriptor(descriptor);
+                descriptor.setApplication(app);
                 aModule.setManifest(newArchivist.getManifest());
                 // for optional application.xml case, set the 
                 // context root as module name for web modules
                 if (!appArchive.exists("META-INF/application.xml")) {
-                    if (aModule.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+                    if (aModule.getModuleType().equals(DOLUtils.warType())) {
                         aModule.setContextRoot(aModule.getModuleName());
                     }
                 }
@@ -696,10 +696,10 @@ public class ApplicationArchivist extends Archivist<Application> {
     private List<ModuleDescriptor> sortModules(Application app) {
         List<ModuleDescriptor> sortedModules = 
             new ArrayList<ModuleDescriptor>();
-        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.rarType()));
-        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.ejbType()));
-        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.warType()));
-        sortedModules.addAll(app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.carType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.rarType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.ejbType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.warType()));
+        sortedModules.addAll(app.getModuleDescriptorsByType(DOLUtils.carType()));
         return sortedModules;
     }
   
@@ -753,7 +753,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                 // not find the appropriate sun-???.xml alternate DD.
                 if (is==null) {
                     ReadableArchive subArchive = archive.getSubArchive(md.getArchiveUri());
-                    archivist.readRuntimeDeploymentDescriptor(subArchive,  md.getDescriptor());
+                    archivist.readRuntimeDeploymentDescriptor(subArchive, (BundleDescriptor)md.getDescriptor());
                 }
             }
         }

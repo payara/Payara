@@ -46,6 +46,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -81,11 +82,11 @@ public class PersistenceUnitCheckMgrImpl extends CheckMgr {
             ModuleDescriptor mdesc =
                     BundleDescriptor.class.cast(rootDD).getModuleDescriptor();
             final ArchiveType moduleType = mdesc.getModuleType();
-            if(moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+            if(moduleType != null && moduleType.equals(DOLUtils.ejbType())) {
                 moduleName = Result.EJB;
-            } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+            } else if (moduleType != null && moduleType.equals(DOLUtils.warType())) {
                 moduleName = Result.WEB;
-            } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+            } else if (moduleType != null && moduleType.equals(DOLUtils.carType())) {
                 moduleName = Result.APPCLIENT;
             } else {
                 throw new RuntimeException(

@@ -164,7 +164,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
                 // In app-client, keep lookup local to JVM so it doesn't need to access
                 // server's global JNDI namespace for managed bean.
-                String jndiName = ( bundleDescriptor.getModuleType() == org.glassfish.deployment.common.DeploymentUtils.carType() )
+                String jndiName = ( bundleDescriptor.getModuleType() == DOLUtils.carType() )
                         ?  desc.getAppJndiName() : desc.getGlobalJndiName();
 
                 resourceEnvRef.setJndiName(jndiName);

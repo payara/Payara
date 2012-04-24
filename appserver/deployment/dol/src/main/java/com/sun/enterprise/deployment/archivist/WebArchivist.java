@@ -113,7 +113,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      */
     @Override
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.warType();
+        return DOLUtils.warType();
     }
 
     /**

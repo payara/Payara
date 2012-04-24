@@ -43,6 +43,7 @@ package org.glassfish.ejb.deployment.archivist;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
@@ -115,7 +116,7 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
-        return moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType());
+        return moduleType != null && moduleType.equals(DOLUtils.warType());
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {

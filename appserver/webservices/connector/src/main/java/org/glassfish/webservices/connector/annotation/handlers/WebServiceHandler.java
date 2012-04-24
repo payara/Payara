@@ -57,6 +57,7 @@ import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
 import com.sun.logging.LogDomains;
 
@@ -400,7 +401,7 @@ public class WebServiceHandler extends AbstractHandler {
         // at this point the SIB has to be used no matter what @WebService was used.
         annElem = annInfo.getAnnotatedElement();
 
-        if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(bundleDesc.getModuleType())) {
+        if (DOLUtils.warType().equals(bundleDesc.getModuleType())) {
             if(endpoint.getServletImplClass() == null) {
                 // Set servlet impl class here
                 endpoint.setServletImplClass(((Class)annElem).getName());

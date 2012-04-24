@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.util.WebServerInfo;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -216,8 +215,8 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
         stubsDir.mkdirs();
 
 
-        if (!org.glassfish.deployment.common.DeploymentUtils.warType().equals(bundle.getModuleType()) &&
-                !org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundle.getModuleType())) {
+        if (!DOLUtils.warType().equals(bundle.getModuleType()) &&
+                !DOLUtils.ejbType().equals(bundle.getModuleType())) {
             // unknown module type with @WebService, just ignore...
             return;
         }
@@ -821,9 +820,9 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
 
             ArchiveType moduleType = bundle.getModuleType();
             //only EAR, WAR and EJB archives could contain wsdl files for publish
-            if (moduleType==null || !(moduleType.equals(DeploymentUtils.earType()) ||
-                    moduleType.equals(DeploymentUtils.warType()) ||
-                    moduleType.equals(DeploymentUtils.ejbType()))) {
+            if (moduleType==null || !(moduleType.equals(DOLUtils.earType()) ||
+                    moduleType.equals(DOLUtils.warType()) ||
+                    moduleType.equals(DOLUtils.ejbType()))) {
                 return publishedFiles;
             }
 

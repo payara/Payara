@@ -41,6 +41,7 @@
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
@@ -192,7 +193,7 @@ public class
              * factory would understand.
              */
             archivist = completeInit((AppClientArchivist) 
-                    af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType()));
+                    af.getArchivist(DOLUtils.carType()));
         }
         return archivist;
     }

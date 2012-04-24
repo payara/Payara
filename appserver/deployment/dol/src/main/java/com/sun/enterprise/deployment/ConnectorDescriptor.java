@@ -844,7 +844,7 @@ public class ConnectorDescriptor extends BundleDescriptor {
      * @return the module type for this bundle descriptor
      */
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.rarType();
+        return DOLUtils.rarType();
     }
 
     /**

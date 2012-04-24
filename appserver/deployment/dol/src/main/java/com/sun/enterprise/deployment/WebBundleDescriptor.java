@@ -50,6 +50,7 @@ import com.sun.enterprise.deployment.util.WebBundleTracerVisitor;
 import com.sun.enterprise.deployment.util.WebBundleValidator;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -2133,7 +2134,7 @@ public class WebBundleDescriptor extends BundleDescriptor
      * @return the module type for this bundle descriptor
      */
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.warType();
+        return DOLUtils.warType();
     }
 
     /**

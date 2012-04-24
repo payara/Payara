@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.archivist;
 
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.Archive;
@@ -58,7 +59,7 @@ public class EarPersistenceArchivist extends PersistenceArchivist {
 
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
-        return moduleType!=null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType());
+        return moduleType!=null && moduleType.equals(DOLUtils.earType());
     }
 
 

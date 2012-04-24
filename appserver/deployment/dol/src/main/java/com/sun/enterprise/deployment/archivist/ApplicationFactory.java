@@ -185,7 +185,7 @@ public class ApplicationFactory implements ContractProvider {
         if (handleRuntimeInfo) {
             // now read the runtime deployment descriptors from the original jar file
             archivist.setHandleRuntimeInfo(true);
-            archivist.readRuntimeDeploymentDescriptor(in, descriptor);
+            archivist.readRuntimeDeploymentDescriptor(in, (BundleDescriptor)descriptor);
         }
 
         // validate

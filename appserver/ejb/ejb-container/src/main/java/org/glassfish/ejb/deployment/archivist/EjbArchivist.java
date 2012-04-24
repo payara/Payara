@@ -84,6 +84,9 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     @Inject @Named("GFEjbRuntimeDDFile")
     Provider<DeploymentDescriptorFile> gfEjbRuntimeDD;
 
+    @Inject
+    private org.glassfish.ejb.EjbType ejbType;
+
     /**
      * @return the  module type handled by this archivist
      * as defined in the application DTD
@@ -91,7 +94,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      */
     @Override
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.ejbType();
+        return ejbType;
     }
 
     /**

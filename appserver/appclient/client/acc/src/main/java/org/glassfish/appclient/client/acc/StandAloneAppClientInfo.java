@@ -41,6 +41,7 @@
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.AppClientPersistenceDependencyAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
@@ -258,7 +259,7 @@ public class StandAloneAppClientInfo extends AppClientInfo implements PostConstr
         //to be done.
         massageDescriptor();
 
-        theArchivist.setDescriptor(d);
+        theArchivist.setDescriptor((BundleDescriptor)d);
         return d;
     }
 

@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.types.EntityManagerFactoryReference;
 import com.sun.enterprise.deployment.types.EntityManagerReference;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -71,6 +72,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "META-INF";
     private final static String WSDL_DIR = "wsdl";
 
+     // the spec versions we should start to look at annotations
+    private final static double ANNOTATION_RAR_VER = 1.6;
+    private final static double ANNOTATION_EJB_VER = 3.0;
+    private final static double ANNOTATION_WAR_VER = 2.5;
+    private final static double ANNOTATION_CAR_VER = 5.0;
+
+    private boolean fullFlag = false;
+    private boolean fullAttribute = false;
 
     private final String PERSISTENCE_UNIT_NAME_SEPARATOR = "#";
 
@@ -944,4 +953,78 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     public void setKeepState(String keepStateVal) {
         this.keepState = Boolean.valueOf(keepStateVal);
     }
+
+    /**
+     * Sets the full flag of the bundle descriptor. Once set, the annotations
+     * of the classes contained in the archive described by this bundle
+     * descriptor will be ignored.
+     * @param flag a boolean to set or unset the flag
+     */
+     public void setFullFlag(boolean flag) {
+         fullFlag=flag;
+     }
+
+    /**
+     * Sets the full attribute of the deployment descriptor
+     * @param value the full attribute
+     */
+    public void setFullAttribute(String value) {
+        fullAttribute = Boolean.valueOf(value);
+    }
+
+    /**
+     * Get the full attribute of the deployment descriptor
+     * @return the full attribute
+     */
+    public boolean isFullAttribute() {
+        return fullAttribute;
+    }
+
+    /**
+     * @ return true for following cases:
+     *   1. When the full attribute is true. This attribute only applies to
+     *      ejb module with schema version equal or later than 3.0;
+            web module and schema version equal or later than than 2.5;
+            appclient module and schema version equal or later than 5.0.
+     *   2. When it's been tagged as "full" when processing annotations.
+     *   3. When DD has a version which doesn't allowed annotations.
+     *   return false otherwise.
+     */
+    public boolean isFullFlag() {
+        // if the full attribute is true or it's been tagged as full,
+        // return true
+        if (fullAttribute == true || fullFlag == true) {
+            return true;
+        }
+        return isDDWithNoAnnotationAllowed();
+    }
+
+
+    /**
+     * @ return true for following cases:
+     *   a. ejb module and schema version earlier than 3.0;
+     *   b. web module and schema version earlier than 2.5;
+     *   c. appclient module and schema version earlier than 5.0.
+     *   d. connector module and schema version earlier than 1.6
+     */
+    public boolean isDDWithNoAnnotationAllowed() {
+        ArchiveType mType = getModuleType();
+        if (mType == null) return false;
+        double specVersion = Double.parseDouble(getSpecVersion());
+
+            // we do not process annotations for earlier versions of DD
+            if ( (mType.equals(DOLUtils.ejbType()) &&
+                  specVersion < ANNOTATION_EJB_VER) ||
+                 (mType.equals(DOLUtils.warType()) &&
+                  specVersion < ANNOTATION_WAR_VER) ||
+                 (mType.equals(DOLUtils.carType()) &&
+                  specVersion < ANNOTATION_CAR_VER)  ||
+                 (mType.equals(DOLUtils.rarType()) &&
+                  specVersion < ANNOTATION_RAR_VER)) {
+                return true;
+            } else {
+                return false;
+            }
+    }
+
 }

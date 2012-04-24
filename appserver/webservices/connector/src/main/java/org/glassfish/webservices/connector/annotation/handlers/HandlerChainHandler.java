@@ -68,6 +68,7 @@ import com.sun.enterprise.deployment.WebServiceHandler;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 
@@ -301,14 +302,14 @@ public class HandlerChainHandler extends AbstractHandler {
                 Descriptor jndiContainer=null;
                 if (serviceSideChain) { 
                     WebServiceEndpoint endpoint = (WebServiceEndpoint) container; 
-                    if (org.glassfish.deployment.common.DeploymentUtils.warType().equals(endpoint.getBundleDescriptor().getModuleType())) {
+                    if (DOLUtils.warType().equals(endpoint.getBundleDescriptor().getModuleType())) {
                         jndiContainer = endpoint.getBundleDescriptor();                 
                     } else {
                         jndiContainer = endpoint.getEjbComponentImpl();
                     }
                 } else { 
                     ServiceReferenceDescriptor ref = (ServiceReferenceDescriptor) container;
-                    if(org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(ref.getBundleDescriptor().getModuleType())) {
+                    if(DOLUtils.ejbType().equals(ref.getBundleDescriptor().getModuleType())) {
                         EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) ref.getBundleDescriptor();
                         Iterator<EjbDescriptor> ejbsIter = ejbBundle.getEjbs().iterator();
                         while(ejbsIter.hasNext()) {

@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -139,7 +140,7 @@ class ModuleClientJarMaker implements ClientJarMaker {
             //there should only be one appclient in this ear file
             for (ModuleDescriptor md : 
                 Application.class.cast(descriptor).getModules()) {
-                if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+                if (md.getModuleType().equals(DOLUtils.carType())) {
                     appclientSource = source.getSubArchive(md.getArchiveUri());
                     if (source2 != null) {
                         appclientSource2 = 
@@ -175,7 +176,7 @@ class ModuleClientJarMaker implements ClientJarMaker {
         if (descriptor.isApplication()) {
             for (ModuleDescriptor md : 
                 Application.class.cast(descriptor).getModules()) {
-                if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+                if (md.getModuleType().equals(DOLUtils.ejbType())) {
                     ReadableArchive subSource = 
                         source.getSubArchive(md.getArchiveUri());
                     for (Enumeration e = subSource.entries();e.hasMoreElements();) {

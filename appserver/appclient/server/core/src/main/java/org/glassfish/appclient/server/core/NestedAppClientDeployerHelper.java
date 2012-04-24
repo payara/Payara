@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.ModuleDescriptor;
@@ -350,7 +351,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
      */
     private void addEJBJARs(final StringBuilder cpForFacade, final Set<URI> dependencyURIsProcessed) throws IOException {
         final Application app = appClientDesc().getApplication();
-        for (ModuleDescriptor md : app.getModuleDescriptorsByType(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+        for (ModuleDescriptor md : app.getModuleDescriptorsByType(DOLUtils.ejbType())) {
             addJar(cpForFacade, null,
                    new File(new File(earURI), md.getArchiveUri()).toURI(),
                    dependencyURIsProcessed);

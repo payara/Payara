@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.io.runtime;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.ws.WLDescriptorConstants;
@@ -61,7 +62,7 @@ public class WLSWebServicesDeploymentDescriptorFile extends DeploymentDescriptor
     private String descriptorPath;
 
     public WLSWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {
-        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ?
+        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(DOLUtils.warType())) ?
                 WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY : WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY;
     }
 

@@ -42,6 +42,7 @@ package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
 import com.sun.logging.LogDomains;
 import com.sun.xml.ws.api.BindingID;
@@ -88,7 +89,7 @@ public class WSServletContextListener implements ServletContextListener {
         JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
         WebBundleDescriptor webBundle = null;
         if (jndiNameEnv != null && jndiNameEnv instanceof BundleDescriptor &&
-                ((BundleDescriptor)jndiNameEnv).getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+                ((BundleDescriptor)jndiNameEnv).getModuleType().equals(DOLUtils.warType())) {
             webBundle = ((WebBundleDescriptor) jndiNameEnv);
         } else {
             throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);

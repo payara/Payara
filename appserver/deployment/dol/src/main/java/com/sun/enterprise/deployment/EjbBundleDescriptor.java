@@ -732,7 +732,7 @@ public class EjbBundleDescriptor extends BundleDescriptor implements WritableJnd
      * @return the module type for this bundle descriptor
      */
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.ejbType();
+        return DOLUtils.ejbType();
     }  
 
     public void setPersistenceManagerInuse(String id,String ver)

@@ -52,14 +52,9 @@ import org.glassfish.api.container.Sniffer;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.hk2.ContractLocator;
-import org.glassfish.hk2.Services;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-
-import javax.enterprise.deploy.shared.ModuleType;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,60 +117,6 @@ public class DeploymentUtils {
 
     private final static String DOWNLOADABLE_ARTIFACTS_KEY_PREFIX = "downloadable";
     private final static String GENERATED_ARTIFACTS_KEY_PREFIX = "generated";
-
-
-    // TODO(Sahoo): This method will be moved to JavaEEDeploymentUtils when we move DOL classes from nucleus to appserver
-    public static ArchiveType earType() {
-        return getModuleType(ModuleType.EAR.toString());
-    }
-
-    // TODO(Sahoo): This method will be moved to JavaEEDeploymentUtils when we move DOL classes from nucleus to appserver
-    public static ArchiveType ejbType() {
-        return getModuleType(ModuleType.EJB.toString());
-    }
-
-    // TODO(Sahoo): This method will be moved to JavaEEDeploymentUtils when we move DOL classes from nucleus to appserver
-    public static ArchiveType carType() {
-        return getModuleType(ModuleType.CAR.toString());
-    }
-
-    // TODO(Sahoo): This method will be moved to JavaEEDeploymentUtils when we move DOL classes from nucleus to appserver
-    public static ArchiveType warType() {
-        return getModuleType(ModuleType.WAR.toString());
-    }
-
-    // TODO(Sahoo): This method will be moved to JavaEEDeploymentUtils when we move DOL classes from nucleus to appserver
-    public static ArchiveType rarType() {
-        return getModuleType(ModuleType.RAR.toString());
-    }
-
-    /**
-     * Utility method to retrieve a {@link ArchiveType} from a stringified module type.
-     * Since {@link ArchiveType} is an extensible abstraction and implementations are plugged in via HK2 service
-     * registry, this method returns null if HK2 service registry is not setup.
-     *
-     * If null is passed to this method, it returns null instead of returning an arbitrary ArchiveType or throwing
-     * an exception.
-     *
-     * @param moduleType String equivalent of the module type being looked up. null is allowed.
-     * @return the corresponding ArchiveType, null if no such module type exists or HK2 Service registry is not set up
-     */
-    public static ArchiveType getModuleType(String moduleType) {
-        if (moduleType == null) {
-            return null;
-        }
-        final Services services = Globals.getDefaultServices();
-        ArchiveType result = null;
-        // This method is called without HK2 being setup when dol unit tests are run, so protect against NPE.
-        if(services != null) {
-            final ContractLocator<ArchiveType> provider =
-                    services.forContract(ArchiveType.class).named(moduleType);
-            if (provider!=null) {
-                result = provider.get();
-            }
-        }
-        return result;
-    }
 
     public static boolean isDASTarget(final String targetName) {
         return DAS_TARGET_NAME.equals(targetName);

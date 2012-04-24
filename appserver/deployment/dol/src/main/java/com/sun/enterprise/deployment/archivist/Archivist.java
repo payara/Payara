@@ -87,7 +87,7 @@ import java.util.logging.Logger;
  * @author Jerome Dochez
  */
 @Contract
-public abstract class Archivist<T extends RootDeploymentDescriptor> {
+public abstract class Archivist<T extends BundleDescriptor> {
 
     protected static final Logger logger =
             DOLUtils.getDefaultLogger();
@@ -549,7 +549,7 @@ public abstract class Archivist<T extends RootDeploymentDescriptor> {
         scanner.process(archive, bundleDesc, classLoader, parser);
 
         if (!scanner.getElements().isEmpty()) {
-            if (bundleDesc.isDDWithNoAnnotationAllowed()) {
+            if (((BundleDescriptor)bundleDesc).isDDWithNoAnnotationAllowed()) {
                 // if we come into this block, it means an old version
                 // of deployment descriptor has annotation which is not correct
                 // throw exception in this case

@@ -43,11 +43,13 @@ package com.sun.enterprise.deployment.util;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.DeploymentContext;
 import java.net.URL;
 import java.util.List;
@@ -61,7 +63,9 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.component.Habitat;
-
+import org.glassfish.hk2.Services;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.hk2.ContractLocator;
 
 /**
  * Utility class for convenienve methods
@@ -171,5 +175,53 @@ public class DOLUtils {
             }
         }
         return false;
+    }
+
+    public static ArchiveType earType() {
+        return getModuleType(ModuleType.EAR.toString());
+    }
+
+    public static ArchiveType ejbType() {
+        return getModuleType(ModuleType.EJB.toString());
+    }
+
+    public static ArchiveType carType() {
+        return getModuleType(ModuleType.CAR.toString());
+    }
+
+    public static ArchiveType warType() {
+        return getModuleType(ModuleType.WAR.toString());
+    }
+
+    public static ArchiveType rarType() {
+        return getModuleType(ModuleType.RAR.toString());
+    }
+
+    /**
+     * Utility method to retrieve a {@link ArchiveType} from a stringified module type.
+     * Since {@link ArchiveType} is an extensible abstraction and implementations are plugged in via HK2 service
+     * registry, this method returns null if HK2 service registry is not setup.
+     *
+     * If null is passed to this method, it returns null instead of returning an arbitrary ArchiveType or throwing
+     * an exception.
+     *
+     * @param moduleType String equivalent of the module type being looked up. null is allowed.
+     * @return the corresponding ArchiveType, null if no such module type exists or HK2 Service registry is not set up
+     */
+    public static ArchiveType getModuleType(String moduleType) {
+        if (moduleType == null) {
+            return null;
+        }
+        final Services services = Globals.getDefaultServices();
+        ArchiveType result = null;
+        // This method is called without HK2 being setup when dol unit tests are run, so protect against NPE.
+        if(services != null) {
+            final ContractLocator<ArchiveType> provider =
+                    services.forContract(ArchiveType.class).named(moduleType);
+            if (provider!=null) {
+                result = provider.get();
+            }
+        }
+        return result;
     }
 }

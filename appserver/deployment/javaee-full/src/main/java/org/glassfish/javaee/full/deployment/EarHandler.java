@@ -67,6 +67,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
@@ -404,7 +405,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                         sub.setParentArchive(context.getSource());
 
                         ClassLoader subCl = handler.getClassLoader(cl, subContext);
-                        if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+                        if (md.getModuleType().equals(DOLUtils.ejbType())) {
                             // for ejb module, we just add the ejb urls 
                             // to EarClassLoader and use that to load 
                             // ejb module
@@ -415,7 +416,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                             }
                             cl.addModuleClassLoader(moduleUri, cl);
                             PreDestroy.class.cast(subCl).preDestroy();
-                        } else if (md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+                        } else if (md.getModuleType().equals(DOLUtils.rarType())) {
                             embeddedConnCl.addDelegate(
                                 (DelegatingClassLoader.ClassFinder)subCl);
                             cl.addModuleClassLoader(moduleUri, subCl);
@@ -485,13 +486,13 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     // performance optimization so we don't need to retrieve archive handler
     // the normal way which might involve annotation scanning
     private ArchiveHandler getArchiveHandlerFromModuleType(ArchiveType type) {
-        if (type.equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+        if (type.equals(DOLUtils.warType())) {
             return habitat.getComponent(ArchiveHandler.class, WarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+        } else if (type.equals(DOLUtils.rarType())) {
             return habitat.getComponent(ArchiveHandler.class, RarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+        } else if (type.equals(DOLUtils.ejbType())) {
             return habitat.getComponent(ArchiveHandler.class, EjbJarDetector.ARCHIVE_TYPE);
-        } else if (type.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+        } else if (type.equals(DOLUtils.carType())) {
             return habitat.getComponent(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
         } else {
             return null;

@@ -73,7 +73,10 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
 
     @Inject
     private ConnectorVisitor connectorValidator;
-    
+
+    @Inject
+    private RarType rarType;
+
     /** 
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
@@ -86,7 +89,7 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
      */
     @Override
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.rarType();
+        return rarType;
     }        
           
 

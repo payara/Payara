@@ -1540,7 +1540,7 @@ public class Application extends BundleDescriptor
      * @return the module type for this bundle descriptor
      */
     public ArchiveType getModuleType() {
-        return DeploymentUtils.earType();
+        return DOLUtils.earType();
     }
 
     public void addSecurityRoleMapping(SecurityRoleMapping roleMapping) {

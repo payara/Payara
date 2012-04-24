@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.deploy.shared.MultiReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -79,7 +80,7 @@ public class ACCPersistenceArchivist extends PersistenceArchivist {
 
     @Override
     public boolean supportsModuleType(ArchiveType moduleType) {
-        return (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) && (env.getProcessType() == ProcessType.ACC) ;
+        return (moduleType != null && moduleType.equals(DOLUtils.carType())) && (env.getProcessType() == ProcessType.ACC) ;
     }
 
     @Override

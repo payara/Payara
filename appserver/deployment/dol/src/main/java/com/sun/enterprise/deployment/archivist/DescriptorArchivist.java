@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -101,7 +102,7 @@ public class DescriptorArchivist {
                             out.closeEntry();
                         }
                     } else {
-                        if (aModule.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+                        if (aModule.getModuleType().equals(DOLUtils.warType())) {
                             BundleDescriptor webBundle = 
                                 (BundleDescriptor)aModule.getDescriptor();
                             if (webBundle.hasWebServices()) {
@@ -156,12 +157,12 @@ public class DescriptorArchivist {
     {
         archivist.setDescriptor(bundle);
         archivist.writeDeploymentDescriptors(out);
-        if (bundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+        if (bundle.getModuleType().equals(DOLUtils.warType())) {
             Collection<EjbBundleDescriptor> ejbExtensions = 
                 bundle.getExtensionsDescriptors(EjbBundleDescriptor.class);
             for (EjbBundleDescriptor ejbBundle : ejbExtensions) {
                 Archivist ejbArchivist = 
-                    archivistFactory.getArchivist(org.glassfish.deployment.common.DeploymentUtils.ejbType());
+                    archivistFactory.getArchivist(DOLUtils.ejbType());
                 write(ejbBundle, ejbArchivist, in, out);
             }
         }

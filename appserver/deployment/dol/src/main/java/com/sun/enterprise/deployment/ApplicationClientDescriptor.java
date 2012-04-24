@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.util.AppClientTracerVisitor;
 import com.sun.enterprise.deployment.util.AppClientValidator;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -657,7 +658,7 @@ public class ApplicationClientDescriptor extends BundleDescriptor
      * @return the module type for this bundle descriptor
      */
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.carType();
+        return DOLUtils.carType();
     }
 
     /**

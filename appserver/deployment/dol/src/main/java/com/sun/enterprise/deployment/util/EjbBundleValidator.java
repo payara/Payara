@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -489,7 +490,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                                     " for Singleton " + sessionDesc.getName());
                         }
 
-                        EjbBundleDescriptor ejbBundle = (bundle.getModuleType() != null && bundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ?
+                        EjbBundleDescriptor ejbBundle = (bundle.getModuleType() != null && bundle.getModuleType().equals(DOLUtils.warType())) ?
                                 bundle.getExtensionsDescriptors(EjbBundleDescriptor.class).iterator().next()
                                 :  (EjbBundleDescriptor) bundle;
 
@@ -797,7 +798,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 throw new RuntimeException("Error: Unresolved <ejb-link>: "+linkName);
             } else {
                 final ArchiveType moduleType = ejbRef.getReferringBundleDescriptor().getModuleType();
-                if(moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+                if(moduleType != null && moduleType.equals(DOLUtils.carType())) {
                     // Because no annotation processing is done within ACC runtime, this case typically
                     // arises for remote @EJB annotations, so don't log it as warning.
                     DOLUtils.getDefaultLogger().fine("Unresolved <ejb-link>: "+linkName);
@@ -818,10 +819,10 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                 // it must be remote business.
                 if( ( (referringBundle == null) && (ejbBundleDescriptor == null) )
                     ||
-                    (referringBundle.getModuleType() == org.glassfish.deployment.common.DeploymentUtils.carType())
+                    (referringBundle.getModuleType() == DOLUtils.carType())
                     ||
                     ( (getApplication() == null) &&
-                      (referringBundle.getModuleType() != null && referringBundle.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.warType())) ) ) {
+                      (referringBundle.getModuleType() != null && referringBundle.getModuleType().equals(DOLUtils.warType())) ) ) {
 
                     ejbRef.setLocal(false);
 

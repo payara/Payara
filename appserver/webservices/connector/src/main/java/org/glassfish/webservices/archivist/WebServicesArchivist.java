@@ -47,6 +47,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.runtime.WLSWebServicesDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.webservices.io.WebServicesDeploymentDescriptorFile;
@@ -70,8 +71,7 @@ public class WebServicesArchivist extends ExtensionsArchivist {
     }
 
     public boolean supportsModuleType(ArchiveType moduleType) {
-        return (org.glassfish.deployment.common.DeploymentUtils.warType().equals(moduleType) || org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(moduleType)
-                );
+        return (DOLUtils.warType().equals(moduleType) || DOLUtils.ejbType().equals(moduleType));
     }
 
     @Override

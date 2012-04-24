@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.ModuleDescriptor;
 
@@ -104,10 +105,10 @@ public class UndeployedLaunchable implements Launchable {
         }
 
         final ArchiveType moduleType = archivist.getModuleType();
-        if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+        if (moduleType != null && moduleType.equals(DOLUtils.carType())) {
             return new UndeployedLaunchable(habitat, ra,
                     (AppClientArchivist) archivist, callerSuppliedMainClassName);
-        } else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.earType())) {
+        } else if (moduleType != null && moduleType.equals(DOLUtils.earType())) {
             /*
              * Locate the app client submodule that matches the main class name
              * or the app client name.
@@ -115,7 +116,7 @@ public class UndeployedLaunchable implements Launchable {
 
             Application app = (Application) archivist.open(ra);
             for (ModuleDescriptor<BundleDescriptor> md : app.getModules()) {
-                if ( ! md.getModuleType().equals(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+                if ( ! md.getModuleType().equals(DOLUtils.carType())) {
                     continue;
                 }
 
@@ -158,7 +159,7 @@ public class UndeployedLaunchable implements Launchable {
              * of archivist - such as the EJB archivist.  Now see if the app
              * client archivist will work when selected directly.
              */
-            archivist = af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType());
+            archivist = af.getArchivist(DOLUtils.carType());
 
             /*
              * Try to open the archive as an app client archive just to see
@@ -170,7 +171,7 @@ public class UndeployedLaunchable implements Launchable {
                  * Start with a fresh archivist - unopened - so we can request
                  * anno processing, etc. before opening it for real.
                  */
-                archivist = af.getArchivist(org.glassfish.deployment.common.DeploymentUtils.carType());
+                archivist = af.getArchivist(DOLUtils.carType());
                 return new UndeployedLaunchable(habitat, ra, (AppClientArchivist) archivist,
                                 callerSuppliedMainClassName);
             }

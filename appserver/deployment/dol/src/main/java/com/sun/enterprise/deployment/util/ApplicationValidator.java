@@ -71,11 +71,11 @@ public class ApplicationValidator extends EjbBundleValidator
             Application application = (Application)descriptor;
             accept(application);
 
-            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.ejbType())) {
+            for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
             }
 
-            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.warType())) {
+            for (BundleDescriptor wbd : application.getBundleDescriptorsOfType(DOLUtils.warType())) {
                 // This might be null in the case of an appclient
                 // processing a client stubs .jar whose original .ear contained
                 // a .war.  This will be fixed correctly in the deployment
@@ -86,11 +86,11 @@ public class ApplicationValidator extends EjbBundleValidator
                 }
             }
 
-            for (BundleDescriptor cd :  application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.rarType())) {
+            for (BundleDescriptor cd :  application.getBundleDescriptorsOfType(DOLUtils.rarType())) {
                 cd.visit(getSubDescriptorVisitor(cd));
             }
 
-            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(org.glassfish.deployment.common.DeploymentUtils.carType())) {
+            for (BundleDescriptor acd : application.getBundleDescriptorsOfType(DOLUtils.carType())) {
                 acd.visit(getSubDescriptorVisitor(acd));
             }
 

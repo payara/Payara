@@ -104,7 +104,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      */
     @Override
     public ArchiveType getModuleType() {
-        return org.glassfish.deployment.common.DeploymentUtils.carType();
+        return DOLUtils.carType();
     }
 
     public ApplicationClientDescriptor open(final ReadableArchive archive,

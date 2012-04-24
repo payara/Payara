@@ -43,6 +43,7 @@ package com.sun.enterprise.tools.verifier.webservices;
 import java.util.Iterator;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.tools.verifier.CheckMgr;
 import com.sun.enterprise.tools.verifier.VerifierFrameworkContext;
 import com.sun.enterprise.tools.verifier.JarCheck;
@@ -78,9 +79,9 @@ public class WebServiceCheckMgrImpl extends CheckMgr implements JarCheck {
         WebServicesDescriptor rootDescriptor = (WebServicesDescriptor) descriptor;
         ArchiveType moduleType = rootDescriptor.getBundleDescriptor()
                 .getModuleType();
-        if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.ejbType()))
+        if (moduleType != null && moduleType.equals(DOLUtils.ejbType()))
             moduleName = Result.EJB;
-        else if (moduleType != null && moduleType.equals(org.glassfish.deployment.common.DeploymentUtils.warType()))
+        else if (moduleType != null && moduleType.equals(DOLUtils.warType()))
             moduleName = Result.WEB;
         for (Iterator itr = rootDescriptor.getWebServices().iterator();
              itr.hasNext();) {

@@ -46,6 +46,7 @@ import java.util.logging.Level;
 
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
  * Log all authentication successes and failures.
@@ -69,7 +70,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * a web service invocation.
      */
     public void authSucess(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
-        if (org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundleDesc.getModuleType())) {
+        if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (ejbLogger.isLoggable(Level.FINER)) {
                 ejbLogger.finer("LOG LISTENER : authentication succeeded for " 
                         +  endpoint.getEndpointSelector());                
@@ -88,7 +89,7 @@ public class LogAuthenticationListener implements AuthenticationListener {
      * @param principal Optional principal that failed
      */
     public void authFailure(BundleDescriptor bundleDesc, Endpoint endpoint, Principal principal) {
-        if (org.glassfish.deployment.common.DeploymentUtils.ejbType().equals(bundleDesc.getModuleType())) {
+        if (DOLUtils.ejbType().equals(bundleDesc.getModuleType())) {
             if (ejbLogger.isLoggable(Level.FINE)) {
                 ejbLogger.fine("authentication failure for " 
                         +  endpoint.getEndpointSelector());                
