@@ -95,6 +95,16 @@ public class LocalUser implements VirtUser {
     }
 
     @Override
+    public String getPassword() {
+        throw new RuntimeException("Cannot get local user password !");
+    }
+
+    @Override
+    public void setPassword(String id) {
+        throw new RuntimeException("Cannot change local user password !");
+    }
+
+    @Override
     public String getAuthMethod() {
         return authMethod;
     }
