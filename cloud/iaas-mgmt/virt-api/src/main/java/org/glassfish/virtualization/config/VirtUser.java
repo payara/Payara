@@ -74,4 +74,10 @@ public interface VirtUser extends ConfigBeanProxy {
     String getAuthMethod();
     @Param(optional = true)
     void setAuthMethod(String authMethod);
+
+    @Attribute
+    String getPassword();
+    @Param(name="iaaspassword", password=true, optional = true)
+    void setPassword(String password);
+
 }
