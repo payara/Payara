@@ -42,6 +42,7 @@ package com.sun.enterprise.naming.impl;
 
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 
@@ -60,8 +61,8 @@ import java.util.logging.Logger;
  */
 public class NamedNamingObjectManager {
 
-    private static final AtomicReference<Habitat> habitatRef
-            = new AtomicReference<Habitat>();
+    private static final AtomicReference<BaseServiceLocator> habitatRef
+            = new AtomicReference<BaseServiceLocator>();
 
     private static final Map<String, NamedNamingObjectProxy> proxies = new HashMap<String, NamedNamingObjectProxy>();
 
@@ -69,7 +70,7 @@ public class NamedNamingObjectManager {
 
     private static final Logger logger = Logger.getLogger(NamedNamingObjectManager.class.getPackage().getName());
 
-    public static void checkAndLoadProxies(Habitat habitat)
+    public static void checkAndLoadProxies(BaseServiceLocator habitat)
             throws NamingException {
         if (NamedNamingObjectManager.habitatRef.get() != habitat) {
             if (habitat != null) {
@@ -105,7 +106,7 @@ public class NamedNamingObjectManager {
 //                }
 //            }
 //        }
-        for (Inhabitant<?> inhabitant : getHabitat().getInhabitants(NamespacePrefixes.class)) {
+        for (Inhabitant<?> inhabitant : ((Habitat) getHabitat()).getInhabitants(NamespacePrefixes.class)) {
             for (String prefix : inhabitant.getDescriptor().getNames()) {
                 if (name.startsWith(prefix)) {
                     proxy = (NamedNamingObjectProxy) inhabitant.get();
@@ -119,7 +120,7 @@ public class NamedNamingObjectManager {
         return null;
     }
 
-    private static Habitat getHabitat() {
+    private static BaseServiceLocator getHabitat() {
         return habitatRef.get();
     }
 

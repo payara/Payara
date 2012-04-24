@@ -61,7 +61,7 @@ import com.sun.logging.LogDomains;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -98,7 +98,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
     private GlassfishNamingManager namingManager;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private Events events;

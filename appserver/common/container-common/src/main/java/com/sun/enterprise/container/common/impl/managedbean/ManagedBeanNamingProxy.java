@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
@@ -49,11 +49,11 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
 public class ManagedBeanNamingProxy implements org.glassfish.api.naming.NamingObjectProxy {
 
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private ManagedBeanDescriptor managedBeanDesc;
 
-    public ManagedBeanNamingProxy(ManagedBeanDescriptor desc, Habitat h) {
+    public ManagedBeanNamingProxy(ManagedBeanDescriptor desc, BaseServiceLocator h) {
         managedBeanDesc = desc;
         habitat = h;
     }

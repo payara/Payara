@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.persistence.criteria.*;
 import javax.persistence.*;
@@ -1084,7 +1084,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        Habitat defaultHabitat = Globals.getDefaultHabitat();
+        BaseServiceLocator defaultHabitat = Globals.getDefaultHabitat();
         txManager     = defaultHabitat.getByContract(TransactionManager.class);
         invMgr        = defaultHabitat.getByContract(InvocationManager.class);
         compEnvMgr    = defaultHabitat.getByContract(ComponentEnvManager.class);

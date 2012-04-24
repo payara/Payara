@@ -48,7 +48,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -74,7 +74,7 @@ import java.util.Collection;
 @Scoped(PerLookup.class)
 public class DataSourceDefinitionProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
     @Inject
-    private transient Habitat habitat;
+    private transient BaseServiceLocator habitat;
     private DataSourceDefinitionDescriptor desc;
     private String actualResourceName;
 

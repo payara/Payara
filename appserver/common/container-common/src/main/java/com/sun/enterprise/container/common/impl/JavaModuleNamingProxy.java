@@ -49,7 +49,7 @@ import com.sun.enterprise.deployment.*;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
 import javax.naming.NamingException;
@@ -75,7 +75,7 @@ public class JavaModuleNamingProxy
         implements NamedNamingObjectProxy, PostConstruct {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;

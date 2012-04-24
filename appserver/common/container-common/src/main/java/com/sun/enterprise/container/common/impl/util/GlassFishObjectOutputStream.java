@@ -49,7 +49,7 @@ import javax.naming.NamingException;
 
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.io.OutputStream;

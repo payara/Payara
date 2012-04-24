@@ -46,7 +46,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.*;
 import java.security.PrivilegedExceptionAction;
@@ -67,7 +67,7 @@ import java.util.logging.Logger;
 public class JavaEEObjectStreamFactory {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     public static final Logger _logger = LogDomains.getLogger(
             JavaEEObjectStreamFactory.class, LogDomains.UTIL_LOGGER);

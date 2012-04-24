@@ -68,7 +68,7 @@ import javax.naming.NotContextException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
 import org.omg.CosNaming.NamingContext;
@@ -462,7 +462,7 @@ public class SerialContext implements Context {
         // Before any lookup bind any NamedNamingObjectProxy
         // Skip if in plain Java SE client
         // TODO this should really be moved somewhere else
-        NamedNamingObjectManager.checkAndLoadProxies((Habitat) services);
+        NamedNamingObjectManager.checkAndLoadProxies((BaseServiceLocator) services);
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "SerialContext ==> lookup( {0})", name);

@@ -71,7 +71,7 @@ import javax.annotation.ManagedBean;
 import java.lang.reflect.Constructor;
 import org.glassfish.api.admin.ProcessEnvironment;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -99,7 +99,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     private GlassfishNamingManager glassfishNamingManager;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;

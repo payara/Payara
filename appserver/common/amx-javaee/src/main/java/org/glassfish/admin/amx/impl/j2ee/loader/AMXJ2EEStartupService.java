@@ -63,7 +63,7 @@ import org.glassfish.api.amx.AMXLoader;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.*;
 
 import javax.management.JMException;
@@ -107,7 +107,7 @@ public final class AMXJ2EEStartupService
     }
 
     @Inject
-    Habitat mHabitat;
+    BaseServiceLocator mHabitat;
 
     @Inject
     private ApplicationRegistry mAppsRegistry;

@@ -59,7 +59,7 @@ import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.admin.*;
 
@@ -95,7 +95,7 @@ public class ComponentEnvManagerImpl
     private static final String EIS_STRING = "/eis/";
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private Logger _logger;

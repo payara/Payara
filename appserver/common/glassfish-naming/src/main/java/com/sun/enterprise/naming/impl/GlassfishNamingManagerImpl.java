@@ -53,7 +53,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 
 import com.sun.enterprise.naming.util.LogFacade;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.omg.CORBA.ORB;
 import java.rmi.RemoteException;
@@ -86,7 +86,7 @@ public final class  GlassfishNamingManagerImpl
     private static final int JAVA_MODULE_LENGTH = "java:module".length();
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     //@Inject
     volatile InvocationManager invMgr=null;

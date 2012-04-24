@@ -47,7 +47,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -246,7 +246,7 @@ public class EntityManagerFactoryWrapper
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        Habitat defaultHabitat = Globals.getDefaultHabitat();
+        BaseServiceLocator defaultHabitat = Globals.getDefaultHabitat();
         invMgr        = defaultHabitat.getByContract(InvocationManager.class);
         compEnvMgr    = defaultHabitat.getByContract(ComponentEnvManager.class);
     }

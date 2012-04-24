@@ -60,7 +60,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.container.Adapter;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.InjectionManager;
 import org.jvnet.hk2.component.UnsatisfiedDepedencyException;
 
@@ -89,7 +89,7 @@ public class JMXHTTPAdapter implements Adapter {
     public final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(JMXHTTPAdapter.class);
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     ModulesRegistry modulesRegistry;
