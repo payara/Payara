@@ -53,7 +53,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 /**
@@ -308,7 +308,7 @@ public abstract class Realm implements Comparable {
         throws BadRealmException
     {
         
-        Habitat habitat = Globals.getDefaultHabitat();
+        BaseServiceLocator habitat = Globals.getDefaultHabitat();
         RealmsManager mgr = null;
         try {
             mgr = getRealmsManager();

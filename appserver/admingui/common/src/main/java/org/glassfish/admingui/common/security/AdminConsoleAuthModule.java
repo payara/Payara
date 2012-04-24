@@ -67,7 +67,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.glassfish.admingui.common.util.RestResponse;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -146,7 +146,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
                         + "must be supplied as a property in the provider-config "
                         + "in the domain.xml file!");
             }
-            Habitat habitat = SecurityServicesUtil.getInstance().getHabitat();
+            BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             Domain domain = habitat.getByType(Domain.class);
             NetworkListener adminListener = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
 

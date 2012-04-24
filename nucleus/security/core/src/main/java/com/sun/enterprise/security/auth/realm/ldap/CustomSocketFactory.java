@@ -54,7 +54,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import java.net.InetAddress;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.SharedSecureRandom;
 /**

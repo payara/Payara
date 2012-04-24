@@ -82,7 +82,7 @@ import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 /**
@@ -109,7 +109,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     private Date initDate = new Date();
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Inject
     private ProcessEnvironment penv;
 

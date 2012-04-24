@@ -62,7 +62,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
@@ -82,7 +82,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     private static final Logger _logger = LogDomains.getLogger(EmbeddedSecurityUtil.class, LogDomains.SECURITY_LOGGER);
     
-    public void copyConfigFiles(Habitat habitat, File fromInstanceDir, File domainXml) {
+    public void copyConfigFiles(BaseServiceLocator habitat, File fromInstanceDir, File domainXml) {
         //For security reasons, permit only an embedded server instance to carry out the copy operations
         ServerEnvironment se = habitat.getComponent(ServerEnvironment.class);
         if (!isEmbedded(se)) {

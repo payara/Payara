@@ -59,7 +59,7 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
@@ -82,7 +82,7 @@ public class SecureAdminUpgradeHelper {
     protected Domain domain;
     
     @Inject
-    protected Habitat habitat;
+    protected BaseServiceLocator habitat;
     
     @Inject
     protected StartupContext startupContext;

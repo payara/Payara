@@ -60,7 +60,7 @@ import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 
@@ -95,7 +95,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     private SecurityConfigListener configListener;
     
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private RealmsManager realmsManager;

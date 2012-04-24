@@ -84,6 +84,8 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
+
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import org.w3c.dom.Document;
@@ -838,7 +840,7 @@ public class RestUtil {
             client = JERSEY_CLIENT;
         }
         try{
-            Habitat habitat = SecurityServicesUtil.getInstance().getHabitat();
+            BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
             HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(),
                 habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null ));

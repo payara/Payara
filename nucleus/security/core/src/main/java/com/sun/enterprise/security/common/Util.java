@@ -52,7 +52,7 @@ import org.glassfish.internal.embedded.Server;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 /**
@@ -63,9 +63,9 @@ import org.jvnet.hk2.component.Singleton;
 @Service
 @Scoped(Singleton.class)
 public class Util {
-    //private static Habitat habitat = Globals.getDefaultHabitat();
+    //private static BaseServiceLocator habitat = Globals.getDefaultHabitat();
     @Inject
-    private static Habitat habitat;
+    private static BaseServiceLocator habitat;
     @Inject 
     private ProcessEnvironment penv;
     
@@ -76,7 +76,7 @@ public class Util {
     
     //Note: Will return Non-Null only after Util has been 
     //Injected in some Service.
-    public static Habitat getDefaultHabitat() {
+    public static BaseServiceLocator getDefaultHabitat() {
         return habitat;
     }
     

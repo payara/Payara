@@ -45,7 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface EmbeddedSecurity {
 
-    public void copyConfigFiles(Habitat habitat, File fromInstanceDir, File domainXml) throws IOException, XMLStreamException;
+    public void copyConfigFiles(BaseServiceLocator habitat, File fromInstanceDir, File domainXml) throws IOException, XMLStreamException;
 
     public String parseFileName(String fullFilePath);
 
