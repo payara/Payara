@@ -86,7 +86,7 @@ import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

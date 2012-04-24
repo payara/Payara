@@ -46,7 +46,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.internal.api.Globals;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM

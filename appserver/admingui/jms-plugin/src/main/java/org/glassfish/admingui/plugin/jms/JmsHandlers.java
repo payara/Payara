@@ -66,7 +66,7 @@ import javax.management.ObjectName;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.jms.admin.cli.JMSDestination;
 import org.glassfish.jms.admin.cli.MQJMXConnectorInfo;
 
@@ -456,7 +456,7 @@ public class JmsHandlers {
     }
     
     private static MBeanServerConnection getMBeanServerConnection(String target) throws ConnectorRuntimeException, Exception {
-        Habitat habitat = GuiUtil.getHabitat();
+        BaseServiceLocator habitat = GuiUtil.getHabitat();
         Domain domain = habitat.getComponent(Domain.class);
         Cluster cluster = domain.getClusterNamed(target);
         String configRef = null;
@@ -474,7 +474,7 @@ public class JmsHandlers {
     }
     
     private static class PhysicalDestinations extends JMSDestination {
-        public MQJMXConnectorInfo getConnectorInfo(String target, String configName, Habitat habitat, Domain domain) throws Exception {
+        public MQJMXConnectorInfo getConnectorInfo(String target, String configName, BaseServiceLocator habitat, Domain domain) throws Exception {
             return getMQJMXConnectorInfo(target, domain.getConfigNamed(configName), habitat.getComponent(ServerContext.class), 
                 domain, habitat.getComponent(ConnectorRuntime.class));
         }

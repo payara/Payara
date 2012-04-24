@@ -60,6 +60,7 @@ import org.glassfish.resources.listener.ResourceManagerLifecycleListener;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.*;
@@ -106,7 +107,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     private Applications applications;
 
     @Inject
-    private Habitat connectorRuntimeHabitat;
+    private BaseServiceLocator connectorRuntimeHabitat;
 
     private ConnectorRuntime runtime;
 
@@ -152,7 +153,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
      */
     public boolean isConnectorRuntimeInitialized() {
         Collection<Inhabitant<? extends ConnectorRuntime>> inhabitants =
-                connectorRuntimeHabitat.getInhabitants(ConnectorRuntime.class);
+                ((Habitat)connectorRuntimeHabitat).getInhabitants(ConnectorRuntime.class);
         for(Inhabitant inhabitant : inhabitants){
             // there will be only one implementation of connector-runtime
             return inhabitant.isActive();

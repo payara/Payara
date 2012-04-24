@@ -74,7 +74,7 @@ import org.glassfish.admingui.plugin.ConsolePluginService;
 import org.glassfish.admingui.connector.IntegrationPoint;
 import org.glassfish.admingui.plugin.IntegrationPointComparator;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 /**
@@ -110,7 +110,7 @@ public class PluginHandlers {
 	    (ctx.getExternalContext()).getContext();
 
 	// Get the Habitat from the ServletContext
-	Habitat habitat = (Habitat) servletCtx.getAttribute(
+	BaseServiceLocator habitat = (BaseServiceLocator) servletCtx.getAttribute(
 	    org.glassfish.admingui.common.plugin.ConsoleClassLoader.HABITAT_ATTRIBUTE);
 
 //	System.out.println("Habitat:" + habitat);

@@ -78,7 +78,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -661,10 +661,10 @@ public class GuiUtil {
         return Boolean.valueOf("" + val);
     }
 
-    public static Habitat getHabitat() {
+    public static BaseServiceLocator getHabitat() {
         ServletContext servletCtx = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         // Get the Habitat from the ServletContext
-        Habitat habitat = (Habitat) servletCtx.getAttribute(
+        BaseServiceLocator habitat = (BaseServiceLocator) servletCtx.getAttribute(
                 org.glassfish.admingui.common.plugin.ConsoleClassLoader.HABITAT_ATTRIBUTE);
         return habitat;
     }

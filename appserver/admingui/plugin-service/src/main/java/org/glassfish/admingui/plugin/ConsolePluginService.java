@@ -43,6 +43,7 @@ package org.glassfish.admingui.plugin;
 import org.glassfish.api.admingui.ConsoleProvider;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.ConfigParser;

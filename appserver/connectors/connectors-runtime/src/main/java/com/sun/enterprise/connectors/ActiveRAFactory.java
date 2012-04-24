@@ -54,7 +54,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 /**
@@ -68,7 +68,7 @@ public class ActiveRAFactory {
     private static Logger _logger = LogDomains.getLogger(ActiveRAFactory.class,LogDomains.RSR_LOGGER);
 
     @Inject
-    private Habitat activeRAHabitat;
+    private BaseServiceLocator activeRAHabitat;
     /**
      * Creates an active resource adapter.
      *

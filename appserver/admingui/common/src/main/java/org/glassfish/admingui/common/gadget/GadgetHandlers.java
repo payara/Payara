@@ -63,6 +63,7 @@ import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.JSONUtil;
 import org.glassfish.admingui.connector.GadgetModule;
 
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -124,7 +125,7 @@ public class GadgetHandlers {
 	}
 // FIXME: Cache?
 	// Get our parser...
-	ConfigParser parser = new ConfigParser(GuiUtil.getHabitat());
+	ConfigParser parser = new ConfigParser((Habitat) GuiUtil.getHabitat());
 	String id = null;
 
 	// Read the document...
