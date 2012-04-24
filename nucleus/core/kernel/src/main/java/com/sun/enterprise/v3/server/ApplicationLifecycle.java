@@ -84,6 +84,7 @@ import org.glassfish.api.virtualization.VirtualizationEnv;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.SuperSniffer;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.jvnet.hk2.annotations.Inject;
@@ -205,40 +206,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      * @throws IOException when an error occur
      */
     public ArchiveHandler getArchiveHandler(ReadableArchive archive, String type) throws IOException {
-//        // first we try the composite handlers as archive handlers can be fooled with the
-//        // sub directories and such.
-//        for (CompositeHandler handler : habitat.getAllByContract(CompositeHandler.class)) {
-//            if (type == null || !type.equals(DeploymentProperties.OSGI)) {
-//                if (DeploymentProperties.OSGI.equals(handler.getClass().getAnnotation(Service.class).name())) {
-//                    // skip osgi archive handler if the type is not "osgi"
-//                    continue;
-//                }
-//            }
-//            if (handler.handles(archive)) {
-//                return handler;
-//            }
-//        }
-//
-//        // re-order the list so the ConnectorHandler gets picked up last
-//        // before the default
-//        // this will avoid un-necessary annotation scanning in some cases
-//        LinkedList<ArchiveHandler> handlerList = new LinkedList<ArchiveHandler>();
-//        for (ArchiveHandler handler : habitat.getAllByContract(ArchiveHandler.class)) {
-//            if (!(handler instanceof CompositeHandler) && !"DEFAULT".equals(handler.getClass().getAnnotation(Service.class).name())) {
-//                if ("connector".equals(handler.getClass().getAnnotation(
-//                    Service.class).name())) {
-//                    handlerList.addLast(handler);
-//                } else {
-//                    handlerList.addFirst(handler);
-//                }
-//            }
-//        }
-//
-//        for (ArchiveHandler handler : handlerList) {
-//            if (handler.handles(archive)) {
-//                return handler;
-//            }
-//        }
         if (type != null) {
             return habitat.getComponent(ArchiveDetector.class, type).getArchiveHandler();
         }
@@ -669,13 +636,19 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         final ActionReport report = context.getActionReport();
         if (sniffers==null) {
-            if (handler instanceof CompositeHandler) {
-                context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
-                sniffers = snifferManager.getCompositeSniffers(context);
-            } else {
-                sniffers = snifferManager.getSniffers(context);
+            // let's first see if we get any super sniffer applicable to
+            // this archive
+            sniffers = snifferManager.getSuperSniffers(context);
+            if (sniffers == null || sniffers.isEmpty()) {
+                // if there are no super sniffers, let's look at
+                // other sniffers
+                if (handler instanceof CompositeHandler) {
+                    context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
+                    sniffers = snifferManager.getCompositeSniffers(context);
+                } else {
+                    sniffers = snifferManager.getSniffers(context);
+                }
             }
-
         }
 
         DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);

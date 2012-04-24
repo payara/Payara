@@ -49,6 +49,7 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.container.SecondarySniffer;
 import org.glassfish.internal.deployment.SnifferManager;
+import org.glassfish.internal.deployment.SuperSniffer;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import com.sun.enterprise.deployment.deploy.shared.Util;
@@ -104,10 +105,19 @@ public class SnifferManagerImpl implements SnifferManager {
     /**
      * Returns all the presently registered composite sniffers
      *
-     * @return Collection (possibly empty but never null) of Sniffer
+     * @return Collection (possibly empty but never null) of CompositeSniffer
      */
     public Collection<CompositeSniffer> getCompositeSniffers() {
         return habitat.getAllByContract(CompositeSniffer.class);
+    }
+
+    /**
+     * Returns all the presently registered super sniffers
+     *
+     * @return Collection (possibly empty but never null) of SuperSniffer
+     */
+    public Collection<SuperSniffer> getSuperSniffers() {
+        return habitat.getAllByContract(SuperSniffer.class);
     }
 
     /**
@@ -142,17 +152,18 @@ public class SnifferManagerImpl implements SnifferManager {
 
         // it is important to keep an ordered sequence here to keep sniffers
         // in their natural order.
-        List<Sniffer> nonCompositeSniffers = new ArrayList<Sniffer>();
+        List<Sniffer> regularSniffers = new ArrayList<Sniffer>();
         for (Sniffer sniffer : getSniffers()) {
-            if (!(sniffer instanceof CompositeSniffer))
-                nonCompositeSniffers.add(sniffer);
+            if (!(sniffer instanceof CompositeSniffer) && 
+                !(sniffer instanceof SuperSniffer))
+                regularSniffers.add(sniffer);
         }
 
         // scan for registered annotations and retrieve applicable sniffers
-        List<Sniffer> appSniffers = this.getApplicableSniffers(context, nonCompositeSniffers,  true);
+        List<Sniffer> appSniffers = this.getApplicableSniffers(context, regularSniffers,  true);
         
         // call handles method of the sniffers
-        for (Sniffer sniffer : nonCompositeSniffers) {
+        for (Sniffer sniffer : regularSniffers) {
             if ( !appSniffers.contains(sniffer) &&
                 sniffer.handles(context.getSource(), context.getClassLoader() )) {
                 appSniffers.add(sniffer);
@@ -188,6 +199,34 @@ public class SnifferManagerImpl implements SnifferManager {
 
         // call handles method of the sniffers
         for (CompositeSniffer sniffer : getCompositeSniffers()) {
+            if (!appSniffers.contains(sniffer) && 
+                sniffer.handles(context)) {
+                appSniffers.add(sniffer);
+            }
+        }
+        return appSniffers;
+    }
+
+    /**
+     * Returns a collection of super sniffers that recognized some parts of
+     * the passed archive as components their container handle.
+     *
+     * If no sniffer recognize the passed archive, an empty collection is
+     * returned.
+     *
+     * @param context deployment context
+     * @return possibly empty collection of sniffers that handle the passed
+     * archive.
+     */
+    public Collection<SuperSniffer> getSuperSniffers(DeploymentContext context) {
+        // it is important to keep an ordered sequence here to keep sniffers
+        // in their natural order.
+
+        List<SuperSniffer> appSniffers =
+                getApplicableSniffers(context, getSuperSniffers(), false);
+
+        // call handles method of the sniffers
+        for (SuperSniffer sniffer : getSuperSniffers()) {
             if (!appSniffers.contains(sniffer) && 
                 sniffer.handles(context)) {
                 appSniffers.add(sniffer);
