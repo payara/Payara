@@ -304,7 +304,7 @@ public class TenantManagerImpl implements TenantManagerEx {
                 }
             });
         }
-        DomDocument<Dom> doc = populate(habitat, name);
+        populate(habitat, name);
         // caution, transactions here must come from newly created habitat 
         habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
         return habitat;

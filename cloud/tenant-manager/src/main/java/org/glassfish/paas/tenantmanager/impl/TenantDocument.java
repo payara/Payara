@@ -92,7 +92,54 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
     }
 
     // FIXME: file lock, but keep it reentrant for TenantConfigBean
-    final private ReentrantLock lock = new ReentrantLock();
+    final private ReentrantLock lock = new ReentrantLock()/* {
+        private FileLock fileLock;
+
+        private static final long serialVersionUID = 3798935315905555205L;
+
+        @Override
+        public boolean tryLock(long time, TimeUnit unit)
+                throws InterruptedException {
+            lockFile(); // throws exception
+
+            
+            // TODO Auto-generated method stub
+            return super.tryLock(time, unit);
+        }
+
+        @Override
+        public void unlock() {
+            if (fileLock != null && fileLock.isValid()) {
+                try {
+                    fileLock.release();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                fileLock = null;
+            }
+            super.unlock();
+        }
+
+        private void lockFile() {
+            try {
+                // acquire exclusive lock on config file. 
+                File f = new File(TenantDocument.this.resource.toURI());
+                FileInputStream fs = new FileInputStream(f);
+                //FileOutputStream fs = new FileOutputStream(f);
+                FileChannel c = fs.getChannel();
+                fileLock = c.lock(0L, Long.MAX_VALUE, true);
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }        }
+        
+        
+    }*/;
+
 
     private URL resource;
 
