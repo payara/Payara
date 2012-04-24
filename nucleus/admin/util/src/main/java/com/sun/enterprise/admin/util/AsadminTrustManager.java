@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +40,23 @@
 
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.security.store.AsadminTruststore;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.Console;
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.text.DateFormat;
 import javax.net.ssl.X509TrustManager;
-import java.security.cert.X509Certificate;
-import java.security.cert.CertificateException;
-
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.security.store.AsadminTruststore;
 
 /**
  * An implementation of {@link X509TrustManager} that provides basic support
  * for Trust Management.  It checks if the server is trusted and displays the
  * certificate that was received from the server.  The user is then prompted
  * to confirm the certificate.  If confirmed, the certificate is entered into
- * the client side asadmintruststore (default name is ~/.asadmintruststore).
+ * the client side asadmintruststore (default name is ~/.gfclient/truststore).
  * Once in the truststore, the user is never prompted to confirm a second time.
  */
 class AsadminTrustManager implements X509TrustManager {
@@ -75,7 +74,7 @@ class AsadminTrustManager implements X509TrustManager {
      * Creates an instance of the AsadminTrustManager
      * @param alias The toString() of the alias object concatenated with a
      * date/time stamp is used as the alias of the trusted server certificate
-     * in the client side .asadmintruststore.  When null,
+     * in the client side trust store.  When null,
      * only a date / timestamp is used as an alias.
      */    
     public AsadminTrustManager(Object alias, Map env) {
@@ -88,7 +87,7 @@ class AsadminTrustManager implements X509TrustManager {
     /**
      * Creates an instance of the SunOneBasicX509TrustManager
      * A date/time stamp is used of the trusted server certificate in the
-     * client side .asadmintruststore.
+     * client side trust store.
      */
     public AsadminTrustManager() {
         this (null, null);
@@ -109,6 +108,7 @@ class AsadminTrustManager implements X509TrustManager {
      * @throws {@link CertificateException}
      * @throws {@link UnsupportedOperationException}
      */
+    @Override
     public void checkClientTrusted(X509Certificate[] x509Certificate,
                                 String authType) throws CertificateException {
         throw new UnsupportedOperationException(
@@ -121,6 +121,7 @@ class AsadminTrustManager implements X509TrustManager {
      * @param authType
      * @throws CertificateException
      */    
+    @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) 
         throws CertificateException {
         // The alreadyInvoked flag keeps track of whether we have already
@@ -149,6 +150,7 @@ class AsadminTrustManager implements X509TrustManager {
         }
     }
  
+    @Override
     public X509Certificate[] getAcceptedIssuers() {
         return new X509Certificate[0];
     }

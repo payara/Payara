@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,7 @@ import java.security.cert.Certificate;
  * @author Shing Wai Chan
  */
 public class AsadminTruststore {
-    private static final String ASADMIN_TRUSTSTORE = ".asadmintruststore";
+    private static final String ASADMIN_TRUSTSTORE = "truststore";
     private KeyStore _keyStore = null;
     private File _keyFile = null;        
     private char[] _password = null;
@@ -73,7 +73,7 @@ public class AsadminTruststore {
     {
         String location = System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY);
         if (location == null) {
-            return new File(System.getProperty("user.home") + File.separator + ASADMIN_TRUSTSTORE);
+            return new File(AsadminSecurityUtil.getDefaultClientDir(), ASADMIN_TRUSTSTORE);
         } else {
             return new File(location);
         }

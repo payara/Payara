@@ -43,17 +43,13 @@ package com.sun.enterprise.security.store;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
-import java.io.BufferedInputStream;
-import java.io.Console;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -67,6 +63,9 @@ import java.util.logging.Logger;
  * @author Tim Quinn (with portions refactored from elsewhere)
  */
 public class AsadminSecurityUtil {
+    
+    private static final File DEFAULT_CLIENT_DIR = 
+            new File(System.getProperty("user.home"), ".gfclient");
 
     private static AsadminSecurityUtil instance = null;
 
@@ -116,6 +115,20 @@ public class AsadminSecurityUtil {
     {
         return System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PASSWORD_PROPERTY,
             "changeit").toCharArray();
+    }
+    
+    /**
+     * Get the default location for client related files
+     */
+    public static File getDefaultClientDir() {
+        if (!DEFAULT_CLIENT_DIR.isDirectory()) {
+            if (DEFAULT_CLIENT_DIR.mkdirs() == false) {
+                logger.log(Level.SEVERE, "Unable to create client data directory: {0}", 
+                        DEFAULT_CLIENT_DIR);
+                // return the File anyway, the user of the file will report the failure
+            }
+        }
+        return DEFAULT_CLIENT_DIR;
     }
 
     private AsadminSecurityUtil(final char[] commandLineMasterPassword, final boolean isPromptable) {
