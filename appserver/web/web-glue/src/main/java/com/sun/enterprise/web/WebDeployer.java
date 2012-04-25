@@ -56,6 +56,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.jsp.JSPCompiler;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;

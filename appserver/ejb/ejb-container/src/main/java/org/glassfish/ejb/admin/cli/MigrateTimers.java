@@ -69,7 +69,7 @@ import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 @Service(name = "migrate-timers")
@@ -109,7 +109,7 @@ public class MigrateTimers implements AdminCommand {
     Target targetUtil;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     /**
      * Executes the command

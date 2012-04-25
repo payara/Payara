@@ -50,7 +50,7 @@ import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.IOException;
@@ -75,7 +75,8 @@ public class EjbJarDetector implements ArchiveDetector {
     @Inject
     private EjbType archiveType;
     @Inject
-    private Services services;
+    private BaseServiceLocator baseServiceLocator;
+    
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
@@ -87,7 +88,7 @@ public class EjbJarDetector implements ArchiveDetector {
     @Override
     public boolean handles(ReadableArchive archive) {
         // We should really move the logic from DeploymentUtils.isEjbJar to here and let that method utilize this class.
-        return DeploymentUtils.isEjbJar(archive, services.byType(Habitat.class).get());
+        return DeploymentUtils.isEjbJar(archive, baseServiceLocator);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class EjbJarDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
                 }
-                archiveHandler = services.forContract(ArchiveHandler.class).named(ARCHIVE_TYPE).get();
+                archiveHandler = baseServiceLocator.getComponent(ArchiveHandler.class, ARCHIVE_TYPE);
             }
             return archiveHandler;
         }

@@ -57,6 +57,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.hk2.Services;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import javax.naming.NamingException;

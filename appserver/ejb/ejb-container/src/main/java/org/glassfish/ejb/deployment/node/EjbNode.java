@@ -50,7 +50,7 @@ import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
 import org.w3c.dom.Node;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Map;
 import java.util.Iterator;

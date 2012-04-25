@@ -54,7 +54,7 @@ import javax.ejb.*;
 import javax.servlet.http.*;
 
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import com.sun.ejb.containers.TimerLocal;
 import com.sun.ejb.containers.EjbContainerUtil;
@@ -92,7 +92,7 @@ public class TimerWelcomeServlet extends HttpServlet {
             Set persistenttimers = timer.findActiveTimersOwnedByThisServer();
             // Non-persistent timers get directly from the service
 
-            Habitat habitat = Globals.getDefaultHabitat();
+            BaseServiceLocator habitat = Globals.getDefaultHabitat();
             EJBTimerService ejbTimerService = habitat.getComponent(EjbContainerUtil.class).getEJBTimerService();
             Set nonpersistenttimers = ejbTimerService.getNonPersistentActiveTimerIdsByThisServer();
             int persistentsize = persistenttimers.size();

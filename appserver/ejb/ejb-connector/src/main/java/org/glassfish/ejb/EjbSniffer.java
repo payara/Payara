@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.io.File;
@@ -73,7 +73,7 @@ import java.lang.annotation.Annotation;
 public class EjbSniffer  extends GenericSniffer {
 
     @Inject
-    Habitat habitat;    
+    BaseServiceLocator habitat;    
 
     private static final Class[]  ejbAnnotations = new Class[] {
             javax.ejb.Stateless.class, javax.ejb.Stateful.class,

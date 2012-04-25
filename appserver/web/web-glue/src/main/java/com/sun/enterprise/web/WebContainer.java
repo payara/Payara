@@ -104,6 +104,7 @@ import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
@@ -132,6 +133,7 @@ import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.hk2.Services;
 
 /**
  * Web container service
@@ -202,7 +204,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private GrizzlyService grizzlyService;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private JavaEEIOUtils javaEEIOUtils;
@@ -516,7 +518,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         ConstructorCreator<WebConfigListener> womb =
                 new ConstructorCreator<WebConfigListener>(
                         WebConfigListener.class,
-                        habitat,
+                        (Habitat) habitat,
                         null);
         configListener = womb.get(null);
 
@@ -1214,7 +1216,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         vs.setServerEnvironment(instance);
         vs.setDomain(domain);
         vs.setCommandRunner(runner);
-        vs.setServices(habitat);
+        vs.setServices((Services) habitat);
         vs.setClassLoaderHierarchy(clh);
 
         // Add Host to Engine
@@ -2773,7 +2775,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             updateHostProperties(vsBean, prop.getName(), prop.getValue(), securityService, vs);
         }
         vs.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-        vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, habitat, domain,
+        vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, (Habitat) habitat, domain,
                 globalAccessLoggingEnabled);
 
         // old listener names
@@ -2943,22 +2945,22 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             vs.configureCacheControl(value);
         } else if (Constants.ACCESS_LOGGING_ENABLED.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
-                    globalAccessLogWriteInterval, habitat, domain,
+                    globalAccessLogWriteInterval, (Services) habitat, domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
-                    globalAccessLogWriteInterval, habitat, domain,
+                    globalAccessLogWriteInterval, (Services) habitat, domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
                     globalAccessLogWriteInterval,
-                    habitat,
+                    (Services) habitat,
                     domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
                     globalAccessLogWriteInterval,
-                    habitat,
+                    (Services) habitat,
                     domain,
                     globalAccessLoggingEnabled);
         } else if ("allowRemoteHost".equals(name)
@@ -3017,7 +3019,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             final VirtualServer vs = (VirtualServer) getEngine().findChild(virtualServer.getId());
             if (vs != null) {
                 vs.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, habitat, domain,
+                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, (Services) habitat, domain,
                         globalAccessLoggingEnabled);
                 updateHost(virtualServer);
             }

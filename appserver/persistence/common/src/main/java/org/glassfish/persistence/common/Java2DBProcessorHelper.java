@@ -53,7 +53,7 @@ import com.sun.logging.LogDomains;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -621,7 +621,7 @@ public class Java2DBProcessorHelper {
         // TODO - pass Habitat or ConnectorRuntime as an argument.
         // TODO - remove duplication with DeploymentHelper
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        BaseServiceLocator habitat = Globals.getDefaultHabitat();
         ConnectorRuntime connectorRuntime = habitat.getByContract(ConnectorRuntime.class);
         DataSource ds = PersistenceHelper.lookupNonTxResource(connectorRuntime, ctx, jndiName);
         return ds.getConnection();

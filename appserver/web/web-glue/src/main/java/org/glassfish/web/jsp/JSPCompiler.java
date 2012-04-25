@@ -70,6 +70,7 @@ import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;

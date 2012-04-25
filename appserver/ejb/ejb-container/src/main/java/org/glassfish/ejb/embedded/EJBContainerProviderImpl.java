@@ -67,7 +67,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.security.EmbeddedSecurity;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.module.bootstrap.Which;
 
 /**
@@ -205,7 +205,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                     // XXX Start the server to get the services
                     server.start();
                     EmbeddedSecurity es = server.getService(EmbeddedSecurity.class);
-                    Habitat habitat = server.getService(Habitat.class);
+                    BaseServiceLocator habitat = server.getService(BaseServiceLocator.class);
 
                     // XXX Wait a little before stopping to avoid a deadlock
                     Thread.sleep(1000);

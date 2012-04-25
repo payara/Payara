@@ -69,7 +69,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** 
  * This class is used for static method invocations to avoid unnecessary
@@ -152,7 +152,7 @@ public class DeploymentHelper
 
         // TODO - pass Habitat or ConnectorRuntime as an argument.
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        BaseServiceLocator habitat = Globals.getDefaultHabitat();
         DataSource ds = null;
         try {
             ConnectorRuntime connectorRuntime = habitat.getByContract(ConnectorRuntime.class);

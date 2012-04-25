@@ -53,7 +53,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.Services;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -681,7 +681,7 @@ public final class PEAccessLogValve
      * otherwise
      */
     boolean configure(String vsId, VirtualServer vsBean,
-        HttpService httpService, Domain domain, Habitat habitat,
+        HttpService httpService, Domain domain, BaseServiceLocator habitat,
         WebContainerFeatureFactory fac, String globalAccessLogBufferSize,
         String globalAccessLogWriteInterval) {
 
@@ -704,7 +704,7 @@ public final class PEAccessLogValve
             String vsId,
             VirtualServer vsBean,
             Domain domain,
-            Services services,
+            BaseServiceLocator services,
             String accessLogBufferSize,
             String accessLogWriteInterval) {
 
@@ -740,7 +740,7 @@ public final class PEAccessLogValve
             if (logRoot != null) {
                 dir = new File(logRoot, accessLog);
             } else {
-                ServerEnvironment env = services.forContract(ServerEnvironment.class).get();
+                ServerEnvironment env = services.getByContract(ServerEnvironment.class);
                 dir = new File(env.getDomainRoot(), accessLog);
             }
         }

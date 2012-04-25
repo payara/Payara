@@ -70,7 +70,7 @@ import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.api.deployment.DeploymentContext;

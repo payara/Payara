@@ -44,7 +44,7 @@ import java.lang.ref.WeakReference;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -70,7 +70,7 @@ public class Lookups {
     /**
      * Static singleton {@link Habitat} instance.
      */
-    private static final Habitat habitat = Globals.getDefaultHabitat();
+    private static final BaseServiceLocator habitat = Globals.getDefaultHabitat();
 
     /**
      * Static singleton {@link Lookups} instance.  Note that this is assigned lazily and may

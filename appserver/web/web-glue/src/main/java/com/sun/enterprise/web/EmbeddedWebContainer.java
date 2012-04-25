@@ -55,7 +55,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.Services;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 public final class EmbeddedWebContainer extends Embedded implements PostConstruct {
     
     @Inject
-    private Services services;
+    private BaseServiceLocator services;
     
     @Inject
     private ServerContext serverContext;
@@ -127,10 +127,8 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     // --------------------------------------------------------- Public Methods
     
     public void postConstruct() {
-        invocationManager = services.forContract(
-                InvocationManager.class).get();
-        injectionManager = services.forContract(
-                InjectionManager.class).get();
+        invocationManager = services.getByContract(InvocationManager.class);
+        injectionManager = services.getByContract(InjectionManager.class);
     }
     
     /**
@@ -191,7 +189,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             configFile = new File(location, Constants.WEB_CONTEXT_XML);
         }
         
-        WebModule context = new WebModule(services);
+        WebModule context = new WebModule((Services) services);
         context.setID(id);
         context.setWebContainer(webContainer);
         context.setDebug(debug);
@@ -218,7 +216,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             config = new WebModuleContextConfig();  
             ((WebModuleContextConfig)config).setDescriptor(
                 wmInfo.getDescriptor());
-            ((WebModuleContextConfig)config).setServices(services);
+            ((WebModuleContextConfig)config).setServices((Services) services);
         } else {
             config = new ContextConfig();
         }
@@ -234,7 +232,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         context.addContainerListener(
                 new WebContainerListener(invocationManager, injectionManager));
 
-        for( WebModuleDecorator d : ((Habitat) services).getAllByContract(WebModuleDecorator.class)) {
+        for( WebModuleDecorator d : services.getAllByContract(WebModuleDecorator.class)) {
             d.decorate(context);
         }
 

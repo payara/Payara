@@ -124,6 +124,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
 
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
@@ -1724,7 +1725,7 @@ public class VirtualServer extends StandardHost
                 accessLogValve.stop();
             }
             boolean start = accessLogValve.updateVirtualServerProperties(
-                vsBean.getId(), vsBean, domain, services,
+                vsBean.getId(), vsBean, domain, (BaseServiceLocator) services,
                 globalAccessLogBufferSize, globalAccessLogWriteInterval);
             if (start && isAccessLoggingEnabled(globalAccessLoggingEnabled)) {
                 enableAccessLogging();

@@ -82,7 +82,7 @@ import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** Implementation for Sun specific CMP and Container interactions as defined
 * by the ContainerHelper interface.
@@ -132,7 +132,7 @@ public class SunContainerHelper extends SunTransactionHelper implements Containe
         Object[] params = (Object[])info;
         String appName = (String)params[0];
 
-        Habitat habitat = Globals.getDefaultHabitat();
+        BaseServiceLocator habitat = Globals.getDefaultHabitat();
         ApplicationRegistry reg = habitat.getComponent(ApplicationRegistry.class);
         ApplicationInfo appInfo = reg.get(appName);
         Application app = appInfo.getMetaData(Application.class);
