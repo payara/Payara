@@ -207,7 +207,7 @@ public class TenantManagerTest extends ConfigApiTest {
     }
 
     // verify can modify different elements of tenant concurrently.
-    @Test
+    //@Test
     public void testNonLockingTenant() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
         setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
