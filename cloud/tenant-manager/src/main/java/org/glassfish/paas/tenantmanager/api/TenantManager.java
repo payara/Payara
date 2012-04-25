@@ -48,9 +48,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  * TenantManager provides access to information about all tenants. It is
  * designed for multi-tenant environment, so keeps track of the currently active
- * tenant, and guarantees access to currently active tenant information. It also provides
- * restricted write access to tenant information as whole. Its implementation uses
- * reentrant lock.
+ * tenant, and guarantees access to currently active tenant information only.
+ * It also restricts single write access to tenant information as whole, using 
+ * reentrant per process lock in {@link TenantConfigBean.getLock()}.
  * CAUTION: Interface is currently evolving and may be changed.
  * 
  * @author Andriy Zhdanov

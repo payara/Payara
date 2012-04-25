@@ -50,7 +50,7 @@ import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
 /**
- * Global lock.
+ * Extends ConfigBean with global reentrant per process lock against document file.
  * 
  * @author Andriy Zhdanov
  *
@@ -78,11 +78,10 @@ public class TenantConfigBean extends ConfigBean {
 
     @Override
     public Lock getLock() {
-        return super.getLock(); // TODO: use lock;
+        return lock;
     }
     
-    // lock configuration bean if document is locked.
-    @SuppressWarnings("unused") // TODO: remove
+    // lock document for process first then just element for thread.
     final private Lock lock = new Lock() {
         private final Lock beanLock = TenantConfigBean.super.getLock();
         private final Lock docLock = TenantConfigBean.this.getDocument().getLock();

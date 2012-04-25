@@ -93,7 +93,7 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
     }
 
     /**
-     * Get document lock.
+     * Reentrant per JVM process lock against document file.
      * 
      * @return Lock.
      */
@@ -101,8 +101,8 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
         return lock;
     }
 
-    // FIXME: file lock, but keep it reentrant for TenantConfigBean
-    final private Lock lock = new Lock()  {
+    // Reentrant (per JVM process) lock against document xml file. 
+    private final Lock lock = new Lock()  {
         private FileLock fileLock;
         private AtomicInteger locksByThisProcess = new AtomicInteger(0);
 

@@ -50,8 +50,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -104,6 +102,7 @@ public class TenantManagerImpl implements TenantManagerEx {
      * {@inheritDoc}
      */
     @Override
+    // TODO: remove
     public <T extends ConfigBeanProxy> Object executeUpdate(
             final SingleConfigCode<T> code, T param) throws TransactionFailure {
         ConfigBeanProxy[] objects = { param };
@@ -119,23 +118,10 @@ public class TenantManagerImpl implements TenantManagerEx {
      * {@inheritDoc}
      */
     @Override
+    // TODO: remove
     public Object excuteUpdate(ConfigCode configCode, ConfigBeanProxy ... objects) throws TransactionFailure {
         // assume there is an object and all objects are for one document
-        ConfigBeanProxy source = objects[0];
-        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(source);
-        Lock lock = configBean.getDocument().getLock();
-        try {
-            if (lock.tryLock(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS)) {
-                try {
-                    return configSupport._apply(configCode, objects);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        } catch (InterruptedException e) {
-            // ignore, will throw TransactionFailure
-        }
-        throw new TransactionFailure("Can't acquire global lock");
+        return configSupport._apply(configCode, objects);
     }
 
     /**
