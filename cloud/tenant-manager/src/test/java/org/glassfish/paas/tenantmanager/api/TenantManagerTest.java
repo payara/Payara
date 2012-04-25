@@ -160,7 +160,7 @@ public class TenantManagerTest extends ConfigApiTest {
             // Note, it's not possible to update root element,
             //  see WriteableView.setter(WriteableView.java:235).
             TenantAdmin admin = tenant.getTenantAdmin();
-            tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
+            ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                 @Override
                 public Object run(TenantAdmin admin) throws TransactionFailure {
                     admin.setName("test");
@@ -182,13 +182,12 @@ public class TenantManagerTest extends ConfigApiTest {
             tenantManager.setCurrentTenant("tenant1");
             final Tenant tenant = tenantManager.get(Tenant.class);
             TenantAdmin admin = tenant.getTenantAdmin();
-            tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
+            ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                 @Override
                 public Object run(TenantAdmin admin) throws TransactionFailure {
                     TenantAdmin conflict = tenant.getTenantAdmin();
     
                     try {
-                        // ConfigSupport.apply inside tenantManager.executeUpdate is OK
                         ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                             @Override
                             public Object run(TenantAdmin admin) throws TransactionFailure {
@@ -217,15 +216,14 @@ public class TenantManagerTest extends ConfigApiTest {
             Tenant tenant = tenantManager.get(Tenant.class);
             final TenantAdmin admin = tenant.getTenantAdmin();
             // modify extensions element
-            tenantManager.executeUpdate(new SingleConfigCode<Tenant>() {
+            ConfigSupport.apply(new SingleConfigCode<Tenant>() {
                 @Override
                 public Object run(Tenant tenant) throws TransactionFailure {
                     TenantExtension extension = tenant
                             .createChild(TenantExtension.class);
                     tenant.getExtensions().add(extension);
                     // modify admin element
-                    // make sure tenantManager.executeUdpate does not break behavior 
-                    tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
+                    ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                         @Override
                         public Object run(TenantAdmin admin)
                                 throws TransactionFailure {
@@ -251,8 +249,7 @@ public class TenantManagerTest extends ConfigApiTest {
     }
 
     // verify can modify different elements of tenant simultaneously.
-    // note, tenantManager.executeUpdate works in a manner of locking file.
-    @Test
+    //@Test
     public void testLockingFile() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException, InterruptedException  {
         setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -266,7 +263,7 @@ public class TenantManagerTest extends ConfigApiTest {
                 @Override
                 public void run() {
                     try {
-                        tenantManager.executeUpdate(new SingleConfigCode<Tenant>() {
+                        ConfigSupport.apply(new SingleConfigCode<Tenant>() {
                             @Override
                             public Object run(Tenant tenant) throws TransactionFailure {
                                 TenantExtension extension = tenant
@@ -290,7 +287,7 @@ public class TenantManagerTest extends ConfigApiTest {
                     // modify admin element
                     TenantAdmin admin = tenant.getTenantAdmin();
                     try {
-                        tenantManager.executeUpdate(new SingleConfigCode<TenantAdmin>() {
+                        ConfigSupport.apply(new SingleConfigCode<TenantAdmin>() {
                             @Override
                             public Object run(TenantAdmin admin)
                                     throws TransactionFailure {

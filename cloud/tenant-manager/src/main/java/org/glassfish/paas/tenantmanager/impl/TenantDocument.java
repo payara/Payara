@@ -39,8 +39,18 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.locks.ReentrantLock;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.LockSupport;
 
 import javax.xml.stream.XMLStreamReader;
 
@@ -87,17 +97,14 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
      * 
      * @return Lock.
      */
-    public ReentrantLock getLock() {
+    public Lock getLock() {
         return lock;
     }
 
     // FIXME: file lock, but keep it reentrant for TenantConfigBean
-    final private ReentrantLock lock = new ReentrantLock()  /* {
+    final private Lock lock = new Lock()  {
         private FileLock fileLock;
         private AtomicInteger locksByThisProcess = new AtomicInteger(0);
-
-
-        private static final long serialVersionUID = 3798935315905555205L;
 
         @Override
         public boolean tryLock(long time, TimeUnit unit)
@@ -105,12 +112,28 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
 
             if ( locksByThisProcess.incrementAndGet() == 1) {
                 // Physically lock the file only if we are the first one to enter
-                lockFile(); // throws exception
-            }
+                long nanosTimeout = TimeUnit.NANOSECONDS.convert(time, unit);
+                long increment = nanosTimeout/20;
+                long lastTime = System.nanoTime();
+                for (; ;) {
+                    if (tryLock()) {
+                        return true;
+                    }
+                    if (nanosTimeout < 0) {
+                        return false;
+                    }
+                    LockSupport.parkNanos(increment);
+                    long now = System.nanoTime();
+                    nanosTimeout -= now - lastTime;
+                    lastTime = now;
+                    if (Thread.interrupted())
+                        break;
+                }
+                throw new InterruptedException();
+          }
 
-            
-            // TODO Auto-generated method stub
-            return super.tryLock(time, unit);
+            // return true if we locked already
+            return locksByThisProcess.get() > 0;
         }
 
         @Override
@@ -126,28 +149,44 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
                     }
                     fileLock = null;
                 }
-                super.unlock();
             }
         }
 
-        private void lockFile() {
+        @Override
+        public boolean tryLock() {
             try {
                 // acquire exclusive lock on config file. 
                 File f = new File(TenantDocument.this.resource.toURI());
-                FileInputStream fs = new FileInputStream(f);
-                //FileOutputStream fs = new FileOutputStream(f);
+                FileOutputStream fs = new FileOutputStream(f);
                 FileChannel c = fs.getChannel();
-                fileLock = c.lock(0L, Long.MAX_VALUE, true);
+                fileLock = c.lock();
+                return true;
             } catch (URISyntaxException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }        }
-        
-        
-    }*/;
+            }
+            return false;
+        }
+
+        @Override
+        public void lockInterruptibly() throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void lock() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Condition newCondition() {
+            throw new UnsupportedOperationException();
+        }
+
+    };
 
 
     private URL resource;
