@@ -50,7 +50,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -74,13 +74,13 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
                     PORTABLE_MEJB_JNDI_NAME_SHORT,
                     PORTABLE_MEJB_JNDI_NAME_LONG};
 
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private static final Logger _logger = LogDomains.getLogger(
             MEJBNamingObjectProxy.class, LogDomains.EJB_LOGGER);
 
 
-    public MEJBNamingObjectProxy(Habitat habitat) {
+    public MEJBNamingObjectProxy(BaseServiceLocator habitat) {
         this.habitat = habitat;
     }
 

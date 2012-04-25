@@ -64,7 +64,7 @@ import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.omg.CORBA.ORB;
 
@@ -78,7 +78,7 @@ public class IIOPUtils implements PostConstruct {
     private static IIOPUtils _me;
 
     @Inject
-    Services services;
+    BaseServiceLocator services;
 
     @Inject
     private ClassLoaderHierarchy clHierarchy;
@@ -105,8 +105,8 @@ public class IIOPUtils implements PostConstruct {
 
         if( processEnv.getProcessType().isServer()) {
 
-            iiopService = services.forContract(IiopService.class)
-                    .named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
+            iiopService = services.getComponent(IiopService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+
             final Collection<ThreadPool> threadPool = iiopService.getParent(Config.class).getThreadPools().getThreadPool();
             final Collection<NetworkListener> listeners = allByContract(NetworkListener.class);
             final Set<String> names = new TreeSet<String>();
@@ -120,7 +120,7 @@ public class IIOPUtils implements PostConstruct {
                 }
             }
             serverRefs  = allByContract(ServerRef.class);
-            configs     = services.forContract(Configs.class).get();
+            configs     = services.getComponent(Configs.class);
         }
 
         IIOPUtils.initMe(this);
@@ -192,11 +192,11 @@ public class IIOPUtils implements PostConstruct {
         return processType;
     }
 
-    public Services getHabitat() {
+    public BaseServiceLocator getHabitat() {
         return services;
     }
 
-    public Services getServices() {
+    public BaseServiceLocator getServices() {
         return services;
     }
 
@@ -212,7 +212,7 @@ public class IIOPUtils implements PostConstruct {
     }
     
     private <T> Collection<T> allByContract(Class<T> contractClass) {
-        return ((Habitat) services).getAllByContract(contractClass);
+        return services.getAllByContract(contractClass);
     }
 
 }

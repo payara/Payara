@@ -48,7 +48,7 @@ import org.glassfish.ha.store.api.*;
 import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
 import java.io.Serializable;
@@ -64,7 +64,7 @@ public class ReplicationStoreProxy2
         implements Startup, PostConstruct, BackingStoreFactory {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     Events events;

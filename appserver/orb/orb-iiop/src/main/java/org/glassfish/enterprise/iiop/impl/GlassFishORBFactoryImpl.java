@@ -46,7 +46,7 @@ import org.glassfish.enterprise.iiop.util.IIOPUtils;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.omg.CORBA.ORB;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 
@@ -62,7 +62,7 @@ public class GlassFishORBFactoryImpl
         implements GlassFishORBFactory, PostConstruct {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private IIOPUtils iiopUtils;

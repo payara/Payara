@@ -80,6 +80,7 @@ import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 
 import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -184,7 +185,7 @@ public final class GlassFishORBManager {
     public static final String S1AS_ORB_ID = "S1AS-ORB";
 
     // Set in constructor
-    private Services services;
+    private BaseServiceLocator services;
     private IIOPUtils iiopUtils;
 
     // the ORB instance
@@ -210,15 +211,15 @@ public final class GlassFishORBManager {
      * move all public statics or change them to package private.
      * All external orb/iiop access should go through orb-connector module
      */
-    GlassFishORBManager(Services h ) {
+    GlassFishORBManager(BaseServiceLocator h ) {
         fineLog( "GlassFishORBManager: Constructing GlassFishORBManager: h {0}",
             h ) ;
         services = h;
 
-        iiopUtils = services.byType(IIOPUtils.class).get();
+        iiopUtils = services.getByType(IIOPUtils.class);
 
-        ProcessEnvironment processEnv = services.byType(
-            ProcessEnvironment.class).get();
+        ProcessEnvironment processEnv = services.getByType(
+            ProcessEnvironment.class);
 
         processType = processEnv.getProcessType();
 
@@ -558,7 +559,7 @@ public final class GlassFishORBManager {
                     Module corbaOrbModule = null;
 
                     // start glassfish-corba-orb bundle
-                    ModulesRegistry modulesRegistry = services.forContract(ModulesRegistry.class).get();
+                    ModulesRegistry modulesRegistry = services.getByContract(ModulesRegistry.class);
 
                     for(Module m : modulesRegistry.getModules()) {
                         if( m.getName().equals("glassfish-corba-orb") ) {

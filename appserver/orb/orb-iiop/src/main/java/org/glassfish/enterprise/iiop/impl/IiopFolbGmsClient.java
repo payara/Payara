@@ -80,6 +80,7 @@ import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
 // REVISIT impl
@@ -93,7 +94,7 @@ public class IiopFolbGmsClient implements CallBack {
        LogDomains.getLogger(IiopFolbGmsClient.class,
            LogDomains.CORBA_LOGGER);
 
-    private Services services;
+    private BaseServiceLocator services;
 
     private Domain domain ;
 
@@ -115,12 +116,12 @@ public class IiopFolbGmsClient implements CallBack {
         }
     }
 
-    public IiopFolbGmsClient( Services services ) {
+    public IiopFolbGmsClient( BaseServiceLocator services ) {
         fineLog( "IiopFolbGmsClient: constructor: services {0}",
             services ) ;
         this.services = services ;
 
-        gmsAdapterService = services.byType(GMSAdapterService.class).get() ;
+        gmsAdapterService = services.getByType(GMSAdapterService.class);
 
 	try {
             if (gmsAdapterService == null) {
@@ -131,13 +132,13 @@ public class IiopFolbGmsClient implements CallBack {
             fineLog( "IiopFolbGmsClient: gmsAdapter {0}", gmsAdapter );
 
             if (gmsAdapter != null) {
-                domain = services.forContract( Domain.class ).get() ;
+                domain = services.getComponent( Domain.class );
                 fineLog( "IiopFolbGmsClient: domain {0}", domain) ;
 
-                Servers servers = services.forContract(Servers.class ).get() ;
+                Servers servers = services.getComponent(Servers.class );
                 fineLog( "IiopFolbGmsClient: servers {0}", servers );
 
-                nodes = services.forContract(Nodes.class).get() ;
+                nodes = services.getComponent(Nodes.class);
                 fineLog( "IiopFolbGmsClient: nodes {0}", nodes );
 
                 String instanceName = gmsAdapter.getModule().getInstanceName() ;
@@ -399,7 +400,7 @@ public class IiopFolbGmsClient implements CallBack {
         String configRef = server.getConfigRef() ;
         fineLog( "getConfigForServer: configRef {0}", configRef ) ;
 
-        Configs configs = services.forContract( Configs.class ).get() ;
+        Configs configs = services.getComponent( Configs.class ) ;
         fineLog( "getConfigForServer: configs {0}", configs ) ;
 
         Config config = configs.getConfigByName(configRef) ;
@@ -412,7 +413,7 @@ public class IiopFolbGmsClient implements CallBack {
     private ClusterInstanceInfo getClusterInstanceInfo( String instanceName) {
         fineLog( "getClusterInstanceInfo: instanceName {0}", instanceName ) ;
 
-        final Servers servers = services.forContract( Servers.class ).get() ;
+        final Servers servers = services.getComponent( Servers.class );
         fineLog( "getClusterInstanceInfo: servers {0}", servers ) ;
 
         final Server server = servers.getServer(instanceName) ;
