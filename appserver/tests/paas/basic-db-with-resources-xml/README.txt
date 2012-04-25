@@ -44,6 +44,4 @@ The init.sql file is used by the service provisioning engine to load data into d
 
 The Database service is created as a shared service in this test case. 
 
-Works on Derby as glassfish-resources.xml contents are related to Derby database.
-
 Please refer ../README.txt for more generic guidelines.

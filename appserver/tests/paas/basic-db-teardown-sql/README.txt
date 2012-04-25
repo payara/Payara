@@ -44,6 +44,4 @@ The init.sql file is used by the service provisioning engine to load data into d
 
 While undeployment happens, before app is undeployed, the service provisioning engine executes the teardown.sql. This test also does  DriverManager.getConnection to check if the database contents have been cleared.
 
-Works on Derby as glassfish-resources.xml contents are related to Derby database.
-
 Please refer ../README.txt for more generic guidelines.
