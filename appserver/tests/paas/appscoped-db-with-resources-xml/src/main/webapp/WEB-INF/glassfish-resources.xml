@@ -45,7 +45,7 @@
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 
 <resources>
-    <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.ClientXADataSource" res-type="javax.sql.DataSource" name="java:app/jdbc/glassfish_resources_xml_test_pool">
+    <jdbc-connection-pool res-type="javax.sql.DataSource" name="java:app/jdbc/glassfish_resources_xml_test_pool">
         <property name="service-name" value="coffee-service"/>
     </jdbc-connection-pool>
 
