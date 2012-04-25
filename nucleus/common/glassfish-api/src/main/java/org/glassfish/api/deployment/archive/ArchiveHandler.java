@@ -45,6 +45,8 @@ import org.jvnet.hk2.annotations.Contract;
 
 import java.io.IOException;
 import java.util.jar.Manifest;
+import java.util.List;
+import java.net.URI;
 
 /**
  * ArchiveHandlers are handling certain archive type. An archive has a unique type which is usually defines how
@@ -133,4 +135,12 @@ public interface ArchiveHandler {
      * @return manifest instance or null if this archive has no manifest
      */
     public Manifest getManifest(ReadableArchive archive) throws IOException;
+
+    /**
+     * Returns the classpath URIs for this archive.
+     *
+     * @param archive file
+     * @return classpath URIs for this archive
+     */
+    public List<URI> getClassPathURIs(ReadableArchive archive);
 }

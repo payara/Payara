@@ -348,29 +348,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         }
     }
 
-    /*
-     * return the library URIs for the given archive
-     */
-
-    public List<URL> getLibraryJars(DeploymentContext context) {
-
-        List<URL> libraryURLs = new ArrayList<URL>();
-        try {
-            ReadableArchive archive = context.getSource();
-
-            BundleDescriptor bundleDesc =
-                context.getModuleMetaData(BundleDescriptor.class);
-
-            libraryURLs.addAll(DOLUtils.getLibraryJars(bundleDesc, archive));
-
-            libraryURLs.addAll(DeploymentUtils.getModuleLibraryJars(context));
-        } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.WARNING, "failed to get library jar: ", e);
-        }
-
-        return libraryURLs;
-    }
-
     protected void handleDeploymentPlan(File deploymentPlan,
         Archivist archivist, ReadableArchive sourceArchive, ApplicationHolder holder) throws IOException {
         //Note in copying of deployment plan to the portable archive,

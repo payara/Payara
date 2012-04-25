@@ -53,6 +53,7 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.deployment.SnifferManager;
+import org.glassfish.hk2.classmodel.reflect.*;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
@@ -72,6 +73,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.io.File;
+import java.net.URI;
 
 /**
  * EarDeployer to deploy composite Java EE applications.
@@ -472,8 +474,13 @@ public class EarDeployer implements Deployer {
     // incompatible ones
     private Collection<Sniffer> getSniffersForModule(
         DeploymentContext bundleContext, 
-        ModuleDescriptor md, Application application) {
-        Collection<Sniffer> sniffers = snifferManager.getSniffers(bundleContext);
+        ModuleDescriptor md, Application application) throws Exception {
+        ArchiveHandler handler = bundleContext.getArchiveHandler();
+        ReadableArchive archive = bundleContext.getSource();
+        List<URI> classPathURIs = handler.getClassPathURIs(archive);
+        classPathURIs.addAll(DOLUtils.getLibraryJarURIs((BundleDescriptor)md.getDescriptor(), archive));
+        Types types = bundleContext.getTransientAppMetaData(Types.class.getName(), Types.class);
+        Collection<Sniffer> sniffers = snifferManager.getSniffers(archive, classPathURIs, types, application.getClassLoader());
         String type = getTypeFromModuleType(md.getModuleType());
         Sniffer mainSniffer = null;
         for (Sniffer sniffer : sniffers) {

@@ -46,13 +46,16 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.connectors.connector.module.RarDetector;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.logging.LogDomains;
+import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
+import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
@@ -136,5 +139,26 @@ public class RarHandler extends AbstractArchiveHandler {
     private boolean isEmbedded(DeploymentContext context) {
         ReadableArchive archive = context.getSource();
         return (archive != null && archive.getParentArchive() != null);
+    }
+
+    /**
+     * Returns the classpath URIs for this archive.
+     *
+     * @param archive file
+     * @return classpath URIs for this archive
+     */
+    @Override
+    public List<URI> getClassPathURIs(ReadableArchive archive) {
+        List<URI> uris = super.getClassPathURIs(archive);
+        try {
+            File archiveFile = new File(archive.getURI());
+            if (archiveFile.exists() && archiveFile.isDirectory()) {
+                // add top level jars
+                uris.addAll(ASClassLoaderUtil.getLibDirectoryJarURIs(archiveFile));
+            }
+        } catch (Exception e) {
+            _logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        return uris;
     }
 }

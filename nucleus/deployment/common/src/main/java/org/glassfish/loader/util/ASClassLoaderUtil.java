@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,13 +46,14 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.ServerEnvironment;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
@@ -69,7 +70,7 @@ import java.util.*;
 
 public class ASClassLoaderUtil {
 
-   final private static Logger _logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+   final private static Logger _logger = LogDomains.getLogger(ASClassLoaderUtil.class, LogDomains.DPL_LOGGER);
 
     private static String modulesClassPath = null;
 
@@ -495,5 +496,22 @@ public class ASClassLoaderUtil {
             allLibDirLibraries.addAll(appRootLibraries);
         }
         return allLibDirLibraries;
+    }
+
+    public static List<URI> getLibDirectoryJarURIs(File moduleLibDirectory) throws Exception {
+        List<URI> libLibraryURIs = new ArrayList<URI>();
+        File[] jarFiles = moduleLibDirectory.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                return (pathname.getAbsolutePath().endsWith(".jar"));
+            }
+        });
+
+        if (jarFiles != null && jarFiles.length > 0) {
+            for (File jarFile : jarFiles) {
+                libLibraryURIs.add(Util.toURI(jarFile.toURL()));
+            }
+        }
+
+        return libLibraryURIs;
     }
 }

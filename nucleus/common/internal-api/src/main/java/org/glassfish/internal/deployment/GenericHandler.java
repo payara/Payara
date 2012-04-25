@@ -55,6 +55,11 @@ import java.util.Enumeration;
 import java.util.jar.Manifest;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
+import java.net.URI;
+import java.net.URL;
 
 import com.sun.enterprise.util.io.FileUtils;
 
@@ -189,4 +194,16 @@ public abstract class GenericHandler implements ArchiveHandler {
         return archive.getManifest();
     }
     
+    /**
+     * Returns the classpath URIs for this archive.
+     *
+     * @param archive file
+     * @return classpath URIs for this archive
+     */
+    public List<URI> getClassPathURIs(ReadableArchive archive) {
+        List<URI> uris = new ArrayList<URI>();
+        // add the archive itself
+        uris.add(archive.getURI());
+        return uris;
+    }
 }

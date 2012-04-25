@@ -58,7 +58,6 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.FileFilter;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.net.URI;
@@ -576,31 +575,6 @@ public class DeploymentUtils {
         return externalLibURIs;
     }
 
-    public static List<URL> getModuleLibraryJars(DeploymentContext context)
-        throws Exception {
-        ReadableArchive archive = context.getSource();
-        List<URL> moduleLibraryURLs = new ArrayList<URL>();
-        ArchiveHandler handler = context.getArchiveHandler();
-        if (handler.getClass() == null ||
-            handler.getClass().getAnnotation(Service.class) == null) {
-            return moduleLibraryURLs;
-        }
-        String handlerName = handler.getClass().getAnnotation(Service.class).name();
-        File archiveFile = new File(archive.getURI());
-        if (handlerName.equals("war")) {
-            // we should add all the WEB-INF/lib jars for web module
-            File webInf = new File(archiveFile, "WEB-INF");
-            File webInfLib = new File(webInf, "lib");
-            if (webInfLib.exists()) {
-                moduleLibraryURLs = getLibDirectoryJars(webInfLib);
-            }
-        } else if (handlerName.equals("rar")) {
-            // we should add the top level jars for connector module
-            moduleLibraryURLs = getLibDirectoryJars(archiveFile);
-        }
-        return moduleLibraryURLs;
-    }
-
     /**
      * Opens the specified file as an archive, using the provided archive factory.
      * @param dir directory to be opened as an archive
@@ -610,22 +584,5 @@ public class DeploymentUtils {
      */
     public static FileArchive openAsFileArchive(final File dir, final ArchiveFactory archiveFactory) throws IOException {
         return (FileArchive) archiveFactory.openArchive(dir);
-    }
-
-    private static List<URL> getLibDirectoryJars(File moduleLibDirectory) throws Exception {
-        List<URL> libLibraryURLs = new ArrayList<URL>();
-        File[] jarFiles = moduleLibDirectory.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                return (pathname.getAbsolutePath().endsWith(".jar"));
-            }
-        });
-
-        if (jarFiles != null && jarFiles.length > 0) {
-            for (File jarFile : jarFiles) {
-                libLibraryURLs.add(jarFile.toURL());
-            }
-        }
-
-        return libLibraryURLs;
     }
 }

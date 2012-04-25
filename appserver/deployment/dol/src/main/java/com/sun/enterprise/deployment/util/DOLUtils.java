@@ -52,6 +52,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.DeploymentContext;
 import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
@@ -60,6 +61,7 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.component.Habitat;
@@ -97,8 +99,9 @@ public class DOLUtils {
                 (a != null && a.equals(b)));
     }
 
-    public static List<URL> getLibraryJars(BundleDescriptor bundleDesc, ReadableArchive archive) throws IOException {
+    public static List<URI> getLibraryJarURIs(BundleDescriptor bundleDesc, ReadableArchive archive) throws Exception {
         List<URL> libraryURLs = new ArrayList<URL>();
+        List<URI> libraryURIs = new ArrayList<URI>();
 
         // add libraries referenced through manifest
         libraryURLs.addAll(DeploymentUtils.getManifestLibraries(archive));
@@ -107,7 +110,10 @@ public class DOLUtils {
 
         if (parentArchive == null || bundleDesc == null) {
             // ear level or standalone module
-            return libraryURLs;
+            for (URL url : libraryURLs) {
+                libraryURIs.add(Util.toURI(url));
+            }
+            return libraryURIs;
         }
 
         File appRoot = new File(parentArchive.getURI());
@@ -119,8 +125,11 @@ public class DOLUtils {
         libraryURLs.addAll(ASClassLoaderUtil.getAppLibDirLibrariesAsList(
             appRoot, app.getLibraryDirectory(), null));
 
-       return libraryURLs;
-   } 
+        for (URL url : libraryURLs) {
+            libraryURIs.add(Util.toURI(url));
+        }
+        return libraryURIs;
+    } 
 
    public static BundleDescriptor getCurrentBundleForContext(
        DeploymentContext context) {

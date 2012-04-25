@@ -43,9 +43,13 @@ package org.glassfish.internal.deployment;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Collection;
+import java.util.List;
+import java.net.URI;
 
 /**
  * Service for easy access to sniffers.
@@ -92,6 +96,8 @@ public interface SnifferManager {
      * archive.
      */
     public Collection<Sniffer> getSniffers(DeploymentContext context);
+
+    public Collection<Sniffer> getSniffers(ReadableArchive archive, List<URI> uris, Types types, ClassLoader cl);
 
     /**
      * Return whether a sniffer supports to be isolated during deployment per use request.

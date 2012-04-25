@@ -255,25 +255,25 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     protected void addLibraryJars(T bundleDesc, 
-        ReadableArchive moduleArchive) throws IOException {
-        List<URL> libraryURLs = new ArrayList<URL>(); 
-        if (bundleDesc instanceof BundleDescriptor) {
-            libraryURLs = DOLUtils.getLibraryJars((BundleDescriptor)bundleDesc, moduleArchive);
-        }
+        ReadableArchive moduleArchive) {
+        List<URI> libraryURIs = new ArrayList<URI>(); 
+        try {
+            if (bundleDesc instanceof BundleDescriptor) {
+                libraryURIs = DOLUtils.getLibraryJarURIs((BundleDescriptor)bundleDesc, moduleArchive);
+            }
 
-        for (URL url : libraryURLs) {
-            try {
-                File libFile = new File(url.toURI());;
+            for (URI uri : libraryURIs) {
+                File libFile = new File(uri);;
                 if (libFile.isFile()) {
                     addScanJar(libFile);
                 } else if (libFile.isDirectory()) {
                     addScanDirectory(libFile);
                 }
-            } catch (Exception ex) {
-                // we log a warning and proceed for any problems in 
-                // adding library jars to the scan list
-                logger.log(Level.WARNING, ex.getMessage());
             }
+        } catch (Exception ex) {
+            // we log a warning and proceed for any problems in 
+            // adding library jars to the scan list
+            logger.log(Level.WARNING, ex.getMessage());
         }       
     }
 

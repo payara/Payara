@@ -48,6 +48,7 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
+import org.glassfish.loader.util.ASClassLoaderUtil;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
@@ -57,9 +58,11 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -565,5 +568,30 @@ public class WarHandler extends AbstractArchiveHandler {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the classpath URIs for this archive.
+     *
+     * @param archive file
+     * @return classpath URIs for this archive
+     */
+    @Override
+    public List<URI> getClassPathURIs(ReadableArchive archive) {
+        List<URI> uris = super.getClassPathURIs(archive);
+        try {
+            File archiveFile = new File(archive.getURI());
+            if (archiveFile.exists() && archiveFile.isDirectory()) {
+                uris.add(new URI(archive.getURI().toString()+"WEB-INF/classes/"));
+                File webInf = new File(archiveFile, "WEB-INF");
+                File webInfLib = new File(webInf, "lib");
+                if (webInfLib.exists()) {
+                    uris.addAll(ASClassLoaderUtil.getLibDirectoryJarURIs(webInfLib));
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        return uris;
     }
 }

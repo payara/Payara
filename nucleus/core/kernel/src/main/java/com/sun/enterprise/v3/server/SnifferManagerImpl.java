@@ -48,6 +48,8 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.container.SecondarySniffer;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.internal.deployment.SuperSniffer;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
@@ -149,7 +151,14 @@ public class SnifferManagerImpl implements SnifferManager {
      * archive.
      */
     public Collection<Sniffer> getSniffers(DeploymentContext context) {
+        ReadableArchive archive = context.getSource();
+        ArchiveHandler handler = context.getArchiveHandler();
+        List<URI> uris = handler.getClassPathURIs(archive);
+        Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
+        return getSniffers(archive, uris, types, context.getClassLoader());
+    }
 
+    public Collection<Sniffer> getSniffers(ReadableArchive archive, List<URI> uris, Types types, ClassLoader cl) {
         // it is important to keep an ordered sequence here to keep sniffers
         // in their natural order.
         List<Sniffer> regularSniffers = new ArrayList<Sniffer>();
@@ -160,12 +169,12 @@ public class SnifferManagerImpl implements SnifferManager {
         }
 
         // scan for registered annotations and retrieve applicable sniffers
-        List<Sniffer> appSniffers = this.getApplicableSniffers(context, regularSniffers,  true);
+        List<Sniffer> appSniffers = this.getApplicableSniffers(uris, types, regularSniffers, true);
         
         // call handles method of the sniffers
         for (Sniffer sniffer : regularSniffers) {
             if ( !appSniffers.contains(sniffer) &&
-                sniffer.handles(context.getSource(), context.getClassLoader() )) {
+                sniffer.handles(archive, cl)) {
                 appSniffers.add(sniffer);
             }
         }
@@ -235,12 +244,17 @@ public class SnifferManagerImpl implements SnifferManager {
         return appSniffers;
     }
 
-    public <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, Collection<T> sniffers, boolean checkPath) {
+    private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, Collection<T> sniffers, boolean checkPath) {
+        Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
+        ArchiveHandler handler = context.getArchiveHandler();
+        List<URI> uris = handler.getClassPathURIs(context.getSource());
+        return getApplicableSniffers(uris, types, sniffers, checkPath);
+    }
+
+    private <T extends Sniffer> List<T> getApplicableSniffers(List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
         if (sniffers==null || sniffers.isEmpty()) {
             return Collections.emptyList();
         }
-        Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-        List<URI> uris = getURIs(context);
 
         List<T> result = new ArrayList<T>();
         for (T sniffer : sniffers) {
@@ -299,42 +313,5 @@ public class SnifferManagerImpl implements SnifferManager {
             }
         }
         return false;
-    }
-
-    private List<URI> getURIs(DeploymentContext context) {
-        List<URI> uris = new ArrayList<URI>();
-        uris.add(context.getSource().getURI());
-        try {
-            File f = new File(context.getSource().getURI());
-            if (f.exists() && f.isDirectory()) {
-                // we automatically add web-inf/classes to acceptable loading uri to handle
-                // specificities of war files. Potentially we could check that f ends with "WAR"
-                uris.add(new URI(context.getSource().getURI().toString()+"WEB-INF/classes/"));
-            }
-
-            // add library jars for this module
-            if (context instanceof ExtendedDeploymentContext) {
-                if (((ExtendedDeploymentContext)context).getParentContext() == null) {
-                    // standalone module, we just need to get the module 
-                    // library jars
-                    List<URL> moduleLibraries = DeploymentUtils.getModuleLibraryJars(context);
-                    for (URL url : moduleLibraries) {
-                        uris.add(Util.toURI(url));
-                    }
-                } else {
-                    // non-standalone case, we need to look at other libraries too
-                    ApplicationInfoProvider appInfoProvider = habitat.getComponent(ApplicationInfoProvider.class);
-                    if (appInfoProvider != null) {
-                        List<URL> libraryJars = appInfoProvider.getLibraryJars(context);
-                        for (URL url : libraryJars) {
-                            uris.add(Util.toURI(url));
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            context.getLogger().log(Level.WARNING, e.getMessage(), e);
-        }
-        return uris;
     }
 }

@@ -97,10 +97,7 @@ public class AnnotationDetector {
         List<URI> uris = new ArrayList<URI>();
         uris.add(archive.getURI());
         try {
-            List<URL> libraryJars = DOLUtils.getLibraryJars(null, archive);
-            for (URL url : libraryJars) {
-                uris.add(url.toURI());
-            }
+            uris.addAll(DOLUtils.getLibraryJarURIs(null, archive));
         } catch (Exception e) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, e.getMessage(), e);
         }
