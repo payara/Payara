@@ -63,7 +63,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** 
  * This class implements javax.transaction.UserTransaction .
@@ -298,7 +298,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
      * Return instance with all injected values from deserialization if possible
      */
     Object readResolve() throws ObjectStreamException {
-        Habitat h = Globals.getDefaultHabitat();
+        BaseServiceLocator h = Globals.getDefaultHabitat();
         if (h != null) {
             return h.getComponent(UserTransactionImpl.class);
         }

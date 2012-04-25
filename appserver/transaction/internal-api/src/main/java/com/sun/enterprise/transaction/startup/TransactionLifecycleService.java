@@ -51,6 +51,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PostConstruct;
@@ -70,7 +71,7 @@ import java.util.logging.Logger;
 public class TransactionLifecycleService implements Startup, PostConstruct, PreDestroy {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     @Inject
     Events events;
@@ -104,7 +105,7 @@ public class TransactionLifecycleService implements Startup, PostConstruct, PreD
                 nm.publishObject(USER_TX_NO_JAVA_COMP, new NamingObjectProxy.InitializationNamingObjectProxy() {
                     @Override
                     public Object create(Context ic) throws NamingException {
-                        return habitat.forContract("javax.transaction.UserTransaction").get();
+                        return habitat.getByContract("javax.transaction.UserTransaction");
                     }
                 }, false);
             } catch (NamingException e) {
@@ -145,7 +146,7 @@ public class TransactionLifecycleService implements Startup, PostConstruct, PreD
         // Cleanup if TM was loaded
         if (tm == null) {
             Inhabitant<JavaEETransactionManager> inhabitant =
-                    habitat.getInhabitantByType(JavaEETransactionManager.class);
+                    ((Habitat) habitat).getInhabitantByType(JavaEETransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
                 tm = inhabitant.get();
             }

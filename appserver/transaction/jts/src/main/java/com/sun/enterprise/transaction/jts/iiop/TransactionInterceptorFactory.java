@@ -54,7 +54,7 @@ import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.omg.IOP.Codec;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
@@ -71,7 +71,7 @@ public class TransactionInterceptorFactory implements IIOPInterceptorFactory{
     private TransactionServerInterceptor tsi = null;
     private TransactionClientInterceptor tci = null;
 
-    @Inject private Habitat habitat;
+    @Inject private BaseServiceLocator habitat;
 
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (tci == null) {

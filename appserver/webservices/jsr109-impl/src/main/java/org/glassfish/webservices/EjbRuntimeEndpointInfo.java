@@ -56,7 +56,7 @@ import org.glassfish.ejb.api.EJBInvocation;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceFeature;

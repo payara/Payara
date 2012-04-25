@@ -69,7 +69,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractProvided;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -99,7 +99,7 @@ public class JavaEETransactionManagerSimplified
 
     protected Logger _logger = LogDomains.getLogger(JavaEETransactionManagerSimplified.class, LogDomains.JTA_LOGGER);
 
-    @Inject private Habitat habitat;
+    @Inject private BaseServiceLocator habitat;
 
     @Inject protected InvocationManager invMgr;
 

@@ -72,7 +72,7 @@ import java.util.Collections;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.ws.WLWebServicesTagNames;
 import com.sun.enterprise.deployment.node.ws.WLServiceRefNode;
@@ -183,7 +183,7 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
     }
 
     private SecurityRoleMapper getRoleMapper(){
-        Habitat habitat = Globals.getDefaultHabitat();
+        BaseServiceLocator habitat = Globals.getDefaultHabitat();
         SecurityRoleMapper srm = null;
         if(habitat != null){
             SecurityRoleMapperFactory srmf = habitat.getComponent(SecurityRoleMapperFactory.class);

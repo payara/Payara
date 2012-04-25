@@ -56,7 +56,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 import org.glassfish.api.admin.ProcessEnvironment;
 
@@ -80,7 +80,7 @@ public class AppClientServerApplication implements
         ApplicationContainer<ApplicationClientDescriptor> {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;

@@ -69,7 +69,7 @@ import org.glassfish.deployment.common.Artifacts.FullAndPartURIs;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Encapsulates logic that is specific to stand-alone app client
@@ -91,7 +91,7 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleClassLoader,
             final Application application,
-            final Habitat habitat) throws IOException {
+            final BaseServiceLocator habitat) throws IOException {
         super(dc, bundleDesc, archivist, gfClientModuleClassLoader, 
                 application, habitat);
     }

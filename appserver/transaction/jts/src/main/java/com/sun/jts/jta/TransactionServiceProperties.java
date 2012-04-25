@@ -64,7 +64,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -89,7 +89,7 @@ public class TransactionServiceProperties {
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
 
-    public static synchronized Properties getJTSProperties (Habitat habitat, boolean isORBAvailable) {
+    public static synchronized Properties getJTSProperties (BaseServiceLocator habitat, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
             // We will need to update the properties if ORB availability changed
             return properties;
@@ -309,7 +309,7 @@ public class TransactionServiceProperties {
         if (force || (isValueSet(value) && "true".equals(value))) {
             recoveryInitialized = true;
 
-            Habitat habitat = (Habitat)properties.get(HABITAT);
+            BaseServiceLocator habitat = (BaseServiceLocator)properties.get(HABITAT);
             if (habitat != null) {
                 ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
@@ -347,9 +347,9 @@ public class TransactionServiceProperties {
 
     private static class RecoveryHelperThread extends Thread {
         private int interval;
-        private Habitat habitat;
+        private BaseServiceLocator habitat;
 
-        RecoveryHelperThread(Habitat habitat, int interval) {
+        RecoveryHelperThread(BaseServiceLocator habitat, int interval) {
             setName("Recovery Helper Thread");
             setDaemon(true);
             this.habitat = habitat;

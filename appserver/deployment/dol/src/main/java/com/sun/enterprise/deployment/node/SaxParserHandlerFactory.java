@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.node;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 
 import java.io.File;
@@ -54,7 +54,7 @@ import org.glassfish.internal.api.Globals;
  */
 public class SaxParserHandlerFactory {
     
-    private final static Habitat habitat = Globals.getDefaultHabitat();
+    private final static BaseServiceLocator habitat = Globals.getDefaultHabitat();
     
     /** Creates a new instance of SaxParserHandlerFactory */
     public SaxParserHandlerFactory() {

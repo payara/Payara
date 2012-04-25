@@ -86,6 +86,7 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PerLookup;
@@ -247,7 +248,7 @@ public class AppClientContainer {
     private ConnectorRuntime connectorRuntime;
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private Builder builder;
 
@@ -901,18 +902,18 @@ public class AppClientContainer {
         private final Logger logger;
         private Thread cleanupThread = null;
         private Collection<EntityManagerFactory> emfs = null;
-        private final Habitat habitat;
+        private final BaseServiceLocator habitat;
         private ConnectorRuntime connectorRuntime;
         private ManagedBeanManager managedBeanMgr;
 
         static Cleanup arrangeForShutdownCleanup(final Logger logger,
-                final Habitat habitat, final ApplicationClientDescriptor appDesc) {
+                final BaseServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
             final Cleanup cu = new Cleanup(logger, habitat, appDesc);
             cu.enable();
             return cu;
         }
 
-        private Cleanup(final Logger logger, final Habitat habitat, final ApplicationClientDescriptor appDesc) {
+        private Cleanup(final Logger logger, final BaseServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
             this.logger = logger;
             this.habitat = habitat;
             this.appClient = appDesc;
@@ -1068,7 +1069,7 @@ public class AppClientContainer {
         private void cleanupTransactions() {
             try {
                 Inhabitant<TransactionManager> inhabitant =
-                        habitat.getInhabitantByType(TransactionManager.class);
+                        ((Habitat) habitat).getInhabitantByType(TransactionManager.class);
                 if (inhabitant != null && inhabitant.isActive()) {
                     TransactionManager txmgr = inhabitant.get();
                     txmgr.rollback();

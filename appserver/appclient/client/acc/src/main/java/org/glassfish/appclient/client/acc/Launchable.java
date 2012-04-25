@@ -55,7 +55,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import javax.xml.stream.XMLStreamException;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -87,7 +87,7 @@ interface Launchable {
         static Launchable newLaunchable(final URI uri,
                 final String callerSuppliedMainClassName,
                 final String callerSuppliedAppName,
-                final Habitat habitat) throws IOException, BootException, URISyntaxException, XMLStreamException, SAXParseException, UserError {
+                final BaseServiceLocator habitat) throws IOException, BootException, URISyntaxException, XMLStreamException, SAXParseException, UserError {
             /*
              * Make sure the requested URI exists and is readable.
              */
@@ -134,7 +134,7 @@ interface Launchable {
             return result;
         }
         
-        static Launchable newLaunchable(final Habitat habitat, final Class mainClass) {
+        static Launchable newLaunchable(final BaseServiceLocator habitat, final Class mainClass) {
             return new MainClassLaunchable(habitat, mainClass);
         }
 

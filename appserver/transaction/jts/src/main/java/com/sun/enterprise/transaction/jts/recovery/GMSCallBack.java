@@ -65,7 +65,7 @@ import com.sun.enterprise.ee.cms.core.Signal;
 
 import com.sun.logging.LogDomains;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class GMSCallBack implements CallBack {
 
@@ -77,7 +77,7 @@ public class GMSCallBack implements CallBack {
     static Logger _logger = LogDomains.getLogger(TransactionServiceProperties.class, LogDomains.TRANSACTION_LOGGER);
 
     private Servers servers;
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private int waitTime;
     private DelegatedTransactionRecoveryFence fence;
@@ -85,7 +85,7 @@ public class GMSCallBack implements CallBack {
     private final long startTime;
     private final static Object lock = new Object();
 
-    public GMSCallBack(int waitTime, Habitat habitat) {
+    public GMSCallBack(int waitTime, BaseServiceLocator habitat) {
         GMSAdapterService gmsAdapterService = habitat.getComponent(GMSAdapterService.class);
         if (gmsAdapterService != null) {
             GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();

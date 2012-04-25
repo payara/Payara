@@ -63,7 +63,7 @@ import com.sun.jts.CosTransactions.RecoveryManager;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
 /**
@@ -78,7 +78,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     private TransactionService txnService;
 
     @Inject 
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     private JavaEETransactionManager txMgr;
 

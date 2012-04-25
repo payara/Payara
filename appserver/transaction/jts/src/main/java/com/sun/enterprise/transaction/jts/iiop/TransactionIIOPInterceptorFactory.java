@@ -55,7 +55,7 @@ import com.sun.logging.LogDomains;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.pfl.basic.func.NullaryFunction ;
 
@@ -90,7 +90,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     private static boolean txServiceInitialized = false;
     private InterceptorImpl interceptor = null;
 
-    @Inject private Habitat habitat;
+    @Inject private BaseServiceLocator habitat;
     @Inject private ProcessEnvironment processEnv;
 
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {

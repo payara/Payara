@@ -79,7 +79,7 @@ import org.glassfish.deployment.common.Artifacts.FullAndPartURIs;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
@@ -113,7 +113,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
     private Set<FullAndPartURIs> earLevelDownloads = null;
     private final static String EAR_LEVEL_DOWNLOADS_KEY = "earLevelDownloads";
 
-    private final Habitat habitat;
+    private final BaseServiceLocator habitat;
 
     private final AppClientGroupFacadeGenerator groupFacadeGenerator;
 
@@ -128,7 +128,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleClassLoader,
             final Application application,
-            final Habitat habitat,
+            final BaseServiceLocator habitat,
             final ASJarSigner jarSigner) throws IOException {
         super(dc, bundleDesc, archivist, gfClientModuleClassLoader, application, habitat);
         this.habitat = habitat;

@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -52,11 +52,11 @@ import org.jvnet.hk2.component.Habitat;
  */
 public class JWSFacadeLaunchable extends FacadeLaunchable {
 
-    public JWSFacadeLaunchable(Habitat habitat, ReadableArchive facadeClientRA, Attributes mainAttrs, ReadableArchive clientRA, String mainClassNameToLaunch) throws IOException {
+    public JWSFacadeLaunchable(BaseServiceLocator habitat, ReadableArchive facadeClientRA, Attributes mainAttrs, ReadableArchive clientRA, String mainClassNameToLaunch) throws IOException {
         super(habitat, facadeClientRA, mainAttrs, clientRA, mainClassNameToLaunch, null);
     }
 
-    public JWSFacadeLaunchable(Habitat habitat, Attributes mainAttrs, ReadableArchive facadeRA) throws IOException, URISyntaxException {
+    public JWSFacadeLaunchable(BaseServiceLocator habitat, Attributes mainAttrs, ReadableArchive facadeRA) throws IOException, URISyntaxException {
         super(habitat, mainAttrs, facadeRA, null);
     }
 

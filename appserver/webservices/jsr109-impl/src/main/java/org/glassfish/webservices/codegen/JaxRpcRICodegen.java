@@ -73,7 +73,7 @@ import com.sun.enterprise.deployment.util.WebServerInfo;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.common.ClientArtifactsManager;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.loader.ASURLClassLoader;
 
 // TODO : Neds quivalent
@@ -107,7 +107,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
         implements JaxRpcCodegenAdapter, ApplicationVisitor, EjbBundleVisitor, WebBundleVisitor, AppClientVisitor  
 {
     protected DeploymentContext context = null;
-    protected Habitat habitat = null;
+    protected BaseServiceLocator habitat = null;
     protected String moduleClassPath = null;
 
     // list of generated files
@@ -140,7 +140,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
     }
 
     @Override
-    public void run(Habitat habitat, DeploymentContext context, String cp) throws Exception {
+    public void run(BaseServiceLocator habitat, DeploymentContext context, String cp) throws Exception {
         rootLocation_ = new FileArchive();
         BundleDescriptor bundle = DOLUtils.getCurrentBundleForContext(context);
         if (bundle.hasWebServiceClients() && (bundle instanceof ApplicationClientDescriptor)) {

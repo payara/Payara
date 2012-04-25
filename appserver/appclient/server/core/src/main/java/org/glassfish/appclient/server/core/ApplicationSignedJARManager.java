@@ -63,7 +63,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.ASJarSigner;
 import org.glassfish.appclient.server.core.jws.servedcontent.AutoSignedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Records information about JARs from an EAR that are used by an
@@ -120,7 +120,7 @@ public class ApplicationSignedJARManager {
     public ApplicationSignedJARManager(
             final String autoSigningAlias, 
             final ASJarSigner jarSigner,
-            final Habitat habitat,
+            final BaseServiceLocator habitat,
             final DeploymentContext dc,
             final AppClientDeployerHelper helper,
             final URI EARDirectoryServerURI,

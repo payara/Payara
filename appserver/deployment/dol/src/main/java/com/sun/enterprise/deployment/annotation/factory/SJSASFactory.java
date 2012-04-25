@@ -48,6 +48,7 @@ import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PostConstruct;
@@ -68,7 +69,7 @@ import java.util.Set;
 public class SJSASFactory extends Factory implements ContractProvider, PostConstruct {
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     private Set<String> annotationClassNames = new HashSet<String>();
 
@@ -90,7 +91,7 @@ public class SJSASFactory extends Factory implements ContractProvider, PostConst
         if (systemProcessor == null) {
             // initialize our system annotation processor...            
             systemProcessor = new AnnotationProcessorImpl();
-            for (final Inhabitant i : habitat.getInhabitants(AnnotationHandlerFor.class)) {
+            for (final Inhabitant i : ((Habitat) habitat).getInhabitants(AnnotationHandlerFor.class)) {
                 String annotationTypeName = (String) i.metadata().get(AnnotationHandlerFor.class.getName()).get(0);
                 systemProcessor.pushAnnotationHandler(annotationTypeName, new AnnotationHandler() {
                     @Override

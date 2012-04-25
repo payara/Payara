@@ -84,7 +84,7 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
@@ -106,7 +106,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     private final AtomicBoolean wstxServicesDeploying = new AtomicBoolean(false);
     //
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
     @Inject
     private ServerContext serverContext;
     @Inject

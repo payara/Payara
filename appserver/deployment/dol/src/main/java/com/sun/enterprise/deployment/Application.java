@@ -52,7 +52,7 @@ import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.*;
 import org.glassfish.security.common.Role;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
@@ -204,7 +204,7 @@ public class Application extends BundleDescriptor
     private Set<ApplicationParameter> applicationParams = 
             new HashSet<ApplicationParameter>();
 
-    private static final Habitat habitat = Globals.getDefaultHabitat();
+    private static final BaseServiceLocator habitat = Globals.getDefaultHabitat();
     
     private Application() {
         super("", localStrings.getLocalString(

@@ -95,7 +95,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.servlet.http.HttpServletResponse;
 
 import org.glassfish.web.util.HtmlEntityEncoder;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.*;
 import org.w3c.dom.Node;
 

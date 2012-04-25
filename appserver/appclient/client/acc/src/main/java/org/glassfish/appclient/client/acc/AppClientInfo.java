@@ -67,7 +67,7 @@ import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.appclient.common.Util;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.xml.sax.SAXParseException;
 
 import javax.persistence.EntityManagerFactory;
@@ -287,7 +287,7 @@ public abstract class AppClientInfo {
         }
 
         //TODO: This method does not appear to be used -- can it be deleted?
-        public Application getApplication(Habitat habitat) {
+        public Application getApplication(BaseServiceLocator habitat) {
         	
             Application application = appClient.getApplication();
             if (application == null) {

@@ -54,7 +54,7 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.Node;
 import org.glassfish.internal.api.Globals;
 
@@ -98,7 +98,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     // The XML tag associated with this Node
     public final static XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
 
-    private final static Habitat habitat = Globals.getDefaultHabitat();
+    private final static BaseServiceLocator habitat = Globals.getDefaultHabitat();
 
     
     private final static List<String> initSystemIDs() {

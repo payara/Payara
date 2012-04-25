@@ -67,7 +67,7 @@ import javax.inject.Inject;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 /**
  * List Connector Resources command
  *
@@ -105,7 +105,7 @@ public class ListJMSResources implements AdminCommand {
     Domain domain;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     /**
         * Executes the command with the command parameters passed as Properties

@@ -49,7 +49,7 @@ import com.sun.logging.LogDomains;
 
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.NamingException;
 
@@ -72,7 +72,7 @@ public class TransactionNamingProxy
         implements NamedNamingObjectProxy {
 
     @Inject
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
 
     @Inject
     private ExecutorService es;

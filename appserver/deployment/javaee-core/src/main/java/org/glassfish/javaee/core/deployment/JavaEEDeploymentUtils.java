@@ -42,7 +42,7 @@ package org.glassfish.javaee.core.deployment;
 
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Deloyment utility class for JavaEE related things
@@ -57,7 +57,7 @@ public class JavaEEDeploymentUtils {
      * @param habitat
      * @return whether the archive is a JavaEE archive
      */
-    public static boolean isJavaEE(ReadableArchive archive, Habitat habitat) {
+    public static boolean isJavaEE(ReadableArchive archive, BaseServiceLocator habitat) {
         if (DeploymentUtils.isEAR(archive) || 
             DeploymentUtils.isWebArchive(archive) || 
             DeploymentUtils.isCAR(archive) ||

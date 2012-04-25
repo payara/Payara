@@ -50,7 +50,7 @@ import com.sun.xml.ws.transport.http.servlet.ServletModule;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.xml.ws.api.server.ServerPipelineHook;
 
 public class JAXWSContainer extends Container {
@@ -88,7 +88,7 @@ public class JAXWSContainer extends Container {
         }
         
         if (ServerPipelineHook.class.isAssignableFrom(spiType)){
-            Habitat h = Globals.getDefaultHabitat();
+            BaseServiceLocator h = Globals.getDefaultHabitat();
             ServerPipeCreator s = h.getByContract(ServerPipeCreator.class);
             s.init(endpoint);
             return((T)s);

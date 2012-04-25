@@ -45,6 +45,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.Singleton;
@@ -65,7 +66,7 @@ public class ArchivistFactory implements ContractProvider {
     ExtensionsArchivist[] extensionsArchivists;
 
     @Inject
-    Habitat habitat;
+    BaseServiceLocator habitat;
 
     public Archivist getArchivist(String archiveType, ClassLoader cl) {
         Archivist result = getArchivist(archiveType);
@@ -77,7 +78,7 @@ public class ArchivistFactory implements ContractProvider {
 
     public Archivist getArchivist(String archiveType) {
         Archivist result = null;
-        for (Inhabitant<?> inhabitant : habitat.getInhabitants(ArchivistFor.class)) {
+        for (Inhabitant<?> inhabitant : ((Habitat) habitat).getInhabitants(ArchivistFor.class)) {
             String indexedType = inhabitant.metadata().get(ArchivistFor.class.getName()).get(0);
             if(indexedType.equals(archiveType)) {
                 result = (Archivist) inhabitant.get();

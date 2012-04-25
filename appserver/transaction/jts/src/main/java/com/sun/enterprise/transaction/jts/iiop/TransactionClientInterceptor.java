@@ -47,7 +47,7 @@ import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class TransactionClientInterceptor extends LocalObject
         implements ClientRequestInterceptor, Comparable {
@@ -62,7 +62,7 @@ public class TransactionClientInterceptor extends LocalObject
      * @param the name of the interceptor.
      * @param the order in which the interceptor should be invoked.
      */
-    public TransactionClientInterceptor(String name, int order, Habitat habitat) {
+    public TransactionClientInterceptor(String name, int order, BaseServiceLocator habitat) {
 	this.name = name;
 	this.order = order;
         tm = habitat.getComponent(JavaEETransactionManager.class);

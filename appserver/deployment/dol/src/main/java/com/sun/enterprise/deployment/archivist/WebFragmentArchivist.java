@@ -47,7 +47,7 @@ import com.sun.enterprise.deployment.io.WebFragmentDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -70,7 +70,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      */
     DeploymentDescriptorFile standardDD = new WebFragmentDeploymentDescriptorFile();
 
-    WebFragmentArchivist (Habitat habitat) {
+    WebFragmentArchivist (BaseServiceLocator habitat) {
         this.habitat = habitat;
     }
 

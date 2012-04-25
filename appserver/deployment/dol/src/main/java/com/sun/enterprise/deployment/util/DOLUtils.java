@@ -64,7 +64,7 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.ContractLocator;
@@ -150,7 +150,7 @@ public class DOLUtils {
        }
    }
 
-    public static boolean isRAConnectionFactory(Habitat habitat, 
+    public static boolean isRAConnectionFactory(BaseServiceLocator habitat, 
         String type, Application thisApp) {
         // first check if this is a connection factory defined in a resource
         // adapter in this application

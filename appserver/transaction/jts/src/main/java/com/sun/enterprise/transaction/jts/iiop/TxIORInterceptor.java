@@ -60,7 +60,7 @@ import org.omg.PortableInterceptor.IORInterceptor;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class TxIORInterceptor extends LocalObject implements IORInterceptor {
     
@@ -70,9 +70,9 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
 
     private Codec codec;
     
-    private Habitat habitat;
+    private BaseServiceLocator habitat;
    
-    public TxIORInterceptor(Codec c, Habitat h) {
+    public TxIORInterceptor(Codec c, BaseServiceLocator h) {
         codec = c;
         habitat = h;
     }

@@ -75,7 +75,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),
@@ -102,7 +102,7 @@ public abstract class AppClientDeployerHelper {
 
     private final Application application;
 
-    private final Habitat habitat;
+    private final BaseServiceLocator habitat;
 
     private static final Logger logger = LogDomains.getLogger(AppClientDeployerHelper.class, LogDomains.ACC_LOGGER);
 
@@ -116,7 +116,7 @@ public abstract class AppClientDeployerHelper {
             final DeploymentContext dc,
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleLoader,
-            final Habitat habitat,
+            final BaseServiceLocator habitat,
             final ASJarSigner jarSigner) throws IOException {
         ApplicationClientDescriptor bundleDesc = dc.getModuleMetaData(ApplicationClientDescriptor.class);
         Application application = bundleDesc.getApplication();
@@ -145,7 +145,7 @@ public abstract class AppClientDeployerHelper {
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleClassLoader,
             final Application application,
-            final Habitat habitat) throws IOException {
+            final BaseServiceLocator habitat) throws IOException {
         super();
         this.dc = dc;
         this.appClientDesc = bundleDesc;

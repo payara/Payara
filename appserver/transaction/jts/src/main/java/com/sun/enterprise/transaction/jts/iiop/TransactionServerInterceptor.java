@@ -48,7 +48,7 @@ import com.sun.corba.ee.spi.legacy.interceptor.RequestInfoExt;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
-import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class TransactionServerInterceptor extends LocalObject
         implements ServerRequestInterceptor, Comparable {
@@ -63,7 +63,7 @@ public class TransactionServerInterceptor extends LocalObject
      * Construct the interceptor.
      * @param the order in which the interceptor should run.
      */
-    public TransactionServerInterceptor(int order, Habitat habitat) {
+    public TransactionServerInterceptor(int order, BaseServiceLocator habitat) {
 	this.order = order;
 
         gfORBHelper = habitat.getComponent(GlassFishORBHelper.class);
