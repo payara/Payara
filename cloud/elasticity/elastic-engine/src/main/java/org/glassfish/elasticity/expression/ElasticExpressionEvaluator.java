@@ -49,7 +49,7 @@ import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.metric.TabularMetricAttribute;
 import org.glassfish.elasticity.metric.TabularMetricEntry;
 import org.glassfish.elasticity.util.NotEnoughMetricDataException;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ElasticExpressionEvaluator {
 
-    private Services services;
+    private Habitat services;
 
     private AlertContextImpl ctx;
 
@@ -67,14 +67,14 @@ public class ElasticExpressionEvaluator {
 
     private boolean executeRemote;
 
-    public ElasticExpressionEvaluator(Services services, AlertContextImpl ctx) {
+    public ElasticExpressionEvaluator(Habitat services, AlertContextImpl ctx) {
         this.services = services;
         this.ctx = ctx;
         this.container = ctx.getElasticServiceContainer();
         this.executeRemote = true;
     }
 
-    public ElasticExpressionEvaluator(Services services, ElasticServiceContainer container) {
+    public ElasticExpressionEvaluator(Habitat services, ElasticServiceContainer container) {
         this.services = services;
         this.container = container;
         this.executeRemote = false;

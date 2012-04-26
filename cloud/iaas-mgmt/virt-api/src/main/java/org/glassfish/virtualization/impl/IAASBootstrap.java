@@ -43,8 +43,8 @@ package org.glassfish.virtualization.impl;
 import org.glassfish.api.Startup;
 import org.glassfish.hk2.Factory;
 import org.glassfish.hk2.PostConstruct;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.IAAS;
@@ -72,7 +72,7 @@ public class IAASBootstrap implements Startup, PostConstruct {
     Transactions transactions;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Override
     public Lifecycle getLifecycle() {

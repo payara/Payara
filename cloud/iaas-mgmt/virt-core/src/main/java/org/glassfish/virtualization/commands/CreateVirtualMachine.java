@@ -43,7 +43,6 @@ package org.glassfish.virtualization.commands;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualClusters;
@@ -54,6 +53,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -83,7 +83,7 @@ public class CreateVirtualMachine implements AdminCommand {
     Virtualizations virts;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Override
     public void execute(AdminCommandContext context) {

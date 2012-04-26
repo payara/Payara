@@ -49,7 +49,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.virtualization.spi.VirtualCluster;
@@ -57,6 +56,7 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -84,7 +84,7 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
     private ServerContext serverContext;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Inject
     GMSAdapterService gmsAdapterService;

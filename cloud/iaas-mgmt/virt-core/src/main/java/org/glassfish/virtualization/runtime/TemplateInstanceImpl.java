@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.runtime;
 
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.config.Virtualizations;
@@ -65,7 +65,7 @@ public class TemplateInstanceImpl implements TemplateInstance {
     final TemplateCustomizer customizer;
     final Virtualizations virtualizations;
 
-    public TemplateInstanceImpl(Services services, Template config) {
+    public TemplateInstanceImpl(Habitat services, Template config) {
         this.config = config;
         TemplateCustomizer tmpCustomizer = null;
         for (TemplateIndex indexPersistence : config.getIndexes()) {

@@ -51,10 +51,10 @@ import org.glassfish.elasticity.metric.TabularMetricAttribute;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import javax.inject.Inject;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.logging.Logger;
@@ -72,7 +72,7 @@ public class DescribeMetricAttributesCommand implements AdminCommand{
     AbstractMetricGatherer[] metricGatherers;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Param(name="service")
     String servicename;

@@ -45,8 +45,8 @@ import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import javax.inject.Inject;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.glassfish.flashlight.datatree.TreeNode;
@@ -75,7 +75,7 @@ public class ActiveSessionsMetricHolder
     TreeNode rootNode = null;
     
     @Inject
-    Services services;
+    Habitat services;
 
     @Override
     public void postConstruct() {

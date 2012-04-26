@@ -46,11 +46,11 @@ import org.glassfish.elasticity.engine.util.EngineUtil;
 import org.glassfish.hk2.PostConstruct;
 import javax.inject.Inject;
 
-import org.glassfish.hk2.Services;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeListener;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
@@ -72,7 +72,7 @@ public class ElasticEngineImpl
         implements ElasticEngine, PostConstruct, ServiceChangeListener {
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Inject @Optional
     ElasticServices elasticServices;

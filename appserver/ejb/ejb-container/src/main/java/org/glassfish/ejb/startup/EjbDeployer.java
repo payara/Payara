@@ -78,7 +78,6 @@ import org.glassfish.api.event.Events;
 import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.ejb.spi.CMPService;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -94,6 +93,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 /**
@@ -270,7 +270,7 @@ public class EjbDeployer
         }
 
 
-        EjbApplication ejbApp = new EjbApplication(ejbBundle, dc, dc.getClassLoader(), (Services) habitat,
+        EjbApplication ejbApp = new EjbApplication(ejbBundle, dc, dc.getClassLoader(), (Habitat) habitat,
                                                    ejbSecManagerFactory);
 
         try {
@@ -436,7 +436,7 @@ public class EjbDeployer
         boolean generateRmicStubs = dcp.generatermistubs;
         dc.addTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, getModuleClassPath(dc));
         if( generateRmicStubs ) {
-            StaticRmiStubGenerator staticStubGenerator = new StaticRmiStubGenerator((Services) habitat);
+            StaticRmiStubGenerator staticStubGenerator = new StaticRmiStubGenerator((Habitat) habitat);
             try {
                 staticStubGenerator.ejbc(dc);
             } catch(Exception e) {

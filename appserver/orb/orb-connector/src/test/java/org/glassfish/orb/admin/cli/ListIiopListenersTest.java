@@ -53,7 +53,6 @@ import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -63,7 +62,7 @@ import java.util.List;
 
 public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTest {
 
-    private Services services;
+    private Habitat services;
     private int origNum;
     private ParameterMap parameters;
     private CommandRunner cr;

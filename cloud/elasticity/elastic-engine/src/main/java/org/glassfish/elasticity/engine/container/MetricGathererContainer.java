@@ -45,9 +45,9 @@ import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import javax.inject.Inject;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -63,7 +63,7 @@ public class MetricGathererContainer
     private static final int MAX_DATA_HOLD_TIME_IN_SECONDS = 2 * 60 * 60 * 1000;
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private EngineUtil engineUtil;

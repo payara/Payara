@@ -53,7 +53,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
@@ -76,7 +75,7 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 public class CreateElasticServiceCommand implements AdminCommand  {
  
 	@Inject
-	Services services;
+	Habitat services;
 	
   @Inject
   Domain domain;

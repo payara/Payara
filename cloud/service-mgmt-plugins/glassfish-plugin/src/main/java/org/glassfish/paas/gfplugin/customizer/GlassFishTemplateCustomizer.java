@@ -47,7 +47,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.gms.bootstrap.HealthHistory;
-import org.glassfish.hk2.Services;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.virtualization.spi.Machine;
 import org.glassfish.virtualization.spi.TemplateCustomizer;
@@ -57,6 +56,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * Customization of the GlassFish template for all virtualizations except Native.
@@ -72,7 +72,7 @@ public class GlassFishTemplateCustomizer implements TemplateCustomizer,
     Domain domain;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Inject
     RuntimeContext rtContext;

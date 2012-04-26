@@ -40,7 +40,6 @@
 package org.glassfish.virtualization.libvirt;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
-import org.glassfish.hk2.Services;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
@@ -53,6 +52,7 @@ import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import org.w3c.dom.Document;
@@ -96,7 +96,7 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
     Virtualizations virtualizations;
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Inject
     VirtualMachineLifecycle vmLifecycle;

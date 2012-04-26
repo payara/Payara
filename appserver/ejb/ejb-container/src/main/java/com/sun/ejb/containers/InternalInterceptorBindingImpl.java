@@ -48,14 +48,14 @@ import java.util.Collection;
 
 import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 
 public class InternalInterceptorBindingImpl  {
 
-    private Services services;
+    private Habitat services;
 
-    public InternalInterceptorBindingImpl(Services services) {
+    public InternalInterceptorBindingImpl(Habitat services) {
         this.services = services;
     }
 

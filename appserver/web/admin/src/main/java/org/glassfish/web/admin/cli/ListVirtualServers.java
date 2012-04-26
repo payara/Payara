@@ -60,7 +60,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -87,7 +87,7 @@ public class ListVirtualServers implements AdminCommand {
     @Inject
     Domain domain;
     @Inject
-    Services services;
+    Habitat services;
 
     /**
      * Executes the command with the command parameters passed as Properties where the keys are the paramter names and

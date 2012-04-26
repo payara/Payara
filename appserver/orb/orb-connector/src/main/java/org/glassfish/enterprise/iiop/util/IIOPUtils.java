@@ -50,7 +50,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import org.glassfish.hk2.Provider;
 import org.glassfish.hk2.Providers;
-import org.glassfish.hk2.Services;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.ServerRef;
@@ -65,6 +64,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.omg.CORBA.ORB;
 

@@ -46,7 +46,7 @@ import java.security.PrivilegedExceptionAction;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jboss.weld.serialization.spi.ProxyServices;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * An implementation of the <code>ProxyServices</code> Service.
@@ -74,7 +74,7 @@ public class ProxyServicesImpl implements ProxyServices {
     
     ClassLoaderHierarchy clh;
     
-    public ProxyServicesImpl(Services services) {
+    public ProxyServicesImpl(Habitat services) {
         clh = services.forContract(ClassLoaderHierarchy.class).get();
     }
 

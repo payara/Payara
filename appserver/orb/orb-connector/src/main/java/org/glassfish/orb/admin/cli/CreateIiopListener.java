@@ -71,7 +71,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * Create IioP Listener Command
@@ -118,7 +118,7 @@ public class CreateIiopListener implements AdminCommand {
     Servers servers;
 
     @Inject
-    Services services ;
+    Habitat services ;
 
     /**
      * Executes the command with the command parameters passed as Properties

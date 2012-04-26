@@ -81,12 +81,12 @@ import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.util.SimpleMetadata;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Named;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -114,7 +114,7 @@ public class StatefulContainerBuilder
     private SFSBContainerInitialization containerInitialization;
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private CacheProperties cacheProps;

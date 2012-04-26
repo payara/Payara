@@ -39,8 +39,8 @@
  */
 package org.glassfish.elasticity.api;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 
@@ -61,7 +61,7 @@ public abstract class AbstractAlert<C extends AlertConfig>
 	public enum AlertState {OK, ALARM, NO_DATA};
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     private C config;
 

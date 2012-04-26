@@ -79,7 +79,6 @@ import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.omg.CORBA.ORBPackage.InvalidName;
 

@@ -54,8 +54,8 @@ import org.glassfish.internal.api.ServerContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
@@ -189,7 +189,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             configFile = new File(location, Constants.WEB_CONTEXT_XML);
         }
         
-        WebModule context = new WebModule((Services) services);
+        WebModule context = new WebModule((Habitat) services);
         context.setID(id);
         context.setWebContainer(webContainer);
         context.setDebug(debug);
@@ -216,7 +216,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
             config = new WebModuleContextConfig();  
             ((WebModuleContextConfig)config).setDescriptor(
                 wmInfo.getDescriptor());
-            ((WebModuleContextConfig)config).setServices((Services) services);
+            ((WebModuleContextConfig)config).setServices((Habitat) services);
         } else {
             config = new ContextConfig();
         }

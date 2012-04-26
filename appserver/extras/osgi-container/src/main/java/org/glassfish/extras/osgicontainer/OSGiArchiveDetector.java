@@ -45,9 +45,9 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
 import javax.inject.Inject;
@@ -72,7 +72,7 @@ public class OSGiArchiveDetector implements ArchiveDetector {
     public static final String OSGI_ARCHIVE_TYPE = OSGiArchiveType.ARCHIVE_TYPE; // this is what is accepted in deploy --type command
 
     @Inject
-    private Services services;
+    private Habitat services;
     @Inject
     private OSGiSniffer sniffer;
     @Inject

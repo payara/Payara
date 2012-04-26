@@ -58,7 +58,7 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.naming.NamingException;
@@ -98,7 +98,7 @@ public class WebModuleContextConfig extends ContextConfig {
     public final static int MESSAGE_DESTINATION_REFS = 12;
     public final static int MIME_MAPPINGS = 13;
     
-    protected Services services;
+    protected Habitat services;
     
     /**
      * The <code>File</code> reffering to the default-web.xml 
@@ -149,7 +149,7 @@ public class WebModuleContextConfig extends ContextConfig {
     /**
      * Set the DOL object associated with this class.
      */
-    public void setServices(Services services){
+    public void setServices(Habitat services){
         synchronized (this) {
             this.services = services;
         }

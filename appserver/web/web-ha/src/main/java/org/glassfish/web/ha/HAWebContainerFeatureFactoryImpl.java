@@ -44,7 +44,7 @@ import com.sun.enterprise.web.PEWebContainerFeatureFactoryImpl;
 import com.sun.enterprise.web.PESSOFactory;
 import com.sun.enterprise.web.ServerConfigLookup;
 import com.sun.enterprise.web.SSOFactory;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.web.ha.authenticator.HASSOFactory;
 
 import javax.inject.Inject;
@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="ha")
 public class HAWebContainerFeatureFactoryImpl extends PEWebContainerFeatureFactoryImpl {
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private ServerConfigLookup serverConfigLookup;

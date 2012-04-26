@@ -70,7 +70,6 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.ejb.spi.container.DistributedEJBTimerService;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
@@ -82,6 +81,7 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.component.Habitat;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -131,7 +131,7 @@ public class EjbContainerUtilImpl
     private ThreadPoolExecutor defaultThreadPoolExecutor;
     
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private ServerContext serverContext;
@@ -265,7 +265,7 @@ public class EjbContainerUtilImpl
         return orbHelper;
     }
 
-    public Services getServices() {
+    public Habitat getServices() {
         return services;
     }
 

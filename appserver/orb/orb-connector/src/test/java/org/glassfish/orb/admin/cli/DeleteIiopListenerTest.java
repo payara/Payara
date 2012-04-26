@@ -53,7 +53,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.DomDocument;
@@ -66,7 +65,7 @@ import java.util.List;
 
 public class DeleteIiopListenerTest extends org.glassfish.tests.utils.ConfigApiTest {
 
-    private Services services;
+    private Habitat services;
     private IiopService iiopService;
     private ParameterMap parameters;
     private CommandRunner cr;

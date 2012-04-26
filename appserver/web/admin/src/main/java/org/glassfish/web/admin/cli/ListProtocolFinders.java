@@ -59,7 +59,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -89,7 +89,7 @@ public class ListProtocolFinders implements AdminCommand {
     @Inject
     Domain domain;
     @Inject
-    Services services;
+    Habitat services;
 
     public void execute(AdminCommandContext context) {
         Target targetUtil = services.byType(Target.class).get();

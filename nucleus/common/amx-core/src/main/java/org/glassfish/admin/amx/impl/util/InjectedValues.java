@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.amx.impl.util;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.internal.api.Globals;
 

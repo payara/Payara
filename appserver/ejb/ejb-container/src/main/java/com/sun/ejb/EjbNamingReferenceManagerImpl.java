@@ -48,7 +48,6 @@ import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 

@@ -84,7 +84,7 @@ import org.jboss.weld.transaction.spi.TransactionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
@@ -117,7 +117,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private Events events;
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private ApplicationRegistry applicationRegistry;

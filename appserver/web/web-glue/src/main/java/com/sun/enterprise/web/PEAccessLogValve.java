@@ -52,7 +52,6 @@ import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.File;

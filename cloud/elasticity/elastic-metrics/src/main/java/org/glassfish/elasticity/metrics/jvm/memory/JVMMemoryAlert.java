@@ -44,10 +44,10 @@ import org.glassfish.elasticity.api.AlertContext;
 import org.glassfish.elasticity.metric.TabularMetricEntry;
 import org.glassfish.elasticity.util.Average;
 import org.glassfish.elasticity.util.NotEnoughMetricDataException;
-import org.glassfish.hk2.Services;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import java.util.Iterator;
@@ -64,7 +64,7 @@ public class JVMMemoryAlert
     private static final Logger _logger = Logger.getLogger("elastic-logger");
 
     @Inject
-    Services services;
+    Habitat services;
 
     @Inject
     JVMMemoryMetricHolder metric;

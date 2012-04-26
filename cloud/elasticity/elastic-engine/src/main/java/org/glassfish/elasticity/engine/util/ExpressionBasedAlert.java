@@ -45,7 +45,7 @@ import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.engine.container.AlertContextImpl;
 import org.glassfish.elasticity.expression.*;
 import org.glassfish.elasticity.util.NotEnoughMetricDataException;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,9 +63,9 @@ public class ExpressionBasedAlert<C extends AlertConfig>
 
     private C config;
 
-    private Services services;
+    private Habitat services;
 
-    public void initialize(Services services, C config) {
+    public void initialize(Habitat services, C config) {
         this.services = services;
         this.config = config;
     }

@@ -58,10 +58,10 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
-import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -77,7 +77,7 @@ public class HASSOFactory implements SSOFactory {
     private static BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
 
     @Inject
-    private Services services;
+    private Habitat services;
    
     @Inject
     private JavaEEIOUtils ioUtils;
@@ -96,7 +96,7 @@ public class HASSOFactory implements SSOFactory {
     
     protected static synchronized BackingStore<String, HASingleSignOnEntryMetadata>
             getSsoEntryMetadataBackingStore(
-            String persistenceType, String storeName, Services services) {
+            String persistenceType, String storeName, Habitat services) {
 
         if (ssoEntryMetadataBackingStore == null) {
             BackingStoreFactory factory = services.forContract(BackingStoreFactory.class).named(persistenceType).get();

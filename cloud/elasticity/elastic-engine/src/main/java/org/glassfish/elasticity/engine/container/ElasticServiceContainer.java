@@ -57,10 +57,10 @@ import org.glassfish.gms.bootstrap.GMSAdapterService;
 import javax.inject.Inject;
 
 import org.glassfish.hk2.Provider;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.util.Collection;
@@ -84,7 +84,7 @@ public class ElasticServiceContainer
     implements ElasticService {
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private ElasticEngineThreadPool threadPool;
@@ -184,7 +184,7 @@ public class ElasticServiceContainer
         return maxSize.get();
     }
 
-    public Services getServices() {
+    public Habitat getServices() {
         return services;
     }
 

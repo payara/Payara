@@ -47,10 +47,10 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.hk2.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;
 
 import java.io.IOException;
@@ -71,7 +71,7 @@ public class EarDetector implements ArchiveDetector {
     public static final int DEFAULT_EAR_DETECTOR_RANK = 100;
     public static final String ARCHIVE_TYPE = EarType.ARCHIVE_TYPE;
 
-    @Inject private Services services;
+    @Inject private Habitat services;
     @Inject private EarSniffer sniffer;
     @Inject private EarType archiveType;
     private ArchiveHandler archiveHandler;

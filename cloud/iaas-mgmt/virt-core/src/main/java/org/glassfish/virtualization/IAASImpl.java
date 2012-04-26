@@ -42,7 +42,6 @@ package org.glassfish.virtualization;
 
 
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.runtime.DefaultAllocationStrategy;
@@ -53,6 +52,7 @@ import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyChangeEvent;
@@ -69,7 +69,7 @@ import java.util.logging.Level;
 @Service
 public class IAASImpl implements IAAS, ConfigListener {
 
-    private final Services services;
+    private final Habitat services;
     private final Map<String, Virtualization> virtConfigs = new ConcurrentHashMap<String, Virtualization>();
     private final Map<String, ServerPool> groups = new ConcurrentHashMap<String, ServerPool>();
     private final Map<String, VirtualCluster> virtualClusterMap = new ConcurrentHashMap<String, VirtualCluster>();
@@ -87,7 +87,7 @@ public class IAASImpl implements IAAS, ConfigListener {
     public IAASImpl(@Inject(optional = true) Virtualizations virtualizations,
                     @Inject Transactions transactions,
                     @Inject ServerEnvironment env,
-                    @Inject final Services services) {
+                    @Inject final Habitat services) {
 
         this.services = services;
         // first executeAndWait the fping command to populate our arp table.

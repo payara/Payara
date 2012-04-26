@@ -53,7 +53,7 @@ import com.sun.logging.LogDomains;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.security.application.EJBSecurityManager;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -68,7 +68,7 @@ import org.glassfish.ejb.config.EjbContainer;
 public final class ContainerFactoryImpl implements ContainerFactory {
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;

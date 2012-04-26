@@ -79,7 +79,6 @@ import java.util.logging.Logger;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 

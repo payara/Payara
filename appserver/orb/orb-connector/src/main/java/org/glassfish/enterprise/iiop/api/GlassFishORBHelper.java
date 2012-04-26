@@ -44,7 +44,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 
@@ -78,7 +78,7 @@ import java.util.logging.Logger;
 public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
     @Inject
-    private Services services;
+    private Habitat services;
 
     @Inject
     private ProcessEnvironment processEnv;

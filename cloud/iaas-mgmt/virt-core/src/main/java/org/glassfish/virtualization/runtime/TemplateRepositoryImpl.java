@@ -42,7 +42,6 @@ package org.glassfish.virtualization.runtime;
 
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
-import org.glassfish.hk2.Services;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.Virtualization;
@@ -51,6 +50,7 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,9 +68,9 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     final File location;
     final Logger logger = LogDomains.getLogger(TemplateRepositoryImpl.class, LogDomains.VIRTUALIZATION_LOGGER);
     final List<TemplateInstance> templates = new ArrayList<TemplateInstance>();
-    final Services services;
+    final Habitat services;
 
-    public TemplateRepositoryImpl(@Inject Services services, @Inject Virtualizations virts) {
+    public TemplateRepositoryImpl(@Inject Habitat services, @Inject Virtualizations virts) {
         location = new File(virts.getTemplatesLocation());
         this.services = services;
         for (Virtualization virt : virts.getVirtualizations()) {

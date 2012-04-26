@@ -75,7 +75,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 
 @Service(name="delete-iiop-listener")
@@ -97,7 +97,7 @@ public class DeleteIiopListener implements AdminCommand {
     String target ;
 
     @Inject
-    Services services ;
+    Habitat services ;
 
     /**
      * Executes the command with the command parameters passed as Properties

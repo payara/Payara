@@ -65,7 +65,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 
 /**
@@ -98,7 +98,7 @@ public class ListIiopListeners implements AdminCommand {
     String target ;
 
     @Inject
-    Services services ;
+    Habitat services ;
 
 
     /**

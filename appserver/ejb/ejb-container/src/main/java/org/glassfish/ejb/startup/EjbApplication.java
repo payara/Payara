@@ -58,11 +58,11 @@ import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.data.ApplicationInfo;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 
 import com.sun.enterprise.security.PolicyLoader;
@@ -94,7 +94,7 @@ public class EjbApplication
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
-    private Services services;
+    private Habitat services;
 
     private EJBSecurityManagerFactory ejbSMF;
      
@@ -118,7 +118,7 @@ public class EjbApplication
 
     public EjbApplication(
             EjbBundleDescriptor bundle, DeploymentContext dc,
-            ClassLoader cl, Services services,
+            ClassLoader cl, Habitat services,
             EJBSecurityManagerFactory ejbSecMgrFactory) {
         this.ejbBundle = bundle;
         this.ejbs = bundle.getEjbs();

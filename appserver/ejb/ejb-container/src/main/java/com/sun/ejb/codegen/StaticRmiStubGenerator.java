@@ -59,7 +59,7 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.util.OS;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class is used to generate the RMI-IIOP version of a 
@@ -82,7 +82,7 @@ public class StaticRmiStubGenerator {
     /**
      * This class is only instantiated internally.
      */
-    public StaticRmiStubGenerator(Services services) {
+    public StaticRmiStubGenerator(Habitat services) {
         // Find java path and tools.jar
 
         //Try this jre's parent

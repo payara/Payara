@@ -66,7 +66,7 @@ import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
@@ -97,7 +97,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
     private AnnotationTypesProvider provider = null;
             
     public AbstractEjbHandler() {
-        Services h = Globals.getDefaultHabitat();
+        Habitat h = Globals.getDefaultHabitat();
         if( h != null ) {
             provider = h.forContract(AnnotationTypesProvider.class).named("EJB").get();
         }

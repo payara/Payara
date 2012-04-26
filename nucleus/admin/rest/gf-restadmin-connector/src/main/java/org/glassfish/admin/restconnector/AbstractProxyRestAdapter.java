@@ -45,7 +45,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -77,7 +77,7 @@ public abstract class AbstractProxyRestAdapter implements Adapter {
      * This is not a component itself, so it can not use injection facility.
      * All injection capable fields are implemented as abstract getters.
      */
-    protected abstract Services getServices();
+    protected abstract Habitat getServices();
 
     protected abstract Config getConfig();
 

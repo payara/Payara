@@ -59,7 +59,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -114,7 +114,7 @@ public class CreateHttp implements AdminCommand {
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    Services services;
+    Habitat services;
     @Inject
     Domain domain;
 
