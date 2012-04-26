@@ -138,6 +138,7 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
     
     private class DocumentLock implements Lock {
         private FileOutputStream fs;
+        private FileChannel fc;
         private FileLock fileLock;
         private AtomicInteger locksByThisProcess = new AtomicInteger(0);
 
@@ -188,11 +189,12 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
                             } finally {
                                 try {
                                     fileLock.release();
+                                    fc.close();
+                                    fs.close();
                                 } catch (IOException e) {
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
                                 } finally {
-                                    fs = null;
                                     fileLock = null;
                                 }
                             }
@@ -211,8 +213,8 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
                             // acquire exclusive lock on config file. 
                             File f = new File(TenantDocument.this.resource.toURI());
                             fs = new FileOutputStream(f); // save for unlock
-                            FileChannel c = fs.getChannel();
-                            fileLock = c.lock();
+                            fc = fs.getChannel();
+                            fileLock = fc.lock();
                             return true;
                         } catch (URISyntaxException e) {
                             // TODO Auto-generated catch block

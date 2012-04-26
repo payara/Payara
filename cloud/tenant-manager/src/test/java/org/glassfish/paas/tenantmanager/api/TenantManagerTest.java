@@ -40,17 +40,12 @@
 package org.glassfish.paas.tenantmanager.api;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
