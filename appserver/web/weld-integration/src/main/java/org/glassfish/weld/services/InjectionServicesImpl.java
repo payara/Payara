@@ -41,10 +41,10 @@
 package org.glassfish.weld.services;
 
 import org.glassfish.ejb.api.EjbContainerServices;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -74,7 +74,7 @@ public class InjectionServicesImpl implements InjectionServices {
         try {
 
 
-            Services h = Globals.getDefaultServices();
+            Habitat h = Globals.getDefaultHabitat();
             ComponentEnvManager compEnvManager = (ComponentEnvManager) h.forContract(ComponentEnvManager.class).get();
 
             EjbContainerServices containerServices = h.forContract(EjbContainerServices.class).get();

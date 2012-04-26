@@ -54,6 +54,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 /**
 Utility class that gets various useful values injected into it for use
@@ -97,8 +98,8 @@ public class InjectedValues {
         return mModulesRegistry;
     }
 
-    public static Services getDefaultServices() {
-        return Globals.getDefaultServices();
+    public static Habitat getDefaultServices() {
+        return Globals.getDefaultHabitat();
     }
 
     public static InjectedValues getInstance() {

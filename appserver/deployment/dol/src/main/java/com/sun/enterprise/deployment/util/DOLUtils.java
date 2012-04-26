@@ -65,7 +65,7 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.glassfish.hk2.Services;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.ContractLocator;
 
@@ -221,7 +221,7 @@ public class DOLUtils {
         if (moduleType == null) {
             return null;
         }
-        final Services services = Globals.getDefaultServices();
+        final Habitat services = Globals.getDefaultHabitat();
         ArchiveType result = null;
         // This method is called without HK2 being setup when dol unit tests are run, so protect against NPE.
         if(services != null) {

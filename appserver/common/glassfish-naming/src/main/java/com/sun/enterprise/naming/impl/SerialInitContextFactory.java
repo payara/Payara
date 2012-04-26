@@ -42,9 +42,9 @@ package com.sun.enterprise.naming.impl;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.api.naming.NamingClusterInfo;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
 
 import javax.naming.Context;
@@ -78,7 +78,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     private static String defaultPort = null ;
 
-    private static Services defaultServices = null ;
+    private static Habitat defaultServices = null ;
 
     static void setDefaultHost(String host) {
         defaultHost = host;
@@ -88,16 +88,16 @@ public class SerialInitContextFactory implements InitialContextFactory {
         defaultPort = port;
     }
 
-    static void setDefaultServices(Services h) {
+    static void setDefaultServices(Habitat h) {
         defaultServices = h;
 
     }
 
-    static Services getDefaultServices() {
+    static Habitat getDefaultServices() {
         return defaultServices;
     }
 
-    private final Services services;
+    private final Habitat services;
 
 
     private boolean propertyIsSet( Hashtable env, String pname ) {
@@ -135,9 +135,9 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     public SerialInitContextFactory() {
         // Issue 14396
-        Services temp = defaultServices;
+        Habitat temp = defaultServices;
         if (temp == null) {
-            temp = Globals.getDefaultServices() ;
+            temp = Globals.getDefaultHabitat() ;
         }
         if (temp == null) {
             // May need to initialize hk2 component model in standalone client

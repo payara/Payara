@@ -124,7 +124,7 @@ public final class JSPCompiler {
         // so far, this is not segragated per web bundle, all web-bundles will get the
         // same sysClassPath
         String sysClassPath = ASClassLoaderUtil.getModuleClassPath(
-            (Habitat) serverContext.getDefaultServices(), appName, null);
+            serverContext.getDefaultServices(), appName, null);
         jspc.setSystemClassPath(sysClassPath);
         // END SJSAS 6311155
 

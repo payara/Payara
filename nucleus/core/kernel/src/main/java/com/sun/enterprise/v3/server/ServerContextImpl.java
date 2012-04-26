@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.v3.server;
 
-import org.glassfish.hk2.Services;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
@@ -51,6 +50,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.Singleton;
 
@@ -74,7 +74,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     StartupContext startupContext;
 
     @Inject
-    Services services;
+    Habitat services;
 
     File instanceRoot;
     String[] args;
@@ -145,7 +145,7 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
      * Returns the default services for this instance
      * @return default services
      */
-    public Services getDefaultServices() {
+    public Habitat getDefaultServices() {
         return services;
         
     }

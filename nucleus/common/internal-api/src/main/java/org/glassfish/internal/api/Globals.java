@@ -42,7 +42,6 @@ package org.glassfish.internal.api;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
@@ -67,10 +66,6 @@ public class Globals implements Init {
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
     @Inject
     ConfigBeansUtilities utilities;
-
-    public static Services getDefaultServices() {
-        return defaultHabitat;
-    }
 
     public static BaseServiceLocator getDefaultBaseServiceLocator() {
     	return getDefaultHabitat();

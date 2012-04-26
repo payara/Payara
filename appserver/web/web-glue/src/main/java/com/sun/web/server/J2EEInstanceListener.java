@@ -55,7 +55,6 @@ import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
@@ -127,7 +126,7 @@ public final class J2EEInstanceListener implements InstanceListener {
             msg = MessageFormat.format(msg, wm.getName());
             throw new IllegalStateException(msg);
         }
-        Services services = serverContext.getDefaultServices();
+        Habitat services = serverContext.getDefaultServices();
         im = services.forContract(InvocationManager.class).get();
         tm = getJavaEETransactionManager(services);
         injectionMgr = services.forContract(InjectionManager.class).get();
@@ -397,9 +396,9 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
     }
 
-    private JavaEETransactionManager getJavaEETransactionManager(Services services) {
+    private JavaEETransactionManager getJavaEETransactionManager(Habitat services) {
         JavaEETransactionManager tm = null;
-        Inhabitant<TransactionManager> inhabitant = ((Habitat)services).getInhabitantByType(TransactionManager.class);
+        Inhabitant<TransactionManager> inhabitant = services.getInhabitantByType(TransactionManager.class);
         if (inhabitant != null && inhabitant.isActive()) {
             tm = (JavaEETransactionManager)inhabitant.get();
         }

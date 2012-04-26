@@ -40,8 +40,8 @@
 
 package org.glassfish.api.naming;
 
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
 
 import java.util.Hashtable;
@@ -68,7 +68,7 @@ public interface NamingClusterInfo {
     public static final String CORBALOC = "corbaloc:";
 
     void initGroupInfoService(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
-                              ORB orb, Services services);
+                              ORB orb, Habitat services);
 
     void setClusterInstanceInfo(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
                                 boolean membershipChangeForced);

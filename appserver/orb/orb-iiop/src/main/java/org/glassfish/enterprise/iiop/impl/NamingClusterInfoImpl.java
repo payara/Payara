@@ -45,11 +45,11 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectsProvider;
 import org.glassfish.hk2.Provider;
-import org.glassfish.hk2.Services;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.api.ORBLocator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.ORB;
 
@@ -74,7 +74,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
     @Override
     public void initGroupInfoService(Hashtable<?, ?> myEnv, String defaultHost, String defaultPort,
-                                     ORB orb, Services services) {
+                                     ORB orb, Habitat services) {
         // Always create one rrPolicy to be shared, if needed.
         final List<String> epList = getEndpointList(myEnv, defaultHost, defaultPort);
         rrPolicy = new RoundRobinPolicy(epList);

@@ -133,7 +133,6 @@ import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.hk2.Services;
 
 /**
  * Web container service
@@ -1216,7 +1215,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         vs.setServerEnvironment(instance);
         vs.setDomain(domain);
         vs.setCommandRunner(runner);
-        vs.setServices((Services) habitat);
+        vs.setServices((Habitat) habitat);
         vs.setClassLoaderHierarchy(clh);
 
         // Add Host to Engine
@@ -2945,22 +2944,22 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             vs.configureCacheControl(value);
         } else if (Constants.ACCESS_LOGGING_ENABLED.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
-                    globalAccessLogWriteInterval, (Services) habitat, domain,
+                    globalAccessLogWriteInterval, (Habitat) habitat, domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
-                    globalAccessLogWriteInterval, (Services) habitat, domain,
+                    globalAccessLogWriteInterval, (Habitat) habitat, domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
                     globalAccessLogWriteInterval,
-                    (Services) habitat,
+                    (Habitat) habitat,
                     domain,
                     globalAccessLoggingEnabled);
         } else if (Constants.ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
             vs.reconfigureAccessLog(globalAccessLogBufferSize,
                     globalAccessLogWriteInterval,
-                    (Services) habitat,
+                    (Habitat) habitat,
                     domain,
                     globalAccessLoggingEnabled);
         } else if ("allowRemoteHost".equals(name)
@@ -3019,7 +3018,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             final VirtualServer vs = (VirtualServer) getEngine().findChild(virtualServer.getId());
             if (vs != null) {
                 vs.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
-                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, (Services) habitat, domain,
+                vs.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, (Habitat) habitat, domain,
                         globalAccessLoggingEnabled);
                 updateHost(virtualServer);
             }

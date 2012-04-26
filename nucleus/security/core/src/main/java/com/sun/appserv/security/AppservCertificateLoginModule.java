@@ -123,7 +123,7 @@ public abstract class AppservCertificateLoginModule implements LoginModule {
         Set<Principal> principalSet = subject.getPrincipals();
         for (int i = 0; i < groups.length; i++) {
             if (groups[i] != null) {
-                Group g = Globals.getDefaultServices().forContract(PrincipalGroupFactory.class).get().
+                Group g = Globals.getDefaultHabitat().forContract(PrincipalGroupFactory.class).get().
                         getGroupInstance(groups[i], CertificateRealm.AUTH_TYPE);
                 principalSet.add(g);
             }

@@ -47,11 +47,11 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class is a context implementation for the java:comp namespace.
@@ -185,7 +185,7 @@ public final class JavaURLContext implements Context, Cloneable {
             return obj;
         } catch (NamingException ex) {
 
-            Services services = Globals.getDefaultServices();
+            Habitat services = Globals.getDefaultHabitat();
             ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
             if( fullName.startsWith("java:app/") &&
                 processEnv.getProcessType() == ProcessType.ACC ) {

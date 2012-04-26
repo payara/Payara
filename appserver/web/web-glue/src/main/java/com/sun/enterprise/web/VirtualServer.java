@@ -113,7 +113,6 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
-import org.glassfish.hk2.Services;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -125,6 +124,7 @@ import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
@@ -255,7 +255,7 @@ public class VirtualServer extends StandardHost
 
     private Domain domain;
 
-    private Services services;
+    private Habitat services;
 
     private ServerEnvironment instance;
 
@@ -416,7 +416,7 @@ public class VirtualServer extends StandardHost
         this.runner = runner;
     }
 
-    public void setServices(Services services) {
+    public void setServices(Habitat services) {
         this.services = services;
     }
 
@@ -773,7 +773,7 @@ public class VirtualServer extends StandardHost
      *
     private String getVirtualServers(String appName) {
         String ret = null;
-        Server server = Globals.getDefaultServices().forContract(Server.class).get();
+        Server server = Globals.getDefaultHabitat().forContract(Server.class).get();
         for (ApplicationRef appRef : server.getApplicationRef()) {
             if (appRef.getRef().equals(appName)) {
                 return appRef.getVirtualServers();
@@ -1717,7 +1717,7 @@ public class VirtualServer extends StandardHost
      */
     void reconfigureAccessLog(String globalAccessLogBufferSize,
                               String globalAccessLogWriteInterval,
-                              Services services,
+                              Habitat services,
                               Domain domain,
                               boolean globalAccessLoggingEnabled) {
         try {
@@ -2287,7 +2287,7 @@ public class VirtualServer extends StandardHost
         
         this.config = config;
         configureSingleSignOn(config.isSsoEnabled(), 
-                Globals.getDefaultServices().byType(
+                Globals.getDefaultHabitat().byType(
                 PEWebContainerFeatureFactoryImpl.class).get(),
                 false);
         if (config.isAccessLoggingEnabled()) {

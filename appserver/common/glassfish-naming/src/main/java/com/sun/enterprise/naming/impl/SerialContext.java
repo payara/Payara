@@ -43,7 +43,6 @@ package com.sun.enterprise.naming.impl;
 import com.sun.enterprise.naming.util.LogFacade;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectProxy;
-import org.glassfish.hk2.Services;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
@@ -69,6 +68,7 @@ import javax.naming.Reference;
 import javax.naming.Referenceable;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
 import org.omg.CosNaming.NamingContext;
@@ -130,7 +130,7 @@ public class SerialContext implements Context {
 
     private final JavaURLContext javaUrlContext;
 
-    private Services services;
+    private Habitat services;
 
     private boolean testMode = false;
 
@@ -228,7 +228,7 @@ public class SerialContext implements Context {
      * Constructor for the context. Initializes the object reference to the
      * remote provider object.
      */
-    public SerialContext(String name, Hashtable environment, Services h)
+    public SerialContext(String name, Hashtable environment, Habitat h)
             throws NamingException {
 
         services = h;
@@ -333,7 +333,7 @@ public class SerialContext implements Context {
      * This constructor takes the component id as an argument. All name
      * arguments to operations are prepended by the component id.
      */
-    public SerialContext(Hashtable env, Services services) throws NamingException {
+    public SerialContext(Hashtable env, Habitat services) throws NamingException {
         this("", env, services);
     }
 

@@ -215,7 +215,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 super.getCommonClassPath());
             classpath.append(File.pathSeparatorChar);
             classpath.append(ASClassLoaderUtil.getModuleClassPath(
-                    (Habitat) sc.getDefaultServices(),
+                    sc.getDefaultServices(),
                     wbd.getApplication().getName(), 
                     dc.getCommandParameters(
                         DeployCommandParameters.class).libraries)); 

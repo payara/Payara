@@ -60,7 +60,7 @@ public class NamingActivator implements BundleActivator
 
         // force initialisation of NamingBuilder so that any naming operation will be redirected via
         // our builder which is essential for issue #8458
-        Globals.getDefaultServices().byType(GlassFishNamingBuilder.class).get();
+        Globals.getDefaultHabitat().byType(GlassFishNamingBuilder.class).get();
     }
 
     public void stop(BundleContext context) throws Exception
