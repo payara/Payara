@@ -91,44 +91,12 @@ public class TenantManagerTest extends ConfigApiTest {
     String fileStore = tenantManagerConfig.getFileStore();
     String sourcePath = getClass().getResource("/").getPath();
 
-    // try lock with timeout or fail
-    private FileLock lock(String tenantName) {
-        String tenantFile = fileStore + "/" + tenantName + "/tenant.xml";
-        File f = new File(tenantFile);
-        if (!f.exists()) {
-            return null;
-        }
-
-        long nanosTimeout = TimeUnit.NANOSECONDS.convert(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS);
-        long increment = nanosTimeout/20;
-        long lastTime = System.nanoTime();
-        for (; ;) {
-            try {
-                 return new FileOutputStream(f).getChannel().lock(); // will block
-            } catch (OverlappingFileLockException e) {
-                // ok, locked by other, wait
-            } catch (Exception e) {
-                throw new RuntimeException("Can't lock " + tenantName, e);
-            }
-            if (nanosTimeout < 0) {
-                throw new RuntimeException("Can't lock " + tenantName + ", timeout");
-            }
-            LockSupport.parkNanos(increment);
-            long now = System.nanoTime();
-            nanosTimeout -= now - lastTime;
-            lastTime = now;
-            if (Thread.interrupted())
-                throw new RuntimeException("Can't lock " + tenantName + ", thread interrupted");
-        }
-    }
-
     private void setupTest(String ... tenantNames) throws IOException {
         for (String tenantName : tenantNames) {
-            FileLock lock = lock(tenantName);
             tenantManager.delete(tenantName); // dispose for clean test
-            FileUtils.copyTree(new File(sourcePath + tenantName), new File(fileStore + "/" + tenantName));
-            if (lock != null) { // first run
-                lock.release();
+            File src = new File(sourcePath + tenantName);
+            if (src.exists()) {
+            	FileUtils.copyTree(src, new File(fileStore + "/" + tenantName));
             }
         }
     }
@@ -368,6 +336,7 @@ public class TenantManagerTest extends ConfigApiTest {
     // Then delete, verify exception is thrown on next get.
     @Test
     public void testCreateDelete() throws MalformedURLException, IOException, URISyntaxException {
+        setupTest("tenant3");
         Assert.assertNotNull("tenantManager", tenantManager);
         try {
             Tenant tenant = tenantManager.create("tenant3", "admin");
