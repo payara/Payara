@@ -103,7 +103,19 @@ public class TenantConfigBean extends ConfigBean {
 
         @Override
         public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-            return docLock.tryLock(time, unit) && beanLock.tryLock(time, unit);
+            if (docLock.tryLock(time, unit)) {
+                boolean locked = false;
+                try {
+                    locked = beanLock.tryLock(time, unit);
+                } finally {
+                    if (!locked) {
+                        docLock.unlock();
+                    }
+                }
+                return locked;
+            } else {
+                return false;
+            }
         }
 
         @Override

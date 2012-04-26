@@ -39,6 +39,7 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,17 +47,27 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.IndentingXMLStreamWriter;
+
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * Override <code>make()</code> to create ConfigBean instead of Dom for
@@ -101,8 +112,32 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
         return lock;
     }
 
+    public boolean isLocked() {
+        return lock.isLocked();
+    }
+
+    synchronized private void save(FileOutputStream fos) throws IOException {
+        try {
+            XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(fos));
+            IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
+            this.writeTo(indentingXMLStreamWriter);
+            indentingXMLStreamWriter.close();
+        }
+        catch (XMLStreamException e) {
+            String msg = localStrings.getLocalString("FileNotSaved",
+                            "TenantDocument could not be saved");
+            logger.log(Level.SEVERE, msg, e);
+            throw new IOException(e.getMessage(), e);
+            // return after calling finally clause, because since temp file couldn't be saved,
+            // renaming should not be attempted
+        }        
+    }
+
     // Reentrant (per JVM process) lock against document xml file. 
-    private final Lock lock = new Lock()  {
+    private final DocumentLock lock = new DocumentLock();
+    
+    private class DocumentLock implements Lock {
+        private FileOutputStream fs;
         private FileLock fileLock;
         private AtomicInteger locksByThisProcess = new AtomicInteger(0);
 
@@ -138,15 +173,24 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
 
         @Override
         public void unlock() {
+            // TODO: synchronize block?
             if (locksByThisProcess.decrementAndGet() == 0) {
                 // Physically unlock the file when the last one gets out.
                 if (fileLock != null && fileLock.isValid()) {
                     try {
-                        fileLock.release();
+                        TenantDocument.this.save(fs); // synchronized
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
+                    } finally {
+                        try {
+                            fileLock.release();
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
+                    fs = null;
                     fileLock = null;
                 }
             }
@@ -157,7 +201,7 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
             try {
                 // acquire exclusive lock on config file. 
                 File f = new File(TenantDocument.this.resource.toURI());
-                FileOutputStream fs = new FileOutputStream(f);
+                fs = new FileOutputStream(f); // save for unlock
                 FileChannel c = fs.getChannel();
                 fileLock = c.lock();
                 return true;
@@ -167,6 +211,8 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            } catch (OverlappingFileLockException e){
+                // ok, locked by other, return false
             }
             return false;
         }
@@ -186,9 +232,20 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
             throw new UnsupportedOperationException();
         }
 
-    };
+        public boolean isLocked() {
+            return fileLock != null && fileLock.isValid();
+        }
+
+    }
 
 
     private URL resource;
 
+    private final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(TenantDocument.class);    
+
+    @Inject
+    private Logger logger;
+
+    private final XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
 }

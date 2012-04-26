@@ -40,12 +40,17 @@
 package org.glassfish.paas.tenantmanager.api;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
@@ -84,10 +89,45 @@ public class TenantManagerTest extends ConfigApiTest {
     String fileStore = tenantManagerConfig.getFileStore();
     String sourcePath = getClass().getResource("/").getPath();
 
+    // try lock with timeout or fail
+    private FileLock lock(String tenantName) {
+        String tenantFile = fileStore + "/" + tenantName + "/tenant.xml";
+        File f = new File(tenantFile);
+        if (!f.exists()) {
+            return null;
+        }
+
+        long nanosTimeout = TimeUnit.NANOSECONDS.convert(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS);
+        long increment = nanosTimeout/20;
+        long lastTime = System.nanoTime();
+        for (; ;) {
+            try {
+                 return new FileOutputStream(f).getChannel().lock(); // will block
+            } catch (OverlappingFileLockException e) {
+                // ok, locked by other, wait
+            } catch (Exception e) {
+                throw new RuntimeException("Can't lock " + tenantName, e);
+            }
+            if (nanosTimeout < 0) {
+                throw new RuntimeException("Can't lock " + tenantName + ", timeout");
+            }
+            LockSupport.parkNanos(increment);
+            long now = System.nanoTime();
+            nanosTimeout -= now - lastTime;
+            lastTime = now;
+            if (Thread.interrupted())
+                throw new RuntimeException("Can't lock " + tenantName + ", thread interrupted");
+        }
+    }
+
     private void setupTest(String ... tenantNames) throws IOException {
         for (String tenantName : tenantNames) {
+            FileLock lock = lock(tenantName);
             tenantManager.delete(tenantName); // dispose for clean test
             FileUtils.copyTree(new File(sourcePath + tenantName), new File(fileStore + "/" + tenantName));
+            if (lock != null) { // first run
+                lock.release();
+            }
         }
     }
 
@@ -206,8 +246,8 @@ public class TenantManagerTest extends ConfigApiTest {
         }
     }
 
-    // verify can modify different elements of tenant concurrently.
-    //@Test
+    // verify can modify nested elements of tenant.
+    @Test
     public void testNonLockingTenant() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException  {
         setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -231,13 +271,14 @@ public class TenantManagerTest extends ConfigApiTest {
                             return admin;
                         }
                     }, admin);
-                    // verify file is written without changes to extensions!
+                    // file is no long written while changes in progress
+                    /*
                     try {
                         assertConfigXml("Updated tenant xml", "tenant1", tenant);
                     } catch (Exception e) {
-                        throw new TransactionFailure("fake", e);
+                        throw new TransactionFailure(e.getMessage(), e);
                     }
-    
+                    */
                     return tenant;
                 }
             }, tenant);
@@ -249,7 +290,7 @@ public class TenantManagerTest extends ConfigApiTest {
     }
 
     // verify can modify different elements of tenant simultaneously.
-    //@Test
+    @Test
     public void testLockingFile() throws TransactionFailure, MalformedURLException, IOException, URISyntaxException, InterruptedException  {
         setupTest("tenant1");
         Assert.assertNotNull("tenantManager", tenantManager);
@@ -273,6 +314,7 @@ public class TenantManagerTest extends ConfigApiTest {
                             }
                         }, tenant);
                     } catch (TransactionFailure e) {
+                        e.printStackTrace();
                         synchronized(errors) {
                             errors.add(e.getMessage());
                         }
@@ -296,6 +338,7 @@ public class TenantManagerTest extends ConfigApiTest {
                             }
                         }, admin);
                     } catch (TransactionFailure e) {
+                        e.printStackTrace();
                         synchronized(errors) {
                             errors.add(e.getMessage());
                         }

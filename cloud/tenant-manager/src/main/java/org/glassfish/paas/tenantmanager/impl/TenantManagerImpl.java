@@ -71,8 +71,6 @@ import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.TransactionListener;
-import org.jvnet.hk2.config.Transactions;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
@@ -120,7 +118,25 @@ public class TenantManagerImpl implements TenantManagerEx {
     @Override
     // TODO: remove
     public Object excuteUpdate(ConfigCode configCode, ConfigBeanProxy ... objects) throws TransactionFailure {
+        /*
         // assume there is an object and all objects are for one document
+        ConfigBeanProxy source = objects[0];
+        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(source);
+        Lock lock = configBean.getDocument().getLock();
+        try {
+            if (lock.tryLock(ConfigSupport.lockTimeOutInSeconds,
+                    TimeUnit.SECONDS)) {
+                try {
+                    return configSupport._apply(configCode, objects);
+                } finally {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            // ignore, will throw TransactionFailure
+        }
+        throw new TransactionFailure("Can't acquire global lock");
+        */
         return configSupport._apply(configCode, objects);
     }
 
@@ -212,6 +228,7 @@ public class TenantManagerImpl implements TenantManagerEx {
     public void delete(String name) {
         habitats.remove(name);
         // TODO: do we really want to delete file or just dispose habitat?
+        // TODO: lock!!!
         FileUtils.deleteFileMaybe(getTenantFile(name));
     }
 
@@ -291,8 +308,9 @@ public class TenantManagerImpl implements TenantManagerEx {
             });
         }
         populate(habitat, name);
-        // caution, transactions here must come from newly created habitat 
-        habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
+        // caution, transactions here must come from newly created habitat
+        // see TenantDocument.save() instead
+        //habitat.getComponent(Transactions.class).addTransactionsListener(transactionsListener);
         return habitat;
     }
 
@@ -335,9 +353,11 @@ public class TenantManagerImpl implements TenantManagerEx {
     @Inject
     ServerEnvironment env;
 
+    /*
     @Inject
     @Named("TenantConfigListener")
     private TransactionListener transactionsListener;
+    */
 
     @Inject
     private Logger logger;
