@@ -116,7 +116,7 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
         return lock.isLocked();
     }
 
-    synchronized private void save(FileOutputStream fos) throws IOException {
+    private void save(FileOutputStream fos) throws IOException {
         try {
             XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(fos));
             IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
@@ -177,44 +177,60 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
             if (locksByThisProcess.decrementAndGet() == 0) {
                 // Physically unlock the file when the last one gets out.
                 if (fileLock != null && fileLock.isValid()) {
-                    try {
-                        TenantDocument.this.save(fs); // synchronized
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            fileLock.release();
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                    synchronized(this) {
+                        if (fileLock != null) {
+                            // save then always unlock
+                            try {
+                                TenantDocument.this.save(fs);
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            } finally {
+                                try {
+                                    fileLock.release();
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                } finally {
+                                    fs = null;
+                                    fileLock = null;
+                                }
+                            }
                         }
                     }
-                    fs = null;
-                    fileLock = null;
                 }
             }
         }
 
         @Override
         public boolean tryLock() {
-            try {
-                // acquire exclusive lock on config file. 
-                File f = new File(TenantDocument.this.resource.toURI());
-                fs = new FileOutputStream(f); // save for unlock
-                FileChannel c = fs.getChannel();
-                fileLock = c.lock();
+            if (fileLock == null) {
+                synchronized(this) {
+                    if (fileLock == null) {
+                        try {
+                            // acquire exclusive lock on config file. 
+                            File f = new File(TenantDocument.this.resource.toURI());
+                            fs = new FileOutputStream(f); // save for unlock
+                            FileChannel c = fs.getChannel();
+                            fileLock = c.lock();
+                            return true;
+                        } catch (URISyntaxException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (OverlappingFileLockException e){
+                            // ok, locked by other, return false
+                        }
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
                 return true;
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (OverlappingFileLockException e){
-                // ok, locked by other, return false
             }
-            return false;
         }
 
         @Override
