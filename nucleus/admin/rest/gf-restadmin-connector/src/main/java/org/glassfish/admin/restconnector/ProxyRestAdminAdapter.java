@@ -42,9 +42,11 @@ package org.glassfish.admin.restconnector;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Adapter;
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -56,7 +58,8 @@ public class ProxyRestAdminAdapter extends AbstractProxyRestAdapter implements A
     @Inject
     Habitat services;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
 
