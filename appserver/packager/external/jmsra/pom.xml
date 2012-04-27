@@ -102,7 +102,7 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.mq</groupId>
+            <groupId>org.glassfish</groupId>
             <artifactId>mq-distribution</artifactId>
             <version>${mq.version}</version>
 	    <type>zip</type>

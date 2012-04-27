@@ -51,7 +51,7 @@
     <target name="copy.packages">
 
         <echo message="Copying MQ packages" />
-	<resolveArtifact artifactId="mq-distribution" groupId="org.glassfish.mq" type="zip" classifier="repo" property="mqrepo.zip"/>
+	<resolveArtifact artifactId="mq-distribution" groupId="org.glassfish" type="zip" classifier="repo" property="mqrepo.zip"/>
    
 
         <unzip src="${mqrepo.zip}" dest="target/source/mq">   
