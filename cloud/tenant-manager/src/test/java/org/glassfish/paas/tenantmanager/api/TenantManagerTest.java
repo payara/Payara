@@ -133,6 +133,9 @@ public class TenantManagerTest extends ConfigApiTest {
             Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
             Assert.assertNotNull("Zero Services", tenant.getServices());
             Assert.assertNotNull("Zero Extensions", tenant.getExtensions());
+            Environments environments = tenant.getEnvironments();
+            Assert.assertEquals("Next Id", 1, environments.allocateId());
+            Assert.assertEquals("Next Id", 2, environments.allocateId());
             tenantManager.setCurrentTenant("tenant2");
             tenant = tenantManager.get(Tenant.class);
             Assert.assertNotNull("currentTenant", tenant);
@@ -144,9 +147,6 @@ public class TenantManagerTest extends ConfigApiTest {
             Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
             Assert.assertNotNull("Specific Service", tenant.getServices().getServiceByType(DefaultService.class));
             Assert.assertNotNull("Tenant Extensions", tenant.getExtensions());
-            Environments environments = tenant.getEnvironments();
-            Assert.assertEquals("Next Id", 1, environments.allocateId());
-            Assert.assertEquals("Next Id", 2, environments.allocateId());
             
         } finally {
             // Clean up context...

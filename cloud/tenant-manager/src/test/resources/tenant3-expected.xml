@@ -41,6 +41,7 @@
 
 -->
 <tenant name="tenant3">
+  <environments></environments>
   <services></services>
   <tenant-admin name="admin"></tenant-admin>
 </tenant>

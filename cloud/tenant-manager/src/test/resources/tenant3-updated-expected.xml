@@ -41,6 +41,7 @@
 
 -->
 <tenant name="tenant3">
+  <environments></environments>
   <tenant-extension></tenant-extension>
   <services>
     <default-service></default-service>

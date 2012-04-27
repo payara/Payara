@@ -69,6 +69,7 @@ public interface Tenant extends ConfigBeanProxy {
     void setTenantAdmin(TenantAdmin tenantAdmin);
 
     @Element
+    @NotNull
     Environments getEnvironments();
     void setEnvironments(Environments environments);
 
