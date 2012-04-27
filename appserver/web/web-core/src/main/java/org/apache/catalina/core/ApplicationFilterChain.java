@@ -141,13 +141,6 @@ final class ApplicationFilterChain implements FilterChain {
 
 
     /**
-     * The facade of the request implementation object on which this
-     * FilterChain will be executed
-     */
-    private RequestFacade requestFacade = null;
-
-
-    /**
      * The string manager for our package.
      */
     private static final StringManager sm =
@@ -232,7 +225,10 @@ final class ApplicationFilterChain implements FilterChain {
         if (pos < n) {
             ApplicationFilterConfig filterConfig = filters[pos++];
             if (!filterConfig.isAsyncSupported()) {
-                requestFacade.disableAsyncSupport();
+                RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
+                if (reqFacHelper != null) {
+                    reqFacHelper.disableAsyncSupport();
+                }
             }
             Filter filter = null;
             try {
@@ -340,7 +336,7 @@ final class ApplicationFilterChain implements FilterChain {
 
         */
         // START IASRI 4665318
-        wrapper.service(request, response, servlet, requestFacade);
+        wrapper.service(request, response, servlet);
         // END IASRI 4665318
     }
 
@@ -373,7 +369,6 @@ final class ApplicationFilterChain implements FilterChain {
         pos = 0;
         servlet = null;
         wrapper = null;
-        requestFacade = null;
     }
 
 
@@ -398,15 +393,6 @@ final class ApplicationFilterChain implements FilterChain {
      */
     void setWrapper(StandardWrapper wrapper) {
         this.wrapper = wrapper;
-    }
-
-
-    /**
-     * Sets the facade of the request implementation object on which this
-     * FilterChain will be executed.
-     */
-    void setRequestFacade(RequestFacade requestFacade) {
-        this.requestFacade = requestFacade;
     }
 
 }

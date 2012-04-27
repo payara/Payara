@@ -125,11 +125,10 @@ class ApplicationDispatcherForward {
             ((StandardHost)(context.getParent())).getErrorReportValveClass();
         boolean hasErrorReportValve = (errorReportValveClass != null &&
                 errorReportValveClass.length() > 0);
-        ResponseFacade responseFacade = getResponseFacade(hres);
-        if (hasErrorReportValve && responseFacade.isError() &&
+        RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
+        if (hasErrorReportValve && reqFacHelper != null && reqFacHelper.isResponseError() &&
                 statusCode >= 400 && exception == null) {            
-            boolean matchFound = status(hreq, hres,
-                responseFacade, context, wrapper, statusCode);
+            boolean matchFound = status(hreq, hres, context, wrapper, statusCode);
             if (!matchFound) {
                 boolean isDefaultErrorPageEnabled = true;
                 if (wrapper != null) {
@@ -140,8 +139,7 @@ class ApplicationDispatcherForward {
                     }
                 }
                 if (isDefaultErrorPageEnabled) {
-                    serveDefaultErrorPage(hreq, hres,
-                        responseFacade, statusCode);
+                    serveDefaultErrorPage(hreq, hres, statusCode);
                 }
             }
         }
@@ -172,16 +170,16 @@ class ApplicationDispatcherForward {
      */
     private static boolean status(HttpServletRequest request,
                                   HttpServletResponse response,
-                                  ResponseFacade responseFacade,
                                   Context context,
                                   Wrapper wrapper,
                                   int statusCode) {
 
+        RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
         /*
          * Attempt error-page mapping only if response.sendError(), as
          * opposed to response.setStatus(), was called.
          */
-        if (!responseFacade.isError()) {
+        if (!(reqFacHelper != null && reqFacHelper.isResponseError())) {
             return false;
         }
 
@@ -197,7 +195,10 @@ class ApplicationDispatcherForward {
                 Globals.DISPATCHER_REQUEST_PATH_ATTR);
             if (requestPath == null
                     || !requestPath.equals(errorPage.getLocation())) {
-                String message = RequestUtil.filter(responseFacade.getMessage());
+                String message = null;
+                if (reqFacHelper != null) {
+                    message = RequestUtil.filter(reqFacHelper.getResponseMessage());
+                }
                 if (message == null) {
                     message = "";
                 }
@@ -206,7 +207,7 @@ class ApplicationDispatcherForward {
                                           errorPage.getLocation(),
                                           statusCode,
                                           message);
-                custom(request, response, responseFacade, errorPage, context);
+                custom(request, response, errorPage, context);
             }
         } else {
             errorPage = ((StandardHost) context.getParent()).findErrorPage(
@@ -232,7 +233,6 @@ class ApplicationDispatcherForward {
      */
     private static void custom(HttpServletRequest request,
                                HttpServletResponse response,
-                               ResponseFacade responseFacade,
                                ErrorPage errorPage,
                                Context context) {
         try {
@@ -245,7 +245,10 @@ class ApplicationDispatcherForward {
                  * page will cause an IllegalStateException.
                  * Uncommit the response.
                  */
-                resetResponse(responseFacade);
+                RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
+                if (reqFacHelper != null) {
+                    reqFacHelper.resetResponse();
+                }
             }
             ServletContext servletContext = context.getServletContext();
             ApplicationDispatcher dispatcher = (ApplicationDispatcher)
@@ -344,18 +347,21 @@ class ApplicationDispatcherForward {
      */
     private static void serveDefaultErrorPage(HttpServletRequest request,
                                               HttpServletResponse response,
-                                              ResponseFacade responseFacade,
                                               int statusCode)
             throws IOException, ServletException {
 
+        RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(request);
         // Do nothing on a 1xx, 2xx and 3xx status
         if (response.isCommitted() || statusCode < 400
-                || responseFacade.getContentCount() > 0
+                || (reqFacHelper != null && reqFacHelper.getResponseContentCount() > 0)
                 || Boolean.TRUE.equals(request.getAttribute("org.glassfish.jsp.error_handled"))) {
             return;
         }
 
-        String message = RequestUtil.filter(responseFacade.getMessage());
+        String message = null;
+        if (reqFacHelper != null) {
+            message = RequestUtil.filter(reqFacHelper.getResponseMessage());
+        }
         if (message == null) {
             message = "";
         }
@@ -395,11 +401,7 @@ class ApplicationDispatcherForward {
 
         return ((ResponseFacade) response);
     }
-    
-    private static void resetResponse(ResponseFacade responseFacade) {
-        responseFacade.setSuspended(false);
-        responseFacade.setAppCommitted(false);
-    }
+
 
     private static void closeResponse(ServletResponse response) {
         try {

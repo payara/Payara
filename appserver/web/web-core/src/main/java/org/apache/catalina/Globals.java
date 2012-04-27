@@ -251,6 +251,9 @@ public final class Globals {
         "com.sun.enterprise.http.sessionTracker";    
     // END GlassFish 896
 
+    public static final String REQUEST_FACADE_HELPER =
+        "org.glassfish.web.RequestFacadeHelper";
+
     /**
      * The name of the cookie used to carry a session's version info
      */

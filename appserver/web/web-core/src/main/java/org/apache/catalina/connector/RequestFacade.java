@@ -59,6 +59,7 @@
 package org.apache.catalina.connector;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.RequestFacadeHelper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.StringManager;
 
@@ -74,7 +75,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.catalina.util.Enumerator;
 
 
 /**
@@ -263,6 +263,7 @@ public class RequestFacade
                          boolean maskDefaultContextMapping) {
         this.request = request;
         this.maskDefaultContextMapping = maskDefaultContextMapping;
+        this.reqFacHelper = new RequestFacadeHelper(request);
     }
 
 
@@ -296,6 +297,8 @@ public class RequestFacade
      * were mapped to a default-web-module.
      */
     private boolean maskDefaultContextMapping = false;
+
+    private RequestFacadeHelper reqFacHelper = null;
  
 
     // --------------------------------------------------------- Public Methods
@@ -315,8 +318,17 @@ public class RequestFacade
      */
     public void clear() {
         request = null;
+        if (reqFacHelper != null) {
+            reqFacHelper.clear();
+        }
+        reqFacHelper = null;
     }
 
+
+    RequestFacadeHelper getRequestFacadeHelper() {
+        return reqFacHelper;
+    }
+    
 
     // ------------------------------------------------- ServletRequest Methods
 
@@ -1069,22 +1081,6 @@ public class RequestFacade
 
 
     /**
-     * Disables async support for this request.
-     *
-     * Async support is disabled as soon as this request has passed a filter
-     * or servlet that does not support async (either via the designated
-     * annotation or declaratively).
-     */
-    public void disableAsyncSupport() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        request.disableAsyncSupport();
-    }
-
-
-    /**
      * Checks whether this request supports async.
      */
     public boolean isAsyncSupported() {
@@ -1174,45 +1170,4 @@ public class RequestFacade
         return request;
     }
     //END S1AS 4703023
-
-    /**
-     * Increment the depth of application dispatch
-     */
-    public int incrementDispatchDepth() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        return request.incrementDispatchDepth();
-    }
-
-    /**
-     * Decrement the depth of application dispatch
-     */
-    public int decrementDispatchDepth() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        return request.decrementDispatchDepth();
-    }
-
-    /**
-     * Check if the application dispatching has reached the maximum
-     */
-    public boolean isMaxDispatchDepthReached() {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        return request.isMaxDispatchDepthReached();
-    }
-
-    public Object getNote(String name) {
-        if (request == null) {
-            throw new IllegalStateException(
-                            sm.getString("requestFacade.nullRequest"));
-        }
-        return request.getNote(name);
-    }
 }

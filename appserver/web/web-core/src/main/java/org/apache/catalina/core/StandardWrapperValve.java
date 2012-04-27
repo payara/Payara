@@ -279,11 +279,10 @@ final class StandardWrapperValve extends ValveBase {
             // START IASRI 4665318
             if (servlet != null) {
                 if (filterChain != null) {
-                    filterChain.setRequestFacade(hreq);
                     filterChain.setWrapper(wrapper);
                     filterChain.doFilter(hreq, hres);
                 } else {
-                    wrapper.service(hreq, hres, servlet, hreq);
+                    wrapper.service(hreq, hres, servlet);
                 }
             }
             // END IASRI 4665318

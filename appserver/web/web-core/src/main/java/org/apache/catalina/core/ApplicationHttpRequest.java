@@ -63,7 +63,8 @@ import org.apache.catalina.Globals;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Session;
 import org.apache.catalina.connector.RequestFacade;
-import org.apache.catalina.connector.SessionTracker;
+//XXX
+//import org.apache.catalina.connector.SessionTracker;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.RequestUtil;
@@ -646,10 +647,9 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
                     localSession.setId(other.getId());
                     */
                     // START GlassFish 896
-                    SessionTracker sessionTracker = (SessionTracker)
-                        getRequestFacade().getNote(Globals.SESSION_TRACKER);
-                    if (sessionTracker != null) {
-                        sessionTracker.track(localSession);
+                    RequestFacadeHelper reqFacHelper = RequestFacadeHelper.getInstance(getRequest());
+                    if (reqFacHelper != null) {
+                        reqFacHelper.track(localSession);
                     }
                     // END GlassFish 896
                 }

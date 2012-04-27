@@ -686,65 +686,6 @@ public class ResponseFacade
         return response.getStatus();
     }
 
-
-    public String getMessage() {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getMessage();
-    }
-
-
-    public void setSuspended(boolean suspended) {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        response.setSuspended(suspended);
-    }
-
-
-    public void setAppCommitted(boolean appCommitted) {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        response.setAppCommitted(appCommitted);
-    }
-
-
-    public int getContentCount() {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.getContentCount();
-    }
-
-
-    public boolean isError() {
-
-        // Disallow operation if the object has gone out of scope
-        if (response == null) {
-            throw new IllegalStateException(
-                            sm.getString("responseFacade.nullResponse"));
-        }
-
-        return response.isError();
-    }
     // END SJSAS 6374990
 
 
@@ -773,25 +714,5 @@ public class ResponseFacade
         }
         return response.getHeaderNames();
     }
-
-
-    //START S1AS 4703023
-    /**
-     * Return the original <code>CoyoteRequest</code> object.
-     */
-    public Response getUnwrappedCoyoteResponse()
-        throws AccessControlException {
-
-        // tomcat does not have any Permission types so instead of
-        // creating a TomcatPermission for this, use SecurityPermission.
-        if (Globals.IS_SECURITY_ENABLED) {
-            Permission perm =
-                new SecurityPermission("getUnwrappedCoyoteResponse");
-            AccessController.checkPermission(perm);
-        }
-
-        return response;
-    }
-    //START S1AS 4703023
 
 }

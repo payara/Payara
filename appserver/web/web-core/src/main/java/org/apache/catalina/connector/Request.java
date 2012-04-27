@@ -836,11 +836,15 @@ public class Request
         if (!maskDefaultContextMapping || !isDefaultContext) {
             if (facade == null) {
                 facade = new RequestFacade(this);
+                attributes.put(Globals.REQUEST_FACADE_HELPER,
+                        facade.getRequestFacadeHelper());
             }
             return facade;
         } else {
             if (defaultContextMaskingFacade == null) {
                 defaultContextMaskingFacade = new RequestFacade(this, true);
+                attributes.put(Globals.REQUEST_FACADE_HELPER,
+                        defaultContextMaskingFacade.getRequestFacadeHelper());
             }
             return defaultContextMaskingFacade;
         }
