@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 /* Byron Nevins, April 2000
  * ZipFile -- A utility class for exploding jar files that contain EJB(s).  Used *only* in this package by the EJBImporter class
  */
-
 package com.sun.enterprise.util.zip;
 
 import java.io.*;
@@ -52,299 +51,300 @@ import java.util.zip.*;
 
 import com.sun.enterprise.util.io.FileListerRelative;
 
-public class ZipWriter
-{
-    public ZipWriter(String zipFilename, String dirName) throws ZipFileException
-    {
+public class ZipWriter {
+    public ZipWriter(String zipFilename, String dirName) throws ZipFileException {
         init(zipFilename, dirName);
         createItemList(null);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public ZipWriter(String zipFilename, String dirName, ZipItem[] theItems) throws ZipFileException
-    {
+    public ZipWriter(String zipFilename, String dirName, ZipItem[] theItems) throws ZipFileException {
         items = theItems;
         init(zipFilename, dirName);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public ZipWriter(String zipFilename, String dirName, String[] fileList) throws ZipFileException
-    {
+    public ZipWriter(String zipFilename, String dirName, String[] fileList) throws ZipFileException {
         init(zipFilename, dirName);
         createItemList(fileList);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public ZipWriter(OutputStream outStream, String dirName, String[] fileList) throws ZipFileException
-    {
+    public ZipWriter(OutputStream outStream, String dirName, String[] fileList) throws ZipFileException {
         init(outStream, dirName);
         createItemList(fileList);
     }
 
     /**
-     * Exclude any files that are under these directories.
-     * E.g. suppose you have C:/temp/x1, C:/temp/x2 and C:/temp/x3
-     * and the root is set to c:temp.  Thhen to exclude the contents of the second
-     * 2 dirs you would send in a String array with "x2" and "x3"
+     * Exclude any files that are under these directories. E.g. suppose you have
+     * C:/temp/x1, C:/temp/x2 and C:/temp/x3 and the root is set to c:temp. Then
+     * to exclude the contents of the second 2 dirs you would send in a String
+     * array with "x2" and "x3"
+     *
      * @param dirs an array of top-level directory names
      */
-
     public void excludeDirs(String[] dirs) {
+        if (dirs == null || dirs.length <= 0)
+            return;
+
         // make sure the names all end with "/"
-        for(int i = 0; i < dirs.length; i++) {
-            if(!dirs[i].endsWith("/"))
+        for (int i = 0; i < dirs.length; i++) {
+            if (!dirs[i].endsWith("/"))
                 dirs[i] += "/";
         }
 
         // copy all the items we will retain into list
         List<ZipItem> list = new ArrayList<ZipItem>(items.length);
 
-        for(int i = 0; i < items.length; i++) {
+        for (int i = 0; i < items.length; i++) {
             boolean exclude = false;
 
-            for(int j = 0; j < dirs.length; j++) {
-                if(items[i].name.startsWith(dirs[j]))
+            for (int j = 0; j < dirs.length; j++) {
+                if (items[i].name.startsWith(dirs[j])) {
                     exclude = true;
+                    break;  // don't waste time looking at more dirs!
+                }
             }
+
             if (!exclude) {
                 list.add(items[i]);
             }
         }
 
         // reset items to the pruned list
-        if(list.size() != items.length) {
+        if (list.size() != items.length) {
             items = new ZipItem[list.size()];
             items = list.toArray(items);
         }
     }
-    
+
+    /**
+     * Exclude any files that are under these directories. In this case if the
+     * dir name matches with ANY directory anywhere in the path -- exclude it.
+     * E.g. say you don't want to copy /a/b/c/osgi-cache/*.* then simply call
+     * this method with one of the dirs equal to "osgi-cache"
+     *
+     * @param dirs an array of directory names
+     * @since 4.0
+     */
+    public void excludeDirsAnywhere(String[] dirs) {
+        if (dirs == null || dirs.length <= 0)
+            return;
+        // make sure the names all start and end with "/"
+        for (int i = 0; i < dirs.length; i++) {
+            if (!dirs[i].startsWith("/"))
+                dirs[i] = "/" + dirs[i];
+            if (!dirs[i].endsWith("/"))
+                dirs[i] += "/";
+        }
+
+        // copy all the items we will retain into list
+        List<ZipItem> list = new ArrayList<ZipItem>(items.length);
+
+        for (int i = 0; i < items.length; i++) {
+            boolean exclude = false;
+            String item = "/" + items[i].name;
+
+            for (int j = 0; j < dirs.length; j++) {
+                if (item.indexOf(dirs[j]) >= 0) {
+                    exclude = true;
+                    break;  // don't waste time looking at more dirs!
+                }
+            }
+
+            if (!exclude) {
+                list.add(items[i]);
+            }
+
+        }
+        // reset items to the pruned list
+        if (list.size() != items.length) {
+            items = new ZipItem[list.size()];
+            items = list.toArray(items);
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private void init(String outFileName, String dirName) throws ZipFileException
-    {
-        try
-        {
+    private void init(String outFileName, String dirName) throws ZipFileException {
+        try {
             init(new FileOutputStream(outFileName), dirName);
         }
-        catch(Exception e)
-        {
+        catch (Exception e) {
             throw new ZipFileException(e);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    private void init(OutputStream outStream, String dirName) throws ZipFileException
-    {
-        try
-        {
-            if(dirName == null)
+    private void init(OutputStream outStream, String dirName) throws ZipFileException {
+        try {
+            if (dirName == null)
                 throw new IllegalArgumentException("null dirName");
-            
+
             //make sure it's really a directory
             File f = new File(dirName);
 
-            if(!f.exists())
+            if (!f.exists())
                 throw new ZipFileException("directory (" + dirName + ") doesn't exist");
 
-            if(!f.isDirectory())
+            if (!f.isDirectory())
                 throw new ZipFileException(dirName + " is not a directory");
-            
+
             // change the filename to be full-path & UNIX style
-            try
-            {
+            try {
                 dirName = f.getCanonicalPath();
             }
-            catch(IOException e)
-            {
+            catch (IOException e) {
                 dirName = f.getAbsolutePath();
             }
-            
+
             dirName = dirName.replace('\\', '/');    // all UNIX-style filenames...
-            
-            
+
+
             // we need the dirname to end in a '/'
-            if(!dirName.endsWith("/"))
+            if (!dirName.endsWith("/"))
                 dirName += "/";
 
-            
-            this.dirName        = dirName;
-            zipStream            = new ZipOutputStream(outStream);
+
+            this.dirName = dirName;
+            zipStream = new ZipOutputStream(outStream);
         }
-        catch(ZipFileException zfe) 
-        {
+        catch (ZipFileException zfe) {
             throw zfe;
         }
-        catch(Throwable t)
-        {
+        catch (Throwable t) {
             throw new ZipFileException(t);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     /**
      * Does not throw an exception when there is a duplicate zip entry.
      *
-     * @throws  ZipFileException   if an error while creating the archive
+     * @throws ZipFileException if an error while creating the archive
      */
-    public void safeWrite()  throws ZipFileException
-    {
-        try
-        {
-            for(int i = 0; i < items.length; i++)
-            {
-                try 
-                {
+    public void safeWrite() throws ZipFileException {
+        try {
+            for (int i = 0; i < items.length; i++) {
+                try {
                     addEntry(items[i]);
-                } 
-                catch (ZipException e) 
-                {
+                }
+                catch (ZipException e) {
                     // ignore - duplicate zip entry
                 }
             }
-            
+
             zipStream.close();
         }
-        catch(ZipFileException z)
-        {
+        catch (ZipFileException z) {
             throw z;
         }
-        catch(Exception e)
-        {
+        catch (Exception e) {
             throw new ZipFileException(e);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public void write()  throws ZipFileException
-    {
-        try
-        {
-            for(int i = 0; i < items.length; i++)
-            {
+    public void write() throws ZipFileException {
+        try {
+            for (int i = 0; i < items.length; i++) {
                 addEntry(items[i]);
             }
-            
+
             zipStream.close();
         }
-        catch(ZipFileException z)
-        {
+        catch (ZipFileException z) {
             throw z;
         }
-        catch(Exception e)
-        {
+        catch (Exception e) {
             throw new ZipFileException(e);
         }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    private void addEntry(ZipItem item)  throws ZipFileException, IOException
-    {
-        int       totalBytes    = 0;
-        ZipEntry  ze            = new ZipEntry(item.name);
-        
+    private void addEntry(ZipItem item) throws ZipFileException, IOException {
+        int totalBytes = 0;
+        ZipEntry ze = new ZipEntry(item.name);
+
         zipStream.putNextEntry(ze);
-        if(!item.name.endsWith("/"))
-        {
+        if (!item.name.endsWith("/")) {
             FileInputStream in = new FileInputStream(item.file);
 
             try {
-                for(int numBytes = in.read(buffer); numBytes > 0; numBytes = in.read(buffer)) {
+                for (int numBytes = in.read(buffer); numBytes > 0; numBytes = in.read(buffer)) {
                     zipStream.write(buffer, 0, numBytes);
                     totalBytes += numBytes;
                 }
-            } finally {
+            }
+            finally {
                 if (in != null)
                     try {
                         in.close();
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                     }
             }
         }
-        
+
         zipStream.closeEntry();
         Logger.getAnonymousLogger().finer("Wrote " + item.name + " to Zip File.  Wrote " + totalBytes + " bytes.");
-    }        
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    private void createItemList(String[] files) throws ZipFileException
-    {
-        try
-        {
-            if(files == null)
-            {
+    private void createItemList(String[] files) throws ZipFileException {
+        try {
+            if (files == null) {
                 FileListerRelative lister = new FileListerRelative(new File(dirName));
                 files = lister.getFiles();
             }
 
-            if(files.length <= 0)
+            if (files.length <= 0)
                 throw new ZipFileException("No files to add!");
 
             items = new ZipItem[files.length];
 
-            for(int i = 0; i < files.length; i++)
-            {
+            for (int i = 0; i < files.length; i++) {
                 File f = new File(dirName + files[i]);
                 items[i] = new ZipItem(f, files[i].replace('\\', '/'));    // just in case...
-                
+
                 // bnevins -- add a trailing "/" to empty directories
-                if(f.isDirectory())
-                    items[i].name += "/";                
+                if (f.isDirectory())
+                    items[i].name += "/";
             }
         }
-        catch(Throwable t)
-        {
+        catch (Throwable t) {
             throw new ZipFileException(t);
         }
-            
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    String getDirName()
-    {
+    String getDirName() {
         return dirName;
     }
-        
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    private static void usage()
-    {
+    private static void usage() {
         System.out.println("usage: java com.elf.util.zip.ZipWriter zip-filename directory-name");
         System.exit(1);
     }
-        
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public static void main(String[] args)
-    {
-        if(args == null || args.length != 2)
+    public static void main(String[] args) {
+        if (args == null || args.length != 2)
             usage();
-        
-        try
-        {
+
+        try {
             ZipWriter zw = new ZipWriter(args[0], args[1]);
             zw.write();
         }
-        catch(ZipFileException e)
-        {
+        catch (ZipFileException e) {
             System.exit(0);
         }
     }
-
     /////////////////////////////////////////////////////////////////////////////////////////
-
     //private                    String            zipFilename        = null;
-    private                    String            dirName            = null;
-    private                    ZipOutputStream zipStream        = null;
-    private                    byte[]            buffer            = new byte[16384];
-    private                    ZipItem[]        items            = null;
+    private String dirName = null;
+    private ZipOutputStream zipStream = null;
+    private byte[] buffer = new byte[16384];
+    private ZipItem[] items = null;
 }
