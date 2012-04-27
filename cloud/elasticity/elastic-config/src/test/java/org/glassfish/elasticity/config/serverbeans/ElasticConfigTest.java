@@ -75,4 +75,33 @@ public class ElasticConfigTest  extends ConfigApiTest {
         
         
     }
+    
+
+    @Test
+    public void testAlerts() {
+        tenantManager.setCurrentTenant("tenant2");
+        Tenant tenant = tenantManager.get(Tenant.class);
+        TenantServices ts = tenant.getServices();
+        Elastic elastic = (Elastic) ts.getServiceByType(Elastic.class);
+        ElasticAlerts elasticAlerts = elastic.getElasticAlerts();
+
+        try {
+            tenantManager.executeUpdate(new SingleConfigCode<ElasticAlerts>() {
+                @Override
+                public Object run(ElasticAlerts eAlerts) throws TransactionFailure {
+
+                    ElasticAlert alert = eAlerts.createChild(ElasticAlert.class);
+                    alert.setName(("alert1"));
+                    alert.setSchedule("10s");
+                    alert.setType("jvm_memory");
+                    eAlerts.getElasticAlert().add(alert);
+                    return eAlerts;
+                }
+            }, elasticAlerts);
+        } catch (TransactionFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        Assert.assertNotNull(elasticAlerts.getElasticAlert("alert1"));
+    }
 }
