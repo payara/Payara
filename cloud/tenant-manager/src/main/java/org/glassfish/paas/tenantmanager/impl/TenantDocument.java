@@ -137,8 +137,8 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
     private final DocumentLock lock = new DocumentLock();
     
     private class DocumentLock implements Lock {
-        private FileOutputStream fs;
-        private FileChannel fc;
+        private FileOutputStream fileStream;
+        private FileChannel fileChannel;
         private FileLock fileLock;
         private AtomicInteger locksByThisProcess = new AtomicInteger(0);
 
@@ -182,15 +182,15 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
                         if (fileLock != null) {
                             // save then always unlock
                             try {
-                                TenantDocument.this.save(fs);
+                                TenantDocument.this.save(fileStream);
                             } catch (IOException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                             } finally {
                                 try {
                                     fileLock.release();
-                                    fc.close();
-                                    fs.close();
+                                    fileChannel.close();
+                                    fileStream.close();
                                 } catch (IOException e) {
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
@@ -212,9 +212,9 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
                         try {
                             // acquire exclusive lock on config file. 
                             File f = new File(TenantDocument.this.resource.toURI());
-                            fs = new FileOutputStream(f); // save for unlock
-                            fc = fs.getChannel();
-                            fileLock = fc.lock();
+                            fileStream = new FileOutputStream(f); // save for unlock
+                            fileChannel = fileStream.getChannel();
+                            fileLock = fileChannel.lock();
                             return true;
                         } catch (URISyntaxException e) {
                             // TODO Auto-generated catch block

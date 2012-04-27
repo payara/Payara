@@ -226,7 +226,10 @@ public class TenantManagerImpl implements TenantManagerEx {
      */
     @Override
     public void delete(String name) {
-        habitats.remove(name);
+        Habitat h = habitats.remove(name);
+        if (h != null) {
+            h.release();
+        }
         // TODO: do we really want to delete file or just dispose habitat?
         // TODO: lock!!!
         FileUtils.deleteFileMaybe(getTenantFile(name));

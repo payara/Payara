@@ -120,8 +120,8 @@ public class TenantConfigBean extends ConfigBean {
 
         @Override
         public void unlock() {
-            docLock.unlock();
             beanLock.unlock();
+            docLock.unlock();
         }
 
         @Override

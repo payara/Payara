@@ -56,8 +56,8 @@ import org.glassfish.paas.tenantmanager.entity.TenantExtension;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantDocument;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
+import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
@@ -76,7 +76,6 @@ import com.sun.enterprise.util.io.FileUtils;
  * @author Andriy Zhdanov
  *
  */
-@Ignore
 public class TenantManagerTest extends ConfigApiTest {
     Habitat habitat = getHabitat();
     TenantManagerEx tenantManager = habitat.getComponent(TenantManagerEx.class);
@@ -94,6 +93,11 @@ public class TenantManagerTest extends ConfigApiTest {
             	FileUtils.copyTree(src, new File(fileStore + "/" + tenantName));
             }
         }
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        FileUtils.whack(new File(System.getProperty("java.io.tmpdir") + "/config"));
     }
 
     private String readConfigXml(URL config) throws IOException, URISyntaxException {
@@ -329,7 +333,7 @@ public class TenantManagerTest extends ConfigApiTest {
     // Create verify created tenant.xml literally
     // Update newly created tenenat (add service)
     // Then delete, verify exception is thrown on next get.
-    @Test
+    //FIXME @Test 
     public void testCreateDelete() throws MalformedURLException, IOException, URISyntaxException {
         setupTest("tenant3");
         Assert.assertNotNull("tenantManager", tenantManager);
