@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,26 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.glassfish.api.admin.CommandWrapper;
+import java.lang.annotation.Annotation;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.CommandWrapperImpl;
 
 /**
- * Execution artifacts like Service or Admin Command implementations can use
- * this annotation to generate an asynchronous execution of their logic.
+ * Implementation for the @Async command capability. 
  *
- * @author Jerome Dochez
- * 
+ * @author tmueller
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@CommandWrapper(AsyncImpl.class)
-public @interface Async {
+public class AsyncImpl implements CommandWrapperImpl {
+    
+    private static final Logger logger = Logger.getLogger(AsyncImpl.class.getName());
+    private static final ResourceBundle strings = 
+            ResourceBundle.getBundle("org/glassfish/api/LocalStrings");
+    
+    public AsyncImpl() { }
+    
+    @Override
+    public AdminCommand createWrapper(final Annotation ann, final CommandModel model, 
+            final AdminCommand command, final ActionReport report) {
+        return new AdminCommand() {
 
-    int priority() default Thread.NORM_PRIORITY;
+            @Override
+            public void execute(final AdminCommandContext context) {
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            command.execute(context);
+                        } catch (RuntimeException e) {
+                            logger.log(Level.SEVERE, e.getMessage(), e);
+                        }
+                    }
+                };
+                Async async = (Async) ann;
+                t.setPriority(async.priority());
+                t.start();
+
+                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                report.setMessage(MessageFormat.format(strings.getString("command.launch"),
+                        model.getCommandName()));
+            }
+        };
+    }
 }

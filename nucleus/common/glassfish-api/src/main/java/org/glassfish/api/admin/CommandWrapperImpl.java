@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,26 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.api.admin;
 
-package org.glassfish.api;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.glassfish.api.admin.CommandWrapper;
+import java.lang.annotation.Annotation;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.CommandModel;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Execution artifacts like Service or Admin Command implementations can use
- * this annotation to generate an asynchronous execution of their logic.
+ * Interface for defining wrappers for AdminCommands. This is used with the 
+ * CommandWrapper annotation to implement an annotation that can be used to
+ * wrap generic functionality around commands.  See the @Async annotation for
+ * an example of how this is used. 
  *
- * @author Jerome Dochez
- * 
+ * @author tmueller
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@CommandWrapper(AsyncImpl.class)
-public @interface Async {
-
-    int priority() default Thread.NORM_PRIORITY;
+@Contract
+public interface CommandWrapperImpl {
+    AdminCommand createWrapper(Annotation ann, CommandModel model, AdminCommand command, ActionReport report);
 }

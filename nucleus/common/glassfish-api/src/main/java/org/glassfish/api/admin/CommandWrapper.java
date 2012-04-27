@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,25 +38,24 @@
  * holder.
  */
 
-package org.glassfish.api;
+package org.glassfish.api.admin;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.glassfish.api.admin.CommandWrapper;
+import java.lang.annotation.ElementType;
 
 /**
- * Execution artifacts like Service or Admin Command implementations can use
- * this annotation to generate an asynchronous execution of their logic.
- *
- * @author Jerome Dochez
+ * A marker annotation for annotations that indicate that an AdminCommand is 
+ * to be wrapped in a certain way. The wrapper implementation is provided by a
+ * CommandWraperImpl service that is named with the name of the annotation.
  * 
+ * See the @Async annotation for an example of how this is used.
+ * 
+ * @author tmueller
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@CommandWrapper(AsyncImpl.class)
-public @interface Async {
-
-    int priority() default Thread.NORM_PRIORITY;
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface CommandWrapper {
+    Class<? extends CommandWrapperImpl> value();
 }

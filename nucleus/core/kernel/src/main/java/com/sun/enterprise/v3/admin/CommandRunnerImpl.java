@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import org.glassfish.api.admin.CommandWrapperImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -60,7 +61,7 @@ import java.util.concurrent.locks.Lock;
 import org.glassfish.admin.payload.PayloadFilesManager;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Async;
+import org.glassfish.api.admin.CommandWrapper;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.CommandModelImpl;
@@ -84,6 +85,7 @@ import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.XMLContentActionReporter;
 import com.sun.logging.LogDomains;
+import java.lang.annotation.Annotation;
 
 /**
  * Encapsulates the logic needed to execute a server-side command (for example,
@@ -339,8 +341,9 @@ public class CommandRunnerImpl implements CommandRunner {
 
         // We need to set context CL to common CL before executing
         // the command. See issue #5596
-        final AdminCommand wrappedComamnd = new AdminCommand() {
+        AdminCommand wrappedCommand = new AdminCommand() {
 
+            @Override
             public void execute(AdminCommandContext context) {
                 Thread thread = Thread.currentThread();
                 ClassLoader origCL = thread.getContextClassLoader();
@@ -358,39 +361,34 @@ public class CommandRunnerImpl implements CommandRunner {
             }
         };
 
-        // the command may be an asynchronous command, so we need to check
-        // for the @Async annotation.
-        Async async = command.getClass().getAnnotation(Async.class);
-        if (async == null) {
-            try {
-                wrappedComamnd.execute(context);
-            } catch (Throwable e) {
-                logger.log(Level.SEVERE,
-                        adminStrings.getLocalString("adapter.exception",
-                        "Exception in command execution : ", e), e);
-                report.setMessage(e.toString());
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setFailureCause(e);
-            }
-        } else {
-            Thread t = new Thread() {
-
-                public void run() {
-                    try {
-                        wrappedComamnd.execute(context);
-                    } catch (RuntimeException e) {
-                        logger.log(Level.SEVERE, e.getMessage(), e);
-                    }
+        // look for other CommandWrapper annotations
+        Annotation annotations[] = command.getClass().getAnnotations();
+        for (Annotation a : annotations) {
+            CommandWrapper cw = a.annotationType().getAnnotation(CommandWrapper.class);
+            if (cw != null) {            
+                CommandWrapperImpl cwi;
+                try {
+                    cwi = cw.value().newInstance();
+                    wrappedCommand = cwi.createWrapper(a, model, wrappedCommand, report);
+                } catch (InstantiationException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    logger.log(Level.SEVERE, null, ex);
                 }
-            };
-            t.setPriority(async.priority());
-            t.start();
-            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-            report.setMessage(
-                    adminStrings.getLocalString("adapter.command.launch",
-                    "Command {0} was successfully initiated asynchronously.",
-                    model.getCommandName()));
+            }
         }
+        
+        try {
+            wrappedCommand.execute(context);
+        } catch (Throwable e) {
+            logger.log(Level.SEVERE,
+                    adminStrings.getLocalString("adapter.exception",
+                    "Exception in command execution : ", e), e);
+            report.setMessage(e.toString());
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            report.setFailureCause(e);
+        }
+        
         return context.getActionReport();
     }
 
