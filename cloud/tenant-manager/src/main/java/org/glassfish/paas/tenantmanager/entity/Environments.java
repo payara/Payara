@@ -42,10 +42,14 @@ package org.glassfish.paas.tenantmanager.entity;
 import java.util.List;
 
 import org.glassfish.paas.tenantmanager.api.TenantScoped;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * Tenant environments place holder.
@@ -60,6 +64,11 @@ public interface Environments extends ConfigBeanProxy {
     @Element("*")
     List<TenantEnvironment> getEnvironments();
 
+    @Attribute(defaultValue="1")
+    String getNextId();
+    void setNextId(String id);
+    
+
     /**
      * Get particular environments by type.
      * 
@@ -68,9 +77,26 @@ public interface Environments extends ConfigBeanProxy {
     @DuckTyped
     <T extends TenantEnvironment> T getEnvironmentsByType(Class<T> type);
 
+    @DuckTyped
+    Long allocateId();
+
     class Duck extends Tenant.Extensible {
         public static <T extends TenantEnvironment> List<T> getEnvironmentsByType(Environments environments, Class<T> type) {
             return getExtensionsByType(environments.getEnvironments(), type);
         }
+
+        public static Long allocateId(Environments environments) throws TransactionFailure {
+            return (Long) ConfigSupport.apply(new SingleConfigCode<Environments>() {
+                @Override
+                public Object run(Environments environments) throws TransactionFailure {
+                    String idString = environments.getNextId();
+                    Long id = Long.valueOf(idString); // can throw exception
+                    environments.setNextId("" + (id + 1));
+                    return id;
+                }
+            }, environments);
+
+        }
     }
+
 }

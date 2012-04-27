@@ -50,6 +50,7 @@ import java.util.List;
 import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.DefaultService;
+import org.glassfish.paas.tenantmanager.entity.Environments;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.glassfish.paas.tenantmanager.entity.TenantExtension;
@@ -143,6 +144,10 @@ public class TenantManagerTest extends ConfigApiTest {
             Assert.assertEquals("External Services", 1, tenant.getServices().getExternalServices().size());
             Assert.assertNotNull("Specific Service", tenant.getServices().getServiceByType(DefaultService.class));
             Assert.assertNotNull("Tenant Extensions", tenant.getExtensions());
+            Environments environments = tenant.getEnvironments();
+            Assert.assertEquals("Next Id", 1, environments.allocateId());
+            Assert.assertEquals("Next Id", 2, environments.allocateId());
+            
         } finally {
             // Clean up context...
             tenantManager.setCurrentTenant(null);
