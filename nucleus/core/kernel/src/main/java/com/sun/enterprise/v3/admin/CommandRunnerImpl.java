@@ -365,16 +365,9 @@ public class CommandRunnerImpl implements CommandRunner {
         Annotation annotations[] = command.getClass().getAnnotations();
         for (Annotation a : annotations) {
             CommandWrapper cw = a.annotationType().getAnnotation(CommandWrapper.class);
-            if (cw != null) {            
-                CommandWrapperImpl cwi;
-                try {
-                    cwi = cw.value().newInstance();
-                    wrappedCommand = cwi.createWrapper(a, model, wrappedCommand, report);
-                } catch (InstantiationException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                }
+            if (cw != null) {
+                CommandWrapperImpl cwi = habitat.getByType(cw.value());
+                wrappedCommand = cwi.createWrapper(a, model, wrappedCommand, report);
             }
         }
         

@@ -48,12 +48,14 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandWrapperImpl;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Implementation for the @Async command capability. 
  *
  * @author tmueller
  */
+@Service
 public class AsyncImpl implements CommandWrapperImpl {
     
     private static final Logger logger = Logger.getLogger(AsyncImpl.class.getName());
