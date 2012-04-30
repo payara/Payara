@@ -51,7 +51,7 @@ import org.glassfish.api.admin.Supplemental;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;

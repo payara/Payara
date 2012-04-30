@@ -62,7 +62,9 @@ import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -118,7 +120,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
     @Inject
     Applications applications;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     protected Server server;
 
     @Inject

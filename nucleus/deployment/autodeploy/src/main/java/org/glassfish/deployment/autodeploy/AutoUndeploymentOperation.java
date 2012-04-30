@@ -50,7 +50,9 @@ import java.util.List;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.deployment.autodeploy.AutoDeployer.AutodeploymentStatus;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -100,7 +102,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
     @Inject
     private AutodeployRetryManager retryManager;
 
-    @Inject(name=COMMAND_NAME)
+    @Inject @Named(COMMAND_NAME)
     private AdminCommand undeployCommand;
     
     /**

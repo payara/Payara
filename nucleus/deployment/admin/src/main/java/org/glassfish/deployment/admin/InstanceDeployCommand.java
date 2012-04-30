@@ -65,7 +65,9 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.Transaction;
@@ -116,7 +118,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
     @Inject
     ServerEnvironment env;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     protected Server server;
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;

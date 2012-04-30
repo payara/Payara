@@ -65,7 +65,9 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
@@ -145,7 +147,7 @@ public class CreateApplicationRefCommand implements AdminCommand {
     @Inject
     VersioningService versioningService;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     protected Server server;
 
     @Inject
