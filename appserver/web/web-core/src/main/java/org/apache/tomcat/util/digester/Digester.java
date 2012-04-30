@@ -111,7 +111,7 @@ public class Digester extends DefaultHandler {
         }
     }
 
-    protected static IntrospectionUtils.PropertySource source[] = 
+    static final IntrospectionUtils.PropertySource source[] =
         new IntrospectionUtils.PropertySource[] { new SystemPropertySource() };
 
 
