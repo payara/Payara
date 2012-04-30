@@ -110,6 +110,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.elasticity</groupId>
+            <artifactId>elastic-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.elasticity</groupId>
             <artifactId>elastic-config</artifactId>
             <version>${project.version}</version>
         </dependency>

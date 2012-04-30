@@ -109,6 +109,7 @@ public class ElasticEngineImpl
 
     @Override
     public void onEvent(ServiceChangeEvent event) {
+        //isCPAS should be set to true
         String envName = event.getNewValue().getServiceDescription().getAppName();
         switch (event.getType()) {
             case CREATED:
