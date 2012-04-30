@@ -168,7 +168,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 }
 
                 AdminAccessController.Access access = authenticate(req);
-                if (access == AdminAccessController.Access.FULL) {
+                if (access.isOK()) {
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     if ((context != null) && (!"".equals(context)) && (adapter == null)) {

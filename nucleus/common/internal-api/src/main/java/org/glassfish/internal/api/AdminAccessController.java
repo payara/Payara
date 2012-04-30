@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ public interface AdminAccessController {
      * <ul>
      * <li>FULL - the connection should be permitted full admin access, including
      * the ability to change the configuration
+     * <li>READONLY - the connection should be permitted read but not write access
      * <li>FORBIDDEN - the connection is rejected because it is remote, secure admin
      * is not enabled, and the connection is not from the DAS to an instance
      * <li>NONE - no access permitted
@@ -72,8 +73,13 @@ public interface AdminAccessController {
      */
     public static enum Access {
         FULL,
+        READONLY,
         FORBIDDEN,
-        NONE
+        NONE;
+        
+        public boolean isOK() {
+            return this == FULL || this == READONLY;
+        }
     }
 
     /** Authenticates the admin user by delegating to the underlying realm. The implementing classes
