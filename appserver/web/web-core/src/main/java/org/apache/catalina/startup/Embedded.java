@@ -842,18 +842,14 @@ public class Embedded  extends StandardService {
      * @throws IllegalArgumentException if the specified authenticator is not
      * null and does not implement the org.apache.catalina.Valve interface
      */
-    public void addAuthenticator(Authenticator authenticator,
+    public synchronized void addAuthenticator(Authenticator authenticator,
                                  String loginMethod) {
         if ((authenticator != null) && !(authenticator instanceof GlassFishValve)) {
             throw new IllegalArgumentException(
                 sm.getString("embedded.authenticatorNotInstanceOfValve"));
         }
         if (authenticators == null) {
-            synchronized (this) {
-                if (authenticators == null) {
-                    authenticators = new HashMap<String, Authenticator>();
-                }
-            }
+            authenticators = new HashMap<String, Authenticator>();
         }
         authenticators.put(loginMethod, authenticator);
     }
