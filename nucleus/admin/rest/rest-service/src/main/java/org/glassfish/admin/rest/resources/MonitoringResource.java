@@ -42,15 +42,8 @@ package org.glassfish.admin.rest.resources;
 
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.ProxyImpl;
-import org.glassfish.elasticity.metric.MetricAttribute;
-import org.glassfish.elasticity.metric.MetricNode;
-import org.glassfish.elasticity.metric.TabularMetricAttribute;
-import org.glassfish.elasticity.metric.TabularMetricEntry;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -58,14 +51,12 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.*;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.TreeMap;
 import javax.ws.rs.Consumes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.MediaType;
@@ -182,131 +173,6 @@ public class MonitoringResource {
         return responseBuilder.build();
     }
 
-    @GET
-    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})
-    @Path("elasticity/domain{path:.*}")
-    public Response getElasticity(@PathParam("path")List<PathSegment> pathSegments, @QueryParam("timePeriod") @DefaultValue("120")int timePeriod) {
-
-        Response.ResponseBuilder responseBuilder = Response.status(OK);
-        MetricNode rootNode = habitat.getComponent(MetricNode.class, "elasticity");
-
-        //The pathSegments will always contain "domain". Discard it
-        pathSegments = pathSegments.subList(1, pathSegments.size());
-        if(!pathSegments.isEmpty()) {
-            PathSegment lastSegment = pathSegments.get(pathSegments.size() - 1);
-            if(lastSegment.getPath().isEmpty()) { // if there is a trailing '/' (like monitroing/domain/), a spurious pathSegment is added. Discard it.
-                pathSegments = pathSegments.subList(0,pathSegments.size() - 1);
-            }
-        }
-
-        RestActionReporter ar = new RestActionReporter();
-        String currentInstanceName = System.getProperty("com.sun.aas.instanceName");
-        boolean isRunningOnDAS = "server".equals(currentInstanceName); //TODO this needs to come from an API. Check with admin team
-        if(!pathSegments.isEmpty()) {
-            String serverName = pathSegments.get(0).getPath();
-            pathSegments = pathSegments.subList(1, pathSegments.size());
-            if(serverName.equals(currentInstanceName)) { // Query for current instance. Execute it
-                MetricNode targetNode = rootNode;
-                if(!pathSegments.isEmpty() ) {
-                    targetNode = getChildNode(rootNode, pathSegments);
-                }
-
-                if(targetNode != null) {
-                    // Return all attributes and child links
-                    ResponseEntity responseEntity = constructEntity(targetNode, timePeriod);
-                    ar.getExtraProperties().put("entity", responseEntity.entity);
-                    ar.getExtraProperties().put("childResources", responseEntity.childLinks);
-                }  else {
-                    //Could not find targetnode
-                    responseBuilder.status(NOT_FOUND);
-                }
-
-                responseBuilder.entity(new ActionReportResult(ar));
-
-            } else { //firstPathElement != currentInstanceName => A proxy request
-                if(isRunningOnDAS) { //Attempt to forward to instance if running on Das
-                    //TODO validate that firstPathElement corresponds to a valid server name
-                    Properties proxiedResponse = new ElasticityProxyImpl().proxyRequest(uriInfo, Util.getJerseyClient(), habitat);
-                    ar.setExtraProperties(proxiedResponse);
-                    responseBuilder.entity(new ActionReportResult(ar));
-                } else { // Not running on DAS and firstPathElement != currentInstanceName => Reject the request as invalid
-                    return Response.status(FORBIDDEN).build();
-                }
-            }
-        } else { // Called for /monitoring/domain/
-            if(isRunningOnDAS) { // Add links to instances from the cluster
-                Domain domain = habitat.getComponent(Domain.class);
-                Map<String, String> links = new TreeMap<String, String>();
-                for (Server s : domain.getServers().getServer()) {
-                    if (!s.getName().equals("server")) {// add all non 'server' instances
-                        links.put(s.getName(), getElementLink(uriInfo, s.getName()));
-                    }
-                }
-                ar.getExtraProperties().put("childResources", links);
-            }
-            responseBuilder.entity(new ActionReportResult(ar));
-
-        }
-        return responseBuilder.build();
-    }
-
-    private ResponseEntity constructEntity(MetricNode targetNode, int timePeriod) {
-        ResponseEntity responseEntity = new ResponseEntity();
-
-        for (MetricNode child : targetNode.getChildren()) {
-            String childName = child.getName();
-            responseEntity.childLinks.put(childName, getElementLink(uriInfo, childName));
-        }
-
-        for (MetricAttribute attribute : targetNode.getAttributes()) {
-
-            Object attributeValue = null;
-            if (attribute instanceof TabularMetricAttribute) {
-                TabularMetricAttribute tabularAttribute = (TabularMetricAttribute) attribute;
-                String[] columnNames = tabularAttribute.getColumnNames();
-                Map <Long, Object> attributeTable = new TreeMap<Long, Object>();
-                Iterator<TabularMetricEntry> metricRows = tabularAttribute.iterator(timePeriod, TimeUnit.SECONDS);
-                int i = 0;
-                while (metricRows.hasNext()) {
-                    TabularMetricEntry metricRow = metricRows.next();
-                    Map<String, Object> attributeRow = new TreeMap<String, Object>();
-                    for (String columnName : columnNames) {
-                        attributeRow.put(columnName, metricRow.getValue(columnName));
-                    }
-                    attributeTable.put(metricRow.getTimestamp(), attributeRow);
-                }
-                attributeValue = attributeTable;
-            } else {
-                attributeValue = attribute.getValue();
-            }
-
-            responseEntity.entity.put(attribute.getName(), attributeValue);
-        }
-
-        return responseEntity;
-    }
-
-    private MetricNode getChildNode(MetricNode currentNode, List<PathSegment> pathSegments) {
-
-        for (Iterator<PathSegment> iterator = pathSegments.iterator(); currentNode != null && iterator.hasNext() ; ) {
-            PathSegment pathSegment = iterator.next();
-            MetricNode[] children = currentNode.getChildren();
-
-            MetricNode targetChildNode = null;
-            for(MetricNode child : children) {
-                if(pathSegment.getPath().equals(child.getName()) ) {
-                    targetChildNode = child;
-                    break;
-                }
-            }
-            currentNode = targetChildNode;
-        }
-
-        return currentNode;
-
-    }
-
-
     private void constructEntity(List<TreeNode> nodeList, RestActionReporter ar) {
         Map<String, Object> entity = new TreeMap<String, Object>();
         Map<String, String> links = new TreeMap<String, String>();
@@ -367,15 +233,4 @@ public class MonitoringResource {
         }
     }
 
-    private static class ElasticityProxyImpl extends MonitoringProxyImpl {
-        @Override
-        public String extractTargetInstanceName(UriInfo uriInfo) {
-            return uriInfo.getPathSegments().get(2).getPath(); //pathSegment[0] == "elasticity". pathSegment[1] == "domain"
-        }
-    }
-
-    private static class ResponseEntity {
-        Map<String, Object> entity = new TreeMap<String, Object>();
-        Map<String, String> childLinks = new TreeMap<String, String>();
-    }
 }
