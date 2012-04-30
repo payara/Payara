@@ -55,7 +55,9 @@ import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
@@ -90,7 +92,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     @Inject
     Habitat habitat;
 
-    @Inject(optional = true)
+    @Inject @Optional
     Agent agent = null;
 
     @Inject

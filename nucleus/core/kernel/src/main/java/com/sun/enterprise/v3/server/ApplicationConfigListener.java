@@ -43,7 +43,9 @@ package com.sun.enterprise.v3.server;
 import org.jvnet.hk2.config.TransactionListener;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
@@ -103,7 +105,7 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
     @Inject
     StartupContext startupContext;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     private final static String UPGRADE_PARAM = "-upgrade";

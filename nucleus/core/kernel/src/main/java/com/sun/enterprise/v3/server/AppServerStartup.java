@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import org.glassfish.hk2.RunLevelDefaultScope;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -130,10 +130,10 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     Version version;
 
-    @Inject
+    @org.jvnet.hk2.annotations.Inject
     CommonClassLoaderServiceImpl commonCLS;
 
-    @Inject
+    @org.jvnet.hk2.annotations.Inject
     SystemTasks pidWriter;
     
     @Inject

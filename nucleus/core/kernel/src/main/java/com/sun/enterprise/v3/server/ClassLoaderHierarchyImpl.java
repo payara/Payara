@@ -41,7 +41,9 @@
 package com.sun.enterprise.v3.server;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -81,7 +83,7 @@ public class ClassLoaderHierarchyImpl implements ClassLoaderHierarchy {
     @Inject CommonClassLoaderServiceImpl commonCLS;
 
     //For distributions where connector module is not available.
-    @Inject(optional = true) ConnectorClassLoaderService connectorCLS;
+    @Inject @Optional ConnectorClassLoaderService connectorCLS;
 
     @Inject
     AppLibClassLoaderServiceImpl applibCLS;

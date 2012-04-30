@@ -48,7 +48,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -87,7 +89,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     private Boolean monitor;
     @Param(primary = true)
     private String pattern;
-    @Inject(optional = true)
+    @Inject @Optional
     private MonitoringRuntimeDataRegistry mrdr;
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetCommand.class);

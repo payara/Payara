@@ -658,7 +658,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private AdminCommandContext context;
     private String pattern;
     private String userarg;
-    @Inject(optional = true)
+    @Inject @Optional
     private MonitoringRuntimeDataRegistry datareg;
     @Inject
     private Domain domain;

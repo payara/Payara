@@ -61,6 +61,7 @@ import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.container.Adapter;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.PostConstruct;
 
 import java.net.InetAddress;
@@ -94,7 +95,9 @@ import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Privacy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
@@ -131,7 +134,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject
     Events events;
     
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
     private AdminEndpointDecider epd = null;
@@ -142,16 +145,16 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject
     BaseServiceLocator habitat;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
 
     @Inject
     volatile Domain domain;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile Server server;
     
-    @Inject(optional=true)
+    @Inject @Optional
     AdminAccessController authenticator;
    
     final Class<? extends Privacy> privacyClass;

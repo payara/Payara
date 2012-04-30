@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,10 @@ import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -72,7 +75,7 @@ public class AdminRESTConfigUpgrade
     // http://java.net/jira/browse/GLASSFISH-15576
     // This will force the Grizzly upgrade code to run before
     // AdminRESTConfigUpgrade runs.
-    @Inject(name="grizzlyconfigupgrade", optional=true)
+    @Inject @Named("grizzlyconfigupgrade") @Optional
     ConfigurationUpgrade precondition = null;
 
     @Override

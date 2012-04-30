@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,8 +51,11 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.config.*;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -97,7 +100,7 @@ public class UpgradeStartup implements ModuleStartup {
     @Inject 
     ServerEnvironment env;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     @Inject 
@@ -106,7 +109,7 @@ public class UpgradeStartup implements ModuleStartup {
     @Inject
     CommandRunner commandRunner;
 
-    @Inject(optional=true)
+    @Inject @Optional
     DomainUpgrade[] upgrades=null;
 
     // we need to refine, a better logger should be used.

@@ -98,6 +98,8 @@ import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 
+import javax.inject.Named;
+
 /**
  * This service is responsible for loading all deployed applications...
  *
@@ -134,7 +136,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
 
     protected Domain domain;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     @Inject

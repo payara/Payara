@@ -74,7 +74,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 
-import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.*;
@@ -86,6 +85,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.XMLContentActionReporter;
 import com.sun.logging.LogDomains;
 import java.lang.annotation.Annotation;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Encapsulates the logic needed to execute a server-side command (for example,
@@ -112,11 +114,11 @@ public class CommandRunnerImpl implements CommandRunner {
     private ServerEnvironment serverEnv;
     @Inject
     private ProcessEnvironment processEnv;
-    @Inject
+    @org.jvnet.hk2.annotations.Inject
     private InstanceStateService state;
     @Inject
     private AdminCommandLock adminLock;
-    @Inject(name = "SupplementalCommandExecutorImpl")
+    @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
     private static final String ASADMIN_CMD_PREFIX = "AS_ADMIN_";
     private static final LocalStringManagerImpl adminStrings =

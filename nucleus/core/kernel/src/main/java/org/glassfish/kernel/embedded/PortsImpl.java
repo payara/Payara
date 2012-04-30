@@ -41,7 +41,9 @@
 package org.glassfish.kernel.embedded;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.embedded.Port;
 import org.glassfish.internal.embedded.Ports;
@@ -60,7 +62,7 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 public class PortsImpl implements Ports {
 
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     NetworkConfig network;
 
     @Inject

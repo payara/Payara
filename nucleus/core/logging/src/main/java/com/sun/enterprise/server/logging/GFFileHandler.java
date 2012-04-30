@@ -51,7 +51,9 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.ContractProvided;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -89,7 +91,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
     @Inject
     ServerEnvironmentImpl env;
 
-    @Inject(optional = true)
+    @Inject @Optional
     Agent agent;
 
     @Inject

@@ -43,7 +43,7 @@ package org.glassfish.kernel;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.glassfish.api.admin.FileMonitoring;
 

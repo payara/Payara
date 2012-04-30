@@ -46,7 +46,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleLifecycleListener;
 import com.sun.enterprise.module.common_impl.CompositeEnumeration;
 import com.sun.logging.LogDomains;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 

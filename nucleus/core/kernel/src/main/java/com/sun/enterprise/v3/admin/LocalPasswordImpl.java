@@ -44,7 +44,7 @@ import java.io.*;
 import java.util.logging.*;
 import java.security.SecureRandom;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PostConstruct;

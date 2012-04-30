@@ -46,7 +46,10 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.security.common.MasterPassword;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
@@ -75,10 +78,10 @@ public class IdmService implements PostConstruct/*, IdentityManagement*/ {
     @Inject
     private volatile ServerEnvironmentImpl env = null;
 
-    @Inject(name="Security SSL Password Provider Service", optional=true)
+    @Inject @Named("Security SSL Password Provider Service") @Optional
     private MasterPassword masterPasswordHelper=null;
 
-    @Inject(name="JMX SSL Password Provider Service", optional=true)
+    @Inject @Named("JMX SSL Password Provider Service") @Optional
     private MasterPassword jmxMasterPasswordHelper=null;
 
     private volatile char[] masterPassword;

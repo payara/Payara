@@ -47,7 +47,7 @@ import org.glassfish.api.admin.config.ConfigParser;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.GlassFishConfigBean;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
@@ -58,6 +58,7 @@ import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Named;
 import javax.xml.stream.XMLStreamReader;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -72,7 +73,7 @@ import java.util.logging.Logger;
 @Service
 public class DefaultConfigParser implements ConfigParser {
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
     Logger logger = Logger.getLogger(LogDomains.CORE_LOGGER);

@@ -56,7 +56,9 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.io.OutputBuffer;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
@@ -116,7 +118,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 
     @Inject
     ServerEnvironmentImpl env;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     AdminService adminService;
     private String contextRoot;
     private File warFile;    // GF Admin Console War File Location
@@ -133,7 +135,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     BaseServiceLocator habitat;
     @Inject
     Events events;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config serverConfig;
     @Inject
     Version version;

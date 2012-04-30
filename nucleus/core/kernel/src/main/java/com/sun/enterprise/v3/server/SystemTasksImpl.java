@@ -58,8 +58,11 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.universal.io.SmartFile;
 
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -81,11 +84,11 @@ import java.util.logging.Level;
 public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
     // in embedded environment, JavaConfig is pointless, so make this optional
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME, optional = true)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME) @Optional
 
     JavaConfig javaConfig;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     @Inject

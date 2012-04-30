@@ -44,8 +44,9 @@ import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.admin.*;
 import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
@@ -96,7 +97,7 @@ public class ListCommand extends V2DottedNameSupport implements AdminCommand {
     @Param(primary = true)
     String pattern="";
 
-    @Inject(optional=true)
+    @Inject @Optional
     private MonitoringRuntimeDataRegistry mrdr;
     
     public void execute(AdminCommandContext context) {

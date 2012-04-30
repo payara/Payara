@@ -41,7 +41,7 @@
 package org.glassfish.kernel.embedded;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.ConfigSupport;

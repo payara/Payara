@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,10 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -87,7 +90,7 @@ public class AdminConsoleConfigUpgrade
 
     // This will force the Grizzly upgrade code to run before
     // AdminConsoleConfigUpgrade runs. Issue GLASSFISH-15599
-    @Inject(name="grizzlyconfigupgrade", optional=true)
+    @Inject @Named("grizzlyconfigupgrade") @Optional
     ConfigurationUpgrade precondition = null;
 
     @Override

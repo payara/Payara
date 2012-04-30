@@ -59,6 +59,7 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.config.serverbeans.*;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.config.types.Property;
 import org.glassfish.api.admin.config.ApplicationName;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -87,7 +88,9 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.SuperSniffer;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
@@ -144,7 +147,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Inject
     protected Applications applications;
 
-    @Inject(name= ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
 
     @Inject
@@ -153,7 +156,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Inject
     ServerEnvironmentImpl env;
    
-    @Inject(optional=true)
+    @Inject @Optional
     VirtualizationEnv virtEnv;
 
     @Inject
