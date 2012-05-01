@@ -65,7 +65,6 @@ import java.util.logging.Level;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.internal.api.*;
-import org.glassfish.internal.api.JMXAdminPrincipal;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.Inhabitant;
