@@ -51,7 +51,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.ServiceOrchestrator;
 import org.glassfish.paas.orchestrator.service.metadata.*;
 import org.glassfish.paas.orchestrator.provisioning.util.JSONUtil;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;

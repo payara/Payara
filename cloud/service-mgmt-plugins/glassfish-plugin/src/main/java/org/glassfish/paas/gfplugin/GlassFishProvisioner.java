@@ -44,7 +44,7 @@ package org.glassfish.paas.gfplugin;
 import org.glassfish.embeddable.*;
 import org.glassfish.paas.gfplugin.cli.ApplicationServerProvisioner;
 import org.glassfish.paas.orchestrator.provisioning.util.RemoteCommandExecutor;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;

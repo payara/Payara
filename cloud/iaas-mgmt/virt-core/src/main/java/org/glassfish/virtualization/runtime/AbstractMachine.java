@@ -67,7 +67,7 @@ import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.Habitat;
 
 

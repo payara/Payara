@@ -67,7 +67,7 @@ import java.util.logging.Logger;
 @ExecuteOn({RuntimeType.DAS})
 public class DeleteElasticServiceCommand implements AdminCommand {
 
-  @Inject(optional=true)
+  @Inject @Optional
   ElasticServices elasticServices;
 
   @Inject

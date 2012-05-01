@@ -52,7 +52,7 @@ import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import static org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;

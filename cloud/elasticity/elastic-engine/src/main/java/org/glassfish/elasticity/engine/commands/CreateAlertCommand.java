@@ -71,7 +71,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-alert", description = "Create alert") })
 public class CreateAlertCommand implements AdminCommand {
 
-  @Inject(optional = true)
+  @Inject @Optional
   ElasticServices elasticServices;
 
   @Inject

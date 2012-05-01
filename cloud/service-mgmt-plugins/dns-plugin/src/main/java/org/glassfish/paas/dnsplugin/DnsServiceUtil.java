@@ -43,7 +43,7 @@ package org.glassfish.paas.dnsplugin;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 
 @org.jvnet.hk2.annotations.Service

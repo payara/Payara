@@ -48,7 +48,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.scopes.PerLookup;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;

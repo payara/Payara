@@ -51,7 +51,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.api.Resource;
 import org.glassfish.resources.module.ResourcesDeployer;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.*;

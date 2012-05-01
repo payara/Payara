@@ -46,7 +46,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.paas.orchestrator.*;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.provisioning.util.FailureInducer;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.Habitat;
 
 import java.util.logging.Logger;

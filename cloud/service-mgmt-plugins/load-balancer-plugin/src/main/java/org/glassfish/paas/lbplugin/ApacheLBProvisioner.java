@@ -62,7 +62,7 @@ import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.lbplugin.util.LBServiceConfiguration;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.VirtualizationType;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;

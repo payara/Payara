@@ -48,7 +48,9 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 
@@ -107,7 +109,7 @@ public interface Virtualizations extends DomainExtension {
         @Inject
         Domain domain;
 
-        @Inject(optional = true)
+        @Inject @Optional
         Virtualizations virt = null;
 
         @Override

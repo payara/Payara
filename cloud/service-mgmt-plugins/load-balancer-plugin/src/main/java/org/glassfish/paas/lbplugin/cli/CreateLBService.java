@@ -61,7 +61,9 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -91,10 +93,10 @@ public class CreateLBService extends BaseLBService implements AdminCommand, Runn
     @Param(name="serviceconfigurations", optional=true, separator=':')
     public Properties serviceConfigurations;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject @Optional // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject @Optional // made it optional for non-virtual scenario to work
     IAAS iaas;
 
     @Inject

@@ -58,7 +58,9 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.*;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -111,13 +113,13 @@ public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
     
     private static final Logger logger = Logger.getLogger(RegenerateGlassFishTemplate.class.getName());
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject @Optional // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
     
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject @Optional // made it optional for non-virtual scenario to work
     IAAS iaas;
     
-    @Inject(optional = true) // // made it optional for non-virtual scenario to work
+    @Inject @Optional // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
 
     public void execute(AdminCommandContext context) {

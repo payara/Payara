@@ -61,7 +61,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.SQLExec;
 import org.apache.tools.ant.types.Path;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 
 import java.io.File;
 import java.io.FileInputStream;

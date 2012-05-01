@@ -70,7 +70,7 @@ import org.glassfish.api.admin.RestEndpoints;
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-jvm-memory-alert", description = "Create JVM memeory alert") })
 public class CreateJVMMemoryAlertCommand implements AdminCommand {
 
-  @Inject(optional = true)
+  @Inject @Optional
   ElasticServices elasticServices;
 
   @Inject

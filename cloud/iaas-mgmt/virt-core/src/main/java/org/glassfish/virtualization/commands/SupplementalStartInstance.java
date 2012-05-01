@@ -50,7 +50,9 @@ import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -75,7 +77,7 @@ public class SupplementalStartInstance implements AdminCommand {
     @Inject
     Factory<VirtualMachineLifecycle> vmLifecycle;
 
-    @Inject(optional = true)
+    @Inject @Optional
     Virtualizations virtualizations;
 
     @Param(name="_vmStartup", optional=true, defaultValue = "true")

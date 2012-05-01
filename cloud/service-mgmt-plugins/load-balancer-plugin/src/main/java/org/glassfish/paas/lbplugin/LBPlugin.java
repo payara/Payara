@@ -70,7 +70,9 @@ import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.virtualization.spi.AllocationStrategy;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
@@ -107,7 +109,7 @@ public class LBPlugin implements ServicePlugin {
     @Inject
     private Habitat habitat;
 
-    @Inject(optional = true) // made it optional for non-virtual scenario to work
+    @Inject @Optional // made it optional for non-virtual scenario to work
     private TemplateRepository templateRepository;
 
     private static final String APPLICATION_DOMAIN_NAME = "application-domain-name";

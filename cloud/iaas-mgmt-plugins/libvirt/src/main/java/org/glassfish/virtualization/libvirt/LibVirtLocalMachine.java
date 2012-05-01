@@ -51,7 +51,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 

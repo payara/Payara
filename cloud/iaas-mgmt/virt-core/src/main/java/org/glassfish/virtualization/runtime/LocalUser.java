@@ -43,7 +43,7 @@ package org.glassfish.virtualization.runtime;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.spi.OsInterface;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 

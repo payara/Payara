@@ -51,7 +51,7 @@ import org.glassfish.paas.orchestrator.config.PaasApplication;
 import org.glassfish.paas.orchestrator.config.PaasApplications;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;

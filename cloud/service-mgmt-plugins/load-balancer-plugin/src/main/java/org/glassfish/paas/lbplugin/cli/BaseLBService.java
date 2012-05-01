@@ -49,7 +49,9 @@ import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -73,7 +75,7 @@ public class BaseLBService {
     private String _vmId;
 
     // TODO :: remove dependency on VirtualCluster(s).
-    @Inject(optional = true) // // made it optional for non-virtual scenario to work
+    @Inject @Optional // // made it optional for non-virtual scenario to work
     VirtualClusters virtualClusters;
     
     @Param(name="virtualcluster", optional=true)
