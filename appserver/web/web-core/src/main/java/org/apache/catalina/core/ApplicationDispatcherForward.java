@@ -179,7 +179,7 @@ class ApplicationDispatcherForward {
          * Attempt error-page mapping only if response.sendError(), as
          * opposed to response.setStatus(), was called.
          */
-        if (!(reqFacHelper != null && reqFacHelper.isResponseError())) {
+        if (reqFacHelper == null || !reqFacHelper.isResponseError()) {
             return false;
         }
 
@@ -195,10 +195,7 @@ class ApplicationDispatcherForward {
                 Globals.DISPATCHER_REQUEST_PATH_ATTR);
             if (requestPath == null
                     || !requestPath.equals(errorPage.getLocation())) {
-                String message = null;
-                if (reqFacHelper != null) {
-                    message = RequestUtil.filter(reqFacHelper.getResponseMessage());
-                }
+                String message = RequestUtil.filter(reqFacHelper.getResponseMessage());
                 if (message == null) {
                     message = "";
                 }
