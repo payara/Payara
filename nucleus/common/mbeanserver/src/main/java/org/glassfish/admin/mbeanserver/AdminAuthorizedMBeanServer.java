@@ -59,7 +59,6 @@ import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.JMXAccessInfo;
-import org.glassfish.internal.api.JMXAdminPrincipal;
 
 /**
  * Allows per-access security checks on MBean attribute set/get and other
