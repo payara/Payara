@@ -47,7 +47,7 @@ import org.glassfish.api.naming.NamedNamingObjectProxy;
 import com.sun.enterprise.deployment.*;
 
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;

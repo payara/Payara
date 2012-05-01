@@ -61,7 +61,7 @@ import org.glassfish.admin.amx.j2ee.J2EETypes;
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.api.amx.AMXLoader;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.*;

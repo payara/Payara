@@ -42,7 +42,7 @@ package com.sun.enterprise.container.common.impl.util;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEObjectStreamHandler;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.Context;

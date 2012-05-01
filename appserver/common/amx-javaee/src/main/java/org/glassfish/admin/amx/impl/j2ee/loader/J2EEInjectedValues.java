@@ -41,7 +41,7 @@
 package org.glassfish.admin.amx.impl.j2ee.loader;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.internal.data.ApplicationRegistry;

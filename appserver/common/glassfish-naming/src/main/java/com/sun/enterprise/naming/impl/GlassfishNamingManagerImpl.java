@@ -42,7 +42,7 @@ package com.sun.enterprise.naming.impl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
