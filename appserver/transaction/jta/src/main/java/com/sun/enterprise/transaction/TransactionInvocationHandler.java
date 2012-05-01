@@ -52,7 +52,7 @@ import org.glassfish.api.invocation.ComponentInvocationHandler;
 import org.glassfish.api.invocation.InvocationException;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 

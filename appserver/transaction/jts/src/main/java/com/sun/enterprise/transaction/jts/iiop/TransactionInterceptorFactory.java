@@ -52,7 +52,7 @@ import com.sun.jts.CosTransactions.Configuration;
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 

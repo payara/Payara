@@ -49,7 +49,9 @@ import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -80,7 +82,7 @@ public class TransactionServiceConfigListener implements ConfigListener, PostCon
 
     // Injecting @Configured type triggers the corresponding change 
     // events to be sent to this instance
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService ts;
 
     @Inject

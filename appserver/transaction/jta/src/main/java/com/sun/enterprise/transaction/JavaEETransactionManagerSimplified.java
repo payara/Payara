@@ -66,7 +66,7 @@ import com.sun.enterprise.transaction.monitoring.TransactionServiceStatsProvider
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.component.BaseServiceLocator;
