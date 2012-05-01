@@ -65,6 +65,7 @@ import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.api.container.Sniffer;
 import org.glassfish.deployment.common.*;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
@@ -83,6 +84,7 @@ import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -159,7 +161,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             archivist.setXMLValidation(false);
         }
         archivist.setRuntimeXMLValidation(false);
-
+        Collection<Sniffer> sniffers = dc.getTransientAppMetaData(DeploymentProperties.SNIFFERS, Collection.class);
+        archivist.setExtensionArchivists(archivistFactory.getExtensionsArchivists(sniffers, archivist.getModuleType()));
+        
         ApplicationHolder holder = dc.getModuleMetaData(ApplicationHolder.class);
         File deploymentPlan = params.deploymentplan;
         handleDeploymentPlan(deploymentPlan, archivist, sourceArchive, holder);
@@ -294,6 +298,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             ActionReport report = new HTMLActionReporter();
             context = new DeploymentContextImpl(report, logger, archive, parameters, env);
             context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, archiveHandler.getArchiveType());
+            context.setArchiveHandler(archiveHandler);
             String appName = archiveHandler.getDefaultApplicationName(archive, context);
             parameters.name = appName;
 
@@ -319,6 +324,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             context.createDeploymentClassLoader(clh, archiveHandler);
             cl = context.getClassLoader();
             deployment.getDeployableTypes(context);
+            deployment.getSniffers(archiveHandler, null, context);
             return processDOL(context);
         } finally  {
             if (cl != null) {

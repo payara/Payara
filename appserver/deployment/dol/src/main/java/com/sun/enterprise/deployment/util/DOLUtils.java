@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment.util;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
@@ -50,24 +51,32 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.container.Sniffer;
 import java.net.URL;
 import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.io.File;
 import java.io.IOException;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.archivist.Archivist;
+import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.ContractLocator;
+import org.glassfish.hk2.classmodel.reflect.Types;
 
 /**
  * Utility class for convenienve methods
@@ -100,6 +109,15 @@ public class DOLUtils {
     }
 
     public static List<URI> getLibraryJarURIs(BundleDescriptor bundleDesc, ReadableArchive archive) throws Exception {
+        if (bundleDesc == null) {
+            return Collections.emptyList();
+        }
+        ModuleDescriptor moduleDesc = ((BundleDescriptor)bundleDesc).getModuleDescriptor();
+        Application app = ((BundleDescriptor)moduleDesc.getDescriptor()).getApplication();
+        return getLibraryJarURIs(app, archive);
+    }
+
+    public static List<URI> getLibraryJarURIs(Application app, ReadableArchive archive) throws Exception {
         List<URL> libraryURLs = new ArrayList<URL>();
         List<URI> libraryURIs = new ArrayList<URI>();
 
@@ -108,18 +126,11 @@ public class DOLUtils {
 
         ReadableArchive parentArchive = archive.getParentArchive();
 
-        if (parentArchive == null || bundleDesc == null) {
-            // ear level or standalone module
-            for (URL url : libraryURLs) {
-                libraryURIs.add(Util.toURI(url));
-            }
-            return libraryURIs;
+        if (parentArchive == null) {
+            return Collections.emptyList();
         }
 
         File appRoot = new File(parentArchive.getURI());
-
-        ModuleDescriptor moduleDesc = ((BundleDescriptor)bundleDesc).getModuleDescriptor();
-        Application app = ((BundleDescriptor)moduleDesc.getDescriptor()).getApplication();
 
         // add libraries jars inside application lib directory
         libraryURLs.addAll(ASClassLoaderUtil.getAppLibDirLibrariesAsList(
@@ -232,5 +243,90 @@ public class DOLUtils {
             }
         }
         return result;
+    }
+
+    public static void setExtensionArchivistForSubArchivist(BaseServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app, Archivist subArchivist) {
+        try {
+            Collection<Sniffer> sniffers = getSniffersForModule(habitat, archive, md, app);
+            ArchivistFactory archivistFactory = habitat.getComponent(ArchivistFactory.class);
+            subArchivist.setExtensionArchivists(archivistFactory.getExtensionsArchivists(sniffers, subArchivist.getModuleType()));
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+
+    // get sniffer list for sub modules of an ear application
+    private static Collection<Sniffer> getSniffersForModule(BaseServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app) throws Exception {
+        ArchiveHandler handler = habitat.getComponent(ArchiveHandler.class, md.getModuleType().toString());
+        SnifferManager snifferManager = habitat.getComponent(SnifferManager.class);
+        List<URI> classPathURIs = handler.getClassPathURIs(archive);
+        classPathURIs.addAll(getLibraryJarURIs(app, archive));
+        Types types = archive.getParentArchive().getExtraData(Types.class);
+        Collection<Sniffer> sniffers = snifferManager.getSniffers(archive, classPathURIs, types, app.getClassLoader());
+        String type = getTypeFromModuleType(md.getModuleType());
+        Sniffer mainSniffer = null;
+        for (Sniffer sniffer : sniffers) {
+            if (sniffer.getModuleType().equals(type)) {
+                mainSniffer = sniffer;
+            }
+        }
+
+        // if the sub module does not show characteristics of certain module
+        // type, we should still use the application.xml defined module type
+        // to add the appropriate sniffer
+        if (mainSniffer == null) {
+            mainSniffer = snifferManager.getSniffer(type);
+            sniffers.add(mainSniffer);
+        }
+
+        String [] incompatibleTypes = mainSniffer.getIncompatibleSnifferTypes();
+        List<String> allIncompatTypes = addAdditionalIncompatTypes(mainSniffer, incompatibleTypes);
+
+        List<Sniffer> sniffersToRemove = new ArrayList<Sniffer>();
+        for (Sniffer sniffer : sniffers) {
+            for (String incompatType : allIncompatTypes) {
+                if (sniffer.getModuleType().equals(incompatType)) {
+                    logger.warning(type + " module [" +
+                        md.getArchiveUri() +
+                        "] contains characteristics of other module type: " +
+                        incompatType);
+
+                    sniffersToRemove.add(sniffer);
+                }
+            }
+        }
+
+        sniffers.removeAll(sniffersToRemove);
+        archive.setExtraData(Collection.class, sniffers);
+
+        return sniffers;
+    }
+
+    private static String getTypeFromModuleType(ArchiveType moduleType) {
+        if (moduleType.equals(DOLUtils.warType())) {
+            return "web";
+        } else if (moduleType.equals(DOLUtils.ejbType())) {
+            return "ejb";
+        } else if (moduleType.equals(DOLUtils.carType())) {
+            return "appclient";
+        } else if (moduleType.equals(DOLUtils.rarType())) {
+            return "connector";
+        }
+        return null;
+    }
+
+    // this is to add additional incompatible sniffers at ear level where
+    // we have information to determine what is the main sniffer
+    private static List<String> addAdditionalIncompatTypes(Sniffer mainSniffer, String[] incompatTypes) {
+        List<String> allIncompatTypes = new ArrayList<String>();
+        for (String incompatType : incompatTypes) {
+            allIncompatTypes.add(incompatType);
+        }
+        if (mainSniffer.getModuleType().equals("appclient")) {
+            allIncompatTypes.add("ejb");
+        } else if (mainSniffer.getModuleType().equals("ejb")) {
+            allIncompatTypes.add("appclient");
+        }
+        return allIncompatTypes;
     }
 }

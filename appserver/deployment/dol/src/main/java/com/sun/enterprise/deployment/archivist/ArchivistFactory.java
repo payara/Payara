@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.archivist;
 
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.container.Sniffer;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -53,6 +54,9 @@ import org.jvnet.hk2.component.Singleton;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Collection;
 
 /**
  * This factory class is responsible for creating Archivists
@@ -91,11 +95,21 @@ public class ArchivistFactory implements ContractProvider {
         return getArchivist(String.valueOf(moduleType));
     }
 
-    public List<ExtensionsArchivist> getExtensionsArchists(ArchiveType moduleType) {
+    public List<ExtensionsArchivist> getExtensionsArchivists(Collection<Sniffer> sniffers, ArchiveType moduleType) {
+        Set<String> containerTypes = new HashSet<String>();
+        for (Sniffer sniffer : sniffers) {
+            containerTypes.add(sniffer.getModuleType());
+        }
         List<ExtensionsArchivist> archivists = new ArrayList<ExtensionsArchivist>();
-        for (ExtensionsArchivist ea : extensionsArchivists) {
-            if (ea.supportsModuleType(moduleType)) {
-                archivists.add(ea);
+        for (String containerType : containerTypes) {
+            for (Inhabitant<?> inhabitant : ((Habitat)habitat).getInhabitants(ExtensionsArchivistFor.class)) {
+                String indexedType = inhabitant.metadata().get(ExtensionsArchivistFor.class.getName()).get(0);
+                if(indexedType.endsWith(containerType)) {
+                    ExtensionsArchivist ea = (ExtensionsArchivist) inhabitant.get();
+                    if (ea.supportsModuleType(moduleType)) {
+                        archivists.add(ea);
+                    }
+                }
             }
         }
         return archivists;

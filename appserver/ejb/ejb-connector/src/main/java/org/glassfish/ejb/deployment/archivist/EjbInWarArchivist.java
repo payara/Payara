@@ -43,6 +43,7 @@ package org.glassfish.ejb.deployment.archivist;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -62,6 +63,7 @@ import javax.inject.Provider;
 
 @Service
 @Scoped(PerLookup.class)
+@ExtensionsArchivistFor("ejb")
 public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Inject

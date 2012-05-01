@@ -632,12 +632,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return setupContainerInfos(null, null, context);
     }
 
-    // set up containers and prepare the sorted ModuleInfos
-    public List<EngineInfo> setupContainerInfos(final ArchiveHandler handler,
-            Collection<? extends Sniffer> sniffers, DeploymentContext context)
-             throws Exception {
-
-        final ActionReport report = context.getActionReport();
+    public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (sniffers==null) {
             // let's first see if we get any super sniffer applicable to
             // this archive
@@ -653,6 +648,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 }
             }
         }
+        context.addTransientAppMetaData(DeploymentProperties.SNIFFERS, sniffers);
+        return sniffers;
+    }
+
+    // set up containers and prepare the sorted ModuleInfos
+    public List<EngineInfo> setupContainerInfos(final ArchiveHandler handler,
+            Collection<? extends Sniffer> sniffers, DeploymentContext context)
+             throws Exception {
+
+        final ActionReport report = context.getActionReport();
+        sniffers = getSniffers(handler, sniffers, context);
 
         DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
         

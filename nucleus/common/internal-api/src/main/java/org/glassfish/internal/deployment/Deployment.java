@@ -261,6 +261,8 @@ public interface Deployment {
 
     public List<Sniffer> getSniffersFromApp(Application app);
 
+    public Collection<? extends Sniffer> getSniffers(ArchiveHandler archiveHandler, Collection<? extends Sniffer> sniffers, DeploymentContext context);
+
     // sets the default target when the target is not specified
     public String getDefaultTarget(String appName, OpsParams.Origin origin);
 

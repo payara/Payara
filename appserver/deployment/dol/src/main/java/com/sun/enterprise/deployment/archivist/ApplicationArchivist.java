@@ -577,6 +577,8 @@ public class ApplicationArchivist extends Archivist<Application> {
                 throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.nosuchmodule", "Could not find sub module [{0}] as defined in application.xml", new Object[]{aModule.getArchiveUri()}));
             }
             embeddedArchive.setParentArchive(appArchive);
+            DOLUtils.setExtensionArchivistForSubArchivist(habitat, embeddedArchive, aModule, app, newArchivist);
+
             if (aModule.getAlternateDescriptor()!=null) {
                 // the module use alternate deployement descriptor, ignore the
                 // DDs in the archive.
@@ -596,15 +598,13 @@ public class ApplicationArchivist extends Archivist<Application> {
                 // it mean for sub components.
                 Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions =
                     new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
-                
-                if (extensionsArchivists!=null) {
+                List<ExtensionsArchivist> extensionsArchivists = newArchivist.getExtensionArchivists();
+                if (extensionsArchivists != null) {
                     for (ExtensionsArchivist extension : extensionsArchivists) {
-                        if (extension.supportsModuleType(aModule.getModuleType())) {
                             Object rdd = extension.open(newArchivist, embeddedArchive, descriptor);
                             if (rdd instanceof RootDeploymentDescriptor) {
                                 extensions.put(extension, (RootDeploymentDescriptor) rdd);
                             }
-                        }
                     }
                 }
                 newArchivist.postStandardDDsRead(descriptor, embeddedArchive, extensions);

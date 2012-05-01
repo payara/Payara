@@ -570,6 +570,7 @@ public class DeploymentProperties extends Properties {
     public static final String SKIP_SCAN_EXTERNAL_LIB = "skipScanExternalLib";
 
     public static final String ARCHIVE_TYPE = "archive-type"; 
+    public static final String SNIFFERS = "sniffers"; 
 
     static Map keyMap;
 

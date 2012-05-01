@@ -68,6 +68,7 @@ import org.xml.sax.SAXParseException;
  *
  */
 @Service
+@ExtensionsArchivistFor("acc-jpa")
 public class ACCPersistenceArchivist extends PersistenceArchivist {
 
     

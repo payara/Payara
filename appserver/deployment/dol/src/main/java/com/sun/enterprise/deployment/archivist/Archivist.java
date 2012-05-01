@@ -159,8 +159,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     @Inject
     ArchiveFactory archiveFactory;
 
-    @Inject @Optional
-    ExtensionsArchivist[] extensionsArchivists;
+    List<ExtensionsArchivist> extensionsArchivists;
 
     /**
      * Creates new Archivist
@@ -183,12 +182,26 @@ public abstract class Archivist<T extends BundleDescriptor> {
         annotationErrorHandler = other.annotationErrorHandler;
     }
 
+    
+    /**
+     * Set the applicable extension archivists for this archivist
+     *
+     * @param descriptor for this archivist instnace
+     */
+    public void setExtensionArchivists(List<ExtensionsArchivist> archivists) {
+        extensionsArchivists = archivists;
+    }
+
+    public List<ExtensionsArchivist> getExtensionArchivists() {
+        return extensionsArchivists;
+    }
+
     /**
      * Archivist read XML deployment descriptors and keep the
      * parsed result in the DOL descriptor instances. Sets the descriptor
      * for a particular Archivist type
      *
-     * @parem descriptor for this archivist instnace
+     * @param descriptor for this archivist instnace
      */
     public void setDescriptor(T descriptor) {
         this.descriptor = descriptor;
@@ -377,7 +390,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions = new HashMap<ExtensionsArchivist, RootDeploymentDescriptor>();
         if (extensionsArchivists!=null) {
             for (ExtensionsArchivist extension : extensionsArchivists) {
-                if (extension.supportsModuleType(getModuleType())) {
                     Object o = extension.open(this, descriptorArchive, descriptor);
                     if (o instanceof RootDeploymentDescriptor) {
                         if (o != descriptor) {
@@ -387,7 +399,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
                     } else {
                         extensions.put(extension, null); // maybe annotation processing will yield results
                     }
-                }
             }
         }
 

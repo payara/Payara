@@ -41,6 +41,7 @@
 package org.glassfish.webservices.archivist;
 
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
+import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -60,6 +61,7 @@ import org.xml.sax.SAXParseException;
  * Extension Archivist for webservices.
  */
 @Service
+@ExtensionsArchivistFor("webservices")
 public class WebServicesArchivist extends ExtensionsArchivist {
 
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {

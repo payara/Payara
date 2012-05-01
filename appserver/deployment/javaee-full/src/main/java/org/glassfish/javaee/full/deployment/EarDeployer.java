@@ -273,8 +273,8 @@ public class EarDeployer implements Deployer {
 
         try {
             // let's get the list of sniffers
-            Collection<Sniffer> sniffers = 
-                getSniffersForModule(bundleContext, md, application);
+            Collection<Sniffer> sniffers = bundleContext.getSource().getExtraData(Collection.class);
+            bundleContext.getSource().removeExtraData(Collection.class);
             // let's get the list of containers interested in this module
             orderedContainers = deployment.setupContainerInfos(null, sniffers, bundleContext);
             if (orderedContainers == null) {
@@ -454,84 +454,5 @@ public class EarDeployer implements Deployer {
             modulePropsMap.put(moduleUri, moduleProps);
         }
         return moduleProps;
-    }
-
-
-    private String getTypeFromModuleType(ArchiveType moduleType) {
-        if (moduleType.equals(DOLUtils.warType())) {
-            return "web";
-        } else if (moduleType.equals(DOLUtils.ejbType())) {
-            return "ejb";
-        } else if (moduleType.equals(DOLUtils.carType())) {
-            return "appclient";
-        } else if (moduleType.equals(DOLUtils.rarType())) {
-            return "connector";
-        }
-        return null;
-    }
-
-    // get the list of sniffers for sub module and filter out the 
-    // incompatible ones
-    private Collection<Sniffer> getSniffersForModule(
-        DeploymentContext bundleContext, 
-        ModuleDescriptor md, Application application) throws Exception {
-        ArchiveHandler handler = bundleContext.getArchiveHandler();
-        ReadableArchive archive = bundleContext.getSource();
-        List<URI> classPathURIs = handler.getClassPathURIs(archive);
-        classPathURIs.addAll(DOLUtils.getLibraryJarURIs((BundleDescriptor)md.getDescriptor(), archive));
-        Types types = bundleContext.getTransientAppMetaData(Types.class.getName(), Types.class);
-        Collection<Sniffer> sniffers = snifferManager.getSniffers(archive, classPathURIs, types, application.getClassLoader());
-        String type = getTypeFromModuleType(md.getModuleType());
-        Sniffer mainSniffer = null;
-        for (Sniffer sniffer : sniffers) {
-            if (sniffer.getModuleType().equals(type)) { 
-                mainSniffer = sniffer; 
-            }
-        }
-
-        // if the sub module does not show characteristics of certain module
-        // type, we should still use the application.xml defined module type
-        // to add the appropriate sniffer
-        if (mainSniffer == null) {
-            mainSniffer = snifferManager.getSniffer(type);
-            sniffers.add(mainSniffer);
-        }
-
-        String [] incompatibleTypes = mainSniffer.getIncompatibleSnifferTypes();
-
-        List<String> allIncompatTypes = addAdditionalIncompatTypes(mainSniffer, incompatibleTypes);
-        
-        List<Sniffer> sniffersToRemove = new ArrayList<Sniffer>();
-        for (Sniffer sniffer : sniffers) {
-            for (String incompatType : allIncompatTypes) {
-                if (sniffer.getModuleType().equals(incompatType)) {
-                    logger.warning(type + " module [" + 
-                        md.getArchiveUri() + 
-                        "] contains characteristics of other module type: " +
-                        incompatType);
-
-                    sniffersToRemove.add(sniffer);
-                }
-            }
-        }
-
-        sniffers.removeAll(sniffersToRemove);
-
-        return sniffers;
-    }
-
-    // this is to add additional incompatible sniffers at ear level where 
-    // we have information to determine what is the main sniffer
-    private List<String> addAdditionalIncompatTypes(Sniffer mainSniffer, String[] incompatTypes) {
-        List<String> allIncompatTypes = new ArrayList<String>();
-        for (String incompatType : incompatTypes) {
-            allIncompatTypes.add(incompatType);
-        }
-        if (mainSniffer.getModuleType().equals("appclient")) {
-            allIncompatTypes.add("ejb");
-        } else if (mainSniffer.getModuleType().equals("ejb")) {
-            allIncompatTypes.add("appclient");
-        }
-        return allIncompatTypes;
     }
 }

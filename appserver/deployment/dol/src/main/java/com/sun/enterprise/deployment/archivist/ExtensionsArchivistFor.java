@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,35 +40,27 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.Service;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Index;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Archivist that reads persitence.xml for ejb jars and appclient while running on server side
+ * Normally goes with {@link org.jvnet.hk2.annotations.Service} annotation,
+ * and this annotation must be placed on a class that extends
+ * {@link com.sun.enterprise.deployment.archivist.ExtensionsArchivist}.
  */
-@Service
-@ExtensionsArchivistFor("ejb-jpa")
-public class ServerSidePersistenceArchivist extends PersistenceArchivist {
-    @Inject
-    private ProcessEnvironment env;
-
-    @Override
-    public boolean supportsModuleType(ArchiveType moduleType) {
-        // Reads persitence.xml for ejb jars
-        return moduleType != null && (moduleType.equals(DOLUtils.ejbType()) ||
-                // Or App client modules if running inside server
-                (moduleType.equals(DOLUtils.carType()) && env.getProcessType().isServer()));
-    }
-
-    @Override
-    protected String getPuRoot(ReadableArchive archive) {
-        //PU root for ejb jars and acc (while on server) is the current exploded archive on server side  
-        return "";
-    }
-
+@Contract
+@Retention(RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ExtensionsArchivistFor {
+    /**
+     * see {@link org.glassfish.api.container.Sniffer.getModuleType} and its
+     * implementation classes for valid string values.
+     */
+    @Index String value();
 }
