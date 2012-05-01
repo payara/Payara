@@ -79,7 +79,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.internal.embedded.Server;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;

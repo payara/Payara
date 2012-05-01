@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,9 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.embedded.EmbeddedFileSystem;
 import org.glassfish.internal.embedded.EmbeddedLifecycle;
 import org.glassfish.internal.embedded.Server;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -71,7 +73,7 @@ public class EmbeddedSecurityLifeCycle
     @Inject
     private EmbeddedSecurity embeddedSecurity;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
 
     @Override

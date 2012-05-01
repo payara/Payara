@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,9 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -111,7 +113,7 @@ public class CreateJACCProvider implements AdminCommand {
     SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     private String target;
 
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
 
     @Inject

@@ -46,7 +46,7 @@ import com.sun.logging.LogDomains;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 import org.glassfish.internal.api.PostStartupRunLevel;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;

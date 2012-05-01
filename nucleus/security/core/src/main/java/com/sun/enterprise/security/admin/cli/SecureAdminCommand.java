@@ -68,7 +68,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;

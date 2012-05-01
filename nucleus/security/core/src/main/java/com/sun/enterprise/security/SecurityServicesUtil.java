@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import javax.security.auth.callback.CallbackHandler;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.annotations.Scoped;
 import org.glassfish.api.admin.ProcessEnvironment;

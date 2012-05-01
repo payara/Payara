@@ -57,7 +57,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -85,7 +87,7 @@ public class RealmsManager {
     private final RealmsProbeProvider probeProvider = new RealmsProbeProvider();
     private static final Logger _logger = LogDomains.getLogger(RealmsManager.class, LogDomains.SECURITY_LOGGER);
     
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
 
     private String defaultDigestAlgorithm = null;
