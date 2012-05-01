@@ -141,7 +141,7 @@
 
         <javax-persistence-api.version>2.0.4.v201112200901</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
-		<eclipselink.version>2.4.0-M18</eclipselink.version>
+		<eclipselink.version>2.4.0-M17.2</eclipselink.version>
 		<eclipselink.asm.version>3.3.1.v201107111215</eclipselink.asm.version>
 		<eclipselink.antlr.version>3.2.0.v201107111232</eclipselink.antlr.version>
 		<!-- End versions for EclipseLink artifacts -->
