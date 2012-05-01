@@ -418,15 +418,8 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         parseParameters();
         synchronized (parameters) {
-            Object value = parameters.get(name);
-            if (value == null)
-                return (null);
-            else if (value instanceof String[])
-                return (((String[]) value)[0]);
-            else if (value instanceof String)
-                return ((String) value);
-            else
-                return (value.toString());
+            String[] value = parameters.get(name);
+            return ((value != null) ? value[0] : null);
         }
 
     }
@@ -471,20 +464,8 @@ public class ApplicationHttpRequest extends HttpServletRequestWrapper {
 
         parseParameters();
         synchronized (parameters) {
-            Object value = parameters.get(name);
-            if (value == null)
-                return null;
-            else if (value instanceof String[])
-                return ((String[]) value);
-            else if (value instanceof String) {
-                String values[] = new String[1];
-                values[0] = (String) value;
-                return (values);
-            } else {
-                String values[] = new String[1];
-                values[0] = value.toString();
-                return (values);
-            }
+            String[] value = parameters.get(name);
+            return value;
         }
 
     }
