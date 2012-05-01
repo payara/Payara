@@ -262,20 +262,20 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             logger.log(Level.FINE, "Not an otherwise \"trusted sender\"; file realm user authentication {1} for admin user {0}",
                     new Object[] {user, isUsernamePasswordAuth ? "passed" : "failed"});
             if (isUsernamePasswordAuth) {
-                if (serverEnv.isInstance()) {
-                    if (isAuthorizedInternalUser(user)) {
-                        access = Access.FULL;
-                        logger.log(Level.FINE, "Granting access to this instance; user is set up as an internal admin user");
-                    } else {
-                        /*
-                         * Restrict normal admin user/password log-in to an instance.
-                         */
-                        access = Access.READONLY;
-                        logger.log(Level.FINE, "Restricting the admin request to this instance to read-only access");
-                    }
-                } else {
-                    logger.log(Level.FINE, "Granting admin access for this request to the DAS; user/password authenticated as a valid admin account");
-                }
+//                if (serverEnv.isInstance()) {
+//                    if (isAuthorizedInternalUser(user)) {
+//                        access = Access.FULL;
+//                        logger.log(Level.FINE, "Granting access to this instance; user is set up as an internal admin user");
+//                    } else {
+//                        /*
+//                         * Restrict normal admin user/password log-in to an instance.
+//                         */
+//                        access = Access.READONLY;
+//                        logger.log(Level.FINE, "Restricting the admin request to this instance to read-only access");
+//                    }
+//                } else {
+                    logger.log(Level.FINE, "Granting admin access for this request; user/password authenticated as a valid admin account");
+//                }
                 logger.log(Level.FINE, "Authorized {0} access for user {1}",
                     new Object[] {access, user});
 
@@ -353,7 +353,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private synchronized Access checkRemoteAccess(final String originHost,
             final boolean adminIndicatorCheckerMatched) {
         Access grantedAccess;
-        if (serverEnv.isDas()) {
+        /*
+         * I've commented out the next line and the "else" block below as a
+         * temporary workaround to allow cadmin commands to contact instances
+         * directly.  Note that the secure-admin rules still apply: remote 
+         * access is allowed only if secure admin has been enabled.
+         */
+//        if (serverEnv.isDas()) {
             if ( NetUtils.isThisHostLocal(originHost) 
                  ||
                  SecureAdmin.Util.isEnabled(secureAdmin) ) {
@@ -362,20 +368,20 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 logger.log(Level.FINE, "Forbidding the admin request to the DAS; the request is remote and secure admin is not enabled");
                 grantedAccess = Access.FORBIDDEN;
             }
-        } else {
-            /*
-             * This is an instance.  Insist that the admin identifier was
-             * present in the request and matched ours in order to grant full
-             * access.
-             */
-            if (adminIndicatorCheckerMatched) {
-                grantedAccess = Access.FULL;
-                logger.log(Level.FINE, "Granting access for the admin request to this instance; the request contained the correct unique ID");
-            } else {
-                grantedAccess = Access.READONLY;
-                logger.log(Level.FINE, "Granting read-only access for the admin request to this instance; full access was refused because the request lacked the unique ID or contained an incorrect one");
-            }
-        }
+//        } else {
+//            /*
+//             * This is an instance.  Insist that the admin identifier was
+//             * present in the request and matched ours in order to grant full
+//             * access.
+//             */
+//            if (adminIndicatorCheckerMatched) {
+//                grantedAccess = Access.FULL;
+//                logger.log(Level.FINE, "Granting access for the admin request to this instance; the request contained the correct unique ID");
+//            } else {
+//                grantedAccess = Access.READONLY;
+//                logger.log(Level.FINE, "Granting read-only access for the admin request to this instance; full access was refused because the request lacked the unique ID or contained an incorrect one");
+//            }
+//        }
         return grantedAccess;
     }
 
@@ -583,25 +589,11 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 logger.log(Level.INFO, msg);
                 throw new SecurityException(msg);
             }
-            return createJMXSubject(user, result);
+            JMXAccessInfo.setAccess(result);
+            return null;
         } catch (LoginException e) {
             throw new SecurityException(e);
         }
-    }
-    
-    /**
-     * Creates a Subject that will be accessible to the MBeanServer so it can
-     * decide what access to permit this user to have.
-     * @param user username of the authenticated user
-     * @param access access to be permitted (at this point should be FULL or READONLY)
-     * @return 
-     */
-    private Subject createJMXSubject(final String user, final AdminAccessController.Access access) {
-        
-        final JMXAdminPrincipal jmxP = new JMXAdminPrincipal(user, access);
-        final Subject s = new Subject();
-        s.getPrincipals().add(jmxP);
-        return s;
     }
     
     /*

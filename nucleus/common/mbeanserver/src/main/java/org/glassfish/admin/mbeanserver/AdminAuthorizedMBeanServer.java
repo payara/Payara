@@ -41,11 +41,13 @@ package org.glassfish.admin.mbeanserver;
 
 import com.sun.logging.LogDomains;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessControlContext;
 import java.security.AccessControlException;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -56,6 +58,7 @@ import javax.management.*;
 import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
 import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.internal.api.JMXAccessInfo;
 import org.glassfish.internal.api.JMXAdminPrincipal;
 
 /**
@@ -95,7 +98,7 @@ public class AdminAuthorizedMBeanServer {
             
             AdminAccessController.Access access = getAccess();
             if (isAllowed(access, method, args)) {
-                return method.invoke(mBeanServer, args);
+                            return method.invoke(mBeanServer, args);
             } else {
                 String objectNameString = "??";
                 if ((args[0] != null) && (args[0] instanceof ObjectName)) {
@@ -196,15 +199,11 @@ public class AdminAuthorizedMBeanServer {
     }
         
     private static AdminAccessController.Access getAccess() {
-        final AccessControlContext acc = AccessController.getContext();
-        final Subject s = Subject.getSubject(acc);
-        if (s == null) {
-            return AdminAccessController.Access.FULL;
+        AdminAccessController.Access result = JMXAccessInfo.getAccess();
+        if (result == null) {
+            result = AdminAccessController.Access.READONLY;
         }
-        for (JMXAdminPrincipal p : s.getPrincipals(JMXAdminPrincipal.class)) {
-            return p.access();
-        }
-        return AdminAccessController.Access.NONE;
+        return result;
     }
     
     /**
