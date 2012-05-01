@@ -161,9 +161,40 @@ setup_kvm ()
 setup_init ()
 {
     log "OVM init ...."
-    [ -z "$POOL"] && err "Please specify pool name using -p <pool> option." && exit 3;
+    [ -z "$POOL" ] && err "Please specify pool name using -p <pool> option." && exit 3;
     [ -z "$CONNECTION_STRING" ] && echo "Please specify connection string using -c <string> option." && exit 1;
     [ -z "$SUBNET" ] && echo "Please specify subnet using -n <subnet> option." && exit 1;
+
+    # Parse the old style connection string into variables we can use with the
+    # new commands. At some point we should probably allow these to be 
+    # specified via CLI options, but for now this keeps us compatible with
+    # current uses of this script.
+
+    # Connection string looks like:
+    # http://adminUser:adminPassword@hostName:port/foo/bar;rootUser:rootPassword
+    # Convert most delimeters into colons so it looks like
+    # http://adminUser:adminPassword:hostName:port/foo/bar:rootUser:rootPassword
+    # Then pick out the fields
+    _S=`echo "$CONNECTION_STRING" | tr -s "@;" ":"`
+    # Parse out fields
+    PROTOCOL=`echo $_S | cut -f 1 -d :`
+    OVMUSER=`echo $_S | cut -f 2 -d : | sed -e "s|//||"`
+    OVMPASSWORD=`echo $_S | cut -f 3 -d :`
+    OVMHOST=`echo $_S | cut -f 4 -d :`
+    OVMPORT=`echo $_S | cut -f 5 -d :`
+    POOLUSER=`echo $_S | cut -f 6 -d :`
+    POOLPASSWORD=`echo $_S | cut -f 7 -d :`
+    OVMURL="$PROTOCOL://$OVMHOST:$OVMPORT"
+
+    log "Parsed $CONNECTION_STRING into: "
+    log "OVMUSER=$OVMUSER"
+    log "OVMPASSWORD=$OVMPASSWORD"
+    log "OVMHOST=$OVMHOST"
+    log "OVMPORT=$OVMPORT"
+    log "POOLUSER=$POOLUSER"
+    log "POOLPASSWORD=$POOLPASSWORD"
+    log "OVMURL=$OVMURL"
+
     $A start-domain domain1
     $A set configs.config.server-config.network-config.protocols.protocol.admin-listener.http.request-timeout-seconds=-1
     $A create-jvm-options -Dorg.glassfish.paas.orchestrator.parallel-provisioning=true
@@ -171,57 +202,44 @@ setup_init ()
 
 setup_ovm3 ()
 {
+    log "Configuring OVM 3.0 ...."
     setup_init
 
-    log "Configuring OVM 3.0 ...."
+    OVMVERSION=3.0
+    VIRTTYPE=OVM30
 
-    $A create-ims-config-ovm --connectionstring $CONNECTION_STRING --ovmversion=3.0 ovm
-    $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
-
-    IFS_TMP=$IFS
-    IFS=","
-    for s in $SERVICES
-    do
-        case $s in
-            "jee") log "Creating template for jee service..."
-                    touch $templates_dir/glassfish.tgz
-                    $A create-template --files $templates_dir/glassfish.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM30 glassfish
-                    $A create-template-user --virtualization ovm --template glassfish glassfish
-                    ;;
-          "oracle") log "Creating template for oracle service..."
-                    touch $templates_dir/ORACLEDB.tgz
-                    $A create-template --files $templates_dir/ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=OVM30 ORACLE_DATABASE
-                    $A create-template-user --virtualization ovm --template ORACLE_DATABASE oracle
-                    ;;
-           "derby") log "Creating template for derby service..."
-                    touch $templates_dir/DERBY_DATABASE.tgz
-                    $A create-template --files $templates_dir/DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=OVM30 DERBY_DATABASE
-                    $A create-template-user --virtualization ovm --template DERBY_DATABASE glassfish
-                    ;;
-             "otd") log "Creating template for otd service..."
-                    touch $templates_dir/OTD_LARGE.tgz
-                    $A create-template --files $templates_dir/OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=OVM30 otd-new
-                    $A create-template-user --virtualization ovm --template otd-new cloud
-                    ;;
-                *) err "Ignoring unknown service $s"
-                    ;;
-        esac
-    done
-    IFS=$IFS_TMP
-
-    $A stop-domain
+    setup_ovm
     log "Successfully configured OVM 3.0 ...."
-
 }
 
 setup_ovm2 ()
 {
+    log "Configuring OVM 2.2 ...."
     setup_init
 
-    log "Configuring OVM 2.2 ...."
+    OVMVERSION=2.2
+    VIRTTYPE=OVM
 
-    $A create-ims-config-ovm --connectionstring $CONNECTION_STRING  ovm
+    setup_ovm
+    log "Successfully configured OVM 2.2 ...."
+}
+
+setup_ovm ()
+{
+    _PFILE=/tmp/p$$.txt
+    trap 'rm -f $_PFILE' 0 1 15
+
+    # Need to pass passwords vi asadmin password file
+    echo "AS_ADMIN_OVMPASSWORD=$OVMPASSWORD" > $_PFILE
+    echo "AS_ADMIN_IAASPASSWORD=$POOLPASSWORD" >> $_PFILE
+
+    set -x
+    $A --passwordfile $_PFILE create-ims-config-ovm --connectionstring $OVMURL --ovmversion $OVMVERSION --ovmuser $OVMUSER ovm
     $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
+    $A --passwordfile $_PFILE create-server-pool-user --virtualization ovm --serverpool $POOL $POOLUSER
+    set +x
+
+    rm $_PFILE
 
     IFS_TMP=$IFS
     IFS=","
@@ -230,22 +248,22 @@ setup_ovm2 ()
         case $s in
             "jee") log "Creating template for jee service..."
                     touch $templates_dir/glassfish.tgz
-                    $A create-template --files $templates_dir/glassfish.tgz --indexes ServiceType=JavaEE,VirtualizationType=OVM glassfish
+                    $A create-template --files $templates_dir/glassfish.tgz --indexes ServiceType=JavaEE,VirtualizationType=$VIRTTYPE glassfish
                     $A create-template-user --virtualization ovm --template glassfish glassfish
                     ;;
           "oracle") log "Creating template for oracle service..."
                     touch $templates_dir/ORACLEDB.tgz
-                    $A create-template --files $templates_dir/ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=OVM ORACLE_DATABASE
+                    $A create-template --files $templates_dir/ORACLEDB.tgz --indexes ServiceType=Database,VirtualizationType=$VIRTTYPE ORACLE_DATABASE
                     $A create-template-user --virtualization ovm --template ORACLE_DATABASE oracle
                     ;;
            "derby") log "Creating template for derby service..."
                     touch $templates_dir/DERBY_DATABASE.tgz
-                    $A create-template --files $templates_dir/DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=OVM DERBY_DATABASE
+                    $A create-template --files $templates_dir/DERBY_DATABASE.tgz --indexes ServiceType=Database,VirtualizationType=$VIRTTYPE DERBY_DATABASE
                     $A create-template-user --virtualization ovm --template DERBY_DATABASE glassfish
                     ;;
              "otd") log "Creating template for otd service..."
                     touch $templates_dir/OTD_LARGE.tgz
-                    $A create-template --files $templates_dir/OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=OVM otd-new
+                    $A create-template --files $templates_dir/OTD_LARGE.tgz --properties vendor-name=otd --indexes ServiceType=LB,VirtualizationType=$VIRTTYPE otd-new
                     $A create-template-user --virtualization ovm --template otd-new cloud
                     ;;
                 *) err "Ignoring unknown service $s"
@@ -255,7 +273,6 @@ setup_ovm2 ()
     IFS=$IFS_TMP
 
     $A stop-domain
-    log "Successfully configured OVM 2.2 ...."
 }
 
 log "GlassFish is at $GF_HOME"
