@@ -75,8 +75,10 @@ import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.util.Set;
 import javax.management.JMException;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.*;
 
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -107,6 +109,10 @@ public final class JMXStartupService implements PostConstruct {
     Events mEvents;
     @Inject
     volatile static BaseServiceLocator habitat;
+    
+    @Inject
+    private static ServerEnvironment serverEnv;
+    
     private volatile BootAMX mBootAMX;
     private volatile JMXConnectorsStarterThread mConnectorsStarterThread;
     private final Logger mLogger = LogDomains.getLogger(JMXStartupService.class, LogDomains.JMX_LOGGER);
@@ -132,7 +138,7 @@ public final class JMXStartupService implements PostConstruct {
         final boolean autoStart = false;
 
         mConnectorsStarterThread = new JMXConnectorsStarterThread(
-                AdminAuthorizedMBeanServer.newInstance(mMBeanServer), configuredConnectors, mBootAMX, !autoStart);
+                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance()), configuredConnectors, mBootAMX, !autoStart);
         mConnectorsStarterThread.start();
 
         // start AMX *first* (if auto start) so that it's ready

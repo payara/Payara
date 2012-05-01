@@ -44,6 +44,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.rmi.server.RemoteServer;
 import java.security.AccessControlContext;
 import java.security.AccessControlException;
 import java.security.AccessController;
@@ -58,7 +59,6 @@ import javax.management.*;
 import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
 import org.glassfish.internal.api.AdminAccessController;
-import org.glassfish.internal.api.JMXAccessInfo;
 
 /**
  * Allows per-access security checks on MBean attribute set/get and other
@@ -86,17 +86,18 @@ public class AdminAuthorizedMBeanServer {
     private static class Handler implements InvocationHandler {
         
         private final MBeanServer mBeanServer;
+        private final boolean isInstance;
         
-        private Handler(final MBeanServer mbs) {
+        private Handler(final MBeanServer mbs, final boolean isInstance) {
             this.mBeanServer = mbs;
+            this.isInstance = isInstance;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             final String methodName = method.getName();
             
-            AdminAccessController.Access access = getAccess();
-            if (isAllowed(access, method, args)) {
+            if (isAllowed(method, args)) {
                             return method.invoke(mBeanServer, args);
             } else {
                 String objectNameString = "??";
@@ -105,21 +106,18 @@ public class AdminAuthorizedMBeanServer {
                 }
                 final String msg = MessageFormat.format(
                         mLogger.getResourceBundle().getString("jmx.noaccess"),
-                        methodName, objectNameString, access) + Thread.currentThread().getName();
+                        methodName, objectNameString, AdminAccessController.Access.READONLY);
                 throw new AccessControlException(msg);
             }
             
         }
         
         private boolean isAllowed(
-                final AdminAccessController.Access access, 
                 final Method method,
                 final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
 
-            return (access == AdminAccessController.Access.FULL)
-                || (access == AdminAccessController.Access.READONLY && 
-                                isReadonlyRequest(method, args)
-                   )
+            return (! isInstance)
+                || ( isReadonlyRequest(method, args) )
                 ;
         }
 
@@ -218,8 +216,8 @@ public class AdminAuthorizedMBeanServer {
      * @param mbs the real MBeanServer to which to delegate
      * @return the security-checking wrapper around the MBeanServer
      */
-    public static MBeanServerForwarder newInstance(final MBeanServer mbs) {
-        final Handler handler = new Handler(mbs);
+    public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance) {
+        final Handler handler = new Handler(mbs, isInstance);
         
         return (MBeanServerForwarder) Proxy.newProxyInstance(
                 MBeanServerForwarder.class.getClassLoader(),

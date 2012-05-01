@@ -588,7 +588,6 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 logger.log(Level.INFO, msg);
                 throw new SecurityException(msg);
             }
-            JMXAccessInfo.setAccess(result);
             return null;
         } catch (LoginException e) {
             throw new SecurityException(e);
