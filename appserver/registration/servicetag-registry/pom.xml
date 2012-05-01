@@ -47,27 +47,10 @@
         <groupId>org.glassfish.main.registration</groupId>
         <artifactId>registration</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>servicetag-registry</artifactId>
     <name>Service tag registry file distribution fragment</name>
     <packaging>distribution-fragment</packaging>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-plugin</artifactId>
-            </plugin>
-        </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
-    </build>
 
 </project>

@@ -51,7 +51,6 @@
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <developers>
@@ -89,14 +88,7 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins> 
-         <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
+        </plugins>
     </build>
 </project>
 

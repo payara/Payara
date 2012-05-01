@@ -48,7 +48,6 @@
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.extras</groupId>
     <artifactId>extras</artifactId>
@@ -61,13 +60,5 @@
         <module>javaee</module>
         <module>appserv-rt</module>
     </modules>
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
-    </build>
+
 </project>

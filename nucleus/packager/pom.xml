@@ -113,14 +113,7 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins> 
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
+        </plugins>
     </build>
 
 </project>

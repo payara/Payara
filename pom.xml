@@ -174,7 +174,7 @@
         <asm.version>3.1</asm.version>
         <shoal.version>1.6.18</shoal.version>
         <ha-api.version>3.1.8</ha-api.version>
-        <glassfishbuild.version>3.2.2</glassfishbuild.version>
+        <glassfishbuild.version>3.2.3</glassfishbuild.version>
         <websocket.version>0.1</websocket.version>
     </properties>
 
@@ -207,7 +207,7 @@
                     <!-- prints ${project.basedir} in build output -->
                     <plugin>
                         <groupId>org.glassfish.build</groupId>
-                        <artifactId>maven-glassfishbuild-plugin</artifactId>
+                        <artifactId>glassfishbuild-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>echo</id>
@@ -222,6 +222,9 @@
                                 </configuration>
                             </execution>
                         </executions>
+			<configuration>
+				<dir>${project.build.outputDirectory}</dir>
+			</configuration>
                     </plugin>
                 </plugins>
             </build>			
@@ -363,8 +366,9 @@
 
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
-                    <artifactId>maven-glassfishbuild-plugin</artifactId>
+                    <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <version>${glassfishbuild.version}</version>
+                    <extensions>true</extensions>
                     <configuration>
                         <!-- configuration for the checkout mojo -->
                         <checkoutDirectory>.</checkoutDirectory>
@@ -377,12 +381,6 @@
                         </distribution>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.glassfish.build</groupId>
-                    <artifactId>maven-glassfishbuild-extension</artifactId>
-                    <version>${glassfishbuild.version}</version>                            
-                    <extensions>true</extensions>
-                </plugin>                
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -464,6 +462,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.3</version>
                 </plugin>
             </plugins>
         </pluginManagement>

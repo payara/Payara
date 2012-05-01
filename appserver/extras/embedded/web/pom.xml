@@ -48,7 +48,6 @@
     <groupId>org.glassfish.main.extras</groupId>
     <artifactId>extras</artifactId>
     <version>4.0-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>glassfish-embedded-web</artifactId>
@@ -99,13 +98,6 @@
         </executions>
       </plugin>
     </plugins>
-    <extensions>
-        <extension>
-            <groupId>org.glassfish.build</groupId>
-            <artifactId>maven-glassfishbuild-extension</artifactId>
-            <version>${glassfishbuild.version}</version>
-        </extension>
-    </extensions>
   </build>
 
       <dependencies>

@@ -47,7 +47,6 @@
         <groupId>org.glassfish.main.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>cmp-scripts</artifactId>
@@ -81,27 +80,10 @@
 
     <packaging>distribution-fragment</packaging>
 
-    <build>
         <!--
          In this module, all the files are statically stored as-is in the Subversion repository,
          so the simple copying from src/main/resources to target/classes that Maven does by default
          is suffice.
    -->
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-plugin</artifactId>
-            </plugin>
-        </plugins>
-<!--
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
--->
-    </build>
 
 </project>

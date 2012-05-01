@@ -56,13 +56,6 @@
     <packaging>distribution-base-zip</packaging>
 
     <build>
-	<extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>

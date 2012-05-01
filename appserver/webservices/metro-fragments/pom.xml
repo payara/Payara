@@ -45,7 +45,6 @@
         <groupId>org.glassfish.main.webservices</groupId>
         <artifactId>webservices</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>metro-fragments</artifactId>
@@ -109,18 +108,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-plugin</artifactId>
-            </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
     </build>
 
     <dependencies>

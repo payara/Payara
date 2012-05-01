@@ -47,11 +47,11 @@
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-main-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-cloud-parent</artifactId>
     <packaging>pom</packaging>
-    <name>PaaS related modules</name>
+    <name>Cloud modules</name>
+    
     <modules>
         <module>iaas-mgmt</module>
         <module>iaas-mgmt-plugins</module>
@@ -62,5 +62,6 @@
 	<module>service-mgmt-plugins</module>
         <module>admin</module>
         <module>gui</module>
+	<module>packager</module>
     </modules>
 </project>

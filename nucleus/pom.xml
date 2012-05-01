@@ -126,30 +126,6 @@
                 <module>security</module>
                 <module>tests</module>
             </modules>
-            <build>
-                <plugins>
-                    <!-- prints ${project.basedir} in build output -->
-                    <plugin>
-                        <groupId>org.glassfish.build</groupId>
-                        <artifactId>maven-glassfishbuild-plugin</artifactId>
-                        <version>${glassfishbuild.version}</version>
-                        <executions>
-                            <execution>
-                                <id>echo</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>echo</goal>
-                                </goals>
-                                <configuration>
-                                    <messages>
-                                        <message>Building in ${project.basedir} </message>
-                                    </messages>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>
@@ -171,25 +147,6 @@
                 <module>security</module>
                 <module>tests</module>
             </modules>
-        </profile>        
-        <profile>
-            <!--
-                The GlassFish build depends on maven-glassfishbuild-plugin as an extension,
-                so it causes a chicken and egg problem during a release;
-                Maven tries to resolve all extensions early on, but it fails
-                because the maven-glassfishbuild-plugin is not built yet.
-
-                So the work around is a release in two-phase. First we
-                do "mvn release:prepare", which fails due to the problem described above.
-                At this point the workspace is left with POM that has non-SNAPSHOT version.
-                So now we run "mvn -P release-phase1" and builds the build module.
-                This puts maven-glassfishbuild-plugin in local repo,
-                so the retry of "mvn release:prepare" now works.
-            -->
-            <id>release-phase1</id>
-            <modules>
-                
-            </modules>
         </profile>
 
         <profile>
@@ -197,10 +154,6 @@
                 RE profile for release purposes.
             -->
             <id>release-phase2</id>
-
-            <build>
-                
-            </build>
 
             <modules>
                 <module>osgi-platforms</module>

@@ -67,13 +67,6 @@
                 </configuration>
              </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
     </build>
     <!-- Do not place any dependencies in this distribution, dependencies
     should go into other packager modules -->

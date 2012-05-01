@@ -47,7 +47,6 @@
         <groupId>org.glassfish.main.appclient</groupId>
         <artifactId>client</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>appclient-scripts</artifactId>
@@ -84,7 +83,7 @@
 <!--
 
     <packaging>pom</packaging>
--->     <build>
+-->     
         <!--
          In this module, all the files are statically stored as-is in the Subversion repository,
          so the simple copying from src/main/resources to target/classes that Maven does by default
@@ -95,19 +94,5 @@
 
          The following section shows how you can do this.
        -->
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-plugin</artifactId>
-            </plugin>
-        </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
-    </build>
 
 </project>

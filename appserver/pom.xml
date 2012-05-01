@@ -148,30 +148,6 @@
                 <module>verifier/verifier-jdk-extension-bundle</module>
                 <module>ant-tasks</module>
             </modules>
-            <build>
-                <plugins>
-                    <!-- prints ${project.basedir} in build output -->
-                    <plugin>
-                        <groupId>org.glassfish.build</groupId>
-                        <artifactId>maven-glassfishbuild-plugin</artifactId>
-                        <version>${glassfishbuild.version}</version>
-                        <executions>
-                            <execution>
-                                <id>echo</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>echo</goal>
-                                </goals>
-                                <configuration>
-                                    <messages>
-                                        <message>Building in ${project.basedir} </message>
-                                    </messages>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>

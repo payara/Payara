@@ -66,7 +66,6 @@
       <groupId>org.glassfish.main.osgi-platforms</groupId>
       <artifactId>osgi-platforms</artifactId>
       <version>4.0-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>felix</artifactId>
@@ -130,13 +129,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>maven-glassfishbuild-extension</artifactId>
-                <version>${glassfishbuild.version}</version>
-            </extension>
-        </extensions>
     </build>
 
     <dependencies>
