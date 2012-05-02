@@ -13,6 +13,7 @@ import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
@@ -50,7 +51,8 @@ public class ElasticCpasParentFinder implements RootElementFinder{
 
 
         try {
-            tenantManager.executeUpdate(new SingleConfigCode<ElasticAlerts>() {
+            //TODO need to understand when this will be called so that right locking and usage pattern can be used
+            ConfigSupport.apply(new SingleConfigCode<ElasticAlerts>() {
                 @Override
                 public Object run(ElasticAlerts eAlerts) throws TransactionFailure {
 

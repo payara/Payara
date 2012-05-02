@@ -12,8 +12,8 @@ import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.jvnet.hk2.annotations.*;
-import org.glassfish.hk2.Services;
 import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
@@ -64,13 +64,14 @@ public class CreateElasticElementCommand implements AdminCommand{
 
         TenantServices services = tenant.getServices();
         try {
-            tenantManager.executeUpdate(new SingleConfigCode<TenantServices>() {
+            //TODO need to convert this to use @TenantDataMutator
+            ConfigSupport.apply(new SingleConfigCode<TenantServices>() {
                 @Override
                 public Object run(TenantServices tenantServices) throws TransactionFailure {
 
                     Elastic es = tenantServices.createChild(Elastic.class);
 
-                    ElasticAlerts alerts=es.createChild((ElasticAlerts.class));
+                    ElasticAlerts alerts = es.createChild((ElasticAlerts.class));
                     es.setElasticAlerts(alerts);
                     tenantServices.getTenantServices().add(es);
                     return tenantServices;

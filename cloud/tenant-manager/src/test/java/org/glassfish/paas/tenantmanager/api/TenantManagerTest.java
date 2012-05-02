@@ -150,7 +150,7 @@ public class TenantManagerTest extends ConfigApiTest {
             
         } finally {
             // Clean up context...
-            tenantManager.setCurrentTenant(null);
+            tenantManager.resetCurrentTenant();
         }
 
         // ... tenantManager.get(Tenant.class) will throw exception at this point.
@@ -183,7 +183,7 @@ public class TenantManagerTest extends ConfigApiTest {
             }, admin);
             assertConfigXml("Updated tenant xml", "tenant1", tenant);
         } finally {
-            tenantManager.setCurrentTenant(null);
+            tenantManager.resetCurrentTenant();
         }
     }
 
@@ -216,7 +216,7 @@ public class TenantManagerTest extends ConfigApiTest {
                 }
             }, admin);
         } finally {
-            tenantManager.setCurrentTenant(null);
+            tenantManager.resetCurrentTenant();
         }
     }
 
@@ -259,7 +259,7 @@ public class TenantManagerTest extends ConfigApiTest {
             // verify file is written with both changes!
             assertConfigXml("Updated tenant xml", "tenant1-nonlocking", tenant);
         } finally {
-            tenantManager.setCurrentTenant(null);
+            tenantManager.resetCurrentTenant();
         }
     }
 
@@ -329,7 +329,7 @@ public class TenantManagerTest extends ConfigApiTest {
             // verify file is written with both changes!
             assertConfigXml("Updated tenant xml", "tenant1-nonlocking", tenant);
         } finally {
-            tenantManager.setCurrentTenant(null);
+            tenantManager.resetCurrentTenant();
         }
     }
 
@@ -392,7 +392,7 @@ public class TenantManagerTest extends ConfigApiTest {
         } finally {
             // clean up
             try {
-                tenantManager.setCurrentTenant(null);
+                tenantManager.resetCurrentTenant();
                 tenantManager.delete("tenant3");
             } catch (Throwable e) {
                 // ignore

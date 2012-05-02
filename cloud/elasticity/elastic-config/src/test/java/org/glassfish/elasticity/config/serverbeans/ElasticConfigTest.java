@@ -86,7 +86,8 @@ public class ElasticConfigTest  extends ConfigApiTest {
         ElasticAlerts elasticAlerts = elastic.getElasticAlerts();
 
         try {
-            tenantManager.executeUpdate(new SingleConfigCode<ElasticAlerts>() {
+            //TODO There is nothing specific to elasticity to test here. This should move to CTM tests
+            ConfigSupport.apply(new SingleConfigCode<ElasticAlerts>() {
                 @Override
                 public Object run(ElasticAlerts eAlerts) throws TransactionFailure {
 

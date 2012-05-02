@@ -70,36 +70,28 @@ public interface TenantManager {
     <T> T get(Class<T> config);
 
     /**
-     * Executes code on object protected by a transaction. It is wrapper to
-     * <code>ConfigBeanSupport.apply</code> and ensures restricted access to
-     * tenant information as whole.
-     * 
-     * @param code
-     * @param object
-     * @return
-     * @throws TransactionFailure
-     */
-    <T extends ConfigBeanProxy> Object executeUpdate(final SingleConfigCode<T> code, T object) throws TransactionFailure;
-
-    /**
-     * Executes code on objects protected by a transaction. It is wrapper to
-     * <code>ConfigBeanSupport.apply</code> and ensures restricted access to
-     * tenant information as whole.
-     * 
-     * @param code
-     * @param objects configurations
-     * @return
-     * @throws TransactionFailure  
-     */
-    Object excuteUpdate(ConfigCode code, ConfigBeanProxy ... objects) throws TransactionFailure;
-
-    /**
      * Get current tenant.
      */
     String getCurrentTenant();
 
     /**
-     * Get current tenant.
+     * Associate tenant with current thread.
      */
     void setCurrentTenant(String name);
+
+    /**
+     * Removes association of tenant with current thread.
+     */
+    void resetCurrentTenant();
+
+    /**
+     * Obtain an exclusive lock for current tenant. The lock is obtained on behalf of current CPAS JVM process
+     */
+    void lock();
+
+    /**
+     * Releases the lock held for current tenant by current CPAS JVM process.
+     * @throws IllegalMonitorStateException if current CPAS JVM process does not own a lock for this tenant
+     */
+    void unlock();
 }

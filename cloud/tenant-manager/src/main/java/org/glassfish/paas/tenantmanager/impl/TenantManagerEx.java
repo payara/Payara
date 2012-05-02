@@ -47,7 +47,7 @@ import org.jvnet.hk2.annotations.Contract;
 
 /**
  * TenantManagerEx allows to manage information about all tenants. Its
- * responsibility is to create new and delete existing informations. It is
+ * responsibility is to create new and delete existing information. It is
  * designed for internal (tenant-manager) usage only.
  * 
  * @author Andriy Zhdanov

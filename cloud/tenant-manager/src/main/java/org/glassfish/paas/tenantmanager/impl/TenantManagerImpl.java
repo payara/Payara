@@ -39,7 +39,6 @@
  */
 package org.glassfish.paas.tenantmanager.impl;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -63,8 +62,6 @@ import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -100,50 +97,6 @@ public class TenantManagerImpl implements TenantManagerEx {
      * {@inheritDoc}
      */
     @Override
-    // TODO: remove
-    public <T extends ConfigBeanProxy> Object executeUpdate(
-            final SingleConfigCode<T> code, T param) throws TransactionFailure {
-        ConfigBeanProxy[] objects = { param };
-        return excuteUpdate((new ConfigCode() {
-            @SuppressWarnings("unchecked")
-            public Object run(ConfigBeanProxy... objects) throws PropertyVetoException, TransactionFailure {
-                return code.run((T) objects[0]);
-            }
-        }), objects);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    // TODO: remove
-    public Object excuteUpdate(ConfigCode configCode, ConfigBeanProxy ... objects) throws TransactionFailure {
-        /*
-        // assume there is an object and all objects are for one document
-        ConfigBeanProxy source = objects[0];
-        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(source);
-        Lock lock = configBean.getDocument().getLock();
-        try {
-            if (lock.tryLock(ConfigSupport.lockTimeOutInSeconds,
-                    TimeUnit.SECONDS)) {
-                try {
-                    return configSupport._apply(configCode, objects);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        } catch (InterruptedException e) {
-            // ignore, will throw TransactionFailure
-        }
-        throw new TransactionFailure("Can't acquire global lock");
-        */
-        return configSupport._apply(configCode, objects);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public String getCurrentTenant() {
         String name = currentTenant.get();
         if (name == null) {
@@ -158,14 +111,45 @@ public class TenantManagerImpl implements TenantManagerEx {
      */
     @Override
     public void setCurrentTenant(String name) {
-        if (name != null) { // validate tenant exists sooner than later
-            String filePath = getTenantFilePath(name);
-            // TODO: i18n, better error
-            if (!new File(filePath).exists()) {
-                throw new IllegalArgumentException("Tenant does not exist");
-            }
+        if (name == null) {
+            throw new IllegalArgumentException("Tenant can not be null"); //TODO: i18n
+        }
+        // validate tenant exists sooner than later
+        String filePath = getTenantFilePath(name);
+        // TODO: i18n, better error
+        if (!new File(filePath).exists()) {
+            throw new IllegalArgumentException("Tenant does not exist");
         }
         currentTenant.set(name);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void resetCurrentTenant() {
+        if(getCurrentTenant() == null) {
+            throw new IllegalStateException("resetCurrentTenant() called while there is no current tenant");
+        }
+        currentTenant.set(null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void lock() {
+        //TODO code to obtain lock goes here
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unlock() {
+        //TODO code to release lock goes here
+
     }
 
     private File getTenantFile(String name) {
@@ -368,6 +352,4 @@ public class TenantManagerImpl implements TenantManagerEx {
     @Inject
     private ModulesRegistry modulesRegistry;
 
-    @Inject
-    private ConfigSupport configSupport;
 }
