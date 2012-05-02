@@ -51,6 +51,7 @@ import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
@@ -77,7 +78,7 @@ public class SupplementalStopInstance implements AdminCommand {
     IAAS groups=null;
 
     @Inject
-    Factory<VirtualMachineLifecycle> vmLifecycle;
+    Provider<VirtualMachineLifecycle> vmLifecycle;
 
     @Override
     public void execute(AdminCommandContext context) {
