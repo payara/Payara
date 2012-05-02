@@ -159,7 +159,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     @Inject
     ArchiveFactory archiveFactory;
 
-    List<ExtensionsArchivist> extensionsArchivists;
+    protected List<ExtensionsArchivist> extensionsArchivists;
 
     /**
      * Creates new Archivist
