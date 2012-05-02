@@ -49,15 +49,23 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.Descriptor;
-import org.jvnet.hk2.annotations.Contract;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 
-import javax.xml.parsers.*;
-import java.io.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -68,7 +76,6 @@ import java.util.logging.Level;
  * @author Jerome Dochez
  */
 
-@Contract
 public abstract class DeploymentDescriptorFile<T extends Descriptor> {
     
     public final static String FULL_VALIDATION = "full";

@@ -44,17 +44,20 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
-import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
+import org.glassfish.ejb.deployment.io.EjbInWarDeploymentDescriptorFile;
+import org.glassfish.ejb.deployment.io.EjbInWarRuntimeDDFile;
+import org.glassfish.ejb.deployment.io.GFEjbInWarRuntimeDDFile;
+import org.glassfish.ejb.deployment.io.WLSEjbInWarRuntimeDDFile;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Provider;
 
 /**
@@ -69,17 +72,13 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
     @Inject
     Provider<EjbInWarScanner> scanner;
 
-    @Inject @Named("EjbInWarDeploymentDescriptorFile")
-    Provider<DeploymentDescriptorFile> standardDD;
+    private EjbInWarDeploymentDescriptorFile standardDD;
 
-    @Inject @Named("WLSEjbInWarRuntimeDDFile")
-    Provider<DeploymentDescriptorFile> wlsEjbInWarRuntimeDD;
+    private WLSEjbInWarRuntimeDDFile wlsEjbInWarRuntimeDD;
 
-    @Inject @Named("GFEjbInWarRuntimeDDFile")
-    Provider<DeploymentDescriptorFile> gfEjbInWarRuntimeDD;
+    private GFEjbInWarRuntimeDDFile gfEjbInWarRuntimeDD;
 
-    @Inject @Named("EjbInWarRuntimeDDFile")
-    Provider<DeploymentDescriptorFile> ejbInWarRuntimeDD;
+    private EjbInWarRuntimeDDFile ejbInWarRuntimeDD;
 
     /**
      * @return the DeploymentDescriptorFile responsible for handling
@@ -87,22 +86,34 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
      */
     @Override
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
-        return standardDD.get();
+        if (standardDD == null) {
+            standardDD = new EjbInWarDeploymentDescriptorFile();
+        }
+        return standardDD;
     }
 
     @Override
     public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return wlsEjbInWarRuntimeDD.get();
+        if (wlsEjbInWarRuntimeDD == null) {
+            wlsEjbInWarRuntimeDD = new WLSEjbInWarRuntimeDDFile();
+        }
+        return wlsEjbInWarRuntimeDD;
     }
 
     @Override
     public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return gfEjbInWarRuntimeDD.get();
+        if (gfEjbInWarRuntimeDD == null) {
+            gfEjbInWarRuntimeDD = new GFEjbInWarRuntimeDDFile();
+        }
+        return gfEjbInWarRuntimeDD;
     }
 
     @Override
     public DeploymentDescriptorFile getSunConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return ejbInWarRuntimeDD.get();
+        if (ejbInWarRuntimeDD == null) {
+            ejbInWarRuntimeDD = new EjbInWarRuntimeDDFile();
+        }
+        return ejbInWarRuntimeDD;
     }
 
     /**

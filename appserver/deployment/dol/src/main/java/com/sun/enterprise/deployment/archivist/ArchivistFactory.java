@@ -41,9 +41,8 @@
 package com.sun.enterprise.deployment.archivist;
 
 import org.glassfish.api.ContractProvider;
-import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.container.Sniffer;
-import org.jvnet.hk2.annotations.Optional;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -53,10 +52,10 @@ import org.jvnet.hk2.component.Singleton;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Collection;
 
 /**
  * This factory class is responsible for creating Archivists
@@ -66,9 +65,6 @@ import java.util.Collection;
 @Service
 @Scoped(Singleton.class)
 public class ArchivistFactory implements ContractProvider {
-    @Inject @Optional
-    ExtensionsArchivist[] extensionsArchivists;
-
     @Inject
     BaseServiceLocator habitat;
 

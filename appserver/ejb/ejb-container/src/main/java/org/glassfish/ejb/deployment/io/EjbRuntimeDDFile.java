@@ -46,9 +46,6 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 
 /**
@@ -58,8 +55,6 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Jerome Dochez
  */
 
-@Service(name="EjbRuntimeDDFile")
-@Scoped(PerLookup.class)
 public class EjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     /**

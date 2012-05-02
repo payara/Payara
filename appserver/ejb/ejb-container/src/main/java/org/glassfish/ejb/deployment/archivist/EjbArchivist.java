@@ -52,13 +52,14 @@ import com.sun.enterprise.deployment.util.EjbBundleValidator;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.ejb.deployment.io.EjbRuntimeDDFile;
+import org.glassfish.ejb.deployment.io.GFEjbRuntimeDDFile;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
 import java.io.IOException;
 import java.util.Set;
 
@@ -75,14 +76,11 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     /**
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
-    @Inject @Named("EjbDeploymentDescriptorFile")
-    Provider<DeploymentDescriptorFile> standardDD;
+    private EjbDeploymentDescriptorFile standardDD;
     
-    @Inject @Named("EjbRuntimeDDFile")
-    Provider<DeploymentDescriptorFile> ejbRuntimeDD;
+    private EjbRuntimeDDFile ejbRuntimeDD;
 
-    @Inject @Named("GFEjbRuntimeDDFile")
-    Provider<DeploymentDescriptorFile> gfEjbRuntimeDD;
+    private GFEjbRuntimeDDFile gfEjbRuntimeDD;
 
     @Inject
     private org.glassfish.ejb.EjbType ejbType;
@@ -119,7 +117,10 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      */
     @Override
     public DeploymentDescriptorFile getStandardDDFile() {
-        return standardDD.get();
+        if (standardDD == null) {
+            standardDD = new EjbDeploymentDescriptorFile();
+        }
+        return standardDD;
     }
 
     /**
@@ -128,7 +129,10 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      */
     @Override
     public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        return gfEjbRuntimeDD.get();
+        if (gfEjbRuntimeDD == null) {
+            gfEjbRuntimeDD = new GFEjbRuntimeDDFile();
+        }
+        return gfEjbRuntimeDD;
     }
 
     /**
@@ -136,7 +140,10 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      *         handling the Sun configuration deployment descriptors
      */
     public DeploymentDescriptorFile getSunConfigurationDDFile() {
-        return ejbRuntimeDD.get();
+        if (ejbRuntimeDD == null) {
+            ejbRuntimeDD = new EjbRuntimeDDFile();
+        }
+        return ejbRuntimeDD;
     }
 
     /**

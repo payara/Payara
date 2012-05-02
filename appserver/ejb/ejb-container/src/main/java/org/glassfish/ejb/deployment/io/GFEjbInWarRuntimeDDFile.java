@@ -41,12 +41,7 @@
 package org.glassfish.ejb.deployment.io;
 
 import com.sun.enterprise.deployment.io.DescriptorConstants;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
-@Service(name = "GFEjbInWarRuntimeDDFile")
-@Scoped(PerLookup.class)
 public class GFEjbInWarRuntimeDDFile extends GFEjbRuntimeDDFile {
     @Override
     public String getDeploymentDescriptorPath() {

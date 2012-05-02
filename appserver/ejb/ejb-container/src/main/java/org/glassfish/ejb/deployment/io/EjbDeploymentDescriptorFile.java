@@ -45,9 +45,6 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.node.EjbBundleNode;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * This class is responsible for handling EJB DeploymentDescriptor files
@@ -55,8 +52,6 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Jerome Dochez
  */
 
-@Service(name="EjbDeploymentDescriptorFile")
-@Scoped(PerLookup.class)
 public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
     
     /** Creates a new instance of EjbDeploymentDescriptorFile */
@@ -75,7 +70,7 @@ public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
      * @return a RootXMLNode responsible for handling the deployment
      * descriptors associated with this J2EE module
      *
-     * @param the descriptor for which we need the node
+     * @param descriptor the descriptor for which we need the node
      */
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
         return new EjbBundleNode();

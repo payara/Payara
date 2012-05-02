@@ -44,17 +44,12 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * This class is responsible for handling the XML configuration information
  * for the WebLogic EJB Container
  */
 
-@Service(name="WLSEjbRuntimeDDFile")
-@Scoped(PerLookup.class)
 public class WLSEjbRuntimeDDFile extends
         ConfigurationDeploymentDescriptorFile {
 

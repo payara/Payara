@@ -46,17 +46,12 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.node.runtime.GFEjbBundleRuntimeNode;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * This class is responsible for handling the XML configuration information
  * for the Glassfish EJB Container
  */
 
-@Service(name="GFEjbRuntimeDDFile")
-@Scoped(PerLookup.class)
 public class GFEjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
     /**
      * @return the location of the DeploymentDescriptor file for a
