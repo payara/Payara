@@ -222,9 +222,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-			<configuration>
-				<dir>${project.build.outputDirectory}</dir>
-			</configuration>
                     </plugin>
                 </plugins>
             </build>			
@@ -368,18 +365,6 @@
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <version>${glassfishbuild.version}</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <!-- configuration for the checkout mojo -->
-                        <checkoutDirectory>.</checkoutDirectory>
-                        <skipCheckoutIfExists>true</skipCheckoutIfExists>
-                        <!-- configuration for the run mojo -->
-                        <distribution>
-                            <groupId>org.glassfish.distributions</groupId>
-                            <artifactId>web</artifactId>
-                            <version>${project.version}</version>
-                        </distribution>
-                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -671,6 +656,24 @@
                             -->
                         </plugin>
                     </reportPlugins>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- configuration for the checkout mojo -->
+                    <checkoutDirectory>.</checkoutDirectory>
+                    <skipCheckoutIfExists>true</skipCheckoutIfExists>
+                    <!-- configuration for the run mojo -->
+                    <distribution>
+                        <groupId>org.glassfish.distributions</groupId>
+                        <artifactId>web</artifactId>
+                        <version>${project.version}</version>
+                    </distribution>
+                    <!-- configuration for the zip mojo -->
+                    <dir>${project.build.outputDirectory}</dir>
                 </configuration>
             </plugin>
         </plugins>
