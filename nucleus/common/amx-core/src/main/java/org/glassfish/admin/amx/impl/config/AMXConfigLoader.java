@@ -71,6 +71,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
 Responsible for loading ConfigBeanProxy MBeans (com.sun.enterprise.config.serverbeans.*)
@@ -89,6 +90,13 @@ public final class AMXConfigLoader
     private final PendingConfigBeans mPendingConfigBeans;
     private final ConfigBeanRegistry mRegistry = ConfigBeanRegistry.getInstance();
     private final MBeanServer mServer;
+    
+    /**
+     * Detects illegal characters in MBean name values.  (Used instead of
+     * individual character searches for efficiency)
+     */
+    private static final Pattern ILLEGAL_JMX_NAME_PATTERN = Pattern.compile(".*[=:"
+            + Pattern.quote("\"") + Pattern.quote("*") + Pattern.quote("?") + "].*");
     
     public AMXConfigLoader(
             final MBeanServer mbeanServer,
@@ -599,10 +607,30 @@ public final class AMXConfigLoader
 
         //debug( "Type/name for " + cb.getProxyType().getName() + " = " + type + " = " + name );
 
-        final ObjectName objectName = ObjectNameBuilder.buildChildObjectName(mServer, parentObjectName, type, name);
+        final ObjectName objectName = ObjectNameBuilder.buildChildObjectName(mServer, parentObjectName, type, quoteIfNeeded(name));
 
         //debug( "ObjectName for " + cb.getProxyType().getName() + " = " + objectName + " of parent " + parentObjectName );
 
         return objectName;
+    }
+    
+    /**
+     * Quotes the name string if it contains any characters that are illegal
+     * in MBean names.
+     * 
+     * @param name the string to examine
+     * @return quoted string if it contains illegal characters; the string otherwise
+     */
+    private static String quoteIfNeeded(final String name) {
+        /*
+         * JMX names cannot include =  or , or : or * or ? unless they are part of
+         * the value and they are quoted.
+         */
+        
+        if (name != null && ILLEGAL_JMX_NAME_PATTERN.matcher(name).matches()) {
+            return "\"" + name + "\"";
+        } else {
+            return name;
+        }
     }
 }
