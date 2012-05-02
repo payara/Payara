@@ -346,16 +346,16 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 break;
 
             case NONE:
-                if (env.isDas()) {
+//                if (env.isDas()) {
                     reportAuthFailure(res, report, "adapter.auth.userpassword",
                         "Invalid user name or password",
                         HttpURLConnection.HTTP_UNAUTHORIZED,
                         "WWW-Authenticate", "BASIC");
-                } else {
-                    reportAuthFailure(res, report, "adapter.auth.notOnInstance",
-                            "Configuration access to an instance is not allowed; please connect to the domain admin server instead to make configuration changes",
-                        HttpURLConnection.HTTP_FORBIDDEN);
-                }
+//                } else {
+//                    reportAuthFailure(res, report, "adapter.auth.notOnInstance",
+//                            "Configuration access to an instance is not allowed; please connect to the domain admin server instead to make configuration changes",
+//                        HttpURLConnection.HTTP_FORBIDDEN);
+//                }
                 break;
                 
             default:

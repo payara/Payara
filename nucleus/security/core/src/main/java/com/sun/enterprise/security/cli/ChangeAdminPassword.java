@@ -87,7 +87,7 @@ import org.glassfish.internal.api.Target;
 @Service(name="change-admin-password")
 @Scoped(PerLookup.class)
 @I18n("change.admin.password")
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.ALL})
 public class ChangeAdminPassword implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = 

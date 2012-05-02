@@ -87,7 +87,7 @@ import org.jvnet.hk2.config.types.Property;
 @Service(name="delete-file-user")
 @Scoped(PerLookup.class)
 @I18n("delete.file.user")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.ALL})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=AuthRealm.class,

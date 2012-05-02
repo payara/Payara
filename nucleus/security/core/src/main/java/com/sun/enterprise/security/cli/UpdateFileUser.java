@@ -87,7 +87,7 @@ import org.glassfish.config.support.TargetType;
 @Service(name="update-file-user")
 @Scoped(PerLookup.class)
 @I18n("update.file.user")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.ALL})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=AuthRealm.class,

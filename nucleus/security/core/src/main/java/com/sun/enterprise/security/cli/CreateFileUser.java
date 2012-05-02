@@ -92,7 +92,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="create-file-user")
 @Scoped(PerLookup.class)
 @I18n("create.file.user")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.ALL})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=AuthRealm.class,
