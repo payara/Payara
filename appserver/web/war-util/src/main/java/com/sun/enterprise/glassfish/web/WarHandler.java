@@ -40,9 +40,15 @@
 
 package com.sun.enterprise.glassfish.web;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.logging.LogDomains;
 import org.apache.naming.resources.FileDirContext;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -51,6 +57,7 @@ import org.glassfish.web.sniffer.WarDetector;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.xml.stream.XMLStreamException;
@@ -62,6 +69,7 @@ import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.jar.JarFile;
@@ -77,13 +85,23 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 @Service(name= WarDetector.ARCHIVE_TYPE)
 public class WarHandler extends AbstractArchiveHandler {
-    @Inject @Named(WarDetector.ARCHIVE_TYPE)
-    ArchiveDetector detector;
+
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
     private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
+    private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
+    private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
     private static final Logger logger = LogDomains.getLogger(WarHandler.class, LogDomains.WEB_LOGGER);
     private static final ResourceBundle rb = logger.getResourceBundle();
+
+    @Inject @Named(WarDetector.ARCHIVE_TYPE)
+    private ArchiveDetector detector;
+
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+
+    @Inject
+    private ServerEnvironment serverEnvironment;
 
     @Override
     public String getArchiveType() {
@@ -149,6 +167,8 @@ public class WarHandler extends AbstractArchiveHandler {
 
             configureLoaderAttributes(cloader, webXmlParser, base);
             configureLoaderProperties(cloader, webXmlParser, base);
+            
+            configureContextXmlAttribute(cloader, base, context);
             
         } catch(MalformedURLException malex) {
             logger.log(Level.SEVERE, malex.getMessage());
@@ -265,26 +285,94 @@ public class WarHandler extends AbstractArchiveHandler {
         }
     }
 
+    protected void configureContextXmlAttribute(WebappClassLoader cloader,
+            File base, DeploymentContext dc) throws XMLStreamException, FileNotFoundException {
 
+        boolean consistent = true;
+        Boolean value = null;
+
+        File warContextXml = new File(base.getAbsolutePath(), WAR_CONTEXT_XML);
+        if (warContextXml.exists()) {
+            ContextXmlParser parser = new ContextXmlParser(warContextXml);
+            value = parser.getClearReferencesStatic();
+        }
+
+        if (value == null) {
+            Boolean domainCRS = null;
+            File defaultContextXml = new File(serverEnvironment.getInstanceRoot(), "config/context.xml");
+            if (defaultContextXml.exists()) {
+                ContextXmlParser parser = new ContextXmlParser(defaultContextXml);
+                domainCRS = parser.getClearReferencesStatic();
+            }
+
+            List<Boolean> csrs = new ArrayList<Boolean>();
+            HttpService httpService = serverConfig.getHttpService();
+            DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
+            String vsIDs = params.virtualservers;
+            List<String> vsList = StringUtils.parseStringList(vsIDs, " ,");
+            if (httpService != null && vsList != null && !vsList.isEmpty()) {
+                for (VirtualServer vsBean : httpService.getVirtualServer()) {
+                    if (vsList.contains(vsBean.getId())) {
+                        Boolean csr = null;
+                        Property prop = vsBean.getProperty("contextXmlDefault");
+                        if (prop != null) {
+                            File contextXml = new File(serverEnvironment.getInstanceRoot(),
+                                    prop.getValue());
+                            if (contextXml.exists()) {  // vs context.xml
+                                ContextXmlParser parser = new ContextXmlParser(contextXml);
+                                csr = parser.getClearReferencesStatic();
+                            }
+                        }
+
+                        if (csr == null) {
+                            csr = domainCRS;
+                        }
+                        csrs.add(csr);
+                    }
+                }
+
+                // check that it is consistent
+                for (Boolean b : csrs) {
+                    if (b != null) {
+                        if (value != null && !b.equals(value)) {
+                            consistent = false;
+                            break;
+                        }
+                        value = b;
+                    }
+                }
+
+            }
+        }
+
+        if (consistent) {
+            if (value != null) {
+                cloader.setClearReferencesStatic(value);
+            }
+        } else if (logger.isLoggable(Level.WARNING)) {
+            logger.log(Level.WARNING, "webcontainer.inconsistentClearReferencesStatic");
+        }
+    }
+    
     // ---- inner class ----
-    protected abstract class WebXmlParser {
-        protected String baseStr = null;
+    protected abstract class BaseXmlParser {
         protected XMLStreamReader parser = null;
 
-        protected boolean delegate = true;
+        /**
+         * This method will parse the input stream and set the XMLStreamReader
+         * object for latter use.
+         *
+         * @param input InputStream
+         * @exception XMLStreamException;
+         */
+        protected abstract void read(InputStream input) throws XMLStreamException;
 
-        protected boolean ignoreHiddenJarFiles = false;
-        protected boolean useBundledJSF = false;
-        protected String extraClassPath = null;
-
-        WebXmlParser(String baseStr) 
+        protected void init(File xmlFile)     
                 throws XMLStreamException, FileNotFoundException {
 
-            this.baseStr = baseStr;
             InputStream input = null;
-            File f = new File(baseStr, getXmlFileName());
-            if (f.exists()) {
-                input = new FileInputStream(f);
+            if (xmlFile.exists()) {
+                input = new FileInputStream(xmlFile);
                 try {
                     read(input);
                 } finally {
@@ -305,17 +393,6 @@ public class WarHandler extends AbstractArchiveHandler {
                 }
             }
         }
-
-        protected abstract String getXmlFileName();
-
-        /**
-         * This method will parse the input stream and set the XMLStreamReader
-         * object for latter use.
-         *
-         * @param input InputStream
-         * @exception XMLStreamException;
-         */
-        protected abstract void read(InputStream input) throws XMLStreamException;
 
         protected void skipRoot(String name) throws XMLStreamException {
             while (true) {
@@ -342,6 +419,25 @@ public class WarHandler extends AbstractArchiveHandler {
                 }
             }
         }
+
+    }
+
+    protected abstract class WebXmlParser extends BaseXmlParser {
+        protected String baseStr = null;
+
+        protected boolean delegate = true;
+
+        protected boolean ignoreHiddenJarFiles = false;
+        protected boolean useBundledJSF = false;
+        protected String extraClassPath = null;
+
+        WebXmlParser(String baseStr) 
+                throws XMLStreamException, FileNotFoundException {
+
+            init(new File(baseStr, getXmlFileName()));
+        }
+
+        protected abstract String getXmlFileName();
 
         String getBase() {
             return baseStr;
@@ -568,6 +664,61 @@ public class WarHandler extends AbstractArchiveHandler {
                 }
             }
         }
+    }
+
+    protected class ContextXmlParser extends BaseXmlParser {
+        protected XMLStreamReader parser = null;
+
+        protected Boolean clearReferencesStatic = null;
+
+        ContextXmlParser(File contextXmlFile)
+                throws XMLStreamException, FileNotFoundException {
+
+            init(contextXmlFile);
+        }
+
+        /**
+         * This method will parse the input stream and set the XMLStreamReader
+         * object for latter use.
+         *
+         * @param input InputStream
+         * @exception XMLStreamException;
+         */
+        @Override
+        protected void read(InputStream input) throws XMLStreamException {
+            parser = getXMLInputFactory().createXMLStreamReader(input);
+
+            int event = 0;
+            while (parser.hasNext() && (event = parser.next()) != END_DOCUMENT) {
+                if (event == START_ELEMENT) {
+                    String name = parser.getLocalName();
+                    if ("Context".equals(name)) {
+                        String path = null;
+                        Boolean crs = null;
+                        int count = parser.getAttributeCount();
+                        for (int i = 0; i < count; i++) {
+                            String attrName = parser.getAttributeName(i).getLocalPart();
+                            if ("clearReferencesStatic".equals(attrName)) {
+                                crs = Boolean.valueOf(parser.getAttributeValue(i));
+                            } else if ("path".equals(attrName)) {
+                                path = parser.getAttributeValue(i);
+                            }
+                        }
+                        if (path == null) {  // make sure no path associated to it
+                            clearReferencesStatic = crs;
+                            break;
+                        }
+                    }  else {
+                        skipSubTree(name);
+                    }
+                }
+            }
+        }
+
+        Boolean getClearReferencesStatic() {
+            return clearReferencesStatic;
+        }
+
     }
 
     /**

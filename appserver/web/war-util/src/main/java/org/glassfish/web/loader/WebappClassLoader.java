@@ -167,8 +167,6 @@ public class WebappClassLoader
         "org.apache.commons.logging"                 // Commons logging
     };
 
-    private static final boolean ENABLE_CLEAR_REFERENCES = 
-        Boolean.valueOf(System.getProperty("org.apache.catalina.loader.WebappClassLoader.ENABLE_CLEAR_REFERENCES", "false")).booleanValue();
 
     /**
      * All permission.
@@ -355,7 +353,7 @@ public class WebappClassLoader
      * option set to <code>false</code>. If not specified, the default value of
      * <code>false</code> will be used.
      */
-    private boolean clearReferencesStatic = ENABLE_CLEAR_REFERENCES;
+    private boolean clearReferencesStatic = false;
 
     /**
      * Name of associated context used with logging and JMX to associate with
