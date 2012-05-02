@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,13 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.enterprise.naming.util.LogFacade;
-import java.util.logging.Level;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 
 public class SerialContextProviderImpl implements SerialContextProvider {
-
-    static Logger _logger = LogFacade.getLogger();
-
     private TransientContext rootContext;
-
 
     protected SerialContextProviderImpl(TransientContext rootContext)
             throws RemoteException {
@@ -69,19 +61,14 @@ public class SerialContextProviderImpl implements SerialContextProvider {
      * @throws if              there is an RMI exception.
      */
 
-    public Object lookup(String name)
-            throws NamingException, RemoteException {
+    public Object lookup(String name) throws NamingException, RemoteException {
         try {
-            _logger.log(Level.FINE, " SerialContextProviderImpl :: lookup {0}", name);
-
             return rootContext.lookup(name);
         } catch (NamingException ne) {
             throw ne;
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, "Exception occurred : {0}", e.getMessage());
             RemoteException re = new RemoteException("", e);
             throw re;
-
         }
     }
 

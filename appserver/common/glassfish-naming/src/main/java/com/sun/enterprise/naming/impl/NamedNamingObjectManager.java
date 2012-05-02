@@ -53,11 +53,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * @author Mahesh Kannan
- *         Date: Mar 4, 2008
  */
 public class NamedNamingObjectManager {
 
@@ -67,8 +67,6 @@ public class NamedNamingObjectManager {
     private static final Map<String, NamedNamingObjectProxy> proxies = new HashMap<String, NamedNamingObjectProxy>();
 
     private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-
-    private static final Logger logger = Logger.getLogger(NamedNamingObjectManager.class.getPackage().getName());
 
     public static void checkAndLoadProxies(BaseServiceLocator habitat)
             throws NamingException {
@@ -92,7 +90,10 @@ public class NamedNamingObjectManager {
 
         NamedNamingObjectProxy proxy = getCachedProxy(name);
         if (proxy != null) {
-            logger.logp(Level.INFO, "NamedNamingObjectManager", "tryNamedProxies", "found cached proxy [{0}] for [{1}]", new Object[]{proxy, name});
+            if (logger.isLoggable(Level.FINE)) {
+                logger.logp(Level.FINE, "NamedNamingObjectManager", "tryNamedProxies",
+                        "found cached proxy [{0}] for [{1}]", new Object[]{proxy, name});
+            }
             return proxy.handle(name);
         }
 
@@ -110,7 +111,10 @@ public class NamedNamingObjectManager {
             for (String prefix : inhabitant.getDescriptor().getNames()) {
                 if (name.startsWith(prefix)) {
                     proxy = (NamedNamingObjectProxy) inhabitant.get();
-                    logger.logp(Level.INFO, "NamedNamingObjectManager", "tryNamedProxies", "found a new proxy [{0}] for [{1}]", new Object[]{proxy, name});
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.logp(Level.FINE, "NamedNamingObjectManager", "tryNamedProxies",
+                                "found a new proxy [{0}] for [{1}]", new Object[]{proxy, name});
+                    }
                     cacheProxy(prefix, proxy);
                     return proxy.handle(name);
                 }

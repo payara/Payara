@@ -41,22 +41,24 @@
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.spi.folb.GroupInfoService;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectsProvider;
 import org.glassfish.hk2.Provider;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.api.ORBLocator;
+import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.LoggerInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.ORB;
+import org.omg.CORBA.ORBPackage.InvalidName;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is responsible for setting up naming load-balancing including RoundRobinPolicy.
@@ -65,8 +67,20 @@ import java.util.logging.Level;
 @Service
 @Scoped(Singleton.class)
 public class NamingClusterInfoImpl implements NamingClusterInfo {
-    private static final java.util.logging.Logger logger =
-            java.util.logging.Logger.getLogger(LogDomains.JNDI_LOGGER);
+    //move up to some class in top orb module
+    @LoggerInfo(subsystem = "orb", description = "logger for GlassFish appserver orb modules", publish = true)
+    public static final String ORB_LOGGER_NAME = "org.glassfish.orb";
+
+    public static final Logger logger = Logger.getLogger(ORB_LOGGER_NAME, ORB_LOGGER_NAME + ".LogMessages");
+
+    @LogMessageInfo(message = "Exception occurred when resolving {0}",
+    cause = "org.omg.CORBA.ORBPackage.InvalidName when trying to resolve GroupInfoService",
+    action = "Check server.log for details")
+    public static final String FAILED_TO_RESOLVE_GROUPINFOSERVICE = "AS-ORB-00001";
+
+    @LogMessageInfo(
+    message = "No Endpoints selected in com.sun.appserv.iiop.endpoints property. Using {0}:{1} instead")
+    public static final String NO_ENDPOINT_SELECTED = "AS-ORB-00002";
 
     private RoundRobinPolicy rrPolicy;
 
@@ -83,7 +97,8 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
         try {
             gis = (GroupInfoService) (orb.resolve_initial_references(ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE));
         } catch (InvalidName ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, FAILED_TO_RESOLVE_GROUPINFOSERVICE, ORBLocator.FOLB_CLIENT_GROUP_INFO_SERVICE);
+            logger.log(Level.SEVERE, "", ex);
         }
 
         giso = new GroupInfoServiceObserverImpl( gis, rrPolicy );
@@ -160,7 +175,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
             if (host != null && port != null) {
                 list.addAll(rrPolicy.getAddressPortList(host, port) ) ;
-                logger.log(Level.WARNING, "no.endpoints.selected", new Object[]{host, port});
+                logger.log(Level.WARNING, NO_ENDPOINT_SELECTED, new Object[]{host, port});
             }
         }
 

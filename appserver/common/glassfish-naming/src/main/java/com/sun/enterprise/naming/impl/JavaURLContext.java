@@ -40,18 +40,17 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.enterprise.naming.util.LogFacade;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.naming.ComponentNamingUtil;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.naming.*;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.glassfish.internal.api.Globals;
-import org.glassfish.api.naming.ComponentNamingUtil;
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.jvnet.hk2.component.Habitat;
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * This class is a context implementation for the java:comp namespace.
@@ -60,9 +59,6 @@ import org.jvnet.hk2.component.Habitat;
  * object in that component's local namespace.
  */
 public final class JavaURLContext implements Context, Cloneable {
-
-    static final Logger _logger = LogFacade.getLogger();
-
     private static GlassfishNamingManagerImpl namingManager;
 
     private Hashtable myEnv;
@@ -137,10 +133,6 @@ public final class JavaURLContext implements Context, Cloneable {
      */
     @Override
     public Object lookup(String name) throws NamingException {
-        if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE, "In javaURLContext.lookup, name = " + name
-                    + " serialcontext..." + serialContext);
-
         if (name.equals("")) {
             /**
              * javadocs for Context.lookup: If name is empty, returns a new
@@ -213,8 +205,7 @@ public final class JavaURLContext implements Context, Cloneable {
                         obj = ic.lookup(globalLookup);
 
                     } catch(NamingException javaappenvne) {
-                        _logger.log(Level.FINE, "Trying global version of java:app ejb lookup",
-                                javaappenvne);
+                        logger.log(Level.FINE, "Trying global version of java:app ejb lookup", javaappenvne);
                     }
                 }
 

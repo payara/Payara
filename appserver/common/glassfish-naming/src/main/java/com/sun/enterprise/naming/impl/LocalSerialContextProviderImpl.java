@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,18 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.enterprise.naming.util.LogFacade;
 import com.sun.enterprise.naming.util.NamingUtilsImpl;
+import org.glassfish.logging.LogMessageInfo;
+import org.omg.CORBA.ORB;
 
+import javax.naming.CompositeName;
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.naming.CompositeName;
 import java.rmi.RemoteException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import java.util.Hashtable;
-import org.omg.CORBA.ORB;
-import org.glassfish.internal.api.Globals;
-import javax.naming.Context;
+import java.util.logging.Level;
 
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * This class is the implementation of the local SerialContextProvider
@@ -62,11 +59,11 @@ import javax.naming.Context;
  * @author Sheetal Vartak
  */
 
-public class LocalSerialContextProviderImpl
-        extends SerialContextProviderImpl {
-
-
-    static Logger _logger = LogFacade.getLogger();
+public class LocalSerialContextProviderImpl extends SerialContextProviderImpl {
+    @LogMessageInfo(message = "Exception occurred when instantiating LocalSerialContextProviderImpl: {0}",
+    cause = "java.rmi.RemoteException",
+    action = "Check server.log for details")
+    public static final String LOCAL_PROVIDER_NULL = "AS-NAMING-00003";
 
     private NamingUtilsImpl namingUtils = new NamingUtilsImpl();
 
@@ -78,9 +75,7 @@ public class LocalSerialContextProviderImpl
         try {
             return new LocalSerialContextProviderImpl(rootContext);
         } catch (RemoteException re) {
-            _logger.log(Level.SEVERE,
-                    "local.provider.null.  Exception occurred. Returning null provider : {0}",
-                    new Object[]{re.getMessage()});
+            logger.log(Level.SEVERE, LOCAL_PROVIDER_NULL, re);
             return null;
         }
     }

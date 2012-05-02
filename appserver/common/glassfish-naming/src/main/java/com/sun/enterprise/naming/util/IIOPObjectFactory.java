@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,12 @@
 
 package com.sun.enterprise.naming.util;
 
+import javax.naming.*;
+import javax.naming.spi.ObjectFactory;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Name;
-import javax.naming.RefAddr;
-import javax.naming.Reference;
-import javax.naming.spi.ObjectFactory;
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * An object factory to handle URL references.
@@ -57,36 +53,25 @@ import javax.naming.spi.ObjectFactory;
  */
 
 public class IIOPObjectFactory implements ObjectFactory {
-
-    static Logger _logger;
-
-    public static final boolean debug = false;
     Hashtable env = new Hashtable();
 
     public Object getObjectInstance(Object obj,
                                     Name name,
                                     Context nameCtx,
                                     Hashtable env) throws Exception {
-        env.put("java.naming.factory.initial",
-                "com.sun.jndi.cosnaming.CNCtxFactory");
+        env.put("java.naming.factory.initial", "com.sun.jndi.cosnaming.CNCtxFactory");
 
         InitialContext ic = new InitialContext(env);
 
         Reference ref = (Reference) obj;
-        if (debug) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "IIOPObjectFactory " + ref +
-                        " Name:" + name);
-            }
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "IIOPObjectFactory " + ref + " Name:" + name);
         }
         RefAddr refAddr = ref.get("url");
         Object realObject = ic.lookup((String) refAddr.getContent());
-        if (debug) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Found Object:" + realObject);
-            }
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Found Object:" + realObject);
         }
         return realObject;
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,18 +42,19 @@ package com.sun.enterprise.naming.util;
 
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
-import static com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory.*;
-
+import org.glassfish.logging.LogMessageInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
 
+import javax.naming.Context;
 import java.io.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
-import javax.naming.Context;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.naming.util.LogFacade.logger;
+import static com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory.getFactory;
 
 /**
  * This is a utils class for refactoring the following method.
@@ -61,10 +62,11 @@ import javax.naming.Context;
 
 @Service
 @Scoped(Singleton.class)
-public class NamingUtilsImpl
-    implements NamingUtils {
-
-    static Logger _logger = LogFacade.getLogger();
+public class NamingUtilsImpl implements NamingUtils {
+    @LogMessageInfo(message = "Exception in NamingManagerImpl copyMutableObject(): {0}",
+    cause = "Problem with serialising or deserialising of the object",
+    action = "Check the class hierarchy to see if all the classes are Serializable.")
+    public static final String EXCEPTION_COPY_MUTABLE = "AS-NAMING-00006";
 
     public NamingObjectFactory createSimpleNamingObjectFactory(String name,
         Object value) {
@@ -93,8 +95,8 @@ public class NamingUtilsImpl
     
     public Object makeCopyOfObject(Object obj) {
         if ( !(obj instanceof Context) && (obj instanceof Serializable) ) {
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "** makeCopyOfObject:: " + obj);
+            if(logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "** makeCopyOfObject:: " + obj);
             }
             
             try {
@@ -117,13 +119,8 @@ public class NamingUtilsImpl
                 });
                 return obj;
             } catch (Exception ex) {
-
-                _logger.log(Level.SEVERE,
-                        "enterprise_naming.excep_in_copymutableobj", ex);
-
-                RuntimeException re =
-                        new RuntimeException("Cant copy Serializable object:");
-                re.initCause(ex);
+                logger.log(Level.SEVERE, EXCEPTION_COPY_MUTABLE, ex);
+                RuntimeException re = new RuntimeException("Cant copy Serializable object:", ex);
                 throw re;
             }
         } else {

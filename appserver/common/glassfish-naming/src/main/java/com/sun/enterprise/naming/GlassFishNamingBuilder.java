@@ -41,28 +41,28 @@
 package com.sun.enterprise.naming;
 
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.internal.api.*;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.logging.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 
+import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
+import java.lang.reflect.Field;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.lang.reflect.Field;
 
-import com.sun.enterprise.naming.util.LogFacade;
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * This is both a startup run level service as well as our implementation of
@@ -81,10 +81,11 @@ import com.sun.enterprise.naming.util.LogFacade;
 @StartupRunLevel
 public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, PostConstruct, PreDestroy
 {
+    @LogMessageInfo(message = "Failed to load {0} using CommonClassLoader")
+    public static final String FAILED_TO_LOAD_CLASS = "AS-NAMING-00001";
+
     @Inject
     private ServerContext sc;
-
-    private static Logger _logger = LogFacade.getLogger();
 
     /**
      * We use a naming builder in order to enable use of JNDI in OSGi context, because the builder gives us
@@ -130,7 +131,7 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
             return Class.forName(className, true, tccl);
         } catch (ClassNotFoundException e) {
             // Not a significant error.  Try with common class loader instead.
-            _logger.logp(Level.FINE, "GlassFishNamingBuilder", "loadClass",
+            logger.logp(Level.FINE, "GlassFishNamingBuilder", "loadClass",
                     "Failed to load {0} using thread context class loader {1}", new Object[]{className, tccl});
             // Try using CommonClassLoader.
             ClassLoader ccl = sc.getCommonClassLoader();
@@ -138,7 +139,8 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
                 try {
                     return Class.forName(className, true, ccl);
                 } catch (ClassNotFoundException e2) {
-                    _logger.logp(Level.WARNING, "GlassFishNamingBuilder", "loadClass", "Failed to load {0} using CommonClassLoader", new Object[]{className});
+                    logger.logp(Level.WARNING, "GlassFishNamingBuilder", "loadClass",
+                            FAILED_TO_LOAD_CLASS, new Object[]{className});
                     throw e2;
                 }
             }

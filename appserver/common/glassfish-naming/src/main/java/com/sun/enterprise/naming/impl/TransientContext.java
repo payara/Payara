@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,14 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.enterprise.naming.util.LogFacade;
-
 import javax.naming.*;
 import java.io.Serializable;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * Class to implement multiple level of subcontexts in SerialContext. To use this
@@ -64,9 +56,6 @@ import java.util.logging.Logger;
  * An example for using this is in /test/subcontext
  */
 public class TransientContext implements Context, Serializable {
-    static final Logger _logger = LogFacade.getLogger();
-
-    public static final boolean debug = false;
     Hashtable myEnv;
     private Map<String,Object> bindings = new HashMap<String,Object>();
     static NameParser myParser = new SerialNameParser();
@@ -508,7 +497,7 @@ public class TransientContext implements Context, Serializable {
     public Hashtable listContext(String name) throws NamingException {
         lock.readLock().lock();
         try {
-            if (debug) {
+            if (logger.isLoggable(Level.FINE)) {
                 print(bindings);
             }
             if (name.equals("")) {
@@ -544,7 +533,7 @@ public class TransientContext implements Context, Serializable {
     public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
         lock.readLock().lock() ;
         try {
-            if (debug) {
+            if (logger.isLoggable(Level.FINE)) {
                 print(bindings);
             }
             if (name.equals("")) {
@@ -738,16 +727,13 @@ public class TransientContext implements Context, Serializable {
     }
 
     /**
-     * Print the current hashtable.
+     * Print the current hashtable.  Should only be invoked for FINE Level logging.
      */
     private static void print(Map<String,Object> ht) {
-        for( Map.Entry<String,Object> entry : ht.entrySet()) {
-            String key = entry.getKey() ;
-            Object value = entry.getValue() ;
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "[{0}, {1}:{2}]",
-                        new Object[]{key, value, value.getClass().getName()});
-            }
+        for (Map.Entry<String, Object> entry : ht.entrySet()) {
+            Object value = entry.getValue();
+            logger.log(Level.FINE, "[{0}, {1}:{2}]",
+                    new Object[]{entry.getKey(), value, value.getClass().getName()});
             // END OF IASRI 4660742
         }
     }

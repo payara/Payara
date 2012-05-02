@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,10 @@
 
 package com.sun.enterprise.naming.impl;
 
-import java.rmi.RemoteException;
-import java.util.logging.Logger;
-
 import org.omg.CORBA.ORB;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 
 /**
@@ -97,16 +92,11 @@ public class ProviderManager {
     }
 
     public Remote initRemoteProvider(ORB orb) throws RemoteException {
-
         this.orb = orb;
         return RemoteSerialContextProviderImpl.initSerialContextProvider(orb, rootContext);
-
-
     }
 
     ORB getORB() {
         return orb;
     }
-
-
 }

@@ -40,49 +40,35 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.enterprise.naming.util.LogFacade;
-import org.glassfish.api.naming.NamingClusterInfo;
-import org.glassfish.api.naming.NamingObjectProxy;
-
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import javax.naming.spi.ObjectFactory;
-import java.rmi.RemoteException;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Map;
-import java.util.HashMap;
-import javax.naming.Binding;
-import javax.naming.CommunicationException;
-import javax.naming.CompositeName;
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NameClassPair;
-import javax.naming.NameParser;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.NotContextException;
-import javax.naming.Reference;
-import javax.naming.Referenceable;
-
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
-import org.omg.CORBA.ORBPackage.InvalidName;
-
-import org.omg.CosNaming.NamingContext;
-import org.omg.CosNaming.NameComponent;
-import org.omg.CosNaming.NamingContextHelper;
-import javax.rmi.PortableRemoteObject;
+import org.glassfish.api.naming.NamingClusterInfo;
+import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.internal.api.ServerContext;
-
+import org.glassfish.logging.LogMessageInfo;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
+import org.omg.CORBA.ORBPackage.InvalidName;
+import org.omg.CosNaming.NameComponent;
+import org.omg.CosNaming.NamingContext;
+import org.omg.CosNaming.NamingContextHelper;
 import org.omg.CosNaming.NamingContextPackage.CannotProceed;
 import org.omg.CosNaming.NamingContextPackage.NotFound;
 
+import javax.naming.*;
+import javax.naming.spi.ObjectFactory;
+import javax.rmi.PortableRemoteObject;
+import java.rmi.RemoteException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.logging.Level;
+
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * This context provides access to the app server naming service. This
@@ -96,6 +82,11 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * <b>NOT THREAD SAFE: mutable instance variables</b>
  */
 public class SerialContext implements Context {
+    @LogMessageInfo(message = "Exception during name lookup : {0}",
+    cause = "App Server may not be running at port intended, or possible Network Error.",
+    action = "Check to see if the AppServer is up and running on the port intended. The problem could be because of incorrect port. Check to see if you can access the host on which the AppServer running.")
+    public static final String EXCEPTION_DURING_LOOKUP = "AS-NAMING-00002";
+
     // Maximum number of recursive calls to lookup on comm error
     // Maximum number of recursive calls to lookup on comm error
     private static final int MAX_LEVEL = 5 ;
@@ -106,8 +97,6 @@ public class SerialContext implements Context {
 
     // Sets unmanaged SerialContext in test mode to prevent attempts to contact server. 
     static final String INITIAL_CONTEXT_TEST_MODE = "com.sun.enterprise.naming.TestMode";
-
-    private static final Logger _logger = LogFacade.getLogger();
 
     private static final NameParser myParser = new SerialNameParser();
 
@@ -208,12 +197,10 @@ public class SerialContext implements Context {
                     ctx = null ;
                 }
             } else {
-                if (_logger.isLoggable(Level.FINE))  {
-                    _logger.log( Level.FINE,
-                        "SerialContext: attempt to release StickyContext "
-                        + " without grab") ;
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "SerialContext: attempt to release StickyContext without grab");
                 }
-                ctx = null ;
+                ctx = null;
             }
         }
 
@@ -243,10 +230,6 @@ public class SerialContext implements Context {
             "com.sun.corba.ee.impl.presentation.rmi.JNDIStateFactoryImpl" );
 
         this.myName = name;
-        if (_logger.isLoggable(Level.FINE))
-            _logger.fine("SerialContext ==> SerialContext instance created : "
-                    + this);
-
         if( myEnv.get(INITIAL_CONTEXT_TEST_MODE) != null ) {
             testMode = true;
             System.out.println("SerialContext in test mode");
@@ -267,7 +250,6 @@ public class SerialContext implements Context {
                 } else {
                     services = SerialInitContextFactory.getDefaultServices();
                 }
-
             }
         }
         
@@ -276,11 +258,6 @@ public class SerialContext implements Context {
         } else {
             ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
             processType = processEnv.getProcessType();
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
-                    "Serial Context initializing with process environment {0}",
-                    processEnv);
-            }
         }
 
         // using these two temp variables allows instance variables
@@ -464,18 +441,13 @@ public class SerialContext implements Context {
         // TODO this should really be moved somewhere else
         NamedNamingObjectManager.checkAndLoadProxies((BaseServiceLocator) services);
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "SerialContext ==> lookup( {0})", name);
-        }
-
         /**
          * In case a user is creating an IC with env passed in constructor; env
          * specifies endpoints in some form in that case, the sticky IC should
          * be stored as a thread local variable.
          *
          */
-        final boolean useSticky = myEnv.get(
-                NamingClusterInfo.IIOP_URL_PROPERTY) != null ;
+        final boolean useSticky = myEnv.get(NamingClusterInfo.IIOP_URL_PROPERTY) != null ;
 
         if (useSticky) {
             grabSticky() ;
@@ -489,11 +461,6 @@ public class SerialContext implements Context {
             }
 
             name = getRelativeName(name);
-
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,
-                    "SerialContext ==> lookup relative name : {0}", name);
-            }
 
             if (isjavaURL(name)) {
                 //it is possible that the object bound in a java url ("java:") is
@@ -525,9 +492,8 @@ public class SerialContext implements Context {
         } catch (Exception ex) {
             // Issue 14732: make this FINE, as a cluster configuration change
             // can send us here in a normal retry scenario.
-            _logger.log(Level.FINE,
-                    "enterprise_naming.serialctx_communication_exception", name);
-            _logger.log(Level.FINE, "", ex);
+            logger.log(Level.FINE, EXCEPTION_DURING_LOOKUP, name);
+            logger.log(Level.FINE, "", ex);
 
             final int nextLevel = level + 1 ;
 
@@ -538,8 +504,7 @@ public class SerialContext implements Context {
                     && ex.getCause() instanceof org.omg.CORBA.COMM_FAILURE
                     && nextLevel < MAX_LEVEL) {
                 clearProvider();
-                _logger.fine("Resetting provider to NULL. Will get new obj ref " +
-                             "for provider since previous obj ref was stale...");
+                logger.fine("Resetting provider to NULL. Will get new obj ref for provider since previous obj ref was stale...");
                 return lookup(name, nextLevel );
             } else {
                 CommunicationException ce = new CommunicationException(
@@ -574,18 +539,15 @@ public class SerialContext implements Context {
             if (tccl != commonCL) {
                 Reference ref = getReference(obj);
                 if (ref != null) {
-                    _logger.logp(Level.FINE, "SerialContext",
-                            "getObjectInstance",
-                            "Trying with CommonClassLoader for name {0} ",
-                            new Object[]{name});
+                    logger.logp(Level.FINE, "SerialContext", "getObjectInstance",
+                            "Trying with CommonClassLoader for name {0} ", name);
                     ObjectFactory factory = getObjectFactory(ref, commonCL);
                     if (factory != null) {
                         retObj = factory.getObjectInstance(
                                 ref, new CompositeName(name), null, myEnv);
                     }
                     if (retObj != obj) {
-                        _logger.logp(Level.FINE, "SerialContext",
-                                "getObjectInstance",
+                        logger.logp(Level.FINE, "SerialContext", "getObjectInstance",
                                 "Found with CommonClassLoader");
                     }
                 }

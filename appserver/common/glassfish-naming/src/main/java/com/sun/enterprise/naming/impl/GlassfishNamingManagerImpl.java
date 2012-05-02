@@ -40,31 +40,26 @@
 
 package com.sun.enterprise.naming.impl;
 
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
-import javax.inject.Inject;
-
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
-
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
-
-import com.sun.enterprise.naming.util.LogFacade;
-
+import org.glassfish.logging.LogMessageInfo;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.omg.CORBA.ORB;
-import java.rmi.RemoteException;
-import java.rmi.Remote;
 
+import javax.inject.Inject;
 import javax.naming.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.*;
+import java.util.logging.Level;
 
-
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 
 /**
  * This is the manager that handles all naming operations including
@@ -74,10 +69,12 @@ import java.util.*;
 
 @Service
 @Scoped(Singleton.class)
-public final class  GlassfishNamingManagerImpl
-        implements GlassfishNamingManager {
+public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager {
+    @LogMessageInfo(message = "Error during CosNaming.unbind for name {0}: {1}")
+    public static final String ERROR_COSNAMING_UNBIND = "AS-NAMING-00004";
 
-    static final Logger _logger = LogFacade.getLogger();
+    @LogMessageInfo(message = "Naming binding already exists for {0} in namespace {1}")
+    public static final String NAMING_ALREADY_EXISTS = "AS-NAMING-00005";
 
     public static final String IIOPOBJECT_FACTORY =
             "com.sun.enterprise.naming.util.IIOPObjectFactory";
@@ -254,15 +251,11 @@ public final class  GlassfishNamingManagerImpl
      */
     public void unpublishCosNamingObject(String name)
             throws NamingException {
-
-
         try {
             getCosContext().unbind(name);
         } catch(NamingException cne) {
-           _logger.log(Level.WARNING, "Error during CosNaming.unbind for " + name); 
+           logger.log(Level.WARNING, ERROR_COSNAMING_UNBIND, new Object[] {name, cne});
         }
-
-
         initialContext.unbind(name);
     }
 
@@ -285,12 +278,8 @@ public final class  GlassfishNamingManagerImpl
      * @throws Exception
      */
     private void createSubContexts(Name name, Context rootCtx) throws NamingException {
-
         int numSubContexts = name.size() - 1;
         Context currentCtx = rootCtx;
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "Creating sub contexts for " + name);
-        }
 
         for (int subCtxIndex = 0; subCtxIndex < numSubContexts; subCtxIndex++) {
             String subCtxName = name.get(subCtxIndex);
@@ -299,11 +288,6 @@ public final class  GlassfishNamingManagerImpl
                 Object obj = currentCtx.lookup(subCtxName);
 
                 if (obj == null) {
-                    // @@@ thought it should throw NameNotFound when
-                    // context doesn't exist...
-                    if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, "name == null");
-                    }
                     // Doesn't exist so create it.
                     Context newCtx = currentCtx.createSubcontext(subCtxName);
                     currentCtx = newCtx;
@@ -316,8 +300,6 @@ public final class  GlassfishNamingManagerImpl
                 }
             }
             catch (NameNotFoundException e) {
-                _logger.log(Level.FINE, "name not found", e);
-
                 // Doesn't exist so create it.
                 Context newCtx = currentCtx.createSubcontext(subCtxName);
                 currentCtx = newCtx;
@@ -404,8 +386,10 @@ public final class  GlassfishNamingManagerImpl
                 try {
                     o = getObjectInstance(name, o, env);
                 } catch (Exception e) {
-                    _logger.log(Level.FINEST,"Unable to get Object instance from Reference for name ["+name+"]. " +
-                            "Hence returning the Reference object ", e);
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Unable to get Object instance from Reference for name [" + name + "]. " +
+                                "Hence returning the Reference object ", e);
+                    }
                 }
             }
             return o;
@@ -505,19 +489,12 @@ public final class  GlassfishNamingManagerImpl
 
     private void bindToNamespace(Map namespace, String logicalJndiName, Object value)
             throws NamingException {
-
-
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,
-                    "naming.bind Binding name:{0}",
-                    new Object[]{logicalJndiName});
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "naming.bind Binding name:{0}", logicalJndiName);
         }
 
         if (namespace.put(logicalJndiName, value) != null) {
-            _logger.log(Level.WARNING,
-                    "naming.alreadyexists" +
-                            "Reference name [{0}] already exists for {1}",
-                    new Object[]{logicalJndiName, namespace.toString()});
+            logger.log(Level.WARNING, NAMING_ALREADY_EXISTS, new Object[]{logicalJndiName, namespace.toString()});
         }
 
         bindIntermediateContexts(namespace, logicalJndiName);
@@ -723,7 +700,6 @@ public final class  GlassfishNamingManagerImpl
      */
     public Object lookup(String name, SerialContext serialContext)
             throws NamingException {
-        _logger.fine("serialcontext in GlassfishNamingManager.." + serialContext);
         Context ic = null;
 
         if (serialContext != null) {
@@ -734,13 +710,9 @@ public final class  GlassfishNamingManagerImpl
 
         // initialContext is used as ic in case of PE while
         // serialContext is used as ic in case of EE/SE
-        if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE, "GlassfishNamingManager : looking up name : "
-                    + name);
 
         // Get the component id and namespace to lookup
         String componentId = getComponentId();
-
         return lookup(componentId, name, ic);
     }
 

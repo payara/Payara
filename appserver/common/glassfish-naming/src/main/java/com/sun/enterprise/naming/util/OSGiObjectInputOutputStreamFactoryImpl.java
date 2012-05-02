@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,16 @@
 
 package com.sun.enterprise.naming.util;
 
-import org.osgi.framework.BundleContext;
+import org.glassfish.logging.LogMessageInfo;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.io.ObjectStreamClass;
+import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,17 +58,19 @@ import java.util.logging.Logger;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 public class OSGiObjectInputOutputStreamFactoryImpl
-        implements ObjectInputOutputStreamFactory
-{
+        implements ObjectInputOutputStreamFactory {
+    @LogMessageInfo(message = "BundleTracker.removedBundle null bundleID for {0}")
+    public static final String NULL_BUNDLE = "AS-NAMING-00007";
+
+    private static final Logger logger = LogFacade.getLogger();
+
     private BundleContext ctx;
     PackageAdmin pkgAdm;
-
-    static Logger _logger = LogFacade.getLogger();
 
     private ConcurrentHashMap<String, Long> name2Id = new ConcurrentHashMap<String, Long>();
 
     // Since bundle id starts with 0, we use -1 to indicate a non-bundle
-    private static final long NOT_A_BUNDLE_ID = -1;
+//    private static final long NOT_A_BUNDLE_ID = -1;
     private static final String NOT_A_BUNDLE_KEY = ":";
 
     public OSGiObjectInputOutputStreamFactoryImpl(BundleContext ctx)
@@ -91,8 +89,8 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             public Object addingBundle(Bundle bundle, BundleEvent bundleEvent) {
                 String key = makeKey(bundle);
                 name2Id.put(key, bundle.getBundleId());
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "BundleTracker.addingBundle BUNDLE " + key + " ==> " + bundle.getBundleId() + "  for " + bundle.getSymbolicName());
+                if (logger != null && logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "BundleTracker.addingBundle BUNDLE " + key + " ==> " + bundle.getBundleId() + "  for " + bundle.getSymbolicName());
                 }
                 return null;
             }
@@ -101,11 +99,11 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             public void removedBundle(Bundle bundle, BundleEvent bundleEvent, Object o) {
                 String key = makeKey(bundle);
                 Long bundleID = name2Id.remove(key);
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "BundleTracker.removedBundle BUNDLE " + key + "  ==> " + bundle.getSymbolicName());
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "BundleTracker.removedBundle BUNDLE " + key + "  ==> " + bundle.getSymbolicName());
                 }
                 if (bundleID == null) {
-                    _logger.log(Level.WARNING, "BundleTracker.removedBundle null bundleID for ==> " + key);
+                    logger.log(Level.WARNING, NULL_BUNDLE, key);
                 }
             }
             /*

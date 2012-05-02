@@ -44,12 +44,12 @@ package org.glassfish.enterprise.iiop.impl;
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.GroupInfoService;
 import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.LogMessageInfo;
 
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import static org.glassfish.enterprise.iiop.impl.NamingClusterInfoImpl.logger;
 
 /**
  * Called when the GroupInfoService that you register with
@@ -59,27 +59,16 @@ import java.util.logging.Logger;
  * @author Ken Cavanaugh
  * @author Sheetal Vartak
  */
-public class GroupInfoServiceObserverImpl 
-    implements GroupInfoServiceObserver {
-
-    protected static final Logger _logger = LogDomains.getLogger(
-        GroupInfoServiceObserverImpl.class, LogDomains.JNDI_LOGGER);
-
-    private static void doLog( Level level, String fmt, Object... args )  {
-        if (_logger.isLoggable(level)) {
-            _logger.log( level, fmt, args ) ;
-        }
-    }
-
-    private static void fineLog( String fmt, Object... args ) {
-        doLog( Level.FINE, fmt, args ) ;
-    }
-
+public class GroupInfoServiceObserverImpl implements GroupInfoServiceObserver {
+    @LogMessageInfo(message = "Problem with membership change notification. Exception occurred : {0}",
+    cause = "check server.log for details",
+    action = "check network configuration and cluster setup")
+    public static final String GROUPINFOSERVICE_MEMBERSHIP_NOTIFICATION_PROBLEM = "AS-ORB-00003";
 
     private GroupInfoService gis;
     private RoundRobinPolicy rr ;
 
-    public GroupInfoServiceObserverImpl(GroupInfoService gis, 
+    public GroupInfoServiceObserverImpl(GroupInfoService gis,
         RoundRobinPolicy rr ) {
 
 	this.gis = gis;
@@ -89,28 +78,32 @@ public class GroupInfoServiceObserverImpl
     // This method is called for internally forced updates: 
     // see SerialInitContextFactory.getInitialContext.
     public void forceMembershipChange() {
-        fineLog( "GroupInfoServiceObserverImpl.forceMembershipChange called") ;
-        doMembershipChange() ;
+        doMembershipChange();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "GroupInfoServiceObserverImpl.forceMembershipChange called");
+        }
     }
 
     @Override
     // This method is called when the client is informed about a cluster
     // membership change through ClientGroupManager.receive_star.
     public void membershipChange() {
-        fineLog( "GroupInfoServiceObserverImpl.membershipChange called") ;
-        doMembershipChange() ;
+        doMembershipChange();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "GroupInfoServiceObserverImpl.membershipChange called");
+        }
     }
 
     private void doMembershipChange() {
-	try {
-	    List<ClusterInstanceInfo> instanceInfoList =
-                gis.getClusterInstanceInfo(null, rr.getHostPortList() );
-	    if (instanceInfoList != null && instanceInfoList.size() > 0) {
+        try {
+            List<ClusterInstanceInfo> instanceInfoList =
+                    gis.getClusterInstanceInfo(null, rr.getHostPortList());
+            if (instanceInfoList != null && instanceInfoList.size() > 0) {
                 rr.setClusterInstanceInfo(instanceInfoList);
-	    }
-	} catch(Exception e) {
-	    _logger.log(Level.SEVERE,
-                "groupinfoservice.membership.notification.problem", new Object[] {e});
-	}
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, GROUPINFOSERVICE_MEMBERSHIP_NOTIFICATION_PROBLEM, e);
+            logger.log(Level.SEVERE, "", e);
+        }
     }
 }

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.naming.impl;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
@@ -54,25 +53,12 @@ import javax.naming.spi.NamingManager;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import static com.sun.enterprise.naming.util.LogFacade.logger;
 import static org.glassfish.api.naming.NamingClusterInfo.*;
 
 public class SerialInitContextFactory implements InitialContextFactory {
     private static volatile boolean initialized = false ;
-
-    protected static final Logger _logger = LogDomains.getLogger(
-        SerialInitContextFactory.class, LogDomains.JNDI_LOGGER );
-
-    private static void doLog( Level level, String fmt, Object... args )  {
-        if (_logger.isLoggable(level)) {
-            _logger.log( level, fmt, args ) ;
-        }
-    }
-
-    private static void fineLog( String fmt, Object... args ) {
-        doLog( Level.FINE, fmt, args ) ;
-    }
 
     private static String defaultHost = null ;
 
@@ -167,7 +153,9 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
         boolean membershipChangeForced = false ;
 
-        fineLog( "getInitialContext: env={0}", env ) ;
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "getInitialContext: env={0}", env);
+        }
         boolean useLB = propertyIsSet(myEnv, IIOP_ENDPOINTS_PROPERTY)
             || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
         NamingClusterInfo namingClusterInfo = null;
@@ -207,7 +195,9 @@ public class SerialInitContextFactory implements InitialContextFactory {
                 }
 
                 List<String> rrList = namingClusterInfo.getNextRotation();
-                fineLog( "getInitialContext: RoundRobinPolicy list = {0}", rrList);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "getInitialContext: RoundRobinPolicy list = {0}", rrList);
+                }
                 myEnv.put(IIOP_URL_PROPERTY, getCorbalocURL(rrList));
             }
 

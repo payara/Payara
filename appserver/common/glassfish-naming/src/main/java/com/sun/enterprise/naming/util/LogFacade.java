@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,19 @@
 
 package com.sun.enterprise.naming.util;
 
+import org.glassfish.logging.LoggerInfo;
+
 import java.util.logging.Logger;
 
 public class LogFacade {
+    @LoggerInfo(subsystem = "glassfish-naming", description = "logger for GlassFish appserver naming", publish = true)
+    public static final String NAMING_LOGGER_NAME = "org.glassfish.naming";
 
-    public static final Logger _logger = Logger.getLogger("com.sun.enterprise.naming");
+    public static final Logger logger = Logger.getLogger(NAMING_LOGGER_NAME, NAMING_LOGGER_NAME + ".LogMessages");
+
+    private LogFacade() {}
 
     public static Logger getLogger() {
-        return _logger;
+        return logger;
     }
 }
