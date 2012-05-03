@@ -249,6 +249,7 @@ public class EjbContainerUtilImpl
             }
         }
 
+        EJBObjectOutputStreamHandler.setJavaEEIOUtils(javaEEIOUtils);
         javaEEIOUtils.addGlassFishOutputStreamHandler(new EJBObjectOutputStreamHandler());
         javaEEIOUtils.addGlassFishInputStreamHandler(new EJBObjectInputStreamHandler());
         _me = this;
