@@ -43,6 +43,7 @@ package com.sun.enterprise.transaction.jts;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.xa.XAResource;
 
@@ -63,7 +64,7 @@ import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.RecoveryManager;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 
