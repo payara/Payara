@@ -49,6 +49,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -98,8 +99,7 @@ public class TenantManagerImpl implements TenantManagerEx {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public String getCurrentTenant() {
+    private String getCurrentTenant() {
         String name = currentTenant.get();
         if (name == null) {
             // TODO: logging, error handling, i18n
@@ -140,18 +140,10 @@ public class TenantManagerImpl implements TenantManagerEx {
      * {@inheritDoc}
      */
     @Override
-    public void lock() {
-        //TODO code to obtain lock goes here
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void unlock() {
-        //TODO code to release lock goes here
-
+    public Lock getLock() {
+        Tenant source = get(Tenant.class);
+        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(source);
+        return configBean.getDocument().getLock();
     }
 
     private File getTenantFile(String name) {

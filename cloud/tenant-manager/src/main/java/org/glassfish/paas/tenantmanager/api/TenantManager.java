@@ -39,11 +39,10 @@
  */
 package org.glassfish.paas.tenantmanager.api;
 
+import java.util.concurrent.locks.Lock;
+
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigCode;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * TenantManager provides access to information about all tenants. It is
@@ -70,11 +69,6 @@ public interface TenantManager {
     <T extends ConfigBeanProxy> T get(Class<T> config);
 
     /**
-     * Get current tenant.
-     */
-    String getCurrentTenant();
-
-    /**
      * Associate tenant with current thread.
      */
     void setCurrentTenant(String name);
@@ -85,13 +79,8 @@ public interface TenantManager {
     void resetCurrentTenant();
 
     /**
-     * Obtain an exclusive lock for current tenant. The lock is obtained on behalf of current CPAS JVM process
+     * Returns lock on whole tenant, call tryLock then unlock. The lock is obtained on behalf of current CPAS JVM process.
      */
-    void lock();
+    Lock getLock();
 
-    /**
-     * Releases the lock held for current tenant by current CPAS JVM process.
-     * @throws IllegalMonitorStateException if current CPAS JVM process does not own a lock for this tenant
-     */
-    void unlock();
 }

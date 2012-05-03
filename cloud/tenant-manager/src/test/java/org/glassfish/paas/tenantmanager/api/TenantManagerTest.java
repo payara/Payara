@@ -127,7 +127,6 @@ public class TenantManagerTest extends ConfigApiTest {
         Assert.assertNotNull("tenantManager", tenantManager);
         try {
             tenantManager.setCurrentTenant("tenant1");
-            Assert.assertEquals("currentTenant", "tenant1", tenantManager.getCurrentTenant());
             Tenant tenant = tenantManager.get(Tenant.class);
             Assert.assertNotNull("currentTenant", tenant);
             Assert.assertEquals("currentTenant", "tenant1", tenant.getName());
