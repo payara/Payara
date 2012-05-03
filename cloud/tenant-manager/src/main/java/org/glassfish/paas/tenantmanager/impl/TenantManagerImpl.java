@@ -62,6 +62,7 @@ import org.glassfish.paas.tenantmanager.entity.TenantAdmin;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -88,7 +89,7 @@ public class TenantManagerImpl implements TenantManagerEx {
      * {@inheritDoc}
      */
     @Override
-    public <T> T get(Class<T> config) {
+    public <T extends ConfigBeanProxy> T get(Class<T> config) {
         String name = getCurrentTenant();
         return get(config, name);
     }
@@ -205,15 +206,22 @@ public class TenantManagerImpl implements TenantManagerEx {
         return tenant;
     }
 
+    private void dispose(String name) {
+        Habitat h = null;
+        synchronized (habitats) {
+            h = habitats.remove(name);
+        }
+        if (h != null) {
+            h.release();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void delete(String name) {
-        Habitat h = habitats.remove(name);
-        if (h != null) {
-            h.release();
-        }
+        dispose(name);
         // TODO: do we really want to delete file or just dispose habitat?
         // TODO: lock!!!
         FileUtils.deleteFileMaybe(getTenantFile(name));
@@ -249,10 +257,25 @@ public class TenantManagerImpl implements TenantManagerEx {
      *            Tenant name.
      * @return Config.
      */
-    private <T> T get(Class<T> config, String tenantName) {
+    private <T extends ConfigBeanProxy> T get(Class<T> config, String tenantName) {
         Habitat habitat = getHabitat(tenantName);
         // TODO: assert Tenant/Environment/Service is requested
-        return  habitat.getComponent(config);
+        // FIXME: synchronized(habitats) whole block (for re-read below)?
+        T result =  habitat.getComponent(config);
+        if (result == null) {
+            return null;
+        }
+        // re-read tenant file if it was modified (tentative, subject for changes)
+        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(result);
+        long myLastModified = configBean.getDocument().getLastModified();
+        long otherLastModified = new File(getTenantFilePath(tenantName)).lastModified();
+        if (otherLastModified > myLastModified) {
+            dispose(tenantName);
+            habitat = getHabitat(tenantName);
+            result = habitat.getComponent(config);
+        }
+        
+        return result;
         
     }
 
@@ -306,15 +329,17 @@ public class TenantManagerImpl implements TenantManagerEx {
         String filePath = getTenantFilePath(name);
         ConfigParser parser = new ConfigParser(habitat);
         URL fileUrl = null;
+        File f = new File(filePath);
+        long lastModified = f.lastModified();
         try {
-            fileUrl = new File(filePath).toURI().toURL();
+            fileUrl = f.toURI().toURL();
         } catch (MalformedURLException e) {
             // should not happen
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         try {
-            return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl));
+            return parser.parse(fileUrl, new TenantDocument(habitat, fileUrl, lastModified));
         } catch (ComponentException e) {
             // TODO: i18n, better error
             throw new IllegalArgumentException("Tenant '" + name + "' might be deleted", e);

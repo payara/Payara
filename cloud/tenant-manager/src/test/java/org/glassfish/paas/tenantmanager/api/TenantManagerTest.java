@@ -185,6 +185,17 @@ public class TenantManagerTest extends ConfigApiTest {
         } finally {
             tenantManager.resetCurrentTenant();
         }
+        // verify tenant file is reready if updated by someone else
+        setupTest("tenant1");
+        try {
+            tenantManager.setCurrentTenant("tenant1");
+            Tenant tenant = tenantManager.get(Tenant.class);
+            TenantAdmin admin = tenant.getTenantAdmin();
+            Assert.assertEquals("Original name", "admin", admin.getName());         
+        } finally {
+            tenantManager.resetCurrentTenant();
+            
+        }
     }
 
     // verify restricted access to the configuration - can't modify the same object simultaneously.
@@ -399,4 +410,5 @@ public class TenantManagerTest extends ConfigApiTest {
             }
         }
     }
+      
 }

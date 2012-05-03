@@ -79,10 +79,11 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class TenantDocument extends DomDocument<TenantConfigBean> {
 
-    public TenantDocument(final Habitat habitat, URL resource) {
+    public TenantDocument(final Habitat habitat, URL resource, long lastModified) {
         super(habitat);
-        
+
         this.resource = resource;
+        this.lastModified = lastModified;
     }
 
     /**
@@ -101,6 +102,15 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
      */
     public URL getResource() {
         return resource;
+    }
+
+    /**
+     * Get tenant file last modified time.
+     * 
+     * @return file last modified time.
+     */
+    public long getLastModified() {
+        return lastModified;
     }
 
     /**
@@ -256,8 +266,8 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
 
     }
 
-
     private URL resource;
+    private long lastModified;
 
     private final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(TenantDocument.class);    

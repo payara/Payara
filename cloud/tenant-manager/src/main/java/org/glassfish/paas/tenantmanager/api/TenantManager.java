@@ -67,7 +67,7 @@ public interface TenantManager {
      *            Config class.
      * @return Config.
      */
-    <T> T get(Class<T> config);
+    <T extends ConfigBeanProxy> T get(Class<T> config);
 
     /**
      * Get current tenant.
