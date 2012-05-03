@@ -60,7 +60,7 @@ import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.util.ServiceType;
 import org.glassfish.virtualization.util.SimpleSearchCriteria;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -81,13 +81,13 @@ public class CreateDerbyVM implements AdminCommand {
     @Param(name = "servicecharacteristics", optional = true, separator = ':')
     public Properties serviceCharacteristics;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private IAAS iaas;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private VirtualClusters virtualClusters;
 
-    @Inject(optional = true)
+    @Inject @Optional
     private TemplateRepository templateRepository;
 
     @Inject

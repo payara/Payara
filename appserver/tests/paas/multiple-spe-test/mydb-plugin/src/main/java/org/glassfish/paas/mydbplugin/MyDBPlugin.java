@@ -46,7 +46,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.paas.javadbplugin.DerbyPlugin;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;

@@ -48,7 +48,7 @@ import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -61,7 +61,7 @@ import org.jvnet.hk2.component.PerLookup;
 @CommandLock(CommandLock.LockType.NONE)
 public class DeleteDerbyVM implements AdminCommand {
 
-    @Inject(optional = true)
+    @Inject @Optional
     private VirtualClusters virtualClusters;
 
     @Inject
