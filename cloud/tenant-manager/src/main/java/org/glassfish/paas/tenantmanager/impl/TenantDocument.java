@@ -185,7 +185,7 @@ public class TenantDocument extends DomDocument<TenantConfigBean> {
         @Override
         public void unlock() {
             // TODO: synchronize block?
-            if (locksByThisProcess.decrementAndGet() == 0) {
+            if (locksByThisProcess.get() > 0 && locksByThisProcess.decrementAndGet() == 0) {
                 // Physically unlock the file when the last one gets out.
                 if (fileLock != null && fileLock.isValid()) {
                     synchronized(this) {

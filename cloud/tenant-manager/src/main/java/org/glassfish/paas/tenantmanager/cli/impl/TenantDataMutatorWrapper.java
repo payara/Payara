@@ -99,7 +99,7 @@ public class TenantDataMutatorWrapper implements CommandWrapperImpl {
                     throw new RuntimeException(e);
                 } finally {
                     tm.resetCurrentTenant();
-                    lock.unlock(); // let it fail
+                    lock.unlock(); // safe
                 }
             }
         };
