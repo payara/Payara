@@ -82,7 +82,10 @@ public class TenantDataMutatorWrapper implements CommandWrapperImpl {
                 tm.setCurrentTenant(""); // FIXME: (IMPORTANT) obtain tenant from current context
                 Lock lock = tm.getLock();
                 try {
-                    lock.tryLock(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS);
+                    boolean locked = lock.tryLock(ConfigSupport.lockTimeOutInSeconds, TimeUnit.SECONDS);
+                    if (!locked) { // Make FindBugs happy
+                        throw new RuntimeException("Can't lock tenant");
+                    }
                     Transaction currentTransaction = new Transaction();
                     TenantDataMutatorAdminCommandContext mutatorAdminCommandContext = new TenantDataMutatorAdminCommandContext(currentTransaction, context);
                     command.execute(mutatorAdminCommandContext);
