@@ -260,22 +260,23 @@ public class TenantManagerImpl implements TenantManagerEx {
     private <T extends ConfigBeanProxy> T get(Class<T> config, String tenantName) {
         Habitat habitat = getHabitat(tenantName);
         // TODO: assert Tenant/Environment/Service is requested
-        // FIXME: synchronized(habitats) whole block (for re-read below)?
-        T result =  habitat.getComponent(config);
-        if (result == null) {
-            return null;
-        }
-        // re-read tenant file if it was modified (tentative, subject for changes)
-        TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(result);
-        long myLastModified = configBean.getDocument().getLastModified();
-        long otherLastModified = new File(getTenantFilePath(tenantName)).lastModified();
-        if (otherLastModified > myLastModified) {
-            dispose(tenantName);
-            habitat = getHabitat(tenantName);
-            result = habitat.getComponent(config);
+        synchronized(habitat) { // for re-read below, remove if not needed
+            T result =  habitat.getComponent(config);
+            if (result == null) {
+                return null;
+            }
+            // re-read tenant file if it was modified (tentative, subject for changes)
+            TenantConfigBean configBean = (TenantConfigBean) Dom.unwrap(result);
+            long myLastModified = configBean.getDocument().getLastModified();
+            long otherLastModified = new File(getTenantFilePath(tenantName)).lastModified();
+            if (otherLastModified > myLastModified) {
+                dispose(tenantName);
+                habitat = getHabitat(tenantName);
+                result = habitat.getComponent(config);
+            }
+            return result;
         }
         
-        return result;
         
     }
 
