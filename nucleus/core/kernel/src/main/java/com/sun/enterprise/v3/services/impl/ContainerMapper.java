@@ -337,9 +337,7 @@ public class ContainerMapper extends StaticHttpHandler {
         // the request is targetted to the CoyoteAdapter.
         mapper.map(req.getRequest().serverName(), decodedURI, mappingData);
 
-        if (!mappingData.contextPath.isNull()) {
-            updateContextPath(req, mappingData.contextPath.toString());
-        }
+        updatePaths(req, mappingData);
 
         ContextRootInfo contextRootInfo;
         if (mappingData.context != null && (mappingData.context instanceof ContextRootInfo
@@ -536,6 +534,8 @@ public class ContainerMapper extends StaticHttpHandler {
     public void unregister(final Endpoint endpoint) {
         unregister(endpoint.getContextRoot());
     }
+
+
     
     private static final class AfterServiceListenerImpl implements AfterServiceListener {
 
