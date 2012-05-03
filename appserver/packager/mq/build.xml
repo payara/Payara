@@ -47,7 +47,7 @@
 
 	<mkdir dir="target/stage/${install.dir.name}"/>
 
-	<resolveArtifact property="mq.zip" groupID="org.glassfish" artifactID="mq-distribution" type="zip" />
+	<resolveArtifact property="mq.zip" groupID="org.glassfish.mq" artifactID="mq-distribution" type="zip" />
 
 
         <unzip src="${mq.zip}"
