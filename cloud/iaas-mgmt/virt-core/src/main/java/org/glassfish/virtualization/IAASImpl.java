@@ -50,7 +50,9 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
@@ -84,10 +86,11 @@ public class IAASImpl implements IAAS, ConfigListener {
         return groups.get(groupName);
     }
 
-    public IAASImpl(@Inject(optional = true) Virtualizations virtualizations,
-                    @Inject Transactions transactions,
-                    @Inject ServerEnvironment env,
-                    @Inject final Habitat services) {
+    @Inject
+    public IAASImpl(@Optional Virtualizations virtualizations,
+                    Transactions transactions,
+                    ServerEnvironment env,
+                    final Habitat services) {
 
         this.services = services;
         // first executeAndWait the fping command to populate our arp table.
