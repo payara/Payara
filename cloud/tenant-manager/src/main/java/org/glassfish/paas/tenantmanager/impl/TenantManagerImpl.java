@@ -72,6 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.hk2.component.InhabitantsParser;
@@ -298,6 +299,7 @@ public class TenantManagerImpl implements TenantManagerEx {
         Habitat habitat = modulesRegistry.newHabitat();
         InhabitantsParser parser = new InhabitantsParser(habitat); 
         habitat.add(new ExistingSingletonInhabitant<ModulesRegistry>(ModulesRegistry.class, modulesRegistry));
+        habitat.add(new ExistingSingletonInhabitant<StartupContext>(StartupContext.class, startupContext));
         final ClassLoader oldCL = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
             @Override
             public ClassLoader run() {
@@ -377,5 +379,8 @@ public class TenantManagerImpl implements TenantManagerEx {
 
     @Inject
     private ModulesRegistry modulesRegistry;
+
+    @Inject
+    private StartupContext startupContext;
 
 }
