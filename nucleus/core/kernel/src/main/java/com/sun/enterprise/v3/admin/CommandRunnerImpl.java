@@ -103,6 +103,9 @@ public class CommandRunnerImpl implements CommandRunner {
 
     private static final Logger logger =
             LogDomains.getLogger(CommandRunnerImpl.class, LogDomains.ADMIN_LOGGER);
+    // This is used only for backword compatibility with old behavior
+    private static final String OLD_PASSWORD_PARAM_PREFIX = "AS_ADMIN_";
+
     private final InjectionManager injectionMgr = new InjectionManager();
     @Inject
     private Habitat habitat;
@@ -120,7 +123,7 @@ public class CommandRunnerImpl implements CommandRunner {
     private AdminCommandLock adminLock;
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
-    private static final String ASADMIN_CMD_PREFIX = "AS_ADMIN_";
+
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(CommandRunnerImpl.class);
 
@@ -668,7 +671,7 @@ public class CommandRunnerImpl implements CommandRunner {
     }
 
     /**
-     * Validate the paramters with the Param annotation.  If parameter is
+     * Validate the parameters with the Param annotation.  If parameter is
      * not defined as a Param annotation then it's an invalid option.
      * If parameter's key is "DEFAULT" then it's a operand.
      *
@@ -679,19 +682,29 @@ public class CommandRunnerImpl implements CommandRunner {
     static void validateParameters(final CommandModel model,
             final ParameterMap parameters) throws ComponentException {
 
+        ParameterMap adds = null; // renamed password parameters
+        
         // loop through parameters and make sure they are
         // part of the Param declared field
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             String key = entry.getKey();
 
             // to do, we should validate meta-options differently.
-            if (key.equals("DEFAULT") || key.startsWith(ASADMIN_CMD_PREFIX)) {
+            if (key.equals("DEFAULT")) {
                 continue;
             }
 
             // help and Xhelp are meta-options that are handled specially
             if (key.equals("help") || key.equals("Xhelp")) {
                 continue;
+            }
+            
+            if (key.startsWith(OLD_PASSWORD_PARAM_PREFIX)) {
+                // This is an old prefixed password parameter being passed in.
+                // Strip the prefix and lowercase the name
+                key = key.substring(OLD_PASSWORD_PARAM_PREFIX.length()).toLowerCase(Locale.ENGLISH);
+                if (adds == null) adds = new ParameterMap();
+                adds.add(key, entry.getValue().get(0));
             }
 
             // check if key is a valid Param Field
@@ -703,19 +716,14 @@ public class CommandRunnerImpl implements CommandRunner {
                 validOption = pModel.isParamId(key);
                 if (validOption) {
                     break;
-                }
-                if (pModel.getParam().password()) {
-                    validOption = pModel.isParamId(
-                            ASADMIN_CMD_PREFIX + key.toUpperCase(Locale.ENGLISH));
-                    if (validOption) {
-                        break;
-                    }
-                }
+                }      
             }
+            
             if (!validOption) {
                 throw new ComponentException(" Invalid option: " + key);
             }
         }
+        parameters.mergeAll(adds);
     }
 
     /**

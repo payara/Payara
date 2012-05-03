@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
 
     public static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MapInjectionResolver.class);
-
+    
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters) {
         this(model, parameters, null);
@@ -222,17 +222,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             // check for shortName
             paramValueStr = parameters.getOne(param.shortName());
         }
-
-        /*
-         * If we still don't have a value, and it's a password parameter,
-         * try using the simple name of the parameter (instead of the
-         * "AS_ADMIN_" name).  This makes it easier to pass password
-         * parameters when using the local CommandRunner API, e.g., for
-         * embedded use.
-         */
-        if (paramValueStr == null && param.password())
-            paramValueStr = getParameterValue(parameters, param.name(), true);
-
+        
         // if paramValueStr is still null, then check to
         // see if the defaultValue is defined
         if (paramValueStr == null) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -383,11 +383,9 @@ public class SecurityHandler {
                 endpoint = endpoint + "/update-user?target=" + configName;
             }
 
-            final String USERPASSWORD = "AS_ADMIN_USERPASSWORD";
-
             attrs = new HashMap<String, Object>();
             attrs.put("id", userid);
-            attrs.put(USERPASSWORD, password);
+            attrs.put("userpassword", password);
             attrs.put("target", configName);
             if (grouplist != null && grouplist.contains(","))
                 grouplist = grouplist.replace(',', ':');

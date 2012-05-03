@@ -157,9 +157,6 @@ public abstract class CommandModel {
                 name = Introspector.decapitalize(name);
             }
         }
-        if (param.password()) {
-            name = ASADMIN_CMD_PREFIX + name.toUpperCase(Locale.ENGLISH);
-        }
         return name;
     }
 
@@ -201,9 +198,7 @@ public abstract class CommandModel {
             if (getParam().primary()) {
                 return "DEFAULT".equals(key) || getName().equalsIgnoreCase(key);
             }
-            if (getParam().password()) {
-                return key.startsWith(ASADMIN_CMD_PREFIX);
-            }
+            
             return getName().equalsIgnoreCase(key) ||
 		    getParam().shortName().equals(key) ||
 		    getParam().alias().equalsIgnoreCase(key);
@@ -218,7 +213,5 @@ public abstract class CommandModel {
     public boolean unknownOptionsAreOperands() {
 	    return false;	// default implementation
     }
-
-    private static final String ASADMIN_CMD_PREFIX = "AS_ADMIN_";
     
 }

@@ -991,7 +991,7 @@ public abstract class CLICommand implements PostConstruct {
     protected String getPassword(ParamModel opt, String defaultPassword,
             boolean create) throws CommandValidationException {
 
-        String passwordName = opt.getName();
+        String passwordName = Environment.getPrefix() + opt.getName().toUpperCase(Locale.ENGLISH);
         String password = passwords.get(passwordName);
         if (password != null)
             return password;

@@ -116,7 +116,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     private static final String BASIC = "Basic ";
 
     private static final String QUERY_STRING_SEPARATOR = "&";
-    private static final String ASADMIN_CMD_PREFIX = "AS_ADMIN_";
 
     private static final String[] authRelatedHeaderNames = {
         SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME,
@@ -449,12 +448,12 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             command = requestURI.substring(getContextRoot().length() + 1);
         
         String qs = req.getQueryString();
+        final ParameterMap parameters = extractParameters(qs);
         String passwordOptions = req.getHeader("X-passwords");
         if (passwordOptions != null) {
-            qs = qs + QUERY_STRING_SEPARATOR + passwordOptions;
+            decodePasswords(parameters, passwordOptions);
         }
-
-        final ParameterMap parameters = extractParameters(qs);
+        
         try {
             Payload.Inbound inboundPayload = PayloadImpl.Inbound
                 .newInstance(req.getContentType(), req.getInputStream());
@@ -527,6 +526,40 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     public void fireAdapterEvent(String type, Object data) {
     }
      
+    /**
+     * decode the parameters that were passed in the X-Passwords header
+     * 
+     * @params requestString value of the X-Passwords header
+     * @returns a decoded requestString
+     */
+    void decodePasswords(ParameterMap pmap, final String requestString) {
+        StringTokenizer stoken = new StringTokenizer(requestString == null ? "" : requestString, QUERY_STRING_SEPARATOR);
+        while (stoken.hasMoreTokens()) {
+            String token = stoken.nextToken();            
+            if (token.indexOf("=") == -1) 
+                continue;
+            String paramName = token.substring(0, token.indexOf("="));
+            String value = token.substring(token.indexOf("=") + 1);
+
+            try {
+                value = URLDecoder.decode(value, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                aalogger.log(Level.WARNING, adminStrings.getLocalString("adapter.param.decode",
+                        "Cannot decode parameter {0} = {1}"));
+                continue;
+            }
+
+            try {               
+                value = new String(decoder.decodeBuffer(value));
+            } catch (IOException e) {
+                aalogger.log(Level.WARNING, adminStrings.getLocalString("adapter.param.decode",
+                        "Cannot decode parameter {0} = {1}"));
+                continue;
+            }
+            pmap.add(paramName, value);
+        }
+       
+    }
      
     /**
      *  extract parameters from URI and save it in ParameterMap obj
@@ -543,10 +576,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             String token = stoken.nextToken();            
             if (token.indexOf("=") == -1) 
                 continue;
-            String paramName = null;
-            String value = null;
-            paramName = token.substring(0, token.indexOf("="));
-            value = token.substring(token.indexOf("=") + 1);
+            String paramName = token.substring(0, token.indexOf("="));
+            String value = token.substring(token.indexOf("=") + 1);
             try {
                 value = URLDecoder.decode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -554,15 +585,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                         "Cannot decode parameter {0} = {1}"));
             }
 
-            // indicates a password parameter
-            if (paramName.startsWith(ASADMIN_CMD_PREFIX) && (value != null)) {
-                try {               
-                      value = new String(decoder.decodeBuffer(value));
-                } catch (IOException e) {
-                    // ignore for now. Not much can be done anyway.
-                    // todo: improve this error condition reporting
-                }
-            }
             parameters.add(paramName, value);
         }
 
