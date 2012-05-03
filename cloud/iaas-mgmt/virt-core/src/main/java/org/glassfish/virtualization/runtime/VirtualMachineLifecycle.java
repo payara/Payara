@@ -57,7 +57,9 @@ import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.glassfish.virtualization.spi.VirtualMachineInfo;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
@@ -80,7 +82,8 @@ public class VirtualMachineLifecycle {
     final TemplateRepository templateRepository;
     final Map<String, CountDownLatch> inStartup = new HashMap<String, CountDownLatch>();
     final Domain domain;
-    @Inject(optional = true)
+    @Inject
+    @Optional
     private Virtualizations virtualizations;
 
     @Inject
@@ -89,7 +92,8 @@ public class VirtualMachineLifecycle {
     @Inject
     AuthTokenManager authTokenManager;
 
-    public VirtualMachineLifecycle(@Inject TemplateRepository templateRepository, @Inject Domain domain) {
+    @Inject
+    public VirtualMachineLifecycle(TemplateRepository templateRepository, Domain domain) {
         this.templateRepository = templateRepository;
         this.domain = domain;
     }

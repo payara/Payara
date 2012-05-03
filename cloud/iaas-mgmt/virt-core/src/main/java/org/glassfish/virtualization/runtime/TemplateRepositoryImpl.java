@@ -48,7 +48,7 @@ import org.glassfish.virtualization.config.Virtualization;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
@@ -70,7 +70,8 @@ public class TemplateRepositoryImpl implements TemplateRepository {
     final List<TemplateInstance> templates = new ArrayList<TemplateInstance>();
     final Habitat services;
 
-    public TemplateRepositoryImpl(@Inject Habitat services, @Inject Virtualizations virts) {
+    @Inject
+    public TemplateRepositoryImpl(Habitat services, Virtualizations virts) {
         location = new File(virts.getTemplatesLocation());
         this.services = services;
         for (Virtualization virt : virts.getVirtualizations()) {

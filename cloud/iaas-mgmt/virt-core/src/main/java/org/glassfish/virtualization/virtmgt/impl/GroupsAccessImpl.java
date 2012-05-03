@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.IAAS;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 import org.glassfish.virtualization.virtmgt.GroupsAccess;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +60,8 @@ public class GroupsAccessImpl implements GroupsAccess {
     final IAAS groupMgt;
     final Injector injector;
 
-    public GroupsAccessImpl(@Inject Injector injector, @Inject IAAS groupMgt) {
+    @Inject
+    public GroupsAccessImpl(Injector injector, IAAS groupMgt) {
         this.injector = injector;
         this.groupMgt = groupMgt;
     }

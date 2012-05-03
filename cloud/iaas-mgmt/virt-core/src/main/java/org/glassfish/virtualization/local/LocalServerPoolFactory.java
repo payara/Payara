@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@ import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.ServerPoolFactory;
 import org.glassfish.virtualization.spi.TemplateRepository;
-import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -62,9 +62,10 @@ public class LocalServerPoolFactory implements ServerPoolFactory {
     final private Domain domain;
     final private ServerContext environment;
 
-    public LocalServerPoolFactory(@Inject TemplateRepository templateRepository,
-                                  @Inject Domain domain,
-                                  @Inject ServerContext environment) {
+    @Inject
+    public LocalServerPoolFactory(TemplateRepository templateRepository,
+                                  Domain domain,
+                                  ServerContext environment) {
         this.templateRepository = templateRepository;
         this.domain = domain;
         this.environment = environment;
