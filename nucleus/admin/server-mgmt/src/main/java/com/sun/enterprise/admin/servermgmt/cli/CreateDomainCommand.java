@@ -92,9 +92,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 public final class CreateDomainCommand extends CLICommand {
     // constants for create-domain options
     private static final String ADMIN_PORT = "adminport";
-    private static final String ADMIN_PASSWORD = "AS_ADMIN_PASSWORD";
-    private static final String ADMIN_ADMINPASSWORD = "AS_ADMIN_ADMINPASSWORD";
-    private static final String MASTER_PASSWORD = "AS_ADMIN_MASTERPASSWORD";
+    private static final String ADMIN_PASSWORD = "password";
     private static final String DEFAULT_MASTER_PASSWORD =
             RepositoryManager.DEFAULT_MASTER_PASSWORD;
     private static final String SAVE_MASTER_PASSWORD = "savemasterpassword";
@@ -126,28 +124,18 @@ public final class CreateDomainCommand extends CLICommand {
     private boolean saveLoginOpt = false;
     @Param(name = "nopassword", optional = true, defaultValue = "false")
     private boolean noPassword = false;
-    //@Param(name = "AS_ADMIN_ADMINPASSWORD", optional = true, password = true)
+    @Param(name = ADMIN_PASSWORD, optional = true, password = true)
     private String adminPassword = null;
-    //@Param(name = "AS_ADMIN_MASTERPASSWORD", optional = true, password = true)
+    @Param(name = "masterpassword", optional = true, password = true, defaultValue = DEFAULT_MASTER_PASSWORD)
     private String masterPassword = null;
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts = true;
     @Param(name = "domain_name", primary = true)
     private String domainName;
-    private ParamModelData masterPasswordOption;
-    private ParamModelData adminPasswordOption;
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(CreateDomainCommand.class);
 
     public CreateDomainCommand() {
-        masterPasswordOption = new ParamModelData(MASTER_PASSWORD,
-                String.class, false, null);
-        masterPasswordOption.description = strings.get("MasterPassword");
-        masterPasswordOption.param._password = true;
-        adminPasswordOption = new ParamModelData(ADMIN_PASSWORD,
-                String.class, false, null);
-        adminPasswordOption.description = strings.get("AdminPassword");
-        adminPasswordOption.param._password = true;
     }
 
     /**
@@ -204,8 +192,18 @@ public final class CreateDomainCommand extends CLICommand {
                 cons.printf("%s", strings.get("AdminUserRequiredPrompt",
                         SystemPropertyConstants.DEFAULT_ADMIN_USER));
                 String val = cons.readLine();
-                if (ok(val))
+                if (ok(val)) {
                     programOpts.setUser(val);
+                    if (adminPassword == null) {
+                        // create a required ParamModel for the password
+                        ParamModelData po = new ParamModelData(ADMIN_PASSWORD,
+                            String.class, false, null);
+                        po.description = strings.get("AdminPassword");
+                        po.param._password = true;
+                        adminPassword = getPassword(po,
+                            SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
+                    }
+                }
             }
             else {
                 //logger.info(strings.get("AdminUserRequired"));
@@ -323,30 +321,16 @@ public final class CreateDomainCommand extends CLICommand {
              * If the admin password was supplied in the password file, and no
              * master password is suppied, we use the default master password
              * without prompting.
-             *
-             * The admin password can be supplied using the deprecated
-             * AS_ADMIN_ADMINPASSWORD option in the password file.
              */
+            
             boolean haveAdminPwd = false;
-            adminPassword = passwords.get(ADMIN_ADMINPASSWORD);
-            if (adminPassword != null) {
-                haveAdminPwd = true;
-                logger.warning(strings.get("DeprecatedAdminPassword"));
-            }
-            else {
-                haveAdminPwd = passwords.get(ADMIN_PASSWORD) != null;
-                adminPassword = getAdminPassword();
-            }
-            validatePassword(adminPassword, adminPasswordOption);
         }
 
         if (saveMasterPassword)
             useMasterPassword = true;
-        if (useMasterPassword)
-            masterPassword = getMasterPassword();
+        
         if (masterPassword == null)
             masterPassword = DEFAULT_MASTER_PASSWORD;
-        validatePassword(masterPassword, masterPasswordOption);
 
         try {
             // verify admin port is valid if specified on command line
@@ -739,43 +723,6 @@ public final class CreateDomainCommand extends CLICommand {
                 break;
             }
         }
-    }
-
-    /*
-     * validates adminpassword and masterpassword
-     */
-    public void validatePassword(String password, ParamModel pwdOpt)
-            throws CommandValidationException {
-        // XXX - hack alert!  the description is stored in the default value
-        String description = pwdOpt.getParam().defaultValue();
-        if (!ok(description))
-            description = pwdOpt.getName();
-
-        if (password == null)
-            throw new CommandValidationException(
-                    strings.get("PasswordMissing", description));
-    }
-
-    /**
-     * Get the admin password, either from the password file or by prompting (if
-     * allowed).
-     *
-     * @return admin password
-     * @throws CommandValidationException if could not get the admin password
-     */
-    protected String getAdminPassword() throws CommandValidationException {
-        return getPassword(adminPasswordOption, "", true);
-    }
-
-    /**
-     * Get the master password, prompting if necessary, and accepting the
-     * default ("changeit").
-     */
-    private String getMasterPassword()
-            throws CommandValidationException, CommandException {
-
-        return getPassword(masterPasswordOption,
-                DEFAULT_MASTER_PASSWORD, true);
     }
 
     /*
