@@ -667,8 +667,6 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected class ContextXmlParser extends BaseXmlParser {
-        protected XMLStreamReader parser = null;
-
         protected Boolean clearReferencesStatic = null;
 
         ContextXmlParser(File contextXmlFile)
