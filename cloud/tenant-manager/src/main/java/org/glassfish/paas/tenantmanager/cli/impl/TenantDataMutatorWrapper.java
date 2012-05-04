@@ -101,8 +101,11 @@ public class TenantDataMutatorWrapper implements CommandWrapperImpl {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } finally {
-                    tm.resetCurrentTenant();
-                    lock.unlock(); // safe
+                    try {
+                        lock.unlock(); // safe to unlock if not locked
+                    } finally {
+                        tm.resetCurrentTenant();
+                    }
                 }
             }
         };
