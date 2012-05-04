@@ -51,12 +51,14 @@ import org.glassfish.paas.tenantmanager.api.TenantManager;
 //import javax.inject.*;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import javax.inject.Inject;
 import java.util.logging.Logger;
 
 
@@ -68,7 +70,7 @@ import java.util.logging.Logger;
  * To change this template use File | Settings | File Templates.
  */
 @Scoped(PerLookup.class)
-@Service (name="create-elastic-element")
+@Service(name="create-elastic-element")
 public class CreateElasticElementCommand implements AdminCommand{
 
     @Inject

@@ -44,7 +44,9 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 import java.util.logging.Logger;
@@ -54,6 +56,8 @@ import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
+
+import javax.inject.Inject;
 /*
 
 /*

@@ -50,9 +50,13 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
+
+import javax.inject.Inject;
 import java.util.logging.Logger;
 
 /**
