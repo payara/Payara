@@ -218,7 +218,7 @@ public class AppClientFacade {
          */
         launchInfo = CommandLaunchInfo.newInstance(agentArgs);
         if (launchInfo.getClientLaunchType() == ClientLaunchType.UNKNOWN) {
-            throw new IllegalArgumentException();
+            usage(1);
         }
 
         /*

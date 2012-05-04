@@ -127,7 +127,7 @@ public class CommandLaunchInfo {
         if (agentArgs == null){
             return ClientLaunchType.UNKNOWN;
         }
-        ClientLaunchType result = null;
+        ClientLaunchType result = ClientLaunchType.UNKNOWN;
 
         String s;
         if ((s = lastFromList(agentArgs.namedValues(CLIENT_AGENT_ARG_NAME))) != null) {
