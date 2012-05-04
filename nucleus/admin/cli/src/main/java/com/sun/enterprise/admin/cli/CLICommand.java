@@ -45,7 +45,9 @@ import java.util.*;
 import java.lang.reflect.*;
 import java.util.logging.*;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import com.sun.hk2.component.InjectionResolver;
 
@@ -66,6 +68,8 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.appserv.server.util.Version;
 
 import com.sun.logging.LogDomains;
+
+import javax.inject.Inject;
 
 
 /**

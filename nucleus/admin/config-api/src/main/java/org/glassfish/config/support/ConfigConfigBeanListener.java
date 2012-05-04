@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
@@ -57,6 +57,9 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Listens for changes to the Config for the current server and adds an 
@@ -68,7 +71,7 @@ public final class ConfigConfigBeanListener implements ConfigListener, Startup {
 
     @Inject
     Habitat habitat;
-    @Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     static final Logger logger = LogDomains.getLogger(ConfigConfigBeanListener.class,
             LogDomains.ADMIN_LOGGER);

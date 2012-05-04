@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,11 +44,16 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 import java.util.regex.*;
-import org.jvnet.hk2.annotations.*;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+
+import javax.inject.Inject;
+
 import static com.sun.enterprise.admin.cli.CLIConstants.EOL;
 
 /**

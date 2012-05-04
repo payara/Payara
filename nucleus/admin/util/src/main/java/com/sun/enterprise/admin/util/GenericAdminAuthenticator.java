@@ -66,10 +66,14 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.internal.api.*;
 import org.glassfish.security.common.Group;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.Subject;
 import javax.management.remote.JMXAuthenticator;
@@ -108,13 +112,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     @Inject
     BaseServiceLocator habitat;
     
-    @Inject(name="security", optional=true)
+    @Inject @Named("security") @Optional
     Sniffer snif;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile SecurityService ss;
 
-    @Inject(name=ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
 
     @Inject
