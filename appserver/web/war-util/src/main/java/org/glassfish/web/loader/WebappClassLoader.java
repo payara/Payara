@@ -81,6 +81,7 @@ import javax.naming.directory.DirContext;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -997,11 +998,8 @@ public class WebappClassLoader
                     throw cnfe;
                 }
             } catch (UnsupportedClassVersionError ucve) {
-                String msg = rb.getString(
-                    "webappClassLoader.unsupportedVersion");
-                msg = MessageFormat.format(msg,
-                    new Object[] {name, getJavaVersion()});
-                throw new UnsupportedClassVersionError(msg);
+                throw new UnsupportedClassVersionError(
+                        getString("webappClassLoader.unsupportedVersion", name, getJavaVersion()));
             } catch(AccessControlException ace) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING, "WebappClassLoader.findClassInternal(" + name
@@ -1013,10 +1011,8 @@ public class WebappClassLoader
             } catch(Error err) {
                 throw err;
             } catch (Throwable t) {
-                String msg = rb.getString(
-                    "webappClassLoader.unableToLoadClass");
-                msg = MessageFormat.format(msg, name, t.toString());
-                throw new RuntimeException(msg, t);
+                throw new RuntimeException(
+                        getString("webappClassLoader.unableToLoadClass", name, t.toString()), t);
             }
             if ((clazz == null) && hasExternalRepositories) {
                 try {
@@ -1451,9 +1447,8 @@ public class WebappClassLoader
 
         // Don't load classes if class loader is stopped
         if (!started) {
-            String msg = rb.getString("webappClassLoader.notStarted");
             throw new IllegalStateException(
-                MessageFormat.format(msg, name));
+                getString("webappClassLoader.notStarted", name));
         }
 
         // (0) Check our previously loaded local class cache
@@ -1487,7 +1482,9 @@ public class WebappClassLoader
                 } catch (SecurityException se) {
                     String error = "Security Violation, attempt to use " +
                         "Restricted Class: " + name;
-                    logger.log(Level.INFO, error, se);
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.log(Level.INFO, error, se);
+                    }
                     throw new ClassNotFoundException(error, se);
                 }
             }
@@ -1826,6 +1823,13 @@ public class WebappClassLoader
         // Clear the IntrospectionUtils cache.
         IntrospectionUtils.clear();
 
+        // Clear the resource bundle cache
+        // This shouldn't be necessary, the cache uses weak references but
+        // it has caused leaks. Oddly, using the leak detection code in
+        // standard host allows the class loader to be GC'd. This has been seen
+        // on Sun but not IBM JREs. Maybe a bug in Sun's GC impl?
+        clearReferencesResourceBundles();
+
         // Clear the classloader reference in the VM's bean introspector
         java.beans.Introspector.flushCaches();
     }
@@ -1882,15 +1886,15 @@ public class WebappClassLoader
             // So many things to go wrong above...
             Throwable t = ExceptionUtils.unwrapInvocationTargetException(e);
             ExceptionUtils.handleThrowable(t);
-            String msg = rb.getString("webappClassLoader.jdbcRemoveFailed");
-            logger.log(Level.WARNING, MessageFormat.format(msg, contextName), t);
+            logger.log(Level.WARNING,
+                    getString("webappClassLoader.jdbcRemoveFailed", contextName), t);
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException ioe) {
-                    String msg = rb.getString("webappClassLoader.jdbcRemoveStreamError");
-                    logger.log(Level.WARNING, MessageFormat.format(msg, contextName), ioe);
+                    logger.log(Level.WARNING,
+                            getString("webappClassLoader.jdbcRemoveStreamError", contextName), ioe);
                 }
             }
         }
@@ -2033,20 +2037,128 @@ public class WebappClassLoader
 
 
     /**
-     * Determine whether a class was loaded by this class loader or one of
-     * its child class loaders.
+     * @param o object to test, may be null
+     * @return <code>true</code> if o has been loaded by the current classloader
+     * or one of its descendants.
      */
-    protected boolean loadedByThisOrChild(Class<? extends Object> clazz) {
-        boolean result = false;
-        for (ClassLoader classLoader = clazz.getClassLoader();
-                null != classLoader; classLoader = classLoader.getParent()) {
-            if (classLoader.equals(this)) {
-                result = true;
-                break;
+    private boolean loadedByThisOrChild(Object o) {
+        if (o == null) {
+            return false;
+        }
+
+        Class<?> clazz;
+        if (o instanceof Class) {
+            clazz = (Class<?>) o;
+        } else {
+            clazz = o.getClass();
+        }
+
+        ClassLoader cl = clazz.getClassLoader();
+        while (cl != null) {
+            if (cl == this) {
+                return true;
+            }
+            cl = cl.getParent();
+        }
+
+        if (o instanceof Collection<?>) {
+            Iterator<?> iter = ((Collection<?>) o).iterator();
+            while (iter.hasNext()) {
+                Object entry = iter.next();
+                if (loadedByThisOrChild(entry)) {
+                    return true;
+                }
             }
         }
-        return result;
+        return false;
     }
+
+
+    /**
+     * Clear the {@link ResourceBundle} cache of any bundles loaded by this
+     * class loader or any class loader where this loader is a parent class
+     * loader. Whilst {@link ResourceBundle#clearCache()} could be used there
+     * are complications around the
+     * {@link org.apache.jasper.servlet.JasperLoader} that mean a reflection
+     * based approach is more likely to be complete.
+     *
+     * The ResourceBundle is using WeakReferences so it shouldn't be pinning the
+     * class loader in memory. However, it is. Therefore clear ou the
+     * references.
+     */
+    private void clearReferencesResourceBundles() {
+        // Get a reference to the cache
+        try {
+            Field cacheListField =
+                ResourceBundle.class.getDeclaredField("cacheList");
+            cacheListField.setAccessible(true);
+
+            // Java 6 uses ConcurrentMap
+            // Java 5 uses SoftCache extends Abstract Map
+            // So use Map and it *should* work with both
+            Map<?,?> cacheList = (Map<?,?>) cacheListField.get(null);
+
+            // Get the keys (loader references are in the key)
+            Set<?> keys = cacheList.keySet();
+
+            Field loaderRefField = null;
+
+            // Iterate over the keys looking at the loader instances
+            Iterator<?> keysIter = keys.iterator();
+
+            int countRemoved = 0;
+
+            while (keysIter.hasNext()) {
+                Object key = keysIter.next();
+
+                if (loaderRefField == null) {
+                    loaderRefField =
+                        key.getClass().getDeclaredField("loaderRef");
+                    loaderRefField.setAccessible(true);
+                }
+                WeakReference<?> loaderRef =
+                    (WeakReference<?>) loaderRefField.get(key);
+
+                ClassLoader loader = (ClassLoader) loaderRef.get();
+
+                while (loader != null && loader != this) {
+                    loader = loader.getParent();
+                }
+
+                if (loader != null) {
+                    keysIter.remove();
+                    countRemoved++;
+                }
+            }
+
+            if (countRemoved > 0 && logger.isLoggable(Level.FINE)) {
+                logger.fine(getString(
+                        "webappClassLoader.clearReferencesResourceBundlesCount",
+                        Integer.valueOf(countRemoved), contextName));
+            }
+        } catch (SecurityException e) {
+            logger.log(Level.SEVERE, getString(
+                    "webappClassLoader.clearReferencesResourceBundlesFail",
+                    contextName), e);
+        } catch (NoSuchFieldException e) {
+            String msg = getString(
+                    "webappClassLoader.clearReferencesResourceBundlesFail", contextName);
+            if (System.getProperty("java.vendor").startsWith("Sun")) {
+                logger.log(Level.SEVERE, msg, e);
+            } else if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, msg, e);
+            }
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.SEVERE, getString(
+                    "webappClassLoader.clearReferencesResourceBundlesFail",
+                    contextName), e);
+        } catch (IllegalAccessException e) {
+            logger.log(Level.SEVERE, getString(
+                    "webappClassLoader.clearReferencesResourceBundlesFail",
+                    contextName), e);
+        }
+    }
+
     // ------------------------------------------------------ Protected Methods
 
 
@@ -2191,9 +2303,8 @@ public class WebappClassLoader
                                                boolean fromJarsOnly) {
 
         if (!started) {
-            String msg = rb.getString("webappClassLoader.notStarted");
             throw new IllegalStateException(
-                MessageFormat.format(msg, name));
+                getString("webappClassLoader.notStarted", name));
         }
 
         if ((name == null) || (path == null)) {
@@ -2408,14 +2519,12 @@ public class WebappClassLoader
                 try {
                     if (!resourceFile.getCanonicalPath().startsWith(
                             canonicalLoaderDir)) {
-                        String msg = rb.getString("webappClassLoader.illegalJarPath");
-                        msg = MessageFormat.format(msg, jarEntry2.getName());
-                        throw new IllegalArgumentException(msg);
+                        throw new IllegalArgumentException(getString(
+                                "webappClassLoader.illegalJarPath", jarEntry2.getName()));
                     }
                 } catch (IOException ioe) {
-                    String msg = rb.getString("webappClassLoader.validationErrorJarPath");
-                    msg = MessageFormat.format(msg, new Object[] {jarEntry2.getName(), ioe});
-                    throw new IllegalArgumentException(msg);
+                    throw new IllegalArgumentException(getString(
+                            "webappClassLoader.validationErrorJarPath", jarEntry2.getName(), ioe));
                 }
                 if (!FileUtils.mkdirsMaybe(resourceFile.getParentFile())) {
                     logger.log(Level.WARNING,
@@ -2488,9 +2597,7 @@ public class WebappClassLoader
                 pos += n;
             }
         } catch (Exception e) {
-            String msg = rb.getString("webappClassLoader.readClassError");
-            msg = MessageFormat.format(msg, name);
-            logger.log(Level.WARNING, msg, e);
+            logger.log(Level.WARNING, getString("webappClassLoader.readClassError", name), e);
             return;
         } finally {
             try {
@@ -2903,5 +3010,10 @@ public class WebappClassLoader
                     !name.startsWith("com/sun/faces/extensions") &&
                     !useMyFaces)
                 || name.startsWith("org/apache/taglibs/standard"));
+    }
+
+    private static String getString(String key, Object ... arguments) {
+        String msg = rb.getString(key);
+        return MessageFormat.format(msg, arguments);
     }
 }
