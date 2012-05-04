@@ -5225,7 +5225,7 @@ public abstract class BaseContainer
     }
     
     protected int getTxAttrForLifecycleCallback(Set<LifecycleCallbackDescriptor> lifecycleCallbackDescriptors, 
-            int defaultTxAttr, int validateTxAttr) throws Exception {
+            int defaultTxAttr, int... validateTxAttr) throws Exception {
         int txAttr =  isBeanManagedTran ?
                 Container.TX_BEAN_MANAGED : defaultTxAttr;
 
@@ -5237,11 +5237,14 @@ public abstract class BaseContainer
                     int lcTxAttr = findTxAttr(
                         new MethodDescriptor(callbackMethod, MethodDescriptor.EJB_BEAN));
                     // Since default attribute is set up, override the value if it's validateTxAttr
-                    if( lcTxAttr == validateTxAttr ) {
-                        txAttr = validateTxAttr;
-                        if (_logger.isLoggable(Level.FINE)) {
-	                    _logger.log(Level.FINE, "Found callback method " + ejbDescriptor.getEjbClassName() + 
-                                    "<>" + callbackMethod + " : " + txAttr);
+                    for (int t : validateTxAttr) {
+                        if( lcTxAttr == t ) {
+                            txAttr = t;
+                            if (_logger.isLoggable(Level.FINE)) {
+	                        _logger.log(Level.FINE, "Found callback method " + ejbDescriptor.getEjbClassName() + 
+                                        "<>" + callbackMethod + " : " + txAttr);
+                            }
+                            break;
                         }
                     }
                     break;

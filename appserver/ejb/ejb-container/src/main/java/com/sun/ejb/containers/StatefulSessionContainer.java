@@ -226,7 +226,7 @@ public final class StatefulSessionContainer
         inv.ejbName = ejbDescriptor.getName();
         inv.methodIntf = MethodDescriptor.EJB_BEAN;
         inv.txAttr = getTxAttrForLifecycleCallback(lifecycleCallbackDescriptors, 
-                Container.TX_NOT_SUPPORTED, Container.TX_REQUIRES_NEW);
+                -1, Container.TX_NOT_SUPPORTED, Container.TX_REQUIRES_NEW);
 
         return inv;
     }
@@ -781,14 +781,16 @@ public final class StatefulSessionContainer
             ejbInv = super.createEjbInvocation(context.getEJB(), context);
             invocationManager.preInvoke(ejbInv);
 
-            // Call preInvokeTx directly.  InvocationInfo containing tx
-            // attribute must be set prior to calling preInvoke
-            ejbInv.transactionAttribute = postConstructInvInfo.txAttr;
-            ejbInv.invocationInfo = postConstructInvInfo;
+            if (postConstructInvInfo.txAttr != -1) {
+                // Call preInvokeTx directly.  InvocationInfo containing tx
+                // attribute must be set prior to calling preInvoke
+                ejbInv.transactionAttribute = postConstructInvInfo.txAttr;
+                ejbInv.invocationInfo = postConstructInvInfo;
 
-            initGotToPreInvokeTx = true;
-            context.setInLifeCycleCallback(true);
-            preInvokeTx(ejbInv);
+                initGotToPreInvokeTx = true;
+                context.setInLifeCycleCallback(true);
+                preInvokeTx(ejbInv);
+            }
 
 
             // PostConstruct must be called after state set to something
@@ -2861,11 +2863,14 @@ public final class StatefulSessionContainer
 
             ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
             invocationManager.preInvoke(ejbInv);
-            // Call preInvokeTx directly.  InvocationInfo containing tx
-            // attribute must be set prior to calling preInvoke
-            ejbInv.transactionAttribute = preDestroyInvInfo.txAttr;
-            ejbInv.invocationInfo = preDestroyInvInfo;
-            preInvokeTx(ejbInv);
+
+            if (preDestroyInvInfo.txAttr != -1) {
+                // Call preInvokeTx directly.  InvocationInfo containing tx
+                // attribute must be set prior to calling preInvoke
+                ejbInv.transactionAttribute = preDestroyInvInfo.txAttr;
+                ejbInv.invocationInfo = preDestroyInvInfo;
+                preInvokeTx(ejbInv);
+            }
 
             interceptorManager.intercept(CallbackType.PRE_DESTROY, ctx);
         } catch (Throwable t) {
@@ -2874,10 +2879,12 @@ public final class StatefulSessionContainer
         } finally {
             if( ejbInv != null ) {
                 invocationManager.postInvoke(ejbInv);
-                try {
-                    postInvokeTx(ejbInv);
-                } catch(Exception pie) {
-                    _logger.log(Level.FINE, "SFSB postInvokeTx exception", pie);
+                if (preDestroyInvInfo.txAttr != -1) {
+                    try {
+                        postInvokeTx(ejbInv);
+                    } catch(Exception pie) {
+                        _logger.log(Level.FINE, "SFSB postInvokeTx exception", pie);
+                    }
                 }
                 ((SessionContextImpl)ctx).setInLifeCycleCallback(false);
             }
