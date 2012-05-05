@@ -775,27 +775,15 @@ public final class StatefulSessionContainer
         context.setState(BeanState.READY);
 
         EjbInvocation ejbInv = null;
-        boolean initGotToPreInvokeTx = false;
+        boolean inTx = false;
         try {
             // Need to do preInvoke because setSessionContext can access JNDI
             ejbInv = super.createEjbInvocation(context.getEJB(), context);
             invocationManager.preInvoke(ejbInv);
 
-            if (postConstructInvInfo.txAttr != -1) {
-                // Call preInvokeTx directly.  InvocationInfo containing tx
-                // attribute must be set prior to calling preInvoke
-                ejbInv.transactionAttribute = postConstructInvInfo.txAttr;
-                ejbInv.invocationInfo = postConstructInvInfo;
-
-                initGotToPreInvokeTx = true;
-                context.setInLifeCycleCallback(true);
-                preInvokeTx(ejbInv);
-            }
-
-
             // PostConstruct must be called after state set to something
                 // other than CREATED
-            interceptorManager.intercept(CallbackType.POST_CONSTRUCT, context);
+            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, context, postConstructInvInfo, CallbackType.POST_CONSTRUCT);
         } catch (Throwable t) {
             EJBException ejbEx = new EJBException();
             ejbEx.initCause(t);
@@ -804,7 +792,8 @@ public final class StatefulSessionContainer
             if (ejbInv != null) {
                 try {
                     invocationManager.postInvoke(ejbInv);
-                    if( initGotToPreInvokeTx ) {
+                    if( inTx ) {
+                        // Call directly to report exception
                         postInvokeTx(ejbInv);
                     }
                 } catch(Exception pie) {
@@ -2159,7 +2148,7 @@ public final class StatefulSessionContainer
                     if (sessionBeanCache.eligibleForRemovalFromCache(sc, instanceKey)) {
                         // remove the EJB since removal-timeout has elapsed
                         sc.setState(BeanState.DESTROYED);
-                        interceptorManager.intercept(CallbackType.PRE_DESTROY, sc);
+                        destroyBean(ejbInv, sc);
                         sessionBeanCache.remove(instanceKey, sc.existsInStore());
                     } else {
                         // passivate the EJB
@@ -2859,35 +2848,74 @@ public final class StatefulSessionContainer
             ejbInv = createEjbInvocation(ctx.getEJB(), ctx);
         }
 
+        boolean inTx = false;
         try {
 
             ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
             invocationManager.preInvoke(ejbInv);
 
-            if (preDestroyInvInfo.txAttr != -1) {
-                // Call preInvokeTx directly.  InvocationInfo containing tx
-                // attribute must be set prior to calling preInvoke
-                ejbInv.transactionAttribute = preDestroyInvInfo.txAttr;
-                ejbInv.invocationInfo = preDestroyInvInfo;
-                preInvokeTx(ejbInv);
-            }
-
-            interceptorManager.intercept(CallbackType.PRE_DESTROY, ctx);
+            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, preDestroyInvInfo, CallbackType.PRE_DESTROY);
         } catch (Throwable t) {
             _logger.log(Level.FINE,
                     "exception thrown from SFSB PRE_DESTROY", t);
         } finally {
-            if( ejbInv != null ) {
-                invocationManager.postInvoke(ejbInv);
-                if (preDestroyInvInfo.txAttr != -1) {
-                    try {
-                        postInvokeTx(ejbInv);
-                    } catch(Exception pie) {
-                        _logger.log(Level.FINE, "SFSB postInvokeTx exception", pie);
-                    }
-                }
-                ((SessionContextImpl)ctx).setInLifeCycleCallback(false);
+            invocationManager.postInvoke(ejbInv);
+            completeLifecycleCallbackTxIfUsed(ejbInv, ctx, inTx);
+        }
+    }
+
+    private void postActivate(EjbInvocation ejbInv, EJBContextImpl ctx) throws Throwable {
+        boolean inTx = false;
+        try {
+            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, postActivateInvInfo, CallbackType.POST_ACTIVATE);
+        } finally {
+            completeLifecycleCallbackTxIfUsed(ejbInv, ctx, inTx);
+        }
+    }
+
+    private void prePassivate(EjbInvocation ejbInv, EJBContextImpl ctx) throws Throwable {
+        boolean inTx = false;
+        try {
+            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
+        } finally {
+            completeLifecycleCallbackTxIfUsed(ejbInv, ctx, inTx);
+        }
+    }
+
+    /**
+     * Start transaction if necessary and invoke lifecycle callback
+     */
+    private boolean callLifecycleCallbackInTxIfUsed(EjbInvocation ejbInv, EJBContextImpl ctx, 
+            InvocationInfo invInfo, CallbackType callbackType)  throws Throwable {
+        boolean inTx = (invInfo.txAttr != -1);
+        if (inTx) {
+            ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
+
+            // Call preInvokeTx directly.  InvocationInfo containing tx
+            // attribute must be set prior to calling preInvoke
+            ejbInv.transactionAttribute = invInfo.txAttr;
+            ejbInv.invocationInfo = invInfo;
+            preInvokeTx(ejbInv);
+            enlistExtendedEntityManagers(ctx);
+        }
+
+        interceptorManager.intercept(callbackType, ctx);
+
+        return inTx;
+    }
+
+    /**
+     * Complete transaction if necessary after lifecycle callback
+     */
+    private void completeLifecycleCallbackTxIfUsed(EjbInvocation ejbInv, EJBContextImpl ctx, boolean usedTx)  {
+        if (usedTx) {
+            delistExtendedEntityManagers(ctx);
+            try {
+                postInvokeTx(ejbInv);
+            } catch(Exception pie) {
+                _logger.log(Level.FINE, "SFSB postInvokeTx exception", pie);
             }
+            ((SessionContextImpl)ctx).setInLifeCycleCallback(false);
         }
     }
 
