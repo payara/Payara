@@ -1991,11 +1991,13 @@ public final class StatefulSessionContainer
 
             EjbInvocation ejbInv = createEjbInvocation(ejb, sc);
             invocationManager.preInvoke(ejbInv);
+            boolean needToDoPostInvokeTx = false;
+            boolean destroyBean = false;
 
             synchronized (sc) {
                 try {
-                    interceptorManager.intercept(
-                            CallbackType.PRE_PASSIVATE, sc);
+                    needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                            prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
                     sc.setLastPersistedAt(System.currentTimeMillis());
                     long newCtxVersion = sc.incrementAndGetVersion();
                     byte[] serializedState = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(sc, true);
@@ -2003,8 +2005,8 @@ public final class StatefulSessionContainer
                             System.currentTimeMillis(),
                             removalGracePeriodInSeconds*1000L, serializedState);
                     simpleMetadata.setVersion(newCtxVersion);
-                    interceptorManager.intercept(
-                            CallbackType.POST_ACTIVATE, sc);
+                    needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                            postActivateInvInfo, CallbackType.POST_ACTIVATE);
                     //Do not set sc.setExistsInStore() here
                 } catch (java.io.NotSerializableException serEx) {
                     _logger.log(Level.WARNING, "Error  during checkpoint ("
@@ -2012,23 +2014,23 @@ public final class StatefulSessionContainer
                             + sc.getInstanceKey() + ") " + serEx);
                     _logger.log(Level.FINE, "sfsb checkpoint error. Key: "
                             + sc.getInstanceKey(), serEx);
-                    try {
-                        forceDestroyBean(sc);
-                    } catch (Exception e) {
-                        _logger.log(Level.FINE, "error destroying bean", e);
-                    }
+                    destroyBean = true;
                 } catch (Throwable ex) {
                     _logger.log(Level.WARNING, "ejb.sfsb_checkpoint_error",
                             new Object[]{ejbDescriptor.getName()});
                     _logger.log(Level.WARNING, "sfsb checkpoint error. key: "
                             + sc.getInstanceKey(), ex);
-                    try {
-                        forceDestroyBean(sc);
-                    } catch (Exception e) {
-                        _logger.log(Level.FINE, "error destroying bean", e);
-                    }
+                    destroyBean = true;
                 } finally {
                     invocationManager.postInvoke(ejbInv);
+                    completeLifecycleCallbackTxIfUsed(ejbInv, sc, needToDoPostInvokeTx);
+                    if (destroyBean) {
+                        try {
+                            forceDestroyBean(sc);
+                        } catch (Exception e) {
+                            _logger.log(Level.FINE, "error destroying bean", e);
+                        }
+                    }
                 }
             } //synchronized
 
@@ -2070,11 +2072,11 @@ public final class StatefulSessionContainer
 		        realException = ((InvocationTargetException)ex).getTargetException();
 		    }
 		// Error during afterCompletion, so discard bean: EJB2.0 18.3.3
-		try {
-		    forceDestroyBean(context);
-		} catch (Exception e) {
-		    _logger.log(Level.FINE, "error removing bean", e);
-		}
+                try {
+                    forceDestroyBean(context);
+                } catch (Exception e) {
+                    _logger.log(Level.FINE, "error destroying bean", e);
+                }
 		
 		_logger.log(Level.INFO, "ejb.aftercompletion_exception", realException);
 		
@@ -2136,6 +2138,8 @@ public final class StatefulSessionContainer
             boolean failed = false;
 
             success = false;
+            boolean needToDoPostInvokeTx = false;
+            boolean destroyBean = false;
             synchronized (sc) {
                 try {
                     // dont passivate if there is a Tx/invocation in progress
@@ -2148,14 +2152,15 @@ public final class StatefulSessionContainer
                     if (sessionBeanCache.eligibleForRemovalFromCache(sc, instanceKey)) {
                         // remove the EJB since removal-timeout has elapsed
                         sc.setState(BeanState.DESTROYED);
-                        destroyBean(ejbInv, sc);
+                        needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                                preDestroyInvInfo, CallbackType.PRE_DESTROY);
                         sessionBeanCache.remove(instanceKey, sc.existsInStore());
                     } else {
                         // passivate the EJB
                         sc.setState(BeanState.PASSIVATED);
                         decrementMethodReadyStat();
-                        interceptorManager.intercept(
-                                CallbackType.PRE_PASSIVATE, sc);
+                        needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                                prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
                         sc.setLastPersistedAt(System.currentTimeMillis());
                         boolean saved = false;
                         try {
@@ -2167,8 +2172,12 @@ public final class StatefulSessionContainer
                             saved = false;
                         }
                         if (!saved) {
-                            interceptorManager.intercept(
-                                    CallbackType.POST_ACTIVATE, sc);
+                            // TODO - add a flag to reactivate in the same tx
+                            // Complete previous tx
+                            completeLifecycleCallbackTxIfUsed(ejbInv, sc, needToDoPostInvokeTx);
+
+                            needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                                    postActivateInvInfo, CallbackType.POST_ACTIVATE);
                             sc.setState(BeanState.READY);
                             incrementMethodReadyStat();
                             return false;
@@ -2252,11 +2261,7 @@ public final class StatefulSessionContainer
                             + sc + "; " + nsEx);
                     _logger.log(Level.FINE, "sfsb passivation error", nsEx);
                     // Error during passivate, so discard bean: EJB2.0 18.3.3
-                    try {
-                        forceDestroyBean(sc);
-                    } catch (Exception e) {
-                        _logger.log(Level.FINE, "error destroying bean", e);
-                    }
+                    destroyBean = true;
                 } catch (Throwable ex) {
                     // V2: sfsbStoreMonitor.incrementPassivationCount(false);
                     cacheProbeNotifier.ejbBeanPassivatedEvent(getContainerId(),
@@ -2267,13 +2272,17 @@ public final class StatefulSessionContainer
                     _logger.log(Level.WARNING, "sfsb passivation error. Key: "
                             + sc.getInstanceKey(), ex);
                     // Error during passivate, so discard bean: EJB2.0 18.3.3
-                    try {
-                        forceDestroyBean(sc);
-                    } catch (Exception e) {
-                        _logger.log(Level.FINE, "error destroying bean", e);
-                    }
+                    destroyBean = true;
                 } finally {
                     invocationManager.postInvoke(ejbInv);
+                    completeLifecycleCallbackTxIfUsed(ejbInv, sc, needToDoPostInvokeTx);
+                    if (destroyBean) {
+                        try {
+                            forceDestroyBean(sc);
+                        } catch (Exception e) {
+                            _logger.log(Level.FINE, "error destroying bean", e);
+                        }
+                    }
                     if (passStartTime != -1) {
                         long timeSpent = System.currentTimeMillis()
                                 - passStartTime;
@@ -2328,6 +2337,7 @@ public final class StatefulSessionContainer
 
         EjbInvocation ejbInv = createEjbInvocation(ejb, context);
         invocationManager.preInvoke(ejbInv);
+            boolean needToDoPostInvokeTx = false;
         try {
             // we're sure that no concurrent thread can be using this bean
             // so no need to synchronize.
@@ -2452,8 +2462,8 @@ public final class StatefulSessionContainer
             repopulateEEMMapsInContext(sessionKey, context);
 
             try {
-                interceptorManager.intercept(
-                        CallbackType.POST_ACTIVATE, context);
+                needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, context, 
+                        postActivateInvInfo, CallbackType.POST_ACTIVATE);
             } catch (Throwable th) {
                 EJBException ejbEx = new EJBException("Error during activation"
                         + sessionKey);
@@ -2491,6 +2501,7 @@ public final class StatefulSessionContainer
         }
         finally {
             invocationManager.postInvoke(ejbInv);
+            completeLifecycleCallbackTxIfUsed(ejbInv, context, needToDoPostInvokeTx);
         }
     }
 
@@ -2864,24 +2875,6 @@ public final class StatefulSessionContainer
         }
     }
 
-    private void postActivate(EjbInvocation ejbInv, EJBContextImpl ctx) throws Throwable {
-        boolean inTx = false;
-        try {
-            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, postActivateInvInfo, CallbackType.POST_ACTIVATE);
-        } finally {
-            completeLifecycleCallbackTxIfUsed(ejbInv, ctx, inTx);
-        }
-    }
-
-    private void prePassivate(EjbInvocation ejbInv, EJBContextImpl ctx) throws Throwable {
-        boolean inTx = false;
-        try {
-            inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
-        } finally {
-            completeLifecycleCallbackTxIfUsed(ejbInv, ctx, inTx);
-        }
-    }
-
     /**
      * Start transaction if necessary and invoke lifecycle callback
      */
@@ -3193,6 +3186,8 @@ public final class StatefulSessionContainer
 
             EjbInvocation ejbInv = createEjbInvocation(ejb, sc);
             invocationManager.preInvoke(ejbInv);
+            boolean needToDoPostInvokeTx = false;
+            boolean destroyBean = false;
 
             synchronized (sc) {
                 try {
@@ -3205,8 +3200,8 @@ public final class StatefulSessionContainer
                     // passivate the EJB
                     sc.setState(BeanState.PASSIVATED);
                     decrementMethodReadyStat();
-                    interceptorManager.intercept(
-                            CallbackType.PRE_PASSIVATE, sc);
+                    needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                            prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
                     sc.setLastPersistedAt(System.currentTimeMillis());
                     byte[] serializedState = null;
                     try {
@@ -3234,8 +3229,12 @@ public final class StatefulSessionContainer
                                 "Error during checkpoint", ignorableEx);
                     }
 
-                    interceptorManager.intercept(
-                            CallbackType.POST_ACTIVATE, sc);
+                    // TODO - add a flag to reactivate in the same tx
+                    // Complete previous tx
+                    completeLifecycleCallbackTxIfUsed(ejbInv, sc, needToDoPostInvokeTx);
+
+                    needToDoPostInvokeTx = callLifecycleCallbackInTxIfUsed(ejbInv, sc, 
+                            postActivateInvInfo, CallbackType.POST_ACTIVATE);
                     sc.setState(BeanState.READY);
                     incrementMethodReadyStat();
                     if( sfsbStoreMonitor != null ) {
@@ -3250,13 +3249,17 @@ public final class StatefulSessionContainer
                             new Object[]{ejbDescriptor.getName()});
                     _logger.log(Level.WARNING, "sfsb checkpoint error. Key: "
                             + sc.getInstanceKey(), ex);
-                    try {
-                        forceDestroyBean(sc);
-                    } catch (Exception e) {
-                        _logger.log(Level.FINE, "error destroying bean", e);
-                    }
+                    destroyBean = true;
                 } finally {
                     invocationManager.postInvoke(ejbInv);
+                    completeLifecycleCallbackTxIfUsed(ejbInv, sc, needToDoPostInvokeTx);
+                    if (destroyBean) {
+                        try {
+                            forceDestroyBean(sc);
+                        } catch (Exception e) {
+                            _logger.log(Level.FINE, "error destroying bean", e);
+                        }
+                    }
                     if (checkpointStartTime != -1) {
                         long timeSpent = System.currentTimeMillis()
                                 - checkpointStartTime;
