@@ -44,9 +44,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 import java.util.logging.Logger;
@@ -57,8 +55,6 @@ import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
-
-import javax.inject.Inject;
 /*
   * command used by GUI for OOW
  */
@@ -69,7 +65,7 @@ import javax.inject.Inject;
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "delete-alert", description = "Delete alert") })
 public class DeleteAlertCommand implements AdminCommand{
 
-    @Inject @Optional
+    @Inject (optional = true)
     ElasticServices elasticServices;
 
     @Inject

@@ -44,11 +44,9 @@ import org.glassfish.elasticity.config.serverbeans.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 
-import javax.inject.Inject;
 import java.util.logging.Logger;
 //import org.glassfish.virtualization.libvirt.*;
 //import org.glassfish.virtualization.spi.*;
