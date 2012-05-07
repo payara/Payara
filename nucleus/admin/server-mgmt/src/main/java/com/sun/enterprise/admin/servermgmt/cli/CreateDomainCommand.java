@@ -195,13 +195,7 @@ public final class CreateDomainCommand extends CLICommand {
                 if (ok(val)) {
                     programOpts.setUser(val);
                     if (adminPassword == null) {
-                        // create a required ParamModel for the password
-                        ParamModelData po = new ParamModelData(ADMIN_PASSWORD,
-                            String.class, false, null);
-                        po.description = strings.get("AdminPassword");
-                        po.param._password = true;
-                        adminPassword = getPassword(po,
-                            SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
+                        adminPassword = getAdminPassword();
                     }
                 }
             }
@@ -317,13 +311,8 @@ public final class CreateDomainCommand extends CLICommand {
             adminPassword = SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD;
         }
         else {
-            /*
-             * If the admin password was supplied in the password file, and no
-             * master password is suppied, we use the default master password
-             * without prompting.
-             */
-            
-            boolean haveAdminPwd = false;
+            adminPassword = getAdminPassword();
+            boolean haveAdminPwd = true;
         }
 
         if (saveMasterPassword)
@@ -358,6 +347,17 @@ public final class CreateDomainCommand extends CLICommand {
         return 0;
     }
 
+    /**
+     * Get the admin password as a required option.
+     */
+    private String getAdminPassword() throws CommandValidationException {
+        // create a required ParamModel for the password
+        ParamModelData po = new ParamModelData(ADMIN_PASSWORD, String.class, false, null);
+        po.description = strings.get("AdminPassword");
+        po.param._password = true;
+        return getPassword(po, SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD, true);
+    }
+    
     /**
      * Verify that the port is valid. Port must be greater than 0 and less than
      * 65535. This method will also check if the port is in use. If checkPorts
