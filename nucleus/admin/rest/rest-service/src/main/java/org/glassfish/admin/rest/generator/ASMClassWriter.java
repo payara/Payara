@@ -292,7 +292,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
     public void done() {
         cw.visitEnd();
         try {
-            defineClass(this.getClass());
+            defineClass(this.getClass(), cw.toByteArray());
         } catch (Exception ex) {
             Logger.getLogger(ASMClassWriter.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -426,7 +426,7 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
         return cw.toByteArray();
     }
 
-    public String defineClass(Class similarClass) throws Exception {
+    public String defineClass(Class similarClass, byte[] classBytes) throws Exception {
 
         String generatedClassName = "org.glassfish.admin.rest.resources.generatedASM.";
         generatedClassName =  generatedClassName + className;

@@ -46,6 +46,7 @@ import org.jvnet.hk2.annotations.Contract;
  * @author jdlee
  */
 @Contract
-public interface RestResource {
-    
+public interface RestExtension {
+    String getParent();
+    void get(Object data);
 }

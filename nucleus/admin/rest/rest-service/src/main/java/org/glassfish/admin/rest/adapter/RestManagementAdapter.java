@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
@@ -92,6 +93,7 @@ public class RestManagementAdapter extends RestAdapter {
 //        r.add(GeneratorResource.class);
         r.add(StatusGenerator.class);
         r.add(ClientGenerator.class);
+//        r.add(ModelResource.class);
         //r.add(ActionReportResource.class);
 
         r.add(domainResourceClass);
@@ -116,6 +118,7 @@ public class RestManagementAdapter extends RestAdapter {
         r.add(org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider.class);
         r.add(org.glassfish.admin.rest.provider.ActionReportResultJsonProvider.class);
         r.add(org.glassfish.admin.rest.provider.ActionReportResultXmlProvider.class);
+//        r.add(ProxyMessageBodyWriter.class);
 
 
         r.add(org.glassfish.admin.rest.provider.FormWriter.class);
