@@ -72,14 +72,16 @@ public class CompositeUtil {
     public static final String PACKAGE_NAME = "org.glassfish.admin.rest.model.proxy";
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
-    public synchronized static <T> T getModel(Class<T> clazz, Class similarClass) throws Exception {
+    public synchronized static <T> T getModel(Class<T> clazz, Class similarClass,
+            Class<?>[] interfaces) throws Exception {
         String className = //PACKAGE_NAME + "." +
                 getClassName(clazz);
         if (!alreadyGenerated(className)) {
-            Class<?>[] interfaces = new Class<?>[]{
-                clazz,
+            // TODO: This will be replace by HK2 code, once the HK2 integration is completed
+//            Class<?>[] interfaces = new Class<?>[]{
+//                clazz,
 //                ClusterExtension.class
-            };
+//            };
             Map<String, String> properties = new HashMap<String, String>();
 
             ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
