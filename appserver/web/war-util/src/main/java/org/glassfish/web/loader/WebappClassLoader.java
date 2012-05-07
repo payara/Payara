@@ -81,8 +81,10 @@ import javax.naming.directory.DirContext;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -1814,6 +1816,12 @@ public class WebappClassLoader
         // De-register any remaining JDBC drivers
         clearReferencesJdbc();
 
+        // Check for leaks triggered by ThreadLocals loaded by this class loader
+        checkThreadLocalsForLeaks();
+
+        // Clear RMI Targets loaded by this class loader
+        //clearReferencesRmiTargets();
+
         // Null out any static or final fields from loaded classes,
         // as a workaround for apparent garbage collection bugs
         if (clearReferencesStatic) {
@@ -2036,6 +2044,172 @@ public class WebappClassLoader
     }
 
 
+    private void checkThreadLocalsForLeaks() {
+        Thread[] threads = getThreads();
+
+        try {
+            // Make the fields in the Thread class that store ThreadLocals
+            // accessible
+            Field threadLocalsField =
+                Thread.class.getDeclaredField("threadLocals");
+            threadLocalsField.setAccessible(true);
+            Field inheritableThreadLocalsField =
+                Thread.class.getDeclaredField("inheritableThreadLocals");
+            inheritableThreadLocalsField.setAccessible(true);
+            // Make the underlying array of ThreadLoad.ThreadLocalMap.Entry objects
+            // accessible
+            Class<?> tlmClass = Class.forName("java.lang.ThreadLocal$ThreadLocalMap");
+            Field tableField = tlmClass.getDeclaredField("table");
+            tableField.setAccessible(true);
+            Method expungeStaleEntriesMethod = tlmClass.getDeclaredMethod("expungeStaleEntries");
+            expungeStaleEntriesMethod.setAccessible(true);
+
+            for (int i = 0; i < threads.length; i++) {
+                Object threadLocalMap;
+                if (threads[i] != null) {
+
+                    // Clear the first map
+                    threadLocalMap = threadLocalsField.get(threads[i]);
+                    if (null != threadLocalMap){
+                        expungeStaleEntriesMethod.invoke(threadLocalMap);
+                        checkThreadLocalMapForLeaks(threadLocalMap, tableField);
+                    }
+
+                    // Clear the second map
+                    threadLocalMap =inheritableThreadLocalsField.get(threads[i]);
+                    if (null != threadLocalMap){
+                        expungeStaleEntriesMethod.invoke(threadLocalMap);
+                        checkThreadLocalMapForLeaks(threadLocalMap, tableField);
+                    }
+                }
+            }
+        } catch (SecurityException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (NoSuchFieldException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (ClassNotFoundException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (IllegalArgumentException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (IllegalAccessException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (InvocationTargetException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        } catch (NoSuchMethodException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.checkThreadLocalsForLeaksFail",
+                        contextName), e);
+            }
+        }
+    }
+
+
+    /**
+     * Analyzes the given thread local map object. Also pass in the field that
+     * points to the internal table to save re-calculating it on every
+     * call to this method.
+     */
+    private void checkThreadLocalMapForLeaks(Object map,
+            Field internalTableField) throws IllegalAccessException,
+            NoSuchFieldException {
+        if (map != null) {
+            Object[] table = (Object[]) internalTableField.get(map);
+            if (table != null) {
+                for (int j =0; j < table.length; j++) {
+                    if (table[j] != null) {
+                        boolean potentialLeak = false;
+                        // Check the key
+                        Object key = ((Reference<?>) table[j]).get();
+                        if (this.equals(key) || loadedByThisOrChild(key)) {
+                            potentialLeak = true;
+                        }
+                        // Check the value
+                        Field valueField =
+                            table[j].getClass().getDeclaredField("value");
+                        valueField.setAccessible(true);
+                        Object value = valueField.get(table[j]);
+                        if (this.equals(value) || loadedByThisOrChild(value)) {
+                            potentialLeak = true;
+                        }
+                        if (potentialLeak) {
+                            Object[] args = new Object[5];
+                            args[0] = contextName;
+                            if (key != null) {
+                                args[1] = getPrettyClassName(key.getClass());
+                                try {
+                                    args[2] = key.toString();
+                                } catch (Exception e) {
+                                    logger.log(Level.SEVERE, getString(
+                                            "webappClassLoader.checkThreadLocalsForLeaks.badKey",
+                                            args[1]), e);
+                                    args[2] = getString(
+                                            "webappClassLoader.checkThreadLocalsForLeaks.unknown");
+                                }
+                            }
+                            if (value != null) {
+                                args[3] = getPrettyClassName(value.getClass());
+                                try {
+                                    args[4] = value.toString();
+                                } catch (Exception e) {
+                                    logger.log(Level.SEVERE, getString(
+                                            "webappClassLoader.checkThreadLocalsForLeaks.badValue",
+                                            args[3]), e);
+                                    args[4] = getString(
+                                    "webappClassLoader.checkThreadLocalsForLeaks.unknown");
+                                }
+                            }
+                            if (value == null) {
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.log(Level.FINE, getString(
+                                            "webappClassLoader.checkThreadLocalsForLeaksDebug",
+                                            args));
+                                }
+                            } else {
+                                logger.log(Level.SEVERE, getString(
+                                        "webappClassLoader.checkThreadLocalsForLeaks",
+                                        args));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String getPrettyClassName(Class<?> clazz) {
+        String name = clazz.getCanonicalName();
+        if (name==null){
+            name = clazz.getName();
+        }
+        return name;
+    }
+
+
     /**
      * @param o object to test, may be null
      * @return <code>true</code> if o has been loaded by the current classloader
@@ -2072,6 +2246,122 @@ public class WebappClassLoader
         }
         return false;
     }
+
+
+    /*
+     * Get the set of current threads as an array.
+     */
+    private Thread[] getThreads() {
+        // Get the current thread group
+        ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );
+        // Find the root thread group
+        while (tg.getParent() != null) {
+            tg = tg.getParent();
+        }
+
+        int threadCountGuess = tg.activeCount() + 50;
+        Thread[] threads = new Thread[threadCountGuess];
+        int threadCountActual = tg.enumerate(threads);
+        // Make sure we don't miss any threads
+        while (threadCountActual == threadCountGuess) {
+            threadCountGuess *=2;
+            threads = new Thread[threadCountGuess];
+            // Note tg.enumerate(Thread[]) silently ignores any threads that
+            // can't fit into the array
+            threadCountActual = tg.enumerate(threads);
+        }
+
+        return threads;
+    }
+
+
+    /**
+     * This depends on the internals of the Sun JVM so it does everything by
+     * reflection.
+     */
+    /* Cannot load sun.rmi.transprt.Target in felix
+    private void clearReferencesRmiTargets() {
+        try {
+            // Need access to the ccl field of sun.rmi.transport.Target
+            Class<?> objectTargetClass =
+                Class.forName("sun.rmi.transport.Target");
+            Field cclField = objectTargetClass.getDeclaredField("ccl");
+            cclField.setAccessible(true);
+
+            // Clear the objTable map
+            Class<?> objectTableClass =
+                Class.forName("sun.rmi.transport.ObjectTable");
+            Field objTableField = objectTableClass.getDeclaredField("objTable");
+            objTableField.setAccessible(true);
+            Object objTable = objTableField.get(null);
+            if (objTable == null) {
+                return;
+            }
+
+            // Iterate over the values in the table
+            if (objTable instanceof Map<?,?>) {
+                Iterator<?> iter = ((Map<?,?>) objTable).values().iterator();
+                while (iter.hasNext()) {
+                    Object obj = iter.next();
+                    Object cclObject = cclField.get(obj);
+                    if (this == cclObject) {
+                        iter.remove();
+                    }
+                }
+            }
+
+            // Clear the implTable map
+            Field implTableField = objectTableClass.getDeclaredField("implTable");
+            implTableField.setAccessible(true);
+            Object implTable = implTableField.get(null);
+            if (implTable == null) {
+                return;
+            }
+
+            // Iterate over the values in the table
+            if (implTable instanceof Map<?,?>) {
+                Iterator<?> iter = ((Map<?,?>) implTable).values().iterator();
+                while (iter.hasNext()) {
+                    Object obj = iter.next();
+                    Object cclObject = cclField.get(obj);
+                    if (this == cclObject) {
+                        iter.remove();
+                    }
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO,
+                        getString("webappClassLoader.clearRmiInfo",
+                        contextName), e);
+            }
+        } catch (SecurityException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.clearRmiFail",
+                        contextName), e);
+            }
+        } catch (NoSuchFieldException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.clearRmiFail",
+                        contextName), e);
+            }
+        } catch (IllegalArgumentException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.clearRmiFail",
+                        contextName), e);
+            }
+        } catch (IllegalAccessException e) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING,
+                        getString("webappClassLoader.clearRmiFail",
+                        contextName), e);
+            }
+        }
+    }
+    */
 
 
     /**
