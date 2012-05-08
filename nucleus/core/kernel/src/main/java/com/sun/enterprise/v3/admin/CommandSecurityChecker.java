@@ -92,7 +92,7 @@ public class CommandSecurityChecker {
             final AdminCommand command) throws SecurityException {
         
         if (command instanceof SelfAuthorizer) {
-            ((SelfAuthorizer) command).isAuthorized(subject, env);
+            ((SelfAuthorizer) command).authorize(subject, env);
         } else {
             isAuthorizedUsingAnnos(subject, env, command);
         }
