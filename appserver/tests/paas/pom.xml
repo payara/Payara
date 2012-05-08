@@ -95,7 +95,7 @@
         		<module>basic-db-teardown-sql</module>
 			<module>multiple-db-app-scoped-services/basic</module>
 			<module>external-db-service</module>
-			<module>app-scoped-db-with-resources-xml</module>
+			<module>appscoped-db-with-resources-xml</module>
 			<module>javaee_shared_service</module>
 			<module>scale_service</module>
     		</modules>
@@ -113,7 +113,7 @@
         		<module>basic-db-teardown-sql</module>
 			<module>multiple-db-app-scoped-services/basic</module>
 			<module>external-db-service</module>
-			<module>app-scoped-db-with-resources-xml</module>
+			<module>appscoped-db-with-resources-xml</module>
 			<module>javaee_shared_service</module>
 			<module>scale_service</module>
     		</modules>
