@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>dol</artifactId>
+            <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

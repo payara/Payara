@@ -47,6 +47,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.AnnotationTypesProvider;
 
 import java.lang.reflect.Method;
 import java.util.*;

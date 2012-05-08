@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.AnnotationTypesProvider;
+import org.glassfish.internal.deployment.AnnotationTypesProvider;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.*;
 import org.glassfish.apf.impl.AnnotationUtils;

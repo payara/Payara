@@ -68,6 +68,7 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.AnnotationTypesProvider;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbsContext;
