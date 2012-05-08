@@ -44,6 +44,7 @@ package org.glassfish.api.admin;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 
 /**
  * Useful services for administrative commands implementation
@@ -56,6 +57,7 @@ public class AdminCommandContext implements ExecutionContext {
     public final Logger logger;
     private final Payload.Inbound inboundPayload;
     private final Payload.Outbound outboundPayload;
+    private Subject subject;
     
     public AdminCommandContext(Logger logger, ActionReport report) {
         this(logger, report, null, null);
@@ -112,4 +114,22 @@ public class AdminCommandContext implements ExecutionContext {
     public Payload.Outbound getOutboundPayload() {
         return outboundPayload;
     }
+
+    /**
+     * Returns the Subject associated with this command context.
+     * @return the Subject
+     */
+    public Subject getSubject() {
+        return subject;
+    }
+
+    /**
+     * Sets the Subject to be associated with this command context.
+     * @param subject 
+     */
+    public void setSubject(Subject subject) {
+        this.subject = subject;
+    }
+    
+    
 }

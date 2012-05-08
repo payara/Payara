@@ -124,6 +124,9 @@ public class CommandRunnerImpl implements CommandRunner {
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
 
+    @Inject
+    private CommandSecurityChecker commandSecurityChecker;
+    
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(CommandRunnerImpl.class);
 
@@ -910,6 +913,25 @@ public class CommandRunnerImpl implements CommandRunner {
                     return;
                 }
 
+                /*
+                 * Now that parameters have been injected into the command object,
+                 * decide if the current Subject should be permitted to execute
+                 * the command.  We need to wait until after injection is done
+                 * because the class might implement its own authorization check
+                 * and that logic might need the injected values.
+                 */
+                final Map<String,Object> env = buildEnvMap(parameters);
+                try {
+                    commandSecurityChecker.authorize(context.getSubject(), env, command);
+                } catch (SecurityException ex) {
+                    report.setFailureCause(ex);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(adminStrings.getLocalString("commandrunner.noauth",
+                            "User is not authorized for this command"));
+                    return;
+                }
+                    
+                
                 logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.injectiondone",
                         "Parameter mapping, validation, injection completed successfully; Starting paramater injection"));
 
@@ -1258,6 +1280,17 @@ public class CommandRunnerImpl implements CommandRunner {
             }
         }
 
+    }
+    
+    private Map<String,Object> buildEnvMap(final ParameterMap params) {
+        final Map<String,Object> result = new HashMap<String,Object>();
+        for (Map.Entry<String,List<String>> entry : params.entrySet()) {
+            final List<String> values = entry.getValue();
+            if (values != null && values.size() > 0) {
+                result.put(entry.getKey(), values.get(0));
+            }
+        }
+        return result;
     }
 
     /*
