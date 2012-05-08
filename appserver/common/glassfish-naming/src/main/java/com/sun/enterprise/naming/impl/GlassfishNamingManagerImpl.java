@@ -53,10 +53,29 @@ import org.jvnet.hk2.component.Singleton;
 import org.omg.CORBA.ORB;
 
 import javax.inject.Inject;
-import javax.naming.*;
+import javax.naming.Binding;
+import javax.naming.CompositeName;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.NotContextException;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
@@ -137,28 +156,19 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     
     public Remote initializeRemoteNamingSupport(ORB orb) throws NamingException {
-
-        Remote remoteProvider = null;
-
+        Remote remoteProvider;
         try {
             // Now that we have an ORB, initialize the CosNaming service
             // and set it on the server's naming service.
-
             Hashtable cosNamingEnv = new Hashtable();
-
-            cosNamingEnv.put("java.naming.factory.initial",
-                             "com.sun.jndi.cosnaming.CNCtxFactory");
-
+            cosNamingEnv.put("java.naming.factory.initial", "com.sun.jndi.cosnaming.CNCtxFactory");
             cosNamingEnv.put("java.naming.corba.orb", orb);
-
             cosContext = new InitialContext(cosNamingEnv);
-
             ProviderManager pm = ProviderManager.getProviderManager();
 
             // Initialize RemoteSerialProvider.  This allows access to the naming
             // service from clients.
             remoteProvider = pm.initRemoteProvider(orb);
-
         } catch(RemoteException re) {
             NamingException ne = new NamingException("Exception during remote naming initialization");
             ne.initCause(ne);
@@ -196,13 +206,10 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      */
     public void publishObject(Name name, Object obj, boolean rebind)
             throws NamingException {
-
-        Object serialObj = obj;
-
         if (rebind) {
-            initialContext.rebind(name, serialObj);
+            initialContext.rebind(name, obj);
         } else {
-            initialContext.bind(name, serialObj);
+            initialContext.bind(name, obj);
         }
     }
 
@@ -289,8 +296,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
                 if (obj == null) {
                     // Doesn't exist so create it.
-                    Context newCtx = currentCtx.createSubcontext(subCtxName);
-                    currentCtx = newCtx;
+                    currentCtx = currentCtx.createSubcontext(subCtxName);
                 } else if (obj instanceof Context) {
                     // OK -- no need to create it.
                     currentCtx = (Context) obj;
@@ -301,12 +307,9 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             }
             catch (NameNotFoundException e) {
                 // Doesn't exist so create it.
-                Context newCtx = currentCtx.createSubcontext(subCtxName);
-                currentCtx = newCtx;
+                currentCtx = currentCtx.createSubcontext(subCtxName);
             }
         } // End for -- each sub-context
-
-        return;
     }
 
     private Map getComponentNamespace(String componentId)
@@ -466,9 +469,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     private Map getNamespace(String appName, String moduleName,
                              String componentId, String logicalJndiName) throws NamingException {
-
-        Map namespace = null;
-
+        Map namespace;
         if( logicalJndiName.startsWith("java:comp") ) {
             namespace = getComponentNamespace(componentId);
         } else if ( logicalJndiName.startsWith("java:module")) {
@@ -562,14 +563,12 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     private String logicalCompJndiNameToModule(String logicalCompName) {
         String tail = logicalCompName.substring(JAVA_COMP_LENGTH);
-        String logicalModuleJndiName = "java:module" + tail;
-        return logicalModuleJndiName;
+        return "java:module" + tail;
     }
 
     private String logicalModuleJndiNameToComp(String logicalModuleName) {
         String tail = logicalModuleName.substring(JAVA_MODULE_LENGTH);
-        String logicalCompJndiName = "java:comp" + tail;
-        return logicalCompJndiName;
+        return "java:comp" + tail;
     }
 
 
@@ -605,7 +604,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     private void bindIntermediateContexts(Map namespace, String name)
             throws NamingException {
         // for each component of name, put an entry into namespace
-        String partialName = null;
+        String partialName;
         if( name.startsWith("java:comp/") ) {
             partialName = "java:comp";
         } else if( name.startsWith("java:module/")) {
@@ -623,9 +622,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
             String tok = toks.nextToken();
             partialName = partialName + "/" + tok;
             if (namespace.get(partialName) == null) {
-
-                namespace.put(partialName,
-                        new JavaURLContext(partialName, null));
+                namespace.put(partialName, new JavaURLContext(partialName, null));
             }
         }
     }
@@ -700,7 +697,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      */
     public Object lookup(String name, SerialContext serialContext)
             throws NamingException {
-        Context ic = null;
+        Context ic;
 
         if (serialContext != null) {
             ic = serialContext;
@@ -725,9 +722,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
     }
 
-    private Object lookup(String componentId, String name,
-        Context ctx) throws NamingException {
-
+    private Object lookup(String componentId, String name, Context ctx) throws NamingException {
         ComponentIdInfo info = componentIdInfo.get(componentId);
         String logicalJndiName = name;
         boolean replaceName = (info != null) && (info.treatComponentAsModule)
@@ -832,7 +827,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
      * @return the component id as a string.
      */
     private String getComponentId() throws NamingException {
-        String id = null;
+        String id;
 
         ComponentInvocation ci;
         if (invMgr==null) {
@@ -848,9 +843,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
         try {
             id = ci.getComponentId();
             if (id == null) {
-                NamingException nameEx = new NamingException(
-                        "Invocation exception: ComponentId is null");
-                throw nameEx;
+                throw new NamingException("Invocation exception: ComponentId is null");
             }
         } catch (Throwable th) {
             NamingException ine = new NamingException("Invocation exception: " + th);
