@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.pfl.objectweb.asm.Type;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -56,10 +57,12 @@ import org.objectweb.asm.MethodVisitor;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.DUP;
 import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.PUTFIELD;
 import static org.objectweb.asm.Opcodes.RETURN;
 import static org.objectweb.asm.Opcodes.V1_6;
@@ -82,10 +85,7 @@ public class CompositeUtil {
 //                clazz,
 //                ClusterExtension.class
 //            };
-            Map<String, String> properties = new HashMap<String, String>();
-
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            visitClass(cw, className, interfaces);
+            Map<String, Map<String, String>> properties = new HashMap<String, Map<String, String>>();
 
             for (Class<?> iface : interfaces) {
                 for (Method method : iface.getMethods()) {
@@ -93,22 +93,38 @@ public class CompositeUtil {
                     final boolean isGetter = name.startsWith("get");
                     if (isGetter || name.startsWith("set")) {
                         name = name.substring(3);
-                        if (!properties.containsKey(name)) {
-                            final String type = isGetter ?
-                                    method.getReturnType().getCanonicalName() :
-                                    method.getParameterTypes()[0].getCanonicalName();
-                            properties.put(name, type);
+                        Map<String, String> property = properties.get(name);
+                        if (property == null) {
+                            property = new HashMap<String, String>();
+                            properties.put(name, property);
+                        }
+
+                        String type = "String";
+                        Attribute attr = method.getAnnotation(Attribute.class);
+                        if (attr != null) {
+                            property.put("type", attr.dataType().getCanonicalName());
+                            property.put("defaultValue", attr.defaultValue());
+                        } else {
+                            property.put("type", isGetter ?
+                                method.getReturnType().getCanonicalName() :
+                                method.getParameterTypes()[0].getCanonicalName());
                         }
                     }
                 }
             }
-            for (Map.Entry<String, String> entry : properties.entrySet()) {
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            visitClass(cw, className, interfaces, properties);
+
+//            for (Map.Entry<String, String> entry : properties.entrySet()) {
+             for (Map.Entry<String, Map<String, String>> entry : properties.entrySet()) {
                 String name = entry.getKey();
-                String type = entry.getValue();
+                String type = entry.getValue().get("type");
                 createField(cw, name, type);
                 createGettersAndSetters(cw, clazz, className, name, type);
 
             }
+
+            createConstructor(cw, className, properties);
             cw.visitEnd();
             Class<?> newClass = defineClass(similarClass, className, cw.toByteArray());
             generatedClasses.put(className, newClass);
@@ -180,25 +196,17 @@ public class CompositeUtil {
         fv.visitEnd();
     }
 
-    protected static void visitClass(ClassWriter cw, String className, Class<?>[] ifaces) {
+    protected static void visitClass(ClassWriter cw, String className, Class<?>[] ifaces, Map<String, Map<String, String>> properties) {
         String[] ifaceNames = new String[ifaces.length];
         int i = 0;
         for (Class<?> iface : ifaces) {
             ifaceNames[i++] = iface.getName().replace(".", "/");
         }
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, getInternalName(className),
+        className = getInternalName(className);
+        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className,
                 null,
                 "java/lang/Object",
                 ifaceNames);
-
-        // Create the ctor
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(1, 1);
-        mv.visitEnd();
 
         // Add @XmlRootElement
         cw.visitAnnotation("Ljavax/xml/bind/annotation/XmlRootElement;", true).visitEnd();
@@ -207,6 +215,33 @@ public class CompositeUtil {
         AnnotationVisitor av0 = cw.visitAnnotation("Ljavax/xml/bind/annotation/XmlAccessorType;", true);
         av0.visitEnum("value", "Ljavax/xml/bind/annotation/XmlAccessType;", "FIELD");
         av0.visitEnd();
+    }
+
+    protected static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, String>> properties) {
+        // Create the ctor
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(ALOAD, 0);
+        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+
+        for (Map.Entry<String, Map<String, String>> property : properties.entrySet()) {
+            String name = property.getKey();
+            String defaultValue = property.getValue().get("defaultValue");
+            if (defaultValue != null && !defaultValue.isEmpty()) {
+                final String type = getInternalName(property.getValue().get("type"));
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitTypeInsn(NEW, type);
+                mv.visitInsn(DUP);
+                mv.visitLdcInsn(defaultValue);
+                mv.visitMethodInsn(INVOKESPECIAL, type, "<init>", "(Ljava/lang/String;)V");
+                mv.visitFieldInsn(PUTFIELD, getInternalName(className), name, "L" + type + ";");
+
+            }
+        }
+
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(1, 1);
+        mv.visitEnd();
     }
 
     // TODO: This is duplicated from the generator class.  
