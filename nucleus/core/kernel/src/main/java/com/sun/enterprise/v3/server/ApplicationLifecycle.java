@@ -252,8 +252,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // if the virtualservers param is not defined, set it to all
         // defined virtual servers minus __asadmin on that target
         if (commandParams.virtualservers == null) {
-            commandParams.virtualservers = getVirtualServers(
-                commandParams.target);
+            commandParams.virtualservers = DeploymentUtils.getVirtualServers(
+                commandParams.target, env, domain);
         }
         
         if (commandParams.enabled == null) {
@@ -1729,60 +1729,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return initial;
     }
 
-    /*
-     * @return comma-separated list of all defined virtual servers (exclusive
-     * of __asadmin)
-     */
-    private String getVirtualServers(String target) {
-        if (target == null) {
-            // return null;
-            // work around till the OE sets the virtualservers param when it's 
-            // handling the default target 
-            target = "server";
-        }
-
-        if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
-            target = "server";
-        }
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        Server server = domain.getServerNamed(target);
-        Config config = null;
-        if (server != null) {
-            config = domain.getConfigs().getConfigByName(
-                server.getConfigRef());
-        } else {
-            Cluster cluster = domain.getClusterNamed(target); 
-            if (cluster != null) {
-                config = domain.getConfigs().getConfigByName(
-                    cluster.getConfigRef());
-            }
-        }
-        
-        if (config != null) {
-            HttpService httpService = config.getHttpService();
-            if (httpService != null) {
-                List<VirtualServer> hosts = httpService.getVirtualServer();
-                if (hosts != null) {
-                    for (VirtualServer host : hosts) {
-                        if (("__asadmin").equals(host.getId())) {
-                            continue;
-                        }
-                        if (first) {
-                            sb.append(host.getId());
-                            first = false;
-                        } else {
-                            sb.append(",");
-                            sb.append(host.getId());
-                        }
-                    }
-                }
-            }
-        }
-     
-        return sb.toString();
-    }
-
     private void setAppRefAttributes(ApplicationRef appRef, 
         DeployCommandParameters deployParams)
         throws PropertyVetoException {
@@ -1791,7 +1737,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             appRef.setVirtualServers(deployParams.virtualservers);
         } else {
             // deploy to all virtual-servers, we need to get the list.
-            appRef.setVirtualServers(getVirtualServers(deployParams.target));
+            appRef.setVirtualServers(DeploymentUtils.getVirtualServers(deployParams.target, env, domain));
         }
         if(deployParams.lbenabled != null){
             appRef.setLbEnabled(deployParams.lbenabled);

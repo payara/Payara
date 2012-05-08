@@ -40,7 +40,7 @@
 
 package org.glassfish.deployment.common;
 
-import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.io.FileUtils;
@@ -49,12 +49,14 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -585,4 +587,59 @@ public class DeploymentUtils {
     public static FileArchive openAsFileArchive(final File dir, final ArchiveFactory archiveFactory) throws IOException {
         return (FileArchive) archiveFactory.openArchive(dir);
     }
+
+    /*
+     * @return comma-separated list of all defined virtual servers (exclusive
+     * of __asadmin) on the specified target
+     */
+    public static String getVirtualServers(String target, ServerEnvironment env, Domain domain) {
+        if (target == null) {
+            // return null;
+            // work around till the OE sets the virtualservers param when it's
+            // handling the default target
+            target = "server";
+        }
+
+        if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
+            target = "server";
+        }
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        Server server = domain.getServerNamed(target);
+        Config config = null;
+        if (server != null) {
+            config = domain.getConfigs().getConfigByName(
+                server.getConfigRef());
+        } else {
+            Cluster cluster = domain.getClusterNamed(target);
+            if (cluster != null) {
+                config = domain.getConfigs().getConfigByName(
+                    cluster.getConfigRef());
+            }
+        }
+
+        if (config != null) {
+            HttpService httpService = config.getHttpService();
+            if (httpService != null) {
+                List<VirtualServer> hosts = httpService.getVirtualServer();
+                if (hosts != null) {
+                    for (VirtualServer host : hosts) {
+                        if (("__asadmin").equals(host.getId())) {
+                            continue;
+                        }
+                        if (first) {
+                            sb.append(host.getId());
+                            first = false;
+                        } else {
+                            sb.append(",");
+                            sb.append(host.getId());
+                        }
+                    }
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
 }
