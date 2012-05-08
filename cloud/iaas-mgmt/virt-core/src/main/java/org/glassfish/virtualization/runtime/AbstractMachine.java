@@ -67,6 +67,7 @@ import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.Host;
 import org.glassfish.virtualization.util.RuntimeContext;
+import org.glassfish.virtualization.util.VirtualizationType;
 import javax.inject.Inject;
 import org.jvnet.hk2.component.Habitat;
 
@@ -121,6 +122,10 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
 
     @Override
     public void install(final TemplateInstance template) throws IOException {
+        //TODO call upon install-node to install bits?
+        if (isNativeMode())
+            return;
+        
         final LocalTemplate localTemplate = new LocalTemplate(template);
         // we install it first as a local template
         installedTemplates.put(template.getConfig().getName(),localTemplate);
@@ -450,5 +455,10 @@ public abstract class AbstractMachine implements PostConstruct, Machine {
         // create the iso file.
         custDisk.createISOFromDirectory(custDir, custFile);
         return custDisk;
+    }
+    
+    private boolean isNativeMode(){
+        String t = getServerPool().getConfig().getVirtualization().getType();
+        return (t!= null) && t.equals(VirtualizationType.Type.Native.name());
     }
 }

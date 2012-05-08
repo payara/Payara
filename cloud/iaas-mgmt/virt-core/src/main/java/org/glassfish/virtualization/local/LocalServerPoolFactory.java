@@ -40,40 +40,41 @@
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.inject.Injector;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.ServerPoolFactory;
 import org.glassfish.virtualization.spi.TemplateRepository;
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Implementation of the {@link ServerPoolFactory} for laptop mode
+ * Implementation of the {@link ServerPoolFactory} for native mode.
  *
  * @author Jerome Dochez
  */
 @Service(name="Native")
 public class LocalServerPoolFactory implements ServerPoolFactory {
 
+    final Injector injector;
     final private TemplateRepository templateRepository;
     final private Domain domain;
     final private ServerContext environment;
 
-    @Inject
-    public LocalServerPoolFactory(TemplateRepository templateRepository,
-                                  Domain domain,
-                                  ServerContext environment) {
+    public LocalServerPoolFactory(@Inject Injector injector,
+                                  @Inject TemplateRepository templateRepository,
+                                  @Inject Domain domain,
+                                  @Inject ServerContext environment) {
         this.templateRepository = templateRepository;
         this.domain = domain;
         this.environment = environment;
+        this.injector=injector;
     }
 
     @Override
     public ServerPool build(ServerPoolConfig config) {
-        return new LocalServerPool(config, this);
+        return new LocalServerPool(injector, config, this);
     }
 
     Domain getDomain() {

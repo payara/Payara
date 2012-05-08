@@ -41,9 +41,9 @@
 package org.glassfish.paas.gfplugin.customizer;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.ExecException;
-import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.ProcessExecutor;
 import org.glassfish.api.ActionReport;
 import org.glassfish.gms.bootstrap.GMSAdapter;
@@ -63,8 +63,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.util.logging.Level;
+import org.glassfish.virtualization.local.LocalMachine;
+import org.glassfish.virtualization.local.RemoteMachine;
 
 /**
  * Implementation of the non virtualized glassfish template customizer.
@@ -96,36 +97,56 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
         }
         ActionReport report = services.forContract(ActionReport.class)
                 .named(PLAIN_ACTION_REPORT).get();
-       // this line below needs to come from the template...
-        String[] createArgs = {getAsAdminCommand(),
-                CREATE_LOCAL_INSTANCE,
-                "--cluster", cluster.getConfig().getName(),
-                 virtualMachine.getName()};
-        ProcessExecutor createInstance = new ProcessExecutor(createArgs);
-
-        try {
-            createInstance.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
         
-        for (Server instance : cluster.getConfig().getInstances()) {
-            if (instance.getName().equals(virtualMachine.getName())) {
-                try {
-                    ConfigSupport.apply(new SingleConfigCode<Server>() {
-                        @Override
-                        public Object run(Server wServer) throws PropertyVetoException, TransactionFailure {
-                            Property property = wServer.createChild(Property.class);
-                            property.setName("ServerPool");
-                            property.setValue(virtualMachine.getServerPool().getName());
-                            wServer.getProperty().add(property);
-                            return null;
-                        }
-                    }, instance);
-                } catch (TransactionFailure transactionFailure) {
-                    RuntimeContext.logger.log(Level.SEVERE,
-                            "Cannot add properties to newly created instance configuration", transactionFailure);
-                    throw new VirtException(transactionFailure);
+        Machine machine = virtualMachine.getMachine();
+        
+        if (machine instanceof RemoteMachine){
+            final String nodeName = getNodeName(virtualMachine);
+            // create-node-ssh --nodehost $ip_address --installdir $GLASSFISH_HOME $node_name
+            String installDir = virtualMachine.getProperty(VirtualMachine.PropertyName.INSTALL_DIR);
+            rtContext.executeAdminCommand(report, CREATE_NODE_SSH, nodeName,
+                    NODE_HOST_ARG, virtualMachine.getAddress().getHostAddress(),
+                    SSH_USER_ARG, virtualMachine.getUser().getName(), /* TODO :: if vm.getUser() is null then should we use System.getProperty("user.name");*/
+                    INSTALL_DIR_ARG, installDir);
+
+            if (report.hasFailures()) {
+                return;
+            }
+            rtContext.executeAdminCommand(report, CREATE_INSTANCE, getInstanceName(virtualMachine),
+                    NODE_ARG, nodeName,
+                    CLUSTER_ARG, cluster.getConfig().getName());
+        } else if (machine instanceof LocalMachine) {
+            // this line below needs to come from the template...
+            String[] createArgs = {getAsAdminCommand(),
+                    CREATE_LOCAL_INSTANCE,
+                    "--cluster", cluster.getConfig().getName(),
+                    getInstanceName(virtualMachine)};
+            ProcessExecutor createInstance = new ProcessExecutor(createArgs);
+
+            try {
+                createInstance.execute();
+            } catch (ExecException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+
+            for (Server instance : cluster.getConfig().getInstances()) {
+                if (instance.getName().equals(virtualMachine.getName())) {
+                    try {
+                        ConfigSupport.apply(new SingleConfigCode<Server>() {
+                            @Override
+                            public Object run(Server wServer) throws PropertyVetoException, TransactionFailure {
+                                Property property = wServer.createChild(Property.class);
+                                property.setName("ServerPool");
+                                property.setValue(virtualMachine.getServerPool().getName());
+                                wServer.getProperty().add(property);
+                                return null;
+                            }
+                        }, instance);
+                    } catch (TransactionFailure transactionFailure) {
+                        RuntimeContext.logger.log(Level.SEVERE,
+                                "Cannot add properties to newly created instance configuration", transactionFailure);
+                        throw new VirtException(transactionFailure);
+                    }
                 }
             }
         }
@@ -145,13 +166,23 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
         if(provisionDAS) {
             return;
         }
-        // let's find our instance name.
-        String instanceName = virtualMachine.getName();
+        
+        Machine machine = virtualMachine.getMachine();
+        String instanceName = getInstanceName(virtualMachine);
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
             ActionReport report = services.forContract(ActionReport.class)
                     .named(PLAIN_ACTION_REPORT).get();
             rtContext.executeAdminCommand(report, DELETE_INSTANCE, instanceName);
+            if (machine instanceof RemoteMachine) {
+                String nodeName = instance.getNodeRef();
+                Node node = domain.getNodeNamed(nodeName);
+                if (node != null) {
+                    if (node.getType().equals(NODE_TYPE_SSH)) {
+                        rtContext.executeAdminCommand(report, DELETE_NODE_SSH, nodeName);
+                    }
+                }
+            }
         }
     }
 
@@ -165,14 +196,27 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
         if(provisionDAS) {
             return;
         }
-        String[] startArgs = {getAsAdminCommand(),
-                START_LOCAL_INSTANCE,
-                 virtualMachine.getName()};
-        ProcessExecutor startInstance = new ProcessExecutor(startArgs);
-        try {
-            startInstance.execute();
-        } catch (ExecException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        
+        Machine machine = virtualMachine.getMachine();
+        String instanceName = getInstanceName(virtualMachine);
+        if (machine instanceof RemoteMachine) {           
+            Server instance = domain.getServerNamed(instanceName);
+            if (instance != null) {
+                ActionReport report = services.forContract(ActionReport.class)
+                        .named(PLAIN_ACTION_REPORT).get();
+                // TODO :: check for virtualMachine.getInfo().getState()??
+                rtContext.executeAdminCommand(report, START_INSTANCE, instanceName);
+            }
+        } else if (machine instanceof LocalMachine) {
+            String[] startArgs = {getAsAdminCommand(),
+                    START_LOCAL_INSTANCE,
+                    instanceName};
+            ProcessExecutor startInstance = new ProcessExecutor(startArgs);
+            try {
+                startInstance.execute();
+            } catch (ExecException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
     }
 
@@ -181,7 +225,9 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
         if(provisionDAS) {
             return;
         }
-        String instanceName = virtualMachine.getName();
+        
+        String instanceName = getInstanceName(virtualMachine);
+        
         Server instance = domain.getServerNamed(instanceName);
         if (instance != null) {
             ActionReport report = services.forContract(ActionReport.class)
@@ -189,5 +235,31 @@ public class LocalGlassFishTemplateCustomizer implements TemplateCustomizer,
             rtContext.executeAdminCommand(report, STOP_INSTANCE, instanceName,
                     VM_SHUTDOWN_ARG, "false");
         }
+    }
+    
+    private String getNodeName(VirtualMachine virtualMachine) {
+        String machineName = virtualMachine.getMachine() != null ?
+                virtualMachine.getMachine().getName() :
+                virtualMachine.getServerPool().getConfig().getVirtualization().getName();
+
+        String args[] = new String[]{
+                virtualMachine.getServerPool().getName(),
+                machineName,
+                virtualMachine.getName()
+        };
+        return NODE_NAME_FORMAT.format(args).toString();
+    }
+    
+    private String getInstanceName(VirtualMachine virtualMachine) {
+        String machineName = virtualMachine.getMachine() != null ?
+                virtualMachine.getMachine().getName() :
+                virtualMachine.getServerPool().getConfig().getVirtualization().getName();
+
+        String args[] = new String[]{
+                virtualMachine.getServerPool().getName(),
+                machineName,
+                virtualMachine.getName()
+        };
+        return INSTANCE_NAME_FORMAT.format(args).toString();
     }
 }

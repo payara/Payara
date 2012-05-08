@@ -62,7 +62,7 @@ public abstract class AbstractVirtualMachine implements VirtualMachine {
     final Map<PropertyName, String> properties = new HashMap<PropertyName, String>();
     final VirtualMachineConfig config;
     protected SSHLauncher sshLauncher;
-    private static final Logger logger = RuntimeContext.logger;
+    protected static final Logger logger = RuntimeContext.logger;
 
     protected AbstractVirtualMachine(VirtualMachineConfig config, VirtUser user) {
         this.config = config;

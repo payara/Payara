@@ -49,6 +49,9 @@
           <template-index value="Native" type="VirtualizationType"></template-index>
         </template>
         <server-pool port-name="en0" name="cloud" sub-net="10.132.181.0/24">
+          <machines name="local">
+            <network-name>localhost</network-name>
+          </machines>
           <user></user>
         </server-pool>
       </native-virtualization>

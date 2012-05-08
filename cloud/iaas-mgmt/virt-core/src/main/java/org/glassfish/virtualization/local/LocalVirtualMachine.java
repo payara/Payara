@@ -37,93 +37,64 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.ExecException;
 import com.sun.enterprise.util.ProcessExecutor;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.virtualization.config.VirtUser;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import org.glassfish.hk2.inject.Injector;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.AbstractVirtualMachine;
 import org.glassfish.virtualization.util.RuntimeContext;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
- * abstraction of a non virtualization bare metal PC.
+ * Representation of a virtual machine in native mode.
  *
  * @author Jerome Dochez
  */
-class LocalVirtualMachine extends AbstractVirtualMachine {
+public class LocalVirtualMachine extends AbstractVirtualMachine {
 
     final String vmName;
-    final Machine machine;
+    final private Machine owner;
     final LocalServerPool pool;
-    private static final Logger logger = RuntimeContext.logger;
 
-    LocalVirtualMachine(VirtualMachineConfig config, VirtUser user, LocalServerPool pool, Machine machine, String vmName) {
-        super(config, user);
-        this.vmName = vmName;
+    public static LocalVirtualMachine from(Injector injector, VirtualMachineConfig config, LocalServerPool group, Machine owner) {
+        return injector.inject(new LocalVirtualMachine(config, group, owner));
+    }
+
+    protected LocalVirtualMachine(VirtualMachineConfig config, LocalServerPool pool, Machine owner) {
+        super(config, owner.getUser());
+        this.vmName = config.getName();
         this.pool = pool;
-        this.machine = machine;
-    }
-
-
-    @Override
-    public String getName() {
-        return vmName;
-    }
-
-    @Override
-    public InetAddress getAddress() {
-        // we need to return our ip address.
-        Enumeration<NetworkInterface> interfaces = null;
-        try {
-            interfaces = NetworkInterface.getNetworkInterfaces();
-        } catch (SocketException e) {
-            RuntimeContext.logger.log(Level.SEVERE, "Cannot get list of network interfaces",e);
-            try {
-                return InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-            } catch (UnknownHostException e1) {
-                RuntimeContext.logger.log(Level.SEVERE, "Cannot create loop back address");
-                return null;
-            }
-        }
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface networkInterface = interfaces.nextElement();
-            // we need a way to customize this through configuration
-            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-            while (addresses.hasMoreElements()) {
-                InetAddress inetAddress = addresses.nextElement();
-                String address = inetAddress.getHostAddress();
-                if (address.contains(".")) {
-                    return inetAddress;
-                }
-            }
-        }
-        try {
-            return InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
-        } catch (UnknownHostException e1) {
-            RuntimeContext.logger.log(Level.SEVERE, "Cannot create loop back address");
-            return null;
-        }
+        this.owner = owner;
     }
 
     @Override
     public void setAddress(InetAddress address) {
-        // ignore/
+        //ignore
+    }
+
+    @Override
+    public InetAddress getAddress() {
+        try {
+            String name = owner.getConfig().getNetworkName();
+            if (name != null) {
+                return InetAddress.getByName(name);
+            } else {
+                return InetAddress.getByName(owner.getIpAddress());
+            }
+        } catch (UnknownHostException e1) {
+            RuntimeContext.logger.log(Level.SEVERE, "Cannot create ip address");
+            return null;
+        }
     }
 
     @Override
@@ -131,7 +102,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
         for (Cluster cluster : pool.serverPoolFactory.getDomain().getClusters().getCluster()) {
             for (VirtualMachineConfig vmc : cluster.getExtensionsByType(VirtualMachineConfig.class)) {
                 if (vmc.getName().equals(getName())) {
-                    TemplateInstance ti = pool.serverPoolFactory.getTemplateRepository() .byName(vmc.getTemplate().getName());
+                    TemplateInstance ti = pool.serverPoolFactory.getTemplateRepository().byName(vmc.getTemplate().getName());
                     if (ti!=null) {
                         ti.getCustomizer().start(this, false);
                     }
@@ -140,21 +111,27 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
             }
         }
         throw new RuntimeException("Cannot find registered virtual machine " + getName());
-    }
 
-    @Override
-    public void suspend() throws VirtException {
-        throw new RuntimeException("Local processes cannot be suspended or resumed");
-    }
-
-    @Override
-    public void resume() throws VirtException {
-        throw new RuntimeException("Local processes cannot be suspended or resumed");
     }
 
     @Override
     public void stop() throws VirtException {
         // nothing to do ?
+    }
+
+    @Override
+    public void resume() throws VirtException {
+        throw new VirtException("Local processes cannot be resumed.");
+    }
+
+    @Override
+    public void suspend() throws VirtException {
+        throw new VirtException("Local processes cannot be suspended.");
+    }
+
+    @Override
+    public String getName() {
+       return vmName;
     }
 
     @Override
@@ -165,19 +142,25 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
     @Override
     public VirtualMachineInfo getInfo() {
         return new VirtualMachineInfo() {
+
             @Override
-            public long maxMemory() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            public int nbVirtCpu() throws VirtException {
+                return 0;
             }
 
             @Override
             public long memory() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+                return 0;
             }
 
             @Override
             public long cpuTime() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+                return 0;
+            }
+
+            @Override
+            public long maxMemory() throws VirtException {
+                return 0;
             }
 
             @Override
@@ -186,18 +169,13 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
             }
 
             @Override
-            public void registerMemoryListener(MemoryListener ml, long delay, TimeUnit unit) {
-                //To change body of implemented methods use File | Settings | File Templates.
+            public void registerMemoryListener(final MemoryListener ml, long period, TimeUnit unit) {
+                // Not applicable
             }
 
             @Override
-            public void unregisterMemoryListener(MemoryListener ml) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public int nbVirtCpu() throws VirtException {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            public void unregisterMemoryListener(final MemoryListener ml) {
+                // Not applicable
             }
         };
     }
@@ -209,7 +187,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
 
     @Override
     public Machine getMachine() {
-        return machine;
+        return owner;
     }
 
     @Override
@@ -217,7 +195,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
         ProcessExecutor processExecutor = new ProcessExecutor(args);
         try {
             String[] returnLines = processExecutor.execute(true);
-            StringBuffer stringBuffer = new StringBuffer();
+            StringBuilder stringBuffer = new StringBuilder();
             if (returnLines != null) {
                 for (String returnLine : returnLines) {
                     stringBuffer.append(returnLine);
@@ -229,6 +207,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
         }
     }
 
+    @Override
     public boolean upload(File localFile, File remoteTargetDirectory) {
         try {
             File toFile = new File(remoteTargetDirectory, localFile.getName());
@@ -244,6 +223,7 @@ class LocalVirtualMachine extends AbstractVirtualMachine {
         }
     }
 
+    @Override
     public boolean download(File remoteFile, File localTargetDirectory) {
         try {
             FileUtils.copy(remoteFile, new File(localTargetDirectory, remoteFile.getName()));
