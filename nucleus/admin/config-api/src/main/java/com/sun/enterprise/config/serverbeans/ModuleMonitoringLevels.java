@@ -372,7 +372,61 @@ public interface ModuleMonitoringLevels extends ConfigBeanProxy, Injectable, Pro
      *              {@link String }
      */
     public void setJersey(String value) throws PropertyVetoException;
-    
+
+    /**
+     * Gets the value of the cloudTenantManager property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="OFF")
+    @Pattern(regexp="(OFF|LOW|HIGH)")
+    public String getCloudTenantManager();
+
+    /**
+     * Sets the value of the cloudTenantManager property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setCloudTenantManager(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the cloud property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="OFF")
+    @Pattern(regexp="(OFF|LOW|HIGH)")
+    public String getCloud();
+
+    /**
+     * Sets the value of the cloud property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setCloud(String value) throws PropertyVetoException;
+
+
+    /**
+     * Gets the value of the cloud Orchestrator property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="OFF")
+    @Pattern(regexp="(OFF|LOW|HIGH)")
+    public String getCloudOrchestrator();
+
+    /**
+     * Sets the value of the cloud Orchestrator property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setCloudOrchestrator(String value) throws PropertyVetoException;
     /**
     	Properties as per {@link PropertyBag}
      */
