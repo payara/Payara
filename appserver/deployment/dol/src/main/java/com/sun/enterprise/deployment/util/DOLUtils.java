@@ -56,6 +56,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
 import java.net.URL;
 import java.net.URI;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -297,7 +298,15 @@ public class DOLUtils {
         }
 
         sniffers.removeAll(sniffersToRemove);
-        archive.setExtraData(Collection.class, sniffers);
+
+        // store the module sniffer information so we don't need to 
+        // recalculate them later
+        Hashtable sniffersTable = archive.getParentArchive().getExtraData(Hashtable.class);
+        if (sniffersTable == null) {
+            sniffersTable = new Hashtable<String, Collection<Sniffer>>();
+            archive.getParentArchive().setExtraData(Hashtable.class, sniffersTable);
+        }
+        sniffersTable.put(md.getArchiveUri(), sniffers);
 
         return sniffers;
     }

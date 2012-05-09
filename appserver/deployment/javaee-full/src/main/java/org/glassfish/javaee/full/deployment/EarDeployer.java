@@ -165,6 +165,7 @@ public class EarDeployer implements Deployer {
             throw de;
         }
 
+        context.getSource().removeExtraData(Hashtable.class);
         context.addModuleMetaData(appInfo);
         generateArtifacts(context);
         return true;
@@ -272,9 +273,9 @@ public class EarDeployer implements Deployer {
         ProgressTracker tracker = bundleContext.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
 
         try {
-            // let's get the list of sniffers
-            Collection<Sniffer> sniffers = bundleContext.getSource().getExtraData(Collection.class);
-            bundleContext.getSource().removeExtraData(Collection.class);
+            // let's get the previously stored list of sniffers
+            Hashtable<String, Collection<Sniffer>> sniffersTable = bundleContext.getSource().getParentArchive().getExtraData(Hashtable.class);
+            Collection<Sniffer> sniffers = sniffersTable.get(md.getArchiveUri());
             // let's get the list of containers interested in this module
             orderedContainers = deployment.setupContainerInfos(null, sniffers, bundleContext);
             if (orderedContainers == null) {
