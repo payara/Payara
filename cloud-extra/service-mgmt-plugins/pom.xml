@@ -45,14 +45,19 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-cloud-parent</artifactId>
+        <artifactId>glassfish-cloud-extra-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>paas.spe</artifactId>
+    <artifactId>paas.plugins</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Service Plugins Base Module</name>
+    <name>GlassFish Service Plugins Modules</name>
     <modules>
-        <module>spe-base</module>
+        <module>db-spe-common</module>
+        <module>glassfish-plugin</module>
+        <module>javadb-plugin</module>
+        <module>load-balancer-plugin</module>
+        <module>dns-plugin</module>
+        <module>mq-plugin</module>
    </modules>
 </project>

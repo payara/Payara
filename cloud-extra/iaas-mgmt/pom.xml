@@ -46,18 +46,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-cloud-parent</artifactId>
+        <artifactId>glassfish-cloud-extra-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.virtualization</groupId>
-    <artifactId>virtualization-plugin</artifactId>
+    <artifactId>virtualization</artifactId>
     <packaging>pom</packaging>
-    <name>IaaS Management Plugins</name>  
+    <name>IaaS Management Modules</name>  
     <modules>
-    	<module>libvirt</module>
-        <module>libvirt-files</module>
-        <module>native-files</module>
-        <module>virtualbox</module>
+    	<module>virt-api</module>
+        <module>virt-core</module>
     </modules>
 </project>

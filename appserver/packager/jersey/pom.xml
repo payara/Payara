@@ -86,9 +86,9 @@
                             <includeScope>runtime</includeScope>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>
-               </executions>
-           </plugin>
+                    </execution>
+                </executions>
+            </plugin>           
         </plugins>
     </build>
 
@@ -101,40 +101,89 @@
             <type>zip</type>
             <classifier>project</classifier>
             <optional>true</optional>
-       </dependency>
+        </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
+        <profiles>
+            <profile>
             <!--
                 Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
              -->
-            <id>ips</id>
-	    <activation>
-	       <activeByDefault>false</activeByDefault> 
-	    </activation>
-	    <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.jvnet.updatecenter2</groupId>
-                    <artifactId>maven-makepkgs-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <remoteRepository>${repo.url}</remoteRepository>
-                        <python>${python}</python>
-                        <proto>src/main/resources/pkg_proto.py</proto>
-                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
-                     </configuration>
-                </plugin>
-            </plugins>
-	    </build>
-        </profile>
+                <id>ips</id>
+                <activation>
+                    <activeByDefault>false</activeByDefault> 
+                </activation>
+                <build>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.glassfish.build</groupId>
+                            <artifactId>glassfishbuild-maven-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>makepkg</goal>
+                                    </goals>
+                                    <configuration>
+                                        <remoteRepository>${repo.url}</remoteRepository>
+                                        <python>${python}</python>
+                                        <baseDirectory>target/stage/${install.dir.name}/</baseDirectory>
+                                        <pkg>
+                                            <name>${project.artifactId}</name>
+                                            <version>${jersey.version},0-1.10</version>
+                                            <attributes>
+                                                <attribute>
+                                                    <key>pkg.summary</key>
+                                                    <value>Jersey Core, RESTful Web services for GlassFish</value>
+                                                </attribute>
+                                                <attribute>
+                                                    <key>pkg.description</key>
+                                                    <value>"Jersey core runtime libraries including some 3rd party dependencies. \
+                                                        Documentation and examples of Jersey were moved to a separate package, Jersey Examples And Documentation. \
+                                                        If you are about to upgrade Jersey, you might want to install that new package as well, otherwise Jersey examples and javadocs will get deleted. \
+                                                        Also please note, that from 1.0.3 version on, Jersey docs and examples get installed into as_home/glassfish/jersey directory instead of just 
+                                                        as_home/jersey. \
+                                                            Jersey is the open source (under dual CDDL+GPL license)\
+                                                            JAX-RS (JSR 311) Reference Implementation for building RESTful Web services. \
+                                                            But, it is also more than the Reference Implementation. \
+                                                            Jersey provides additional APIs and extension points (SPIs) \
+                                                            so that developers may extend Jersey to suite their needs.",
+                                                        </value>
+                                                    </attribute>
+                                                    <attribute>
+                                                        <key>info.classification</key>
+                                                        <value>Jersey Core, RESTful Web services for GlassFish</value>
+                                                    </attribute>
+                                                </attributes>
+                                                <dirtrees>
+                                                    <dirtree>
+                                                        <path>glassfish</path>
+                                                    </dirtree>
+                                                </dirtrees>
+                                                <depends>
+                                                    <depend>
+                                                        <pkg>glassfish-nucleus</pkg>
+                                                        <type>require</type>
+                                                    </depend>
+                                                    <depend>
+                                                        <pkg>glassfish-common</pkg>
+                                                        <type>require</type>
+                                                    </depend>
+                                                </depends>
+                                                <licenses>
+                                                    <license>
+                                                        <file>../../../../CDDL+GPL.txt</file>
+                                                        <name>CDDL and GPL v2 with classpath exception</name>
+                                                    </license>
+                                                </licenses>
+                                            </pkg>
+                                        </configuration>
+                                    </execution>
+                                </executions>
+                            </plugin>
+                        </plugins>
+                    </build>
+                </profile>
    </profiles>        
 </project>
 
