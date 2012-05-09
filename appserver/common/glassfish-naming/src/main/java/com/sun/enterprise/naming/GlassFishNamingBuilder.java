@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.naming;
 
+import com.sun.enterprise.naming.impl.SerialInitContextFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.LogMessageInfo;
@@ -84,6 +85,9 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
     @LogMessageInfo(message = "Failed to load {0} using CommonClassLoader")
     public static final String FAILED_TO_LOAD_CLASS = "AS-NAMING-00001";
 
+    @LogMessageInfo(message = "Fall back to INITIAL_CONTEXT_FACTORY {0}")
+    private static final String FALL_BACK_INITIAL_CONTEXT_FACTORY = "AS-NAMING-00008";
+
     @Inject
     private ServerContext sc;
 
@@ -104,19 +108,23 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
             // As per the documentation of Context.INITIAL_CONTEXT_FACTORY,
             // it represents a fully qualified class name.
             String className = (String) environment.get(Context.INITIAL_CONTEXT_FACTORY);
+
             if (className != null)
             {
                 try
                 {
                     return (InitialContextFactory) (loadClass(className).newInstance());
                 }
-                catch (Exception e)
-                {
-                    NoInitialContextException ne =
-                            new NoInitialContextException(
-                                    "Cannot instantiate class: " + className);
-                    ne.setRootCause(e);
-                    throw ne;
+                catch (Exception e) {
+                    if (className.startsWith("weblogic.jndi")) {
+                        logger.log(Level.INFO, FALL_BACK_INITIAL_CONTEXT_FACTORY,
+                                "com.sun.enterprise.naming.impl.SerialInitContextFactory");
+                    } else {
+                        NoInitialContextException ne =
+                                new NoInitialContextException("Cannot instantiate class: " + className);
+                        ne.setRootCause(e);
+                        throw ne;
+                    }
                 }
             }
         }
