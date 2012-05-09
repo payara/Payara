@@ -1128,6 +1128,13 @@ public class CommandRunnerImpl implements CommandRunner {
                         inv.setReport(report);
                     }
 
+                    if (runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE) && !(serverEnv.isDas())) {
+                        logger.fine(adminStrings.getLocalString("commandRunner.executor.instance",
+                                "Executing command on instance {0}",model.getCommandName()));
+                        report = doCommand(model,command,context);
+                        inv.setReport(report);
+                    }
+
                     if (!FailurePolicy.applyFailurePolicy(fp,
                             report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                         //Run Supplemental commands that have to be run after this command on this instance type
