@@ -176,6 +176,7 @@
         <ha-api.version>3.1.8</ha-api.version>
         <glassfishbuild.version>3.2.3</glassfishbuild.version>
         <websocket.version>0.1</websocket.version>
+        <source-annotation-processor.version>1.0</source-annotation-processor.version>
     </properties>
 
 
@@ -1486,6 +1487,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <optional>true</optional>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.annotations</groupId>
+          <artifactId>source-annotation-processor</artifactId>
+          <version>${source-annotation-processor.version}</version>
+          <optional>true</optional>
       </dependency>
     </dependencies>
 
