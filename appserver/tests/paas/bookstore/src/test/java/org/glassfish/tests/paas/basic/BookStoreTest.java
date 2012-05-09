@@ -64,8 +64,6 @@ import java.util.regex.Pattern;
 
 public class BookStoreTest {
 
-    private boolean dasProvisioning;
-
     @Test
     public void test() throws Exception {
 
@@ -79,7 +77,7 @@ public class BookStoreTest {
         PrintStream sysout = System.out;
         glassfish.start();
         System.setOut(sysout);
-        dasProvisioning = Boolean.getBoolean("org.glassfish.paas.provision-das");
+
         // 2. Deploy the PaaS-bookstore application.
         File archive = new File(System.getProperty("basedir")
                 + "/target/bookstore.war"); // TODO :: use mvn apis to get the
@@ -88,31 +86,15 @@ public class BookStoreTest {
 
         Deployer deployer = null;
         String appName = null;
- 
-        CommandResult result = null;
-        CommandRunner commandRunner = glassfish.getCommandRunner();
-
         try {
-
-            
-            if (dasProvisioning) {
-            appName = "bookstore";
-            result = commandRunner.run("paas-deploy", archive.getAbsolutePath());
-            	if (CommandResult.ExitStatus.FAILURE.equals(result.getExitStatus())) {
-	    		System.err.println("Failure while deploying application : " + result.getOutput());
-            	}
-            Assert.assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
-	    System.err.println("Deployed [" + appName + "]");   
-            } else {
             deployer = glassfish.getDeployer();
             appName = deployer.deploy(archive);
 
             System.err.println("Deployed [" + appName + "]");
             Assert.assertNotNull(appName);
-            }
 
-           
-            result = commandRunner.run("list-services");
+            CommandRunner commandRunner = glassfish.getCommandRunner();
+            CommandResult result = commandRunner.run("list-services");
             System.out.println("\nlist-services command output [ "
                     + result.getOutput() + "]");
 
@@ -143,12 +125,7 @@ public class BookStoreTest {
 
         } finally {
             if (appName != null) {
-                if (dasProvisioning) {
-		                        result = commandRunner.run("paas-undeploy", appName);
-		                        Assert.assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
-                                } else {
-                                   deployer.undeploy(appName);              
-                                }
+                deployer.undeploy(appName);
                 System.err.println("Undeployed [" + appName + "]");
                 try {
                     boolean undeployClean = false;

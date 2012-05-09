@@ -46,7 +46,7 @@
     <characteristic name="service-type" value="JavaEE"/>
   </characteristics>
   <configurations>
-    <configuration name="min.clustersize" value="1"/>
+    <configuration name="min.clustersize" value="2"/>
     <configuration name="max.clustersize" value="4"/>
   </configurations>
 </service-description>
