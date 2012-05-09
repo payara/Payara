@@ -135,6 +135,11 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
  
         <!-- gms-bootstrap module -->
        <dependency>
