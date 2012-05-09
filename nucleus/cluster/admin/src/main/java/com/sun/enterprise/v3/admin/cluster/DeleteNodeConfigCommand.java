@@ -91,7 +91,7 @@ public class DeleteNodeConfigCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger = context.logger;
+        Logger logger = context.getLogger();
         Node node = nodes.getNode(name);
 
         if (node == null) {

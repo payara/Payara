@@ -89,7 +89,7 @@ public class DisableAutoScaling
 
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
     	ElasticServiceContainer service = (ElasticServiceContainer) elasticServiceManager.getElasticServiceContainer(name);
 

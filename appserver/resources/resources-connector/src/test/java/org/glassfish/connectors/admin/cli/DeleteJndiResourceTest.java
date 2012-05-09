@@ -46,6 +46,7 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import com.sun.enterprise.config.serverbeans.BindableResource;
@@ -87,7 +88,7 @@ public class DeleteJndiResourceTest extends ConfigApiTest {
         resources = habitat.getComponent(Domain.class).getResources();
         parameters = new ParameterMap();
         cr = habitat.getComponent(CommandRunner.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(DeleteJndiResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
     }

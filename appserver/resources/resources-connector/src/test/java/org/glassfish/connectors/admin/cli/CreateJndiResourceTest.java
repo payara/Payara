@@ -46,6 +46,7 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import com.sun.enterprise.config.serverbeans.BindableResource;
@@ -62,12 +63,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import java.beans.PropertyVetoException;
 
 
 public class CreateJndiResourceTest extends ConfigApiTest {
@@ -93,7 +90,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         resources = habitat.getComponent(Domain.class).getResources();
         server = habitat.getComponent(Server.class);
         parameters = new ParameterMap();
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateJndiResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         cr = habitat.getComponent(CommandRunner.class);

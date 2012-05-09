@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,7 @@ import com.sun.logging.LogDomains;
 import java.beans.PropertyVetoException;
 
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.connectors.config.JdbcResource;
@@ -108,7 +109,7 @@ public class CreateJdbcResourceTest extends ConfigApiTest {
         parameters.set("description", "my resource");
         parameters.set("DEFAULT", "jdbc/foo");
         
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateJdbcResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         

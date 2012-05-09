@@ -82,7 +82,7 @@ public class DeleteElasticServiceCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
         if(elasticServices != null){
             ElasticServiceConfig elasticService= elasticServices.getElasticService(name);
             if (elasticService == null) {

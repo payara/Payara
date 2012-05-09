@@ -107,7 +107,7 @@ public class DeleteInstanceCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext ctx) {
         ActionReport report = ctx.getActionReport();
-        logger = ctx.logger;
+        logger = ctx.getLogger();
         String msg = "";
         boolean  fsfailure = false;
         boolean  configfailure = false;

@@ -113,7 +113,7 @@ public class CreateElasticServiceCommand implements AdminCommand  {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
         
         logger.log(Level.INFO, "**_CREATE_ELASTIC_SERVICES_ELEMENT called....");
 

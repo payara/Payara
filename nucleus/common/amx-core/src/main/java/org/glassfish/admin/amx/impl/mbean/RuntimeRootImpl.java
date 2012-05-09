@@ -40,19 +40,13 @@
 
 package org.glassfish.admin.amx.impl.mbean;
 
-import java.util.List;
 import javax.management.ObjectName;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -63,23 +57,14 @@ import javax.management.JMException;
 import javax.management.remote.JMXServiceURL;
 import org.glassfish.admin.amx.base.RuntimeRoot;
 import org.glassfish.admin.amx.base.ServerRuntime;
-import org.glassfish.admin.amx.impl.mbean.AMXImplBase;
 import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.ServerEnvironment;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ModuleInfo;
-import org.glassfish.internal.data.EngineRef;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
@@ -168,7 +153,7 @@ public final class RuntimeRootImpl extends AMXImplBase
     {
         final ModulesRegistry registry = InjectedValues.getInstance().getModulesRegistry();
 
-        final AdminCommandContext ctx = new AdminCommandContext(ImplUtil.getLogger(), new PlainTextActionReporter());
+        final AdminCommandContext ctx = new AdminCommandContextImpl(ImplUtil.getLogger(), new PlainTextActionReporter());
         final AdminCommand cmd = new RestartDomainCommand(registry);
         cmd.execute(ctx);
     }

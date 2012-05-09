@@ -40,6 +40,7 @@
 
 package org.glassfish.orb.admin.cli;
 
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
@@ -82,7 +83,7 @@ public class ListIiopListenersTest extends org.glassfish.tests.utils.ConfigApiTe
         IiopService iiopService = services.forContract(IiopService.class).get();
         parameters = new ParameterMap();
         cr = services.byType(CommandRunner.class).get();
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListIiopListenersTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         List<IiopListener> listenerList = iiopService.getIiopListener();

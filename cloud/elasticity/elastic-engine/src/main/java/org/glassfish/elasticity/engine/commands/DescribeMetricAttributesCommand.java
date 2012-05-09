@@ -85,7 +85,7 @@ public class DescribeMetricAttributesCommand implements AdminCommand{
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
         // Look for the Metric Gatherer services and get the attribute for the
         StringBuilder sb = new StringBuilder();

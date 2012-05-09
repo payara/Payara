@@ -820,7 +820,7 @@ public class CommandRunnerImpl implements CommandRunner {
         UploadedFilesManager ufm = null;
         ActionReport report = inv.report();
         ParameterMap parameters;
-        final AdminCommandContext context = new AdminCommandContext(
+        final AdminCommandContext context = new AdminCommandContextImpl(
                 LogDomains.getLogger(command.getClass(), LogDomains.ADMIN_LOGGER),
                 report, inv.inboundPayload(), inv.outboundPayload());
 

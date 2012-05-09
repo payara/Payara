@@ -49,6 +49,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.resources.javamail.config.MailResource;
@@ -86,7 +87,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         cr = habitat.getComponent(CommandRunner.class);
         assertTrue(cr != null);
         Resources resources = habitat.getComponent(Domain.class).getResources();
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJavaMailResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         for (Resource resource : resources.getResources()) {
@@ -176,7 +177,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         deleteJavaMailResource();
         parameters = new ParameterMap();
         listCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJavaMailResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);

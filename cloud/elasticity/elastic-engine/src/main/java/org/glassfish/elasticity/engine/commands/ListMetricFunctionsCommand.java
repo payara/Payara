@@ -70,7 +70,7 @@ public class ListMetricFunctionsCommand implements AdminCommand{
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
         // Look for the Metric Functions and list them
         StringBuilder sb = new StringBuilder();

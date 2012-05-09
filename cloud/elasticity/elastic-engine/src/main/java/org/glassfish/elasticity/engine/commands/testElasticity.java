@@ -71,7 +71,7 @@ public class testElasticity implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
         ElasticServiceConfig es= elasticServices.getElasticService(servicename);
         if (es == null) {

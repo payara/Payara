@@ -84,7 +84,7 @@ public class DeleteLogActionCommand implements AdminCommand{
     @Override
    public void execute(AdminCommandContext context) {
        ActionReport report = context.getActionReport();
-       Logger logger= context.logger;
+       Logger logger= context.getLogger();
 
        if (elasticServices == null)   {
            //service doesn't exist

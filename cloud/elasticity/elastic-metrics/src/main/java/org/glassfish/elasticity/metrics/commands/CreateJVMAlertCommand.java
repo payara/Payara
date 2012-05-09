@@ -71,7 +71,7 @@ public class CreateJVMAlertCommand implements AdminCommand{
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
         tenantManager.setCurrentTenant(tenantid);
         /*

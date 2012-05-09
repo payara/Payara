@@ -40,10 +40,10 @@
 package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.elasticity.api.AbstractMetricGatherer;
 import org.glassfish.elasticity.metric.MetricAttribute;
 import org.glassfish.elasticity.metric.MetricNode;
-import org.glassfish.elasticity.metric.TabularMetricEntry;
 import org.glassfish.elasticity.metrics.util.CollectMetricData;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import org.jvnet.hk2.annotations.Service;
@@ -175,7 +175,7 @@ public class JVMMemoryMetricHolder
     }
 
     private void turnOnMonitoring(String insName) {
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(JVMMemoryMetricHolder.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         ActionReport report = context.getActionReport();

@@ -90,7 +90,7 @@ public class EnableAutoScaling
     public void execute(AdminCommandContext context) {
     	ElasticServiceContainer service = elasticServiceManager.getElasticServiceContainer(name);
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
 
          if (elasticServices == null)   {
             //service doesn't exist

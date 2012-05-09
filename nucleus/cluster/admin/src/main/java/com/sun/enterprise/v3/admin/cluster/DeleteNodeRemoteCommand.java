@@ -94,7 +94,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
 
     protected final void executeInternal(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        logger = context.logger;
+        logger = context.getLogger();
         Node node = nodes.getNode(name);
 
         if (node == null) {

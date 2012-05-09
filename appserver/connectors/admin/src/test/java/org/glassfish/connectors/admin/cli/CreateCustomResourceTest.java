@@ -46,6 +46,7 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.resources.config.CustomResource;
@@ -61,12 +62,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import java.beans.PropertyVetoException;
 
 
 public class CreateCustomResourceTest extends ConfigApiTest {
@@ -93,7 +90,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
         assertTrue(resources != null);
         command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         assertTrue(command != null);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateCustomResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         cr = habitat.getComponent(CommandRunner.class);

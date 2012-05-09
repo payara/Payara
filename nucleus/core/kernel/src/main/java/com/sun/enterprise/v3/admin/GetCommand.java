@@ -210,9 +210,9 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
         String s = "Get Command: " + mr.toString();
 
         if (Boolean.parseBoolean(System.getenv("AS_DEBUG")))
-            ctxt.logger.info(s);
+            ctxt.getLogger().info(s);
         else
-            ctxt.logger.fine(s);
+            ctxt.getLogger().fine(s);
 
         mr.execute();
     }

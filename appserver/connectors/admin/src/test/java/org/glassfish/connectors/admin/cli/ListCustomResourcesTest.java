@@ -48,6 +48,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.tests.utils.ConfigApiTest;
@@ -81,7 +82,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
     public void setUp() {
         parameters = new ParameterMap();
         cr = habitat.getComponent(CommandRunner.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListCustomResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         Resources resources = habitat.getComponent(Domain.class).getResources();
@@ -184,7 +185,7 @@ public class ListCustomResourcesTest extends ConfigApiTest {
 
         ParameterMap parameters = new ParameterMap();
         listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListCustomResources.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListCustomResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         cr.getCommandInvocation("list-custom-resources", context.getActionReport()).parameters(parameters).execute(listCommand);

@@ -46,7 +46,8 @@ import com.sun.logging.LogDomains;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.Properties;
+
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.jvnet.hk2.config.types.Property;
 
 import org.glassfish.api.admin.AdminCommandContext;
@@ -104,7 +105,7 @@ public class CreateProfilerTest extends ConfigApiTest {
         command = habitat.getComponent(CreateProfiler.class);
         assertTrue(command!=null);
         
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateProfilerTest.class, LogDomains.ADMIN_LOGGER),
                 habitat.getComponent(ActionReport.class, "hk2-agent"));
         

@@ -127,7 +127,7 @@ public class CreateInstanceCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         ctx = context;
-        logger = context.logger;
+        logger = context.getLogger();
 
         if (!env.isDas()) {
             String msg = Strings.get("notAllowed");

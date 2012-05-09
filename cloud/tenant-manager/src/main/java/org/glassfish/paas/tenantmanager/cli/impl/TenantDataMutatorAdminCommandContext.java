@@ -45,19 +45,19 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.Payload;
 import org.jvnet.hk2.config.Transaction;
 
+import javax.security.auth.Subject;
 import java.util.logging.Logger;
 
 /**
  * A wrapper for AdminCommandContext. Enables carrying additional information like current transaction from TenantDataMutatorWrapper to consuming command
  * @author  Mitesh Meswani
  */
-public class TenantDataMutatorAdminCommandContext extends AdminCommandContext {
+public class TenantDataMutatorAdminCommandContext implements AdminCommandContext {
 
     AdminCommandContext delegate;
     Transaction currentTx;
 
     public TenantDataMutatorAdminCommandContext(Transaction tx, AdminCommandContext delegate ) {
-        super(null, null); //TODO Hack to keep compiler happy. Change AdminCommandContext to have an interface and impl. Once that is done, this hack is not required.
         this.delegate = delegate;
         this.currentTx = tx;
     }
@@ -66,25 +66,39 @@ public class TenantDataMutatorAdminCommandContext extends AdminCommandContext {
         return currentTx;
     }
 
-//TODO all of following will be method of AdminCommandContext interface
+    @Override
     public ActionReport getActionReport() {
         return delegate.getActionReport();
     }
 
+    @Override
     public void setActionReport(ActionReport newReport) {
         delegate.setActionReport(newReport);
     }
 
+    @Override
     public Logger getLogger() {
         return delegate.getLogger();
     }
 
+    @Override
     public Payload.Inbound getInboundPayload() {
         return delegate.getInboundPayload();
     }
 
+    @Override
     public Payload.Outbound getOutboundPayload() {
         return delegate.getOutboundPayload();
+    }
+
+    @Override
+    public Subject getSubject() {
+        return delegate.getSubject();
+    }
+
+    @Override
+    public void setSubject(Subject subject) {
+        delegate.setSubject(subject);
     }
 
 }

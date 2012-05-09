@@ -47,6 +47,7 @@ import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.tests.utils.ConfigApiTest;
@@ -80,7 +81,7 @@ public class ListJndiResourcesTest extends ConfigApiTest {
     public void setUp() {
         habitat = getHabitat();
         cr = habitat.getComponent(CommandRunner.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJndiResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         parameters = new ParameterMap();
@@ -182,7 +183,7 @@ public class ListJndiResourcesTest extends ConfigApiTest {
 
         ParameterMap parameters = new ParameterMap();
         listCommand = habitat.getComponent(org.glassfish.resources.admin.cli.ListJndiResources.class);
-        context = new AdminCommandContext(
+        context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJndiResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
         cr.getCommandInvocation("list-jndi-resources", context.getActionReport()).parameters(parameters).execute(listCommand);

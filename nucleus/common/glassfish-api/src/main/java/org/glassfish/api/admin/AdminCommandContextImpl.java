@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,63 +38,73 @@
  * holder.
  */
 
-package org.glassfish.elasticity.engine.commands;
+package org.glassfish.api.admin;
+
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.elasticity.api.AbstractMetricGatherer;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.api.Param;
-import org.jvnet.hk2.component.PerLookup;
-
+import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 
 /**
- * Created by IntelliJ IDEA.
- * User: cmott
- * Date: 9/27/11
+ * Useful services for administrative commands implementation
+ *
+ * @author Jerome Dochez
  */
-@Service(name="list-metric-gatherers")
-@I18n("list.metric.gatherers")
-@Scoped(PerLookup.class)
-public class ListMetricGatherersCommand  implements AdminCommand {
+public class AdminCommandContextImpl implements  AdminCommandContext {
+    
+    private  ActionReport report;
+    private final Logger logger;
+    private final Payload.Inbound inboundPayload;
+    private final Payload.Outbound outboundPayload;
+    private Subject subject;
 
-    @Inject
-    AbstractMetricGatherer[] metricGatherers;
-
-    @Param(name="service")
-    String servicename;
-
-    private static final String EOL = "\n";
+    public AdminCommandContextImpl(Logger logger, ActionReport report) {
+        this(logger, report, null, null);
+    }
+    
+    public AdminCommandContextImpl(Logger logger, ActionReport report,
+                                   final Payload.Inbound inboundPayload,
+                                   final Payload.Outbound outboundPayload) {
+        this.logger = logger;
+        this.report = report;
+        this.inboundPayload = inboundPayload;
+        this.outboundPayload = outboundPayload;
+    }
+    
+    @Override
+    public ActionReport getActionReport() {
+        return report;
+    }
 
     @Override
-    public void execute(AdminCommandContext context) {
-        ActionReport report = context.getActionReport();
-        Logger logger= context.getLogger();
+    public void setActionReport(ActionReport newReport) {
+        report = newReport;
+    }
 
-        // Look for the Metric Gatherer services and list them
-        // Eventually want to list if they are running, for now they are
-        StringBuilder sb = new StringBuilder();
-        boolean firstName =true;
+    @Override
+    public Logger getLogger() {
+        return logger;
+    }
 
-        for (AbstractMetricGatherer mg : metricGatherers) {
-            String metricName = mg.getClass().getAnnotation(Service.class).toString();
-            if ( firstName)
-                firstName = false;
-             else
-                sb.append(EOL);
-             int nameIndex = metricName.indexOf("name=") + 5;
-            int endNameIndex = metricName.indexOf(",");
-            sb.append(metricName.substring(nameIndex, endNameIndex));
+    @Override
+    public Payload.Inbound getInboundPayload() {
+        return inboundPayload;
+    }
 
-        }
+    @Override
+    public Payload.Outbound getOutboundPayload() {
+        return outboundPayload;
+    }
 
-        report.setMessage(sb.toString());
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+    @Override
+    public Subject getSubject() {
+        return subject;
+    }
 
-        }
+    @Override
+    public void setSubject(Subject subject) {
+        this.subject = subject;
+    }
+
 }

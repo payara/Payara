@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,55 +45,31 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
+import java.util.logging.Logger;
 
 /**
  * Useful services for administrative commands implementation
  *
  * @author Jerome Dochez
  */
-public class AdminCommandContext implements ExecutionContext {
-    
-    public  ActionReport report;
-    public final Logger logger;
-    private final Payload.Inbound inboundPayload;
-    private final Payload.Outbound outboundPayload;
-    private Subject subject;
-    
-    public AdminCommandContext(Logger logger, ActionReport report) {
-        this(logger, report, null, null);
-    }
-    
-    public AdminCommandContext(Logger logger, ActionReport report,
-            final Payload.Inbound inboundPayload,
-            final Payload.Outbound outboundPayload) {
-        this.logger = logger;
-        this.report = report;
-        this.inboundPayload = inboundPayload;
-        this.outboundPayload = outboundPayload;
-    }
+public interface AdminCommandContext extends ExecutionContext {
     
     /**
      * Returns the Reporter for this action
      * @return ActionReport implementation suitable for the client
      */
-    public ActionReport getActionReport() {
-        return report;
-    }
+    public ActionReport getActionReport();
     /**
      * Change the Reporter for this action
      * @param newReport The ActionReport to set.
      */
-    public void setActionReport(ActionReport newReport) {
-        report = newReport;
-    }
+    public void setActionReport(ActionReport newReport);
 
     /**
      * Returns the Logger
      * @return the logger
      */
-    public Logger getLogger() {
-        return logger;
-    }
+    public Logger getLogger();
 
     /**
      * Returns the inbound payload, from the admin client, that accompanied
@@ -101,9 +77,7 @@ public class AdminCommandContext implements ExecutionContext {
      *
      * @return the inbound payload
      */
-    public Payload.Inbound getInboundPayload() {
-        return inboundPayload;
-    }
+    public Payload.Inbound getInboundPayload();
 
     /**
      * Returns a reference to the outbound payload so a command implementation
@@ -111,25 +85,20 @@ public class AdminCommandContext implements ExecutionContext {
      *
      * @return the outbound payload
      */
-    public Payload.Outbound getOutboundPayload() {
-        return outboundPayload;
-    }
+    public Payload.Outbound getOutboundPayload();
 
     /**
      * Returns the Subject associated with this command context.
+     *
      * @return the Subject
      */
-    public Subject getSubject() {
-        return subject;
-    }
+    public Subject getSubject();
 
     /**
      * Sets the Subject to be associated with this command context.
-     * @param subject 
+     *
+     * @param subject
      */
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-    
-    
+    public void setSubject(Subject subject);
+
 }

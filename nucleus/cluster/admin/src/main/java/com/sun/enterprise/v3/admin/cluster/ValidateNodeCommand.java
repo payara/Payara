@@ -124,7 +124,7 @@ public class ValidateNodeCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Logger logger= context.logger;
+        Logger logger= context.getLogger();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
         logger.fine(Strings.get("Validating node {0}", name));
