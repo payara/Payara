@@ -235,7 +235,7 @@ setup_ovm ()
 
     set -x
     $A --passwordfile $_PFILE create-ims-config-ovm --connectionstring $OVMURL --ovmversion $OVMVERSION --ovmuser $OVMUSER ovm
-    $A create-server-pool --subnet $SUBNET --portname "foobar" --virtualization ovm $POOL
+    $A create-server-pool --subnet $SUBNET --portname $BRIDGE  --virtualization ovm $POOL
     $A --passwordfile $_PFILE create-server-pool-user --virtualization ovm --serverpool $POOL $POOLUSER
     set +x
 
@@ -278,8 +278,9 @@ setup_ovm ()
 log "GlassFish is at $GF_HOME"
 
 A=$GF_HOME/bin/asadmin
+BRIDGE="xenbr0"
 
-while getopts rd:s:c:n:p: opt
+while getopts rd:s:c:n:p:b: opt
 do
   case ${opt} in
     r) log "Recreating domain1..."
@@ -303,6 +304,8 @@ do
     n) SUBNET=$OPTARG
        ;;
     p) POOL=$OPTARG
+       ;;
+    b) BRIDGE=$OPTARG
        ;;
     \?) echo $USAGE
         exit 2;;
