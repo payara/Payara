@@ -43,3 +43,12 @@
                         org.glassfish.web.loader; \
                         org.glassfish.web.util; \
                         com.sun.logging.enterprise.system.container.web; version=${project.osgi.version}
+
+# Normally Import-Package is not required, as the default value of *
+# is enough to find all static dependencies. But, when a module is
+# doing Class.forName, there is no foolproof way to find out the
+# desired package name, hence we need to add those packages explicitly.
+# In this case, sun.rmi.transport is one such package which is used
+# during classloader cleanup. Since it is only presence for Oracle JDK,
+# the import has been marked as optional.
+Import-Package: sun.rmi.transport; resolution:=optional, *

@@ -133,6 +133,7 @@
  sun.nio.cs,
  sun.reflect,
  sun.rmi.rmic,
+ sun.rmi.transport,
  sun.security.action,
  sun.security.jgss,
  sun.security.jgss.spi,

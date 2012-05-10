@@ -1820,7 +1820,7 @@ public class WebappClassLoader
         checkThreadLocalsForLeaks();
 
         // Clear RMI Targets loaded by this class loader
-        //clearReferencesRmiTargets();
+        clearReferencesRmiTargets();
 
         // Null out any static or final fields from loaded classes,
         // as a workaround for apparent garbage collection bugs
@@ -2279,7 +2279,6 @@ public class WebappClassLoader
      * This depends on the internals of the Sun JVM so it does everything by
      * reflection.
      */
-    /* Cannot load sun.rmi.transprt.Target in felix
     private void clearReferencesRmiTargets() {
         try {
             // Need access to the ccl field of sun.rmi.transport.Target
@@ -2361,7 +2360,6 @@ public class WebappClassLoader
             }
         }
     }
-    */
 
 
     /**
