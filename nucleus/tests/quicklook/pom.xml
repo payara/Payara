@@ -81,7 +81,14 @@ utilities are in the NucleusTestUtils class.
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.tests</groupId>
+            <artifactId>utils</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>

@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main.tests</groupId>
+    <version>4.0-SNAPSHOT</version>
     <artifactId>utils</artifactId>
     <packaging>jar</packaging>
     <name>Test utilities</name>
@@ -93,6 +94,18 @@
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
-        </dependency>      
+        </dependency>     
+        <dependency>
+            <groupId>org.glassfish.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.3.1</version>
+        </dependency>
+    
     </dependencies>    
 </project>

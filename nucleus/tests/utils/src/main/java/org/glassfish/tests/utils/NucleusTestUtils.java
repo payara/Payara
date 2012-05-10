@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.nucleus.quicklook;
+package org.glassfish.tests.utils;
 
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -82,11 +82,11 @@ public class NucleusTestUtils {
      *
      * @return true if successful
      */
-    protected static boolean nadmin(int timeout, final String... args) {
+    public static boolean nadmin(int timeout, final String... args) {
         return nadminWithOutput(timeout, args).returnValue;
     }
 
-    protected static boolean nadmin(final String... args) {
+    public static boolean nadmin(final String... args) {
         return nadmin(DEFAULT_TIMEOUT_MSEC, args);
     }
 
@@ -98,11 +98,11 @@ public class NucleusTestUtils {
      *
      * @return true if successful
      */
-    protected static NadminReturn nadminWithOutput(final String... args) {
+    public static NadminReturn nadminWithOutput(final String... args) {
         return nadminWithOutput(DEFAULT_TIMEOUT_MSEC, args);
     }
     
-    protected static NadminReturn nadminWithOutput(final int timeout, final String... args) {
+    public static NadminReturn nadminWithOutput(final int timeout, final String... args) {
         File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
         List<String> command = new ArrayList<String>();
         command.add(cmd.toString());
@@ -160,11 +160,11 @@ public class NucleusTestUtils {
     /*
      * Returns true if String b contains String a.
      */
-    protected static boolean matchString(String a, String b) {
+    public static boolean matchString(String a, String b) {
         return b.indexOf(a) != -1;
     }
 
-    protected static String getURL(String urlstr) {
+    public static String getURL(String urlstr) {
         try {
             URL u = new URL(urlstr);
             URLConnection urlc = u.openConnection();

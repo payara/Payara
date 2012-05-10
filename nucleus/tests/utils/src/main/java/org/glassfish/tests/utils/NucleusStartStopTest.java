@@ -37,31 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.nucleus.quicklook;
+package org.glassfish.tests.utils;
 
-import static org.glassfish.tests.utils.NucleusTestUtils.nadmin;
+import static org.glassfish.tests.utils.NucleusTestUtils.*;
 import static org.testng.AssertJUnit.assertTrue;
-import org.testng.annotations.Test;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 
-/**
- *
- * @author Tom Mueller
- */
-@Test
-public class MiscCommandsTest {
-    
-    public void uptime() {
-        assertTrue(nadmin("uptime"));
-    }
-
-    public void version1() {
-        assertTrue(nadmin("version"));
-    }
-
-    public void version2() {
-        assertTrue(nadmin("stop-domain"));
-        assertTrue(nadmin("version", "--local"));
+public class NucleusStartStopTest {
+        
+    @BeforeSuite 
+    public void setUp() {
         assertTrue(nadmin("start-domain"));
     }
-
+    
+    @AfterSuite
+    public void tearDown() {
+        assertTrue(nadmin("stop-domain"));
+    }
+    
+   
 }

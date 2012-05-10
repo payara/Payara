@@ -39,7 +39,7 @@
  */
 package org.glassfish.nucleus.quicklook;
 
-import static org.glassfish.nucleus.quicklook.NucleusTestUtils.*;
+import static org.glassfish.tests.utils.NucleusTestUtils.*;
 import static org.testng.AssertJUnit.assertTrue;
 import org.testng.annotations.Test;
 

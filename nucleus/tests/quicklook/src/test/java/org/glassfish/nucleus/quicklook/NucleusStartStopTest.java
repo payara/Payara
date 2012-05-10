@@ -39,22 +39,4 @@
  */
 package org.glassfish.nucleus.quicklook;
 
-import static org.glassfish.nucleus.quicklook.NucleusTestUtils.*;
-import static org.testng.AssertJUnit.assertTrue;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-
-public class NucleusStartStopTest {
-        
-    @BeforeSuite 
-    public void setUp() {
-        assertTrue(nadmin("start-domain"));
-    }
-    
-    @AfterSuite
-    public void tearDown() {
-        assertTrue(nadmin("stop-domain"));
-    }
-    
-   
-}
+public class NucleusStartStopTest extends org.glassfish.tests.utils.NucleusStartStopTest { }
