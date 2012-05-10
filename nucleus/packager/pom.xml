@@ -91,7 +91,6 @@
 	<module>nucleus-cluster</module>
 	<module>nucleus-management</module>
 	<module>nucleus-jersey</module>	
-        <module>nucleus-virtualization</module>	
         <module>nucleus-osgi</module>
 	<module>nucleus-jmx</module>
         <module>nucleus-cluster-l10n</module>	

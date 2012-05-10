@@ -47,7 +47,6 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>nucleus-common</artifactId>
     <name>Nucleus Commons Package</name>
@@ -113,12 +112,6 @@
         <dependency>
     	    <groupId>org.glassfish.main.admin</groupId>
             <artifactId>monitoring-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
- 
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.orchestrator</artifactId>
             <version>${project.version}</version>
         </dependency>
 

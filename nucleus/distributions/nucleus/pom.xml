@@ -47,7 +47,6 @@
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>nucleus-distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>nucleus-new</artifactId>
     <name>Nucleus Distribution</name>
@@ -152,14 +151,7 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>nucleus-virtualization</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>        
+        </dependency>       
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-jersey</artifactId>
