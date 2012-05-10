@@ -57,7 +57,7 @@ import static org.testng.AssertJUnit.assertNotNull;
 public class NucleusTestUtils {
     private static final int DEFAULT_TIMEOUT_MSEC = 480000; // 8 minutes
     private static boolean verbose = true;
-    protected static File nucleusRoot = initNucleusRoot();
+    protected static final File nucleusRoot = initNucleusRoot();
     
     private static File initNucleusRoot() {
         String nucleusRootProp = System.getProperty("nucleus.home");
