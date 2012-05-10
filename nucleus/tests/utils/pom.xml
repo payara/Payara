@@ -96,7 +96,7 @@
             <version>${project.version}</version>
         </dependency>     
         <dependency>
-            <groupId>org.glassfish.common</groupId>
+            <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
