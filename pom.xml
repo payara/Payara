@@ -201,7 +201,7 @@
                      the same under release profiles as well (below) -->
 		<module>nucleus</module>
                 <module>appserver</module>
-		<module>cloud-extra</module>               
+<!--		<module>cloud-extra</module>               -->
             </modules>
             <build>
                 <plugins>
@@ -236,7 +236,7 @@
                      the same under release profiles as well (below) -->
                 <module>nucleus</module>
                 <module>appserver</module>
-		<module>cloud-extra</module>
+<!--		<module>cloud-extra</module>-->
             </modules>
         </profile>        
 
@@ -282,7 +282,7 @@
             <modules>		
                 <module>nucleus</module>
                 <module>appserver</module>
-		<module>cloud-extra</module>
+<!--		<module>cloud-extra</module>-->
             </modules>
        </profile>
 
@@ -295,7 +295,7 @@
 		
                 <module>nucleus</module>
                 <module>appserver</module>
-		<module>cloud-extra</module>
+<!--		<module>cloud-extra</module>-->
                 <module>copyright</module>
             </modules>
         </profile>

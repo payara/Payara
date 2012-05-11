@@ -256,13 +256,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-virtualization</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
 
         <!-- admin ui package -->
         <dependency>
@@ -271,16 +264,7 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>  
-
-        <!-- PaaS admin ui package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-paas-gui</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>     
+        </dependency>    
 
         <!-- javadb package -->
         <dependency>

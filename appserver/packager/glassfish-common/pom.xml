@@ -121,12 +121,6 @@
             <artifactId>monitoring-core</artifactId>
             <version>${project.version}</version>
         </dependency>
- 
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.orchestrator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- moving stuff from killed glassfish-security package -->
         <dependency>

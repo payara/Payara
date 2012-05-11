@@ -168,26 +168,6 @@
             <groupId>org.glassfish.main.extras</groupId>
             <artifactId>osgi-container</artifactId>
             <version>${project.version}</version>
-        </dependency>	
-        <dependency>
-    	    <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.gfplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-    	    <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.javadbplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-    	    <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.lbplugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>    
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.dnsplugin</artifactId>
-            <version>${project.version}</version>
         </dependency>
        
         <!-- HA API  -->
@@ -255,7 +235,7 @@
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>ant</artifactId>
             <version>${project.version}</version>
-       </dependency>  
+       </dependency>
  
 
    	<!-- now, listing package dependencies so that their content

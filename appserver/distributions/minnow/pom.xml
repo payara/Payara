@@ -161,12 +161,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-virtualization</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>        
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>jersey</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

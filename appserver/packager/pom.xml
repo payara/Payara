@@ -117,9 +117,7 @@
 	<module>glassfish-jcdi</module>
 	<module>mq</module>
 	<module>glassfish-common-web</module>
-	<module>glassfish-virtualization</module>
         <module>glassfish-osgi</module>
-        <module>glassfish-paas-gui</module>
         <module>glassfish-osgi-http</module>
 	<module>glassfish-osgi-gui</module>
 	<module>glassfish-web-incorporation</module>
