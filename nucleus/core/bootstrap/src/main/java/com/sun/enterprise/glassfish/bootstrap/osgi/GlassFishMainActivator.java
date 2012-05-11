@@ -163,8 +163,9 @@ public class GlassFishMainActivator implements BundleActivator {
         try {
             final URI uri = URI.create(location);
             File f = new File(uri);
-            if (f.exists() && f.isFile() && f.getParentFile().getCanonicalPath().endsWith("modules") &&
-                    f.getParentFile().getParentFile().getCanonicalPath().endsWith("glassfish")) {
+            // We can't assume it is glassfish/modules/glassfish.jar.
+            // Bare nucleus is installed as nucleus/modules/glassfish.jar.
+            if (f.exists() && f.isFile() && f.getParentFile().getCanonicalPath().endsWith("modules")) {
                 return f.getParentFile().getParentFile().getAbsolutePath();
             }
         } catch (Exception e) {
