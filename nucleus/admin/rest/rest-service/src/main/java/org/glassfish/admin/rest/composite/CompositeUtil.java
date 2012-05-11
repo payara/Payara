@@ -72,13 +72,13 @@ import static org.objectweb.asm.Opcodes.V1_6;
  * @author jdlee
  */
 public class CompositeUtil {
-    public static final String PACKAGE_NAME = "org.glassfish.admin.rest.model.proxy";
+//    private static final String PACKAGE_NAME = "org.glassfish.admin.rest.model.proxy";
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
     public synchronized static <T> T getModel(Class<T> clazz, Class similarClass,
             Class<?>[] interfaces) throws Exception {
         String className = //PACKAGE_NAME + "." +
-                getClassName(clazz);
+                clazz.getName() + "Impl";
         if (!alreadyGenerated(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
 //            Class<?>[] interfaces = new Class<?>[]{
@@ -149,53 +149,6 @@ public class CompositeUtil {
         //.get(foo);
     }
 
-    protected static boolean alreadyGenerated(String className) {
-        return generatedClasses.containsKey(className);
-    }
-
-    protected static String getInternalName(String className) {
-        return className.replace(".", "/");
-    }
-
-    // TODO: Add support for primitives
-    protected static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, String type) {
-        type = getInternalName(type);
-        className = getInternalName(className);
-
-        // Create the getter
-        MethodVisitor getterVistor = cw.visitMethod(ACC_PUBLIC, "get" + name, "()L" + type + ";", null, null);
-        getterVistor.visitCode();
-        getterVistor.visitVarInsn(ALOAD, 0);
-        getterVistor.visitFieldInsn(GETFIELD, className, name, "L" + type + ";");
-        getterVistor.visitInsn(Type.getType(c).getOpcode(IRETURN));
-        getterVistor.visitMaxs(0, 0);
-        getterVistor.visitEnd();
-
-        // Create the setter
-        MethodVisitor setterVisitor = cw.visitMethod(ACC_PUBLIC, "set" + name, "(L" + type + ";)V", null, null);
-        setterVisitor.visitCode();
-        setterVisitor.visitVarInsn(ALOAD, 0);
-        setterVisitor.visitVarInsn(Type.getType(c).getOpcode(ILOAD), 1);
-        setterVisitor.visitFieldInsn(PUTFIELD, className, name, "L" + type + ";");
-        setterVisitor.visitInsn(RETURN);
-        setterVisitor.visitMaxs(0, 0);
-        setterVisitor.visitEnd();
-    }
-
-    protected static String getClassName(Class<?> clazz) {
-        return clazz.getName() + "Impl";
-    }
-
-    /*
-     * Add the field to the class
-     */
-    protected static void createField(ClassWriter cw, String name, String type) {
-        // TODO: Add support for primitives
-        FieldVisitor fv = cw.visitField(ACC_PUBLIC, name, "L" + getInternalName(type) + ";", null, null);
-        fv.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
-        fv.visitEnd();
-    }
-
     protected static void visitClass(ClassWriter cw, String className, Class<?>[] ifaces, Map<String, Map<String, String>> properties) {
         String[] ifaceNames = new String[ifaces.length];
         int i = 0;
@@ -242,6 +195,49 @@ public class CompositeUtil {
         mv.visitInsn(RETURN);
         mv.visitMaxs(1, 1);
         mv.visitEnd();
+    }
+
+    /**
+     * Add the field to the class
+     */
+    protected static void createField(ClassWriter cw, String name, String type) {
+        // TODO: Add support for primitives
+        FieldVisitor fv = cw.visitField(ACC_PUBLIC, name, "L" + getInternalName(type) + ";", null, null);
+        fv.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
+        fv.visitEnd();
+    }
+
+    protected static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, String type) {
+        // TODO: Add support for primitives
+        type = getInternalName(type);
+        className = getInternalName(className);
+
+        // Create the getter
+        MethodVisitor getterVistor = cw.visitMethod(ACC_PUBLIC, "get" + name, "()L" + type + ";", null, null);
+        getterVistor.visitCode();
+        getterVistor.visitVarInsn(ALOAD, 0);
+        getterVistor.visitFieldInsn(GETFIELD, className, name, "L" + type + ";");
+        getterVistor.visitInsn(Type.getType(c).getOpcode(IRETURN));
+        getterVistor.visitMaxs(0, 0);
+        getterVistor.visitEnd();
+
+        // Create the setter
+        MethodVisitor setterVisitor = cw.visitMethod(ACC_PUBLIC, "set" + name, "(L" + type + ";)V", null, null);
+        setterVisitor.visitCode();
+        setterVisitor.visitVarInsn(ALOAD, 0);
+        setterVisitor.visitVarInsn(Type.getType(c).getOpcode(ILOAD), 1);
+        setterVisitor.visitFieldInsn(PUTFIELD, className, name, "L" + type + ";");
+        setterVisitor.visitInsn(RETURN);
+        setterVisitor.visitMaxs(0, 0);
+        setterVisitor.visitEnd();
+    }
+
+    protected static boolean alreadyGenerated(String className) {
+        return generatedClasses.containsKey(className);
+    }
+
+    protected static String getInternalName(String className) {
+        return className.replace(".", "/");
     }
 
     // TODO: This is duplicated from the generator class.  
