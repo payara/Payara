@@ -102,8 +102,6 @@ public class EjbApplication
 
     private SingletonLifeCycleManager singletonLCM;
 
-    boolean usesEJBTimerService = false;
-    
     private PolicyLoader policyLoader;
 
     private boolean initializeInOrder;

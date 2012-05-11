@@ -44,6 +44,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -64,6 +65,7 @@ import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
 import javax.sql.DataSource;
 
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -759,6 +761,40 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
         return result;
     }
+
+    /**
+     * Called in a clustered environment to eagerly create automatic persistent timers
+     * on the specific server instance.
+     */
+    public void createSchedulesOnServer(EjbDescriptor ejbDescriptor, String server_name) {
+        Map<MethodDescriptor, List<ScheduledTimerDescriptor>> schedules =
+                new HashMap<MethodDescriptor, List<ScheduledTimerDescriptor>>();
+        for (ScheduledTimerDescriptor schd : ejbDescriptor.getScheduledTimerDescriptors()) {
+            MethodDescriptor method = schd.getTimeoutMethod();
+            if (method != null && schd.getPersistent()) {
+                if( logger.isLoggable(Level.FINE) ) {
+                    logger.log(Level.FINE, "... processing " + method );
+                }
+
+                List<ScheduledTimerDescriptor> list = schedules.get(method);
+                if (list == null) {
+                    list = new ArrayList<ScheduledTimerDescriptor>();
+                    schedules.put(method, list);
+                }
+                list.add(schd);
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log( Level.FINE, "EJBTimerService - creating schedules for " + ejbDescriptor.getUniqueId());
+        }
+        createSchedules(ejbDescriptor.getUniqueId(), ejbDescriptor.getApplication().getUniqueId(), schedules, server_name);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log( Level.FINE, "EJBTimerService - finished processing schedules for BEAN ID: " + ejbDescriptor.getUniqueId());
+        }
+    }
+
 
     /**
      * Create automatic timers defined by the @Schedule annotation on the EJB bean during

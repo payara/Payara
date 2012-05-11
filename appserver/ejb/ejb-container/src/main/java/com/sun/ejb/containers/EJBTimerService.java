@@ -72,6 +72,7 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.glassfish.api.invocation.ComponentInvocation;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
 
@@ -746,6 +747,22 @@ public class EJBTimerService
         }
 
         return result;
+    }
+
+    /**
+     * Called in a clustered environment to eagerly create automatic persistent timers
+     * on the specific server instance.
+     * In a EJB Lite distribution if there is at least one persistent automatic timer
+     * defined, this method will fail with a RuntimeException.
+     */
+    public void createSchedulesOnServer(EjbDescriptor ejbDescriptor, String server_name) {
+        for (ScheduledTimerDescriptor schd : ejbDescriptor.getScheduledTimerDescriptors()) {
+            if (schd.getTimeoutMethod() != null && schd.getPersistent()) {
+                throw new RuntimeException("EJB " +
+                        ejbDescriptor.getName() + " uses persistent EJB Timer Service"
+                        + ". This feature is not part of the EJB Lite API");
+            }
+        }
     }
 
     /**

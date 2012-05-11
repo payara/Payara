@@ -548,12 +548,6 @@ public class EjbDeployer
      */
     private void createAutomaticPersistentTimersForEJB(EjbDescriptor ejbDescriptor, String target) {
         try {
-            if( EjbContainerUtilImpl.getInstance().isEJBLite() ) {
-                throw new RuntimeException("Invalid application.  EJB " +
-                        ejbDescriptor.getName() + " uses the EJB Timer Service"
-                        + ". This feature is not part of the EJB 3.1 Lite API");
-            }
-
             //Start EJB Timer Service if it wasn't started yet. On DAS the first start will create the timer table.
             EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getEJBTimerService(target);
             if (_logger.isLoggable(Level.FINE)) {
@@ -562,29 +556,10 @@ public class EjbDeployer
             }
 
             if( timerService != null ) {
-                String owner = getOwnerId(target);
-                Map<MethodDescriptor, List<ScheduledTimerDescriptor>> schedules = 
-                        new HashMap<MethodDescriptor, List<ScheduledTimerDescriptor>>();
-                for (ScheduledTimerDescriptor schd : ejbDescriptor.getScheduledTimerDescriptors()) {
-                    MethodDescriptor method = schd.getTimeoutMethod();
-                    if (method != null && schd.getPersistent()) {
-                        if( _logger.isLoggable(Level.FINE) ) {
-                            _logger.log(Level.FINE, "... processing " + method );
-                        }
-    
-                        List<ScheduledTimerDescriptor> list = schedules.get(method);
-                        if (list == null) {
-                            list = new ArrayList<ScheduledTimerDescriptor>();
-                            schedules.put(method, list);
-                        }
-                        list.add(schd);
-                    }
-                }
-
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log( Level.FINE, "EjbDeployer - calling timerService.createSchedules for " + ejbDescriptor.getUniqueId());
                 }  
-                timerService.createSchedules(ejbDescriptor.getUniqueId(), ejbDescriptor.getApplication().getUniqueId(), schedules, owner);
+                timerService.createSchedulesOnServer(ejbDescriptor, getOwnerId(target));
 
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log( Level.FINE, "EjbDeployer Done With BEAN ID: " + ejbDescriptor.getUniqueId());
