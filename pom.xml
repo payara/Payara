@@ -1488,12 +1488,6 @@
             <scope>test</scope>
             <optional>true</optional>
       </dependency>
-      <dependency>
-          <groupId>org.glassfish.annotations</groupId>
-          <artifactId>source-annotation-processor</artifactId>
-          <version>${source-annotation-processor.version}</version>
-          <optional>true</optional>
-      </dependency>
     </dependencies>
 
 
