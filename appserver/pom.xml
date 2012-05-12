@@ -49,7 +49,7 @@
         <artifactId>glassfish-main-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>glassfish-parent</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Parent Project</name>
@@ -89,212 +89,63 @@
         </mailingList>
     </mailingLists>
 
-    <properties>
-
-    </properties>
-
-
     <modules>
-        <!-- Don't add any other module here. Instead add them in default profile -->
-        <!-- To avoid JVM crash while using JDK 6, we are not
-             building this module in anonymous profile anymore.
-             See bug #6766662 for more details.
-              <module>build</module>
-        -->
+        <module>javaee-api</module>
+        <module>common</module>
+        <module>ha</module>
+        <module>deployment</module>
+        <module>admin</module>
+        <module>core</module>
+        <module>transaction</module>
+        <module>web</module>
+        <module>ejb</module>
+        <module>resources</module>
+        <module>connectors</module>
+        <module>load-balancer</module>
+        <module>jms</module>
+        <module>jdbc</module>
+        <module>persistence</module>
+        <module>extras</module>
+        <module>admingui</module>
+        <module>extras/embedded/shell</module>
+        <module>packager</module>
+        <module>distributions</module>
+        <module>security</module>
+        <module>registration</module>
+        <module>tests</module>
+        <module>osgi-platforms</module>
+        <module>flashlight</module>
+        <module>grizzly</module>
+        <module>webservices</module>
+        <module>orb</module>
+        <module>appclient</module>
+        <module>verifier/verifier-impl</module>
+        <module>verifier/verifier-impl-l10n</module>
+        <module>verifier/verifier-scripts</module>
+        <module>verifier/verifier-jdk-extension-bundle</module>
+        <module>ant-tasks</module>
     </modules>
+
     <profiles>
-
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-                <module>javaee-api</module>
-                <module>common</module>
-                <module>ha</module>
-                <module>deployment</module>
-                <module>admin</module>
-                <module>core</module>
-                <module>transaction</module>
-                <module>web</module>
-                <module>ejb</module>
-                <module>resources</module>
-                <module>connectors</module>
-                <module>load-balancer</module> 
-                <module>jms</module>
-                <module>jdbc</module>
-                <module>persistence</module>
-                <module>extras</module>
-                <module>admingui</module>
-                <module>extras/embedded/shell</module>
-                <module>packager</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>registration</module>
-                <module>tests</module>
-                <module>osgi-platforms</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>webservices</module>
-                <module>orb</module>
-                <module>appclient</module>
-                <module>verifier/verifier-impl</module>
-                <module>verifier/verifier-impl-l10n</module>
-                <module>verifier/verifier-scripts</module>
-                <module>verifier/verifier-jdk-extension-bundle</module>
-                <module>ant-tasks</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>IDE</id>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-                <module>javaee-api</module>
-                <module>common</module>
-                <module>ha</module>
-                <module>deployment</module>
-                <module>admin</module>
-                <module>core</module>
-                <module>transaction</module>
-                <module>web</module>
-                <module>ejb</module>
-                <module>resources</module>
-                <module>connectors</module>
-                <module>load-balancer</module> 
-                <module>jdbc</module>
-                <module>extras</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>registration</module>
-                <module>tests</module>
-                <module>osgi-platforms</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>webservices</module>
-            </modules>
-        </profile>        
-
         <profile>
             <!--
                 RE profile for release purposes.
             -->
             <id>release-phase2</id>
-
-            <build>
-                <plugins>
-                    <!-- The installer module requires the dependency of jdk tools.jar -->
-                    <!-- to compile java classes in build.xml.  -->
-                    <plugin>
-                        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                        <artifactId>maven-antrun-extended-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>sun.jdk</groupId>
-                                <artifactId>tools</artifactId>
-                                <version>1.6</version>
-                                <scope>system</scope>
-                                <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
 
             <modules>
-                <module>javaee-api</module>
-                <module>common</module>
-                <module>ha</module>
-                <module>deployment</module>
-                <module>admin</module>
-                <module>core</module>
-                <module>transaction</module>
-                <module>web</module>
-                <module>ejb</module>
-                <module>resources</module>
-                <module>connectors</module>
-                <module>load-balancer</module> 
-                <module>jms</module>
-                <module>jdbc</module>
-                <module>persistence</module>
-                <module>extras</module>
-                <module>admingui</module>
-                <module>extras/embedded/shell</module>
-                <module>packager</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>registration</module>
-                <module>tests</module>
-                <module>osgi-platforms</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>webservices</module>
-                <module>orb</module>
                 <module>installer</module>
-                <module>appclient</module>
-                <module>verifier/verifier-impl</module>
-                <module>verifier/verifier-impl-l10n</module>
-                <module>verifier/verifier-scripts</module>
-                <module>verifier/verifier-jdk-extension-bundle</module>
                 <module>extras/embedded/all</module>
                 <module>extras/embedded/web</module>
                 <module>extras/embedded/nucleus</module>
-		<module>ant-tasks</module>
             </modules>
        </profile>
-
-       <profile>
-            <!--
-                RE profile for release purposes.
-            -->
-            <id>release-phase-all</id>
-            <modules>
-                <module>javaee-api</module>
-                <module>common</module>
-                <module>ha</module>
-                <module>deployment</module>
-                <module>admin</module>
-                <module>core</module>
-                <module>transaction</module>
-                <module>web</module>
-                <module>ejb</module>
-                <module>resources</module>
-                <module>connectors</module>
-                <module>load-balancer</module> 
-                <module>jms</module>
-                <module>jdbc</module>
-                <module>persistence</module>
-                <module>extras</module>
-                <module>admingui</module>
-                <module>extras/embedded/shell</module>
-                <module>packager</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>registration</module>
-                <module>tests</module>
-                <module>osgi-platforms</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>webservices</module>
-                <module>orb</module>
-                <module>installer</module>
-                <module>appclient</module>
-                <module>verifier/verifier-impl</module>
-                <module>verifier/verifier-impl-l10n</module>
-                <module>verifier/verifier-scripts</module>
-                <module>verifier/verifier-jdk-extension-bundle</module>
-                <module>extras/embedded/all</module>
-                <module>extras/embedded/web</module>
-                <module>extras/embedded/nucleus</module>
-                <module>ant-tasks</module>
-            </modules>
-        </profile>
     </profiles>
 
 </project>

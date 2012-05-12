@@ -48,11 +48,11 @@
         <artifactId>glassfish-main-parent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
-    
     <artifactId>glassfish-nucleus-parent</artifactId>
-  <version>4.0-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
+
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</developerConnection>
@@ -89,108 +89,19 @@
         </mailingList>
     </mailingLists>
 
-    <properties>
-
-    </properties>
-
-
     <modules>
-        <!-- Don't add any other module here. Instead add them in default profile -->
-        <!-- To avoid JVM crash while using JDK 6, we are not
-             building this module in anonymous profile anymore.
-             See bug #6766662 for more details.
-              <module>build</module>
-        -->
+        <module>osgi-platforms</module>
+        <module>cluster</module>
+        <module>common</module>
+        <module>core</module>
+        <module>admin</module>
+        <module>flashlight</module>
+        <module>grizzly</module>
+        <module>deployment</module>
+        <module>packager</module>
+        <module>distributions</module>
+        <module>security</module>
+        <module>tests</module>
     </modules>
-    <profiles>
-
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-                <module>osgi-platforms</module>
-                <module>cluster</module>
-                <module>common</module>
-                <module>core</module>
-                <module>admin</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>deployment</module>
-                <module>packager</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>tests</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>IDE</id>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-                <module>osgi-platforms</module>
-                <module>cluster</module>
-                <module>common</module>
-                <module>core</module>
-                <module>admin</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>deployment</module>
-                <module>packager</module>    
-                <module>distributions</module>    
-                <module>security</module>
-                <module>tests</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <!--
-                RE profile for release purposes.
-            -->
-            <id>release-phase2</id>
-
-            <modules>
-                <module>osgi-platforms</module>
-                <module>cluster</module>
-                <module>common</module>
-                <module>core</module>
-                <module>admin</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>deployment</module>
-                <module>packager</module>
-                <module>distributions</module>
-                <module>security</module>
-                <module>tests</module>
-            </modules>
-       </profile>
-
-       <profile>
-            <!--
-                RE profile for release purposes.
-            -->
-            <id>release-phase-all</id>
-            <modules>
-                <module>osgi-platforms</module>
-                <module>cluster</module>
-                <module>common</module>
-                <module>core</module>
-                <module>admin</module>
-                <module>flashlight</module>
-                <module>grizzly</module>
-                <module>deployment</module>
-                <module>packager</module> 
-                <module>distributions</module> 
-                <module>security</module>
-                <module>tests</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>

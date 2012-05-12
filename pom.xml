@@ -49,7 +49,7 @@
         <artifactId>jvnet-parent</artifactId>
         <version>3</version>
     </parent>
-    
+
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-parent</artifactId>
     <packaging>pom</packaging>
@@ -94,7 +94,7 @@
     <properties>
         <!-- Set sourceEncoding property to eliminate warning with "File encoding not set" -->
         <!-- when running FindBugs plugin.  -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mail.version>1.4.5</mail.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <jms-api.version>1.1-rev-1</jms-api.version>
@@ -141,10 +141,10 @@
 
         <javax-persistence-api.version>2.0.4.v201112200901</javax-persistence-api.version>
         <!-- Versions for EclipseLink artifacts -->
-		<eclipselink.version>2.4.0-M17.2</eclipselink.version>
-		<eclipselink.asm.version>3.3.1.v201107111215</eclipselink.asm.version>
-		<eclipselink.antlr.version>3.2.0.v201107111232</eclipselink.antlr.version>
-		<!-- End versions for EclipseLink artifacts -->
+        <eclipselink.version>2.4.0-M17.2</eclipselink.version>
+        <eclipselink.asm.version>3.3.1.v201107111215</eclipselink.asm.version>
+        <eclipselink.antlr.version>3.2.0.v201107111232</eclipselink.antlr.version>
+        <!-- End versions for EclipseLink artifacts -->
         <!-- repackage of org.netbeans.modules:org-netbeans-modules-dbschema RELEASE60 artifact-->
         <dbschema.version>3.1.1</dbschema.version>
         <!-- osgi version string must start with a number. Manually mapping above dbschema.version to osgi.version here -->
@@ -179,70 +179,20 @@
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
     </properties>
 
-
     <modules>
-        <!-- Don't add any other module here. Instead add them in default profile -->
-        <!-- To avoid JVM crash while using JDK 6, we are not
-             building this module in anonymous profile anymore.
-             See bug #6766662 for more details.
-              <module>build</module>
-        -->
+        <module>nucleus</module>
+        <module>appserver</module>
     </modules>
+
     <profiles>
-        
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-		<module>nucleus</module>
-                <module>appserver</module>
-<!--		<module>cloud-extra</module>               -->
-            </modules>
-            <build>
-                <plugins>
-                    <!-- prints ${project.basedir} in build output -->
-                    <plugin>
-                        <groupId>org.glassfish.build</groupId>
-                        <artifactId>glassfishbuild-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>echo</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>echo</goal>
-                                </goals>
-                                <configuration>
-                                    <messages>
-                                        <message>Building in ${project.basedir} </message>
-                                    </messages>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>			
-        </profile>
-
-        <profile>
-            <!-- this profile is used during the development -->
-            <id>IDE</id>
-            <modules>
-                <!-- Every time you change module list, please change
-                     the same under release profiles as well (below) -->
-                <module>nucleus</module>
-                <module>appserver</module>
-<!--		<module>cloud-extra</module>-->
-            </modules>
-        </profile>        
-
-
         <profile>
             <id>release-phase1</id>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
             <modules>
                 <!--
                     The resource provided by the copyright module is needed
@@ -252,7 +202,6 @@
                 <module>copyright</module>
             </modules>
         </profile>
-
         <profile>
             <!--
                 RE profile for release purposes.
@@ -278,27 +227,7 @@
                     </plugin>
                 </plugins>
             </build>
-
-            <modules>		
-                <module>nucleus</module>
-                <module>appserver</module>
-<!--		<module>cloud-extra</module>-->
-            </modules>
        </profile>
-
-       <profile>
-            <!--
-                RE profile for release purposes.
-            -->
-            <id>release-phase-all</id>
-            <modules>
-		
-                <module>nucleus</module>
-                <module>appserver</module>
-<!--		<module>cloud-extra</module>-->
-                <module>copyright</module>
-            </modules>
-        </profile>
     </profiles>
 
     <build>
@@ -307,7 +236,6 @@
         <!-- make the target/*.jar names match the name as found in  installed modules/ -->
         <finalName>${project.artifactId}</finalName>
 
-        <!--    Begin: Parent Plugin Management Section -->
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -315,37 +243,31 @@
                     <artifactId>hk2-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
                     <artifactId>osgiversion-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
                     <artifactId>consolidatedbundle-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                     <artifactId>maven-antrun-extended-plugin</artifactId>
                     <version> 1.42 </version>
                 </plugin>
-
                  <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version> 1.1 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version> 2.0.1 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -355,37 +277,31 @@
                        <target>1.6</target>
                     </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version> 2.2 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <version>${glassfishbuild.version}</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version> 2.8 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version> 2.1 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version> 2.3 </version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -405,25 +321,21 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.0-beta-9</version>
                 </plugin>
-                
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>antlr-maven-plugin</artifactId>
                     <version>2.1</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.jvnet.updatecenter2</groupId>
                     <artifactId>maven-makepkgs-plugin</artifactId>
                     <version>0.5.1</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-remote-resources-plugin</artifactId>
                     <version>1.1</version>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -456,11 +368,42 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <!--    End: Parent Plugin Management Section    -->
 
         <plugins>
-
-            <!-- Enforces maven 2.2.1 and jdk 1.6.0-04 and above to be used to build v3 -->
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <!-- prints ${project.basedir} in build output -->
+                <executions>
+                    <execution>
+                        <id>echo</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>echo</goal>
+                        </goals>
+                        <configuration>
+                            <messages>
+                                <message>Building in ${project.basedir} </message>
+                            </messages>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- configuration for the checkout mojo -->
+                    <checkoutDirectory>.</checkoutDirectory>
+                    <skipCheckoutIfExists>true</skipCheckoutIfExists>
+                    <!-- configuration for the run mojo -->
+                    <distribution>
+                        <groupId>org.glassfish.distributions</groupId>
+                        <artifactId>web</artifactId>
+                        <version>${project.version}</version>
+                    </distribution>
+                    <!-- configuration for the zip mojo -->
+                    <dir>${project.build.outputDirectory}</dir>
+                </configuration>
+            </plugin>
+            <!-- Enforces maven 2.2.1 and jdk 1.6.0-22 and above to be used -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -474,8 +417,8 @@
                     <configuration>
                         <rules>
                             <requireJavaVersion>
-                                <version>[1.6.0-4,)</version>
-                                <message>You need JDK 1.6.0_04 and above!</message>
+                                <version>[1.6.0-22,)</version>
+                                <message>You need JDK 1.6.0_22 and above!</message>
                             </requireJavaVersion>
                             <requireMavenVersion>
                                 <version>[2.2.1,)</version>
@@ -538,12 +481,11 @@
                        <id>attach-sources</id>
                        <phase>verify</phase>
                        <goals>
-                           <goal>jar-no-fork</goal> 
+                           <goal>jar-no-fork</goal>
                        </goals>
                     </execution>
                 </executions>
           </plugin>
-
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -659,28 +601,9 @@
                     </reportPlugins>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>glassfishbuild-maven-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <!-- configuration for the checkout mojo -->
-                    <checkoutDirectory>.</checkoutDirectory>
-                    <skipCheckoutIfExists>true</skipCheckoutIfExists>
-                    <!-- configuration for the run mojo -->
-                    <distribution>
-                        <groupId>org.glassfish.distributions</groupId>
-                        <artifactId>web</artifactId>
-                        <version>${project.version}</version>
-                    </distribution>
-                    <!-- configuration for the zip mojo -->
-                    <dir>${project.build.outputDirectory}</dir>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
-    <!--  Begin: Dependency management -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -688,19 +611,16 @@
                 <artifactId>hk2</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-core</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-maven</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-adapter</artifactId>
@@ -710,87 +630,73 @@
                         <groupId>org.apache.felix</groupId>
                         <artifactId>org.apache.felix.bundlerepository</artifactId>
                     </exclusion>
-                </exclusions>                
+                </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>stax-osgi</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>auto-depends</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-types</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
             <dependency>
               <groupId>org.glassfish</groupId>
               <artifactId>javax.faces</artifactId>
               <version>${mojarra.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-framework</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-http</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-http-server</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-http-servlet</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-rcm</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-portunif</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
 <!--            <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-compat</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>-->
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-comet</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-websockets</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-http-ajp</artifactId>
@@ -801,79 +707,66 @@
                 <artifactId>grizzly-messagesbus</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>-->
-
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
                 <artifactId>grizzly-config</artifactId>
                 <version>${grizzly.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>javax.persistence</artifactId>
                 <version>${javax-persistence-api.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.core</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.jpa</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
-                    <groupId>org.eclipse.persistence</groupId>
-                    <artifactId>org.eclipse.persistence.core.jpql</artifactId>
-                    <version>${eclipselink.version}</version>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.core.jpql</artifactId>
+                <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
-                    <groupId>org.eclipse.persistence</groupId>
-                    <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
-                    <version>${eclipselink.version}</version>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
+                <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.moxy</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.sdo</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.oracle</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.antlr</artifactId>
                 <version>${eclipselink.antlr.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
-				<version>${eclipselink.asm.version}</version>
+                <version>${eclipselink.asm.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.ctc.wstx</groupId>
                 <artifactId>woodstox-osgi</artifactId>
@@ -982,7 +875,6 @@
                 <artifactId>org.apache.felix.eventadmin</artifactId>
                 <version>1.2.8</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.pkg</groupId>
                 <artifactId>pkg-client</artifactId>
@@ -993,19 +885,16 @@
                 <artifactId>pkg-bootstrap</artifactId>
                 <version>${uc-pkg-bootstrap.version}</version>
             </dependency>
-            
             <dependency>
                 <groupId>org.glassfish.web</groupId>
                 <artifactId>javax.servlet.jsp</artifactId>
                 <version>${jsp-impl.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.web</groupId>
                 <artifactId>javax.el</artifactId>
                 <version>${el-impl.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-server</artifactId>
@@ -1026,7 +915,6 @@
                 <artifactId>jersey-json</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.faces.extensions</groupId>
                 <artifactId>jsf-extensions-dynamic-faces</artifactId>
@@ -1048,7 +936,6 @@
                 <artifactId>webui-jsf-suntheme</artifactId>
                 <version>${woodstock.version}</version>
             </dependency>
-            
             <dependency>
                 <groupId>org.glassfish.docs.help</groupId>
                 <artifactId>console-common-help</artifactId>
@@ -1109,7 +996,6 @@
                 <artifactId>console-web-plugin-help</artifactId>
                 <version>${v3-docs.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.jsftemplating</groupId>
                 <artifactId>jsftemplating</artifactId>
@@ -1120,7 +1006,6 @@
                 <artifactId>jsftemplating-dt</artifactId>
                 <version>${jsftemplating.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.woodstock.dependlibs</groupId>
                 <artifactId>json</artifactId>
@@ -1146,13 +1031,11 @@
                 <artifactId>commons-fileupload</artifactId>
                 <version>1.1.1</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.messaging.mq</groupId>
                 <artifactId>imqjmx</artifactId>
                 <version>4.3</version>
             </dependency>
-
             <dependency>
                 <groupId>org.jvnet.mimepull</groupId>
                 <artifactId>mimepull</artifactId>
@@ -1163,31 +1046,26 @@
                 <artifactId>jersey-multipart</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>javax.help</groupId>
                 <artifactId>javahelp</artifactId>
                 <version>2.0.02</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.tools.btrace</groupId>
                 <artifactId>btrace-agent</artifactId>
                 <version>${btrace.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.tools.btrace</groupId>
                 <artifactId>btrace-boot</artifactId>
                 <version>${btrace.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.external</groupId>
                 <artifactId>opendmk_jmxremote_optional_jar</artifactId>
                 <version>${opendmk.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.corba</groupId>
                 <artifactId>glassfish-corba-orb</artifactId>
@@ -1208,7 +1086,6 @@
                 <artifactId>glassfish-corba-internal-api</artifactId>
                 <version>${glassfish-corba.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish.pfl</groupId>
                 <artifactId>pfl-basic</artifactId>
@@ -1239,7 +1116,6 @@
                 <artifactId>pfl-tf-tools</artifactId>
                 <version>${pfl.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
@@ -1360,7 +1236,6 @@
                 <artifactId>saaj-api</artifactId>
                 <version>${saaj-api.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>genericra</artifactId>
@@ -1476,10 +1351,8 @@
                 <artifactId>cglib</artifactId>
                 <version>${hk2.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
-    <!--  End:   Dependency management -->
 
     <dependencies>
         <dependency>
@@ -1489,6 +1362,5 @@
             <optional>true</optional>
       </dependency>
     </dependencies>
-
 
 </project>

@@ -52,7 +52,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfishbuild-repo-setup</artifactId>
-    <name>GlassFish v3 IPS repository initial setup</name>
+    <name>GlassFish IPS repository initial setup</name>
     <packaging>distribution-base-zip</packaging>
 
     <build>
@@ -64,43 +64,43 @@
 		    <tasks>
                         <ant dir="." antfile="build.xml" target="default.target"/>
                     </tasks>
-                </configuration>               
+                </configuration>
              </plugin>
         </plugins>
-     </build> 
+     </build>
 
-   
+
     <dependencies>
         <!--
           modules to be included in this bundle
-        -->       
+        -->
         <dependency>
       	    <groupId>org.glassfish.mq</groupId>
             <artifactId>mq-distribution</artifactId>
             <version>${mq.version}</version>
 	    <classifier>repo</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-common</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-core</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-client</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
 <!--
        <dependency>
@@ -108,28 +108,28 @@
             <artifactId>javadb-demo</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-doc</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
        <dependency>
       	    <groupId>javadb</groupId>
             <artifactId>javadb-javadoc</artifactId>
             <version>${javadb.version}</version>
 	    <classifier>ips</classifier>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
 -->
        <dependency>
       	    <groupId>org.glassfish.l10n</groupId>
             <artifactId>l10n-distribution</artifactId>
             <version>${l10n.version}</version>
-            <type>zip</type>    
+            <type>zip</type>
        </dependency>
     </dependencies>
 
@@ -140,7 +140,7 @@
              -->
             <id>ips</id>
 	    <activation>
-	      <activeByDefault>false</activeByDefault>  
+	      <activeByDefault>false</activeByDefault>
 	    </activation>
 	    <build>
                 <plugins>
@@ -151,11 +151,11 @@
 		        <tasks>
                             <ant dir="." antfile="build.xml" target="copy.packages"/>
                         </tasks>
-                    </configuration>               
+                    </configuration>
                  </plugin>
                  </plugins>
 	     </build>
             </profile>
-   </profiles>        
+   </profiles>
 
 </project>
