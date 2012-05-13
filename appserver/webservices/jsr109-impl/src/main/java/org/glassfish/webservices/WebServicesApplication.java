@@ -47,6 +47,7 @@ import java.util.ResourceBundle;
 import com.sun.enterprise.deployment.util.WebServerInfo;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
+import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 
 import org.glassfish.api.admin.ServerEnvironment;
@@ -112,6 +113,8 @@ public class WebServicesApplication implements ApplicationContainer {
         try {
            app = deploymentCtx.getModuleMetaData(Application.class);
 
+            DeployCommandParameters commandParams = ((DeploymentContext)startupContext).getCommandParameters(DeployCommandParameters.class);
+            String virtualServers = commandParams.virtualservers;
             Iterator<EjbEndpoint> iter = ejbendpoints.iterator();
             EjbEndpoint ejbendpoint = null;
             while(iter.hasNext()) {
@@ -119,7 +122,7 @@ public class WebServicesApplication implements ApplicationContainer {
                 String contextRoot = ejbendpoint.contextRoot;
                 WebServerInfo wsi = new WsUtil().getWebServerInfoForDAS();
                 URL rootURL = wsi.getWebServerRootURL(ejbendpoint.isSecure);
-                dispatcher.registerEndpoint(contextRoot, httpHandler, this);
+                dispatcher.registerEndpoint(contextRoot, httpHandler, this, virtualServers);
                 //Fix for issue 13107490 and 17648
                 if (wsi.getHttpVS() != null && wsi.getHttpVS().getPort()!=0)
                     logger.info(format(rb.getString("enterprise.deployment.ejbendpoint.registration"),
