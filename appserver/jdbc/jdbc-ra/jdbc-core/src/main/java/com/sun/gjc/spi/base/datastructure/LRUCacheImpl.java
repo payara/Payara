@@ -167,6 +167,7 @@ public class LRUCacheImpl implements Cache {
         }
     }
 
+    // Used only for purging the bad statements.
     public void purge(Object obj) {
         PreparedStatementWrapper tmpPS = (PreparedStatementWrapper) obj;
         Iterator keyIterator = list.keySet().iterator();
@@ -199,6 +200,10 @@ public class LRUCacheImpl implements Cache {
      */
     public int getSize() {
        return list.size();
+    }
+
+    public int getMaxSize() {
+        return maxSize;
     }
 
     /**

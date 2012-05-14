@@ -761,6 +761,27 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Injectable, Resourc
     void setStatementCacheSize(String value) throws PropertyVetoException;
 
     /**
+     * Gets the value of the statementCacheType property.
+     *
+     * When specified, statement caching type is set to cache statements, 
+     * prepared statements, callable statements that are repeatedly executed by 
+     * applications. 
+     *  
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="")
+    String getStatementCacheType();
+
+    /**
+     * Sets the value of the statementCacheType property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setStatementCacheType(String value) throws PropertyVetoException;
+
+    /**
      *
      * @return possible object is
      *         {@link String }

@@ -653,23 +653,12 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
 
     private void detectStatementCachingSupport() {
         String cacheSize = getStatementCacheSize();
-        String cacheType = getStatementCacheType();
         if(cacheSize != null){
             try{
                 statementCacheSize = Integer.valueOf(cacheSize);
                 //TODO-SC FINE log-level with Pool Name (if possible)
                 if(_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE, "StatementCaching Size : " + statementCacheSize);
-                }
-                if(cacheType == null || cacheType.trim().equals("")) {
-                    if(_logger.isLoggable(Level.FINE)) {
-                        _logger.fine(" Default StatementCaching Type : " +
-                                localStrings.getString("jdbc.statement-cache.default.datastructure"));
-                    }
-                } else {
-                    if(_logger.isLoggable(Level.FINE)) {
-                        _logger.fine("StatementCaching Type : " + cacheType);
-                    }
                 }
             }catch(NumberFormatException nfe){
                 if(_logger.isLoggable(Level.FINE)) {
@@ -1086,6 +1075,17 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
 
     public void setStatementCacheType(String statementCacheType) {
         spec.setDetail(DataSourceSpec.STATEMENTCACHETYPE, statementCacheType);
+        this.statementCacheType = getStatementCacheType();
+        if(this.statementCacheType == null || this.statementCacheType.trim().equals("")) {
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.fine(" Default StatementCaching Type : " +
+                        localStrings.getString("jdbc.statement-cache.default.datastructure"));
+            }
+        } else {
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.fine("StatementCaching Type : " + this.statementCacheType);
+            }
+        }
     }
 
     public String getNumberOfTopQueriesToReport() {

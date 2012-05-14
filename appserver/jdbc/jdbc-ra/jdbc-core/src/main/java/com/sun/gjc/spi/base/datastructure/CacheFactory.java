@@ -65,15 +65,18 @@ public class CacheFactory {
     protected final static StringManager localStrings =
             StringManager.getManager(DataSourceObjectBuilder.class);
 
-    public static Cache getDataStructure(PoolInfo poolInfo, String className,
+    public static Cache getDataStructure(PoolInfo poolInfo, String cacheType,
             int maxSize) throws ResourceException {
         Cache stmtCacheStructure;
 
-        if(className == null || className.trim().equals("")) {
+        if(cacheType == null || cacheType.trim().equals("")) {
             debug("Initializing LRU Cache Implementation");
             stmtCacheStructure = new LRUCacheImpl(poolInfo, maxSize);
-        } else {
-            stmtCacheStructure = initCustomCacheStructurePrivileged(className, 
+        } else if(cacheType.equals("FIXED")) {
+            debug("Initializing FIXED Cache Implementation");
+            stmtCacheStructure = new FIXEDCacheImpl(poolInfo, maxSize);
+        } else { // consider the value of cacheType as a className
+            stmtCacheStructure = initCustomCacheStructurePrivileged(cacheType,
                     maxSize);
         } 
         if(!stmtCacheStructure.isSynchronized()) {

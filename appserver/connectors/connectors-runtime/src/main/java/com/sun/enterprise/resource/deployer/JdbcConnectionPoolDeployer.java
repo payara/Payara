@@ -371,6 +371,11 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
                 "Statement Cache Size",
                 "java.lang.String"));
 
+        propList.add(new ConnectorConfigProperty("StatementCacheType",
+                adminPool.getStatementCacheType() + "",
+                "Statement Cache Type",
+                "java.lang.String"));
+
         propList.add(new ConnectorConfigProperty("InitSql",
                 adminPool.getInitSql() + "",
                 "InitSql",
@@ -490,8 +495,10 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
 
                 } else if ("STATEMENT-CACHE-TYPE".equals(name.toUpperCase(Locale.getDefault()))) {
 
-                    propList.add(new ConnectorConfigProperty("StatementCacheType",
-                            rp.getValue(), "StatementCacheType", "java.lang.String"));
+		    if(adminPool.getStatementCacheType() != null) {
+                        propList.add(new ConnectorConfigProperty("StatementCacheType",
+                                rp.getValue(), "StatementCacheType", "java.lang.String"));
+		    }
 
                 } else if ("NUMBER-OF-TOP-QUERIES-TO-REPORT".equals(name.toUpperCase(Locale.getDefault()))) {
 
@@ -785,6 +792,7 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
         excludes.add("StatementTimeout");
         excludes.add("ValidationClassName");
         excludes.add("StatementCacheSize");
+        excludes.add("StatementCacheType");
         excludes.add("StatementLeakTimeoutInSeconds");
         excludes.add("StatementLeakReclaim");
 

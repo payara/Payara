@@ -939,5 +939,13 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         public void setStatementLeakReclaim(String value) throws PropertyVetoException {
             //do nothing
         }
+	
+	public String getStatementCacheType() {
+            return null;
+	}
+
+	public void setStatementCacheType(String value) throws PropertyVetoException {
+	    //do nothing
+	}
     }
 }
