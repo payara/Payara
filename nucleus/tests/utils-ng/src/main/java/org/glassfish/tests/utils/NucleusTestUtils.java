@@ -104,6 +104,9 @@ public class NucleusTestUtils {
     
     public static NadminReturn nadminWithOutput(final int timeout, final String... args) {
         File cmd = new File(nucleusRoot, isWindows() ? "bin/nadmin.bat" : "bin/nadmin");
+        if (!cmd.canExecute()) {
+            cmd = new File(nucleusRoot, isWindows() ? "bin/asadmin.bat" : "bin/asadmin");
+        }
         List<String> command = new ArrayList<String>();
         command.add(cmd.toString());
         command.add("--echo");

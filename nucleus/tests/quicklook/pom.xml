@@ -87,7 +87,7 @@ utilities are in the NucleusTestUtils class.
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
-            <artifactId>utils</artifactId>
+            <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <type>jar</type>
