@@ -48,6 +48,9 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.testng.AssertJUnit.assertNotNull;
 
 /**
@@ -130,14 +133,9 @@ public class NucleusTestUtils {
             exit = 1;
         }
 
-        NadminReturn ret = new NadminReturn();
-        ret.out = pm.getStdout();
-        ret.err = pm.getStderr() + myErr;
-        ret.outAndErr = ret.out + ret.err;
-        ret.returnValue = exit == 0 && validResults(ret.out,
-                String.format("Command %s failed.", args[0]));
-        write(ret.out);
-        write(ret.err);
+        NadminReturn ret = new NadminReturn(exit, pm.getStdout(), pm.getStderr() + myErr, args[0]);
+        
+        write(ret.outAndErr);
         return ret;
     }
 
@@ -157,7 +155,7 @@ public class NucleusTestUtils {
 
 
     private static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().contains("win");
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
     }
     
     /*
@@ -168,30 +166,56 @@ public class NucleusTestUtils {
     }
 
     public static String getURL(String urlstr) {
+        // @todo Java SE 7 use try with resources
+        StringWriter ow = null;
+        BufferedReader ir = null;
         try {
             URL u = new URL(urlstr);
             URLConnection urlc = u.openConnection();
-            BufferedReader ir = new BufferedReader(new InputStreamReader(urlc.getInputStream(),
+            ir = new BufferedReader(new InputStreamReader(urlc.getInputStream(),
                     "ISO-8859-1"));
-            StringWriter ow = new StringWriter();
-            String line;
-            while ((line = ir.readLine()) != null) {
-                ow.write(line);
-                ow.write("\n");
+            try {
+                ow = new StringWriter();
+                String line;
+                while ((line = ir.readLine()) != null) {
+                    ow.write(line);
+                    ow.write("\n");
+                }
+                
+                return ow.getBuffer().toString();
             }
-            ir.close();
-            ow.close();
-            return ow.getBuffer().toString();
+            finally {
+                if (ow != null) {
+                    ow.close();
+                }
+            }
         }
         catch (IOException ex) {
             System.out.println("unable to fetch URL:" + urlstr + ", reason: " + ex.getMessage());
             return "";
+        }
+        finally {
+            if (ir != null) {
+                try {
+                    ir.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(NucleusTestUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
     
     // simple C-struct -- DIY
     public static class NadminReturn {
+        NadminReturn(int exit, String out, String err, String cmd) {
+            this.returnValue = exit == 0 && validResults(out,
+                String.format("Command %s failed.", cmd));
+            this.out = out;
+            this.err = err;
+            this.outAndErr = this.out + this.err;
+        }
+        
         public boolean returnValue;
         public String out;
         public String err;
