@@ -142,22 +142,52 @@ public class CommandRunnerImpl implements CommandRunner {
     }
 
     /**
-     * Retuns the command model for a command name.
+     * Returns the command model for a command name.
      *
      * @param commandName command name
      * @param logger logger to log any error messages
      * @return model for this command (list of parameters,etc...),
      *          or null if command is not found
      */
+    @Override
     public CommandModel getModel(String commandName, Logger logger) {
+        return getModel(null, commandName, logger);
+    }
+    
+    /**
+     * Returns the command model for a command name.
+     *
+     * @param commandName command name
+     * @param logger logger to log any error messages
+     * @return model for this command (list of parameters,etc...),
+     *          or null if command is not found
+     */
+    @Override
+    public CommandModel getModel(String scope, String commandName, Logger logger) {
         AdminCommand command = null;
         try {
-            command = habitat.getComponent(AdminCommand.class, commandName);
+            String commandServiceName = (scope != null) ? scope + commandName : commandName;
+            command = habitat.getComponent(AdminCommand.class, commandServiceName);
         } catch (ComponentException e) {
             logger.log(Level.SEVERE, "Cannot instantiate " + commandName, e);
             return null;
         }
         return command == null ? null : getModel(command);
+    }
+
+    /**
+     * Obtain and return the command implementation defined by
+     * the passed commandName for the null scope.
+     *
+     * @param commandName command name as typed by users
+     * @param report report used to communicate command status back to the user
+     * @param logger logger to log
+     * @return command registered under commandName or null if not found
+     */
+    @Override
+    public AdminCommand getCommand(String commandName, 
+            ActionReport report, Logger logger) {
+        return getCommand(null, commandName, report, logger);
     }
 
     /**
@@ -169,12 +199,14 @@ public class CommandRunnerImpl implements CommandRunner {
      * @param logger logger to log
      * @return command registered under commandName or null if not found
      */
-    public AdminCommand getCommand(String commandName, ActionReport report,
-            Logger logger) {
+    public AdminCommand getCommand(String scope, String commandName, 
+            ActionReport report, Logger logger) {
 
         AdminCommand command = null;
+        String commandServiceName = (scope != null) ? scope + commandName : commandName;
+        
         try {
-            command = habitat.getComponent(AdminCommand.class, commandName);
+            command = habitat.getComponent(AdminCommand.class, commandServiceName);
         } catch (ComponentException e) {
             e.printStackTrace();
             report.setFailureCause(e);
@@ -188,7 +220,7 @@ public class CommandRunnerImpl implements CommandRunner {
             } else {
                 // this means either a non-existent command or
                 // an ill-formed command
-                if (habitat.getInhabitant(AdminCommand.class, commandName)
+                if (habitat.getInhabitant(AdminCommand.class, commandServiceName)
                         == null) // somehow it's in habitat
                 {
                     msg = adminStrings.getLocalString("adapter.command.notfound", "Command {0} not found", commandName);
@@ -234,7 +266,7 @@ public class CommandRunnerImpl implements CommandRunner {
     }
 
     /**
-     * Obtain a new command invocation object.
+     * Obtain a new command invocation object for the null scope.
      * Command invocations can be configured and used
      * to trigger a command execution.
      *
@@ -244,7 +276,22 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     public CommandInvocation getCommandInvocation(String name,
             ActionReport report) {
-        return new ExecutionContext(name, report);
+        return getCommandInvocation(null, name, report);
+    }
+
+    /**
+     * Obtain a new command invocation object.
+     * Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param scope the scope (or name space) for the command
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @return a new command invocation for that command name
+     */
+    public CommandInvocation getCommandInvocation(String scope, String name,
+            ActionReport report) {
+        return new ExecutionContext(scope, name, report);
     }
 
     private ActionReport.ExitCode injectParameters(final CommandModel model, final AdminCommand command,
@@ -804,7 +851,7 @@ public class CommandRunnerImpl implements CommandRunner {
     private void doCommand(ExecutionContext inv, AdminCommand command) {
 
         if (command == null) {
-            command = getCommand(inv.name(), inv.report(), logger);
+            command = getCommand(inv.scope(), inv.name(), inv.report(), logger);
             if (command == null) {
                 return;
             }
@@ -1310,6 +1357,7 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     class ExecutionContext implements CommandInvocation {
 
+        protected final String scope;
         protected final String name;
         protected ActionReport report;
         protected ParameterMap params;
@@ -1317,7 +1365,8 @@ public class CommandRunnerImpl implements CommandRunner {
         protected Payload.Inbound inbound;
         protected Payload.Outbound outbound;
 
-        private ExecutionContext(String name, ActionReport report) {
+        private ExecutionContext(String scope, String name, ActionReport report) {
+            this.scope = scope;
             this.name = name;
             this.report = report;
         }
@@ -1356,6 +1405,10 @@ public class CommandRunnerImpl implements CommandRunner {
 
         private String name() {
             return name;
+        }
+
+        private String scope() {
+            return scope;
         }
 
         ActionReport report() {

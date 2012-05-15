@@ -131,6 +131,7 @@ public class RemoteAdminCommand {
     protected String            user;
     protected String            password;
     protected Logger            logger;
+    protected String            scope;
     protected String            authToken = null;
     protected boolean           prohibitDirectoryUploads = false;
 
@@ -229,7 +230,7 @@ public class RemoteAdminCommand {
     public RemoteAdminCommand(String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        this(name, host, port, secure, user, password, logger, null, false);
+        this(name, host, port, secure, user, password, logger, null, null, false);
     }
 
     /**
@@ -238,6 +239,7 @@ public class RemoteAdminCommand {
      */
     public RemoteAdminCommand(String name, String host, int port,
             boolean secure, String user, String password, Logger logger,
+            final String scope,
             final String authToken,
             final boolean prohibitDirectoryUploads)
             throws CommandException {
@@ -248,6 +250,7 @@ public class RemoteAdminCommand {
         this.user = user;
         this.password = password;
         this.logger = logger;
+        this.scope = scope;
         this.authToken = authToken;
         this.prohibitDirectoryUploads = prohibitDirectoryUploads;
         checkName();
@@ -374,8 +377,7 @@ public class RemoteAdminCommand {
             if (doUpload)
                 outboundPayload = PayloadImpl.Outbound.newInstance();
 
-            StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
-                    append(name).append(QUERY_STRING_INTRODUCER);
+            StringBuilder uriString = getCommandURI();
             ParamModel operandParam = null;
             for (ParamModel opt : commandModel.getParameters()) {
                 if (opt.getParam().primary()) {
@@ -487,6 +489,16 @@ public class RemoteAdminCommand {
      */
     protected String reportAuthenticationException() {
         return strings.get("InvalidCredentials", user);
+    }
+    
+    /**
+     * Get the URI for executing the command.
+     */
+    protected StringBuilder getCommandURI() {
+        StringBuilder rv = new StringBuilder(ADMIN_URI_PATH);
+        if (scope != null) rv.append(scope);
+        rv.append(name).append(QUERY_STRING_INTRODUCER);
+        return rv;
     }
 
     /**
@@ -1101,8 +1113,7 @@ public class RemoteAdminCommand {
         //StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
                 //append("help").append(QUERY_STRING_INTRODUCER);
         //addStringOption(uriString, "DEFAULT", name);
-        StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
-                append(name).append(QUERY_STRING_INTRODUCER);
+        StringBuilder uriString = getCommandURI();
         addStringOption(uriString, "Xhelp", "true");
 
         // remove the last character, whether it was "?" or "&"

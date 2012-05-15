@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,7 +65,7 @@ public interface CommandRunner {
     public ActionReport getActionReport(String name);
 
     /**
-     * Retuns the command model for a command name
+     * Returns the command model for a command name for the null scope
      *
      * @param name command name
      * @param logger logger to log any error messages
@@ -75,7 +75,19 @@ public interface CommandRunner {
     public CommandModel getModel(String name, Logger logger);
 
     /**
-     * Obtain and return the command implementation defined by the passed commandName
+     * Returns the command model for a command name
+     *
+     * @param scope the scope (or namespace) for the command
+     * @param name command name
+     * @param logger logger to log any error messages
+     * @return model for this command (list of parameters,etc...), null if command
+     * is not found
+     */
+    public CommandModel getModel(String scope, String name, Logger logger);
+
+    /**
+     * Obtain and return the command implementation defined by the passed commandName 
+     * for the null scope
      *
      * @param commandName command name as typed by users
      * @param report report used to communicate command status back to the user
@@ -85,14 +97,37 @@ public interface CommandRunner {
     public AdminCommand getCommand(String commandName, ActionReport report, Logger logger);
 
     /**
-     * Obtain a new command invocation object. Command invocations can be configured and used
-     * to trigger a command execution.
+     * Obtain and return the command implementation defined by the passed commandName
+     *
+     * @param scope the scope (or namespace) for the command
+     * @param commandName command name as typed by users
+     * @param report report used to communicate command status back to the user
+     * @param logger logger to log
+     * @return command registered under commandName or null if not found.
+     */
+    public AdminCommand getCommand(String scope, String commandName, ActionReport report, Logger logger);
+
+    /**
+     * Obtain a new command invocation object for the null scope. Command invocations can 
+     * be configured and used to trigger a command execution.
      *
      * @param name name of the requested command to invoke
      * @param report where to place the status of the command execution
      * @return a new command invocation for that command name.
      */
     CommandInvocation getCommandInvocation(String name, ActionReport report);
+
+
+    /**
+     * Obtain a new command invocation object. Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param scope the scope (or namespace) for the command
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @return a new command invocation for that command name.
+     */
+    CommandInvocation getCommandInvocation(String scope, String name, ActionReport report);
 
 
     /**

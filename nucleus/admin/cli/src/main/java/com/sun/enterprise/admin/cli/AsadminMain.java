@@ -151,6 +151,7 @@ public class AsadminMain {
     protected String getCommandName() {
         return "asadmin";
     }
+    
     /*
      * End of skinning methods -------------------------------------------------
      */

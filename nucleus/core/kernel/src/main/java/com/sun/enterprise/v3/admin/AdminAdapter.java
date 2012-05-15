@@ -447,6 +447,14 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         if (requestURI.length() > getContextRoot().length() + 1)
             command = requestURI.substring(getContextRoot().length() + 1);
         
+        // check for a command scope
+        String scope = null;
+        int ci = command.indexOf("/");
+        if (ci != -1) {
+            scope = command.substring(0, ci + 1);
+            command = command.substring(ci + 1);
+        }
+        
         String qs = req.getQueryString();
         final ParameterMap parameters = extractParameters(qs);
         String passwordOptions = req.getHeader("X-passwords");
@@ -460,7 +468,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             if (aalogger.isLoggable(Level.FINE)) {
                 aalogger.log(Level.FINE, "***** AdminAdapter {0}  *****", req.getMethod());
             }
-            AdminCommand adminCommand = commandRunner.getCommand(command, report, aalogger);
+            AdminCommand adminCommand = commandRunner.getCommand(scope, command, report, aalogger);
             if (adminCommand==null) {
                 // maybe commandRunner already reported the failure?
                 if (report.getActionExitCode() == ActionReport.ExitCode.FAILURE)
@@ -477,7 +485,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             if (validatePrivacy(adminCommand)) {
             //if (adminCommand.getClass().getAnnotation(Visibility.class).privacy().equals(visibility.privacy())) {
                 // todo : needs to be changed, we should reuse adminCommand
-                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(command, report);
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(scope, command, report);
                 inv.parameters(parameters).inbound(inboundPayload).outbound(outboundPayload).execute();
                 try {
                     // note it has become extraordinarily difficult to change the reporter!
