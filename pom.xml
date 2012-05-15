@@ -501,7 +501,7 @@
                         <!-- Use the manifest.mf produced by maven-bundle-plugin:manifest -->
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
-                    <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>
+<!--                    <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>-->
                     <compilerArguments>
                         <processor>org.glassfish.annotation.processing.LogMessageInfoAnnotationProcessor</processor>
                         <A>-AresourceBundlePackage=${logging-resource-bundle}</A>
