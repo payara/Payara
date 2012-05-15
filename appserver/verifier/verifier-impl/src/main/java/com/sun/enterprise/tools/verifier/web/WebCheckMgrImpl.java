@@ -50,11 +50,12 @@ import java.util.Vector;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.WebDeploymentDescriptorFile;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.dd.ParseDD;
 import com.sun.enterprise.tools.verifier.wsclient.WebServiceClientCheckMgrImpl;
+
+import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
 
 import javax.xml.parsers.ParserConfigurationException;
 

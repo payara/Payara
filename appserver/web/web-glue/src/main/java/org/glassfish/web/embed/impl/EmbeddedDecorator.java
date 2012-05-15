@@ -40,9 +40,9 @@
 
 package org.glassfish.web.embed.impl;
 
-import com.sun.enterprise.deployment.archivist.WebArchivist;
 import com.sun.hk2.component.InhabitantsParser;
 import com.sun.hk2.component.InhabitantsParserDecorator;
+import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.kohsuke.MetaInfServices;
 
 /**

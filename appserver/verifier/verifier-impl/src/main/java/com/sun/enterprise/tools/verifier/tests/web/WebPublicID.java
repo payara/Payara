@@ -43,7 +43,6 @@ package com.sun.enterprise.tools.verifier.tests.web;
 import java.io.*;
 
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.io.WebDeploymentDescriptorFile;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deploy.shared.FileArchive;

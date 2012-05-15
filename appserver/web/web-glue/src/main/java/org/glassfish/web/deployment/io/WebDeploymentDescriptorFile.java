@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,42 +38,37 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io.runtime;
+package org.glassfish.web.deployment.io;
 
-import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.web.WebBundleNode;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the WebLogic Web Container
+ * This class is responsible for handling Web DeploymentDescriptor files
  *
+ * @author Jerome Dochez
  */
-public class WLSWebRuntimeDDFile extends 
-        ConfigurationDeploymentDescriptorFile {  
-   
+public class WebDeploymentDescriptorFile extends DeploymentDescriptorFile<WebBundleDescriptor> {
+
     /**
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.WLS_WEB_JAR_ENTRY;        
+        return DescriptorConstants.WEB_JAR_ENTRY;        
     }
     
     /**
      * @return a RootXMLNode responsible for handling the deployment
      * descriptors associated with this J2EE module
      *
-     * @param the descriptor for which we need the node
+     * @param descriptor descriptor for which we need the node
      */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new WLWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
-        }
-        return null;
+    public RootXMLNode<WebBundleDescriptor> getRootXMLNode(WebBundleDescriptor descriptor) {
+        return new WebBundleNode();        
     }
+    
 }

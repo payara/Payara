@@ -153,6 +153,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
             <optional>true</optional>

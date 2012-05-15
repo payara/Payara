@@ -64,6 +64,9 @@
                         com.sun.enterprise.web.util; \
                         com.sun.web.server; \
                         org.glassfish.web; \
+                        org.glassfish.web.deployment.archivist; \
+                        org.glassfish.web.deployment.io; \
+                        org.glassfish.web.deployment.io.runtime; \
                         
                         version=${project.osgi.version}
 

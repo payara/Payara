@@ -151,7 +151,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     protected T descriptor;
 
     @Inject
-    BaseServiceLocator habitat;
+    protected BaseServiceLocator habitat;
 
     @Inject
     SJSASFactory annotationFactory;

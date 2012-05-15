@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,35 +38,39 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io;
+package org.glassfish.web.deployment.io.runtime;
 
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.web.WebFragmentNode;
+import com.sun.enterprise.deployment.node.runtime.web.GFWebBundleRuntimeNode;
 
 /**
- * This class is responsible for handling WebFragment DeploymentDescriptor files
- *
- * @author Shing Wai Chan
+ * This class is responsible for handling the XML configuration information
+ * for the Glassfish Web Container
  */
-public class WebFragmentDeploymentDescriptorFile extends DeploymentDescriptorFile<WebFragmentDescriptor> {
-
+public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
     /**
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.WEB_FRAGMENT_JAR_ENTRY;        
+        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
     }
     
     /**
      * @return a RootXMLNode responsible for handling the deployment
      * descriptors associated with this J2EE module
      *
-     * @param descriptor descriptor for which we need the node
+     * @param the descriptor for which we need the node
      */
-    public RootXMLNode<WebFragmentDescriptor> getRootXMLNode(WebFragmentDescriptor descriptor) {
-        return new WebFragmentNode();        
+    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
+   
+        if (descriptor instanceof WebBundleDescriptor) {
+            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+        }
+        return null;
     }
-    
 }

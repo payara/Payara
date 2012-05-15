@@ -38,15 +38,16 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.archivist;
+package org.glassfish.web.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebFragmentDescriptor;
+import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.WebFragmentDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.web.deployment.io.WebFragmentDeploymentDescriptorFile;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
@@ -68,10 +69,11 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     /** 
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
-    DeploymentDescriptorFile standardDD = new WebFragmentDeploymentDescriptorFile();
+    DeploymentDescriptorFile<WebFragmentDescriptor> standardDD = new WebFragmentDeploymentDescriptorFile();
 
-    WebFragmentArchivist (BaseServiceLocator habitat) {
+    WebFragmentArchivist (WebArchivist webArchivist, BaseServiceLocator habitat) {
         this.habitat = habitat;
+        initializeContext(webArchivist);
     }
 
     /**
@@ -108,7 +110,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      * standard deployment descriptor
      */
     @Override
-    public DeploymentDescriptorFile getStandardDDFile() {
+    public DeploymentDescriptorFile<WebFragmentDescriptor> getStandardDDFile() {
         return standardDD;
     }
     

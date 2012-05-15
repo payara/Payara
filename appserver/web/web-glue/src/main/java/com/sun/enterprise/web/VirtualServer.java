@@ -53,7 +53,6 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.archivist.WebArchivist;
 import com.sun.enterprise.security.web.GlassFishSingleSignOn;
 import com.sun.enterprise.server.logging.GFFileHandler;
 import com.sun.enterprise.util.StringUtils;
@@ -112,6 +111,7 @@ import org.glassfish.grizzly.http.TransferEncoding;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
+import org.glassfish.web.deployment.archivist.WebArchivist;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
