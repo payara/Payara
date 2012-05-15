@@ -47,7 +47,6 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-grizzly</artifactId>
     <name>Glassfish Grizzly Package</name>

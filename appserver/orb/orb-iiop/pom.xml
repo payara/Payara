@@ -47,11 +47,11 @@
         <groupId>org.glassfish.main.orb</groupId>
         <artifactId>orb</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>orb-iiop</artifactId>
     <packaging>hk2-jar</packaging>
     <name>GlassFish ORB interface layer implementation</name>
+    
     <developers>
         <developer>
             <id>mk111283</id>
@@ -67,34 +67,8 @@
 
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+        <logging-resource-bundle>org.glassfish.orb</logging-resource-bundle>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>
-                    <compilerArguments>
-                        <processor>org.glassfish.annotation.processing.LogMessageInfoAnnotationProcessor</processor>
-                        <!--
-                            Required parameter: Package where LogMessages.properties will be generated.
-                            It will typically be the top level package in the module.
-                        -->
-                        <A>-AresourceBundlePackage=org.glassfish.orb</A>
-                    </compilerArguments>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.glassfish.annotations</groupId>
-                        <artifactId>source-annotation-processor</artifactId>
-                        <version>1.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -105,7 +79,6 @@
         <dependency>
             <groupId>org.shoal</groupId>
             <artifactId>shoal-gms-api</artifactId>
-            <version>${shoal.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -170,12 +143,6 @@
             <groupId>org.glassfish.main</groupId>
             <artifactId>javax.ejb</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.annotations</groupId>
-            <artifactId>source-annotation-processor</artifactId>
-            <version>1.0</version>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

@@ -54,7 +54,7 @@
     <packaging>hk2-jar</packaging>
     <name>AMX V3 Core</name>
     <description>Appserver Management Extensions (AMX) Core</description>
-	
+
     <developers>
         <developer>
             <id>naman_mehta</id>
