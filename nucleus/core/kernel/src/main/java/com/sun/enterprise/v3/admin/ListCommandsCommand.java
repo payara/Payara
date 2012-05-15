@@ -84,6 +84,7 @@ public class ListCommandsCommand implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
 
         context.getActionReport().setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -95,13 +96,29 @@ public class ListCommandsCommand implements AdminCommand {
         }
     }
     
+    protected String getScope() {
+        return null;
+    }
+    
     private List<String> sortedAdminCommands() {
+        String scope = getScope();
         List<String> names = new ArrayList<String>();
         for (Inhabitant<?> command : habitat.getInhabitantsByContract(AdminCommand.class.getName())) {
             for (String name : Inhabitants.getNamesFor(command, AdminCommand.class.getName())) {
                 //see 6161 -- I thought we should ensure that a command found in habitat should
                 //return a valid Command Object, but it was decided that we don't need to instantiate
                 //each object satisfying AdminCommand contract to get a list of all commands
+                
+                // limit list to commands for current scope
+                int ci = name.indexOf("/");
+                if (ci != -1) {
+                    String cmdScope = name.substring(0, ci + 1);
+                    if (scope == null || !cmdScope.equals(scope)) continue;
+                    name = name.substring(ci + 1);
+                } else {
+                    if (scope != null) continue;
+                }
+                
                 if (debugCommand(command)) { //it's a debug command, add only if debug is set
                     if (debugSet())
                         names.add(name);
