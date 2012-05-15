@@ -47,6 +47,7 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>nucleus-cluster-l10n</artifactId>
     <name>Nucleus Clustering l10n Package</name>
@@ -80,7 +81,8 @@
                             <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <overWriteSnapshots>true</overWriteSnapshots>                            
+                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <stripVersion>true</stripVersion>
@@ -112,5 +114,8 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    
+
 </project>
 

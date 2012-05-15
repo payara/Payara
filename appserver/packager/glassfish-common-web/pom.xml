@@ -47,6 +47,7 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-common-web</artifactId>
     <name>Glassfish Commons for Web Profile Distribution </name>

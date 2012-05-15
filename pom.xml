@@ -501,11 +501,6 @@
                         <!-- Use the manifest.mf produced by maven-bundle-plugin:manifest -->
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
-<!--                    <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>-->
-                    <compilerArguments>
-                        <processor>org.glassfish.annotation.processing.LogMessageInfoAnnotationProcessor</processor>
-                        <A>-AresourceBundlePackage=${logging-resource-bundle}</A>
-                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -1360,14 +1355,7 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.annotations</groupId>
-            <artifactId>source-annotation-processor</artifactId>
-            <version>${source-annotation-processor.version}</version>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>   
+      </dependency>
     </dependencies>
 
 </project>

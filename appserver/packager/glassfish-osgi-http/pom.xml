@@ -47,6 +47,7 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-osgi-http</artifactId>
     <name>Glassfish OSGi HTTP Service package</name>
@@ -81,6 +82,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <stripVersion>true</stripVersion>
                         </configuration>

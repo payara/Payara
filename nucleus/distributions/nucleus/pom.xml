@@ -84,6 +84,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                         </configuration>
                    </execution>

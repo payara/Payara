@@ -47,6 +47,7 @@
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-web</artifactId>
     <name>Glassfish Web Container Package</name>
@@ -82,6 +83,7 @@
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>                           
+                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <excludeGroupIds>org.glassfish.main,org.jboss.weld</excludeGroupIds>
@@ -98,6 +100,7 @@
                             <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>                            
+                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                             <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
                             <excludeGroupIds>org.jboss.weld</excludeGroupIds>

@@ -48,6 +48,7 @@
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-naming</artifactId>
@@ -76,8 +77,34 @@
 
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-        <logging-resource-bundle>org.glassfish.naming</logging-resource-bundle>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-maven-plugin</artifactId>
+                <configuration>
+                    <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>
+                    <compilerArguments>
+                        <processor>org.glassfish.annotation.processing.LogMessageInfoAnnotationProcessor</processor>
+                        <!--
+                            Required parameter: Package where LogMessages.properties will be generated.
+                            It will typically be the top level package in the module.
+                        -->
+                        <A>-AresourceBundlePackage=org.glassfish.naming</A>
+                    </compilerArguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.glassfish.annotations</groupId>
+                        <artifactId>source-annotation-processor</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -105,6 +132,12 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.enterprise</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>source-annotation-processor</artifactId>
+            <version>1.0</version>
+            <optional>true</optional>
         </dependency>
    </dependencies>
 </project>

@@ -47,6 +47,7 @@
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>nucleus-distributions</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>atomic</artifactId>
     <name>Glassfish Atomic Distribution</name>
@@ -82,6 +83,7 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
+                            <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
                         </configuration>
                    </execution>
