@@ -89,13 +89,7 @@ public final class ContainerFactoryImpl implements ContainerFactory {
             if (ejbDescriptor instanceof EjbSessionDescriptor) {
                 EjbSessionDescriptor sd = (EjbSessionDescriptor)ejbDescriptor;
                 if ( sd.isStateless() ) {
-                    if ((ejbDescriptor.getLocalClassName() != null) &&
-                            (ejbDescriptor.getLocalBusinessClassNames()
-                             .contains("com.sun.ejb.containers.TimerLocal"))) {
-                        container = new TimerBeanContainer(ejbDescriptor, loader);
-                    } else {
-                        container = new StatelessSessionContainer(ejbDescriptor, loader);
-                    }
+                    container = new StatelessSessionContainer(ejbDescriptor, loader);
                 } else if( sd.isStateful() ) {
                     StatefulContainerBuilder sfsbBuilder = services.byType(
                             StatefulContainerBuilder.class).get();
@@ -118,37 +112,29 @@ public final class ContainerFactoryImpl implements ContainerFactory {
                         EjbEntityDescriptor robDesc = (EjbEntityDescriptor) ejbDescriptor;                    
                         container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
                     } else {
-                        if ((ejbDescriptor.getLocalHomeClassName() != null) &&
-                            (ejbDescriptor.getLocalHomeClassName()
-                             .equals("com.sun.ejb.containers.TimerLocalHome"))) {
-                            container = new TimerBeanContainer(ejbDescriptor, loader);
-                        } else {
-                        	String commitOption = null;
-                            IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
+                    	String commitOption = null;
+                        IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
                                 getIASEjbExtraDescriptors();
-                            if (iased != null) {
-                                commitOption = iased.getCommitOption();    	
-                            }
-                            if (commitOption == null) {
-                                commitOption = ejbContainerDesc.getCommitOption();  
-                            }
-                            if (commitOption.equals("A")) {
-                                _logger.log(Level.WARNING, 
+                        if (iased != null) {
+                            commitOption = iased.getCommitOption();    	
+                        }
+                        if (commitOption == null) {
+                            commitOption = ejbContainerDesc.getCommitOption();  
+                        }
+                        if (commitOption.equals("A")) {
+                            _logger.log(Level.WARNING, 
                                             "ejb.commit_option_A_not_supported",
                                             new Object []{ejbDescriptor.getName()}
                                             );
-                                container = 
-                                    new EntityContainer(ejbDescriptor, loader);
-                            } else if (commitOption.equals("C")) {
-                                _logger.log(Level.FINE, "Using commit option C for: " 
-                                            + ejbDescriptor.getName());
-                                container = new CommitCEntityContainer(ejbDescriptor,
-                                                                       loader);
-                            } else {
-                                _logger.log(Level.FINE,"Using commit option B for: " + 
+                            container = new EntityContainer(ejbDescriptor, loader);
+                        } else if (commitOption.equals("C")) {
+                            _logger.log(Level.FINE, "Using commit option C for: " 
+                                        + ejbDescriptor.getName());
+                            container = new CommitCEntityContainer(ejbDescriptor, loader);
+                        } else {
+                            _logger.log(Level.FINE,"Using commit option B for: " + 
                                             ejbDescriptor.getName());
-                                container = new EntityContainer(ejbDescriptor, loader);
-                            }
+                            container = new EntityContainer(ejbDescriptor, loader);
                         }
             	}
             }

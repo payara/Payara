@@ -40,24 +40,23 @@
 
 package com.sun.ejb.containers;
 
+import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.Collection;
-import java.util.List;
+import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import java.io.Serializable;
-
-import java.sql.Connection;
-
-import com.sun.logging.LogDomains;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -65,15 +64,36 @@ import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
 import javax.sql.DataSource;
 
+import javax.transaction.TransactionManager;
+
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-
-import javax.transaction.TransactionManager;
 
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.persistence.common.DatabaseConstants;
+import org.glassfish.persistence.common.Java2DBProcessorHelper;
+
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.logging.LogDomains;
+
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
 
 /*
  * Persistence part of the EJBTimerService 
@@ -94,9 +114,12 @@ public class PersistenceEJBTimerService extends EJBTimerService
     // timer service would have maximim consistency with performance degration.
     private boolean performDBReadBeforeTimeout = false;
     
+    private boolean removeOldTimers = false;
+
     private static final String strDBReadBeforeTimeout = "com.sun.ejb.timer.ReadDBBeforeTimeout";
     private boolean foundSysPropDBReadBeforeTimeout = false;
 
+    EjbTimerService ejbt = null;
     private DataSource timerDataSource = null;
 
     // Determines what needs to be done on connection failure
@@ -107,16 +130,28 @@ public class PersistenceEJBTimerService extends EJBTimerService
     // Possible values "redeliver" and "stop"
     private String operationOnConnectionFailure = null;
 
-    public PersistenceEJBTimerService(String appID, TimerLocal timerLocal) throws Exception {
+    public PersistenceEJBTimerService(String ejbName, boolean removeOldTimers) throws Exception {
         super();
-        timerLocal_ = timerLocal;
-        this.appID = appID;
+
+        timerLocal_ = (TimerLocal) ejbContainerUtil.getGlassfishNamingManager().
+                getInitialContext().lookup(ejbName);
+
+        this.removeOldTimers = removeOldTimers;
+
+        initProperties();
 
         // Verify that the DataSource ref is correct and store it to check if connections can be aquired if
         // the timeout fails
         lookupTimerResource();
 
-        initProperties();
+        // load DistributedEJBTimerService if available and adjust performDBReadBeforeTimeout
+        // if it is not set explicitly
+        DistributedEJBTimerService dts = ejbContainerUtil.getServices().
+                forContract(DistributedEJBTimerService.class).get();
+
+        boolean doDBReadBeforeTimeout = ((dts == null)? !ejbContainerUtil.isDas() : 
+                dts.getPerformDBReadBeforeTimeout());
+        setPerformDBReadBeforeTimeout(doDBReadBeforeTimeout);
     }
 
     private void initProperties() {
@@ -125,7 +160,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
             
             // Check for property settings from domain.xml
             EjbContainer ejbc = ejbContainerUtil.getEjbContainer();
-            EjbTimerService ejbt = ejbc.getEjbTimerService();
+            ejbt = ejbc.getEjbTimerService();
 
             if( ejbt != null ) {
 
@@ -331,7 +366,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
      * Called at server startup *after* user apps have been re-activated
      * to restart any active EJB timers.  
      */
-    public boolean restoreEJBTimers() {
+    private boolean restoreEJBTimers() {
         boolean rc = false;
         try {
             if( totalTimedObjectsInitialized_ > 0 ) {
@@ -1307,9 +1342,197 @@ public class PersistenceEJBTimerService extends EJBTimerService
     }
 
     private void lookupTimerResource() throws Exception {
-        String resource_name = ejbContainerUtil.getTimerResource();
+        String resource_name = getTimerResource();
         ConnectorRuntime connectorRuntime = ejbContainerUtil.getServices().forContract(ConnectorRuntime.class).get();
         timerDataSource = DataSource.class.cast(connectorRuntime.lookupNonTxResource(resource_name, false));
     }
 
+    public static EJBTimerService initEJBTimerService(String target) {
+        EJBTimerService ts = null;
+
+        EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+        EjbTimerService _ejbt = _ejbContainerUtil.getEjbTimerService(target);
+        String resourceName = getTimerResource(_ejbt);
+
+        File root = _ejbContainerUtil.getServerContext().getInstallRoot();
+        boolean is_upgrade = isUpgrade(resourceName, _ejbt, root);
+
+        File rootScratchDir = _ejbContainerUtil.getServerEnvironment().getApplicationStubPath();
+        File appScratchFile = new File(rootScratchDir, EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+
+        // Remember the value before the file is created during deploy
+        boolean removeOldTimers = is_upgrade && !appScratchFile.exists();
+
+        boolean available = _ejbContainerUtil.getDeployment().isRegistered(EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+        if (available) {
+            logger.log (Level.WARNING, "EJBTimerService had been explicitly deployed.");
+        } else {
+            if (resourceName != null) {
+                available = deployEJBTimerService(root, appScratchFile, resourceName, is_upgrade);
+            } else {
+                logger.log (Level.WARNING, "Cannot deploy EJBTimerService: Timer resource for target "
+                        + target + " is not available");
+            }
+        }
+
+        if (available) {
+            try {
+                ts = new PersistenceEJBTimerService("java:global/" +
+                        EjbContainerUtil.TIMER_SERVICE_APP_NAME + "/" +
+                        EjbContainerUtil.TIMER_SERVICE_BEAN_NAME, removeOldTimers);
+
+                logger.log(Level.INFO, "ejb.timer_service_started", new Object[] { resourceName } );
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "ejb.timer_service_init_error", ex);
+            }
+        }
+
+        return ts;
+    }
+
+    public void resetEJBTimers(String target) {
+        if (removeOldTimers) {
+            // Destroy all previous timers
+            destroyAllTimers(0L);
+        } else if (target == null) {
+            // target is null when accessed from the BaseContainer on load, i.e. where timers are running
+            logger.log(Level.INFO, "==> Restoring Timers ... " );
+            if (restoreEJBTimers()) {
+                logger.log(Level.INFO, "<== ... Timers Restored.");
+            }
+        }
+    }
+
+    private String getTimerResource() {
+        return getTimerResource(ejbt);
+    }
+
+    private static String getTimerResource(EjbTimerService _ejbt) {
+        String resource = EjbContainerUtil.TIMER_RESOURCE_JNDI;
+        if (_ejbt != null) {
+            if (_ejbt.getTimerDatasource() != null) {
+                resource = _ejbt.getTimerDatasource();
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Found Timer Service resource name " + resource);
+                }
+            }
+        }
+        return resource;
+    }
+
+    private static boolean deployEJBTimerService(File root, File appScratchFile, 
+            String resourceName, boolean is_upgrade) {
+        boolean deployed = false;
+        logger.log (Level.INFO, "Loading EJBTimerService. Please wait.");
+        File app = null;
+        try {
+            app = FileUtils.getManagedFile(EjbContainerUtil.TIMER_SERVICE_APP_NAME + ".war",
+                    new File(root, "lib/install/applications/"));
+        } catch (Exception e) {
+            logger.log (Level.WARNING, "Caught unexpected exception", e);
+        }
+
+        if (app == null || !app.exists()) {
+            logger.log (Level.WARNING, "Cannot deploy or load persistent EJBTimerService: " +
+                    "required WAR file (" +
+                    EjbContainerUtil.TIMER_SERVICE_APP_NAME + ".war) is not installed");
+        } else {
+            DeployCommandParameters params = new DeployCommandParameters(app);
+            params.name = EjbContainerUtil.TIMER_SERVICE_APP_NAME;
+
+            try {
+                // appScratchFile is a marker file and needs to be created on Das on the
+                // first access of the Timer Service application - so use & instead of &&
+                EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+                if (_ejbContainerUtil.isDas() && (!is_upgrade & appScratchFile.createNewFile())) {
+                    params.origin = OpsParams.Origin.deploy;
+                } else {
+                    params.origin = OpsParams.Origin.load;
+                }
+                params.target = _ejbContainerUtil.getServerEnvironment().getInstanceName();
+
+                ActionReport report = _ejbContainerUtil.getServices().
+                        forContract(ActionReport.class).named("plain").get();
+                Deployment deployment = _ejbContainerUtil.getDeployment();
+                ExtendedDeploymentContext dc = deployment.getBuilder(
+                        logger, params, report).source(app).build();
+                dc.addTransientAppMetaData(DatabaseConstants.JTA_DATASOURCE_JNDI_NAME_OVERRIDE, resourceName);
+                Properties appProps = dc.getAppProps();
+                appProps.setProperty(ServerTags.OBJECT_TYPE, DeploymentProperties.SYSTEM_ALL);
+
+                deployment.deploy(dc);
+
+                if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
+                    logger.log (Level.WARNING, "Cannot deploy or load EJBTimerService: ",
+                            report.getFailureCause());
+                } else {
+                    deployed = true;
+                }
+            } catch (Exception e) {
+                logger.log (Level.WARNING, "Cannot deploy or load EJBTimerService: ", e);
+            } finally {
+                if (!deployed && params.origin.isDeploy() && appScratchFile.exists()) {
+                    // Remove marker file if deploy failed
+                    appScratchFile.delete();
+                }
+            }
+        }
+
+        return deployed;
+    }
+
+    private static boolean isUpgrade(String resource, EjbTimerService _ejbt, File root) {
+        boolean upgrade = false;
+        Property prop = null;
+        if (_ejbt != null) {
+            List<Property> properties = _ejbt.getProperty();
+            if (properties != null) {
+                for (Property p : properties) {
+                    if (p.getName().equals(EjbContainerUtil.TIMER_SERVICE_UPGRADED)) {
+                        String value = p.getValue();
+                        if (value != null && "false".equals(value)) {
+                            upgrade = true;
+                            prop = p;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("===> Upgrade? <==");
+        }
+        if (upgrade) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("===> Upgrade! <==");
+            }
+            boolean success = false;
+            try {
+                File dir = new File(root, "lib/install/databases/upgrade");
+
+                if (!dir.exists()) {
+                    logger.log (Level.WARNING, "Cannot upgrade EJBTimerService: " +
+                            "required directory is not available");
+                } else {
+                    Java2DBProcessorHelper h = new Java2DBProcessorHelper(
+                            EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+                    success = h.executeDDLStatement(
+                            dir.getCanonicalPath() + "/ejbtimer_upgrade_", resource);
+                    ConfigSupport.apply(new SingleConfigCode<Property>() {
+                        public Object run(Property p) throws PropertyVetoException, TransactionFailure {
+                            p.setValue("true");
+                            return null;
+                        }
+                    }, prop);
+                }
+            } catch (Exception e) {
+                logger.log (Level.WARNING, "", e);
+            }
+            if (!success) {
+                logger.log (Level.SEVERE, "Failed to upgrade EJBTimerService: see log for details");
+            }
+        }
+        return upgrade;
+    }
 }

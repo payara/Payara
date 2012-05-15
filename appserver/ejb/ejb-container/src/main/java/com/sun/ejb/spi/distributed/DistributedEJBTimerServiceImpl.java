@@ -42,6 +42,7 @@ package com.sun.ejb.spi.distributed;
 
 import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.PersistenceEJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
 import com.sun.ejb.spi.container.DistributedEJBTimerService;
@@ -72,6 +73,8 @@ public class DistributedEJBTimerServiceImpl
 
     @Inject
     RecoveryResourceRegistry recoveryResourceRegistry;
+
+    private boolean defaultDBReadValue = false;
 
     public void postConstruct() {
         if (!ejbContainerUtil.isDas()) {
@@ -175,10 +178,22 @@ public class DistributedEJBTimerServiceImpl
         return result;
     }
 
-    public void setPerformDBReadBeforeTimeout( boolean defaultDBReadValue ) {
-        // Set it if and when EJBTimerService is available
-        ejbContainerUtil.setEJBTimerServiceDBReadBeforeTimeout(defaultDBReadValue);
+    public boolean getPerformDBReadBeforeTimeout() {
+        return defaultDBReadValue;
     }
+
+    private void setPerformDBReadBeforeTimeout( boolean value ) {
+        defaultDBReadValue = value;
+        // Set it the EJBTimerService is available. Otherwise the value will be pulled
+        // on the timer service startup
+        if (ejbContainerUtil.isEJBTimerServiceLoaded()) {
+            EJBTimerService ts = ejbContainerUtil.getEJBTimerService();
+            if (ts != null && ts instanceof PersistenceEJBTimerService) {
+                ((PersistenceEJBTimerService)ts).setPerformDBReadBeforeTimeout(value);
+            }
+        }
+    }
+
 
 } //DistributedEJBTimerServiceImpl.java
 

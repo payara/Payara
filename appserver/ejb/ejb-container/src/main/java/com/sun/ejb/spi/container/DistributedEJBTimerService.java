@@ -61,7 +61,7 @@ public interface DistributedEJBTimerService {
      * "true" (i.e. always read from DB before delivering a ejbTimeout for a timer)
      *
     */
-    public void setPerformDBReadBeforeTimeout( boolean defaultDBReadValue );
+    public boolean getPerformDBReadBeforeTimeout();
 
 //    public void cancelTimerTask( Object timerId, String ownerServerId );
 

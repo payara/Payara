@@ -557,7 +557,8 @@ public class EjbDeployer
 
             if( timerService != null ) {
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log( Level.FINE, "EjbDeployer - calling timerService.createSchedules for " + ejbDescriptor.getUniqueId());
+                    _logger.log( Level.FINE, "EjbDeployer - calling timerService.createSchedules for " + 
+                            ejbDescriptor.getUniqueId());
                 }  
                 timerService.createSchedulesOnServer(ejbDescriptor, getOwnerId(target));
 

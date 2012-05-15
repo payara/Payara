@@ -544,10 +544,7 @@ public class StatelessSessionContainer
         return context;
     }
 
-    /**
-     * Allow overriding this method by the TimerBeanContainer
-     */
-    void setSessionContext(Object ejb, SessionContextImpl context)
+    private void setSessionContext(Object ejb, SessionContextImpl context)
             throws Exception {
         if( ejb instanceof SessionBean ) {
             ((SessionBean)ejb).setSessionContext(context);

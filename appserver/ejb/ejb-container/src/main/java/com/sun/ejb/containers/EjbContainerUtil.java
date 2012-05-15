@@ -40,12 +40,14 @@
 
 package com.sun.ejb.containers;
 
+import org.glassfish.ejb.config.EjbTimerService;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.admin.monitor.callflow.Agent;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -76,6 +78,8 @@ public interface EjbContainerUtil {
 
     public String TIMER_SERVICE_APP_NAME = "ejb-timer-service-app";
 
+    public String TIMER_SERVICE_BEAN_NAME = "TimerBean";
+
     public String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
 
     public String TIMER_RESOURCE_JNDI = "jdbc/__TimerPool";
@@ -94,8 +98,6 @@ public interface EjbContainerUtil {
 
     public  void unsetEJBTimerService();
 
-    public  void setEJBTimerServiceDBReadBeforeTimeout(boolean value);
-
     public  boolean isEJBTimerServiceLoaded();
 
     public  EJBTimerService getEJBTimerService();
@@ -104,7 +106,7 @@ public interface EjbContainerUtil {
 
     public  EJBTimerService getEJBTimerService(String target, boolean force);
 
-    public String getTimerResource();
+    public  EjbTimerService getEjbTimerService(String target);
 
     public  void registerContainer(BaseContainer container);
 
@@ -173,4 +175,6 @@ public interface EjbContainerUtil {
     public ThreadPoolExecutor getThreadPoolExecutor(String poolName);
 
     public JavaEEIOUtils getJavaEEIOUtils();
+
+    public Deployment getDeployment();
 }

@@ -70,6 +70,8 @@ import com.sun.logging.LogDomains;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.enterprise.deployment.EjbDescriptor;
 
+import javax.annotation.Resource;
+import javax.annotation.PreDestroy;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -95,10 +97,19 @@ public class TimerBean implements TimerLocal {
 
     private static final Logger logger = LogDomains.getLogger(TimerBean.class, LogDomains.EJB_LOGGER);
 
-    private EJBContextImpl context_;
+    @Resource private SessionContext context_;
 
     @PersistenceContext(unitName="__EJB__Timer__App")
     private EntityManager em;
+
+    @PreDestroy
+    private void destroy() {
+        EJBTimerService ejbTimerService = getEJBTimerService();
+        if (ejbTimerService != null) {
+            EjbContainerUtilImpl.getInstance().unsetEJBTimerService();
+            ejbTimerService.onShutdown();
+        }
+    }
 
     // Find Timer by Id
     public TimerState findTimer(TimerPrimaryKey timerId) {
@@ -318,7 +329,7 @@ public class TimerBean implements TimerLocal {
         // containerId is not generated until after deployment.  
         //
         try {
-            getEJBTimerService().addTimerSynchronization(context_, 
+            getEJBTimerService().addTimerSynchronization((EJBContextImpl)context_, 
                     timerId, initialExpiration, containerId, ownerId);
         } catch(Exception e) {
             CreateException ce = new CreateException();
@@ -338,10 +349,6 @@ public class TimerBean implements TimerLocal {
         return EjbContainerUtilImpl.getInstance().getEJBTimerService();
     }
 
-    public void setSessionContext(SessionContext context) {
-        context_ = (EJBContextImpl) context;
-    }
-    
     public void remove(TimerPrimaryKey timerId) {
         TimerState timer = em.find(TimerState.class, timerId);
         if (timer != null) {
@@ -381,7 +388,7 @@ public class TimerBean implements TimerLocal {
 
         timer.setState(TimerState.CANCELLED);
 
-        getEJBTimerService().cancelTimerSynchronization(context_, timerId, 
+        getEJBTimerService().cancelTimerSynchronization((EJBContextImpl)context_, timerId, 
                 timer.getContainerId(), timer.getOwnerId());
 
         // XXX ???? WHY WAS IT: NOTE that it's the caller's responsibility to call remove().

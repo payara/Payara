@@ -135,8 +135,6 @@ public class EJBTimerService
     private static final int MAX_REDELIVERIES = 1;
     private static final long REDELIVERY_INTERVAL = 5000;
 
-    String appID;
-
     // minimum amount of time between either a timer creation and its first 
     // expiration or between subsequent timer expirations.  
     private long minimumDeliveryInterval_ = EjbContainerUtil.MINIMUM_TIMER_DELIVERY_INTERVAL;
@@ -270,10 +268,11 @@ public class EJBTimerService
 
     /**
      * Called at server startup *after* user apps have been re-activated
-     * to restart any active EJB timers. No-op for non-persitent timers
+     * to restart any active EJB timers or cleanup old timers. 
+     * No-op for non-persitent timers
      */
-    public boolean restoreEJBTimers() {
-        return true;
+    public void resetEJBTimers(String target) {
+        // Nothing to do
     }
 
     void shutdown() {
@@ -1801,7 +1800,7 @@ public class EJBTimerService
 
 
     /**
-     * Called from TimerBeanContainer
+     * Called from TimerBean PreDestroy
      */
     public void onShutdown() {
         shutdown();
