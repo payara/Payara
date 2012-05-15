@@ -355,7 +355,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
             }
         } catch(Exception e) {
             logger.log(Level.INFO,
-                "ContainerFactoryImpl.getDebugMonitoringDetails(), " +
+                "getDBReadBeforeTimeoutProperty(), " +
                 " Exception when trying to " + 
                 "get the System property - ", e);
         }

@@ -496,8 +496,7 @@ public class EntityContainer
     
     
     /**
-     * Called only from ContainerFactory when a remote EjbInvocation
-     * arrives for an EJB.
+     * Called when a remote EjbInvocation arrives for an EJB.
      */
     EJBObjectImpl getEJBObjectImpl(byte[] streamKey) {
         // First get the primary key of the EJB
