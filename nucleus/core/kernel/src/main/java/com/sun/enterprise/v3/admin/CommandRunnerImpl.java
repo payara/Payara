@@ -1168,6 +1168,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     if ((runtimeTypes.contains(RuntimeType.ALL))
                             || (serverEnv.isDas() && (CommandTarget.DOMAIN.isValid(habitat, targetName)
                             || runtimeTypes.contains(RuntimeType.DAS)))
+                            || runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE)
                             || (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
                                 "Command execution stage 3 : Calling main command implementation for {0}", inv.name()));
@@ -1175,12 +1176,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         inv.setReport(report);
                     }
 
-                    if (runtimeTypes.contains(RuntimeType.SINGLE_INSTANCE) && !(serverEnv.isDas())) {
-                        logger.fine(adminStrings.getLocalString("commandRunner.executor.instance",
-                                "Executing command on instance {0}",model.getCommandName()));
-                        report = doCommand(model,command,context);
-                        inv.setReport(report);
-                    }
+
 
                     if (!FailurePolicy.applyFailurePolicy(fp,
                             report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
