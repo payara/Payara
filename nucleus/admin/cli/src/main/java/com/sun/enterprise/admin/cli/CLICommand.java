@@ -295,8 +295,8 @@ public abstract class CLICommand implements PostConstruct {
     }
     
     /*
-     * Return the command context for this command.  The command context is 
-     * a scope in which commands are defined. Command clients can specify a scope
+     * Return the command scope for this command.  The command scope is 
+     * a name space in which commands are defined. Command clients can specify a scope
      * to use in looking up a command. Currently this is only used for remote
      * commands. By default, the context is null.
      */
@@ -305,7 +305,7 @@ public abstract class CLICommand implements PostConstruct {
     }
 
     /*
-     * Set the command context for this command.  
+     * Set the command scope for this command.  
      */
     public static void setCommandScope(String ctx) {
         commandScope = ctx;
