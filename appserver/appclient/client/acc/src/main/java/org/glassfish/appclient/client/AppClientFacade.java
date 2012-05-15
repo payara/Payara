@@ -69,9 +69,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
+import javax.xml.bind.util.ValidationEventCollector;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -106,6 +105,8 @@ public class AppClientFacade {
 
     private static final String ACC_CONFIG_CONTENT_PROPERTY_NAME = "glassfish-acc.xml.content";
     private static final String MAN_PAGE_PATH = "/org/glassfish/appclient/client/acc/appclient.1m";
+    private static final String LINE_SEP = System.getProperty("line.separator");
+    
 
     private static final Class<?> stringsAnchor = ACCClassLoader.class;
     private static LocalStringManager localStrings = new LocalStringManagerImpl(stringsAnchor);
@@ -514,6 +515,7 @@ public class AppClientFacade {
                 IOException {
         ClientContainer result = null;
         Reader configReader = null;
+        String configFileLocationForErrorMessage = "";
         try {
             /*
              * During a Java Web Start launch, the config is passed as a property
@@ -544,6 +546,7 @@ public class AppClientFacade {
                 File configFile = checkXMLFile(configPath);
                 checkXMLFile(appClientCommandArgs.getConfigFilePath());
                 configReader = new FileReader(configFile);
+                configFileLocationForErrorMessage = configFile.getAbsolutePath();
             }
 
             /*
@@ -573,9 +576,35 @@ public class AppClientFacade {
 
             SAXSource saxSource = new SAXSource(reader, inputSource);
             JAXBContext jc = JAXBContext.newInstance(ClientContainer.class );
-
+            final ValidationEventCollector vec = new ValidationEventCollector();
+            
             Unmarshaller u = jc.createUnmarshaller();
+            u.setEventHandler(vec);
             result = (ClientContainer) u.unmarshal(saxSource);
+            if (vec.hasEvents()) {
+                /*
+                 * The parser reported at least one warning or error.  If all 
+                 * events were warnings, display them as a message and continue.
+                 * Otherwise there was at least one error or fatal, so throw
+                 * an exception and abort the client launch.
+                 */
+                boolean isErrorOrWorse = false;
+                final String messageIntroduction = localStrings.getLocalString(
+                            AppClientFacade.class, "appclient.errParsingConfig",
+                            "Error parsing app client container configuration {0}",
+                            new Object[] {configFileLocationForErrorMessage});
+                final StringBuilder sb = new StringBuilder();
+                for (ValidationEvent ve : vec.getEvents()) {
+                    sb.append(ve.getMessage()).append(LINE_SEP);
+                    isErrorOrWorse |= (ve.getSeverity() != ValidationEvent.WARNING);
+                }
+                if (isErrorOrWorse) {
+                    throw new UserError(messageIntroduction,
+                            new ValidationException(sb.toString()));
+                } else {
+                    System.err.println(messageIntroduction + LINE_SEP + sb.toString());
+                }
+            }
 
             return result;
         } finally {
