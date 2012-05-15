@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -385,19 +385,24 @@ public class StandardPipeline
     public void setBasic(GlassFishValve valve) {
 
         // Change components if necessary
-        GlassFishValve oldBasic = this.basic;
+        GlassFishValve oldBasic = null;
+        synchronized (this) {
+            oldBasic = this.basic;
+        }
         if (oldBasic == valve) {
             return;
         }
 
         // Stop the old component if necessary
         if (oldBasic != null) {
-            if (started && (oldBasic instanceof Lifecycle)) {
-                try {
-                    ((Lifecycle) oldBasic).stop();
-                } catch (LifecycleException e) {
-                    log.log(Level.SEVERE, "StandardPipeline.setBasic: stop",
-                            e);
+            synchronized (this) {
+                if (started && (oldBasic instanceof Lifecycle)) {
+                    try {
+                        ((Lifecycle) oldBasic).stop();
+                    } catch (LifecycleException e) {
+                        log.log(Level.SEVERE, "StandardPipeline.setBasic: stop",
+                                e);
+                    }
                 }
             }
             if (oldBasic instanceof Contained) {

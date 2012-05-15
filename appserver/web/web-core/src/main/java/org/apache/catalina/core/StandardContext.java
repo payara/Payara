@@ -874,7 +874,9 @@ public class StandardContext
      * Returns true if the internal naming support is used.
      */
     public boolean isUseNaming() {
-        return useNaming;
+        synchronized (this) {
+            return useNaming;
+        }
     }
 
     /**
@@ -1220,7 +1222,9 @@ public class StandardContext
      */
     @Override
     public void setDocBase(String docBase) {
-        this.docBase = docBase;
+        synchronized (this) {
+            this.docBase = docBase;
+        }
     }
 
     /**
@@ -1395,9 +1399,11 @@ public class StandardContext
      * Sets a new pipeline
      */
     public void restrictedSetPipeline(Pipeline pl) {
-        pl.setBasic(new StandardContextValve());
-        pipeline = pl;
-        hasCustomPipeline = true;
+        synchronized (this) {
+            pl.setBasic(new StandardContextValve());
+            pipeline = pl;
+            hasCustomPipeline = true;
+        }
     }
 
     /**
@@ -2029,7 +2035,9 @@ public class StandardContext
      * @param workDir The new work directory
      */
     public void setWorkDir(String workDir) {
-        this.workDir = workDir;
+        synchronized (this) {
+            this.workDir = workDir;
+        }
         if (started) {
             postWorkDirectory();
         }
@@ -6094,7 +6102,7 @@ public class StandardContext
 
     /**
      * Get app base.
-     */
+     *
     private String getAppBase() {
         String appBase = null;
         Container container = this;
@@ -6111,7 +6119,7 @@ public class StandardContext
 
     /**
      * Get config base.
-     */
+     *
     private File getConfigBase() {
         File configBase =
             new File(System.getProperty("catalina.base"), "conf");
@@ -6137,6 +6145,7 @@ public class StandardContext
         configBase.mkdirs();
         return configBase;
     }
+    */
 
     /**
      * Given a context path, get the config file name.
@@ -6154,7 +6163,7 @@ public class StandardContext
 
     /**
      * Copy a file.
-     */
+     *
     private boolean copy(File src, File dest) {
         FileInputStream is = null;
         FileOutputStream os = null;
@@ -6190,6 +6199,7 @@ public class StandardContext
         }
         return true;
     }
+    */
 
 
     /**

@@ -4307,10 +4307,12 @@ public class Request
      * Log a message on the Logger associated with our Container (if any).
      *
      * @param message Message to be logged
-     */
+     *
     private void log(String message) {
-        org.apache.catalina.Logger logger =
-                connector.getContainer().getLogger();
+        org.apache.catalina.Logger logger = null;
+        if (connector != null && connector.getContainer() != null) {
+            logger = connector.getContainer().getLogger();
+        }
         String localName = "Request";
         if (logger != null) {
             logger.log(localName + " " + message);
@@ -4319,7 +4321,7 @@ public class Request
                 log.info(localName + " " + message);
             }
         }
-    }
+    }*/
 
     /**
      * Log a message on the Logger associated with our Container (if any).

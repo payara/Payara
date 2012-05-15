@@ -66,7 +66,6 @@ import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.apache.naming.resources.Resource;
-import org.apache.tomcat.util.modeler.Registry;
 import org.glassfish.web.loader.WebappClassLoader;
 
 import javax.management.MBeanRegistration;
@@ -88,6 +87,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -671,11 +672,16 @@ public class WebappLoader
         // Construct a class loader based on our current repositories list
         try {
 
-            ClassLoader cl = createClassLoader();
+            final ClassLoader cl = createClassLoader();
             if (cl instanceof WebappClassLoader) {
                 classLoader = (WebappClassLoader) cl;
             } else {
-                classLoader = new WebappClassLoader(cl);
+                classLoader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+                    @Override
+                    public WebappClassLoader run() {
+                        return new WebappClassLoader(cl);
+                    }
+                });
             }
             classLoader.setResources(container.getResources());
             classLoader.setDebug(this.debug);
@@ -831,7 +837,7 @@ public class WebappLoader
      * Log a message on the Logger associated with our Container (if any)
      *
      * @param message Message to be logged
-     */
+     *
     private void log(String message) {
         org.apache.catalina.Logger logger = null;
         String containerName = null;
@@ -848,6 +854,7 @@ public class WebappLoader
             }
         }
     }
+    */
 
 
     /**
