@@ -248,7 +248,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             // As a work around, we create a new framework instance with a clean cache.
             // uninstallOldBundles();
             logger.logp(Level.INFO, "OSGiGlassFishRuntimeBuilder", "reconfigure",
-                    "Provisioning options have changed, recreating the framework");
+                    "Provisioning options have changed, recreating the framework with a clean OSGi storage(aka cache)");
             framework.stop();
             framework.waitForStop(0);
             properties.setProperty(FRAMEWORK_STORAGE_CLEAN,
