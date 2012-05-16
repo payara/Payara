@@ -81,10 +81,22 @@ import static org.objectweb.asm.Opcodes.V1_6;
 public class CompositeUtil {
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
-    public synchronized static <T> T getModel(Class<T> clazz, Class similarClass,
+    /**
+     * This method will return a generated concrete class that implements the interface
+     * requested, as well as any interfaces intended to extend the base model interface.
+     * The intent to extend the model is shown via annotations yet to be developed.  Currently, this
+     * API requires the caller to specify all the desired interfaces, though this requirement will be
+     * removed with the full integration of HK2 2.x into GlassFish.
+     * @param modelIface The base interface for the desired data model
+     * @param similarClass the Class for the calling code, used to load the generated class into the Classloader
+     * @param interfaces An array of the interfaces, excluding the base interface, to implement
+     * @return An instance of a concrete class implementing the requested interfaces
+     * @throws Exception
+     */
+    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass,
             Class<?>[] interfaces) throws Exception {
-        String className = clazz.getName() + "Impl";
-        if (!alreadyGenerated(className)) {
+        String className = modelIface.getName() + "Impl";
+        if (!generatedClasses.containsKey(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
 //            Class<?>[] interfaces = new Class<?>[]{
 //                clazz,
@@ -122,7 +134,7 @@ public class CompositeUtil {
                 String name = entry.getKey();
                 Class<?> type = (Class<?>)entry.getValue().get("type");
                 createField(classWriter, name, type);
-                createGettersAndSetters(classWriter, clazz, className, name, type);
+                createGettersAndSetters(classWriter, modelIface, className, name, type);
 
             }
 
@@ -136,6 +148,13 @@ public class CompositeUtil {
     }
 
     // TODO: method enum?
+    /**
+     * Find and execute all resource extensions for the specified base resource and HTTP method
+     * @param habitat
+     * @param baseClass
+     * @param data
+     * @param method
+     */
     public static void getResourceExtensions(Habitat habitat, Class<?> baseClass, Object data, String method) {
         Collection<RestExtension> extensions = habitat.getAllByContract(RestExtension.class);
 
@@ -148,12 +167,22 @@ public class CompositeUtil {
         }
     }
 
+    /**
+     * This builds the representation of a type suitable for use in bytecode.  For example,
+     * the internal type for String would be "L;java/lang/String;", and a double would be "D".
+     * @param type The desired class
+     * @return
+     */
     protected static String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
                 ? Primitive.getPrimitive(type.getName()).getInternalType()
                 : ("L" + getInternalName(type.getName()) + ";");
     }
 
+    /**
+     * This method starts the class definition, adding the JAX-B annotations to allow
+     * for marshalling via JAX-RS
+     */
     protected static void visitClass(ClassWriter classWriter, String className, Class<?>[] ifaces, Map<String, Map<String, Object>> properties) {
         String[] ifaceNames = new String[ifaces.length];
         int i = 0;
@@ -175,6 +204,10 @@ public class CompositeUtil {
         annotation.visitEnd();
     }
 
+    /**
+     * This method creates the default constructor for the class.  Default values are set for any @Attribute
+     * defined with a defaultValue.
+     */
     protected static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
         // Create the ctor
         MethodVisitor method = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -195,6 +228,9 @@ public class CompositeUtil {
         method.visitEnd();
     }
 
+    /**
+     * This enum encapsulates the metadata for primitives needed for generating fields, getters and setters
+     */
     static enum Primitive {
         DOUBLE ("D", DRETURN, DLOAD),
         FLOAT  ("F", FRETURN, FLOAD),
@@ -246,6 +282,15 @@ public class CompositeUtil {
         }
     };
 
+    /*
+     * This method generates the byte code to set the default value for a given field.  Efforts are made to determine
+     * the best way to create the correct value.  If the field is a primitive, the one-arg, String constructor of the
+     * appropriate wrapper class is called to generate the value. If the field is not a primitive, a one-arg, String
+     * constructor is requested to build the value.  If both of these attempts fail, the default value is set using
+     * the String representation as given via the @Attribute annotation.
+     *
+     * TODO: it may make sense to treat primitives here as non-String types.
+     */
     protected static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
         final String type = getInternalTypeString(fieldClass);
         Object value = defaultValue;
@@ -283,7 +328,7 @@ public class CompositeUtil {
     }
 
     /**
-     * Add the field to the class
+     * Add the field to the class, adding the @XmlAttribute annotation for marshalling purposes.
      */
     protected static void createField(ClassWriter cw, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
@@ -292,6 +337,9 @@ public class CompositeUtil {
         field.visitEnd();
     }
 
+    /**
+     * Create getters and setters for the given field
+     */
     protected static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
         className = getInternalName(className);
@@ -321,10 +369,9 @@ public class CompositeUtil {
         setter.visitEnd();
     }
 
-    protected static boolean alreadyGenerated(String className) {
-        return generatedClasses.containsKey(className);
-    }
-
+    /**
+     * Convert the dotted class name to the "internal" (bytecode) representation
+     */
     protected static String getInternalName(String className) {
         return className.replace(".", "/");
     }
