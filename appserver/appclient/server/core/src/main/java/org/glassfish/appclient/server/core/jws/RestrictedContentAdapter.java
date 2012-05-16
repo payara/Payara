@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -261,16 +261,16 @@ public class RestrictedContentAdapter extends HttpHandler {
              * Delegate to the Grizzly implementation.
              */
             StaticHttpHandler.sendFile(gResp, fileToSend);
-            final int status = gResp.getStatus();
-            if (status != HttpServletResponse.SC_OK) {
-                logger.fine(logPrefix() + "Could not serve content for "
-                        + relativeURIString + " - status = " + status);
-            } else {
-                logger.fine(logPrefix() + "Served static content for " + gReq.getMethod()
-                        + ":" + sc.toString());
-            }
+//            final int status = gResp.getStatus();
+//            if (status != HttpServletResponse.SC_OK) {
+//                logger.fine(logPrefix() + "Could not serve content for "
+//                        + relativeURIString + " - status = " + status);
+//            } else {
+//                logger.fine(logPrefix() + "Served static content for " + gReq.getMethod()
+//                        + ":" + sc.toString());
+//            }
 
-            finishResponse(gResp, status);
+//            finishResponse(gResp, status);
         } catch (Exception e) {
 //            gResp.getResponse().setErrorException(e);
             finishErrorResponse(gResp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
