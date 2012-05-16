@@ -275,15 +275,16 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      *
      */
     public boolean hasCookieHeaders(Request req) {
+
         for (String header : req.getHeaders("Cookie")){
+            int index = header.lastIndexOf('"');
             if (header.contains(SESSION_COOKIE_NAME) &&
-               (header.substring(header.lastIndexOf(".")+1).equals(server.getName()))) {
+               (header.substring((index+1),header.indexOf(';')-1).equals(server.getName()))) {
                 return true;
             }
 
         }
         return false;
-
     }
 
     /**
