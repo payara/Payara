@@ -60,11 +60,11 @@ import java.net.URL;
 
 /**
  * This class is responsible for creating a ClassLoader that can
- * load classes exported by any OSGi bundle in the system for public use.
+ * load classes exported by the system for public use. We call those classes public APIs and
+ * the corresponding class loader is called APIClassLoader.
  * Such classes include Java EE API, AMX API, appserv-ext API, etc.
- * CommonClassLoader delegates to this class loader..
- * It does special treatment of META-INF/mailcap file. For such resources,
- * it searches all available bundles.
+ * CommonClassLoader delegates to this class loader.
+ * This class has a punch-in mechanism to do special handling of META-INF/mailcap and META-INF/services resources.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
@@ -73,7 +73,10 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
 
     /*
      * Implementation Note:
-     * 1. This class depends on OSGi runtime, so not portable on HK2.
+     * 1. This class currently depends on a special which is configured such that it can load all public APIs.
+     * The APIClassLoader is a wrapper around such a module's loader. This is how we are indepdendent of
+     * actual module system like OSGi. So far it has worked when we run in OSGi mode as well as when we run
+     * in a single classpath mode.
      * 2. APIClassLoader maintains a blacklist, i.e., classes and resources that could not be loaded to avoid
      * unnecessary delegation. It flushes that list everytime a new bundle is installed in the system.
      * This takes care of performance problem in typical production use of GlassFish.
@@ -86,13 +89,16 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     private ClassLoader theAPIClassLoader;
     @Inject
     ModulesRegistry mr;
+    /**
+     * This is the module that we delegate to.
+     */
     private static final String APIExporterModuleName =
             "GlassFish-Application-Common-Module"; // NOI18N
     private static final String MAILCAP = "META-INF/mailcap";
-    private static final String META_INF_SERVICES = "META-INF/services/";
+    private static final String META_INF_SERVICES = "META-INF/services/"; // NOI18N
 
     private static final String PUNCHIN_MODULE_STATE_PROP =
-            "glassfish.kernel.apicl.punchin.module.state";
+            "glassfish.kernel.apicl.punchin.module.state"; // NOI18N
 
     // set to NEW to maintain backward compatibility. We should change it to RESOLVED after we have
     // done enough testing to make susre there are no regressions.
@@ -126,10 +132,10 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
         /*
          * We don't directly retrun APIModule's class loader, because
          * that class loader does not delegate to the parent. Instead, it
-         * relies on OSGi bundle to load the classes. That behavior is
-         * fine if we want to honor OSGi classloading semantics. APIClassLoader
-         * wants to use delegation model so that we don't have to set
-         * bootdelegation=* for OSGi bundles.
+         * relies on OSGi bundle or some such module implementation to load the classes. That behavior is
+         * fine if we want to mimic underlying module system's classloading semantics. But, APIClassLoader has a
+         * slightly different requirement. It has to use classic delegation model as well so that
+         * deployed applications can use classes made available via extension class loader.
          * Since the parent of bundle classloader will have glassfish launching classes, felix or any other
          * OSGi framework classes and their dependencies, we don't want to delegate to such a class loader.
          * Instead, we delegate to JRE's extension class loader if we don't find any class via APIModuleLoader.
@@ -169,9 +175,9 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
          * This method takes two classloaders which is unusual. Both the class loaders are consulted,
          * so they both are delegates, but depending on the class/resource being requested, one is preferred
          * over the other. The second argument is the classic parent class loader, where as the first one
-         * is the OSGi gateway classloader. For all java.* names, we consult only the parent loader.
-         * For any other names, we first consult the OSGi gateway loader and then parent. See more comments in
-         * loadClass() method implementation of this class.
+         * is the module system gateway classloader. For all java.* names, we consult only the parent loader.
+         * For any other names, we first consult the gateway loader and then parent. See more comments in
+         * {@link #loadClass(String)} method implementation of this class.
          * @param apiModuleLoader ClassLoader corresponding to the APIModule
          * @param parent ClassLoader that's consulted for all java.* classes and for classes
          * not found via apiModuleLoader
