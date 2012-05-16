@@ -50,8 +50,10 @@
                         com.sun.enterprise.deployment.io; \
                         com.sun.enterprise.deployment.io.runtime; \
                         com.sun.enterprise.deployment.node; \
+                        com.sun.enterprise.deployment.node.web; \
                         com.sun.enterprise.deployment.node.runtime; \
                         com.sun.enterprise.deployment.node.runtime.common; \
+                        com.sun.enterprise.deployment.node.runtime.web; \
                         com.sun.enterprise.deployment.runtime; \
                         com.sun.enterprise.deployment.runtime.application; \
                         com.sun.enterprise.deployment.runtime.application.wls; \
