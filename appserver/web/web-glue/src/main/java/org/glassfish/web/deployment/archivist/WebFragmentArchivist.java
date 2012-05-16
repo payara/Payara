@@ -69,7 +69,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     /** 
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
-    DeploymentDescriptorFile<WebFragmentDescriptor> standardDD = new WebFragmentDeploymentDescriptorFile();
+    private DeploymentDescriptorFile<WebFragmentDescriptor> standardDD = null;
 
     WebFragmentArchivist (WebArchivist webArchivist, BaseServiceLocator habitat) {
         this.habitat = habitat;
@@ -111,6 +111,9 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      */
     @Override
     public DeploymentDescriptorFile<WebFragmentDescriptor> getStandardDDFile() {
+        if (standardDD == null) {
+            standardDD = new WebFragmentDeploymentDescriptorFile();
+        }
         return standardDD;
     }
     
