@@ -115,20 +115,20 @@ public class CompositeUtil {
                     }
                 }
             }
-            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-            visitClass(cw, className, interfaces, properties);
+            ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            visitClass(classWriter, className, interfaces, properties);
 
              for (Map.Entry<String, Map<String, Object>> entry : properties.entrySet()) {
                 String name = entry.getKey();
                 Class<?> type = (Class<?>)entry.getValue().get("type");
-                createField(cw, name, type);
-                createGettersAndSetters(cw, clazz, className, name, type);
+                createField(classWriter, name, type);
+                createGettersAndSetters(classWriter, clazz, className, name, type);
 
             }
 
-            createConstructor(cw, className, properties);
-            cw.visitEnd();
-            Class<?> newClass = defineClass(similarClass, className, cw.toByteArray());
+            createConstructor(classWriter, className, properties);
+            classWriter.visitEnd();
+            Class<?> newClass = defineClass(similarClass, className, classWriter.toByteArray());
             generatedClasses.put(className, newClass);
         }
 
@@ -150,49 +150,49 @@ public class CompositeUtil {
 
     protected static String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
-                ? getPrimitiveInternalType(type.getName())//Primitive.getPrimitive(type.getName()).getInternalType()
+                ? Primitive.getPrimitive(type.getName()).getInternalType()
                 : ("L" + getInternalName(type.getName()) + ";");
     }
 
-    protected static void visitClass(ClassWriter cw, String className, Class<?>[] ifaces, Map<String, Map<String, Object>> properties) {
+    protected static void visitClass(ClassWriter classWriter, String className, Class<?>[] ifaces, Map<String, Map<String, Object>> properties) {
         String[] ifaceNames = new String[ifaces.length];
         int i = 0;
         for (Class<?> iface : ifaces) {
             ifaceNames[i++] = iface.getName().replace(".", "/");
         }
         className = getInternalName(className);
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className,
+        classWriter.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className,
                 null,
                 "java/lang/Object",
                 ifaceNames);
 
         // Add @XmlRootElement
-        cw.visitAnnotation("Ljavax/xml/bind/annotation/XmlRootElement;", true).visitEnd();
+        classWriter.visitAnnotation("Ljavax/xml/bind/annotation/XmlRootElement;", true).visitEnd();
 
         // Add @XmlAccessType
-        AnnotationVisitor av0 = cw.visitAnnotation("Ljavax/xml/bind/annotation/XmlAccessorType;", true);
-        av0.visitEnum("value", "Ljavax/xml/bind/annotation/XmlAccessType;", "FIELD");
-        av0.visitEnd();
+        AnnotationVisitor annotation = classWriter.visitAnnotation("Ljavax/xml/bind/annotation/XmlAccessorType;", true);
+        annotation.visitEnum("value", "Ljavax/xml/bind/annotation/XmlAccessType;", "FIELD");
+        annotation.visitEnd();
     }
 
     protected static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
         // Create the ctor
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+        MethodVisitor method = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+        method.visitCode();
+        method.visitVarInsn(ALOAD, 0);
+        method.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
 
         for (Map.Entry<String, Map<String, Object>> property : properties.entrySet()) {
             String fieldName = property.getKey();
             String defaultValue = (String)property.getValue().get("defaultValue");
             if (defaultValue != null && !defaultValue.isEmpty()) {
-                setDefaultValue(mv, className, fieldName, (Class<?>)property.getValue().get("type"), defaultValue);
+                setDefaultValue(method, className, fieldName, (Class<?>)property.getValue().get("type"), defaultValue);
             }
         }
 
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(1, 1);
-        mv.visitEnd();
+        method.visitInsn(RETURN);
+        method.visitMaxs(1, 1);
+        method.visitEnd();
     }
 
     static enum Primitive {
@@ -246,7 +246,7 @@ public class CompositeUtil {
         }
     };
 
-    protected static void setDefaultValue(MethodVisitor mv, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
+    protected static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
         final String type = getInternalTypeString(fieldClass);
         Object value = defaultValue;
 
@@ -261,38 +261,35 @@ public class CompositeUtil {
                 case BYTE: value = Byte.valueOf(defaultValue); break;
                 case BOOLEAN: value = Boolean.valueOf(defaultValue); break;
             }
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitLdcInsn(value);
+            method.visitVarInsn(ALOAD, 0);
+            method.visitLdcInsn(value);
             System.out.println("CTOR: Using " + type + " for PUTFIELD " + fieldName);
-            mv.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
+            method.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
         } else {
             if (!fieldClass.equals(String.class)) {
-                mv.visitVarInsn(ALOAD, 0);
+                method.visitVarInsn(ALOAD, 0);
                 final String internalName = getInternalName(fieldClass.getName());
-                mv.visitTypeInsn(NEW, internalName);
-                mv.visitInsn(DUP);
-                mv.visitLdcInsn(defaultValue);
-                mv.visitMethodInsn(INVOKESPECIAL, internalName, "<init>", "(Ljava/lang/String;)V");
-                mv.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
+                method.visitTypeInsn(NEW, internalName);
+                method.visitInsn(DUP);
+                method.visitLdcInsn(defaultValue);
+                method.visitMethodInsn(INVOKESPECIAL, internalName, "<init>", "(Ljava/lang/String;)V");
+                method.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
             } else {
-                mv.visitVarInsn(ALOAD, 0);
-                mv.visitLdcInsn(value);
-                mv.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
+                method.visitVarInsn(ALOAD, 0);
+                method.visitLdcInsn(value);
+                method.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
             }
         }
-
-
     }
 
     /**
      * Add the field to the class
      */
     protected static void createField(ClassWriter cw, String name, Class<?> type) {
-        // TODO: Add support for primitives
         String internalType = getInternalTypeString(type);
-        FieldVisitor fv = cw.visitField(ACC_PROTECTED, name, internalType, null, null);
-        fv.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
-        fv.visitEnd();
+        FieldVisitor field = cw.visitField(ACC_PROTECTED, name, internalType, null, null);
+        field.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
+        field.visitEnd();
     }
 
     protected static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
@@ -300,54 +297,28 @@ public class CompositeUtil {
         className = getInternalName(className);
 
         // Create the getter
-        MethodVisitor getterVistor = cw.visitMethod(ACC_PUBLIC, "get" + name, "()" + internalType, null, null);
-        getterVistor.visitCode();
-        getterVistor.visitVarInsn(ALOAD, 0);
-        getterVistor.visitFieldInsn(GETFIELD, className, name, internalType);
-        int opcode = //type.isPrimitive() ?
-                //Primitive.getPrimitive(internalType).getReturnOpcode() :
-                ARETURN;
-        if (type.isPrimitive()) {
-            switch (Primitive.getPrimitive(internalType)) {
-                case DOUBLE : opcode = DRETURN; break;
-                case FLOAT : opcode = FRETURN; break;
-                case LONG : opcode = LRETURN; break;
-                case BOOLEAN:
-                case BYTE:
-//                case CHAR:
-                case SHORT:
-                case INT: opcode = IRETURN; break;
-            }
-        }
-        getterVistor.visitInsn(opcode);
-        getterVistor.visitMaxs(0, 0);
-        getterVistor.visitEnd();
+        MethodVisitor getter = cw.visitMethod(ACC_PUBLIC, "get" + name, "()" + internalType, null, null);
+        getter.visitCode();
+        getter.visitVarInsn(ALOAD, 0);
+        getter.visitFieldInsn(GETFIELD, className, name, internalType);
+        getter.visitInsn(type.isPrimitive() ?
+                Primitive.getPrimitive(internalType).getReturnOpcode() :
+                ARETURN);
+        getter.visitMaxs(0, 0);
+        getter.visitEnd();
 
         // Create the setter
-        MethodVisitor setterVisitor = cw.visitMethod(ACC_PUBLIC, "set" + name, "(" + internalType + ")V", null, null);
-        opcode = //type.isPrimitive() ?
-                //Primitive.getPrimitive(internalType).getSetOpCode() :
-                ALOAD;
-        if (type.isPrimitive()) {
-            switch (Primitive.getPrimitive(internalType)) {
-                case DOUBLE : opcode = DLOAD; break;
-                case FLOAT : opcode = FLOAD; break;
-                case LONG : opcode = LLOAD; break;
-                case BOOLEAN:
-                case BYTE:
-//                case CHAR:
-                case SHORT:
-                case INT: opcode = ILOAD; break;
-            }
-        }
-        setterVisitor.visitCode();
-        setterVisitor.visitVarInsn(ALOAD, 0);
-        setterVisitor.visitVarInsn(opcode, 1);
+        MethodVisitor setter = cw.visitMethod(ACC_PUBLIC, "set" + name, "(" + internalType + ")V", null, null);
+        setter.visitCode();
+        setter.visitVarInsn(ALOAD, 0);
+        setter.visitVarInsn(type.isPrimitive() ?
+                Primitive.getPrimitive(internalType).getSetOpCode() :
+                ALOAD, 1);
         System.out.println("SETTER: Using " + internalType + " for PUTFIELD " + name);
-        setterVisitor.visitFieldInsn(PUTFIELD, className, name, internalType);
-        setterVisitor.visitInsn(RETURN);
-        setterVisitor.visitMaxs(0,0);
-        setterVisitor.visitEnd();
+        setter.visitFieldInsn(PUTFIELD, className, name, internalType);
+        setter.visitInsn(RETURN);
+        setter.visitMaxs(0,0);
+        setter.visitEnd();
     }
 
     protected static boolean alreadyGenerated(String className) {
@@ -356,28 +327,6 @@ public class CompositeUtil {
 
     protected static String getInternalName(String className) {
         return className.replace(".", "/");
-    }
-
-    protected static String getPrimitiveInternalType(String type) {
-        if (type.equals("int")) {
-            return "I";
-        } else if (type.equals("float")) {
-            return "F";
-        } else if (type.equals("double")) {
-            return "D";
-        } else if (type.equals("short")) {
-            return "S";
-        } else if (type.equals("long")) {
-            return "J";
-        } else if (type.equals("byte")) {
-            return "B";
-        } else if (type.equals("char")) {
-            return "C";
-        } else if (type.equals("boolean")) {
-            return "Z";
-        } else {
-            throw new RuntimeException("Unexpected primitve type: " + type);
-        }
     }
 
     // TODO: This is duplicated from the generator class.  
