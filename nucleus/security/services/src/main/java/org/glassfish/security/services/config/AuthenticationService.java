@@ -50,9 +50,10 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface AuthenticationService extends SecurityService {
     /**
-     * Gets the name of the authentication realm used for password validation.
+     * Determines if the Authentication Service instance should use
+     * a GlassFish AuthRealm PasswordCredential with the LoginModule(s).
      */
-	@Attribute(defaultValue = "file")
-    String getAuthRealm();
-    void setAuthRealm(String name) throws PropertyVetoException;
+    @Attribute(defaultValue = "false")
+    boolean getUsePasswordCredential();
+    void setUsePasswordCredential(boolean value) throws PropertyVetoException;
 }

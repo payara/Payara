@@ -69,10 +69,22 @@ public interface SecurityConfigurations extends ConfigBeanProxy, Injectable, Dom
     <T extends SecurityService> List<T> getSecurityServicesByType(Class<T> type);
 
     /**
-     * Gets a named security service configuration.
+     * Gets the default configured security service by security service type.
+     */
+    @DuckTyped
+    <T extends SecurityService> T getDefaultSecurityServiceByType(Class<T> type);
+
+    /**
+     * Gets a named security service configuration by specific security type.
      */
     @DuckTyped
     <T extends SecurityService> T getSecurityServiceByName(String name, Class<T> type);
+
+    /**
+     * Gets a named security service configuration.
+     */
+    @DuckTyped
+    SecurityService getSecurityServiceByName(String name);
 
     class Duck {
         /**
@@ -93,7 +105,23 @@ public interface SecurityConfigurations extends ConfigBeanProxy, Injectable, Dom
         }
 
         /**
-         * Gets a named security service configuration.
+         * Gets the default configured security service by security service type.
+         */
+    	public static <T extends SecurityService> T getDefaultSecurityServiceByType(SecurityConfigurations services, Class<T> type) {
+            for (SecurityService service : services.getSecurityServices()) {
+                try {
+                    if (service.getDefault()) {
+                        return type.cast(service);
+                    }
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Gets a named security service configuration by specific security type.
          */
     	public static <T extends SecurityService> T getSecurityServiceByName(SecurityConfigurations services, String name, Class<T> type) {
             for (SecurityService service : services.getSecurityServices()) {
@@ -103,6 +131,18 @@ public interface SecurityConfigurations extends ConfigBeanProxy, Injectable, Dom
                     }
                 } catch (Exception e) {
                     // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Gets a named security service configuration.
+         */
+    	public static SecurityService getSecurityServiceByName(SecurityConfigurations services, String name) {
+            for (SecurityService service : services.getSecurityServices()) {
+                if (service.getName().equals(name)) {
+                    return service;
                 }
             }
             return null;

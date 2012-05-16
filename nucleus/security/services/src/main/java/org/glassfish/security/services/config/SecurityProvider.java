@@ -39,6 +39,8 @@
  */
 package org.glassfish.security.services.config;
 
+import java.util.List;
+
 import java.beans.PropertyVetoException;
 import javax.validation.constraints.NotNull;
 
@@ -55,15 +57,17 @@ import org.jvnet.hk2.config.Element;
 @Configured
 public interface SecurityProvider extends ConfigBeanProxy, Injectable {
     /**
-     * Gets the name of the security provider instance.
+     * Gets the name of the security provider.
+     * The name represents the qualifier @Named given to the security provider. 
      */
-    @Attribute(required=true, key=true)
+    @Attribute
     @NotNull
     public String getName();
     public void setName(String value) throws PropertyVetoException;
 
     /**
-     * Gets the type of the security provider instance.
+     * Gets the type of the security provider.
+     * The type represents a String used by the security service for the security provider interface.
      */
     @Attribute(required=true)
     @NotNull
@@ -71,8 +75,18 @@ public interface SecurityProvider extends ConfigBeanProxy, Injectable {
     void setType(String type) throws PropertyVetoException;
 
     /**
+     * Gets the name of the security provider configuration instance.
+     * The provider name is used to reference specific provider configuration objects.
+     */
+    @Attribute(required=true, key=true)
+    @NotNull
+    String getProviderName();
+    void setProviderName(String name) throws PropertyVetoException;
+
+    /**
      * Gets configuration object specific to the security provider implementation.
+     * Security provider configuration must extend the SecurityProviderConfig interface.
      */
     @Element("*")
-    SecurityProviderConfig getSecurityProviderConfig();
+    List<SecurityProviderConfig> getSecurityProviderConfig();
 }

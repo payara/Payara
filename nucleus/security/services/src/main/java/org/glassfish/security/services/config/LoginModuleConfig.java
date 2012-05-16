@@ -39,64 +39,67 @@
  */
 package org.glassfish.security.services.config;
 
-import java.beans.PropertyVetoException;
-import java.util.List;
-import javax.validation.constraints.NotNull;
-
-import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import java.beans.PropertyVetoException;
+import javax.validation.constraints.NotNull;
+import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 
 /**
- * Base interface for all security service configurations.
+ * The LoginModule configuration used for a security provider plugin.
  * 
- * Each security service configuration has a name, indication of the service
- * configuration being the default when multiple service configurations are
- * present and an optional list of the specific security provider plugins. 
+ * Defines setup for standard JAAS LoginModule Configuration.
  */
 @Configured
-public interface SecurityService extends ConfigBeanProxy, Injectable {
+public interface LoginModuleConfig extends SecurityProviderConfig, PropertyBag {
     /**
-     * Gets the name of the security service instance.
+     * Gets the class name of the LoginModule.
      */
-    @Attribute(required=true, key=true)
+    @Attribute(required=true)
     @NotNull
-    public String getName();
-    public void setName(String value) throws PropertyVetoException;
+    @JavaClassName
+    public String getModuleClass();
+    public void setModuleClass(String value) throws PropertyVetoException;
 
     /**
-     * Determine if this is the default instance.
+     * Gets the JAAS control flag of the LoginModule.
      */
-    @Attribute(defaultValue = "false")
-    boolean getDefault();
-    void setDefault(boolean defaultValue) throws PropertyVetoException;
+    @Attribute(required=true)
+    @NotNull
+    public String getControlFlag();
+    public void setControlFlag(String value) throws PropertyVetoException;
 
     /**
-     * Gets the list of the security provider plugins used by the security service.
+     * Gets the properties of the LoginModule.
      */
-    @Element("security-provider")
-    List<SecurityProvider> getSecurityProviders();
+    @Element
+    List<Property> getProperty();
 
     /**
-     * Gets a named security provider.
+     * Gets the options of the LoginModule for use with JAAS Configuration.
      */
     @DuckTyped
-    SecurityProvider getSecurityProviderByName(String name);
+    Map<String,?> getModuleOptions();
 
     class Duck {
         /**
-         * Gets a named security provider.
+         * Gets the options of the LoginModule for use with JAAS Configuration.
          */
-    	public static SecurityProvider getSecurityProviderByName(SecurityService service, String name) {
-            for (SecurityProvider config : service.getSecurityProviders()) {
-                if (config.getProviderName().equals(name)) {
-                    return config;
-                }
+        public static Map<String,?> getModuleOptions(LoginModuleConfig config) {
+        	Map<String,String> moduleOptions = new HashMap<String,String>();
+            for (Property prop : config.getProperty()) {
+                moduleOptions.put(prop.getName(), prop.getValue());
             }
-            return null;
+            return moduleOptions;
         }
     }
 }

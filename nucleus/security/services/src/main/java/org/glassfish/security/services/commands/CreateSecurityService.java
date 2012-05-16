@@ -61,6 +61,7 @@ import org.glassfish.config.support.TargetType;
 
 import org.glassfish.security.services.config.AuthenticationService;
 import org.glassfish.security.services.config.SecurityConfigurations;
+import org.glassfish.security.services.config.SecurityService;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -72,6 +73,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
 public class CreateSecurityService implements AdminCommand {
+    private static final String AUTHENTICATION = "authentication";
+
     @Param(optional = false)
     private String serviceType;
 
@@ -87,13 +90,31 @@ public class CreateSecurityService implements AdminCommand {
     @Inject
     private Domain domain;
 
+    // Service configuration type and handler
+    private Class<? extends SecurityService> clazzServiceType;
+    private ServiceConfigHandler<? extends SecurityService> serviceConfigHandler;
+
+	/**
+	 * Execute the create-security-service admin command.
+	 */
 	@Override
 	public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
 
+        // Setup the service type and configuration handler
+        if (AUTHENTICATION.equalsIgnoreCase(serviceType)) {
+            clazzServiceType = AuthenticationService.class;
+            serviceConfigHandler = new AuthenticationConfigHandler();
+        }
+        else {
+            report.setMessage("Invalid security service type specified: " + serviceType);
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
         // Lookup or Create the security configurations
         SecurityConfigurations secConfigs = domain.getExtensionByType(SecurityConfigurations.class);
-        if (secConfigs==null) {
+        if (secConfigs == null) {
             try {
             	secConfigs = (SecurityConfigurations) ConfigSupport.apply(new SingleConfigCode<Domain>() {
                     @Override
@@ -111,25 +132,16 @@ public class CreateSecurityService implements AdminCommand {
             }
         }
 
-        // TODO - Validate all arguments
-        if (serviceType.isEmpty()) {
-            report.setMessage("Security service type not specified");
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        // Add service configuration
-        // TODO - Address different service types
+        // Add service configuration to the security configurations
+        // TODO - Add validation logic required for base service configuration
+        SecurityService config = null;
         try {
-            ConfigSupport.apply(new SingleConfigCode<SecurityConfigurations>() {
+            config = (SecurityService) ConfigSupport.apply(new SingleConfigCode<SecurityConfigurations>() {
+                @Override
                 public Object run(SecurityConfigurations param) throws PropertyVetoException, TransactionFailure {
-                    AuthenticationService svcConfig = param.createChild(AuthenticationService.class);
+                    SecurityService svcConfig = param.createChild(clazzServiceType);
                     svcConfig.setName(serviceName);
                     svcConfig.setDefault(enableDefault);
-                    if (configuration != null) {
-                    	String realmName = configuration.getProperty("auth-realm");
-                    	svcConfig.setAuthRealm(realmName);
-                    }
                     param.getSecurityServices().add(svcConfig);
                     return svcConfig;
                 }
@@ -138,6 +150,50 @@ public class CreateSecurityService implements AdminCommand {
             report.setMessage("Unable to create security service: " + transactionFailure.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(transactionFailure);
+            return;
         }
+
+        // Configure the specific service type settings
+        // TODO - Add validation logic required for specific service configuration
+        if ((config != null) && (configuration != null) && (!configuration.isEmpty())) {
+            serviceConfigHandler.setupConfiguration(report, config);
+        }
+	}
+
+	/**
+	 * Base class for service type configuration handling
+	 */
+	private abstract class ServiceConfigHandler<T extends SecurityService> {
+		abstract T setupConfiguration(ActionReport report, SecurityService serviceConfig);
+	}
+
+	/**
+	 * Handle the authentication service configuration
+	 */
+	private class AuthenticationConfigHandler extends ServiceConfigHandler<AuthenticationService> {
+		@Override
+		public AuthenticationService setupConfiguration(ActionReport report, SecurityService serviceConfig) {
+		    // TODO - Additional type checking needed?
+		    AuthenticationService config = (AuthenticationService) serviceConfig;
+		    try {
+		        config = (AuthenticationService) ConfigSupport.apply(new SingleConfigCode<AuthenticationService>() {
+		            @Override
+		            public Object run(AuthenticationService param) throws PropertyVetoException, TransactionFailure {
+		            	// Look at the use password credential setting
+		            	Boolean usePassCred = Boolean.valueOf(configuration.getProperty("use-password-credential"));
+		            	param.setUsePasswordCredential(usePassCred.booleanValue());
+		            	return param;
+		            }
+		        }, config);
+		    } catch (TransactionFailure transactionFailure) {
+		    	report.setMessage("Unable to configure authentication service: " + transactionFailure.getMessage());
+		    	report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+		    	report.setFailureCause(transactionFailure);
+		    	return null;
+		    }
+
+		    // Return the updated configuration object
+		    return config;
+		}
 	}
 }

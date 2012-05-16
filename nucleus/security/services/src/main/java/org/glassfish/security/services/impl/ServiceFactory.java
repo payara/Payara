@@ -37,66 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.config;
+package org.glassfish.security.services.impl;
 
-import java.beans.PropertyVetoException;
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
-import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
+import org.glassfish.security.services.config.SecurityConfigurations;
+import org.glassfish.security.services.config.SecurityService;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
- * Base interface for all security service configurations.
- * 
- * Each security service configuration has a name, indication of the service
- * configuration being the default when multiple service configurations are
- * present and an optional list of the specific security provider plugins. 
+ * The base security service factory class.
  */
-@Configured
-public interface SecurityService extends ConfigBeanProxy, Injectable {
-    /**
-     * Gets the name of the security service instance.
-     */
-    @Attribute(required=true, key=true)
-    @NotNull
-    public String getName();
-    public void setName(String value) throws PropertyVetoException;
+public class ServiceFactory {
+	/**
+	 * Get the security service configuration for the specified service type.
+	 * 
+	 * Attempt to obtain the service configuration marked as default
+	 * otherwise use the first configured service instance.
+	 * 
+	 * @param domain The current Domain configuration object
+	 * @param type The type of the security service configuration
+	 * 
+	 * @return null when no service configurations are found
+	 */
+	public static <T extends SecurityService> T getSecurityServiceConfiguration(Domain domain, Class<T> type) {
+		T config = null;
 
-    /**
-     * Determine if this is the default instance.
-     */
-    @Attribute(defaultValue = "false")
-    boolean getDefault();
-    void setDefault(boolean defaultValue) throws PropertyVetoException;
+		// Look for security service configurations
+		SecurityConfigurations secConfigs = domain.getExtensionByType(SecurityConfigurations.class);
+		if (secConfigs != null) {
+			// Look for the service configuration marked default
+			config = secConfigs.getDefaultSecurityServiceByType(type);
+			if (config == null) {
+				// Obtain the first service configuration listed
+				List<T> configs = secConfigs.getSecurityServicesByType(type);
+				if (!configs.isEmpty())
+					config = configs.get(0);
+			}
+		}
 
-    /**
-     * Gets the list of the security provider plugins used by the security service.
-     */
-    @Element("security-provider")
-    List<SecurityProvider> getSecurityProviders();
-
-    /**
-     * Gets a named security provider.
-     */
-    @DuckTyped
-    SecurityProvider getSecurityProviderByName(String name);
-
-    class Duck {
-        /**
-         * Gets a named security provider.
-         */
-    	public static SecurityProvider getSecurityProviderByName(SecurityService service, String name) {
-            for (SecurityProvider config : service.getSecurityProviders()) {
-                if (config.getProviderName().equals(name)) {
-                    return config;
-                }
-            }
-            return null;
-        }
-    }
+		// Return the service configuration
+		return config;
+	}
 }
