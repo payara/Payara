@@ -50,11 +50,20 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
         extends DeploymentDescriptorNode<T> implements RootXMLNode<T> {
 
     protected T descriptor=null;
+
+    // we record the XML element to node class mapping when parsing and 
+    // retrieve it when writing out
+    // The first level map is indexed by the parent element name, and the 
+    // second level of the map is indexed by the sub element name and the
+    // corresponding handler node class name
+    protected HashMap<String, LinkedHashMap<String, Class>> elementToNodeMappings = new HashMap<String, LinkedHashMap<String, Class>>();
     
     public RuntimeBundleNode(T descriptor) {
         this.descriptor = descriptor;
@@ -142,6 +151,22 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
         Element child = getOwnerDocument(parent).createElementNS(nameSpace, elementName);
         parent.appendChild(child);
         return child;
+    }
+
+    /**
+     * record mapping of sub element to node class for the current element
+     */
+    public void recordNodeMapping(String currentElementName, String subElementName, Class subElementHandler) {
+        LinkedHashMap<String, Class> subElementMappings = elementToNodeMappings.get(currentElementName);
+        if (subElementMappings == null) {
+            subElementMappings = new LinkedHashMap<String, Class>();
+            elementToNodeMappings.put(currentElementName, subElementMappings);
+        }
+        subElementMappings.put(subElementName, subElementHandler);
+    }
+
+    public LinkedHashMap<String, Class> getNodeMappings(String currentElementName) {
+        return elementToNodeMappings.get(currentElementName);
     }
 
     private static Boolean restrictDTDDeclarations=null;

@@ -105,7 +105,12 @@ public interface XMLNode<T> {
      * @return the parent node for this XMLNode
      */
     public XMLNode getParentNode();     
-    
+
+    /**
+     * @return the root node for this XMLNode
+     */
+    public XMLNode getRootNode();
+
     /**
      * @return the XMLPath for the element name this node 
      * is handling. The XML path can be a absolute or a 
@@ -138,7 +143,7 @@ public interface XMLNode<T> {
      * @return the JAXP DOM node for this descriptor
      */
     public Node writeDescriptor(Node parent, T descriptor);
-    
+
     /**
      * notify of a new prefix mapping used from this node
      */

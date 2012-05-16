@@ -264,6 +264,8 @@ public interface RuntimeTagNames extends TagNames {
     public final static String KEEP_STATE = "keep-state";
     public static final String VERSION_IDENTIFIER = "version-identifier";
     public final static String APPLICATION_PARAM = "application-param";
+    public static final String PARAM_NAME = "param-name";
+    public static final String PARAM_VALUE = "param-value";
     public final static String MODULE = "module";
     public final static String TYPE = "type";
     public final static String PATH = "path";

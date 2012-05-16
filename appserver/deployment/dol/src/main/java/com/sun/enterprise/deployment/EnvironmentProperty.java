@@ -40,7 +40,7 @@
 
  package com.sun.enterprise.deployment;
 
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.InitializationParameter;
@@ -58,7 +58,7 @@ import java.util.Set;
     ** @author Danny Coward 
     */
  
-public class EnvironmentProperty extends Descriptor implements InitializationParameter, ContextParameter, ApplicationParameter, WebDescriptor, EnvironmentEntry, InjectionCapable {
+public class EnvironmentProperty extends Descriptor implements InitializationParameter, ContextParameter, ApplicationParam, WebDescriptor, EnvironmentEntry, InjectionCapable {
     private String value; 
     private String type;
     private Object valueObject;

@@ -45,7 +45,7 @@ import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.types.*;
 import com.sun.enterprise.deployment.util.*;
@@ -201,8 +201,8 @@ public class Application extends BundleDescriptor
 
     private Set<String> resourceAdapters = new HashSet<String>();
 
-    private Set<ApplicationParameter> applicationParams = 
-            new HashSet<ApplicationParameter>();
+    private Set<ApplicationParam> applicationParams = 
+            new HashSet<ApplicationParam>();
 
     private static final BaseServiceLocator habitat = Globals.getDefaultHabitat();
     
@@ -1610,14 +1610,14 @@ public class Application extends BundleDescriptor
     /**
      * @return the Set of application paramaters.
      */
-    public Set<ApplicationParameter> getApplicationParams() {
+    public Set<ApplicationParam> getApplicationParams() {
         return applicationParams; 
     }
 
    /**
      * Adds a new context parameter to my list.
      */
-    public void addApplicationParam(ApplicationParameter appParam) {
+    public void addApplicationParam(ApplicationParam appParam) {
         applicationParams.add(appParam);
     }
 

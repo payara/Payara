@@ -72,7 +72,13 @@ public class WLSWebRuntimeDDFile extends
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof WebBundleDescriptor) {
-            return new WLWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+            WebBundleDescriptor bundleDesc = (WebBundleDescriptor)descriptor;
+            RootXMLNode node = bundleDesc.getRootNode(getDeploymentDescriptorPath());
+            if (node == null) {
+                node = new WLWebBundleRuntimeNode(bundleDesc);
+                bundleDesc.addRootNode(getDeploymentDescriptorPath(), node);
+            }
+            return node;
         }
         return null;
     }

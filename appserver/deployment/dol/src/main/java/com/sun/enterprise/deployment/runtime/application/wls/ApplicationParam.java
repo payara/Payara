@@ -45,6 +45,6 @@ import com.sun.enterprise.deployment.web.NameValuePair;
 /**
  * This represents the application parameter element.
  */
-public interface ApplicationParameter extends NameValuePair {
+public interface ApplicationParam extends NameValuePair {
 }
 

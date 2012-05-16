@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.types.EntityManagerReference;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -105,6 +106,8 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     private String compatValue;
 
     private boolean keepState = false; 
+
+    protected HashMap<String, RootXMLNode> rootNodes = new HashMap<String, RootXMLNode>();
 
     /**
      * Construct a new BundleDescriptor
@@ -171,6 +174,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
      */
     public Application getApplication() {
         return application;
+    }
+
+    public void addRootNode(String ddPath, RootXMLNode rootNode) {
+        rootNodes.put(ddPath, rootNode);
+    }
+
+    public RootXMLNode getRootNode(String ddPath) {
+        return rootNodes.get(ddPath);
     }
 
     /**

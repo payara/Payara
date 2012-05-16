@@ -43,13 +43,9 @@ package com.sun.enterprise.deployment.node.runtime.application.wls;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import org.glassfish.security.common.Role;
-import org.glassfish.deployment.common.SecurityRoleMapper;
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParameter;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.common.wls.SecurityRoleAssignmentNode;
-import com.sun.enterprise.deployment.node.web.InitParamNode;
-import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
@@ -59,8 +55,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
 
 
 /**
@@ -96,9 +90,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     protected void init() {
         super.init();
         registerElementHandler(new XMLElement(
-                RuntimeTagNames.APPLICATION_PARAM), InitParamNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT),
-                SecurityRoleAssignmentNode.class);
+                RuntimeTagNames.APPLICATION_PARAM), ApplicationParamNode.class);
     }
 
     /**
@@ -144,26 +136,7 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
      */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EnvironmentProperty) {
-            descriptor.addApplicationParam((ApplicationParameter)newDescriptor);
-        } else if (newDescriptor instanceof SecurityRoleAssignment) {
-            SecurityRoleAssignment roleMap = (SecurityRoleAssignment) newDescriptor;
-            if (descriptor!=null && !descriptor.isVirtual()) {
-                descriptor.addWLRoleAssignments(roleMap);
-                Role role = new Role(roleMap.getRoleName());
-                SecurityRoleMapper rm = descriptor.getRoleMapper();
-                if (rm != null) {
-                    if(roleMap.isExternallyDefined()){
-                        rm.assignRole(new Group(roleMap.getRoleName()),
-                                role, descriptor);
-                    } else {
-                        List<String> principals = roleMap.getPrincipalNames();
-                        for (int i = 0; i < principals.size(); i++) {
-                            rm.assignRole(new PrincipalImpl(principals.get(i)),
-                                    role, descriptor);
-                        }
-                    }
-                }
-            }
+            descriptor.addApplicationParam((ApplicationParam)newDescriptor);
         } else super.addDescriptor(newDescriptor);
     }
 
@@ -179,23 +152,9 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(),
                     TagNames.WLS_APPLICATION_NAMESPACE);
 
-        // application-param*
-        Set<ApplicationParameter> applicationParams = 
-            application.getApplicationParams(); 
-        if (!applicationParams.isEmpty()) {
-            InitParamNode initParamNode = new InitParamNode();
-            for (ApplicationParameter appParam : applicationParams) {
-                initParamNode.writeDescriptor(root, 
-                        RuntimeTagNames.APPLICATION_PARAM,
-                        (EnvironmentProperty)appParam);
-            }
-        }
+        writeSubDescriptors(root, nodeName, application);
 
-        List<SecurityRoleAssignment> wlRoleAssignments = application.getWlRoleAssignments();
-        for (int i = 0; i < wlRoleAssignments.size(); i++) {
-            SecurityRoleAssignmentNode sran = new SecurityRoleAssignmentNode();
-            sran.writeDescriptor(root, RuntimeTagNames.SECURITY_ROLE_ASSIGNMENT, wlRoleAssignments.get(i));
-        }
         return root;
+        
     }
 }

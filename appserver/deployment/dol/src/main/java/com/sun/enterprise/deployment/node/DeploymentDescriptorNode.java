@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
@@ -90,7 +91,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 
     // handlers is the list of XMLNodes  registered for handling sub xml tags of the current
     // XMLNode
-    protected Hashtable handlers = null;
+    protected Hashtable<String, Class> handlers = null;
     
     // list of add methods declared on the descriptor class to add sub descriptors extracted 
     // by the handlers registered above. The key for the table is the xml root tag for the 
@@ -104,6 +105,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     // Parent node in the XML Nodes implementation tree we create to map to the XML 
     // tags of the XML document
     protected XMLNode parentNode = null;
+
+    // The root xml node in the XML Node implementation tree
+    protected XMLNode rootNode = null;
         
     // default descriptor associated with this node, some sub nodes which
     // relies on the dispatch table don't really need to know the actual
@@ -211,7 +215,20 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     public XMLNode getParentNode() {
         return parentNode;
     }
-    
+
+    /**
+     * @return the root node of the current instance
+     */
+    public XMLNode getRootNode() {
+       XMLNode parent = this;
+
+       while (parent.getParentNode() != null) {
+           parent = parent.getParentNode(); 
+       }
+
+       return parent;
+    }
+
     /**
      * register a new XMLNode handler for a particular XML tag.
      * 
@@ -220,7 +237,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      */
     protected void registerElementHandler(XMLElement element, Class handler) {
         if (handlers==null) {
-            handlers = new Hashtable();
+            handlers = new Hashtable<String, Class>();
         }
         handlers.put(element.getQName(), handler);        
     }
@@ -374,6 +391,8 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             for (Enumeration handlersIterator = handlers.keys();handlersIterator.hasMoreElements();) {
                 String subElement  = (String) handlersIterator.nextElement();
                 if (element.getQName().equals(subElement)) {
+                    // record element to node mapping for runtime nodes
+                    recordNodeMapping(element.getQName(), handlers.get(subElement)); 
                     return false;
                 }
             }
@@ -388,12 +407,24 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             // false
             registerElementHandler(new XMLElement(element.getQName()), 
                 extHandler);
+            // record element to node mapping for runtime nodes
+            recordNodeMapping(element.getQName(), extHandler); 
             return false;
         }
+
+        recordNodeMapping(element.getQName(), this.getClass()); 
 
         return true;
     }       
     
+    // record element to node mapping
+    private void recordNodeMapping(String subElementName, Class handler) {
+        XMLNode rootNode = getRootNode();
+        if (rootNode instanceof RuntimeBundleNode) {
+            ((RuntimeBundleNode)rootNode).recordNodeMapping(getXMLRootTag().getQName(), subElementName, handler); 
+        }
+    }
+
     /**
      * receives notification of the value for a particular tag
      * 
@@ -532,7 +563,94 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         return node; 
     }
     
-        
+    /**
+     * write all occurrences of the descriptor corresponding to the current
+     * node from the parent descriptor to an JAXP DOM node and return it
+     *
+     * This API will be invoked by the parent node when the parent node
+     * writes out a mix of statically and dynamically registered sub nodes.
+     *
+     * This method should be overriden by the sub classes if it
+     * needs to be called by the parent node.
+     *
+     * @param parent node in the DOM tree
+     * @param nodeName the name of the node
+     * @param parentDesc parent descriptor of the descriptor to be written
+     * @return the JAXP DOM node
+     */
+    public Node writeDescriptors(Node parent, String nodeName, Descriptor parentDesc) {
+        return parent;
+    }
+
+    /**
+     * write out simple text element based on the node name
+     * to an JAXP DOM node and return it
+     *
+     * This API will be invoked by the parent node when the parent node
+     * writes out a mix of statically and dynamically registered sub nodes.
+     * And this API is to write out the simple text sub element that the
+     * parent node handles itself.
+     *
+     * This method should be overriden by the sub classes if it
+     * needs to be called by the parent node.
+     *
+     * @param parent node in the DOM tree
+     * @param nodeName node name of the node
+     * @param parentDesc parent descriptor of the descriptor to be written
+     * @return the JAXP DOM node
+     */
+    public Node writeSimpleTextDescriptor(Node parent, String nodeName, Descriptor parentDesc) {
+        return parent;
+    }
+
+    /**
+     * write out descriptor in a generic way to an JAXP DOM 
+     * node and return it
+     *
+     * This API will generally be invoked when the parent node needs to
+     * write out a mix of statically and dynamically registered sub nodes.
+     *
+     * @param node current node in the DOM tree
+     * @param nodeName node name of the node
+     * @param descriptor the descriptor to be written
+     * @return the JAXP DOM node for this descriptor
+     */
+    public Node writeSubDescriptors(Node node, String nodeName, Descriptor descriptor) {
+        XMLNode rootNode = getRootNode();
+        if (rootNode instanceof RuntimeBundleNode) {
+            // we only support this for runtime xml
+            LinkedHashMap<String, Class> elementToNodeMappings = ((RuntimeBundleNode)rootNode).getNodeMappings(nodeName);
+
+            if (elementToNodeMappings != null) {
+                for (String subElementName : elementToNodeMappings.keySet()) {
+                    // skip if it's the element itself and not the subelement
+                    if (subElementName.equals(nodeName)) {
+                        continue;
+                    }
+                    Class handlerClass = elementToNodeMappings.get(subElementName);
+                    if (handlerClass.getName().equals(this.getClass().getName())) {
+                        // if this sublement is handled by the current node
+                        // it is a simple text element, just append the text
+                        // element based on the node name
+                        writeSimpleTextDescriptor(node, subElementName, descriptor);
+                    } else {
+                        // if this sublement is handled by a sub node
+                        // write all occurences of this sub node under 
+                        // the parent node
+                        try {
+                            DeploymentDescriptorNode subNode = (DeploymentDescriptorNode)handlerClass.newInstance();
+                            subNode.setParentNode(this);
+                            subNode.writeDescriptors(node, subElementName, descriptor);
+                        } catch (Exception e) {
+                            DOLUtils.getDefaultLogger().log(Level.WARNING, e.getMessage(), e); 
+                        }
+                    }
+                }
+            }
+        }
+        return node;
+    }
+
     /**
      *  <p>
      * @return the Document for the given node

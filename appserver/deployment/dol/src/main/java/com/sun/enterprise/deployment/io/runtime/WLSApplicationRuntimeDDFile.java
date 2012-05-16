@@ -70,9 +70,14 @@ public class WLSApplicationRuntimeDDFile extends
      * @param the descriptor for which we need the node
      */
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
         if (descriptor instanceof Application) {
-            return new WeblogicApplicationNode((Application) descriptor);
+            Application application = (Application)descriptor;
+            RootXMLNode node = application.getRootNode(getDeploymentDescriptorPath());  
+            if (node == null) {
+                node = new WeblogicApplicationNode(application);
+                application.addRootNode(getDeploymentDescriptorPath(), node);
+            }
+            return node;
         }
         return null;
     }
