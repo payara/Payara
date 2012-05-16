@@ -60,6 +60,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.grizzly.http.Cookie;
+import org.glassfish.grizzly.http.util.CookieSerializerUtils;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -256,7 +257,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             res.setContentType(outboundPayload.getContentType());
             String commandName = req.getRequestURI().substring(getContextRoot().length() + 1);
             if (! hasCookieHeaders(req) && isSingleInstanceCommand(commandName)) {
-               res.addCookie(new Cookie(SESSION_COOKIE_NAME, getSessionID()));
+               StringBuilder sb = new StringBuilder();
+               CookieSerializerUtils.serializeServerCookie(sb,new Cookie(SESSION_COOKIE_NAME, getSessionID()));
+               res.addHeader(SET_COOKIE2_HEADER, sb.toString());
             }
             outboundPayload.writeTo(res.getOutputStream());
             res.getOutputStream().flush();
@@ -314,8 +317,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         UuidGenerator uuidGenerator = new UuidGeneratorImpl();
         String sessionId = uuidGenerator.generateUuid();
         StringBuffer sb = new StringBuffer();
-        sb.append(sessionId).append(".").append(server.getName());
-
+        //Set the max age to 1 week ie cookie expires after a week
+        sb.append(sessionId).append('.').append(server.getName()).append(';').append("Max-Age=604800;");
+        sb.append("$Path=/__asadmin");
         return sb.toString();
 
     }
