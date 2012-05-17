@@ -118,7 +118,9 @@ public class FilterNode extends DisplayableComponentNode {
         writeDisplayableComponentInfo(myNode, descriptor);
         appendTextChild(myNode, WebTagNames.FILTER_NAME, descriptor.getName());         
         appendTextChild(myNode, WebTagNames.FILTER_CLASS, descriptor.getClassName());     
-        appendTextChild(myNode, WebTagNames.ASYNC_SUPPORTED, String.valueOf(descriptor.isAsyncSupported()));     
+        if (descriptor.isAsyncSupported() != null) { 
+            appendTextChild(myNode, WebTagNames.ASYNC_SUPPORTED, String.valueOf(descriptor.isAsyncSupported()));     
+        }
         Vector initParams = descriptor.getInitializationParameters();
         if (!initParams.isEmpty()) {
             WebCommonNode.addInitParam(myNode, WebTagNames.INIT_PARAM, initParams.elements());

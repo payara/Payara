@@ -190,7 +190,9 @@ public class ServletNode extends DisplayableComponentNode {
         }
 
         appendTextChild(myNode, WebTagNames.ENABLED, String.valueOf(descriptor.isEnabled()));
-        appendTextChild(myNode, WebTagNames.ASYNC_SUPPORTED, String.valueOf(descriptor.isAsyncSupported()));
+        if (descriptor.isAsyncSupported() != null) { 
+            appendTextChild(myNode, WebTagNames.ASYNC_SUPPORTED, String.valueOf(descriptor.isAsyncSupported()));
+        }
         
         // run-as
         RunAsIdentityDescriptor runAs = descriptor.getRunAsIdentity();

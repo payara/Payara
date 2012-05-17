@@ -78,7 +78,7 @@ public class ListenerNode extends DisplayableComponentNode {
     public Node writeDescriptor(Node parent, String nodeName, AppListenerDescriptorImpl descriptor) {       
         Node myNode = appendChild(parent, nodeName);
         writeDisplayableComponentInfo(myNode, descriptor);
-        appendTextChild(myNode, WebTagNames.LISTENER, descriptor.getListener());
+        appendTextChild(myNode, WebTagNames.LISTENER_CLASS, descriptor.getListener());
         return myNode;
     }
 }
