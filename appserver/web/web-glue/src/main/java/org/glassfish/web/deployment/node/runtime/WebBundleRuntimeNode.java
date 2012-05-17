@@ -199,15 +199,11 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
 	return descriptor.getSunDescriptor();                
     }
     
-       /**
-    * @return the web bundle descriptor instance to associate with this XMLNode
-    */    
+    /**
+     * @return the web bundle descriptor instance to associate with this XMLNode
+     */
     public WebBundleDescriptor getDescriptor() {    
-	return descriptor;               
-    }
-    
-    public WebBundleDescriptor getWebBundleDescriptor() {    
-        return getDescriptor();               
+        return descriptor;
     }
 
     /**
