@@ -38,38 +38,55 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.io.runtime;
+package org.glassfish.web.deployment.node.runtime;
 
+import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.XMLNode;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the Glassfish Web Container
+ * This node is responsible for handling weblogic.xml servlet-descriptor.
+ *
+ * @author  Shing Wai Chan
  */
-public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
+public class WLServletDescriptorNode extends RuntimeDescriptorNode {
+    private WebComponentDescriptor descriptor;
+
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
+     * receives notification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
      */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
+    public void setElementValue(XMLElement element, String value) {
+        String name = element.getQName();
+        if (name.equals(RuntimeTagNames.SERVLET_NAME)) {
+            Object parentDesc = ((WLWebBundleRuntimeNode)getParentNode()).getDescriptor();
+            descriptor = ((WebBundleDescriptor)parentDesc).getWebComponentByCanonicalName(value);
+        } else if (name.equals(RuntimeTagNames.RUN_AS_PRINCIPAL_NAME)) {
+            if (descriptor != null && descriptor.getRunAsIdentity() != null) {
+                descriptor.getRunAsIdentity().setPrincipal(value);
+            }
+        } else {
+            super.setElementValue(element, value);
+        }
     }
-    
-    /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
-     *
-     * @param the descriptor for which we need the node
-     */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+
+    public Node writeDescriptor(Element root, WebComponentDescriptor descriptor) {        
+        if (descriptor != null && descriptor.getRunAsIdentity() != null) {
+            Node servletNode =  appendChild(root, RuntimeTagNames.SERVLET_DESCRIPTOR);
+            appendTextChild(servletNode, RuntimeTagNames.SERVLET_NAME, descriptor.getCanonicalName());
+
+            appendTextChild(servletNode, RuntimeTagNames.RUN_AS_PRINCIPAL_NAME, 
+                            descriptor.getRunAsIdentity().getPrincipal());
+
+            return servletNode;
         }
         return null;
     }

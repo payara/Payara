@@ -44,7 +44,7 @@ import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.web.WebFragmentNode;
+import org.glassfish.web.deployment.node.WebFragmentNode;
 
 /**
  * This class is responsible for handling WebFragment DeploymentDescriptor files

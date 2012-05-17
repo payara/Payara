@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.NameValuePairNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.ServiceRefPortInfoRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
@@ -109,8 +108,8 @@ public class WLServiceRefNode extends DeploymentDescriptorNode {
             if (parentDesc instanceof JndiNameEnvironment) {
                 descriptor = ((JndiNameEnvironment) parentDesc).
                         getServiceReferenceByName(value);
-            } else if (parentDesc instanceof SunWebApp) {
-                WebBundleDescriptor desc = ((WebBundleRuntimeNode) getParentNode()).getWebBundleDescriptor();
+            } else if (parentDesc instanceof WebBundleDescriptor) {
+                WebBundleDescriptor desc = (WebBundleDescriptor)parentDesc;
                 descriptor = desc.getServiceReferenceByName(value);
             }
         } else if (WLWebServicesTagNames.SERVICE_REFERENCE_WSDL_URL.equals(name)) {

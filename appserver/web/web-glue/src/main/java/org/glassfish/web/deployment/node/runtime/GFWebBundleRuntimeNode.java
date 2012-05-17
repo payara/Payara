@@ -38,39 +38,62 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.io.runtime;
+package org.glassfish.web.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.DTDRegistry;
+
+import java.util.Map;
+
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the Glassfish Web Container
+ * This node is responsible for handling all runtime information for 
+ * web bundle.
  */
-public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
-    /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
-     */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
+public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
+
+    /** Creates new GFWebBundleRuntimeNode */
+    public GFWebBundleRuntimeNode(WebBundleDescriptor descriptor) {
+        super(descriptor);
+    }
+    
+    /** Creates new GFWebBundleRuntimeNode */
+    public GFWebBundleRuntimeNode() {
+        super(null);    
     }
     
     /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
-     *
-     * @param the descriptor for which we need the node
+     * @return the XML tag associated with this XMLNode
      */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
-        }
-        return null;
+    protected XMLElement getXMLRootTag() {
+        return new XMLElement(RuntimeTagNames.GF_WEB_RUNTIME_TAG);
+    }    
+    
+    /** 
+     * @return the DOCTYPE that should be written to the XML file
+     */
+    public String getDocType() {
+        return DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
     }
+    
+    /**
+     * @return the SystemID of the XML file
+     */
+    public String getSystemID() {
+        return DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID;
+    }
+
+   /**
+    * register this node as a root node capable of loading entire DD files
+    * 
+    * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
+    * @return the doctype tag name
+    */
+   public static String registerBundle(Map publicIDToDTD) {    
+       publicIDToDTD.put(DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID);
+       
+       return RuntimeTagNames.GF_WEB_RUNTIME_TAG;       
+   }    
 }

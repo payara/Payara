@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,39 +38,61 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.io.runtime;
+/*
+ * AuthConstraintNode.java
+ *
+ * Created on March 1, 2002, 2:45 PM
+ */
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
+package org.glassfish.web.deployment.node;
+
+import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
+import com.sun.enterprise.deployment.SecurityRoleDescriptor;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.w3c.dom.Node;
+
+import java.util.Enumeration;
+import java.util.Map;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the Glassfish Web Container
+ * This node contains the auth-constraint xml node
+ *
+ * @author  Jerome ochez
+ * @version 
  */
-public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
+public class AuthConstraintNode  extends DeploymentDescriptorNode {
+
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
-     */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
+    protected Map getDispatchTable() {    
+        Map table = super.getDispatchTable();
+        table.put(WebTagNames.ROLE_NAME, "addSecurityRole");
+        return table;
     }
     
     /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
+     * write the descriptor class to a DOM tree and return it
      *
-     * @param the descriptor for which we need the node
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
      */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+    public Node writeDescriptor(Node parent, String nodeName, AuthorizationConstraintImpl descriptor) {          
+        Node myNode = appendChild(parent, nodeName);
+        
+        writeLocalizedDescriptions(myNode, descriptor);
+        
+        // role-name*
+        for (Enumeration roles = descriptor.getSecurityRoles();roles.hasMoreElements();) {
+            SecurityRoleDescriptor role = (SecurityRoleDescriptor) roles.nextElement();
+            appendTextChild(myNode, WebTagNames.ROLE_NAME, role.getName());
         }
-        return null;
+        return myNode;
     }
 }

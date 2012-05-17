@@ -41,7 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import org.glassfish.api.event.EventTypes;
-import com.sun.enterprise.deployment.node.web.WebBundleNode;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.*;
@@ -77,6 +76,9 @@ public class WebBundleDescriptor extends BundleDescriptor
         ServiceReferenceContainer
 
 {
+    //XXX the constant is duplicated here temporary
+    private static final String SPEC_VERSION = "3.0";
+
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 
     private static LocalStringManagerImpl localStrings =
@@ -301,7 +303,7 @@ public class WebBundleDescriptor extends BundleDescriptor
      *         loaded by this descriptor
      */
     public String getDefaultSpecVersion() {
-        return WebBundleNode.SPEC_VERSION;
+        return SPEC_VERSION;
     }
 
     /**

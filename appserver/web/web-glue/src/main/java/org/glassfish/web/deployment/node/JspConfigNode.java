@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,39 +38,50 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.io.runtime;
+package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.JspConfigDescriptor;
+import com.sun.enterprise.deployment.JspGroupDescriptor;
+import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.w3c.dom.Node;
+
+import java.util.Enumeration;
+import javax.servlet.descriptor.*;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the Glassfish Web Container
+ * This node represents the <jsp-config> element in a web application.
  */
-public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
-    /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
-     */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
+public class JspConfigNode extends DeploymentDescriptorNode {
+    public JspConfigNode() {
+	super();
+	registerElementHandler(new XMLElement(WebTagNames.TAGLIB), TagLibNode.class, "addTagLib");
+	registerElementHandler(new XMLElement(WebTagNames.JSP_GROUP), JspGroupNode.class, "addJspGroup");
     }
     
     /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
+     * write the descriptor class to a DOM tree and return it
      *
-     * @param the descriptor for which we need the node
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
      */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
-        }
-        return null;
+    public Node writeDescriptor(Node parent, String nodeName, JspConfigDescriptor descriptor) {    
+	Node myNode = appendChild(parent, nodeName);
+	TagLibNode lNode = new TagLibNode();
+	for (TaglibDescriptor desc : descriptor.getTaglibs()) {
+            lNode.writeDescriptor(myNode, WebTagNames.TAGLIB, 
+                (TagLibConfigurationDescriptor) desc);
+	}
+	JspGroupNode jspGroup = new JspGroupNode();
+	for(JspPropertyGroupDescriptor desc : descriptor.getJspPropertyGroups()) {
+            jspGroup.writeDescriptor(myNode, WebTagNames.JSP_GROUP, 
+                (JspGroupDescriptor) desc);
+	}
+
+        return myNode;
     }
 }

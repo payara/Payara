@@ -40,12 +40,12 @@
 
 package org.glassfish.web.deployment.io.runtime;
 
-import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.runtime.web.WLWebBundleRuntimeNode;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.web.deployment.node.runtime.WLWebBundleRuntimeNode;
 
 /**
  * This class is responsible for handling the XML configuration information

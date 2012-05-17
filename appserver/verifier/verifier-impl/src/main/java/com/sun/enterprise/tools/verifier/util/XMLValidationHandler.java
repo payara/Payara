@@ -88,8 +88,8 @@ public class XMLValidationHandler extends DefaultHandler {
             mapping.put(com.sun.enterprise.deployment.node.appclient.AppClientNode.PUBLIC_DTD_ID, "application-client_1_3.dtd" );
             mapping.put(com.sun.enterprise.deployment.node.appclient.AppClientNode.PUBLIC_DTD_ID_12, "application-client_1_2.dtd" );
 
-            mapping.put(com.sun.enterprise.deployment.node.web.WebBundleNode.PUBLIC_DTD_ID, "web-app_2_3.dtd" );
-            mapping.put(com.sun.enterprise.deployment.node.web.WebBundleNode.PUBLIC_DTD_ID_12,   "web-app_2_2.dtd");
+            mapping.put(org.glassfish.web.deployment.node.WebBundleNode.PUBLIC_DTD_ID, "web-app_2_3.dtd" );
+            mapping.put(org.glassfish.web.deployment.node.WebBundleNode.PUBLIC_DTD_ID_12,   "web-app_2_2.dtd");
 
             //connector1.5
             mapping.put(com.sun.enterprise.deployment.node.connector.ConnectorNode.PUBLIC_DTD_ID, "connector_1_5.dtd" );

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,39 +38,24 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.io.runtime;
+package org.glassfish.web.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 /**
- * This class is responsible for handling the XML configuration information
- * for the Glassfish Web Container
- */
-public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
+* superclass node for WebProperty container 
+*
+* @author Jerome Dochez
+*/
+public class WebPropertyContainerNode extends WebRuntimeNode {
+
     /**
-     * @return the location of the DeploymentDescriptor file for a
-     * particular type of J2EE Archive
+     * Initialize the child handlers
      */
-    public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.GF_WEB_JAR_ENTRY;        
-    }
-    
-    /**
-     * @return a RootXMLNode responsible for handling the deployment
-     * descriptors associated with this J2EE module
-     *
-     * @param the descriptor for which we need the node
-     */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-   
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
-        }
-        return null;
+    public WebPropertyContainerNode() {
+	
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
+                               WebPropertyNode.class, "addWebProperty");		       
     }
 }

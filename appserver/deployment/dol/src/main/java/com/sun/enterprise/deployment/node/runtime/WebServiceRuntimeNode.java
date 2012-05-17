@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.WebService;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
@@ -79,12 +78,7 @@ public class WebServiceRuntimeNode extends DeploymentDescriptorNode {
     public void setElementValue(XMLElement element, String value) {
         if (WebServicesTagNames.WEB_SERVICE_DESCRIPTION_NAME.equals
             (element.getQName())) {
-            BundleDescriptor parent;
-            if (getParentNode() instanceof WebBundleRuntimeNode) {
-                parent = ((WebBundleRuntimeNode) getParentNode()).getWebBundleDescriptor();
-            } else {
-                parent = (BundleDescriptor) getParentNode().getDescriptor();
-            }
+            BundleDescriptor parent = (BundleDescriptor)getParentNode().getDescriptor();
             WebServicesDescriptor webServices = parent.getWebServices();
             descriptor = webServices.getWebServiceByName(value);
         } else if( WebServicesTagNames.CLIENT_WSDL_PUBLISH_URL.equals

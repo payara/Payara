@@ -51,7 +51,6 @@ import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
@@ -85,7 +84,7 @@ public class ServletNode extends DeploymentDescriptorNode {
      */
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.SERVLET_NAME.equals(element.getQName())) {
-            Object parentDesc = ((WebBundleRuntimeNode) getParentNode()).getWebBundleDescriptor();
+            Object parentDesc = getParentNode().getDescriptor();
             if (parentDesc instanceof WebBundleDescriptor) {
                 descriptor = ((WebBundleDescriptor) parentDesc).getWebComponentByCanonicalName(value);
             }

@@ -44,7 +44,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import com.sun.enterprise.deployment.node.web.WebBundleNode;
+import org.glassfish.web.deployment.node.WebBundleNode;
 
 /**
  * This class is responsible for handling Web DeploymentDescriptor files

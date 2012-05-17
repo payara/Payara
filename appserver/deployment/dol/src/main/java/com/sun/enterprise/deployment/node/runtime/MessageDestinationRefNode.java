@@ -41,9 +41,10 @@
 package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.web.WebBundleRuntimeNode;
+import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -91,11 +92,11 @@ public class MessageDestinationRefNode extends DeploymentDescriptorNode {
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.MESSAGE_DESTINATION_REFERENCE_NAME.equals(
             element.getQName())) {
-            Object parentNode = getParentNode();
+            XMLNode parentNode = getParentNode();
             Object parentDesc = null;
             // in case of web
-            if (parentNode instanceof WebBundleRuntimeNode) {
-                parentDesc = ((WebBundleRuntimeNode) parentNode).getWebBundleDescriptor();
+            if (parentNode.getDescriptor() instanceof WebBundleDescriptor) {
+                parentDesc = parentNode.getDescriptor();
             // in case of appclient and ejb
             } else {
                 parentDesc = getParentNode().getDescriptor();

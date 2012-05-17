@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,49 +38,51 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.node.runtime;
-
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
+package org.glassfish.web.deployment.node;
 
 import java.util.Map;
 
-/**
- * This node is responsible for handling runtime descriptor
- * message-destination tag.
- *
- * @author  Kenneth Saks
- * @version 
- */
-public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
+import com.sun.enterprise.deployment.MultipartConfigDescriptor;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.WebTagNames;
 
-    private MessageDestinationDescriptor descriptor;
-    
-    /**
+import org.w3c.dom.Node;
+
+/**
+ * This class is responsible for handling multipart-config xml node.
+ * 
+ * @author Shing Wai Chan
+ */
+public class MultipartConfigNode extends DeploymentDescriptorNode {
+    private MultipartConfigDescriptor descriptor;
+
+    public MultipartConfigNode() {
+        super();
+    }
+
+   /**
     * @return the descriptor instance to associate with this XMLNode
-    */    
+    */
     public Object getDescriptor() {
+        if (descriptor == null) {
+            descriptor = (MultipartConfigDescriptor)super.getDescriptor();
+        }
         return descriptor;
-    }   
-    
+    }
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    protected Map getDispatchTable() {    
+    protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
+        table.put(WebTagNames.LOCATION, "setLocation");
         return table;
     }
-    
+
     /**
      * receives notiification of the value for a particular tag
      * 
@@ -88,45 +90,38 @@ public class MessageDestinationRuntimeNode extends DeploymentDescriptorNode {
      * @param value it's associated value
      */
     public void setElementValue(XMLElement element, String value) {
-        if (RuntimeTagNames.MESSAGE_DESTINATION_NAME.equals(element.getQName())) {
-            // this is a hack but not much choice
-            Object parentDesc = getParentNode().getDescriptor();
-            
-            if (parentDesc instanceof BundleDescriptor) {
-                try {
-                    descriptor = ((BundleDescriptor) parentDesc).
-                        getMessageDestinationByName(value);
-                } catch (IllegalArgumentException iae) {
-                    DOLUtils.getDefaultLogger().warning(iae.getMessage());
-                }
-            } 
-        } else if (RuntimeTagNames.JNDI_NAME.equals(element.getQName())) {
-            if (descriptor != null) {
-                descriptor.setJndiName(value);
-            } 
-        } else super.setElementValue(element, value);
+        if (WebTagNames.MAX_FILE_SIZE.equals(element.getQName())) {
+            descriptor.setMaxFileSize(Long.valueOf(value));
+        } else if (WebTagNames.MAX_REQUEST_SIZE.equals(element.getQName())) {
+            descriptor.setMaxRequestSize(Long.valueOf(value));
+        } else if (WebTagNames.FILE_SIZE_THRESHOLD.equals(element.getQName())) {
+            descriptor.setFileSizeThreshold(Integer.valueOf(value));
+        } else {
+            super.setElementValue(element, value);
+        }
     }
-    
+
     /**
      * write the descriptor class to a DOM tree and return it
      *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
      * @param the descriptor to write
      * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, MessageDestinationDescriptor msgDest) {          
-        String jndiName  = msgDest.getJndiName();
-        Node msgDestNode = null;
-        if( (jndiName != null) && (jndiName.length() > 0) ) {
-            msgDestNode = super.writeDescriptor(parent, nodeName, msgDest);
-            appendTextChild(msgDestNode, 
-                            RuntimeTagNames.MESSAGE_DESTINATION_NAME, 
-                            msgDest.getName());
-            appendTextChild(msgDestNode, RuntimeTagNames.JNDI_NAME, 
-                            msgDest.getJndiName());
+     */
+    public Node writeDescriptor(Node parent, String nodeName, MultipartConfigDescriptor descriptor) {       
+        Node myNode = appendChild(parent, nodeName);
+        appendTextChild(myNode, WebTagNames.LOCATION, descriptor.getLocation());
+        if (descriptor.getMaxFileSize() != null) {
+            appendTextChild(myNode, WebTagNames.MAX_FILE_SIZE, descriptor.getMaxFileSize().toString());
         }
-        return msgDestNode;
-    }  
-    
+        if (descriptor.getMaxRequestSize() != null) {
+            appendTextChild(myNode, WebTagNames.MAX_REQUEST_SIZE, descriptor.getMaxRequestSize().toString());
+        }
+        if (descriptor.getFileSizeThreshold() != null) {
+            appendTextChild(myNode, WebTagNames.FILE_SIZE_THRESHOLD, descriptor.getFileSizeThreshold().toString());
+        }
+        
+        return myNode;
+    }   
 }
