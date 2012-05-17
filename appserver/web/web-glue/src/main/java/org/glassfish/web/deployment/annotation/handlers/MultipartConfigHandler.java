@@ -38,82 +38,88 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.handlers;
+package org.glassfish.web.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.MultipartConfigDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
-import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionListener;
-import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
 import java.lang.annotation.Annotation;
-import java.util.logging.Level;
 
 /**
  * This handler is responsible in handling
- * javax.servlet.annotation.WebListener.
+ * javax.servlet.annotation.MultipartConfig.
  *
  * @author Shing Wai Chan
  */
 @Service
-@AnnotationHandlerFor(WebListener.class)
-public class WebListenerHandler extends AbstractWebHandler {
-    public WebListenerHandler() {
+@AnnotationHandlerFor(MultipartConfig.class)
+public class MultipartConfigHandler extends AbstractWebHandler {
+    public MultipartConfigHandler() {
     }
 
-    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo,
             WebComponentContext[] webCompContexts)
             throws AnnotationProcessorException {
 
-        return processAnnotation(ainfo,
-                webCompContexts[0].getDescriptor().getWebBundleDescriptor());
+        HandlerProcessingResult result = null;
+        for (WebComponentContext webCompContext : webCompContexts) {
+            result = processAnnotation(ainfo,
+                    webCompContext.getDescriptor());
+            if (result.getOverallResult() == ResultType.FAILED) {
+                break;
+            }
+        }
+        return result;
     }
 
-    @Override
     protected HandlerProcessingResult processAnnotation(
             AnnotationInfo ainfo, WebBundleContext webBundleContext)
             throws AnnotationProcessorException {
 
-        return processAnnotation(ainfo, webBundleContext.getDescriptor());
+        // this is not a web component
+        return getInvalidAnnotatedElementHandlerResult(webBundleContext, ainfo);
     }
 
     private HandlerProcessingResult processAnnotation(
-            AnnotationInfo ainfo, WebBundleDescriptor webBundleDesc)
+            AnnotationInfo ainfo, WebComponentDescriptor webCompDesc)
             throws AnnotationProcessorException {
 
-        Class listenerClass = (Class)ainfo.getAnnotatedElement();
-        if (!(ServletContextListener.class.isAssignableFrom(listenerClass) ||
-                ServletContextAttributeListener.class.isAssignableFrom(listenerClass) ||
-                ServletRequestListener.class.isAssignableFrom(listenerClass) ||
-                ServletRequestAttributeListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionListener.class.isAssignableFrom(listenerClass) ||
-                HttpSessionAttributeListener.class.isAssignableFrom(listenerClass))) {
-            log(Level.SEVERE, ainfo,
-                localStrings.getLocalString(
-                "enterprise.deployment.annotation.handlers.needtoimpllistenerinterface",
-                "The Class {0} having annotation javax.servlet.annotation.WebListener need to implement one of the following interfaces: javax.servlet.ServletContextLisener, javax.servlet.ServletContextAttributeListener, javax.servlet.ServletRequestListener, javax.servletServletRequestAttributeListener, javax.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionAttributeListener.",
-                listenerClass.getName()));
-            return getDefaultFailedResult();
+        MultipartConfig multipartConfigAn = (MultipartConfig)ainfo.getAnnotation();
+        com.sun.enterprise.deployment.web.MultipartConfig multipartConfig = webCompDesc.getMultipartConfig();
+        if (multipartConfig == null) {
+            multipartConfig = new MultipartConfigDescriptor();
+            webCompDesc.setMultipartConfig(multipartConfig);
         }
 
-        WebListener listenerAn = (WebListener)ainfo.getAnnotation();
-        AppListenerDescriptor appListener =
-            new AppListenerDescriptorImpl(listenerClass.getName());
-        appListener.setDescription(listenerAn.value());
-        webBundleDesc.addAppListenerDescriptor(appListener);
+        if (multipartConfig.getLocation() == null) {
+            multipartConfig.setLocation(multipartConfigAn.location());
+        }
+        if (multipartConfig.getMaxFileSize() == null) {
+            multipartConfig.setMaxFileSize(multipartConfigAn.maxFileSize());
+        }
+        if (multipartConfig.getMaxRequestSize() == null) {
+            multipartConfig.setMaxRequestSize(multipartConfigAn.maxRequestSize());
+        }
+        if (multipartConfig.getFileSizeThreshold() == null) {
+            multipartConfig.setFileSizeThreshold(multipartConfigAn.fileSizeThreshold());
+        }
+
         return getDefaultProcessedResult();
+    }
+
+    /**
+     * @return an array of annotation types this annotation handler would
+     * require to be processed (if present) before it processes it's own
+     * annotation type.
+     */
+    @Override
+    public Class<? extends Annotation>[] getTypeDependencies() {
+        return getWebAnnotationTypes();
     }
 }

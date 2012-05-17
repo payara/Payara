@@ -38,11 +38,12 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.impl;
+package org.glassfish.web.deployment.annotation.impl;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.apf.impl.AnnotationUtils;

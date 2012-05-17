@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.annotation.handlers;
+package org.glassfish.web.deployment.annotation.handlers;
 
 import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
 import org.glassfish.apf.*;
@@ -107,7 +107,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
 
     @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
-        return new Class[] { WebServlet.class };
+        return getWebAnnotationTypes();
     }
 
 

@@ -48,7 +48,7 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
-import com.sun.enterprise.deployment.annotation.impl.WarScanner;
+import org.glassfish.web.deployment.annotation.impl.WarScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;

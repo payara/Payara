@@ -44,7 +44,7 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.annotation.handlers.ServletSecurityHandler;
+import org.glassfish.web.deployment.annotation.handlers.ServletSecurityHandler;
 import com.sun.enterprise.deployment.runtime.web.*;
 import com.sun.enterprise.deployment.runtime.web.SessionConfig;
 import com.sun.enterprise.deployment.web.*;
