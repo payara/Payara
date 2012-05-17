@@ -54,17 +54,18 @@ import org.w3c.dom.Node;
  * 
  * @author Shing Wai Chan
  */
-public class CookieConfigNode extends DeploymentDescriptorNode {
+public class CookieConfigNode extends DeploymentDescriptorNode<CookieConfigDescriptor> {
     private CookieConfigDescriptor descriptor;
 
     public CookieConfigNode() {
         super();
     }
 
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public CookieConfigDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = (CookieConfigDescriptor)super.getDescriptor();
         }
@@ -76,9 +77,10 @@ public class CookieConfigNode extends DeploymentDescriptorNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.COMMON_NAME, "setName");
         table.put(WebTagNames.DOMAIN, "setDomain");
         table.put(WebTagNames.PATH, "setPath");
@@ -108,10 +110,11 @@ public class CookieConfigNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, CookieConfigDescriptor descriptor) {       
         Node myNode = appendChild(parent, nodeName);
         if (descriptor.getName() != null && descriptor.getName().length() > 0) {

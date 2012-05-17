@@ -55,7 +55,7 @@ import java.util.Vector;
  * @author  Jerome Dochez
  * @version 
  */
-public class FilterNode extends DisplayableComponentNode {
+public class FilterNode extends DisplayableComponentNode<ServletFilterDescriptor> {
 
     private ServletFilterDescriptor descriptor;
 
@@ -69,7 +69,7 @@ public class FilterNode extends DisplayableComponentNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */
-    public Object getDescriptor() {
+    public ServletFilterDescriptor getDescriptor() {
 
         if (descriptor==null) {
             descriptor = (ServletFilterDescriptor) super.getDescriptor();
@@ -82,9 +82,10 @@ public class FilterNode extends DisplayableComponentNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.NAME, "setDisplayName");
         table.put(WebTagNames.FILTER_NAME, "setName");
         table.put(WebTagNames.FILTER_CLASS, "setClassName");
@@ -109,10 +110,11 @@ public class FilterNode extends DisplayableComponentNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ServletFilterDescriptor descriptor) {       
         Node myNode = appendChild(parent, nodeName);
         writeDisplayableComponentInfo(myNode, descriptor);

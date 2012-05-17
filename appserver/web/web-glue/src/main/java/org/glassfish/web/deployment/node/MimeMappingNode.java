@@ -54,16 +54,17 @@ import java.util.Map;
  * @author  dochez
  * @version 
  */
-public class MimeMappingNode extends DeploymentDescriptorNode {
+public class MimeMappingNode extends DeploymentDescriptorNode<MimeMappingDescriptor> {
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = new HashMap();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = new HashMap<String, String>();
         table.put(WebTagNames.EXTENSION, "setExtension");
         table.put(WebTagNames.MIME_TYPE, "setMimeType");
         return table;
@@ -72,10 +73,11 @@ public class MimeMappingNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, MimeMappingDescriptor descriptor) {     
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, WebTagNames.EXTENSION, descriptor.getExtension());

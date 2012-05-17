@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,20 +64,21 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-public class RuntimeDescriptorNode extends DeploymentDescriptorNode 
+public class RuntimeDescriptorNode<T> extends DeploymentDescriptorNode<T>
 {
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */ 
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public T getDescriptor() {
         
         if (abstractDescriptor==null) {
 	    abstractDescriptor = createDescriptor();
             if (abstractDescriptor ==null) {
-                return getParentNode().getDescriptor();
+                return (T)getParentNode().getDescriptor();
             }
         }
-        return abstractDescriptor;
+        return (T)abstractDescriptor;
     }     
     
     @SuppressWarnings("unchecked")
@@ -109,9 +110,9 @@ public class RuntimeDescriptorNode extends DeploymentDescriptorNode
     /**
      * writes all information common to all J2EE components
      *
-     * @param xml node parent to add the info to
-     * @param the descriptor
-     */    
+     * @param parent xml node parent to add the info to
+     * @param descriptor the descriptor
+     */
     public static void writeCommonComponentInfo(Node parent, Descriptor descriptor) {
         if (descriptor instanceof EjbReferenceContainer) {
             EjbRefNode.writeEjbReferences(parent, (EjbReferenceContainer) descriptor);

@@ -55,7 +55,7 @@ import java.util.Map;
  * This node is responsible for handling jsp-group xml tag
  * @version 
  */
-public class JspGroupNode  extends DeploymentDescriptorNode {
+public class JspGroupNode  extends DeploymentDescriptorNode<JspGroupDescriptor> {
     private JspGroupDescriptor descriptor;
 
     public JspGroupNode() {
@@ -70,9 +70,10 @@ public class JspGroupNode  extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a 
      * value
-     */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.URL_PATTERN, "addUrlPattern");
         table.put(TagNames.NAME, "setDisplayName");
         table.put(WebTagNames.EL_IGNORED, "setElIgnored");
@@ -92,10 +93,11 @@ public class JspGroupNode  extends DeploymentDescriptorNode {
         return table;
     }    
 
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public JspGroupDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = (JspGroupDescriptor)super.getDescriptor();
         }
@@ -106,10 +108,11 @@ public class JspGroupNode  extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, JspGroupDescriptor descriptor) {  
         Node myNode = appendChild(parent, nodeName);
 

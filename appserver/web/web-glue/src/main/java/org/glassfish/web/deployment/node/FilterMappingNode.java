@@ -70,16 +70,17 @@ import javax.servlet.DispatcherType;
  * @author  Jerome Dochez
  * @version 
  */
-public class FilterMappingNode extends DeploymentDescriptorNode {
+public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMappingDescriptor> {
 
     private ServletFilterMappingDescriptor descriptor;
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ServletMappingNode.class);
     
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */       
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public ServletFilterMappingDescriptor getDescriptor() {
         
        if (descriptor==null) {
             descriptor = (ServletFilterMappingDescriptor) super.getDescriptor();
@@ -92,9 +93,10 @@ public class FilterMappingNode extends DeploymentDescriptorNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.FILTER_NAME, "setName");
         return table;
     }    
@@ -104,7 +106,8 @@ public class FilterMappingNode extends DeploymentDescriptorNode {
      * 
      * @param element the xml element
      * @param value it's associated value
-     */    
+     */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebTagNames.SERVLET_NAME.equals(element.getQName())) {
             descriptor.addServletName(value);
@@ -151,10 +154,11 @@ public class FilterMappingNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ServletFilterMappingDescriptor descriptor) {
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, WebTagNames.FILTER_NAME, descriptor.getName());                        

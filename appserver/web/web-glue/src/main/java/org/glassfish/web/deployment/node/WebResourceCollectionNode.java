@@ -61,16 +61,17 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-public class WebResourceCollectionNode extends DeploymentDescriptorNode  {
+public class WebResourceCollectionNode extends DeploymentDescriptorNode<WebResourceCollectionImpl>  {
 
     private WebResourceCollectionImpl descriptor;
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ServletMappingNode.class);
 
     /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public WebResourceCollectionImpl getDescriptor() {
         if (descriptor==null) {
             descriptor = (WebResourceCollectionImpl) DescriptorFactory.getDescriptor(getXMLPath());
         }
@@ -80,6 +81,7 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode  {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(WebTagNames.WEB_RESOURCE_COLLECTION);
     }
@@ -89,9 +91,10 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode  {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.WEB_RESOURCE_NAME, "setName");
         table.put(WebTagNames.HTTP_METHOD, "addHttpMethod");        
         table.put(WebTagNames.HTTP_METHOD_OMISSION, "addHttpMethodOmission");        
@@ -104,6 +107,7 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode  {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebTagNames.URL_PATTERN.equals(element.getQName())) {
             if (!URLPattern.isValid(value)) {
@@ -146,11 +150,12 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode  {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
-    public Node writeDescriptor(Node parent, String nodeName, WebResourceCollectionImpl descriptor) {       
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, WebResourceCollectionImpl descriptor) {
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, WebTagNames.WEB_RESOURCE_NAME, descriptor.getName());
         writeLocalizedDescriptions(myNode, descriptor);

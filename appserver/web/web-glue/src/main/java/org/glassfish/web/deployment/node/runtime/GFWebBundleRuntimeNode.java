@@ -91,7 +91,7 @@ public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */
-   public static String registerBundle(Map publicIDToDTD) {    
+   public static String registerBundle(Map<String, String> publicIDToDTD) {
        publicIDToDTD.put(DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID);
        
        return RuntimeTagNames.GF_WEB_RUNTIME_TAG;       

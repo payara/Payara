@@ -54,17 +54,18 @@ import org.w3c.dom.Node;
  * 
  * @author Shing Wai Chan
  */
-public class MultipartConfigNode extends DeploymentDescriptorNode {
+public class MultipartConfigNode extends DeploymentDescriptorNode<MultipartConfigDescriptor> {
     private MultipartConfigDescriptor descriptor;
 
     public MultipartConfigNode() {
         super();
     }
 
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public MultipartConfigDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = (MultipartConfigDescriptor)super.getDescriptor();
         }
@@ -76,9 +77,10 @@ public class MultipartConfigNode extends DeploymentDescriptorNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.LOCATION, "setLocation");
         return table;
     }
@@ -89,6 +91,7 @@ public class MultipartConfigNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebTagNames.MAX_FILE_SIZE.equals(element.getQName())) {
             descriptor.setMaxFileSize(Long.valueOf(value));
@@ -105,10 +108,11 @@ public class MultipartConfigNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, MultipartConfigDescriptor descriptor) {       
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, WebTagNames.LOCATION, descriptor.getLocation());

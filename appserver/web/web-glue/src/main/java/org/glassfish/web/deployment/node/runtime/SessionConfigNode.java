@@ -51,7 +51,7 @@ import org.w3c.dom.Node;
 * @author Jerome Dochez
 */
 
-public class SessionConfigNode extends WebRuntimeNode {
+public class SessionConfigNode extends WebRuntimeNode<SessionConfig> {
     
     /**
      * Initialize the child handlers

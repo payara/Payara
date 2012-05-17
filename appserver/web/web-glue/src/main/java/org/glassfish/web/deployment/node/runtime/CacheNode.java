@@ -55,7 +55,7 @@ import org.w3c.dom.Node;
 *
 * @author Jerome Dochez
 */
-public class CacheNode extends WebRuntimeNode {
+public class CacheNode extends WebRuntimeNode<Cache> {
     
     public CacheNode() {
 	
@@ -71,11 +71,12 @@ public class CacheNode extends WebRuntimeNode {
     /**
      * parsed an attribute of an element
      *
-     * @param the element name
-     * @param the attribute name
-     * @param the attribute value
+     * @param elementName the element name
+     * @param attributeName the attribute name
+     * @param value the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
 	RuntimeDescriptor descriptor = (RuntimeDescriptor) getRuntimeDescriptor();
 	if (descriptor==null) {
@@ -100,10 +101,11 @@ public class CacheNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, Cache descriptor) {       
 
 	Element cache = (Element) super.writeDescriptor(parent, nodeName, descriptor);

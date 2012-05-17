@@ -54,7 +54,7 @@ import java.util.Map;
 *
 * @author Jerome Dochez
 */
-public class ConstraintFieldNode extends WebRuntimeNode {
+public class ConstraintFieldNode extends WebRuntimeNode<ConstraintField> {
         
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
@@ -62,14 +62,16 @@ public class ConstraintFieldNode extends WebRuntimeNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
-    protected Map getDispatchTable() {    
-	Map dispatchTable = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+	Map<String, String> dispatchTable = super.getDispatchTable();
         // for backward compatibility with S1AS 7 dtd 
 	dispatchTable.put(RuntimeTagNames.VALUE, "addValue");
         dispatchTable.put(RuntimeTagNames.CONSTRAINT_FIELD_VALUE, "addValue");
 	return dispatchTable;
     }
 
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if (element.getQName().equals(RuntimeTagNames.CONSTRAINT_FIELD)) {
             ConstraintField descriptor = 
@@ -145,10 +147,11 @@ public class ConstraintFieldNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ConstraintField descriptor) {
 	
 	Element constraintField = (Element) super.writeDescriptor(parent, nodeName, descriptor);

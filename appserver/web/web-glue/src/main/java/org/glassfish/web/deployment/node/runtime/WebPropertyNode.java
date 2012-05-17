@@ -53,16 +53,17 @@ import org.w3c.dom.Node;
 *
 * @author Jerome Dochez
 */
-public class WebPropertyNode extends WebRuntimeNode {
+public class WebPropertyNode extends WebRuntimeNode<WebProperty> {
 
     /**
      * parsed an attribute of an element
      *
-     * @param the element name
-     * @param the attribute name
-     * @param the attribute value
+     * @param elementName the element name
+     * @param attributeName the attribute name
+     * @param value the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
         RuntimeDescriptor descriptor = 
             (RuntimeDescriptor) getRuntimeDescriptor();
@@ -84,10 +85,11 @@ public class WebPropertyNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
+     * @param nodeName node name for the descriptor
+     * @param property the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
         WebProperty property) {
         Element propertyElement = 

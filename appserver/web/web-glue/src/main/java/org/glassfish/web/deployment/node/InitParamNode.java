@@ -53,16 +53,17 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class InitParamNode extends DeploymentDescriptorNode {
+public class InitParamNode extends DeploymentDescriptorNode<EnvironmentProperty> {
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.PARAM_NAME, "setName");
         table.put(WebTagNames.PARAM_VALUE, "setValue");                
         return table;
@@ -72,10 +73,11 @@ public class InitParamNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, EnvironmentProperty descriptor) {       
         Node myNode = appendChild(parent, nodeName);
         

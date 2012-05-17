@@ -51,14 +51,15 @@ import org.w3c.dom.Node;
 /**
 * node to handle idempotent-url-pattern node
 */
-public class IdempotentUrlPatternNode extends WebRuntimeNode {
+public class IdempotentUrlPatternNode extends WebRuntimeNode<IdempotentUrlPattern> {
 
     IdempotentUrlPattern descriptor = null;
 
     /**
     * @return the descriptor instance to associate with this XMLNode
     */
-    public Object getDescriptor() {
+    @Override
+    public IdempotentUrlPattern getDescriptor() {
         if (descriptor == null) {
             descriptor = new IdempotentUrlPattern();
         }
@@ -68,11 +69,12 @@ public class IdempotentUrlPatternNode extends WebRuntimeNode {
     /**
      * parsed an attribute of an element
      *
-     * @param the element name
-     * @param the attribute name
-     * @param the attribute value
+     * @param elementName the element name
+     * @param attributeName the attribute name
+     * @param value the attribute value
      * @return true if the attribute was processed
      */
+    @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
         if (attributeName.getQName().equals(RuntimeTagNames.URL_PATTERN)) {
             descriptor.setAttributeValue(IdempotentUrlPattern.URL_PATTERN, 
@@ -91,10 +93,11 @@ public class IdempotentUrlPatternNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
+     * @param nodeName node name for the descriptor
+     * @param pattern the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
        IdempotentUrlPattern pattern) {
        Element patternNode = 

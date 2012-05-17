@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,16 +61,17 @@ import java.util.Map;
  * @author  Jerome ochez
  * @version 
  */
-public class AuthConstraintNode  extends DeploymentDescriptorNode {
+public class AuthConstraintNode  extends DeploymentDescriptorNode<AuthorizationConstraintImpl> {
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.ROLE_NAME, "addSecurityRole");
         return table;
     }
@@ -79,10 +80,11 @@ public class AuthConstraintNode  extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, AuthorizationConstraintImpl descriptor) {          
         Node myNode = appendChild(parent, nodeName);
         

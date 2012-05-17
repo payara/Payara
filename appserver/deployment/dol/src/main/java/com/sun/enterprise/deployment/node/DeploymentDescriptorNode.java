@@ -488,9 +488,9 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
-    protected Map getDispatchTable() {
+    protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map table =  new HashMap();
+        Map<String, String> table =  new HashMap<String, String>();
         table.put(TagNames.DESCRIPTION, "setDescription");
         return table;
     }

@@ -49,7 +49,7 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
  * @author  Jerome Dochez
  * @version 
  */
-public class WebRuntimeNode extends RuntimeDescriptorNode {
+public class WebRuntimeNode<T> extends RuntimeDescriptorNode<T> {
 
    /**
     * @return the descriptor instance to associate with this XMLNode

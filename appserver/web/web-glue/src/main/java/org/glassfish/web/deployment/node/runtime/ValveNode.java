@@ -49,7 +49,7 @@ import org.w3c.dom.Node;
 /**
  * Node representing a valve tag.
  */
-public class ValveNode extends WebRuntimeNode {
+public class ValveNode extends WebRuntimeNode<Valve> {
 
     public ValveNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
@@ -84,10 +84,11 @@ public class ValveNode extends WebRuntimeNode {
      * Writes the descriptor class to a DOM tree and returns it
      *
      * @param parent node for the DOM tree
-     * @param node name
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName,
                                 Valve descriptor) {
 

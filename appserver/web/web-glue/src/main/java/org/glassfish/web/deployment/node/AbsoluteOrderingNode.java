@@ -56,11 +56,11 @@ import org.xml.sax.Attributes;
  * @author  Shing Wai Chan
  * @version 
  */
-public class AbsoluteOrderingNode extends DeploymentDescriptorNode {
+public class AbsoluteOrderingNode extends DeploymentDescriptorNode<AbsoluteOrderingDescriptor> {
 
-   public final static XMLElement tag = new XMLElement(WebTagNames.ABSOLUTE_ORDERING);
+    public final static XMLElement tag = new XMLElement(WebTagNames.ABSOLUTE_ORDERING);
 
-   protected AbsoluteOrderingDescriptor descriptor = null;
+    protected AbsoluteOrderingDescriptor descriptor = null;
 
    /**
     * @return the descriptor instance to associate with this XMLNode
@@ -72,14 +72,15 @@ public class AbsoluteOrderingNode extends DeploymentDescriptorNode {
         return descriptor;
     }  
 
-   /**
+    /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.COMMON_NAME, "addName");
         return table;
     }
@@ -87,6 +88,7 @@ public class AbsoluteOrderingNode extends DeploymentDescriptorNode {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         super.startElement(element, attributes);
 
@@ -104,6 +106,7 @@ public class AbsoluteOrderingNode extends DeploymentDescriptorNode {
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, AbsoluteOrderingDescriptor descriptor) {
         Node myNode = appendChild(parent, nodeName);
         for (Object obj : descriptor.getOrdering()) {

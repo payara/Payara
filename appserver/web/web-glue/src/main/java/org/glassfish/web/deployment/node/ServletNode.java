@@ -62,7 +62,7 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  * @version 
  */
-public class ServletNode extends DisplayableComponentNode {
+public class ServletNode extends DisplayableComponentNode<WebComponentDescriptor> {
 
     private final static XMLElement tag = 
         new XMLElement(WebTagNames.SERVLET);
@@ -83,14 +83,16 @@ public class ServletNode extends DisplayableComponentNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return tag;
     }
     
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public WebComponentDescriptor getDescriptor() {
         
         if (descriptor==null) {
             descriptor = (WebComponentDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
@@ -102,9 +104,10 @@ public class ServletNode extends DisplayableComponentNode {
      * Adds  a new DOL descriptor instance to the descriptor instance associated with 
      * this XMLNode
      *
-     * @param descriptor the new descriptor
-     */    
-    public void addDescriptor(Object  newDescriptor) {       
+     * @param newDescriptor the new descriptor
+     */
+    @Override
+    public void addDescriptor(Object newDescriptor) {       
         if (newDescriptor instanceof RoleReference) {  
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {            
                 DOLUtils.getDefaultLogger().fine("Adding security role ref " + newDescriptor);
@@ -127,10 +130,11 @@ public class ServletNode extends DisplayableComponentNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
         // no need to be synchronized for now
-        Map table = super.getDispatchTable();
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.NAME, "setName");        
         table.put(WebTagNames.SERVLET_NAME, "setCanonicalName");
         return table;
@@ -142,6 +146,7 @@ public class ServletNode extends DisplayableComponentNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (WebTagNames.SERVLET_CLASS.equals(element.getQName())) {
             descriptor.setServlet(true);            
@@ -167,11 +172,11 @@ public class ServletNode extends DisplayableComponentNode {
     /**
      * write the descriptor class to a DOM tree and return it
      *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param parent node in the DOM tree
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, WebComponentDescriptor descriptor) {    
 
         Node myNode = super.writeDescriptor(parent, descriptor);

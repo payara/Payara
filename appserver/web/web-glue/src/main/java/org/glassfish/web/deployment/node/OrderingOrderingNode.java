@@ -57,7 +57,7 @@ import org.xml.sax.Attributes;
  * @author  Shing Wai Chan
  * @version 
  */
-public class OrderingOrderingNode extends DeploymentDescriptorNode {
+public class OrderingOrderingNode extends DeploymentDescriptorNode<OrderingOrderingDescriptor> {
        
     protected OrderingOrderingDescriptor descriptor = null;
 
@@ -77,8 +77,9 @@ public class OrderingOrderingNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.COMMON_NAME, "addName");
         return table;
     }
@@ -86,6 +87,7 @@ public class OrderingOrderingNode extends DeploymentDescriptorNode {
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         super.startElement(element, attributes);
 
@@ -102,6 +104,7 @@ public class OrderingOrderingNode extends DeploymentDescriptorNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, OrderingOrderingDescriptor descriptor) {
         Node myNode = appendChild(parent, nodeName);
         for (String name : descriptor.getNames()) {

@@ -55,7 +55,7 @@ import java.util.Map;
 *
 * @author Jerome Dochez
 */
-public class CacheMappingNode extends WebRuntimeNode {
+public class CacheMappingNode extends WebRuntimeNode<CacheMapping> {
     
     public CacheMappingNode() {
 	
@@ -69,8 +69,9 @@ public class CacheMappingNode extends WebRuntimeNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
-    protected Map getDispatchTable() {    
-	Map dispatchTable = super.getDispatchTable();
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+	Map<String, String> dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.SERVLET_NAME, "setServletName");
 	dispatchTable.put(RuntimeTagNames.URL_PATTERN, "setUrlPattern");
 	dispatchTable.put(RuntimeTagNames.CACHE_HELPER_REF, "setCacheHelperRef");	

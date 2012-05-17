@@ -71,12 +71,13 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
         return Collections.unmodifiableList(systemIDs);
     }
     
-   /**
-    * register this node as a root node capable of loading entire DD files
-    * 
-    * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
-    * @return the doctype tag name
-    */    
+    /**
+     * register this node as a root node capable of loading entire DD files
+     *
+     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+     * @return the doctype tag name
+     */
+    @Override
     public String registerBundle(Map publicIDToDTD) {
         return tag.getQName();
     }
@@ -84,7 +85,7 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
 
     @Override
     public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
     
     /** Creates new WebBundleNode */
@@ -100,17 +101,19 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.COMMON_NAME, "setName");
         return table;
     }
 
-   /**
+    /**
      * @return the XML tag associated with this XMLNode
      */
-   protected XMLElement getXMLRootTag() {
+    @Override
+    protected XMLElement getXMLRootTag() {
         return tag;
     }       
 
@@ -135,9 +138,10 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
         return systemIDs;
     }
 
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
     public WebFragmentDescriptor getDescriptor() {
         // no default bundle for web-fragment
         if (descriptor==null) {
@@ -150,10 +154,11 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param the descriptor to write
+     * @param webFragmentDesc the descriptor to write
      * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, 
+     */
+    @Override
+    public Node writeDescriptor(Node parent,
         WebFragmentDescriptor webFragmentDesc) {
         Node jarNode = super.writeDescriptor(parent, webFragmentDesc);
         if (webFragmentDesc.getOrderingDescriptor() != null) {

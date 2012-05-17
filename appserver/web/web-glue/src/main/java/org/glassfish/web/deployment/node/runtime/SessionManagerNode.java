@@ -52,7 +52,7 @@ import org.w3c.dom.Node;
 *
 * @author Jerome Dochez
 */
-public class SessionManagerNode extends WebRuntimeNode {
+public class SessionManagerNode extends WebRuntimeNode<SessionManager> {
 
     /**
      * Initialize the child handlers
@@ -71,6 +71,7 @@ public class SessionManagerNode extends WebRuntimeNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	RuntimeDescriptor descriptor = getRuntimeDescriptor();
 	if (descriptor==null) {
@@ -85,10 +86,11 @@ public class SessionManagerNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, SessionManager descriptor) {
 	
 	Element sessionMgr = (Element) super.writeDescriptor(parent, nodeName, descriptor);

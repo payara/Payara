@@ -177,7 +177,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */
-   public static String registerBundle(Map publicIDToDTD) {    
+   public static String registerBundle(Map<String, String> publicIDToDTD) {
        publicIDToDTD.put(DTDRegistry.SUN_WEBAPP_230_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_230_DTD_SYSTEM_ID);
        publicIDToDTD.put(DTDRegistry.SUN_WEBAPP_231_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_231_DTD_SYSTEM_ID);
        publicIDToDTD.put(DTDRegistry.SUN_WEBAPP_240_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_240_DTD_SYSTEM_ID);

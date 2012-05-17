@@ -90,9 +90,10 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {
-        Map dispatchTable = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {
+        Map<String, String> dispatchTable = super.getDispatchTable();
         dispatchTable.put(TagNames.NAME, "setDisplayName");        
         dispatchTable.put(TagNames.VERSION, "setSpecVersion");
         return dispatchTable;
@@ -201,12 +202,12 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
 
     @Override
     public Collection<String> elementsAllowingEmptyValue() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     @Override
     public Collection<String> elementsPreservingWhiteSpace() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
     
     protected void writeMessageDestinations(Node parentNode,

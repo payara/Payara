@@ -51,7 +51,7 @@ import org.w3c.dom.Node;
 *
 * @author Jerome Dochez
 */
-public class LocaleCharsetMapNode extends WebRuntimeNode {
+public class LocaleCharsetMapNode extends WebRuntimeNode<LocaleCharsetMap> {
     
     /**
      * receives notification of the value for a particular tag
@@ -59,6 +59,7 @@ public class LocaleCharsetMapNode extends WebRuntimeNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	RuntimeDescriptor descriptor = getRuntimeDescriptor();
 	if (descriptor==null) {
@@ -79,10 +80,11 @@ public class LocaleCharsetMapNode extends WebRuntimeNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
+     * @param nodeName node name for the descriptor
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, LocaleCharsetMap descriptor) {
 	
 	Element locale = (Element) super.writeDescriptor(parent, nodeName, descriptor);

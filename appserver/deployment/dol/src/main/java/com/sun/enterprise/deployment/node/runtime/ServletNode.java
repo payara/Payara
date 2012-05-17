@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class ServletNode extends DeploymentDescriptorNode {
+public class ServletNode extends DeploymentDescriptorNode<WebComponentDescriptor> {
 
     private WebComponentDescriptor descriptor;
 
@@ -72,7 +72,8 @@ public class ServletNode extends DeploymentDescriptorNode {
                                WebServiceEndpointRuntimeNode.class);
     }
 
-    public Object getDescriptor() {
+    @Override
+    public WebComponentDescriptor getDescriptor() {
         return descriptor;
     }
     
@@ -82,6 +83,7 @@ public class ServletNode extends DeploymentDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.SERVLET_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
@@ -100,10 +102,11 @@ public class ServletNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
+     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, WebComponentDescriptor descriptor) {        
         WebServicesDescriptor webServices = 
             descriptor.getWebBundleDescriptor().getWebServices();

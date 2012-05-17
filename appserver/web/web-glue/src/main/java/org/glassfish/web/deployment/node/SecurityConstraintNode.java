@@ -65,7 +65,7 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class SecurityConstraintNode extends DeploymentDescriptorNode {
+public class SecurityConstraintNode extends DeploymentDescriptorNode<SecurityConstraintImpl> {
 
     public SecurityConstraintNode() {
         super();
@@ -84,9 +84,10 @@ public class SecurityConstraintNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a 
      * value
-     */    
-    protected Map getDispatchTable() {    
-        Map table = super.getDispatchTable();
+     */
+    @Override
+    protected Map<String, String> getDispatchTable() {    
+        Map<String, String> table = super.getDispatchTable();
         table.put(WebTagNames.NAME, "setName");
 	return table;
     }
@@ -95,10 +96,11 @@ public class SecurityConstraintNode extends DeploymentDescriptorNode {
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
+     * @param nodeName node name for the root element of this xml fragment
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, SecurityConstraintImpl descriptor) {
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, WebTagNames.NAME, descriptor.getName());
