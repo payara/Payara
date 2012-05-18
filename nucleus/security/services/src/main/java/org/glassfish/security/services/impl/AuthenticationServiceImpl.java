@@ -39,6 +39,7 @@
  */
 package org.glassfish.security.services.impl;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -144,6 +145,22 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	@Override
 	public Subject login(String username, char[] password, Subject subject)
 			throws LoginException {
+		CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+		return loginEx(cbh, subject);
+	}
+
+	@Override
+	public Subject login(CallbackHandler cbh, Subject subject)
+			throws LoginException {
+		if (cbh == null)
+			throw new LoginException("AuthenticationService: JAAS CallbackHandler not supplied");
+
+		// TODO - Wrap CallbackHandler to obtain name for auditing
+		return loginEx(cbh, subject);
+	}
+
+	private Subject loginEx(CallbackHandler handler, Subject subject)
+			throws LoginException {
 		// Use the supplied Subject or create a new Subject
 		Subject _subject = subject;
 		if (_subject == null)
@@ -157,20 +174,12 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 						"JAAS Configuration setup incomplete, unable to perform login");
 			}
 
-			// Setup the PasswordCredential for the Realm LoginModules when required
+			// Setup the PasswordCredential for the Realm LoginModules when configured
 			if (usePasswordCredential) {
-				final Subject s = _subject;
-				final PasswordCredential pc = new PasswordCredential(username, password, realmName);
-				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
-					public Object run() {
-						s.getPrivateCredentials().add(pc);
-						return null;
-					}
-				});
+				setupPasswordCredential(_subject, handler);
 			}
 
 			// Perform the login via the JAAS LoginContext
-			CallbackHandler handler = new AuthenticationCallbackHandler(username, password);
 			LoginContext context = new LoginContext(name, _subject, handler, configuration);
 			context.login();
 		} catch (Exception exc) {
@@ -241,6 +250,53 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	}
 
 	/**
+	 * A PasswordCredential object is needed when using the existing Realm LoginModules.
+	 * 
+	 * Unless the CallbackHandler is from the AuthenticationService obtain the name
+	 * and password from the supplied JAAS CallbackHandler directly. Establishing the
+	 * PasswordCredential in the Subject is determined by service configuration.
+	 * 
+	 * @throws LoginException when unable to obtain data from the CallbackHandler 
+	 */
+	private void setupPasswordCredential(Subject subject, CallbackHandler callbackHandler)
+			throws LoginException {
+		String username = null;
+		char[] password = null;
+
+		// Obtain the username and password for the PasswordCredential
+		if (callbackHandler instanceof AuthenticationCallbackHandler) {
+			username = ((AuthenticationCallbackHandler) callbackHandler).getUsername();
+			password = ((AuthenticationCallbackHandler) callbackHandler).getPassword();
+		}
+		else {
+			// Use the supplied callback handler to obtain the PasswordCredential information
+			// TODO - How does this impact Audit ability to get name?
+			Callback[] callbacks = new Callback[2];
+			callbacks[0] = new NameCallback("username: ");
+			callbacks[1] = new PasswordCallback("password: ", false);
+			try {
+				callbackHandler.handle(callbacks);
+				username = ((NameCallback) callbacks[0]).getName();
+				password = ((PasswordCallback) callbacks[1]).getPassword();
+			} catch (IOException ioe) {
+				throw (LoginException) new LoginException("AuthenticationService unable to create PasswordCredential: "+ ioe.getMessage()).initCause(ioe);
+			} catch (UnsupportedCallbackException uce) {
+				throw (LoginException) new LoginException("AuthenticationService unable to create PasswordCredential: "+ uce.getMessage()).initCause(uce);
+			}			
+		}
+
+		// Add the PasswordCredential to the Subject
+		final Subject s = subject;
+		final PasswordCredential pc = new PasswordCredential(username, password, realmName);
+		AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+			public Object run() {
+				s.getPrivateCredentials().add(pc);
+				return null;
+			}
+		});
+	}
+
+	/**
 	 * Convert the String setting to the JAAS LoginModuleControlFlag.
 	 * An unknown or null flag value is treated as LoginModuleControlFlag.REQUIRED.
 	 */
@@ -275,6 +331,9 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 			pass = password;
 		}
 
+		protected String getUsername() { return user; }
+		protected char[] getPassword() { return pass; }
+
 		@Override
 		public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
 			for (int i = 0; i < callbacks.length; i++) {
@@ -283,8 +342,10 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 				else if (callbacks[i] instanceof PasswordCallback)
 					((PasswordCallback) callbacks[i]).setPassword(pass);
 				else
+					// TODO - Have configuration setting for throwing exception
 					throw new UnsupportedCallbackException(callbacks[i],
-							"AuthenticationCallbackHandler: Unrecognized Callback");
+							"AuthenticationCallbackHandler: Unrecognized Callback "
+							+ callbacks[i].getClass().getName());
 			}
 		}
 	}

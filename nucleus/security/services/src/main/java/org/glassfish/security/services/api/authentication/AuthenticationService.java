@@ -40,6 +40,7 @@
 package org.glassfish.security.services.api.authentication;
 
 import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -66,6 +67,20 @@ public interface AuthenticationService extends SecurityService {
      */
     public Subject login(String username, char[] password, Subject subject)
             throws LoginException;
+
+    /**
+     * Authenticate using a CallbackHandler to provider username/password, X.509 certificate, or
+     * Secure Admin token.
+     * 
+     * @param cbh  The CallbackHandler.
+     * @param subject An optional Subject to receive principals and credentials for the logged in user.
+     * If provided, it will be returned as the return value; if not, a new Subject will be returned.
+     * 
+     * @return A Subject representing the logged in user.
+     * 
+     * @throws LoginException
+     */
+    public Subject login(CallbackHandler cbh, Subject subject) throws LoginException;
 
     /**
      * Impersonate a user, specifying the user and group principal names that
