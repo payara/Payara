@@ -128,6 +128,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     private static final String REFERER = "referer";
     private static final String REQUEST = "request";
     private static final String RESPONSE_LENGTH = "response.length";
+    private static final String RESPONSE_CONTENT_TYPE = "response.content-type";
     private static final String STATUS = "status";
     private static final String TIME_TAKEN = "time-taken";
     private static final String USER_AGENT = "user.agent";
@@ -269,6 +270,8 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                 appendRequestInfo(charBuffer, hreq);
             } else if (RESPONSE_LENGTH.equals(pc)) {
                 appendResponseLength(charBuffer, response);
+            } else if (RESPONSE_CONTENT_TYPE.equals(pc)) {
+                appendResponseContentType(charBuffer, response);
             } else if (STATUS.equals(pc)) {
                 appendResponseStatus(charBuffer, response);
             } else if (TIME_TAKEN.equals(pc)) {
@@ -287,10 +290,10 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                                     hreq);
             } else if (pc.startsWith(RESPONSE_HEADER_BY_NAME_PREFIX)) {
                 appendResponseHeaderByName(charBuffer,
-                    pc.substring(RESPONSE_HEADER_BY_NAME_PREFIX_LEN), hres);
+                    pc.substring(RESPONSE_HEADER_BY_NAME_PREFIX_LEN), hres, response);
             } else if (pc.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)) {
                 appendResponseHeadersByName(charBuffer,
-                    pc.substring(RESPONSE_HEADERS_BY_NAME_PREFIX_LEN), hres);
+                    pc.substring(RESPONSE_HEADERS_BY_NAME_PREFIX_LEN), hres, response);
             }
 
             charBuffer.put(SPACE);
@@ -356,7 +359,8 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                     && !QUERY_STR.equals(component) 
                     && !REFERER.equals(component) 
                     && !REQUEST.equals(component) 
-                    && !RESPONSE_LENGTH.equals(component) 
+                    && !RESPONSE_LENGTH.equals(component)
+                    && !RESPONSE_CONTENT_TYPE.equals(component)
                     && !STATUS.equals(component) 
                     && !TIME_TAKEN.equals(component) 
                     && !USER_AGENT.equals(component) 
@@ -536,6 +540,14 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     }
 
     /*
+     * Appends the content type of the given response to the given char
+     * buffer.
+     */
+    private void appendResponseContentType(CharBuffer cb, Response response) {
+        cb.put(response.getContentType());
+    }
+
+    /*
      * Appends the value of the 'user-agent' header of the given request to
      * the given char buffer.
      */
@@ -668,7 +680,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      */
     private void appendResponseHeaderByName(CharBuffer cb,
                                             String headerName,
-                                            HttpServletResponse hres) {
+                                            HttpServletResponse hres, Response response) {
         if (headerName == null) {
             throw new IllegalArgumentException("Null response header name");
         }
@@ -676,7 +688,13 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
         cb.put(QUOTE);
         String value = hres.getHeader(headerName);
         if (value == null) {
-            value = "NULL-RESPONSE-HEADER-" + headerName.toUpperCase(Locale.ENGLISH);
+            if (headerName.equalsIgnoreCase("Content-Type")) {
+                value = hres.getContentType();
+            } else if (headerName.equalsIgnoreCase("Content-Length")) {
+                value = ""+response.getContentLength();
+            } else {
+                value = "NULL-RESPONSE-HEADER-" + headerName.toUpperCase(Locale.ENGLISH);
+            }
         }
         cb.put(value);
         cb.put(QUOTE);
@@ -723,7 +741,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * are present in the response.
      */
     private void appendResponseHeadersByName(CharBuffer cb,
-            String headerName, HttpServletResponse hres) {
+            String headerName, HttpServletResponse hres, Response response) {
         if (headerName == null) {
             throw new IllegalArgumentException("Null response header name");
         }
@@ -731,13 +749,24 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
         cb.put(QUOTE);
         boolean first = true;
         Collection<String> values = hres.getHeaders(headerName);
-        if (values != null) {
+        if (!values.isEmpty()) {
             for (String value : values) {
                 if (first) {
                     first = false;
                 } else {
                     cb.put(";");
                 }
+                cb.put(value);
+            }
+        } else {
+            String value = null;
+            if (headerName.equalsIgnoreCase("Content-Type")) {
+                value = hres.getContentType();
+            } else if (headerName.equalsIgnoreCase("Content-Length")) {
+                value = ""+response.getContentLength();
+            }
+            if (value != null) {
+                first = false;
                 cb.put(value);
             }
         }
