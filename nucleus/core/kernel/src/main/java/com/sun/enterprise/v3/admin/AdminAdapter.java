@@ -117,6 +117,13 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     private static final String SET_COOKIE2_HEADER = "Set-Cookie2";
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
+
+    public static final String MAX_AGE="604800" ;
+
+    public static final String ASADMIN_PATH="/__asadmin";
+
+    private static final String QUOTE=("\"");
+
     private static final String QUERY_STRING_SEPARATOR = "&";
 
     private static final String[] authRelatedHeaderNames = {
@@ -280,13 +287,22 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     public boolean hasCookieHeaders(Request req) {
 
         for (String header : req.getHeaders("Cookie")){
-            int index = header.lastIndexOf('"');
-            if (header.contains(SESSION_COOKIE_NAME) &&
-               (header.substring((index+1),header.indexOf(';')-1).equals(server.getName()))) {
-                return true;
-            }
 
+            String cookieHeaders[] = header.trim().split(";");
+            for (String cookieHeader:cookieHeaders) {
+                String[] nameValuePair = cookieHeader.trim().split("=");
+
+                String headerName = nameValuePair [0] ;
+                String headerValue = nameValuePair[1];
+                if (headerName.equals(SESSION_COOKIE_NAME)) {
+                    int index = headerValue.lastIndexOf('.');
+                    return headerValue.substring(index+1,headerValue.lastIndexOf("\""))
+                            .equals(server.getName())? true : false;
+
+                }
+            }
         }
+
         return false;
     }
 
@@ -317,9 +333,11 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         UuidGenerator uuidGenerator = new UuidGeneratorImpl();
         String sessionId = uuidGenerator.generateUuid();
         StringBuffer sb = new StringBuffer();
+
+        sb.append(sessionId).append('.').append(server.getName());
         //Set the max age to 1 week ie cookie expires after a week
-        sb.append(sessionId).append('.').append(server.getName()).append(';').append("Max-Age=604800;");
-        sb.append("$Path=/__asadmin");
+        sb.append("; Max-Age=").append(MAX_AGE);
+        sb.append("; Path=").append(ASADMIN_PATH);
         return sb.toString();
 
     }
