@@ -65,10 +65,19 @@
 			<artifactId>elastic-config</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.glassfish.main</groupId>
-            <artifactId>paas.orchestrator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+                <dependency>
+                    <groupId>org.glassfish.main</groupId>
+                    <artifactId>paas.orchestrator</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+	        <dependency>
+	            <groupId>org.glassfish.main.flashlight</groupId>
+	            <artifactId>flashlight-framework</artifactId>
+	            <version>${project.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.glassfish.external</groupId>
+	            <artifactId>management-api</artifactId>
+	        </dependency> 
 	</dependencies>
 </project>
