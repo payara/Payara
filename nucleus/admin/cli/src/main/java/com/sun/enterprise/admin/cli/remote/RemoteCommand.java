@@ -43,7 +43,6 @@ package com.sun.enterprise.admin.cli.remote;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.component.*;
@@ -51,7 +50,6 @@ import com.sun.enterprise.module.*;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.common.util.admin.ManPageFinder;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
@@ -65,6 +63,7 @@ import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.security.store.AsadminSecurityUtil;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -92,6 +91,12 @@ public class RemoteCommand extends CLICommand {
      * we can handle the interactive requirements of a CLI command.
      */
     private class CLIRemoteAdminCommand extends RemoteAdminCommand {
+
+        private static final String JSESSIONID  = "JSESSIONID";
+        private static final String COOKIE_HEADER  = "Cookie";
+        private CookieManager cookieManager = null;
+        private File sessionCache = null;
+
         /**
          * Construct a new remote command object.  The command and arguments
          * are supplied later using the execute method in the superclass.
@@ -102,6 +107,17 @@ public class RemoteCommand extends CLICommand {
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
                     authToken, true /* prohibitDirectoryUploads */);
+
+            StringBuilder sessionFilePath = new StringBuilder();
+
+            // Store the cache at: $GFCLIENT/cache/{host}_{port}/session
+            sessionFilePath.append("cache").append(File.separator);
+            sessionFilePath.append(host).append("_");
+            sessionFilePath.append(port).append(File.separator);
+            sessionFilePath.append("session");
+
+            sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
+                    sessionFilePath.toString());
         }
 
         /**
@@ -210,6 +226,219 @@ public class RemoteCommand extends CLICommand {
             if (msg == null)
                 msg = strings.get("InvalidCredentials", programOpts.getUser());
             return msg;
+        }
+
+        /**
+         * Adds cookies to the header to support session based client 
+         * routing.
+         *
+         * @param urlConnection
+         */
+        @Override
+        protected synchronized void addAdditionalHeaders(final URLConnection urlConnection) {
+            addCookieHeaders(urlConnection);
+        }
+
+        /*
+         * Adds any cookies maintained in the clients session cookie cache.
+         */
+        private void addCookieHeaders(final URLConnection urlConnection) {
+
+            // Get the last modified time of the session cache file.
+            long modifiedTime = sessionCache.lastModified();
+            if (modifiedTime == 0) {
+                // No session file so no cookies to add.
+                return;
+            }
+
+            cookieManager = new CookieManager(
+                                new ClientCookieStore(
+                                        new CookieManager().getCookieStore(), 
+                                        sessionCache),
+                                CookiePolicy.ACCEPT_ALL);
+
+            // XXX: If this is an interactive command we don't want to 
+            // keep reloading the cookie store.
+            try {
+                ((ClientCookieStore) cookieManager.getCookieStore()).load();
+            } catch (IOException e) {
+                logger.fine("Unable to load cookies: " + e.toString());
+                return;
+            }
+
+            if (isSessionCookieExpired(cookieManager, modifiedTime)) {
+                logger.fine("Cookie session file has expired.");
+                sessionCache.delete();
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder("$Version=\"1\"");
+            boolean hasCookies = false;
+            for (HttpCookie cookie: cookieManager.getCookieStore().getCookies()) {
+                hasCookies = true;
+                sb.append("; ").append(cookie.toString());
+            }
+            if (hasCookies) {
+                urlConnection.setRequestProperty(COOKIE_HEADER, sb.toString());
+            } 
+        }
+
+        /*
+         * Looks for the SESSIONID cookie in the cookie store and 
+         * determines if the cookie has expired (based on the
+         * Max-Age and the time in which the file was last modified.)
+         * The assumption, based on how we write cookies, is that
+         * the cookie session file will only be changed when the
+         * JSESSIONID cookie changes.   Therefor the last mod time of
+         * the file is a reasonable proxy for when the cookie was
+         * "created".
+         * If we can't find the JSESSIONID cookie then we return true.
+         */
+        private boolean isSessionCookieExpired(CookieManager manager, 
+                long creationTime) {
+            for (URI uri: manager.getCookieStore().getURIs()) {
+                for (HttpCookie cookie: manager.getCookieStore().get(uri)) {
+                    if (cookie.getName().equals(JSESSIONID)) {
+                        if ((creationTime / 1000 + cookie.getMaxAge()) < 
+                                   System.currentTimeMillis()/1000) {
+                            return true;
+                        } else
+                            return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Processes the headers to support session based client 
+         * routing.
+         *
+         * @param urlConnection
+         */
+        @Override
+        protected synchronized void processHeaders(final URLConnection urlConnection) {
+            processCookieHeaders(urlConnection);
+        }
+
+        private void processCookieHeaders(final URLConnection urlConnection) {
+
+            CookieManager systemCookieManager = (CookieManager)CookieManager.getDefault();
+
+            if (systemCookieManager == null) {
+                logger.fine("Assertion failed: null system CookieManager");
+                return;
+            }
+
+            // Using the system CookieHandler, retrieve any cookies.
+            CookieStore cookieJar = systemCookieManager.getCookieStore();
+            List<HttpCookie> newCookies = cookieJar.getCookies();
+
+            if (newCookies.isEmpty()) {
+                // If there are no cookies to set in the request we
+                // have nothing to do.
+                return;
+            }
+
+               
+            /*
+            Console console = System.console();
+            for (HttpCookie cookie: newCookies) {
+                console.printf("Cookie: %s%n", cookie.toString());
+                console.printf("   MaxAge: %d%n", cookie.getMaxAge());
+                console.printf("   Domain: %s%n", cookie.getDomain());
+                console.printf("   Path: %s%n", cookie.getPath());
+            }
+             */
+
+            // Get the last modified time of the session cache file.
+            if (sessionCache.lastModified() == 0) {
+                // No file, if we have cookies we need to save them.
+                if (cookieManager == null) {
+                    cookieManager = new CookieManager(
+                            new ClientCookieStore(
+                                    new CookieManager().getCookieStore(), 
+                                    sessionCache),
+                            CookiePolicy.ACCEPT_ALL);
+                }
+                try {
+                    cookieManager.put(((ClientCookieStore)cookieManager.getCookieStore()).getStaticURI(),
+                            urlConnection.getHeaderFields());
+                } catch (IOException e) {
+                    // Thrown by cookieManger.put()
+                    logger.fine("Unable to save cookies: " + e.toString());
+                    return;
+                }
+
+                try {
+                    ((ClientCookieStore) cookieManager.getCookieStore()).store();
+                } catch (IOException e) {
+                    logger.fine("Unable to store cookies: " + e.toString());
+                }
+                return;
+            }
+
+            if (cookieManager == null) {
+                cookieManager = new CookieManager(
+                                    new ClientCookieStore(
+                                        new CookieManager().getCookieStore(), 
+                                        sessionCache),
+                                    CookiePolicy.ACCEPT_ALL);
+                try {
+                    ((ClientCookieStore) cookieManager.getCookieStore()).load();
+                } catch (IOException e) {
+                    logger.fine("Unable to load cookies: " + e.toString());
+                    return;
+                }
+            }
+
+            boolean newCookieFound = false;
+
+            // Check to see if any of the set cookies in the reply are
+            // different from what is already in the persistent store.
+            for (HttpCookie cookie: cookieJar.getCookies()) {
+                // Check to see if any of the set cookies in the reply are
+                // different from what is already in the persistent store.
+                int cookieIndex = cookieManager.getCookieStore().getCookies().indexOf(cookie);
+                if (cookieIndex == -1) {
+                    newCookieFound = true;
+                    break;
+                } else {
+                    HttpCookie c1 = cookieManager.getCookieStore().getCookies().get(cookieIndex); 
+
+                    if (!c1.getValue().equals(cookie.getValue())) {
+                        newCookieFound = true;
+                        break;
+                    }
+                }
+            }
+
+            // Note: This has the potential to overwrite the existing file
+            // which may contain changes that were introduced by another
+            // command's execution.   Those changes will be lost.
+            // Since the cookie store is only used for optimized session
+            // routing we are only interested in preserving the last
+            // set of session/routing cookies received from the server/LB
+            // as we believe those to be the most current and accurate in
+            // regards to future request routing.
+            if (newCookieFound) {
+                try {
+                    try {
+                        cookieManager.put(((ClientCookieStore)cookieManager.getCookieStore()).getStaticURI(),
+                            urlConnection.getHeaderFields());
+                    } catch (IOException e) {
+                        // Thrown by cookieManger.put()
+                        logger.fine("Unable to save cookies: " + e.toString());
+                        return;
+                    }
+                    ((ClientCookieStore) cookieManager.getCookieStore()).store();
+                } catch (IOException e) {
+                    logger.fine("Unable to store cookies: " + e.toString());
+                }
+            } else {
+                // No cookies changed.  Update the modification time on the store.
+                ((ClientCookieStore) cookieManager.getCookieStore()).touchStore();
+            }
         }
     }
 

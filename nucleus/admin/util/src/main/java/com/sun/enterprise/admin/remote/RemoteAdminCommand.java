@@ -633,6 +633,14 @@ public class RemoteAdminCommand {
         HttpConnectorAddress url = getHttpConnectorAddress(
                                 host, port, shouldUseSecure);
         url.setInteractive(interactive);
+
+        //XXX: This needs to be moved into RemoteCommand.  A CookieManager
+        //     is only required for CLI commands.   
+        CookieStore defaultCookieStore = new CookieManager().getCookieStore();
+        CookieManager manager = new CookieManager(defaultCookieStore,
+                CookiePolicy.ACCEPT_ALL);
+        CookieHandler.setDefault(manager);
+
         do {
             /*
              * Any code that wants to trigger a retry will say so explicitly.
@@ -724,6 +732,7 @@ public class RemoteAdminCommand {
                  * now-created connection.
                  */
                 cmd.useConnection(urlConnection);
+                processHeaders(urlConnection);
                 logger.finer("doHttpCommand succeeds");
             } catch (AuthenticationException authEx) {
                 
@@ -907,8 +916,22 @@ public class RemoteAdminCommand {
          * true admin clients.
          */
     }
+
+    /**
+     * Process any headers needed from the reply to the admin
+     * request.   Subclasses can override this method to handle processing
+     * headers in the command's reply.
+     *
+     * @param urlConnection
+     */
+    protected void processHeaders(final URLConnection urlConnection) {
+        /*
+         * No headers are processed by RemoteAdminCommand.
+         */
+    }
     
-            /*
+    
+    /*
      * Returns the username/password authenticaiton information to use
      * in building the outbound HTTP connection.
      * 
