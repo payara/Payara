@@ -585,25 +585,35 @@ public class AppClientFacade {
                 /*
                  * The parser reported at least one warning or error.  If all 
                  * events were warnings, display them as a message and continue.
-                 * Otherwise there was at least one error or fatal, so throw
-                 * an exception and abort the client launch.
+                 * Otherwise there was at least one error or fatal, so say so
+                 * and try to continue but say that such errors might be fatal
+                 * in future releases.
                  */
-                boolean isErrorOrWorse = false;
-                final String messageIntroduction = localStrings.getLocalString(
-                            AppClientFacade.class, "appclient.errParsingConfig",
-                            "Error parsing app client container configuration {0}",
-                            new Object[] {configFileLocationForErrorMessage});
+                boolean isError = false;
                 final StringBuilder sb = new StringBuilder();
                 for (ValidationEvent ve : vec.getEvents()) {
                     sb.append(ve.getMessage()).append(LINE_SEP);
-                    isErrorOrWorse |= (ve.getSeverity() != ValidationEvent.WARNING);
+                    isError |= (ve.getSeverity() != ValidationEvent.WARNING);
                 }
-                if (isErrorOrWorse) {
-                    throw new UserError(messageIntroduction,
-                            new ValidationException(sb.toString()));
-                } else {
+                final String messageIntroduction = localStrings.getLocalString(
+                            AppClientFacade.class, 
+                            isError ? "appclient.errParsingConfig" : "appclient.warnParsingConfig",
+                            isError ? "Error parsing app client container configuration {0}.  Attempting to continue.  In future releases such parsing errors might become fatal.  Please correct your configuration file." : 
+                                "Warning(s) parsing app client container configuration {0}.  Continuing.",
+                            new Object[] {configFileLocationForErrorMessage});
+                /*
+                 * Following code - which throws an exception if the config
+                 * validation fails - is commented out to prevent possible
+                 * regressions.  Users might have customized the acc config file
+                 * in a way that does not validate but would have worked silently
+                 * before. 
+                 */
+//                if (isErrorOrWorse) {
+//                    throw new UserError(messageIntroduction,
+//                            new ValidationException(sb.toString()));
+//                } else {
                     System.err.println(messageIntroduction + LINE_SEP + sb.toString());
-                }
+//                }
             }
 
             return result;

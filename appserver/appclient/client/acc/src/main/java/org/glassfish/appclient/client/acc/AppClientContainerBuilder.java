@@ -257,6 +257,15 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
      */
     private void defineIfNotDefined(final String propName, final String newPropValue) {
         if (System.getProperty(propName) == null) {
+            if (newPropValue == null) {
+                throw new RuntimeException(localStrings.getLocalString(
+                        AppClientContainerBuilder.class,
+                        "appclient.missingValue", 
+                        "Value for {0} expected but was not configured or assigned",
+                        new Object[] {propName}
+                        ));
+                        
+            }
             System.setProperty(propName, newPropValue);
         }
     }
