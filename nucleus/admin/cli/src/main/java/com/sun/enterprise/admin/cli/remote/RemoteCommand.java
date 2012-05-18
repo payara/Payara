@@ -251,6 +251,10 @@ public class RemoteCommand extends CLICommand {
                 return;
             }
 
+            // Remote any Set-Cookie's in the system cookie manager otherwise
+            // they appear as cookies in the outgoing request.
+            ((CookieManager)CookieHandler.getDefault()).getCookieStore().removeAll();
+
             cookieManager = new CookieManager(
                                 new ClientCookieStore(
                                         new CookieManager().getCookieStore(), 
@@ -331,8 +335,8 @@ public class RemoteCommand extends CLICommand {
             }
 
             // Using the system CookieHandler, retrieve any cookies.
-            CookieStore cookieJar = systemCookieManager.getCookieStore();
-            List<HttpCookie> newCookies = cookieJar.getCookies();
+            CookieStore systemCookieJar = systemCookieManager.getCookieStore();
+            List<HttpCookie> newCookies = systemCookieJar.getCookies();
 
             if (newCookies.isEmpty()) {
                 // If there are no cookies to set in the request we
@@ -349,6 +353,7 @@ public class RemoteCommand extends CLICommand {
                 console.printf("   Domain: %s%n", cookie.getDomain());
                 console.printf("   Path: %s%n", cookie.getPath());
             }
+             * 
              */
 
             // Get the last modified time of the session cache file.
@@ -396,7 +401,7 @@ public class RemoteCommand extends CLICommand {
 
             // Check to see if any of the set cookies in the reply are
             // different from what is already in the persistent store.
-            for (HttpCookie cookie: cookieJar.getCookies()) {
+            for (HttpCookie cookie: systemCookieJar.getCookies()) {
                 // Check to see if any of the set cookies in the reply are
                 // different from what is already in the persistent store.
                 int cookieIndex = cookieManager.getCookieStore().getCookies().indexOf(cookie);
@@ -509,6 +514,14 @@ public class RemoteCommand extends CLICommand {
                 rac.setResponseFormatType(responseFormatType);
             if (userOut != null)
                 rac.setUserOut(userOut);
+
+            /*
+             * Initialize a CookieManager so that we can retreive
+             * any cookies included in the reply.   These cookies
+             * (e.g. JSESSIONID, JROUTE) are used for CLI session
+             * based routing.
+             */
+            initializeCookieManager();
 
             /*
              * If this is a help request, we don't need the command
@@ -773,6 +786,19 @@ public class RemoteCommand extends CLICommand {
                     ProgramOptions.PasswordLocation.LOGIN_FILE);
             }
         }
+    }
+
+    /*
+     * Initialize a CookieManager so that we can retreive
+     * any cookies included in the reply.   These cookies
+     * (e.g. JSESSIONID, JROUTE) are used for CLI session
+     * based routing.
+    */
+    private void initializeCookieManager() {
+        CookieStore defaultCookieStore = new CookieManager().getCookieStore();
+        CookieManager manager = new CookieManager(defaultCookieStore,
+                CookiePolicy.ACCEPT_ALL);
+        CookieHandler.setDefault(manager);
     }
 
     /**

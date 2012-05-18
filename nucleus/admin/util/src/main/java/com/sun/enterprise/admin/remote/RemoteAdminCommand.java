@@ -634,13 +634,6 @@ public class RemoteAdminCommand {
                                 host, port, shouldUseSecure);
         url.setInteractive(interactive);
 
-        //XXX: This needs to be moved into RemoteCommand.  A CookieManager
-        //     is only required for CLI commands.   
-        CookieStore defaultCookieStore = new CookieManager().getCookieStore();
-        CookieManager manager = new CookieManager(defaultCookieStore,
-                CookiePolicy.ACCEPT_ALL);
-        CookieHandler.setDefault(manager);
-
         do {
             /*
              * Any code that wants to trigger a retry will say so explicitly.
