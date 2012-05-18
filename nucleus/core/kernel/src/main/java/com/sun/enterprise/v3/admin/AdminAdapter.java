@@ -118,11 +118,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
-    public static final int MAX_AGE=604800 ;
+    public static final int MAX_AGE = 86400 ;
 
     public static final String ASADMIN_PATH="/__asadmin";
-
-    private static final String QUOTE=("\"");
 
     private static final String QUERY_STRING_SEPARATOR = "&";
 
@@ -263,8 +261,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                     reportProps, bais);
             res.setContentType(outboundPayload.getContentType());
             String commandName = req.getRequestURI().substring(getContextRoot().length() + 1);
-            if (! hasCookieHeaders(req) && isSingleInstanceCommand(commandName)) {
-                res.addHeader(SET_COOKIE2_HEADER, getCookieHeader());
+            //Check session routing for commands that have @ExecuteOn(RuntimeType.SINGLE_INSTANCE)
+            if ( isSingleInstanceCommand(commandName)) {
+                res.addHeader(SET_COOKIE2_HEADER, getCookieHeader(req));
             }
             outboundPayload.writeTo(res.getOutputStream());
             res.getOutputStream().flush();
@@ -279,29 +278,43 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      * if the instance name serving the request is the same as the
      * jvmRoute information
      * @param req Request to examine the Cookie header
-     * @return true if the Cookie header is set and the jvmRoute information is correct
+     * @return true if the Cookie header is set and the jvmRoute information is  the same as
+     * the instance serving the request , false otherwise
      *
      */
-    public boolean hasCookieHeaders(Request req) {
+    public boolean hasCookieHeader(Request req) {
 
-        for (String header : req.getHeaders("Cookie")){
+        String[] nameValuePair = getJSESSIONIDHeaders(req);
+        if (nameValuePair != null )  {
+            String headerValue = nameValuePair[1];
+
+            int index = headerValue.lastIndexOf('.');
+            return  headerValue.substring(index+1,headerValue.lastIndexOf("\""))
+                    .equals(server.getName())? true : false;
+
+        }
+        return false;
+    }
+
+    /**
+     * This method will return the Cookie header with name JSESSIONID="..."
+     * @param req  The request which may contain cookie headers
+     * @return  cookie header
+     */
+    public String[] getJSESSIONIDHeaders(Request req) {
+         for (String header : req.getHeaders("Cookie")){
 
             String cookieHeaders[] = header.trim().split(";");
             for (String cookieHeader:cookieHeaders) {
                 String[] nameValuePair = cookieHeader.trim().split("=");
-
-                String headerName = nameValuePair [0] ;
-                String headerValue = nameValuePair[1];
-                if (headerName.equals(SESSION_COOKIE_NAME)) {
-                    int index = headerValue.lastIndexOf('.');
-                    return headerValue.substring(index+1,headerValue.lastIndexOf("\""))
-                            .equals(server.getName())? true : false;
-
+                if (nameValuePair[0].equals(SESSION_COOKIE_NAME)) {
+                    return nameValuePair;
                 }
             }
-        }
 
-        return false;
+         }
+        return null;
+
     }
 
     /**
@@ -327,19 +340,40 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      * This will create a unique SessionId, Max-Age,Version,Path to be added to the Set-Cookie header
      * @return Set-Cookie2 header
      */
-    public String getCookieHeader() {
-        UuidGenerator uuidGenerator = new UuidGeneratorImpl();
-        String sessionId = uuidGenerator.generateUuid();
-        StringBuffer sessionBuf = new StringBuffer();
-        sessionBuf.append(sessionId).append('.').append(server.getName());
+    public String getCookieHeader(Request req) {
+        String sessionId = null;
+        // If the request has a Cookie header and
+        // there is no failover then send back the same
+        // JSESSIONID in  Set-Cookie2 header
+        if ( hasCookieHeader(req)) {
+            sessionId = getJSESSIONIDHeaders(req)[1];
+        }  else {
+            //There is no Cookie header in request so generate a new JSESSIONID  or
+            //failover has occured in which case you can generate a new JSESSIONID
+            sessionId = createSessionId();
+
+        }
         StringBuilder sb = new StringBuilder();
-        final Cookie cookie = new Cookie(SESSION_COOKIE_NAME, sessionBuf.toString());
+        final Cookie cookie = new Cookie(SESSION_COOKIE_NAME, sessionId);
         cookie.setMaxAge(MAX_AGE);
         cookie.setPath(ASADMIN_PATH);
         cookie.setVersion(1);
         CookieSerializerUtils.serializeServerCookie(sb, true, false, cookie);
         return sb.toString();
 
+    }
+
+    /**
+     * This will create a new sessionId and add the server name as a jvmroute information to it
+     * @return String to be used for the JSESSIONID Set-Cookie2 header
+     */
+
+    public String createSessionId(){
+        UuidGenerator uuidGenerator = new UuidGeneratorImpl();
+        StringBuffer sessionBuf = new StringBuffer();
+        String sessionId = uuidGenerator.generateUuid();
+        sessionBuf.append(sessionId).append('.').append(server.getName());
+        return sessionBuf.toString();
     }
 
     public AdminAccessController.Access authenticate(Request req) throws Exception {
