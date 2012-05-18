@@ -118,7 +118,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
-    public static final String MAX_AGE="604800" ;
+    public static final int MAX_AGE=604800 ;
 
     public static final String ASADMIN_PATH="/__asadmin";
 
@@ -264,9 +264,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             res.setContentType(outboundPayload.getContentType());
             String commandName = req.getRequestURI().substring(getContextRoot().length() + 1);
             if (! hasCookieHeaders(req) && isSingleInstanceCommand(commandName)) {
-               StringBuilder sb = new StringBuilder();
-               CookieSerializerUtils.serializeServerCookie(sb,new Cookie(SESSION_COOKIE_NAME, getSessionID()));
-               res.addHeader(SET_COOKIE2_HEADER, sb.toString());
+                res.addHeader(SET_COOKIE2_HEADER, getCookieHeader());
             }
             outboundPayload.writeTo(res.getOutputStream());
             res.getOutputStream().flush();
@@ -326,18 +324,20 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     }
 
     /**
-     * This will create a unique SessionId to be added to the Set-Cookie header
-     * @return JSESSIONID string
+     * This will create a unique SessionId, Max-Age,Version,Path to be added to the Set-Cookie header
+     * @return Set-Cookie2 header
      */
-    public String getSessionID() {
+    public String getCookieHeader() {
         UuidGenerator uuidGenerator = new UuidGeneratorImpl();
         String sessionId = uuidGenerator.generateUuid();
-        StringBuffer sb = new StringBuffer();
-
-        sb.append(sessionId).append('.').append(server.getName());
-        //Set the max age to 1 week ie cookie expires after a week
-        sb.append("; Max-Age=").append(MAX_AGE);
-        sb.append("; Path=").append(ASADMIN_PATH);
+        StringBuffer sessionBuf = new StringBuffer();
+        sessionBuf.append(sessionId).append('.').append(server.getName());
+        StringBuilder sb = new StringBuilder();
+        final Cookie cookie = new Cookie(SESSION_COOKIE_NAME, sessionBuf.toString());
+        cookie.setMaxAge(MAX_AGE);
+        cookie.setPath(ASADMIN_PATH);
+        cookie.setVersion(1);
+        CookieSerializerUtils.serializeServerCookie(sb, true, false, cookie);
         return sb.toString();
 
     }
