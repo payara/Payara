@@ -900,7 +900,7 @@ public class Response
             if (index != -1) {
                 int len = type.length();
                 index++;
-                while (index < len && Character.isSpace(type.charAt(index))) {
+                while (index < len && Character.isWhitespace(type.charAt(index))) {
                     index++;
                 }
                 if (index+7 < len

@@ -99,7 +99,7 @@ public class MimeMap implements Serializable {
                         // Find start of key
                         int keyStart = 0;
                         while (keyStart < len
-                                && Character.isSpace(line.charAt(keyStart))) {
+                                && Character.isWhitespace(line.charAt(keyStart))) {
                             keyStart++;
                         }
 
@@ -110,14 +110,14 @@ public class MimeMap implements Serializable {
 
                         int keyEnd = keyStart;
                         while (keyEnd<len
-                                && !Character.isSpace(line.charAt(keyEnd))) {
+                                && !Character.isWhitespace(line.charAt(keyEnd))) {
                             keyEnd++;
                         }
 
                         // Find start of value
                         int valueStart = keyEnd;
                         while (valueStart<len
-                                && Character.isSpace(line.charAt(valueStart))) {
+                                && Character.isWhitespace(line.charAt(valueStart))) {
                             valueStart++;
                         }
                         if (valueStart == len) {
@@ -126,7 +126,7 @@ public class MimeMap implements Serializable {
                         }
                         int valueEnd = valueStart;
                         while (valueEnd<len
-                                && !Character.isSpace(line.charAt(valueEnd))) {
+                                && !Character.isWhitespace(line.charAt(valueEnd))) {
                             valueEnd++;
                         }
 
