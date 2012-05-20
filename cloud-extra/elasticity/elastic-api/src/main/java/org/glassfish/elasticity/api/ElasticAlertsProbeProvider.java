@@ -41,12 +41,16 @@
 package org.glassfish.elasticity.api;
 
 import org.glassfish.external.probe.provider.annotations.*;
+import org.jvnet.hk2.annotations.Service;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Probe emitter for the ElasticAlerts events
  *
  * @author Mahesh Kannan
  */
+@Service
 @ProbeProvider(moduleProviderName="glassfish", moduleName="elasticity", probeProviderName="alerts")
 public class ElasticAlertsProbeProvider {
 
@@ -55,15 +59,33 @@ public class ElasticAlertsProbeProvider {
             @ProbeParam("tenantName") String tenantName,
             @ProbeParam("envName") String envName,
             @ProbeParam("alertName") String alertName,
-            @ProbeParam("executeAfterFrequency") String executeAfterFrequency) {}
+            @ProbeParam("executionFrequency") int executionFrequency,
+            @ProbeParam("timeUtnit") TimeUnit timeUnit) {}
 
     @Probe(name="afterExecute")
     public void afterExecute(
             @ProbeParam("tenantName") String tenantName,
             @ProbeParam("envName") String envName,
             @ProbeParam("alertName") String alertName,
+            @ProbeParam("status") String status) {}
+
+    @Probe(name="beforeAction")
+    public void beforeAction(
+            @ProbeParam("tenantName") String tenantName,
+            @ProbeParam("envName") String envName,
+            @ProbeParam("alertName") String alertName,
             @ProbeParam("status") String status,
-            @ProbeParam("actionNames") String[] actionNames) {}
+            @ProbeParam("actionName") String actionName) {}
+
+    @Probe(name="afterAction")
+    public void afterAction(
+            @ProbeParam("tenantName") String tenantName,
+            @ProbeParam("envName") String envName,
+            @ProbeParam("alertName") String alertName,
+            @ProbeParam("status") String status,
+            @ProbeParam("actionName") String actionName,
+            @ProbeParam("actionStatus") boolean actionStatus,
+            @ProbeParam("cause") Throwable cause) {}
 
     @Probe(name="afterDelete")
     public void afterDelete(
