@@ -122,8 +122,6 @@ import org.apache.catalina.Session;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
-import org.apache.catalina.core.ApplicationHttpRequest;
-import org.apache.catalina.core.ApplicationHttpResponse;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardWrapper;
@@ -143,13 +141,13 @@ import org.glassfish.grizzly.EmptyCompletionHandler;
 import org.glassfish.grizzly.http.server.Response.SuspendedContextImpl;
 import org.glassfish.grizzly.http.server.TimeoutHandler;
 import org.glassfish.grizzly.http.server.util.MappingData;
+import org.glassfish.grizzly.http.server.util.RequestUtils;
 import org.glassfish.grizzly.http.util.B2CConverter;
 import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MessageBytes;
-import org.glassfish.grizzly.http.server.util.RequestUtils;
 import org.glassfish.web.valve.GlassFishValve;
 
 /**
