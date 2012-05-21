@@ -6317,7 +6317,11 @@ public class StandardContext
             } catch (IOException e) {
             }
         }
-        dir.mkdirs();
+        if (!dir.exists() && !dir.mkdirs()) {
+            log.log(Level.SEVERE,
+                    sm.getString("standardContext.createWorkDirFailed",
+                                 dir.getAbsolutePath()));
+        }
 
         // Set the appropriate servlet context attribute
         getServletContext().setAttribute(ServletContext.TEMPDIR, dir);

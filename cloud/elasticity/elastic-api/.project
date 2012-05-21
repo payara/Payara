@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>org.glassfish.main.elasticity.elastic-api</name>
+	<comment>Java.net - The Source for Java Technology Collaboration. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
+	<projects>
+		<project>org.glassfish.main.admin.config-api</project>
+		<project>org.glassfish.main.common.common-util</project>
+		<project>org.glassfish.main.common.glassfish-api</project>
+		<project>org.glassfish.main.common.scattered-archive-api</project>
+		<project>org.glassfish.main.grizzly.nucleus-grizzly-all</project>
+		<project>org.glassfish.main.external.j-interop-repackaged</project>
+		<project>org.glassfish.main.elasticity.elastic-config</project>
+		<project>org.glassfish.main.paas.tenant-manager</project>
+		<project>org.glassfish.main.paas.config-api</project>
+		<project>org.glassfish.main.paas.orchestrator</project>
+		<project>org.glassfish.main.virtualization.virt-core</project>
+		<project>org.glassfish.main.virtualization.virt-api</project>
+		<project>org.glassfish.main.admin.admin-cli</project>
+		<project>org.glassfish.main.core.glassfish</project>
+		<project>org.glassfish.main.simple-glassfish-api</project>
+		<project>org.glassfish.main.admin.admin-util</project>
+		<project>org.glassfish.main.common.internal-api</project>
+		<project>org.glassfish.main.admin.launcher</project>
+		<project>org.glassfish.main.core.logging</project>
+		<project>org.glassfish.main.deployment.deployment-admin</project>
+		<project>org.glassfish.main.deployment.deployment-common</project>
+		<project>org.glassfish.main.javax.enterprise.deploy</project>
+		<project>org.glassfish.main.core.kernel</project>
+		<project>org.glassfish.main.flashlight.flashlight-framework</project>
+		<project>org.glassfish.main.cluster.cluster-ssh</project>
+		<project>org.glassfish.main.external.trilead-ssh2-repackaged</project>
+		<project>org.glassfish.main.cluster.cluster-common</project>
+		<project>org.glassfish.main.cluster.gms-bootstrap</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+</projectDescription>

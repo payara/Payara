@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:tr="http://myfaces.apache.org/trinidad"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="title" required="true" type="java.lang.String"/>
+        <cc:attribute name="icon" required="true" type="java.lang.String"/>
+        <cc:attribute name="metaData" required="true" type="java.util.List"/>
+        <cc:attribute name="selectItems" required="true" type="java.util.List"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="navObjectInfo" style="width: 555px; display: #{cc.attrs.metaData.size() > 0 ? 'block' : 'none'}; margin: 10px; margin-left: 0px; vertical-align: top;">
+            <div class="title headerPageTitle" style="background: url(#{request.contextPath}/images/icons/#{cc.attrs.icon}) top left no-repeat; padding-left: 25px">#{cc.attrs.title}</div>
+            <ui:repeat var="metaData" value="#{cc.attrs.metaData}" >
+                <tr:panelGroupLayout layout="horizontal" inlineStyle="width: 100%">
+                    <tr:panelFormLayout inlineStyle="padding-right: 40px">
+                        <tr:inputText label="Name:" value="#{metaData['name']}" readOnly="true" contentStyle="overflow: hidden"/>
+                        <tr:inputText label="OS Name:" value="#{metaData['characteristics']['os-name']}" readOnly="true"
+                                rendered="#{metaData['template-id'] == null and metaData['characteristics']['os-name'] != null}"/>
+                        <tr:inputText label="Service Type:" value="#{metaData['characteristics']['service-type']}" readOnly="true"
+                                rendered="#{metaData['characteristics']['service-type'] != null}"/>
+                        <!--ui:repeat value="#{uploadBean.getListAsSet(metaData['characteristics'].keySet())}" var="char">
+                                                <tr:inputText label="#{uploadBean.getCharacteristicDisplayName(char)}:" id="char"
+                                                    value="#{metaData['characteristics'][char]}" columns="10" readOnly="true" simple="false"/>
+                                          </ui:repeat-->
+                        <tr:selectOneChoice id="lbTemplate"
+                                            label="Template:"
+                                            value="#{metaData['template-id']}"
+                                            rendered="#{metaData['template-id'] != null}"
+                                            contentStyle="width: 187px;" size="6">
+                            <f:selectItems value="#{cc.attrs.selectItems}" />
+                            <f:ajax render=":wizard:#{cc.clientId}"/>
+                        </tr:selectOneChoice>
+                    </tr:panelFormLayout>
+                    <tr:panelFormLayout rendered="#{metaData['configurations']['ssl-enabled'] != null}" inlineStyle="float: right; margin-right: 20px">
+                        <tr:inputNumberSpinbox label="HTTP Port" value="#{metaData['configurations']['http-port']}" minimum="1" maximum="64535" columns="5" />
+                        <tr:selectBooleanCheckbox label="SSL Enabled:" value="#{metaData['configurations']['ssl-enabled']}"/>
+                        <tr:inputNumberSpinbox label="HTTPS Port:" value="#{metaData['configurations']['https-port']}" minimum="1" maximum="64535" columns="5"/>
+                        <!--<tr:outputText value="To change these values after the application is deployed, use the Load Balancer tab."/>-->
+                    </tr:panelFormLayout>
+                    <tr:panelFormLayout rendered="#{metaData['configurations']['min.clustersize'] != null}" inlineStyle="float: right; margin-right: 20px">
+                        <tr:inputNumberSpinbox label="Instance Count Minimum:" value="#{metaData['configurations']['min.clustersize']}" minimum="1" maximum="16"/>
+                        <tr:inputNumberSpinbox label="Instance Count Maximum:" value="#{metaData['configurations']['max.clustersize']}" minimum="1" maximum="16" />
+                        <!-- <tr:outputText value="To change these values after the application is deployed, use the Auto Scaling tab."/>-->
+                    </tr:panelFormLayout>
+                    <tr:panelFormLayout rendered="#{metaData['configurations']['database.init.sql'] != null}" inlineStyle="float: right; margin-right: 20px">
+                        <tr:inputFile label="Init SQL File:"
+                          id="sqlfile"
+                          value="#{uploadBean.sqlInitFile}"
+                          columns="10"
+                          valueChangeListener="#{uploadBean.sqlFileUploaded}">
+                    </tr:inputFile>
+                    </tr:panelFormLayout>
+                    <!--tr:inputText id="amount" label="Clustersize:" value="#{uploadBean.eeTemplateMinMaxClusterSize}" columns="16"/>
+                                    <div id="slider-range"></div>
+                                    <script type="text/javascript">
+                                        $(function() {
+                                            var $input = $( "#wizard\\:eeTemplateMetaData\\:0\\:amount" );
+                                            $( "#slider-range" ).slider({
+                                                range: true,
+                                                min: 1,
+                                                max: 5,
+                                                values: [ $input.val().split(" - ")[0], $input.val().split(" - ")[1] ],
+                                                slide: function( event, ui ) {
+                                                    $input.val( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+                                                }
+                                            });
+                                            $input.val( $( "#slider-range" ).slider( "values", 0 ) +
+                                                    " - " + $( "#slider-range" ).slider( "values", 1 ) );
+                                        });
+                                   </script-->
+                </tr:panelGroupLayout>
+            </ui:repeat>
+        </div>
+
+    </cc:implementation>
+</html>

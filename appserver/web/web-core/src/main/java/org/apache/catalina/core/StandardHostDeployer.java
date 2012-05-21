@@ -698,17 +698,17 @@ public class StandardHostDeployer implements Deployer {
                                 if (contextWAR.exists()) {
                                     if (contextLastModified 
                                         > contextWAR.lastModified()) {
-                                        contextWAR.delete();
+                                        deleteFile(contextWAR);
                                     }
                                 }
                             }
                         } else {
-                            contextFile.delete();
+                            deleteFile(contextFile);
                         }
                     }
                     if (host.isDeployXML() && (configFile != null)) {
                         File docBaseXml = new File(configFile);
-                        docBaseXml.delete();
+                        deleteFile(docBaseXml);
                     }
                 }
 
@@ -895,11 +895,19 @@ public class StandardHostDeployer implements Deployer {
             if (file.isDirectory()) {
                 deleteDir(file);
             } else {
-                file.delete();
+                deleteFile(file);
             }
         }
-        dir.delete();
+        deleteFile(dir);
 
+    }
+
+    protected void deleteFile(File dir) {
+        if (!dir.delete()) {
+          log.log(Level.WARNING,
+                  sm.getString("standardHost.removeFileFailed",
+                               dir.getAbsolutePath()));
+        }
     }
 
 }
