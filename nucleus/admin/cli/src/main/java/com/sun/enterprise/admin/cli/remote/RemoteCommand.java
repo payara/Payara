@@ -272,7 +272,9 @@ public class RemoteCommand extends CLICommand {
 
             if (isSessionCookieExpired(cookieManager, modifiedTime)) {
                 logger.fine("Cookie session file has expired.");
-                sessionCache.delete();
+                if (!sessionCache.delete()) {
+                    logger.fine("Unable to delete session file.");
+                }
                 return;
             }
 

@@ -74,7 +74,7 @@ public class ClientCookieStore implements CookieStore {
             + "# These cookies are not used for authentication and they are\n"
             + "# not assoicated with server state."; 
 
-    public static URI uri = null;
+    protected URI uri = null;
 
 
     public ClientCookieStore(CookieStore cookieStore, File file) {
@@ -112,7 +112,7 @@ public class ClientCookieStore implements CookieStore {
         return cookieStore.removeAll();
     }
 
-    static public URI getStaticURI() {
+    public URI getStaticURI() {
         if (uri == null) {
             try {
                 uri = new URI(COOKIE_URI);
