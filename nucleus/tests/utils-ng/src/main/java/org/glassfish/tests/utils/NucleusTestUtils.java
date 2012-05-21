@@ -58,7 +58,7 @@ import static org.testng.AssertJUnit.assertNotNull;
  * @author Tom Mueller
  */
 public class NucleusTestUtils {
-    private static final int DEFAULT_TIMEOUT_MSEC = 480000; // 8 minutes
+    protected static final int DEFAULT_TIMEOUT_MSEC = 480000; // 8 minutes
     private static boolean verbose = true;
     protected static final File nucleusRoot = initNucleusRoot();
     
@@ -75,8 +75,7 @@ public class NucleusTestUtils {
     }
 
     // All methods are static, do not allow an object to be created.
-    private NucleusTestUtils() {
-    } 
+    protected NucleusTestUtils() { } 
             
     /**
      * Runs the command with the args given
@@ -110,6 +109,10 @@ public class NucleusTestUtils {
         if (!cmd.canExecute()) {
             cmd = new File(nucleusRoot, isWindows() ? "bin/asadmin.bat" : "bin/asadmin");
         }
+        return cmdWithOutput(cmd, timeout, args);
+    }
+    
+    public static NadminReturn cmdWithOutput(final File cmd, final int timeout, final String... args) {
         List<String> command = new ArrayList<String>();
         command.add(cmd.toString());
         command.add("--echo");
@@ -154,7 +157,7 @@ public class NucleusTestUtils {
     }
 
 
-    private static boolean isWindows() {
+    protected static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
     }
     
