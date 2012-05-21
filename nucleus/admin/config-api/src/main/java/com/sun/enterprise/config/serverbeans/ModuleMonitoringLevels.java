@@ -430,6 +430,28 @@ public interface ModuleMonitoringLevels extends ConfigBeanProxy, Injectable, Pro
     /**
     	Properties as per {@link PropertyBag}
      */
+
+   /**
+     * Gets the value of the cloud IMS property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="OFF")
+    @Pattern(regexp="(OFF|LOW|HIGH)")
+    public String getCloudIaas();
+
+    /**
+     * Sets the value of the cloud IMS property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setCloudIaas(String value) throws PropertyVetoException;
+    /**
+        Properties as per {@link PropertyBag}
+     */
+
     @ToDo(priority=ToDo.Priority.IMPORTANT, details="Provide PropertyDesc for legal props" )
     @PropertiesDesc(props={})
     @Element
