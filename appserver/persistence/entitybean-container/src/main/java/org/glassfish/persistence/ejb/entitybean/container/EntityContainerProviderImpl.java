@@ -96,7 +96,7 @@ public final class EntityContainerProviderImpl implements EntityContainerProvide
             }
             if (commitOption.equals("A")) {
                 _logger.log(Level.WARNING, 
-                            "ejb.commit_option_A_not_supported",
+                            "entitybean.container.commit_option_A_not_supported",
                             new Object []{ejbDescriptor.getName()}
                             );
                 container = new EntityContainer(ejbDescriptor, loader);

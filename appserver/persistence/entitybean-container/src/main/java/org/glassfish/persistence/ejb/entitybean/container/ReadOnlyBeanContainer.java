@@ -461,7 +461,7 @@ public class ReadOnlyBeanContainer
             }                                    
         } catch (Exception ex) {
 
-            _logger.log(Level.SEVERE, "ejb.addPooledEJB", ex);
+            _logger.log(Level.SEVERE, "entitybean.container.addPooledEJB", ex);
             EJBException ejbEx = new EJBException();
             ejbEx.initCause(ex);
             throw ejbEx;
@@ -484,7 +484,7 @@ public class ReadOnlyBeanContainer
             
         } catch (Exception ex) {            
 
-            _logger.log(Level.SEVERE, "ejb.forceDestroyBean", ex);            
+            _logger.log(Level.SEVERE, "entitybean.container.forceDestroyBean", ex);            
             EJBException ejbEx = new EJBException();
             ejbEx.initCause(ex);
             throw ejbEx;        

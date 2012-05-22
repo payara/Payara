@@ -98,6 +98,8 @@ import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.api.invocation.ComponentInvocation;
 
+import com.sun.logging.LogDomains;
+
 /**
  * This class implements the Container interface for EntityBeans.
  * It is responsible for instance & lifecycle management for BMP & CMP
@@ -176,11 +178,12 @@ public class EntityContainer
             return null;
         }
     };
-    protected static final LocalStringManagerImpl localStrings =
-    new LocalStringManagerImpl(EntityContainer.class);
-    
+
+    static final Logger _logger =
+        LogDomains.getLogger(EntityContainer.class, LogDomains.EJB_LOGGER);
+
     static final int POOLED=1, READY=2, INVOKING=3,
-    INCOMPLETE_TX=4, DESTROYED=5;
+            INCOMPLETE_TX=4, DESTROYED=5;
     protected static final int HIGH_WATER_MARK=100;
     
     private static final int DEFAULT_TX_CACHE_BUCKETS = 16;
@@ -717,7 +720,7 @@ public class EntityContainer
                 doFlush( inv );
             }
         } catch ( Exception ex ) {
-            _logger.log(Level.FINE, "ejb.release_context_exception",
+            _logger.log(Level.FINE, "entitybean.container.release_context_exception",
                         logParams);
             _logger.log(Level.FINE, "",ex);
             throw new EJBException(ex);
@@ -1048,7 +1051,7 @@ public class EntityContainer
             preInvoke(i);
             removeBean(i);
         } catch(Exception e) {
-            _logger.log(Level.SEVERE,"ejb.preinvoke_exception",logParams);
+            _logger.log(Level.SEVERE,"entitybean.container.preinvoke_exception",logParams);
             _logger.log(Level.SEVERE,"",e);
             i.exception = e;
         } finally {
@@ -1114,14 +1117,14 @@ public class EntityContainer
             cancelTimers(primaryKey);
         } catch ( RemoveException ex ) {
             if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"ejb.local_remove_exception",logParams);
+                _logger.log(Level.FINE,"entitybean.container.local_remove_exception",logParams);
                 _logger.log(Level.FINE,"",ex);
             }
             throw ex;
         }
         catch ( Exception ex ) {
             if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"ejb.remove_bean_exception",logParams);
+                _logger.log(Level.FINE,"entitybean.container.remove_bean_exception",logParams);
                 _logger.log(Level.FINE,"",ex);
             }
             throw new EJBException(ex);
@@ -1584,7 +1587,7 @@ public class EntityContainer
            ejbContainerUtilImpl.addWork(work);
         } catch (Exception ex) {
             addedASyncTask = false;
-            _logger.log(Level.WARNING, "ejb.add_cleanup_task_error",ex);
+            _logger.log(Level.WARNING, "entitybean.container.add_cleanup_task_error",ex);
         }
     }
     
@@ -1761,7 +1764,7 @@ public class EntityContainer
             }
             return localObjImpl;
         } catch ( Exception ex ) {
-            _logger.log(Level.SEVERE,"ejb.get_ejb_local_object_exception",
+            _logger.log(Level.SEVERE,"entitybean.container.get_ejb_local_object_exception",
                         logParams);
             _logger.log(Level.SEVERE,"",ex);
             throw new EJBException(ex);
@@ -1868,7 +1871,7 @@ public class EntityContainer
             return ejbObjImpl;
         }
         catch ( Exception ex ) {
-            _logger.log(Level.FINE, "ejb.get_ejb_context_exception", logParams);
+            _logger.log(Level.FINE, "entitybean.container.get_ejb_context_exception", logParams);
             _logger.log(Level.FINE,"",ex);
             throw new EJBException(ex);
         }
@@ -2277,7 +2280,7 @@ public class EntityContainer
                 
                 return true;
             } catch ( Exception ex ) {
-                _logger.log(Level.INFO, "ejb.ejb_comparison_exception",
+                _logger.log(Level.INFO, "entitybean.container.ejb_comparison_exception",
                             logParams);
                 _logger.log(Level.INFO, "", ex);
                 throw new RemoteException("Exception in isIdentical()", ex);
@@ -2812,7 +2815,7 @@ public class EntityContainer
             try {
                 ejbContainerUtilImpl.addWork(this);
             } catch (Exception ex) {
-                _logger.log(Level.WARNING, "ejb.entity_add_async_task", ex);
+                _logger.log(Level.WARNING, "entitybean.container.entity_add_async_task", ex);
                 synchronized (lock) {
                     addedTask = false;
                 }

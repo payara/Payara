@@ -55,6 +55,7 @@ import org.jvnet.hk2.component.PostConstruct;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import com.sun.logging.LogDomains;
 
 @Service
 public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnlyBeanNotifier {
@@ -72,6 +73,9 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
 
     private static final String GMS_READ_ONLY_COMPONENT_NAME = "__GMS__READ_ONLY_BEAN__";
 
+    static final Logger _logger =
+        LogDomains.getLogger(ReadOnlyBeanMessageCallBack.class, LogDomains.EJB_LOGGER);
+
     public void postConstruct() {
         if (!ejbContainerUtil.isDas()) {
             if (gmsAdapterService != null) {
@@ -86,7 +90,6 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
     }
 
     public void processNotification(Signal signal) { 
-        Logger _logger = ejbContainerUtil.getLogger();
         try {
             MessageSignal messageSignal = (MessageSignal) signal;
             byte[] payload = messageSignal.getMessage();
@@ -118,7 +121,6 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
         int size = pk.length;
         byte[] payload = new byte[size + 8];
 
-        Logger _logger = ejbContainerUtil.getLogger();
         longToBytes(ejbID, payload, 0);
         System.arraycopy(pk, 0, payload, 8, size);
         try {
@@ -140,7 +142,6 @@ public class ReadOnlyBeanMessageCallBack implements CallBack, DistributedReadOnl
     public void notifyRefreshAll(long ejbID) {
         byte[] payload = new byte[8];
 
-        Logger _logger = ejbContainerUtil.getLogger();
         longToBytes(ejbID, payload, 0);
         try {
             gms.getGroupHandle().sendMessage(GMS_READ_ONLY_COMPONENT_NAME, payload);

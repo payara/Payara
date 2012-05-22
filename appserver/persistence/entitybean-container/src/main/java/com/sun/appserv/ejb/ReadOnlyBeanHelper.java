@@ -76,7 +76,7 @@ public class ReadOnlyBeanHelper {
             return roNotifier;
         } catch (Exception ex) {
             if(_logger.isLoggable(Level.SEVERE)) {
-                _logger.log(Level.SEVERE, "ejb.remote_exception", ex);
+                _logger.log(Level.SEVERE, "entitybean.container.remote_exception", ex);
             }
         }
         return null;
@@ -92,7 +92,7 @@ public class ReadOnlyBeanHelper {
             return home.getReadOnlyBeanLocalNotifier();
         } catch (Exception ex) {
             if(_logger.isLoggable(Level.SEVERE)) {
-                _logger.log(Level.SEVERE, "ejb.remote_exception",ex);
+                _logger.log(Level.SEVERE, "entitybean.container.remote_exception",ex);
             }
         }
         return null;
