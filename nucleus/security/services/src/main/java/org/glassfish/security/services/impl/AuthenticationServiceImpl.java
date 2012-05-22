@@ -322,7 +322,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	 *  
 	 * Facilitates use of the standard JAAS NameCallback and PasswordCallback.
 	 */
-	private class AuthenticationCallbackHandler implements CallbackHandler {
+	private static class AuthenticationCallbackHandler implements CallbackHandler {
 		private String user;
 		private char[] pass;
 
@@ -355,7 +355,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	 *  
 	 * Facilitates the use of JAAS LoginContext with Authentication Service LoginModule configuration.
 	 */
-	private class AuthenticationJaasConfiguration extends Configuration {
+	private static class AuthenticationJaasConfiguration extends Configuration {
 		private String configurationName;
 		private AppConfigurationEntry[] lmEntries;
 
