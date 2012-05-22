@@ -44,7 +44,6 @@ import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.builder.StatefulContainerBuilder;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbEntityDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
@@ -57,6 +56,7 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -64,11 +64,16 @@ import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
 
+import com.sun.ejb.EntityContainerProvider;
+
 @Service
 public final class ContainerFactoryImpl implements ContainerFactory {
 
     @Inject
     private Habitat services;
+
+    @Inject
+    private Provider<EntityContainerProvider> entityContainerProvider;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
@@ -106,37 +111,12 @@ public final class ContainerFactoryImpl implements ContainerFactory {
             } else if ( ejbDescriptor instanceof EjbMessageBeanDescriptor) {
                 container = new MessageBeanContainer(ejbDescriptor, loader);
             } else {
-                    if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
-                        .isIsReadOnlyBean()) { 
-
-                        EjbEntityDescriptor robDesc = (EjbEntityDescriptor) ejbDescriptor;                    
-                        container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
-                    } else {
-                    	String commitOption = null;
-                        IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
-                                getIASEjbExtraDescriptors();
-                        if (iased != null) {
-                            commitOption = iased.getCommitOption();    	
-                        }
-                        if (commitOption == null) {
-                            commitOption = ejbContainerDesc.getCommitOption();  
-                        }
-                        if (commitOption.equals("A")) {
-                            _logger.log(Level.WARNING, 
-                                            "ejb.commit_option_A_not_supported",
-                                            new Object []{ejbDescriptor.getName()}
-                                            );
-                            container = new EntityContainer(ejbDescriptor, loader);
-                        } else if (commitOption.equals("C")) {
-                            _logger.log(Level.FINE, "Using commit option C for: " 
-                                        + ejbDescriptor.getName());
-                            container = new CommitCEntityContainer(ejbDescriptor, loader);
-                        } else {
-                            _logger.log(Level.FINE,"Using commit option B for: " + 
-                                            ejbDescriptor.getName());
-                            container = new EntityContainer(ejbDescriptor, loader);
-                        }
-            	}
+                EntityContainerProvider ecp = entityContainerProvider.get();
+                if (ecp == null) {
+                    throw new RuntimeException("Enity EJB Module is not available");
+                } else {
+                    container = (BaseContainer) ecp.getEntityContainer(ejbDescriptor, loader);
+                }
             }
 
        

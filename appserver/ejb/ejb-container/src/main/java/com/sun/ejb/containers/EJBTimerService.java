@@ -879,6 +879,10 @@ public class EJBTimerService
         return timerCache_.getNonPersistentActiveTimerIdsByThisServer();
     }
 
+    void cancelTimersByKey(long containerId, Object primaryKey) {
+        //Do nothing or throw an exception?
+    }
+
     //
     // Logic used by TimerWrapper for javax.ejb.Timer methods.
     //

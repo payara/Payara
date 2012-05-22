@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -127,7 +127,7 @@ public abstract class EJBContextImpl
     // TODO how to handle this for passivated SFSBs?
     transient protected JCDIService.JCDIInjectionContext jcdiInjectionContext;
     
-    EJBContextImpl(Object ejb, BaseContainer container) {
+    protected EJBContextImpl(Object ejb, BaseContainer container) {
         this.ejb = ejb;
         this.container = container;
         state = BeanState.CREATED;
@@ -203,7 +203,7 @@ public abstract class EJBContextImpl
         return container.isTimedObject();
     }
 
-    BeanState getState() {
+    protected BeanState getState() {
         return state;
     }
     
@@ -236,7 +236,7 @@ public abstract class EJBContextImpl
         return lastTimeUsed;
     }
     
-    void touch() {
+    public void touch() {
         lastTimeUsed = System.currentTimeMillis();
     }
     
@@ -641,6 +641,16 @@ public abstract class EJBContextImpl
         }
         return inActivatePassivate;
     } 
+
+    protected Object getKey() {
+        if ( ejbLocalObjectImpl != null ) {
+            return ejbLocalObjectImpl.getKey();
+        } else if ( ejbObjectImpl != null ) {
+            return ejbObjectImpl.getKey();
+        } else {
+            return null;
+        }
+    }
     
     /**
      * Called after this context is freed up.

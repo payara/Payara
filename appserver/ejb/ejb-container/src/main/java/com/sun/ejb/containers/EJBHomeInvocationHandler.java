@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,8 +76,8 @@ import com.sun.logging.LogDomains;
  * @author Kenneth Saks
  */    
 
-final class EJBHomeInvocationHandler 
-    extends ReadOnlyEJBHomeImpl  implements InvocationHandler {
+public class EJBHomeInvocationHandler 
+    extends EJBHomeImpl  implements InvocationHandler {
 
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(EJBHomeInvocationHandler.class);
@@ -101,9 +101,8 @@ final class EJBHomeInvocationHandler
     private EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
 
 
-    EJBHomeInvocationHandler(EjbDescriptor ejbDescriptor,
-                             Class homeIntfClass,
-                             MethodMap invocationInfoMap) 
+    protected EJBHomeInvocationHandler(EjbDescriptor ejbDescriptor,
+                             Class homeIntfClass)
         throws Exception {
 
         if( ejbDescriptor instanceof EjbSessionDescriptor ) {
@@ -115,8 +114,6 @@ final class EJBHomeInvocationHandler
             isEntity_ = true;
         }
 
-        invocationInfoMap_ = invocationInfoMap;
-
         homeIntfClass_ = homeIntfClass;
 
         // NOTE : Container is not set on super-class until after 
@@ -125,6 +122,10 @@ final class EJBHomeInvocationHandler
 
     public void setProxy(EJBHome proxy) {
         proxy_ = proxy;
+    }
+
+    public void setMethodMap(MethodMap map) {
+        invocationInfoMap_ = map;
     }
 
     protected EJBHome getEJBHome() {
@@ -164,13 +165,7 @@ final class EJBHomeInvocationHandler
             if( methodClass == java.lang.Object.class )  {
                 return InvocationHandlerUtil.invokeJavaObjectMethod
                     (this, method, args);    
-            } else if( methodClass == ReadOnlyEJBHome.class ) {
-                if( method.getName().equals("_refresh_All") ) {
-                    super._refresh_All();
-                } else {
-                    super._refresh_com_sun_ejb_containers_read_only_bean_
-                        (args[0]);
-                }
+            } else if (invokeSpecialEJBHomeMethod(method, methodClass, args)) {
                 return null;
             }
 
@@ -301,9 +296,7 @@ final class EJBHomeInvocationHandler
                         
                     } else if (invInfo.startsWithFindByPrimaryKey) {
 
-                        EntityContainer entityContainer = (EntityContainer) 
-                            container;
-                        returnValue = entityContainer.invokeFindByPrimaryKey
+                        returnValue = container.invokeFindByPrimaryKey
                             (invInfo.targetMethod1, inv, args);
                                                                            
                     } else if ( invInfo.startsWithFind ) {
@@ -341,6 +334,12 @@ final class EJBHomeInvocationHandler
 
             ((BaseContainer) getContainer()).onLeavingContainer();
         }
+    }
+
+    // default impl to be overridden in subclass if necessary
+    protected boolean invokeSpecialEJBHomeMethod(Method method, Class methodClass, 
+            Object[] args) throws Exception {
+        return false;
     }
 
     private Object invokeEJBHomeMethod(String methodName, Object[] args)

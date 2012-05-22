@@ -137,12 +137,12 @@ public abstract class BaseContainer
     static final int EJBHome_getHomeHandle      = 3;
     static final int EJBLocalHome_remove_Pkey   = 4;
     static final int EJBObject_getEJBHome       = 5;
-    static final int EJBObject_getPrimaryKey    = 6;
+    protected static final int EJBObject_getPrimaryKey    = 6; //TODO - move related to entity-container
     static final int EJBObject_remove		    = 7;
     static final int EJBObject_getHandle        = 8;
     static final int EJBObject_isIdentical      = 9;
     static final int EJBLocalObject_getEJBLocalHome = 10;
-    static final int EJBLocalObject_getPrimaryKey   = 11;
+    protected static final int EJBLocalObject_getPrimaryKey   = 11; //TODO - move related to entity-container
     static final int EJBLocalObject_remove      = 12;
     static final int EJBLocalObject_isIdentical	= 13;
     static final int EJBHome_create             = 14;
@@ -449,6 +449,8 @@ public abstract class BaseContainer
     // used to register and unregister ejb webservices endpoints
     private WSEjbEndpointRegistry wsejbEndpointRegistry;
 
+    protected EJBContainerStateManager containerStateManager;
+
     /**
      * This constructor is called from ContainerFactoryImpl when an
      * EJB Jar is deployed.
@@ -476,6 +478,7 @@ public abstract class BaseContainer
             IASEjbExtraDescriptors iased = ejbDesc.getIASEjbExtraDescriptors();
             cmtTimeoutInSeconds = iased.getCmtTimeoutInSeconds();
 
+            containerStateManager = new EJBContainerStateManager(this);
 
             if( ejbDescriptor.getType().equals(EjbMessageBeanDescriptor.TYPE) )
             {
@@ -741,8 +744,7 @@ public abstract class BaseContainer
                 if( !isStatefulSession ) {
                     // EJBTimerService should be accessed only if needed 
                     // not to cause it to be loaded if it's not used.
-                    EJBTimerService timerService = 
-                        ejbContainerUtilImpl.getEJBTimerService();
+                    EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
                     if( timerService != null ) {
                         timerService.timedObjectCount();
                     }
@@ -910,6 +912,14 @@ public abstract class BaseContainer
         return isTimedObject_;
     }
     
+    public final boolean isLocalObject() {
+        return isLocal;
+    }
+    
+    public final boolean isRemoteObject() {
+        return isRemote;
+    }
+    
     final boolean isBeanManagedTx() {
         return isBeanManagedTran;
     }
@@ -922,9 +932,7 @@ public abstract class BaseContainer
         return loader;
     }
 
-    
-    
-    final long getContainerId() {
+    protected final long getContainerId() {
         return ejbDescriptor.getUniqueId();
     }
     
@@ -1113,7 +1121,7 @@ public abstract class BaseContainer
     /**
      * Called from the ContainerFactory during initialization.
      */
-    void initializeHome()
+    protected void initializeHome()
         throws Exception
     {
 
@@ -2068,7 +2076,7 @@ public abstract class BaseContainer
      * @param method an integer identifying the method to be checked,
      *		        must be one of the EJBLocal{Home|Object}_* constants.
      */
-    void authorizeLocalMethod(int method) {
+    protected void authorizeLocalMethod(int method) {
 
         EjbInvocation inv = invFactory.create();
         inv.isLocal = true;
@@ -2090,7 +2098,7 @@ public abstract class BaseContainer
      * @param method an integer identifying the method to be checked,
      *		        must be one of the EJB{Home|Object}_* constants.
      */
-    void authorizeRemoteMethod(int method)
+    protected void authorizeRemoteMethod(int method)
         throws RemoteException
     {
         EjbInvocation inv = invFactory.create();
@@ -2384,6 +2392,17 @@ public abstract class BaseContainer
         
     }
     
+    protected void cancelTimers(Object key) {
+        if( isTimedObject() ) {
+            // EJBTimerService should be accessed only if needed
+            // not to cause it to be loaded if it's not used.
+            EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
+            if( timerService != null ) {
+                timerService.cancelTimersByKey(getContainerId(), key);
+            }
+        }
+    }
+
     private void destroyTimers() {
         if( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed 
@@ -2405,7 +2424,7 @@ public abstract class BaseContainer
     }
     
     // internal API, implemented in subclasses
-    abstract EJBObjectImpl createEJBObjectImpl()
+    protected abstract EJBObjectImpl createEJBObjectImpl()
         throws CreateException, RemoteException;
 
     // Only applies to concrete session containers
@@ -2417,7 +2436,7 @@ public abstract class BaseContainer
     }
     
     // internal API, implemented in subclasses
-    EJBLocalObjectImpl createEJBLocalObjectImpl()
+    protected EJBLocalObjectImpl createEJBLocalObjectImpl()
         throws CreateException
     {
         throw new EJBException(
@@ -2445,7 +2464,7 @@ public abstract class BaseContainer
      * Called when a remote invocation arrives for an EJB.
      * Implemented in subclasses.
      */
-    abstract EJBObjectImpl getEJBObjectImpl(byte[] streamKey);
+    protected abstract EJBObjectImpl getEJBObjectImpl(byte[] streamKey);
     
     EJBObjectImpl getEJBRemoteBusinessObjectImpl(byte[] streamKey) {
 	throw new EJBException(localStrings.getLocalString(
@@ -2454,7 +2473,7 @@ public abstract class BaseContainer
                 "getRemoteBusinessObjectImpl"));
     }
 
-    EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
+    protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
 	throw new EJBException(localStrings.getLocalString(
                 "ejb.basecontainer_internal_error",
                 "Internal ERROR: BaseContainer.{0} called",
@@ -2479,11 +2498,11 @@ public abstract class BaseContainer
      * Check if the given EJBObject/LocalObject has been removed.
      * @exception NoSuchObjectLocalException if the object has been removed.
      */
-    void checkExists(EJBLocalRemoteObject ejbObj)  {
+    protected void checkExists(EJBLocalRemoteObject ejbObj)  {
         throw new EJBException(localStrings.getLocalString(
                 "ejb.basecontainer_internal_error",
                 "Internal ERROR: BaseContainer.{0} called",
-                "checkExists"));
+                ("checkExists for bean " + ejbDescriptor.getName())));
     }
 
     protected final ComponentContext getContext(EjbInvocation inv)
@@ -2491,6 +2510,10 @@ public abstract class BaseContainer
 
         return (inv.context == null) ? _getContext(inv) : inv.context;
 
+    }
+    
+    protected final Object getInvocationKey(EjbInvocation inv) {
+        return (inv.ejbObject == null) ? null : inv.ejbObject.getKey();
     }
     
     // internal API, implemented in subclasses
@@ -2501,60 +2524,75 @@ public abstract class BaseContainer
     protected abstract void releaseContext(EjbInvocation inv)
         throws EJBException;
     
-    abstract boolean passivateEJB(ComponentContext context);
+    protected abstract boolean passivateEJB(ComponentContext context);
     
     // internal API, implemented in subclasses
-    abstract void forceDestroyBean(EJBContextImpl sc)
+    protected abstract void forceDestroyBean(EJBContextImpl sc)
         throws EJBException;
     
-    abstract void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
+    protected abstract void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
             boolean local)
         throws RemoveException, EJBException, RemoteException;
     
     // default implementation
-    public void removeBeanUnchecked(Object pkey) {
+    protected void authorizeLocalGetPrimaryKey(EJBLocalRemoteObject ejbObj) throws EJBException {
         throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "removeBeanUnchecked"));
+            "containers.invalid_operation",
+            "Invalid operation for Session EJBs."));
+    }
+    
+    // default implementation
+    protected void authorizeRemoteGetPrimaryKey(EJBLocalRemoteObject ejbObj) throws RemoteException {
+        throw new RemoteException(localStrings.getLocalString(
+            "containers.invalid_operation",
+            "Invalid operation for Session EJBs."));
+    }
+    
+    // default implementation
+    protected Object invokeFindByPrimaryKey(Method method,
+            EjbInvocation inv, Object[] args) throws Throwable {
+        assertSupportedOption("invokeFindByPrimaryKey");
+        return null;
+    }
+    // default implementation
+    public void removeBeanUnchecked(Object pkey) {
+        assertSupportedOption("removeBeanUnchecked");
     }
 
     // default implementation
     public void removeBeanUnchecked(EJBLocalObject bean) {
-        throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "removeBeanUnchecked"));
+        assertSupportedOption("removeBeanUnchecked");
     }
 
     public void preSelect() {
-        throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "preSelect"));
+        assertSupportedOption("preSelect");
     }
 
     // default implementation
-    public EJBLocalObject getEJBLocalObjectForPrimaryKey(Object pkey, EJBContext ctx)
-    {
-	throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "getEJBLocalObjectForPrimaryKey(pkey, ctx)"));
+    public EJBLocalObject getEJBLocalObjectForPrimaryKey(Object pkey, EJBContext ctx) {
+        assertSupportedOption("getEJBLocalObjectForPrimaryKey(pkey, ctx)");
+        return null;
     }
     
     // default implementation
     public EJBLocalObject getEJBLocalObjectForPrimaryKey(Object pkey) {
-        throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "getEJBLocalObjectForPrimaryKey"));
+        assertSupportedOption("getEJBLocalObjectForPrimaryKey");
+        return null;
     }
     
     // default implementation
     public EJBObject getEJBObjectForPrimaryKey(Object pkey) {
+        assertSupportedOption("getEJBObjectForPrimaryKey");
+        return null;
+    }
+
+    private void assertSupportedOption(String name) {
         throw new EJBException(localStrings.getLocalString(
-                "ejb.entity_container_only", "{0} only works for EntityContainer",
-                "getEJBObjectForPrimaryKey"));
+                "ejb.entity_container_only", "{0} only works for EntityContainer", name));
     }
     
     // internal API, implemented in subclasses
-    boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
+    protected boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
         throws RemoteException
     {
         throw new EJBException(localStrings.getLocalString(
@@ -3618,19 +3656,26 @@ public abstract class BaseContainer
         return flushEnabled;
     }
     
+    // default impl
+    protected void addProxyInterfacesSetClass(Set proxyInterfacesSet, boolean local) {
+        // no-op
+    }
+
+    // default impl
+    protected EJBHomeInvocationHandler getEJBHomeInvocationHandler(Class homeIntfClass) throws Exception {
+        return new EJBHomeInvocationHandler(ejbDescriptor, homeIntfClass);
+    }
+
     private EJBHomeImpl instantiateEJBHomeImpl() throws Exception {
-        EJBHomeInvocationHandler handler =
-            new EJBHomeInvocationHandler(ejbDescriptor, homeIntf,
-                                         proxyInvocationInfoMap);
+        EJBHomeInvocationHandler handler = getEJBHomeInvocationHandler(homeIntf);
+        handler.setMethodMap(proxyInvocationInfoMap);
 
         EJBHomeImpl homeImpl = handler;
 
         // Maintain insertion order
         Set proxyInterfacesSet = new LinkedHashSet();
 
-        if( ejbDescriptor.getIASEjbExtraDescriptors().isIsReadOnlyBean() ) {
-            proxyInterfacesSet.add(ReadOnlyEJBHome.class);
-        }
+        addProxyInterfacesSetClass(proxyInterfacesSet, false);
 
         proxyInterfacesSet.add(homeIntf); 
 
@@ -3653,10 +3698,8 @@ public abstract class BaseContainer
     private EJBHomeImpl instantiateEJBRemoteBusinessHomeImpl() 
         throws Exception {
 
-        EJBHomeInvocationHandler handler =
-            new EJBHomeInvocationHandler(ejbDescriptor,
-                                         remoteBusinessHomeIntf,
-                                         proxyInvocationInfoMap);
+        EJBHomeInvocationHandler handler = getEJBHomeInvocationHandler(remoteBusinessHomeIntf);
+        handler.setMethodMap(proxyInvocationInfoMap);
 
         EJBHomeImpl remoteBusinessHomeImpl = handler;
 
@@ -3673,22 +3716,25 @@ public abstract class BaseContainer
 
     }
 
-    EjbInvocation createEjbInvocation() {
+    protected EjbInvocation createEjbInvocation() {
         return invFactory.create();
     }
 
-    EjbInvocation createEjbInvocation(Object ejb, ComponentContext context) {
+    protected EjbInvocation createEjbInvocation(Object ejb, ComponentContext context) {
         return invFactory.create(ejb, context);
+    }
+
+    // default impl
+    protected EJBLocalHomeInvocationHandler getEJBLocalHomeInvocationHandler(Class homeIntfClass) throws Exception {
+        return new EJBLocalHomeInvocationHandler(ejbDescriptor, homeIntfClass);
     }
 
     private EJBLocalHomeImpl instantiateEJBLocalHomeImpl()
         throws Exception {
 
         // LocalHome impl
-        EJBLocalHomeInvocationHandler invHandler = 
-            new EJBLocalHomeInvocationHandler(ejbDescriptor, 
-                                              localHomeIntf,
-                                              proxyInvocationInfoMap);
+        EJBLocalHomeInvocationHandler invHandler = getEJBLocalHomeInvocationHandler(localHomeIntf);
+        invHandler.setMethodMap(proxyInvocationInfoMap);
         
         EJBLocalHomeImpl homeImpl = invHandler;
         
@@ -3696,9 +3742,7 @@ public abstract class BaseContainer
         Set proxyInterfacesSet = new LinkedHashSet();
         
         proxyInterfacesSet.add(IndirectlySerializable.class);
-        if( ejbDescriptor.getIASEjbExtraDescriptors().isIsReadOnlyBean()) {
-            proxyInterfacesSet.add(ReadOnlyEJBLocalHome.class);
-        }
+        addProxyInterfacesSetClass(proxyInterfacesSet, true);
         proxyInterfacesSet.add(localHomeIntf);
         
         Class[] proxyInterfaces = (Class[])
@@ -3721,10 +3765,8 @@ public abstract class BaseContainer
     private EJBLocalHomeImpl instantiateEJBLocalBusinessHomeImpl()
         throws Exception {
 
-        EJBLocalHomeInvocationHandler invHandler =
-            new EJBLocalHomeInvocationHandler(ejbDescriptor,
-                                              localBusinessHomeIntf,
-                                              proxyInvocationInfoMap);
+        EJBLocalHomeInvocationHandler invHandler = getEJBLocalHomeInvocationHandler(localBusinessHomeIntf);
+        invHandler.setMethodMap(proxyInvocationInfoMap);
 
         EJBLocalHomeImpl homeImpl = invHandler;
 
@@ -3743,10 +3785,8 @@ public abstract class BaseContainer
     private EJBLocalHomeImpl instantiateEJBOptionalLocalBusinessHomeImpl()
         throws Exception {
 
-        EJBLocalHomeInvocationHandler invHandler =
-            new EJBLocalHomeInvocationHandler(ejbDescriptor,
-                                              localBusinessHomeIntf,
-                                              proxyInvocationInfoMap);
+        EJBLocalHomeInvocationHandler invHandler = getEJBLocalHomeInvocationHandler(localBusinessHomeIntf);
+        invHandler.setMethodMap(proxyInvocationInfoMap);
 
         EJBLocalHomeImpl homeImpl = invHandler;
 
@@ -3761,9 +3801,13 @@ public abstract class BaseContainer
         return homeImpl;
     }
 
-
     protected EJBLocalObjectImpl instantiateEJBLocalObjectImpl() 
-        throws Exception {
+            throws Exception {
+        return instantiateEJBLocalObjectImpl(null);
+    }
+
+    protected EJBLocalObjectImpl instantiateEJBLocalObjectImpl(Object key) 
+            throws Exception {
         EJBLocalObjectImpl localObjImpl = null;
         EJBLocalObjectInvocationHandler handler = 
             new EJBLocalObjectInvocationHandler(proxyInvocationInfoMap,
@@ -3780,6 +3824,11 @@ public abstract class BaseContainer
         }
 
         localObjImpl.setContainer(this);
+        if (key != null) {
+            // associate the EJBObject with the key
+            localObjImpl.setKey(key);
+        }
+
         return localObjImpl;
     }
 
@@ -3845,6 +3894,10 @@ public abstract class BaseContainer
     }
     
     protected EJBObjectImpl instantiateEJBObjectImpl() throws Exception {
+        return instantiateEJBObjectImpl(null, null);
+    }
+    
+    protected EJBObjectImpl instantiateEJBObjectImpl(EJBObject ejbStub, Object key) throws Exception {
         EJBObjectInvocationHandler handler =
             new EJBObjectInvocationHandler(proxyInvocationInfoMap,
                                            remoteIntf);        
@@ -3857,6 +3910,16 @@ public abstract class BaseContainer
             String msg = localStrings.getLocalString("ejb.basecontainer_invalid_remote_interface", 
                 "Remote component interface [{0}] is invalid since it does not extend javax.ejb.EJBObject.", remoteIntf);
             throw new IllegalArgumentException(msg, e);
+        }
+
+        if (ejbStub != null) {
+            // associate the EJBObject with the stub
+            ejbObjImpl.setStub(ejbStub);
+        }
+
+        if (key != null) {
+            // associate the EJBObject with the key
+            ejbObjImpl.setKey(key);
         }
 
         ejbObjImpl.setContainer(this);
@@ -3950,8 +4013,7 @@ public abstract class BaseContainer
         if( isTimedObject_ ) {
             // EJBTimerService should be accessed only if needed 
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = 
-                ejbContainerUtilImpl.getEJBTimerService();
+            EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
             if (timerService != null) {
                 boolean deploy0 = deploy;  //avoid modifying param
                 if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
@@ -4001,7 +4063,7 @@ public abstract class BaseContainer
             prepareEjbTimeoutParams(inv, timerState, timerService);
 
             // Delegate to subclass for i.ejbObject / i.isLocal setup.
-            doTimerInvocationInit(inv, timerState);
+            doTimerInvocationInit(inv, timerState.getTimedObjectPrimaryKey());
      
             originalClassLoader = Utility.setContextClassLoader(loader);
 
@@ -4121,7 +4183,7 @@ public abstract class BaseContainer
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
     }
     
-    Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,
+    protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,
             Object[] params, com.sun.enterprise.security.SecurityManager mgr)
             throws Throwable {
         try {
@@ -4147,8 +4209,8 @@ public abstract class BaseContainer
     /**
      * This is implemented by concrete containers that support TimedObjects.
      */
-    void doTimerInvocationInit(EjbInvocation inv, RuntimeTimerState timerState )
-        throws Exception {
+    protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey )
+            throws Exception {
         throw new EJBException("This container doesn't support TimedObjects");
     }
     
@@ -5093,16 +5155,16 @@ public abstract class BaseContainer
     }
     
     // internal APIs, called from ContainerSync, implemented in subclasses
-    abstract void afterBegin(EJBContextImpl context);
-    abstract void beforeCompletion(EJBContextImpl context);
-    abstract void afterCompletion(EJBContextImpl context, int status);
+    protected abstract void afterBegin(EJBContextImpl context);
+    protected abstract void beforeCompletion(EJBContextImpl context);
+    protected abstract void afterCompletion(EJBContextImpl context, int status);
     
-    void preInvokeNoTx(EjbInvocation inv) {
+    protected void preInvokeNoTx(EjbInvocation inv) {
         throw new EJBException(
             "Internal Error: BaseContainer.preInvokeNoTx called");
     }
     
-    void postInvokeNoTx(EjbInvocation inv) {
+    protected void postInvokeNoTx(EjbInvocation inv) {
         throw new EJBException(
             "Internal Error: BaseContainer.postInvokeNoTx called");
     }
@@ -5562,6 +5624,35 @@ public abstract class BaseContainer
 
     }
 
+    /**
+     * PreInvokeException is used to wrap exceptions thrown
+     * from BaseContainer.preInvoke, so it indicates that the bean's
+     * method will not be called.
+     */
+    public final static class PreInvokeException extends EJBException {
+    
+        Exception exception;
+        
+        public PreInvokeException(Exception ex) {
+            this.exception = ex;
+        }
+    } //PreInvokeException{}
+
+    /**
+     * Strings for monitoring info
+     */
+    public static final class ContainerInfo {
+        public String appName;
+        public String modName;
+        public String ejbName;
+
+        ContainerInfo(String appName, String modName, String ejbName) {
+            this.appName = appName;
+            this.modName = modName;
+            this.ejbName = ejbName;
+        }
+    } //ContainerInfo
+
 } //BaseContainer{}
 
 final class CallFlowInfoImpl
@@ -5656,20 +5747,6 @@ final class RemoteBusinessIntfInfo {
 }
 
 
-/**
- * PreInvokeException is used to wrap exceptions thrown
- * from BaseContainer.preInvoke, so it indicates that the bean's
- * method will not be called.
- */
-final class PreInvokeException extends EJBException {
-    
-    Exception exception;
-    
-    PreInvokeException(Exception ex) {
-        this.exception = ex;
-    }
-} //PreInvokeException{}
-
 final class SafeProperties extends Properties {
     private static final String errstr =
     	"Environment properties cannot be modified";
@@ -5715,14 +5792,3 @@ final class SafeProperties extends Properties {
     }
 } //SafeProperties{}
 
-final class ContainerInfo {
-    String appName;
-    String modName;
-    String ejbName;
-
-    ContainerInfo(String appName, String modName, String ejbName) {
-        this.appName = appName;
-        this.modName = modName;
-        this.ejbName = ejbName;
-    }
-}

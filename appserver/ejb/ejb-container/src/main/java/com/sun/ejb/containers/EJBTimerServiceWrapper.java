@@ -57,7 +57,6 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.CreateException;
 
-// XXX ???
 import javax.ejb.EntityContext;
 
 /*
@@ -92,7 +91,6 @@ public class EJBTimerServiceWrapper implements TimerService {
 
     public EJBTimerServiceWrapper(EJBTimerService timerService,
                                   EntityContext entityContext) 
-// XXX ??? XXX                                  EntityContextImpl entityContext) 
     {
         this(timerService, ((EJBContextImpl)entityContext));
         entity_       = true;
@@ -234,7 +232,7 @@ public class EJBTimerServiceWrapper implements TimerService {
             synchronized(this) {
                 if( timedObjectPrimaryKey_ == null ) {
                     timedObjectPrimaryKey_ = 
-                        ((EntityContext /** XXX Impl XXX **/) ejbContext_).getPrimaryKey();
+                        ((EntityContext) ejbContext_).getPrimaryKey();
                 }
             }
         }

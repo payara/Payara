@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -44,9 +44,13 @@
                         com.sun.ejb; \
                         com.sun.ejb.portable; \
                         com.sun.ejb.containers; \
+                        com.sun.ejb.containers.util; \
+                        com.sun.ejb.containers.util.cache; \
+                        com.sun.ejb.containers.util.pool; \
+                        com.sun.ejb.monitoring.stats; \
+                        com.sun.ejb.monitoring.probes; \
                         com.sun.ejb.spi.io; \
-                        com.sun.ejb.spi.container; \
-                        com.sun.appserv.ejb; version=${project.osgi.version}
+                        com.sun.ejb.spi.container; version=${project.osgi.version}
 
 # See issue #10545 to know why we have explicitly added org.glassfish.apf.context
 # in Import-Package
@@ -57,16 +61,6 @@ Import-Package: \
                         javax.xml.ws;resolution:=optional, \
                         javax.xml.ws.handler;resolution:=optional, \
                         javax.jws;resolution:=optional, \
-                        com.sun.corba.ee.spi.orbutil.codegen;resolution:=optional, \
-                        com.sun.corba.ee.impl.orbutil.codegen;resolution:=optional, \
-                        com.sun.corba.ee.spi.orbutil.copyobject;resolution:=optional, \
-                        com.sun.corba.ee.impl.orbutil.copyobject;resolution:=optional, \
-                        com.sun.corba.ee.spi.presentation.rmi;resolution:=optional, \
-                        org.omg.CORBA;resolution:=optional, \
-                        org.omg.CORBA.portable;resolution:=optional, \
-                        org.omg.CORBA_2_3.portable;resolution:=optional, \
-                        javax.rmi.CORBA;resolution:=optional, \
-                        com.sun.corba.ee.impl.presentation.rmi.codegen;resolution:=optional, \
                         org.glassfish.apf.context, \
                         *
 

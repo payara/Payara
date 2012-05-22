@@ -629,7 +629,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
      * Timer removal semantics, which means it can be rolled back 
      * if the transaction rolls back.
      */
-    void cancelEntityBeanTimers(long containerId, Object primaryKey) {
+    void cancelTimersByKey(long containerId, Object primaryKey) {
         try {
 
             // Get *all* timers for this entity bean identity.  This includes

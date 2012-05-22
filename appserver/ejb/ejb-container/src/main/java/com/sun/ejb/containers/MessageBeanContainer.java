@@ -392,7 +392,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 		throw new EJBException("No EJBObject for message-driven beans");
 	}
 
-	void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
+	protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 			boolean local) throws RemoveException, EJBException {
 		throw new EJBException("not used in message-driven beans");
 	}
@@ -464,7 +464,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 	 * 18.3.1 says that discarding an EJB means that no methods other than
 	 * finalize() should be invoked on it.
 	 */
-	void forceDestroyBean(EJBContextImpl sc) {
+	protected void forceDestroyBean(EJBContextImpl sc) {
 		if (sc.getState() == BeanState.DESTROYED)
 			return;
 
@@ -772,15 +772,15 @@ public final class MessageBeanContainer extends BaseContainer implements
 		}
 	}
 
-	void afterBegin(EJBContextImpl context) {
+	protected void afterBegin(EJBContextImpl context) {
 		// Message-driven Beans cannot implement SessionSynchronization!!
 	}
 
-	void beforeCompletion(EJBContextImpl context) {
+	protected void beforeCompletion(EJBContextImpl context) {
 		// Message-driven beans cannot implement SessionSynchronization!!
 	}
 
-	void afterCompletion(EJBContextImpl ctx, int status) {
+	protected void afterCompletion(EJBContextImpl ctx, int status) {
 		// Message-driven Beans cannot implement SessionSynchronization!!
 	}
 

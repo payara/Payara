@@ -105,6 +105,12 @@
 	   <type>pom</type>
         </dependency>
 	
+        <dependency>
+           <groupId>org.glassfish.main.persistence</groupId>
+           <artifactId>entitybean-container</artifactId>
+	   <version>${project.version}</version>
+        </dependency>
+	
 
 
     	<!-- now, listing package dependencies so that their content

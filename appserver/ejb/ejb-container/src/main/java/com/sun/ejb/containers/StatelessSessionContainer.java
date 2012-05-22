@@ -374,7 +374,7 @@ public class StatelessSessionContainer
 
     // Called from EJBObjectImpl.remove, EJBLocalObjectImpl.remove,
     // EJBHomeImpl.remove(Handle).
-    void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
+    protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 	    boolean local)
 	throws RemoveException, EJBException, RemoteException
     {
@@ -393,7 +393,7 @@ public class StatelessSessionContainer
      * Note: EJB2.0 section 18.3.1 says that discarding an EJB
      * means that no methods other than finalize() should be invoked on it.
      */
-    void forceDestroyBean(EJBContextImpl sc) {
+    protected void forceDestroyBean(EJBContextImpl sc) {
         if ( sc.getState() == EJBContextImpl.BeanState.DESTROYED )
                 return;
 
@@ -408,7 +408,7 @@ public class StatelessSessionContainer
     /**
      * Called when a remote invocation arrives for an EJB.
      */
-    EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
+    protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return theEJBObjectImpl;
     }
     
@@ -420,7 +420,7 @@ public class StatelessSessionContainer
     * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
     * a local object reference.
     */
-    EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
+    protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
         return theEJBLocalObjectImpl;
     }
 
@@ -551,9 +551,8 @@ public class StatelessSessionContainer
         }
     }
 
-    void doTimerInvocationInit(EjbInvocation inv, RuntimeTimerState timerState)
-        throws Exception 
-	{
+    protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
+            throws Exception {
         // TODO I don't understand this check.  What is ejbObject used for?
         if( isRemote ) {
             //TODO inv.ejbObject = theEJBObjectImpl;
@@ -601,7 +600,7 @@ public class StatelessSessionContainer
     }
 
 
-    boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
+    protected boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
         throws RemoteException
     {
 
@@ -633,24 +632,24 @@ public class StatelessSessionContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
-    void checkExists(EJBLocalRemoteObject ejbObj) 
+    protected void checkExists(EJBLocalRemoteObject ejbObj) 
     {
         // For stateless session beans, EJBObject/EJBLocalObj are never removed.
         // So do nothing.
     }
 
 
-    void afterBegin(EJBContextImpl context) {
+    protected void afterBegin(EJBContextImpl context) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
-    void beforeCompletion(EJBContextImpl context) {
+    protected void beforeCompletion(EJBContextImpl context) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
-    void afterCompletion(EJBContextImpl ctx, int status) {
+    protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Stateless SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
 

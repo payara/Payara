@@ -439,7 +439,7 @@ public final class StatefulSessionContainer
         return "UNKNOWN-STATE";
     }
 
-    boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
+    protected boolean isIdentical(EJBObjectImpl ejbo, EJBObject other)
             throws RemoteException {
 
         if (other == ejbo.getStub())
@@ -466,7 +466,7 @@ public final class StatefulSessionContainer
      * ejbCreate on the new bean after createEJBObject() returns.
      * Return the EJBObject for the bean.
      */
-    EJBObjectImpl createEJBObjectImpl()
+    protected EJBObjectImpl createEJBObjectImpl()
             throws CreateException, RemoteException {
         try {
             SessionContextImpl context = createBeanInstance();
@@ -491,7 +491,7 @@ public final class StatefulSessionContainer
         }
     }
 
-    EJBObjectImpl createRemoteBusinessObjectImpl()
+    protected EJBObjectImpl createRemoteBusinessObjectImpl()
             throws CreateException, RemoteException {
         try {
             SessionContextImpl context = createBeanInstance();
@@ -525,7 +525,7 @@ public final class StatefulSessionContainer
      * ejbCreate on the new bean after createEJBLocalObjectImpl() returns.
      * Return the EJBLocalObject for the bean.
      */
-    EJBLocalObjectImpl createEJBLocalObjectImpl()
+    protected EJBLocalObjectImpl createEJBLocalObjectImpl()
             throws CreateException {
         try {
             SessionContextImpl context = createBeanInstance();
@@ -829,12 +829,11 @@ public final class StatefulSessionContainer
             return context.getEJBLocalObjectImpl();
 
         // create EJBLocalObject
-        EJBLocalObjectImpl localObjImpl = instantiateEJBLocalObjectImpl();
+        EJBLocalObjectImpl localObjImpl = instantiateEJBLocalObjectImpl(context.getInstanceKey());
 
         // introduce context and EJBLocalObject to each other
         context.setEJBLocalObjectImpl(localObjImpl);
         localObjImpl.setContext(context);
-        localObjImpl.setKey(context.getInstanceKey());
 
         if (hasLocalBusinessView) {
             createEJBLocalBusinessObjectImpl(context);
@@ -924,14 +923,13 @@ public final class StatefulSessionContainer
         if (context.getEJBObjectImpl() != null)
             return context.getEJBObjectImpl();
 
-        // create EJBObject
-        EJBObjectImpl ejbObjImpl = instantiateEJBObjectImpl();
+        // create EJBObject and associate it with the key
+        Object sessionKey = context.getInstanceKey();
+        EJBObjectImpl ejbObjImpl = instantiateEJBObjectImpl(null, sessionKey);
 
         // introduce context and EJBObject to each other
         context.setEJBObjectImpl(ejbObjImpl);
         ejbObjImpl.setContext(context);
-        Object sessionKey = context.getInstanceKey();
-        ejbObjImpl.setKey(sessionKey);
 
         // connect the EJBObject to the ProtocolManager
         // (creates the client-side stub too)
@@ -1014,7 +1012,7 @@ public final class StatefulSessionContainer
 
     // Called from EJBObjectImpl.remove, EJBLocalObjectImpl.remove,
     // EJBHomeImpl.remove(Handle).
-    void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
+    protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
                     boolean local)
             throws RemoveException, EJBException {
         EjbInvocation ejbInv = super.createEjbInvocation();
@@ -1115,7 +1113,7 @@ public final class StatefulSessionContainer
      * Note: EJB2.0 section 18.3.1 says that discarding an EJB
      * means that no methods other than finalize() should be invoked on it.
      */
-    void forceDestroyBean(EJBContextImpl ctx) {
+    protected void forceDestroyBean(EJBContextImpl ctx) {
         SessionContextImpl sc = (SessionContextImpl) ctx;
 
         synchronized (sc) {
@@ -1335,7 +1333,7 @@ public final class StatefulSessionContainer
     }
 
 
-    EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
+    protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         SessionContextImpl sc = _getContextForInstance(instanceKey);
         return sc.getEJBObjectImpl();
     }
@@ -1349,7 +1347,7 @@ public final class StatefulSessionContainer
      * Called from EJBLocalObjectImpl.getLocalObject() while deserializing
      * a local object reference.
      */
-    EJBLocalObjectImpl getEJBLocalObjectImpl(Object sessionKey) {
+    protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object sessionKey) {
 
         // Create an EJBLocalObject reference which
         // is *not* associated with a SessionContext.  That way, the
@@ -1363,10 +1361,7 @@ public final class StatefulSessionContainer
         EJBLocalObjectImpl localObjImpl;
 
         try {
-            localObjImpl = instantiateEJBLocalObjectImpl();
-
-            localObjImpl.setKey(sessionKey);
-
+            localObjImpl = instantiateEJBLocalObjectImpl(sessionKey);
         } catch (Exception ex) {
             EJBException ejbEx = new EJBException();
             ejbEx.initCause(ex);
@@ -1435,7 +1430,7 @@ public final class StatefulSessionContainer
      *
      * @throws NoSuchObjectLocalException if the object has been removed.
      */
-    void checkExists(EJBLocalRemoteObject ejbObj) {
+    protected void checkExists(EJBLocalRemoteObject ejbObj) {
         if (ejbObj.isRemoved())
             throw new NoSuchObjectLocalException("Bean has been removed");
     }
@@ -1829,7 +1824,7 @@ public final class StatefulSessionContainer
 
     }
 
-    void afterBegin(EJBContextImpl context) {
+    protected void afterBegin(EJBContextImpl context) {
         // TX_BEAN_MANAGED EJBs cannot implement SessionSynchronization
         // Do not call afterBegin if it is a transactional lifecycle callback
         if (isBeanManagedTran || ((SessionContextImpl) context).getInLifeCycleCallback()) {
@@ -1872,7 +1867,7 @@ public final class StatefulSessionContainer
     }
 
 
-    void beforeCompletion(EJBContextImpl context) {
+    protected void beforeCompletion(EJBContextImpl context) {
         // SessionSync calls on TX_BEAN_MANAGED SessionBeans
         // are not allowed
         // Do not call beforeCompletion if it is a transactional lifecycle callback
@@ -1914,7 +1909,7 @@ public final class StatefulSessionContainer
     // Called from SyncImpl.afterCompletion
     // May be called asynchronously during tx timeout
     // or on the same thread as tx.commit
-    void afterCompletion(EJBContextImpl context, int status) {
+    protected void afterCompletion(EJBContextImpl context, int status) {
         if (context.getState() == BeanState.DESTROYED) {
             return;
         }

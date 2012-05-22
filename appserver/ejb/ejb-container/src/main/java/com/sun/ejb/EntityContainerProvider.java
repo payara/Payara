@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,51 +38,15 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb;
 
-/**
- * Implementation of the EJBHome interface.
- * This class is also the base class for all generated concrete ReadOnly
- * EJBHome implementations.
- * At deployment time, one instance of ReadOnlyEJBHomeImpl is created 
- * for each EJB class in a JAR that has a remote home. 
- *
- * @author Mahesh Kannan
- */
+import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.deployment.EjbDescriptor;
 
-public abstract class ReadOnlyEJBHomeImpl
-    extends EJBHomeImpl
-    implements ReadOnlyEJBHome
-{
-    private ReadOnlyBeanContainer robContainer;
+@Contract
+public interface EntityContainerProvider {
 
-    public ReadOnlyEJBHomeImpl()
-        throws java.rmi.RemoteException
-    {
-        super();
-    }
+    Container getEntityContainer(EjbDescriptor descriptor, ClassLoader loader) 
+            throws Exception;
 
-    /** 
-     * Called from ReadOnlyBeanContainer only.
-     */
-    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer container) {
-        this.robContainer = container;
-    }
-
-
-    /***********************************************/
-    /** Implementation of ReadOnlyEJBHome methods **/
-    /***********************************************/
-
-    public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
-        throws java.rmi.RemoteException
-    {
-        robContainer.setRefreshFlag(primaryKey);
-    }
-
-    public void _refresh_All() throws java.rmi.RemoteException
-    {
-        robContainer.refreshAll();
-    }
 }
-

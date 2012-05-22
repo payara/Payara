@@ -68,6 +68,7 @@ import org.glassfish.internal.data.ApplicationInfo;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.containers.EjbContainerUtil;
+import org.glassfish.persistence.ejb.entitybean.container.spi.CascadeDeleteNotifier;
 
 import com.sun.jdo.api.persistence.support.JDOException;
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
@@ -262,7 +263,7 @@ public class SunContainerHelper extends SunTransactionHelper implements Containe
      */
     public void setCascadeDeleteAfterSuperEJBRemove(EntityContext context) {
         try {
-            ((com.sun.ejb.containers.EntityContextImpl)context).setCascadeDeleteAfterSuperEJBRemove(true);
+            ((CascadeDeleteNotifier)context).setCascadeDeleteAfterSuperEJBRemove(true);
         } catch (Exception ex) {
             processContainerException(ex);
         }

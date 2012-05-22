@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -109,7 +109,7 @@ public abstract class EJBLocalObjectImpl
      * the client uses,  and vice-versa.  This is overridden in the 
      * InvocationHandler.  Only applicable for local home view. 
      */
-    protected Object getClientObject() {
+    public Object getClientObject() {
         return this;
     }
     
@@ -157,7 +157,7 @@ public abstract class EJBLocalObjectImpl
      *   EJBLocalObjectImpl.getEJBLocalObject()
      * 
      */
-    static EJBLocalObjectImpl toEJBLocalObjectImpl(EJBLocalObject localObj) {
+    public static EJBLocalObjectImpl toEJBLocalObjectImpl(EJBLocalObject localObj) {
         EJBLocalObjectImpl localObjectImpl;
 
         if( localObj instanceof EJBLocalObjectImpl ) {
@@ -197,18 +197,8 @@ public abstract class EJBLocalObjectImpl
     public Object getPrimaryKey()
         throws EJBException
     {
-        if ( container instanceof EntityContainer ) {
-            container.authorizeLocalMethod(
-                BaseContainer.EJBLocalObject_getPrimaryKey);
-            container.checkExists(this);
-            
+            container.authorizeLocalGetPrimaryKey(this);
             return primaryKey;
-        }
-        else {
-            throw new EJBException(localStrings.getLocalString(
-            "containers.invalid_operation",
-            "Invalid operation for Session EJBs."));
-        }
     }
     
     public boolean isIdentical(EJBLocalObject other)

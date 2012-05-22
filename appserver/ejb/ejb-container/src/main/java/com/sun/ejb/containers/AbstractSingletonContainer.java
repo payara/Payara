@@ -159,7 +159,7 @@ public abstract class AbstractSingletonContainer
     }
 
     @Override
-    EjbInvocation createEjbInvocation(Object ejb, ComponentContext ctx) {
+    protected EjbInvocation createEjbInvocation(Object ejb, ComponentContext ctx) {
         EjbInvocation inv = super.createEjbInvocation(ejb, ctx);
 
         // Singletons can not store the underlying resource list
@@ -284,7 +284,7 @@ public abstract class AbstractSingletonContainer
 
 
     // Doesn't apply to Singletons
-    void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
+    protected void removeBean(EJBLocalRemoteObject ejbo, Method removeMethod,
 	    boolean local)
 	throws RemoveException, EJBException, RemoteException
     {
@@ -297,14 +297,14 @@ public abstract class AbstractSingletonContainer
      * during invocations on the Singleton do not result in the instance
      * being destroyed. 
      */
-    void forceDestroyBean(EJBContextImpl sc) {
+    protected void forceDestroyBean(EJBContextImpl sc) {
     }
 
 
     /**
      * Not applicable to Singletons
      */
-    EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
+    protected EJBObjectImpl getEJBObjectImpl(byte[] instanceKey) {
         return null;
     }
     
@@ -315,7 +315,7 @@ public abstract class AbstractSingletonContainer
     /**
      * Not applicable to Singletons
      */
-    EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
+    protected EJBLocalObjectImpl getEJBLocalObjectImpl(Object key) {
         return null;
     }
 
@@ -509,9 +509,8 @@ public abstract class AbstractSingletonContainer
         return context;
     }
 
-    void doTimerInvocationInit(EjbInvocation inv, RuntimeTimerState timerState)
-        throws Exception 
-	{
+    protected void doTimerInvocationInit(EjbInvocation inv, Object primaryKey)
+            throws Exception {
         if( isRemote ) {
             
             // @@@ Revisit setting ejbObject in invocation.
@@ -546,22 +545,22 @@ public abstract class AbstractSingletonContainer
     * Check if the given EJBObject/LocalObject has been removed.
     * @exception NoSuchObjectLocalException if the object has been removed.
     */
-    void checkExists(EJBLocalRemoteObject ejbObj) 
+    protected void checkExists(EJBLocalRemoteObject ejbObj) 
     {
         // Doesn't apply to Singletons
     }
 
-    void afterBegin(EJBContextImpl context) {
+    protected void afterBegin(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
-    void beforeCompletion(EJBContextImpl context) {
+    protected void beforeCompletion(EJBContextImpl context) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
         // EJB2.0 Spec 7.8.
     }
 
-    void afterCompletion(EJBContextImpl ctx, int status) {
+    protected void afterCompletion(EJBContextImpl ctx, int status) {
         // Singleton SessionBeans cannot implement SessionSynchronization!!
     }
 

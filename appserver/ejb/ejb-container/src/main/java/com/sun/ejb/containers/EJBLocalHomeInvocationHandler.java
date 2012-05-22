@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,8 +62,8 @@ import java.util.logging.Logger;
  * @author Kenneth Saks
  */    
 
-final class EJBLocalHomeInvocationHandler 
-    extends ReadOnlyEJBLocalHomeImpl implements InvocationHandler {
+public class EJBLocalHomeInvocationHandler 
+    extends EJBLocalHomeImpl implements InvocationHandler {
 
     private static final Logger logger =
             EjbContainerUtilImpl.getInstance().getLogger();
@@ -87,9 +87,8 @@ final class EJBLocalHomeInvocationHandler
     // is created.  
     private MethodMap invocationInfoMap_;
 
-    EJBLocalHomeInvocationHandler(EjbDescriptor ejbDescriptor,
-                                  Class localHomeIntf,
-                                  MethodMap invocationInfoMap) 
+    protected EJBLocalHomeInvocationHandler(EjbDescriptor ejbDescriptor,
+                                  Class localHomeIntf)
         throws Exception {
 
         if( ejbDescriptor instanceof EjbSessionDescriptor ) {
@@ -101,12 +100,14 @@ final class EJBLocalHomeInvocationHandler
             isEntity_ = true;
         }
 
-        invocationInfoMap_ = invocationInfoMap;
-
         localHomeIntfClass_ = localHomeIntf;
 
         // NOTE : Container is not set on super-class until after 
         // constructor is called.
+    }
+
+    public void setMethodMap(MethodMap map) {
+        invocationInfoMap_ = map;
     }
 
     public void setProxy(EJBLocalHome proxy) {
@@ -149,9 +150,8 @@ final class EJBLocalHomeInvocationHandler
                 (this, method, args);    
         } else if( methodClass == IndirectlySerializable.class ) {
             return this.getSerializableObjectFactory();
-        } else if( methodClass == ReadOnlyEJBLocalHome.class ) {
-            // ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier();
-            return super.getReadOnlyBeanLocalNotifier();
+        } else if( handleSpecialEJBLocalHomeMethod(method, methodClass) ) {
+            return invokeSpecialEJBLocalHomeMethod(method, methodClass, args);
         }
 
         // Use optimized version of get that takes param count as an argument.
@@ -236,8 +236,7 @@ final class EJBLocalHomeInvocationHandler
                             .getClientObject();
                     } 
                 } else if (invInfo.startsWithFindByPrimaryKey) {
-            EntityContainer entityContainer = (EntityContainer) container;
-		    returnValue = entityContainer.invokeFindByPrimaryKey(
+		    returnValue = container.invokeFindByPrimaryKey(
 			invInfo.targetMethod1, inv, args);
                 } else if ( invInfo.startsWithFind ) {
 
@@ -272,5 +271,16 @@ final class EJBLocalHomeInvocationHandler
 
             ((BaseContainer) getContainer()).onLeavingContainer();
         }
+    }
+
+    // default impl to be overridden in subclasses if special invoke is necessary
+    protected boolean handleSpecialEJBLocalHomeMethod(Method method, Class methodClass) {
+        return false;
+    }
+
+    // default impl to be overridden in subclasses if special invoke is necessary
+    protected Object invokeSpecialEJBLocalHomeMethod(Method method, Class methodClass,
+            Object[] args) throws Throwable {
+        return null;
     }
 }
