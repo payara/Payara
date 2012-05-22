@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,8 +54,9 @@
     <property name="derby.jar.classpath.additions" value="../../javadb/lib/derby.jar ../../javadb/lib/derbyclient.jar ../../javadb/lib/derbynet.jar ../../javadb/lib/derbytools.jar ../../javadb/lib/derbyrun.jar"/>
     <property name="jaxr-ra.classpath.additions" value="../lib/install/applications/jaxr-ra/jaxr-ra.jar"/>
     <property name="aix.additions" value="../modules/aixporting-repackaged.jar"/>
+    <property name="entitybean-container.additions" value="../modules/entitybean-container.jar"/>
     
-    <property name="classpath.additions" value="${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions}"/>
+    <property name="classpath.additions" value="${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions}"/>
     <property name="classpath.conditional.additions" value="${aix.additions}"/>
     <target name="fixup.library">
         <unzip src="${output.dir}/${output.file}" dest="${stage.dir}">
