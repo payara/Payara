@@ -39,33 +39,56 @@
  */
 package org.glassfish.admin.rest.resources;
 
-import java.lang.reflect.Method;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.jersey.api.core.ResourceContext;
 import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
-import org.glassfish.admin.rest.utils.ResourceUtil;
+import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.validation.ValidationException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.Util;
+import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.config.*;
 import org.glassfish.config.support.Delete;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.io.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -114,9 +137,8 @@ public class TemplateRestResource {
         return buildActionReportResult(true);
     }
 
-    // TODO: This is wrong. Updates are done via PUT
     @POST
-    //update
+    //create or update
     public Response createEntity(HashMap<String, String> data) {
         try {
             //data.remove("submit");
