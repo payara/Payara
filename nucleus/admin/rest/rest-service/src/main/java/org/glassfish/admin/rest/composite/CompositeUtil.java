@@ -53,7 +53,7 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.ALOAD;
@@ -79,14 +79,15 @@ import static org.objectweb.asm.Opcodes.V1_6;
  * @author jdlee
  */
 public class CompositeUtil {
+
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
     /**
-     * This method will return a generated concrete class that implements the interface
-     * requested, as well as any interfaces intended to extend the base model interface.
-     * The intent to extend the model is shown via annotations yet to be developed.  Currently, this
-     * API requires the caller to specify all the desired interfaces, though this requirement will be
-     * removed with the full integration of HK2 2.x into GlassFish.
+     * This method will return a generated concrete class that implements the interface requested, as well as any
+     * interfaces intended to extend the base model interface. The intent to extend the model is shown via annotations
+     * yet to be developed. Currently, this API requires the caller to specify all the desired interfaces, though this
+     * requirement will be removed with the full integration of HK2 2.x into GlassFish.
+     *
      * @param modelIface The base interface for the desired data model
      * @param similarClass the Class for the calling code, used to load the generated class into the Classloader
      * @param interfaces An array of the interfaces, excluding the base interface, to implement
@@ -94,7 +95,7 @@ public class CompositeUtil {
      * @throws Exception
      */
     public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass,
-            Class<?>[] interfaces) throws Exception {
+                                              Class<?>[] interfaces) throws Exception {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
@@ -121,8 +122,8 @@ public class CompositeUtil {
                             property.put("defaultValue", attr.defaultValue());
                         }
                         Class<?> type = isGetter
-                                ? method.getReturnType()
-                                : method.getParameterTypes()[0];
+                                        ? method.getReturnType()
+                                        : method.getParameterTypes()[0];
                         property.put("type", type);
                     }
                 }
@@ -130,9 +131,9 @@ public class CompositeUtil {
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             visitClass(classWriter, className, interfaces, properties);
 
-             for (Map.Entry<String, Map<String, Object>> entry : properties.entrySet()) {
+            for (Map.Entry<String, Map<String, Object>> entry : properties.entrySet()) {
                 String name = entry.getKey();
-                Class<?> type = (Class<?>)entry.getValue().get("type");
+                Class<?> type = (Class<?>) entry.getValue().get("type");
                 createField(classWriter, name, type);
                 createGettersAndSetters(classWriter, modelIface, className, name, type);
 
@@ -144,12 +145,13 @@ public class CompositeUtil {
             generatedClasses.put(className, newClass);
         }
 
-        return (T)generatedClasses.get(className).newInstance();
+        return (T) generatedClasses.get(className).newInstance();
     }
 
     // TODO: method enum?
     /**
      * Find and execute all resource extensions for the specified base resource and HTTP method
+     *
      * @param habitat
      * @param baseClass
      * @param data
@@ -168,20 +170,20 @@ public class CompositeUtil {
     }
 
     /**
-     * This builds the representation of a type suitable for use in bytecode.  For example,
-     * the internal type for String would be "L;java/lang/String;", and a double would be "D".
+     * This builds the representation of a type suitable for use in bytecode. For example, the internal type for String
+     * would be "L;java/lang/String;", and a double would be "D".
+     *
      * @param type The desired class
      * @return
      */
     protected static String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
-                ? Primitive.getPrimitive(type.getName()).getInternalType()
-                : ("L" + getInternalName(type.getName()) + ";");
+               ? Primitive.getPrimitive(type.getName()).getInternalType()
+               : ("L" + getInternalName(type.getName()) + ";");
     }
 
     /**
-     * This method starts the class definition, adding the JAX-B annotations to allow
-     * for marshalling via JAX-RS
+     * This method starts the class definition, adding the JAX-B annotations to allow for marshalling via JAX-RS
      */
     protected static void visitClass(ClassWriter classWriter, String className, Class<?>[] ifaces, Map<String, Map<String, Object>> properties) {
         String[] ifaceNames = new String[ifaces.length];
@@ -191,9 +193,9 @@ public class CompositeUtil {
         }
         className = getInternalName(className);
         classWriter.visit(V1_6, ACC_PUBLIC + ACC_SUPER, className,
-                null,
-                "java/lang/Object",
-                ifaceNames);
+                          null,
+                          "java/lang/Object",
+                          ifaceNames);
 
         // Add @XmlRootElement
         classWriter.visitAnnotation("Ljavax/xml/bind/annotation/XmlRootElement;", true).visitEnd();
@@ -205,8 +207,8 @@ public class CompositeUtil {
     }
 
     /**
-     * This method creates the default constructor for the class.  Default values are set for any @Attribute
-     * defined with a defaultValue.
+     * This method creates the default constructor for the class. Default values are set for any @Attribute defined with
+     * a defaultValue.
      */
     protected static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
         // Create the ctor
@@ -217,9 +219,9 @@ public class CompositeUtil {
 
         for (Map.Entry<String, Map<String, Object>> property : properties.entrySet()) {
             String fieldName = property.getKey();
-            String defaultValue = (String)property.getValue().get("defaultValue");
+            String defaultValue = (String) property.getValue().get("defaultValue");
             if (defaultValue != null && !defaultValue.isEmpty()) {
-                setDefaultValue(method, className, fieldName, (Class<?>)property.getValue().get("type"), defaultValue);
+                setDefaultValue(method, className, fieldName, (Class<?>) property.getValue().get("type"), defaultValue);
             }
         }
 
@@ -232,34 +234,38 @@ public class CompositeUtil {
      * This enum encapsulates the metadata for primitives needed for generating fields, getters and setters
      */
     static enum Primitive {
-        DOUBLE ("D", DRETURN, DLOAD),
-        FLOAT  ("F", FRETURN, FLOAD),
-        LONG   ("J", LRETURN, LLOAD),
-        SHORT  ("S", IRETURN, ILOAD),
-        INT    ("I", IRETURN, ILOAD),
+
+        DOUBLE("D", DRETURN, DLOAD),
+        FLOAT("F", FRETURN, FLOAD),
+        LONG("J", LRETURN, LLOAD),
+        SHORT("S", IRETURN, ILOAD),
+        INT("I", IRETURN, ILOAD),
 //        CHAR   ("C", IRETURN, ILOAD),
-        BYTE   ("B", IRETURN, ILOAD),
+        BYTE("B", IRETURN, ILOAD),
         BOOLEAN("Z", IRETURN, ILOAD);
-        
         private final int returnOpcode;
         private final int setOpcode;
         private final String internalType;
-        
+
         Primitive(String type, int returnOpcode, int setOpcode) {
             this.internalType = type;
             this.returnOpcode = returnOpcode;
             this.setOpcode = setOpcode;
         }
+
         public int getReturnOpcode() {
             return returnOpcode;
         }
+
         public int getSetOpCode() {
             return setOpcode;
         }
+
         public String getInternalType() {
             return internalType;
         }
-        static Primitive getPrimitive (String type) {
+
+        static Primitive getPrimitive(String type) {
             if ("S".equals(type) || "short".equals(type)) {
                 return SHORT;
             } else if ("J".equals(type) || "long".equals(type)) {
@@ -277,17 +283,17 @@ public class CompositeUtil {
             } else if ("Z".equals(type) || "boolean".equals(type)) {
                 return BOOLEAN;
             } else {
-                throw new RuntimeException ("Unknown primitive type: " + type);
+                throw new RuntimeException("Unknown primitive type: " + type);
             }
         }
     };
 
     /*
-     * This method generates the byte code to set the default value for a given field.  Efforts are made to determine
-     * the best way to create the correct value.  If the field is a primitive, the one-arg, String constructor of the
+     * This method generates the byte code to set the default value for a given field. Efforts are made to determine the
+     * best way to create the correct value. If the field is a primitive, the one-arg, String constructor of the
      * appropriate wrapper class is called to generate the value. If the field is not a primitive, a one-arg, String
-     * constructor is requested to build the value.  If both of these attempts fail, the default value is set using
-     * the String representation as given via the @Attribute annotation.
+     * constructor is requested to build the value. If both of these attempts fail, the default value is set using the
+     * String representation as given via the @Attribute annotation.
      *
      * TODO: it may make sense to treat primitives here as non-String types.
      */
@@ -297,18 +303,31 @@ public class CompositeUtil {
 
         if (fieldClass.isPrimitive()) {
             switch (Primitive.getPrimitive(type)) {
-                case SHORT: value = Short.valueOf(defaultValue); break;
-                case LONG: value = Long.valueOf(defaultValue); break;
-                case INT: value = Integer.valueOf(defaultValue); break;
-                case FLOAT: value = Float.valueOf(defaultValue); break;
-                case DOUBLE: value = Double.valueOf(defaultValue); break;
+                case SHORT:
+                    value = Short.valueOf(defaultValue);
+                    break;
+                case LONG:
+                    value = Long.valueOf(defaultValue);
+                    break;
+                case INT:
+                    value = Integer.valueOf(defaultValue);
+                    break;
+                case FLOAT:
+                    value = Float.valueOf(defaultValue);
+                    break;
+                case DOUBLE:
+                    value = Double.valueOf(defaultValue);
+                    break;
 //                case CHAR: value = Character.valueOf(defaultValue.charAt(0)); break;
-                case BYTE: value = Byte.valueOf(defaultValue); break;
-                case BOOLEAN: value = Boolean.valueOf(defaultValue); break;
+                case BYTE:
+                    value = Byte.valueOf(defaultValue);
+                    break;
+                case BOOLEAN:
+                    value = Boolean.valueOf(defaultValue);
+                    break;
             }
             method.visitVarInsn(ALOAD, 0);
             method.visitLdcInsn(value);
-            System.out.println("CTOR: Using " + type + " for PUTFIELD " + fieldName);
             method.visitFieldInsn(PUTFIELD, getInternalName(className), fieldName, type);
         } else {
             if (!fieldClass.equals(String.class)) {
@@ -332,7 +351,7 @@ public class CompositeUtil {
      */
     protected static void createField(ClassWriter cw, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
-        FieldVisitor field = cw.visitField(ACC_PROTECTED, name, internalType, null, null);
+        FieldVisitor field = cw.visitField(ACC_PRIVATE, name, internalType, null, null);
         field.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
         field.visitEnd();
     }
@@ -349,9 +368,9 @@ public class CompositeUtil {
         getter.visitCode();
         getter.visitVarInsn(ALOAD, 0);
         getter.visitFieldInsn(GETFIELD, className, name, internalType);
-        getter.visitInsn(type.isPrimitive() ?
-                Primitive.getPrimitive(internalType).getReturnOpcode() :
-                ARETURN);
+        getter.visitInsn(type.isPrimitive()
+                         ? Primitive.getPrimitive(internalType).getReturnOpcode()
+                         : ARETURN);
         getter.visitMaxs(0, 0);
         getter.visitEnd();
 
@@ -359,13 +378,12 @@ public class CompositeUtil {
         MethodVisitor setter = cw.visitMethod(ACC_PUBLIC, "set" + name, "(" + internalType + ")V", null, null);
         setter.visitCode();
         setter.visitVarInsn(ALOAD, 0);
-        setter.visitVarInsn(type.isPrimitive() ?
-                Primitive.getPrimitive(internalType).getSetOpCode() :
-                ALOAD, 1);
-        System.out.println("SETTER: Using " + internalType + " for PUTFIELD " + name);
+        setter.visitVarInsn(type.isPrimitive()
+                            ? Primitive.getPrimitive(internalType).getSetOpCode()
+                            : ALOAD, 1);
         setter.visitFieldInsn(PUTFIELD, className, name, internalType);
         setter.visitInsn(RETURN);
-        setter.visitMaxs(0,0);
+        setter.visitMaxs(0, 0);
         setter.visitEnd();
     }
 
@@ -405,18 +423,11 @@ public class CompositeUtil {
                     });
 
             Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, "Loading bytecode for {0}", className);
-            final ClassLoader classLoader =
-                    similarClass.getClassLoader();
+            final ClassLoader classLoader = similarClass.getClassLoader();
 //                    Thread.currentThread().getContextClassLoader();
             try {
-                Class<?> newClass = (Class<?>)clM.invoke(
-                        classLoader,
-                        //                    Thread.currentThread().getContextClassLoader(),
-                        className, byteContent, 0,
-                        byteContent.length, pd);
-                System.out.println(newClass.getName());
+                Class<?> newClass = (Class<?>) clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);
             } catch (Exception e) {
-                e.printStackTrace();
             }
 
             try {
@@ -427,6 +438,5 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
     }
 }
