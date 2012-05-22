@@ -72,11 +72,11 @@ public class AttributeImpl implements Attribute {
 	}
 	
 	public void removeValues(Set<String> values) {
-		this.values.remove(values);
+		this.values.removeAll(values);
 	}
 	
 	public void removeValues(String[] values) {
-		this.values.remove(Arrays.asList(values));
+		this.values.removeAll(Arrays.asList(values));
 	}
 	
 	public void clear() {
