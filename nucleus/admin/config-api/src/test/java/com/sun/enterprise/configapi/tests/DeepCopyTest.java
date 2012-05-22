@@ -139,7 +139,7 @@ public class DeepCopyTest extends ConfigApiTest {
         Assert.assertEquals(original.getClass(), cloned.getClass());
         for (String elementName : original.getElementNames()) {
             ConfigModel.Property property = original.model.getElement(elementName);
-            if (property.isLeaf()) continue;
+            if (property != null && property.isLeaf()) continue;
             Dom originalChild = original.element(elementName);
             Dom clonedChild = cloned.element(elementName);
             if (originalChild==null && clonedChild==null) continue;

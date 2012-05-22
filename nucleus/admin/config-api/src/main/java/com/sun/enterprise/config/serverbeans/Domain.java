@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  * balancers. node-agents and load balancers are SE/EE related entities only.
  *
  */
-public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, SystemPropertyBag  {
+public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, SystemPropertyBag, ConfigLoader  {
 
     public static final String DOMAIN_NAME_PROPERTY = "administrative.domain.name";
 
@@ -456,6 +456,14 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
 
     @DuckTyped
     <T extends DomainExtension> T getExtensionByType(Class<T> type);
+
+    /**
+     * @param configBeanType The config bean type we want to check whether the configuration exists for it or not.
+     * @param <P>            Type that extends the   ConfigBeanProxy which is the type of class we accept as parameter
+     * @return true if configuration for the type exists in the target area of domain.xml and false if not.
+     */
+    @DuckTyped
+    <P extends ConfigBeanProxy> boolean checkIfConfigExists(Class<P> configBeanType);
 
     class Duck {
         public static String getName(Domain domain) {

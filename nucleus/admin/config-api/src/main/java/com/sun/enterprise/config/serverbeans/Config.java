@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,9 +43,7 @@ package com.sun.enterprise.config.serverbeans;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -54,7 +52,10 @@ import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTarget
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
+
+import java.util.logging.Logger;
 import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
+
 
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -65,11 +66,12 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.api.admin.config.*;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Injectable;
 
 import javax.validation.Payload;
+
 import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * The configuration defines the configuration of a server instance that can be
@@ -93,8 +95,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 
 @Configured
 @NotDuplicateTargetName(message="{config.duplicate.name}", payload=Config.class)
-public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag, SystemPropertyBag, Payload {
-
+public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBag, Payload, ConfigLoader, ConfigBeanProxy {
     /**
      *  Name of the configured object
      *
@@ -107,8 +108,12 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
     @Override
     String getName();
 
+
+
     @Override
     void setName(String value) throws PropertyVetoException;
+
+
 
     /**
      * Gets the value of the dynamicReconfigurationEnabled property.
@@ -148,14 +153,7 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
      */
     void setNetworkConfig(NetworkConfig value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the httpService property.
-     *
-     * @return possible object is
-     *         {@link HttpService }
-     */
-    @Element(required=true)
-    HttpService getHttpService();
+
 
     /**
      * Sets the value of the httpService property.
@@ -389,104 +387,118 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
      */
     @DuckTyped
     <T extends ConfigExtension> T getExtensionByType(Class<T> type);
-    
+
     /**
      * Add name as an index key for this Config and for the objects that are
-     * directly referenced by this Config.  This includes all of the Config 
+     * directly referenced by this Config.  This includes all of the Config
      * extensions.
-     * 
+     *
      * @param habitat Habitat that contains this Config
      * @param name name to use to identify the objects
      */
     @DuckTyped
     void addIndex(Habitat habitat, String name);
 
+     /**
+     * Gets the value of the httpService property.
+     *
+     * @return
+     *         {@link HttpService }
+     */
+    @DuckTyped
+    HttpService getHttpService() ;
+
+    /**
+     * @param configBeanType The config bean type we want to check whether the configuration exists for it or not.
+     * @param <P>            Type that extends the   ConfigBeanProxy which is the type of class we accept as parameter
+     * @return true if configuration for the type exists in the target area of domain.xml and false if not.
+     */
+    @DuckTyped
+    <P extends ConfigBeanProxy> boolean checkIfConfigExists(Class<P> configBeanType);
+
     class Duck {
 
-        public static String setLoggingProperty(Config c, String property, String value){
-            ConfigBean cb = (ConfigBean) ((ConfigView)Proxy.getInvocationHandler(c)).getMasterView();
+        private final static Logger LOG = Logger.getLogger(Duck.class.getName());
+
+        public static String setLoggingProperty(Config c, String property, String value) {
+            ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
             String prop = null;
-            try{
-                   prop= loggingConfig.setLoggingProperty(property, value);
-            } catch (IOException ex){
+            try {
+                prop = loggingConfig.setLoggingProperty(property, value);
+            } catch (IOException ex) {
             }
             return prop;
         }
 
-        public static Map<String, String>getLoggingProperties(Config c) {
-            ConfigBean cb = (ConfigBean) ((ConfigView)Proxy.getInvocationHandler(c)).getMasterView();
+        public static Map<String, String> getLoggingProperties(Config c) {
+            ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
-            Map <String, String> map = new HashMap<String, String>() ;
+            Map<String, String> map = new HashMap<String, String>();
             try {
                 map = loggingConfig.getLoggingProperties();
-            } catch (IOException ex){
+            } catch (IOException ex) {
             }
             return map;
         }
 
-        public static Map<String, String>updateLoggingProperties(Config c, Map<String, String>properties){
-            ConfigBean cb = (ConfigBean) ((ConfigView)Proxy.getInvocationHandler(c)).getMasterView();
+        public static Map<String, String> updateLoggingProperties(Config c, Map<String, String> properties) {
+            ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
             ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
-            Map <String, String> map = new HashMap<String, String>() ;
+            Map<String, String> map = new HashMap<String, String>();
             try {
                 map = loggingConfig.updateLoggingProperties(properties);
-            } catch (IOException ex){
+            } catch (IOException ex) {
             }
             return map;
         }
 
-        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws ClassNotFoundException,TransactionFailure{
+        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws ClassNotFoundException, TransactionFailure {
             T configExtension = null;
+            //This require extra checking, Does all ConfigBeans referenced in this class are implementing Container?
             for (Container extension : c.getContainers()) {
                 try {
                     configExtension = type.cast(extension);
-                    return configExtension ;
-
-
+                    //Dom.unwrap(configExtension).addDefaultChildren();
+                    return configExtension;
                 } catch (Exception e) {
                     // ignore, not the right type.
                 }
             }
-            if (configExtension == null ) {
-
-                return createDefaultChildByType(c ,type);
-
+            if (configExtension == null) {
+                ConfigSnippetLoader loader = new ConfigSnippetLoader(c,type);
+                return loader.createConfigBeanForType(type);
             }
-
             return null;
         }
 
         public static NetworkListener getAdminListener(Config c) {
             return ServerHelper.getAdminListener(c);
         }
-        
+
         public static void addIndex(Config c, Habitat habitat, String name) {
             habitat.addIndex(new ExistingSingletonInhabitant<Config>(c),
-                Config.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
-            
+                    Config.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+
             // directly referenced objects
             ConfigBeanProxy dirref[] = {
-                c.getAdminService(),
-                c.getAvailabilityService(),
-                c.getDiagnosticService(),
-                c.getGroupManagementService(),
-                c.getHttpService(),
-                c.getJavaConfig(),
-                c.getLogService(),
-                c.getMonitoringService(),
-                c.getNetworkConfig(),
-                c.getSecurityService(),
-                c.getThreadPools(),
+                    c.getAdminService(),
+                    c.getAvailabilityService(),
+                    c.getDiagnosticService(),
+                    c.getJavaConfig(),
+                    c.getLogService(),
+                    c.getNetworkConfig(),
+                    c.getSecurityService(),
+                    c.getThreadPools(),
             };
             for (ConfigBeanProxy cbp : dirref) {
                 if (cbp != null) {
@@ -495,37 +507,42 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
                             ServerEnvironment.DEFAULT_INSTANCE_NAME);
                 }
             }
-            
+
             // containers
             for (Container extension : c.getContainers()) {
                 habitat.addIndex(new ExistingSingletonInhabitant<Container>(extension),
-                        ConfigSupport.getImpl(extension).getProxyType().getName(), 
+                        ConfigSupport.getImpl(extension).getProxyType().getName(),
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                SecurityService s;
             }
         }
 
-        public static  <U extends ConfigExtension>
-                U createDefaultChildByType(Config config,Class<U> p)
-                throws TransactionFailure {
-
-            final Class<U> parentElem = p;
-            ConfigSupport.apply(new SingleConfigCode<Config>() {
-
-                @Override
-                public Object run(Config parent) throws PropertyVetoException, TransactionFailure {
-                    ConfigExtension child = parent.createChild(parentElem);
-                    Dom.unwrap(child).addDefaultChildren();
-                    parent.getContainers().add(child);
-                    return child;
+        public static <P extends ConfigBeanProxy> boolean checkIfConfigExists(Config c, Class<P> configBeanType) {
+            P configExtension = null;
+            for (Container extension : c.getContainers()) {
+                try {
+                    configExtension = configBeanType.cast(extension);
+                    return true;
+                } catch (Exception e) {
+                    // ignore, not the right type.
                 }
-            }, config);
-            return config.getExtensionByType(p);
+            }
+            return false;
+        }
+
+        public static HttpService getHttpService(Config param) throws TransactionFailure, PropertyVetoException {
+
+            return param.getExtensionByType(HttpService.class);
+        }
+
+        public static GroupManagementService getGroupManagementService(Config param) throws TransactionFailure, ClassNotFoundException {
+            return getExtensionByType(param, GroupManagementService.class);
 
         }
 
-
-
-
+        public static MonitoringService getMonitoringService(Config param) throws ClassNotFoundException, TransactionFailure {
+            return getExtensionByType(param, MonitoringService.class);
+        }
 
     }
     /**
@@ -539,12 +556,9 @@ public interface Config extends ConfigBeanProxy, Injectable, Named, PropertyBag,
 
     /**
      * Get the configuration for other types of containers.
-     * 
+     *
      * @return  list of containers configuration
      */
     @Element("*")
     List<Container> getContainers();
 }
-
-
-

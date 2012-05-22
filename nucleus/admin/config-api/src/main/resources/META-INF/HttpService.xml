@@ -1,0 +1,5 @@
+<http-service>
+             <access-log></access-log>
+             <virtual-server id="server" network-listeners="http-listener-1,http-listener-2"></virtual-server>
+             <virtual-server id="__asadmin" network-listeners="admin-listener"></virtual-server>
+</http-service>

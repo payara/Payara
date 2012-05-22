@@ -60,6 +60,7 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.NotNull;
+import org.glassfish.api.admin.config.ConfigExtension;
 
 
 /* @XmlType(name = "", propOrder = {
@@ -68,7 +69,7 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
-public interface MonitoringService extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface MonitoringService extends ConfigExtension, Injectable, PropertyBag {
 
     /**
      * Gets the value of the moduleMonitoringLevels property.
@@ -87,7 +88,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
      *              {@link ModuleMonitoringLevels }
      */
     public void setModuleMonitoringLevels(ModuleMonitoringLevels value) throws PropertyVetoException;
-    
+
     /**
      * Properties as per {@link org.jvnet.hk2.config.types.PropertyBag}
      */
@@ -110,7 +111,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
      * Sets the value of the mbean-enabled attribute.
      *
      * @param value allowed object is a String
-     * 
+     *
      */
     public void setMbeanEnabled(String value) throws PropertyVetoException;
 
@@ -184,7 +185,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
 
     @DuckTyped
     String getMonitoringLevel(String name);
-    
+
     @DuckTyped
     void setMonitoringLevel(String name, String level);
 
@@ -249,7 +250,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
                 }
             }
 
-            if (level != null) 
+            if (level != null)
                 return level;
 
             // container-monitoring
@@ -261,9 +262,9 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
 
             return null;
         }
-        
+
         private final static List<String> setMethods = new ArrayList<String>();
-        
+
         public static boolean setMonitoringLevel(MonitoringService ms, String name, String level) throws PropertyVetoException, TransactionFailure {
 
             // It is possible that the given module name might exist as
@@ -277,7 +278,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
             // We need to use reflection to comapre the given name with the
             // getters of ModuleMonitoringLevel.
             // For performance, the method names are cached when this is run first time.
-            
+
           boolean isLevelUpdated = false;
 
           synchronized (setMethods) {
@@ -335,7 +336,7 @@ public interface MonitoringService extends ConfigBeanProxy, Injectable, Property
 
         }
     }
-    
+
     final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MonitoringService.class);
 }

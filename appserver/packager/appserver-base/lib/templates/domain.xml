@@ -92,20 +92,6 @@
       </admin-service>
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
-      <web-container>
-        <session-config>
-          <session-manager>
-            <manager-properties />
-            <store-properties />
-          </session-manager>
-          <session-properties />
-        </session-config>
-      </web-container>
-      <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-        <ejb-timer-service />
-      </ejb-container>
-      <mdb-container steady-pool-size="0" max-pool-size="32" pool-resize-quantity="8" >
-      </mdb-container>
       <jms-service type="EMBEDDED" default-jms-host="default_JMS_host">
         <jms-host name="default_JMS_host" host="localhost" port="%%%JMS_PROVIDER_PORT%%%" admin-user-name="admin" admin-password="admin" lazy-init="true"/>
       </jms-service>

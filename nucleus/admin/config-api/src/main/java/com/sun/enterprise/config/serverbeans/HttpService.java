@@ -42,24 +42,23 @@ package com.sun.enterprise.config.serverbeans;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.NonNegativeInteger;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.Attribute;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @Configured
-public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
+public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension {
 
     /**
      * Gets the value of the accessLog property.
@@ -135,6 +134,8 @@ public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
     void setSsoEnabled(String value);
 
     class Duck {
+        private static final Logger logger = Logger.getLogger(HttpService.Duck.class.getName());
+
         public static VirtualServer getVirtualServerByName(HttpService target, String name) {
             for (VirtualServer v : target.getVirtualServer()) {
                 if (v.getId().equals(name)) {
@@ -155,7 +156,41 @@ public interface HttpService extends ConfigBeanProxy, Injectable, PropertyBag {
             return Collections.unmodifiableList(nonAdminVSList);
         }
 
+        public static HttpService createDefaultConfig(Config c) {
+            final Config param = c;
+            try {
+
+                ConfigSupport.apply(new SingleConfigCode<Config>() {
+                    @Override
+                    public Object run(Config param) throws PropertyVetoException, TransactionFailure {
+                        HttpService httpService = param.createChild(HttpService.class);
+                        AccessLog accessLog = httpService.createChild(AccessLog.class);
+                        List<VirtualServer> vsList = httpService.getVirtualServer();
+                        httpService.setAccessLog(accessLog);
+
+                        VirtualServer vs = httpService.createChild(VirtualServer.class);
+                        vs.setId("server");
+                        vs.setNetworkListeners("http-listener-1,http-listener-2");
+
+                        VirtualServer vs1 = httpService.createChild(VirtualServer.class);
+                        vs1.setId("__asadmin");
+                        vs1.setNetworkListeners("admin-listener");
+
+                        vsList.add(vs);
+                        vsList.add(vs1);
+                        param.getContainers().add(httpService);
+                        return httpService;
+                    }
+                }, param);
+            } catch (TransactionFailure ex) {
+                // Will use the BG logging infrastrucre... And probably some exception type?
+                logger.log(Level.INFO, "Unable to create default Http service configuration", ex);
+            }
+            return param.getExtensionByType(HttpService.class);
+        }
     }
+
+
     
     
 @PropertiesDesc(
