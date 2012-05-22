@@ -38,19 +38,73 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.spi;
+package org.glassfish.persistence.ejb.entitybean.container;
+
+import java.lang.reflect.Method;
+
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
+import com.sun.ejb.containers.EJBHomeInvocationHandler;
+import com.sun.ejb.containers.util.MethodMap;
+import com.sun.enterprise.deployment.EjbDescriptor;
 
 /**
- * Home interface for all Remote ReadOnly Beans
+ * Implementation of the EJBHome interface.
+ * This class is also the base class for all generated concrete ReadOnly
+ * EJBHome implementations.
+ * At deployment time, one instance of ReadOnlyEJBHomeImpl is created 
+ * for each EJB class in a JAR that has a remote home. 
  *
  * @author Mahesh Kannan
  */
-public interface ReadOnlyEJBHome
-	extends javax.ejb.EJBHome
+
+public final class ReadOnlyEJBHomeImpl
+    extends EJBHomeInvocationHandler
+    implements ReadOnlyEJBHome
 {
+    private ReadOnlyBeanContainer robContainer;
+
+    ReadOnlyEJBHomeImpl(EjbDescriptor ejbDescriptor,
+                             Class homeIntfClass)
+            throws Exception {
+        super(ejbDescriptor, homeIntfClass);
+    }
+
+    /** 
+     * Called from ReadOnlyBeanContainer only.
+     */
+    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer container) {
+        this.robContainer = container;
+    }
+
+
+    /***********************************************/
+    /** Implementation of ReadOnlyEJBHome methods **/
+    /***********************************************/
 
     public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
-        throws java.rmi.RemoteException;
+        throws java.rmi.RemoteException
+    {
+        robContainer.setRefreshFlag(primaryKey);
+    }
 
-    public void _refresh_All() throws java.rmi.RemoteException;
+    public void _refresh_All() throws java.rmi.RemoteException
+    {
+        robContainer.refreshAll();
+    }
+
+    protected boolean invokeSpecialEJBHomeMethod(Method method, Class methodClass, 
+            Object[] args) throws Exception {
+        if( methodClass == ReadOnlyEJBHome.class ) {
+            if( method.getName().equals("_refresh_All") ) {
+                _refresh_All();
+            } else {
+                _refresh_com_sun_ejb_containers_read_only_bean_
+                    (args[0]);
+            }
+
+            return true;
+        }
+        return false;
+    }
 }
+

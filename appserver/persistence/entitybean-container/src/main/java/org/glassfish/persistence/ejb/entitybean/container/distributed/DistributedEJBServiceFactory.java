@@ -38,31 +38,32 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
-import java.util.logging.*;
-import com.sun.logging.*;
-
-/**
- * @author Mahesh Kannan
- */
-
-public final class ReadOnlyBeanLocalNotifierImpl 
-	implements com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier
+public class DistributedEJBServiceFactory
+    implements DistributedEJBService 
 {
 
-    private ReadOnlyBeanContainer robContainer;
+    protected static DistributedEJBService distributedEJBService = null;
 
-    public ReadOnlyBeanLocalNotifierImpl(ReadOnlyBeanContainer container) {
-		this.robContainer = container;
-	}
+    private static DistributedReadOnlyBeanService _distributedReadOnlyBeanService
+        = new DistributedReadOnlyBeanServiceImpl();
+    public static DistributedEJBService getDistributedEJBService() {
+        if(distributedEJBService == null) {
+            distributedEJBService = new DistributedEJBServiceFactory();
+        } 
 
-    public void refresh (Object primaryKey)  {
-		robContainer.setRefreshFlag(primaryKey);
+        return distributedEJBService;
     }
 
-    public void refreshAll() {
-        robContainer.refreshAll();
+    protected DistributedEJBServiceFactory() {
+        distributedEJBService = this;
     }
-}
+
+
+    public DistributedReadOnlyBeanService getDistributedReadOnlyBeanService() {
+        return _distributedReadOnlyBeanService;
+    }
+
+} //DistributedEJBServiceFactory.java
 

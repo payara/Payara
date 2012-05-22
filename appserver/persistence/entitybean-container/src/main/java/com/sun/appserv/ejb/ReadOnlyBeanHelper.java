@@ -45,8 +45,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
 
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBLocalHome;
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
 
 import org.glassfish.internal.api.Globals;
 

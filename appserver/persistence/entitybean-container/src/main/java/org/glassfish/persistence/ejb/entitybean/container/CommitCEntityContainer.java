@@ -38,14 +38,66 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.spi;
+package org.glassfish.persistence.ejb.entitybean.container;
 
-import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
+import com.sun.ejb.EjbInvocation;
+import com.sun.enterprise.deployment.EjbDescriptor;
 
-public interface ReadOnlyEJBLocalHome
-	extends javax.ejb.EJBLocalHome
+ /*
+  * This class implements the Commit-Option C as described in
+  * the EJB Specification.
+  *
+  * The CommitOptionC Container extends Entity Container and
+  * hence all the life cycle management is still in Entitycontainer
+  *
+  * @author Mahesh Kannan
+  */
+
+public class CommitCEntityContainer
+    extends EntityContainer
 {
-
-    public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier();
-
+    /**
+     * This constructor is called from the JarManager when a Jar is deployed.
+     * @exception Exception on error
+     */
+    protected CommitCEntityContainer(EjbDescriptor desc, ClassLoader loader)
+        throws Exception
+    {
+        super(desc, loader);
+    }
+    
+    protected EntityContextImpl getReadyEJB(EjbInvocation inv) {
+        Object primaryKey = getInvocationKey(inv);
+        return activateEJBFromPool(primaryKey, inv);
+    }
+    
+    protected void createReadyStore(int cacheSize, int numberOfVictimsToSelect,
+            float loadFactor, long idleTimeout)
+    {
+        readyStore = null;
+    }
+    
+    protected void createEJBObjectStores(int cacheSize,
+            int numberOfVictimsToSelect, long idleTimeout) throws Exception
+    {
+        super.defaultCacheEJBO = false;
+        super.createEJBObjectStores(cacheSize, numberOfVictimsToSelect, idleTimeout);
+    }
+    
+    // called from releaseContext, afterCompletion
+    protected void addReadyEJB(EntityContextImpl context) {
+        passivateAndPoolEJB(context);
+    }
+    
+    protected void destroyReadyStoreOnUndeploy() {
+        readyStore = null;
+    }
+    
+    protected void removeContextFromReadyStore(Object primaryKey,
+            EntityContextImpl context)
+    {
+        // There is nothing to remove as we don't have a readyStore
+    }
+    
 }
+

@@ -38,70 +38,65 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
-import javax.ejb.EnterpriseBean;
-import com.sun.ejb.containers.BaseContainer;
+import java.util.Date;
 
 /**
- * Implementation of EJBContext for ReadOnlyBeans. Contains extra
- * attributes that allows selective ejbLoad()
+ * Per-primary key information stored for read-only beans.
  *
- * @author Mahesh Kannan
+ * @author Kenneth Saks
  */
 
-public final class ReadOnlyContextImpl
-    extends EntityContextImpl
+final class ReadOnlyBeanInfo
 {
-    private int pkLevelSequenceNum;
-    private long lastRefreshedAt;   
-    private boolean removed = false;
 
-    // only non-null when associated with a primary-key
-    private ReadOnlyBeanInfo robInfo;
+    Object primaryKey;
+
+    // Used to track staleness versus the bean-level refresh.
+    int beanLevelSequenceNum;
+
+    // Set to true when a programmatic refresh takes place.  
+    boolean refreshNeeded;
     
-    ReadOnlyContextImpl(EnterpriseBean ejb, BaseContainer container) {
-        super(ejb, container);
-    }
+    // Sequence number associated with a point in time when refresh occurred.
+    // Each context for this pk also has a sequence number value.  If they
+    // differ it means the context needs an ejbLoad.
+    int pkLevelSequenceNum;
 
-    public int getPKLevelSequenceNum() {
-        return pkLevelSequenceNum;
-    }
+    // last time when refresh was programattically requested for this PK.
+    long lastRefreshRequestedAt;
+    
+    // time at which refresh actually occurred.
+    long lastRefreshedAt;
+    
+    Object	cachedEjbLocalObject;	    //Cached only for findByPK
 
-    public void incrementPKLevelSequenceNum() {
-        pkLevelSequenceNum++;
-    }
+    Object	cachedEjbObject;	    //Cached only for findByPK
 
-    public void setPKLevelSequenceNum(int num) {
-        pkLevelSequenceNum = num;
-    }
-
-    public long getLastRefreshedAt() {
-        return lastRefreshedAt;
+    public String toString() {
+        
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Read Only Bean Info for " + primaryKey + "\n");
+        buffer.append("Refresh needed = " + refreshNeeded + "\n");
+        buffer.append("Bean level sequence num = " + beanLevelSequenceNum 
+                      + "\n");
+        buffer.append("PK level sequence num = " + pkLevelSequenceNum + "\n");
+        if( lastRefreshRequestedAt > 0 ) {
+            buffer.append("Last refresh requested at " + 
+                          new Date(lastRefreshRequestedAt) 
+                          + "\n");
+        } else {
+            buffer.append("Refresh has never been requested\n");
+        }
+        if( lastRefreshedAt > 0 ) {
+            buffer.append("Last refreshed at " + 
+                          new Date(lastRefreshedAt) + "\n");
+        } else {
+            buffer.append("Never refreshed\n");
+        }
+        
+        return buffer.toString();
     }
     
-    public void setLastRefreshedAt(long time) {
-        lastRefreshedAt = time;
-    }
-    
-    public boolean isRemoved() {
-        return removed;
-    }
-    
-    public void setRemoved(boolean value) {
-        removed = value;
-    }
-    
-    public void setReadOnlyBeanInfo(ReadOnlyBeanInfo info) {
-        robInfo = info;
-
-        // Whenever read-only bean info is set or nulled out, initialize
-        // its derived fields.
-        pkLevelSequenceNum = -1;
-        lastRefreshedAt = 0;
-    }
-
-    public ReadOnlyBeanInfo getReadOnlyBeanInfo() {
-        return robInfo;
-    }
 }

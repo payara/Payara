@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbEntityDescriptor;

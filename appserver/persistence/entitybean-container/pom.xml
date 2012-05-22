@@ -53,7 +53,7 @@
 
     <artifactId>entitybean-container</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Entity EJB container</name>
+    <name>Entity Bean container</name>
 
     <developers>
         <developer>

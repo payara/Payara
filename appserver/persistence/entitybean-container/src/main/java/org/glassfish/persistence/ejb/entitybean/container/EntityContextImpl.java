@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.rmi.RemoteException;
 import java.lang.reflect.Method;
@@ -54,7 +54,7 @@ import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.ejb.containers.EJBLocalObjectImpl;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EJBTimerServiceWrapper;
-import org.glassfish.persistence.ejb.container.spi.CascadeDeleteNotifier;
+import org.glassfish.persistence.ejb.entitybean.container.spi.CascadeDeleteNotifier;
 
 /**
  * Implementation of EJBContext for EntityBeans

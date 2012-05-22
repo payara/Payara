@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -65,6 +65,7 @@ import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.ejb.containers.EJBLocalObjectImpl;
 
 import com.sun.ejb.containers.util.pool.*;
+import com.sun.ejb.spi.container.BeanStateSynchronization;
 import com.sun.appserv.util.cache.Constants;
 import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.BaseCache;
@@ -75,8 +76,9 @@ import com.sun.ejb.containers.util.cache.EJBObjectCacheListener;
 import com.sun.ejb.containers.util.cache.FIFOEJBObjectCache;
 import com.sun.ejb.containers.util.cache.UnboundedEJBObjectCache;
 
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBLocalHome;
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
+import org.glassfish.persistence.ejb.entitybean.container.stats.EntityBeanStatsProvider;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
@@ -88,12 +90,11 @@ import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 
-import com.sun.ejb.spi.container.BeanStateSynchronization;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
-import org.glassfish.persistence.ejb.container.stats.EntityBeanStatsProvider;
+
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.api.invocation.ComponentInvocation;
 

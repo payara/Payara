@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.spi;
+package org.glassfish.persistence.ejb.entitybean.container.spi;
 
 /**
  * Helper interface for CascadeDelete operations

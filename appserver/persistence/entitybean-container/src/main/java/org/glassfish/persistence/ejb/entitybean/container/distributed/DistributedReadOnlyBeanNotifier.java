@@ -38,54 +38,33 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
-
-import java.lang.reflect.Method;
-
-import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
-import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
-import com.sun.ejb.containers.util.MethodMap;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBLocalHome;
+package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
 /**
- * Implementation of the EJBHome interface.
- * This class is also the base class for all generated concrete ReadOnly
- * EJBLocalHome implementations.
- * At deployment time, one instance of ReadOnlyEJBHomeImpl is created 
- * for each EJB class in a JAR that has a local home. 
- *
- * @author Mahesh Kannan
+ * An instance of DistributedReadOnlyBeanNotifier is used to notify other server 
+ *  instances to refresh a ReadOnly Bean. An instance of 
+ *  ReadOnlyBeanRefreshEventHandler is used to handle requests received from
+ *  other server instances.
+ *  
+ *  @author Mahesh Kannan
+ *  @see ReadOnlyBeanRefreshEventHandler
  */
+public interface DistributedReadOnlyBeanNotifier {
 
-public class ReadOnlyEJBLocalHomeImpl
-    extends EJBLocalHomeInvocationHandler
-    implements ReadOnlyEJBLocalHome
-{
-    private ReadOnlyBeanLocalNotifier robNotifier;
-
-    protected ReadOnlyEJBLocalHomeImpl(EjbDescriptor ejbDescriptor,
-                                  Class localHomeIntf) throws Exception {
-        super(ejbDescriptor, localHomeIntf);
-    }
-
-    /** 
-     * Called from ReadOnlyBeancontainer only.
+    /**
+     * This is called by the container after it has called refresh
+     * 
+     * @param ejbID the ejbID that uniquely identifies the container
+     * @param pk The primary key of the bean(s) that is to be refreshed
      */
-    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer robContainer) {
-        this.robNotifier = new ReadOnlyBeanLocalNotifierImpl(robContainer);
-    }
+    public void notifyRefresh(long ejbID, byte[] pk);
 
-    public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier() {
-        return robNotifier;
-    }
+    /**
+     * This is called by the container after it has called refresh
+     * 
+     * @param ejbID the ejbID that uniquely identifies the container
+     * @param pk The primary key of the bean(s) that is to be refreshed
+     */
+    public void notifyRefreshAll(long ejbID);
 
-    protected boolean handleSpecialEJBLocalHomeMethod(Method method, Class methodClass) {
-        return (methodClass == ReadOnlyEJBLocalHome.class);
-    }
-
-    protected Object invokeSpecialEJBLocalHomeMethod(Method method, Class methodClass, 
-            Object[] args) throws Throwable {
-        return getReadOnlyBeanLocalNotifier();
-    }
 }

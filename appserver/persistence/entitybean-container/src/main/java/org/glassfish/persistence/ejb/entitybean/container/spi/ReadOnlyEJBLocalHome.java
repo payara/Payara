@@ -38,32 +38,14 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.distributed;
+package org.glassfish.persistence.ejb.entitybean.container.spi;
 
-public class DistributedEJBServiceFactory
-    implements DistributedEJBService 
+import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
+
+public interface ReadOnlyEJBLocalHome
+	extends javax.ejb.EJBLocalHome
 {
 
-    protected static DistributedEJBService distributedEJBService = null;
+    public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier();
 
-    private static DistributedReadOnlyBeanService _distributedReadOnlyBeanService
-        = new DistributedReadOnlyBeanServiceImpl();
-    public static DistributedEJBService getDistributedEJBService() {
-        if(distributedEJBService == null) {
-            distributedEJBService = new DistributedEJBServiceFactory();
-        } 
-
-        return distributedEJBService;
-    }
-
-    protected DistributedEJBServiceFactory() {
-        distributedEJBService = this;
-    }
-
-
-    public DistributedReadOnlyBeanService getDistributedReadOnlyBeanService() {
-        return _distributedReadOnlyBeanService;
-    }
-
-} //DistributedEJBServiceFactory.java
-
+}

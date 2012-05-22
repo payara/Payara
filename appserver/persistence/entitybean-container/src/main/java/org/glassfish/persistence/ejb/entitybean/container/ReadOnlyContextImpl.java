@@ -38,10 +38,70 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.distributed;
+package org.glassfish.persistence.ejb.entitybean.container;
 
-public interface DistributedEJBService {
+import javax.ejb.EnterpriseBean;
+import com.sun.ejb.containers.BaseContainer;
 
-    public DistributedReadOnlyBeanService getDistributedReadOnlyBeanService();
+/**
+ * Implementation of EJBContext for ReadOnlyBeans. Contains extra
+ * attributes that allows selective ejbLoad()
+ *
+ * @author Mahesh Kannan
+ */
+
+public final class ReadOnlyContextImpl
+    extends EntityContextImpl
+{
+    private int pkLevelSequenceNum;
+    private long lastRefreshedAt;   
+    private boolean removed = false;
+
+    // only non-null when associated with a primary-key
+    private ReadOnlyBeanInfo robInfo;
     
-} //DistributedEJBService.java 
+    ReadOnlyContextImpl(EnterpriseBean ejb, BaseContainer container) {
+        super(ejb, container);
+    }
+
+    public int getPKLevelSequenceNum() {
+        return pkLevelSequenceNum;
+    }
+
+    public void incrementPKLevelSequenceNum() {
+        pkLevelSequenceNum++;
+    }
+
+    public void setPKLevelSequenceNum(int num) {
+        pkLevelSequenceNum = num;
+    }
+
+    public long getLastRefreshedAt() {
+        return lastRefreshedAt;
+    }
+    
+    public void setLastRefreshedAt(long time) {
+        lastRefreshedAt = time;
+    }
+    
+    public boolean isRemoved() {
+        return removed;
+    }
+    
+    public void setRemoved(boolean value) {
+        removed = value;
+    }
+    
+    public void setReadOnlyBeanInfo(ReadOnlyBeanInfo info) {
+        robInfo = info;
+
+        // Whenever read-only bean info is set or nulled out, initialize
+        // its derived fields.
+        pkLevelSequenceNum = -1;
+        lastRefreshedAt = 0;
+    }
+
+    public ReadOnlyBeanInfo getReadOnlyBeanInfo() {
+        return robInfo;
+    }
+}

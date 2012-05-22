@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -60,23 +60,23 @@ import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.BaseContainer.PreInvokeException;
 import com.sun.ejb.containers.EJBHomeInvocationHandler;
 import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
+import com.sun.ejb.containers.EJBContextImpl;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState;
+import com.sun.ejb.containers.EJBLocalRemoteObject;
 import com.sun.ejb.containers.util.cache.EJBObjectCache;
 import com.sun.ejb.containers.util.cache.FIFOEJBObjectCache;
 import com.sun.ejb.containers.util.cache.UnboundedEJBObjectCache;
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBLocalHome;
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBHome;
+
 import com.sun.logging.*;
 
-import com.sun.ejb.containers.EJBContextImpl;
-import com.sun.ejb.containers.EJBLocalRemoteObject;
-import static com.sun.ejb.containers.EJBContextImpl.BeanState;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
+import org.glassfish.persistence.ejb.entitybean.container.distributed.DistributedEJBServiceFactory;
+import org.glassfish.persistence.ejb.entitybean.container.distributed.DistributedReadOnlyBeanService;
+import org.glassfish.persistence.ejb.entitybean.container.distributed.ReadOnlyBeanRefreshEventHandler;
 
-import org.glassfish.persistence.ejb.container.distributed.DistributedEJBServiceFactory;
-import org.glassfish.persistence.ejb.container.distributed.DistributedReadOnlyBeanService;
-import org.glassfish.persistence.ejb.container.distributed.ReadOnlyBeanRefreshEventHandler;
 import java.util.Timer;
 import java.util.TimerTask;
-
 
 /**
  * The Container that manages instances of ReadOnly Beans. This container

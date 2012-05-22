@@ -39,7 +39,7 @@
 #
 
 -exportcontents: \
-                        org.glassfish.persistence.ejb.container.spi; \
+                        org.glassfish.persistence.ejb.entitybean.container.spi; \
                         com.sun.appserv.ejb; version=${project.osgi.version}
 
 # See issue #10545 to know why we have explicitly added org.glassfish.apf.context

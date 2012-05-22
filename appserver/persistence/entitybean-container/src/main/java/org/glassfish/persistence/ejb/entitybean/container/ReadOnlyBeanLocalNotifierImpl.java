@@ -38,66 +38,31 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
-import com.sun.ejb.EjbInvocation;
-import com.sun.enterprise.deployment.EjbDescriptor;
+import java.util.logging.*;
+import com.sun.logging.*;
 
- /*
-  * This class implements the Commit-Option C as described in
-  * the EJB Specification.
-  *
-  * The CommitOptionC Container extends Entity Container and
-  * hence all the life cycle management is still in Entitycontainer
-  *
-  * @author Mahesh Kannan
-  */
+/**
+ * @author Mahesh Kannan
+ */
 
-public class CommitCEntityContainer
-    extends EntityContainer
+public final class ReadOnlyBeanLocalNotifierImpl 
+	implements com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier
 {
-    /**
-     * This constructor is called from the JarManager when a Jar is deployed.
-     * @exception Exception on error
-     */
-    protected CommitCEntityContainer(EjbDescriptor desc, ClassLoader loader)
-        throws Exception
-    {
-        super(desc, loader);
+
+    private ReadOnlyBeanContainer robContainer;
+
+    public ReadOnlyBeanLocalNotifierImpl(ReadOnlyBeanContainer container) {
+		this.robContainer = container;
+	}
+
+    public void refresh (Object primaryKey)  {
+		robContainer.setRefreshFlag(primaryKey);
     }
-    
-    protected EntityContextImpl getReadyEJB(EjbInvocation inv) {
-        Object primaryKey = getInvocationKey(inv);
-        return activateEJBFromPool(primaryKey, inv);
+
+    public void refreshAll() {
+        robContainer.refreshAll();
     }
-    
-    protected void createReadyStore(int cacheSize, int numberOfVictimsToSelect,
-            float loadFactor, long idleTimeout)
-    {
-        readyStore = null;
-    }
-    
-    protected void createEJBObjectStores(int cacheSize,
-            int numberOfVictimsToSelect, long idleTimeout) throws Exception
-    {
-        super.defaultCacheEJBO = false;
-        super.createEJBObjectStores(cacheSize, numberOfVictimsToSelect, idleTimeout);
-    }
-    
-    // called from releaseContext, afterCompletion
-    protected void addReadyEJB(EntityContextImpl context) {
-        passivateAndPoolEJB(context);
-    }
-    
-    protected void destroyReadyStoreOnUndeploy() {
-        readyStore = null;
-    }
-    
-    protected void removeContextFromReadyStore(Object primaryKey,
-            EntityContextImpl context)
-    {
-        // There is nothing to remove as we don't have a readyStore
-    }
-    
 }
 

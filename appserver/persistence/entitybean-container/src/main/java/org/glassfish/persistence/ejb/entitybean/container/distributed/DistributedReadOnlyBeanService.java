@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container.distributed;
+package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
 /**
  * DistributedReadOnlyBeanService defines the methods that can be used to 

@@ -38,65 +38,19 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
-
-import java.util.Date;
+package org.glassfish.persistence.ejb.entitybean.container.spi;
 
 /**
- * Per-primary key information stored for read-only beans.
+ * Home interface for all Remote ReadOnly Beans
  *
- * @author Kenneth Saks
+ * @author Mahesh Kannan
  */
-
-final class ReadOnlyBeanInfo
+public interface ReadOnlyEJBHome
+	extends javax.ejb.EJBHome
 {
 
-    Object primaryKey;
+    public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
+        throws java.rmi.RemoteException;
 
-    // Used to track staleness versus the bean-level refresh.
-    int beanLevelSequenceNum;
-
-    // Set to true when a programmatic refresh takes place.  
-    boolean refreshNeeded;
-    
-    // Sequence number associated with a point in time when refresh occurred.
-    // Each context for this pk also has a sequence number value.  If they
-    // differ it means the context needs an ejbLoad.
-    int pkLevelSequenceNum;
-
-    // last time when refresh was programattically requested for this PK.
-    long lastRefreshRequestedAt;
-    
-    // time at which refresh actually occurred.
-    long lastRefreshedAt;
-    
-    Object	cachedEjbLocalObject;	    //Cached only for findByPK
-
-    Object	cachedEjbObject;	    //Cached only for findByPK
-
-    public String toString() {
-        
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Read Only Bean Info for " + primaryKey + "\n");
-        buffer.append("Refresh needed = " + refreshNeeded + "\n");
-        buffer.append("Bean level sequence num = " + beanLevelSequenceNum 
-                      + "\n");
-        buffer.append("PK level sequence num = " + pkLevelSequenceNum + "\n");
-        if( lastRefreshRequestedAt > 0 ) {
-            buffer.append("Last refresh requested at " + 
-                          new Date(lastRefreshRequestedAt) 
-                          + "\n");
-        } else {
-            buffer.append("Refresh has never been requested\n");
-        }
-        if( lastRefreshedAt > 0 ) {
-            buffer.append("Last refreshed at " + 
-                          new Date(lastRefreshedAt) + "\n");
-        } else {
-            buffer.append("Never refreshed\n");
-        }
-        
-        return buffer.toString();
-    }
-    
+    public void _refresh_All() throws java.rmi.RemoteException;
 }

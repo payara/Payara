@@ -38,73 +38,54 @@
  * holder.
  */
 
-package org.glassfish.persistence.ejb.container;
+package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.lang.reflect.Method;
 
-import org.glassfish.persistence.ejb.container.spi.ReadOnlyEJBHome;
-import com.sun.ejb.containers.EJBHomeInvocationHandler;
+import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
+import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import com.sun.ejb.containers.util.MethodMap;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
 
 /**
  * Implementation of the EJBHome interface.
  * This class is also the base class for all generated concrete ReadOnly
- * EJBHome implementations.
+ * EJBLocalHome implementations.
  * At deployment time, one instance of ReadOnlyEJBHomeImpl is created 
- * for each EJB class in a JAR that has a remote home. 
+ * for each EJB class in a JAR that has a local home. 
  *
  * @author Mahesh Kannan
  */
 
-public final class ReadOnlyEJBHomeImpl
-    extends EJBHomeInvocationHandler
-    implements ReadOnlyEJBHome
+public class ReadOnlyEJBLocalHomeImpl
+    extends EJBLocalHomeInvocationHandler
+    implements ReadOnlyEJBLocalHome
 {
-    private ReadOnlyBeanContainer robContainer;
+    private ReadOnlyBeanLocalNotifier robNotifier;
 
-    ReadOnlyEJBHomeImpl(EjbDescriptor ejbDescriptor,
-                             Class homeIntfClass)
-            throws Exception {
-        super(ejbDescriptor, homeIntfClass);
+    protected ReadOnlyEJBLocalHomeImpl(EjbDescriptor ejbDescriptor,
+                                  Class localHomeIntf) throws Exception {
+        super(ejbDescriptor, localHomeIntf);
     }
 
     /** 
-     * Called from ReadOnlyBeanContainer only.
+     * Called from ReadOnlyBeancontainer only.
      */
-    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer container) {
-        this.robContainer = container;
+    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer robContainer) {
+        this.robNotifier = new ReadOnlyBeanLocalNotifierImpl(robContainer);
     }
 
-
-    /***********************************************/
-    /** Implementation of ReadOnlyEJBHome methods **/
-    /***********************************************/
-
-    public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
-        throws java.rmi.RemoteException
-    {
-        robContainer.setRefreshFlag(primaryKey);
+    public ReadOnlyBeanLocalNotifier getReadOnlyBeanLocalNotifier() {
+        return robNotifier;
     }
 
-    public void _refresh_All() throws java.rmi.RemoteException
-    {
-        robContainer.refreshAll();
+    protected boolean handleSpecialEJBLocalHomeMethod(Method method, Class methodClass) {
+        return (methodClass == ReadOnlyEJBLocalHome.class);
     }
 
-    protected boolean invokeSpecialEJBHomeMethod(Method method, Class methodClass, 
-            Object[] args) throws Exception {
-        if( methodClass == ReadOnlyEJBHome.class ) {
-            if( method.getName().equals("_refresh_All") ) {
-                _refresh_All();
-            } else {
-                _refresh_com_sun_ejb_containers_read_only_bean_
-                    (args[0]);
-            }
-
-            return true;
-        }
-        return false;
+    protected Object invokeSpecialEJBLocalHomeMethod(Method method, Class methodClass, 
+            Object[] args) throws Throwable {
+        return getReadOnlyBeanLocalNotifier();
     }
 }
-
