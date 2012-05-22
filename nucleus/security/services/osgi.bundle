@@ -41,6 +41,9 @@
 -exportcontents: \
                         org.glassfish.security.services.api; \
                         org.glassfish.security.services.api.authentication; \
+                        org.glassfish.security.services.api.authorization; \
+                        org.glassfish.security.services.api.common; \
+                        org.glassfish.security.services.api.context; \
                         org.glassfish.security.services.spi; \
                         org.glassfish.security.services.common; \
                         org.glassfish.security.services.commands; \
