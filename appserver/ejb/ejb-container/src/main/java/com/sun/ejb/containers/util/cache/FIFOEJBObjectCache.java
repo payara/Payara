@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -195,8 +195,8 @@ public class FIFOEJBObjectCache
         synchronized (bucketLocks[index]) {
             item = buckets[index];
             
-            for (; item != null; item = item.next) {
-                if ( (hashCode == item.hashCode) && eq(key, item.key) ) {
+            for (; item != null; item = item.getNext()) {
+                if ( (hashCode == item.getHashCode()) && eq(key, item.getKey()) ) {
                     break;
                 }
             }
@@ -238,8 +238,8 @@ public class FIFOEJBObjectCache
         
         // lookup the item
         synchronized (bucketLocks[index]) {
-            for (item = buckets[index]; item != null; item = item.next) {
-                if ((hashCode == item.hashCode) && eq(key, item.key)) {
+            for (item = buckets[index]; item != null; item = item.getNext()) {
+                if ((hashCode == item.getHashCode()) && eq(key, item.getKey())) {
                     oldItem = item;
                     break;
                 }
@@ -252,7 +252,7 @@ public class FIFOEJBObjectCache
                 newItem.isTrimmed = incrementRefCount;
                 
                 // add the item at the head of the bucket list
-                newItem.next = buckets[index];
+                newItem.setNext( buckets[index] );
                 buckets[index] = newItem;
                 
                 if (incrementRefCount) {
@@ -279,7 +279,7 @@ public class FIFOEJBObjectCache
             incrementEntryCount();
             // make sure we are are not crossing the threshold
             if ((overflow != null) && (listener != null)) {
-                listener.handleOverflow(overflow.key);
+                listener.handleOverflow(overflow.getKey());
             }
         }
         
@@ -291,7 +291,7 @@ public class FIFOEJBObjectCache
         System.out.println("EJBObjectCache:: size: " + getEntryCount() + 
                            "; listSize: " + listSize);
         for (LruCacheItem run = head; run!=null; run=run.lNext) {
-            System.out.print("("+run.key+", "+run.value+") ");
+            System.out.print("("+run.getKey()+", "+run.getValue()+") ");
         }
         System.out.println();
     }
@@ -304,8 +304,8 @@ public class FIFOEJBObjectCache
         CacheItem prev = null, item = null;
         
         synchronized (bucketLocks[index]) {
-            for (item = buckets[index]; item != null; item = item.next) {
-                if (hashCode == item.hashCode && key.equals(item.key)) {
+            for (item = buckets[index]; item != null; item = item.getNext()) {
+                if (hashCode == item.getHashCode() && key.equals(item.getKey())) {
                     
                     EJBObjectCacheItem eoItem = (EJBObjectCacheItem) item;
                     if (decrementRefCount) {
@@ -322,11 +322,11 @@ public class FIFOEJBObjectCache
                     }
                     
                     if (prev == null) {
-                        buckets[index] = item.next;
+                        buckets[index] = item.getNext();
                     } else  {
-                        prev.next = item.next;
+                        prev.setNext( item.getNext() );
                     }
-                    item.next = null;
+                    item.setNext( null );
                     
                     itemRemoved(item);
                     
@@ -341,7 +341,7 @@ public class FIFOEJBObjectCache
             decrementEntryCount();
             incrementRemovalCount();
             incrementHitCount();
-            return item.value;
+            return item.getValue();
         } else {
             incrementMissCount();
             return null;
@@ -429,7 +429,7 @@ public class FIFOEJBObjectCache
             ArrayList localVictims = new ArrayList(count);
             // trim the items from the BaseCache from the old tail backwards
             for (item = lastItem; item != null; item = item.lPrev) {
-                localVictims.add(item.key);
+                localVictims.add(item.getKey());
             }
             
             if (listener != null) {

@@ -152,7 +152,7 @@ public class LruSessionCache
         LruCacheItem removed = (LruCacheItem) item;
 
         if (removeIfIdle) {
-            StatefulEJBContext ctx = (StatefulEJBContext) item.value;
+            StatefulEJBContext ctx = (StatefulEJBContext) item.getValue();
             
             long idleThreshold = 
                 System.currentTimeMillis() - removalTimeoutInSeconds*1000L;
@@ -164,7 +164,7 @@ public class LruSessionCache
 
         for (int i = 0; i < listeners.size(); i++) {
             CacheListener listener = (CacheListener) listeners.get(i);
-            listener.trimEvent(removed.key, removed.value);
+            listener.trimEvent(removed.getKey(), removed.getValue());
         }
     }
 
@@ -207,11 +207,11 @@ public class LruSessionCache
 
         synchronized (bucketLocks[index]) {
             item = buckets[index];
-            for (; item != null; item = item.next) {
-                if ( (hashCode == item.hashCode) && 
-                     (item.key.equals(sessionKey)) )
+            for (; item != null; item = item.getNext()) {
+                if ( (hashCode == item.getHashCode()) && 
+                     (item.getKey().equals(sessionKey)) )
                 {
-                    value = item.value;
+                    value = item.getValue();
                     break;
                 }
             }
@@ -219,11 +219,6 @@ public class LruSessionCache
             // update the stats in line
             if (value != null) {
                 itemAccessed(item);
-            } else if (item == null) {
-                newItem = new LruSessionCacheItem(hashCode, sessionKey,
-                        null, -1, CACHE_ITEM_LOADING); 
-                newItem.next = buckets[index];
-                buckets[index] = newItem;
             }
         }
 
@@ -237,11 +232,11 @@ public class LruSessionCache
         if (item != null) {
             synchronized (item) {
                 LruSessionCacheItem lruItem = (LruSessionCacheItem) item;
-                if ((lruItem.value == null) && (lruItem.cacheItemState == CACHE_ITEM_LOADING)) {
+                if ((lruItem.getValue() == null) && (lruItem.cacheItemState == CACHE_ITEM_LOADING)) {
                     lruItem.waitCount++;
                     try { item.wait(); } catch (InterruptedException inEx) {}
                 }
-                return (StatefulEJBContext) item.value;
+                return (StatefulEJBContext) item.getValue();
             }
         }
 
@@ -251,21 +246,26 @@ public class LruSessionCache
 	    activationStartTime = System.currentTimeMillis();
 	}*/
         try {
-            newItem.value = value = getStateFromStore(sessionKey, container);
+            value = getStateFromStore(sessionKey, container);
+            newItem = new LruSessionCacheItem(hashCode, sessionKey,
+                    value, -1, CACHE_ITEM_LOADING); 
+            newItem.setNext( buckets[index] );
+            buckets[index] = newItem;
+
             synchronized (buckets[index]) {
                 if (value == null) {
                     //Remove the temp cacheItem that we created.
                     CacheItem prev = null;
                     for (CacheItem current = buckets[index]; current != null;
-                            current = current.next)
+                            current = current.getNext())
                     {
                         if (current == newItem) {
                             if (prev == null) {
-                                buckets[index] = current.next;
+                                buckets[index] = current.getNext();
                             } else {
-                                prev.next = current.next;
+                                prev.setNext( current.getNext() );
                             }
-                            current.next = null;
+                            current.setNext( null );
                             break;
                         }
                         prev = current;
@@ -317,14 +317,14 @@ public class LruSessionCache
         CacheItem prev = null, item = null;
 
         synchronized (bucketLocks[index]) {
-            for (item = buckets[index]; item != null; item = item.next) {
-                if ((hashCode == item.hashCode) && sessionKey.equals(item.key)) {
+            for (item = buckets[index]; item != null; item = item.getNext()) {
+                if ((hashCode == item.getHashCode()) && sessionKey.equals(item.getKey())) {
                     if (prev == null) {
-                        buckets[index] = item.next;
+                        buckets[index] = item.getNext();
                     } else  {
-                        prev.next = item.next;
+                        prev.setNext( item.getNext() );
                     }
-                    item.next = null;
+                    item.setNext( null );
                     
                     itemRemoved(item);
                     ((LruSessionCacheItem) item).cacheItemState = CACHE_ITEM_REMOVED;
@@ -391,8 +391,8 @@ public class LruSessionCache
             
             CacheItem prev = null, item = null;
             synchronized (bucketLocks[index]) {
-                for (item = buckets[index]; item != null; item = item.next) {
-                    if (item.value == ctx) {
+                for (item = buckets[index]; item != null; item = item.getNext()) {
+                    if (item.getValue() == ctx) {
                         LruCacheItem lruSCItem = (LruCacheItem) item;
                         if (lruSCItem.isTrimmed == false) {
                             //Was accessed just after marked for passivation
@@ -418,8 +418,8 @@ public class LruSessionCache
 
             synchronized (bucketLocks[index]) {
                 prev = null;
-                for (item = buckets[index]; item != null; item = item.next) {
-                    if (item.value == ctx) {
+                for (item = buckets[index]; item != null; item = item.getNext()) {
+                    if (item.getValue() == ctx) {
                         LruCacheItem lruSCItem = (LruCacheItem) item;
                         if (lruSCItem.isTrimmed == false) {
                             //Was accessed just after marked for passivation
@@ -427,11 +427,11 @@ public class LruSessionCache
                         }
                         
                     	if (prev == null) {
-                            buckets[index] = item.next;
+                            buckets[index] = item.getNext();
                     	} else  {
-                            prev.next = item.next;
+                            prev.setNext( item.getNext() );
                     	}
-                    	item.next = null;
+                    	item.setNext( null );
                         break;
                     }
                     prev = item;
@@ -544,7 +544,7 @@ public class LruSessionCache
 	synchronized (this) {
             LruCacheItem item = tail;
             while (item != null) {
-                StatefulEJBContext ctx = (StatefulEJBContext) item.value;
+                StatefulEJBContext ctx = (StatefulEJBContext) item.getValue();
                 if (ctx != null) {
 		    valueList.add(ctx);
 		}
@@ -569,7 +569,7 @@ public class LruSessionCache
         synchronized (this) {
             LruCacheItem item = tail;
             while (item != null) {
-                StatefulEJBContext ctx = (StatefulEJBContext) item.value;
+                StatefulEJBContext ctx = (StatefulEJBContext) item.getValue();
                 if (ctx != null) {
                     item.isTrimmed = true;
                     valueList.add(ctx);
@@ -631,7 +631,7 @@ public class LruSessionCache
 		    break;
 		}
 
-                StatefulEJBContext ctx = (StatefulEJBContext) item.value;
+                StatefulEJBContext ctx = (StatefulEJBContext) item.getValue();
                 if (ctx != null) {
                     // if we found a valid item, add it to the list
                     if ((ctx.getLastAccessTime() <= idleThresholdTime) &&
@@ -716,9 +716,9 @@ public class LruSessionCache
             if (buckets[index] != null) {
                 synchronized (bucketLocks[index]) {
                     for (CacheItem item = buckets[index]; item != null; 
-                         item = item.next) {
+                         item = item.getNext()) {
                         StatefulEJBContext ctx = 
-                            (StatefulEJBContext) item.value;
+                            (StatefulEJBContext) item.getValue();
                         //Note ctx can be null if bean is in BEING_REFRESHED state
                         if ((ctx != null) && 
                             (ctx.getLastAccessTime() <= idleThreshold) &&
