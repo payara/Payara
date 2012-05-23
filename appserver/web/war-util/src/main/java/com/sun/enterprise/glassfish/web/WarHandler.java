@@ -155,14 +155,14 @@ public class WarHandler extends AbstractArchiveHandler {
             }
 
             WebXmlParser webXmlParser = null;
-            if ((new File(base, GLASSFISH_WEB_XML)).exists()) {
+            if ((new File(base, WEBLOGIC_XML)).exists()) {
+                webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
+            } else if ((new File(base, GLASSFISH_WEB_XML)).exists()) {
                 webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
             } else if ((new File(base, SUN_WEB_XML)).exists()) {
                 webXmlParser = new SunWebXmlParser(base.getAbsolutePath());
-            } else if ((new File(base, WEBLOGIC_XML)).exists()) {
-                webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
             } else {
-                webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
+                webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
             }
 
             configureLoaderAttributes(cloader, webXmlParser, base);
