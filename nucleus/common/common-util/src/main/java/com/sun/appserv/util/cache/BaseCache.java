@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,7 @@ public class BaseCache implements Cache {
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     // maximum number of entries this cache may ever hold
-	int maxEntries;
+    protected int maxEntries;
 
     // the number of cache entries in this cache
     protected int   entryCount;
@@ -80,15 +80,15 @@ public class BaseCache implements Cache {
     protected int threshold = 0;
 
     // the number of cache hits
-    private int     hitCount;
+    protected int     hitCount;
     private Object  hitCountLk = new Object();
 
     // the number of cache misses
-    private int     missCount;
+    protected int     missCount;
     private Object  missCountLk = new Object();
 
     // the number of cache item removals
-    private int    removalCount;
+    protected int    removalCount;
     private Object removalCountLk = new Object();
 
     // the number of cache item refreshes
@@ -993,7 +993,7 @@ public class BaseCache implements Cache {
     }
 
     /** default CacheItem class implementation  ***/
-    protected static class CacheItem {
+    public static class CacheItem {
         int hashCode;
         Object key;
         Object value;
@@ -1011,21 +1011,35 @@ public class BaseCache implements Cache {
         /**
          * get the item's hashCode
          */
-        protected int getHashCode() {
+        public int getHashCode() {
             return hashCode;
         }
     
         /**
          * get the item's key
          */
-        protected Object getKey() {
+        public Object getKey() {
             return key;
+        }
+    
+        /**
+         * get the item's next reference
+         */
+        public CacheItem getNext() {
+            return next;
+        }
+    
+        /**
+         * set the item's next reference
+         */
+        public void setNext(CacheItem next) {
+            this.next = next;
         }
     
         /**
          * get the item's value
          */
-        protected Object getValue() {
+        public Object getValue() {
             return value;
         }
     
@@ -1033,7 +1047,7 @@ public class BaseCache implements Cache {
          * @return size of the entry in bytes
          * a value of -1 indicates unknown size
          */
-        protected int getSize() {
+        public int getSize() {
             return size;
         }
     
