@@ -326,7 +326,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
      */
     public boolean isSingleInstanceCommand(String commandName) {
 
-        CommandModel model = commandRunner.getModel(commandName,aalogger) ;
+        CommandModel model = commandRunner.getModel(getScope(commandName),getCommandAfterScope(commandName),aalogger) ;
         ExecuteOn executeOn = model.getClusteringAttributes();
         if ((executeOn != null) && (executeOn.value().length ==1) &&
                 executeOn.value()[0].equals(RuntimeType.SINGLE_INSTANCE)) {
@@ -562,13 +562,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         if (requestURI.length() > getContextRoot().length() + 1)
             command = requestURI.substring(getContextRoot().length() + 1);
 
-        // check for a command scope
-        String scope = null;
-        int ci = command.indexOf("/");
-        if (ci != -1) {
-            scope = command.substring(0, ci + 1);
-            command = command.substring(ci + 1);
-        }
+        String scope = getScope(command);
+        command = getCommandAfterScope(command);
         
         String qs = req.getQueryString();
         final ParameterMap parameters = extractParameters(qs);
@@ -761,5 +756,32 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Override
     public void setRegistered(boolean isRegistered) {
 	this.isRegistered = isRegistered;
+    }
+
+    /**
+     * A command is defined in a particular scope by
+     * using a prefix on the command service names, as in @Service(name="ascope/mycommand")
+     * This method gets the scope for a command which is "ascope/"
+     * for the above example
+     * @param command  The command to be executed
+     * @return the scope for a command
+     */
+    private String getScope(String command) {
+        int ci = command.indexOf("/");
+        return (ci != -1) ? command.substring(0, ci + 1) : null;
+    }
+
+
+    /**
+     * This method gets the command after the scope string
+     * as defined for a command like this @Service(name="ascope/mycommand")
+     * @param command  The command to be executed
+     * @return the shortened command after the scope ie "mycommand"
+     * for the above example
+     */
+    private String getCommandAfterScope(String command) {
+        int ci = command.indexOf("/");
+        return (ci != -1) ? command = command.substring(ci + 1) : command;
+
     }
 }
