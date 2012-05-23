@@ -451,9 +451,6 @@ public class PersistenceUnitLoader {
         final String TOPLINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY = "toplink.target-server"; // NOI18N
         props.put(TOPLINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY,
                 System.getProperty(TOPLINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY, "SunAS9")); // NOI18N
-        // Eclipselink module metadata is not correctly setup to load HermesParser, so we set it to
-        // ANTLRQueryBuilder which is part of the core.jar. This is a work around until GLASSFISH-18649 is fixed.
-        props.put("eclipselink.jpql.parser", "org.eclipse.persistence.queries.ANTLRQueryBuilder");  // NOI18N
 
         // Hibernate specific properties:
         final String HIBERNATE_TRANSACTION_MANAGER_LOOKUP_CLASS_PROPERTY = "hibernate.transaction.manager_lookup_class"; // NOI18N
