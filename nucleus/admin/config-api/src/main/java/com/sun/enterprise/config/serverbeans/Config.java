@@ -108,12 +108,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     @Override
     String getName();
 
-
-
     @Override
     void setName(String value) throws PropertyVetoException;
-
-
 
     /**
      * Gets the value of the dynamicReconfigurationEnabled property.
@@ -153,7 +149,14 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      */
     void setNetworkConfig(NetworkConfig value) throws PropertyVetoException;
 
-
+    /**
+     * Gets the value of the httpService property.
+     *
+     * @return possible object is
+     *         {@link HttpService }
+     */
+    @Element(required=true)
+    HttpService getHttpService();
 
     /**
      * Sets the value of the httpService property.
@@ -374,9 +377,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     @DuckTyped
     <T extends ConfigExtension> T createDefaultChildByType(Class<T> type);
 
-
-
-
     /**
      * Return an extension configuration given the extension type.
      *
@@ -399,14 +399,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     @DuckTyped
     void addIndex(Habitat habitat, String name);
 
-     /**
-     * Gets the value of the httpService property.
-     *
-     * @return
-     *         {@link HttpService }
-     */
-    @DuckTyped
-    HttpService getHttpService() ;
 
     /**
      * @param configBeanType The config bean type we want to check whether the configuration exists for it or not.
@@ -494,6 +486,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                     c.getAdminService(),
                     c.getAvailabilityService(),
                     c.getDiagnosticService(),
+                    c.getHttpService(),
                     c.getJavaConfig(),
                     c.getLogService(),
                     c.getNetworkConfig(),
@@ -528,11 +521,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                 }
             }
             return false;
-        }
-
-        public static HttpService getHttpService(Config param) throws TransactionFailure, PropertyVetoException {
-
-            return param.getExtensionByType(HttpService.class);
         }
 
         public static GroupManagementService getGroupManagementService(Config param) throws TransactionFailure, ClassNotFoundException {
