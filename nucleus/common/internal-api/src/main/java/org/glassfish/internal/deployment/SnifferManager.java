@@ -97,7 +97,7 @@ public interface SnifferManager {
      */
     public Collection<Sniffer> getSniffers(DeploymentContext context);
 
-    public Collection<Sniffer> getSniffers(ReadableArchive archive, List<URI> uris, Types types, ClassLoader cl);
+    public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types);
 
     /**
      * Return whether a sniffer supports to be isolated during deployment per use request.

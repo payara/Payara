@@ -46,7 +46,6 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.internal.deployment.Deployment;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
@@ -142,7 +141,7 @@ public class DescriptorFactory
             }
 
             context.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE); // issue 14564
-            String archiveType = context.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
+            String archiveType = context.getArchiveHandler().getArchiveType();
             ClassLoader cl = archiveHandler.getClassLoader(parentCl, context);
             Archivist archivist = archivistFactory.getArchivist(archiveType, cl);
             if (archivist == null) {

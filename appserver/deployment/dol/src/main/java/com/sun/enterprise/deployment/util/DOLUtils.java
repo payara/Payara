@@ -47,12 +47,15 @@ import java.util.logging.Level;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.Sniffer;
 import java.net.URL;
 import java.net.URI;
@@ -263,7 +266,10 @@ public class DOLUtils {
         List<URI> classPathURIs = handler.getClassPathURIs(archive);
         classPathURIs.addAll(getLibraryJarURIs(app, archive));
         Types types = archive.getParentArchive().getExtraData(Types.class);
-        Collection<Sniffer> sniffers = snifferManager.getSniffers(archive, classPathURIs, types, app.getClassLoader());
+        DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
+        ExtendedDeploymentContext context = new DeploymentContextImpl(null, logger, archive, parameters, habitat.getComponent(ServerEnvironment.class));
+        context.setArchiveHandler(handler);
+        Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);
         String type = getTypeFromModuleType(md.getModuleType());
         Sniffer mainSniffer = null;
         for (Sniffer sniffer : sniffers) {

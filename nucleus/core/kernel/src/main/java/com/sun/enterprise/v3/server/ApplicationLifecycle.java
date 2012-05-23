@@ -85,7 +85,6 @@ import org.glassfish.api.virtualization.VirtualizationEnv;
 import org.glassfish.internal.data.*;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.SuperSniffer;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import javax.inject.Inject;
@@ -225,7 +224,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return ad.getArchiveHandler();
             }
         }
-        return habitat.getComponent(ArchiveHandler.class, "DEFAULT");
+        return null;
     }
 
     public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
@@ -337,7 +336,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
-            context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, handler.getArchiveType());
             DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
 
             if (tracing!=null) {
@@ -634,18 +632,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
         if (sniffers==null) {
-            // let's first see if we get any super sniffer applicable to
-            // this archive
-            sniffers = snifferManager.getSuperSniffers(context);
-            if (sniffers == null || sniffers.isEmpty()) {
-                // if there are no super sniffers, let's look at
-                // other sniffers
-                if (handler instanceof CompositeHandler) {
-                    context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
-                    sniffers = snifferManager.getCompositeSniffers(context);
-                } else {
-                    sniffers = snifferManager.getSniffers(context);
-                }
+            if (handler instanceof CompositeHandler) {
+                context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
+                sniffers = snifferManager.getCompositeSniffers(context);
+            } else {
+                sniffers = snifferManager.getSniffers(context);
             }
         }
         context.addTransientAppMetaData(DeploymentProperties.SNIFFERS, sniffers);

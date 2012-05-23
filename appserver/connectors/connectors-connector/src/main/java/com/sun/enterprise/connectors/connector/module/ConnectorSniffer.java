@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.annotation.introspection.ResourceAdapterAnn
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
@@ -71,6 +72,8 @@ public class ConnectorSniffer extends GenericSniffer {
 
     @Inject
     private Logger logger;
+
+    @Inject RarType rarType;
 
     private static final Class[]  connectorAnnotations = new Class[] {
             javax.resource.spi.Connector.class };
@@ -150,6 +153,24 @@ public class ConnectorSniffer extends GenericSniffer {
         return new String[] {"ejb", "web"};
     }
 
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.equals(rarType)) {
+            return true;
+        }
+        return false;
+    }
+
     private static final List<String> deploymentConfigurationPaths =
             initDeploymentConfigurationPaths();
 
@@ -170,4 +191,5 @@ public class ConnectorSniffer extends GenericSniffer {
     protected List<String> getDeploymentConfigurationPaths() {
         return deploymentConfigurationPaths;
     }
+
 }

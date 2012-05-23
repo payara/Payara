@@ -147,7 +147,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
 
         String name = params.name();
-        String archiveType = dc.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
+        String archiveType = dc.getArchiveHandler().getArchiveType();
         Archivist archivist = archivistFactory.getArchivist(archiveType, cl);
         if (archivist == null) {
             // if no JavaEE medata was found in the archive, we return 
@@ -255,19 +255,15 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
                 archive.exists("META-INF/ejb-jar.xml") || 
                 archive.exists("META-INF/application-client.xml") || 
                 archive.exists("META-INF/ra.xml")) {
-                String archiveType = context.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class) ;
+                String archiveType = context.getArchiveHandler().getArchiveType() ;
                 application = applicationFactory.createApplicationFromStandardDD(archive, archiveType);
                 DeploymentTracing tracing = null; 
-                if (context != null) {
-                    tracing = context.getModuleMetaData(DeploymentTracing.class);
-                }
+                tracing = context.getModuleMetaData(DeploymentTracing.class);
                 if (tracing != null) {
                     tracing.addMark(DeploymentTracing.Mark.DOL_LOADED);
                 }
                 ApplicationHolder holder = new ApplicationHolder(application);
-                if (context != null) {
-                    context.addModuleMetaData(holder);
-                }
+                context.addModuleMetaData(holder);
 
                 return application.getAppName();
             }
@@ -297,7 +293,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
             ActionReport report = new HTMLActionReporter();
             context = new DeploymentContextImpl(report, logger, archive, parameters, env);
-            context.addTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, archiveHandler.getArchiveType());
             context.setArchiveHandler(archiveHandler);
             String appName = archiveHandler.getDefaultApplicationName(archive, context);
             parameters.name = appName;

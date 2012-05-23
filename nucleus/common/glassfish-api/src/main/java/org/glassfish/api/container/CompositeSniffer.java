@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,12 +54,4 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface CompositeSniffer extends Sniffer {
-
-    /**
-     * Returns true if the passed file or directory is recognized by this
-     * composite sniffer.
-     * @param context deployment context
-     * @return true if the location is recognized by this sniffer
-     */
-    public boolean handles(DeploymentContext context);
 }

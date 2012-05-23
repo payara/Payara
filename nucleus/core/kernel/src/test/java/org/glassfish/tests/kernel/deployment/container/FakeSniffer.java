@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,8 @@ package org.glassfish.tests.kernel.deployment.container;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.DeploymentContext;
 
 import java.lang.annotation.Annotation;
 import java.util.logging.Logger;
@@ -62,6 +64,11 @@ import com.sun.enterprise.module.Module;
 public class FakeSniffer implements Sniffer {
 
     public boolean handles(ReadableArchive source, ClassLoader loader) {
+        // I handle everything
+        return true;
+    }
+
+    public boolean handles(DeploymentContext context) {
         // I handle everything
         return true;
     }
@@ -101,4 +108,9 @@ public class FakeSniffer implements Sniffer {
     public String[] getIncompatibleSnifferTypes() {
         return new String[0];
     }
+
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        return true;
+    }
+
 }

@@ -67,15 +67,4 @@ public abstract class GenericCompositeSniffer extends GenericSniffer implements 
     public GenericCompositeSniffer(String containerName, String appStigma, String urlPattern) {
         super(containerName, appStigma, urlPattern);
     }
-
-
-   /**
-     * Returns true if the passed file or directory is recognized by this
-     * composite sniffer.
-     * @param context deployment context
-     * @return true if the location is recognized by this sniffer
-     */
-    public boolean handles(DeploymentContext context) {
-        return handles(context.getSource(), context.getClassLoader());
-    }
 }

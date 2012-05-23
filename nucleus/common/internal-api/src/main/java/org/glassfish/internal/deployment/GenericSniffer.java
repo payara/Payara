@@ -50,7 +50,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,6 +75,9 @@ public abstract class GenericSniffer implements Sniffer {
     @Inject
     protected ModulesRegistry modulesRegistry;
 
+    @Inject
+    protected BaseServiceLocator habitat;
+
     final private String containerName;
     final private String appStigma;
     final private String urlPattern;
@@ -83,6 +89,20 @@ public abstract class GenericSniffer implements Sniffer {
         this.containerName = containerName;
         this.appStigma = appStigma;
         this.urlPattern = urlPattern;
+    }
+
+    /**
+     * Returns true if the passed file or directory is recognized by this
+     * composite sniffer.
+     * @param context deployment context
+     * @return true if the location is recognized by this sniffer
+     */
+    public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
+        return handles(context.getSource(), context.getClassLoader());
     }
 
     /**

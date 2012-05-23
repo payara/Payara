@@ -43,8 +43,10 @@ package org.glassfish.web.sniffer;
 import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.glassfish.web.WarType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -63,6 +65,8 @@ import java.util.List;
 @Service(name="web")
 @Scoped(Singleton.class)
 public class WebSniffer  extends GenericSniffer {
+
+    @Inject WarType warType;
 
     public WebSniffer() {
         super("web", "WEB-INF/web.xml", null);
@@ -133,6 +137,24 @@ public class WebSniffer  extends GenericSniffer {
      */
     public String[] getIncompatibleSnifferTypes() {
         return new String[] {"connector"};
+    }
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.equals(warType)) {
+            return true;
+        }
+        return false;
     }
 
     // TODO(Sahoo): Ideally we should have separate sniffer for JSP, but since WebSniffer is already

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,10 +41,13 @@
 package org.glassfish.resources.connector;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.resources.api.ResourceConstants;
 import org.jvnet.hk2.annotations.Service;
+
+import javax.enterprise.deploy.shared.ModuleType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +75,7 @@ public class ResourcesSniffer extends GenericSniffer {
      * @return true if this sniffer handles this application type
      */
     public boolean handles(ReadableArchive archive, ClassLoader loader) {
-        return DeploymentUtils.hasResourcesXML(archive) && !DeploymentUtils.isEAR(archive)
+        return DeploymentUtils.hasResourcesXML(archive)
                 && archive.getParentArchive() == null;
     }
 
@@ -95,6 +98,27 @@ public class ResourcesSniffer extends GenericSniffer {
      */
     public String getModuleType() {
         return ResourceConstants.GF_RESOURCES_MODULE;
+    }
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
+            archiveType.toString().equals(ModuleType.EJB.toString()) ||
+            archiveType.toString().equals(ModuleType.RAR.toString()) ||
+            archiveType.toString().equals(ModuleType.CAR.toString())) {
+            return true;
+        }
+        return false;
     }
 
     private static final List<String> deploymentConfigurationPaths =

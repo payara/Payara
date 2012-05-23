@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.extras.grizzly;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 /**
  * Sniffs raw grizzly adapters in jar files
@@ -60,5 +61,20 @@ public class GrizzlyAdapterSniffer extends GenericSniffer {
 
     public String[] getContainersNames() {
         return containerNames;
+    }
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        return true;
     }
 }

@@ -51,7 +51,6 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.javaee.core.deployment.JavaEEDeploymentUtils;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFish;
@@ -558,7 +557,7 @@ public class GlassFishPlugin extends ServiceProvisioningEngineBase<JavaEEService
         File deploymentPlan = params.deploymentplan;
         ClassLoader cl = dc.getClassLoader(); // cl might be null, but it is not used for the operations done in this method.
         ReadableArchive sourceArchive = dc.getSource();
-        String archieType = dc.getTransientAppMetaData(DeploymentProperties.ARCHIVE_TYPE, String.class);
+        String archieType = dc.getArchiveHandler().getArchiveType();
         Archivist archivist = archivistFactory.getArchivist(archieType, cl);
         ApplicationHolder holder = dc.getModuleMetaData(ApplicationHolder.class);
         //Note in copying of deployment plan to the portable archive,

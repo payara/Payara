@@ -41,6 +41,8 @@
 package org.glassfish.api.container;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.io.IOException;
@@ -61,6 +63,14 @@ import java.util.Map;
  */
 @Contract
 public interface Sniffer {
+
+    /**
+     * Returns true if the passed file or directory is recognized by this
+     * composite sniffer.
+     * @param context deployment context
+     * @return true if the location is recognized by this sniffer
+     */
+    public boolean handles(DeploymentContext context);
 
     /**
      * Returns true if the passed file or directory is recognized by this
@@ -162,4 +172,17 @@ public interface Sniffer {
      * 
      */
     public String[] getIncompatibleSnifferTypes();
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize 
+     * the current archive.
+     * If the sniffer does not support the archive type associated with 
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType);
 }

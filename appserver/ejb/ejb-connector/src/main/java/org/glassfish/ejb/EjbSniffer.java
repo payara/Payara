@@ -41,6 +41,7 @@
 package org.glassfish.ejb;
 
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.glassfish.ejb.EjbType;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.common_impl.DirectoryBasedRepository;
@@ -48,10 +49,12 @@ import com.sun.enterprise.module.common_impl.AbstractModulesRegistryImpl;
 import com.sun.hk2.component.InhabitantsParser;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
+import javax.enterprise.deploy.shared.ModuleType;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -74,6 +77,8 @@ public class EjbSniffer  extends GenericSniffer {
 
     @Inject
     BaseServiceLocator habitat;    
+
+    @Inject EjbType ejbType;
 
     private static final Class[]  ejbAnnotations = new Class[] {
             javax.ejb.Stateless.class, javax.ejb.Stateful.class,
@@ -151,6 +156,25 @@ public class EjbSniffer  extends GenericSniffer {
         return new String[] {"connector"};
     }
 
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.equals(ejbType) ||
+            archiveType.toString().equals(ModuleType.WAR.toString())) {
+            return true;
+        }
+        return false;
+    }
+
     private static final List<String> deploymentConfigurationPaths =
             initDeploymentConfigurationPaths();
 
@@ -172,4 +196,5 @@ public class EjbSniffer  extends GenericSniffer {
     protected List<String> getDeploymentConfigurationPaths() {
         return deploymentConfigurationPaths;
     }
+
 }

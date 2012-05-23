@@ -43,11 +43,14 @@ package com.sun.enterprise.security.ee;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.security.SecurityLifecycle;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+
+import javax.enterprise.deploy.shared.ModuleType;
 
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -140,6 +143,25 @@ public class SecuritySniffer extends GenericSniffer {
         return ejbAnnotations;
     }
     
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
+            archiveType.toString().equals(ModuleType.EJB.toString())) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean isJar(ReadableArchive location) {
         // check for ejb-jar.xml
         boolean result = false;

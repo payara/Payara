@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,10 +46,14 @@ import java.util.Enumeration;
 import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Inject;
 
 
 /**
@@ -59,7 +63,15 @@ import org.jvnet.hk2.component.Singleton;
 @Scoped(Singleton.class)
 public class WeldCompositeSniffer extends WeldSniffer implements CompositeSniffer {
 
+    @Inject
+    BaseServiceLocator habitat;
+
     public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
+
         boolean isWeldApplication = false;
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         ReadableArchive appRoot = context.getSource();
@@ -67,6 +79,24 @@ public class WeldCompositeSniffer extends WeldSniffer implements CompositeSniffe
             isWeldApplication = scanLibDir(appRoot, holder.app.getLibraryDirectory(), context);
         }
         return isWeldApplication;
+    }
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.toString().equals(ModuleType.EAR.toString())) {
+            return true;
+        }
+        return false;
     }
 
     // This method returns true if at least one /lib jar is a Weld archive

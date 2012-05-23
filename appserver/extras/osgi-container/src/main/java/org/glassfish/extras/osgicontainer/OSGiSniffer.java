@@ -42,6 +42,7 @@ package org.glassfish.extras.osgicontainer;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.deployment.GenericCompositeSniffer;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
@@ -90,10 +91,27 @@ public class OSGiSniffer extends GenericSniffer  {
         return true;
     }
 
-//    @Override
+    @Override
     public boolean handles(DeploymentContext context) {
-        // We don't depend on DeploymentUtils as we don't want to introduce a dependency on deployment-common
-        // from this connector module.
-        return osgiArchiveType.toString().equals(context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        return supportsArchiveType(archiveType);
+    }
+
+    /**
+     *
+     * This API is used to help determine if the sniffer should recognize
+     * the current archive.
+     * If the sniffer does not support the archive type associated with
+     * the current deployment, the sniffer should not recognize the archive.
+     *
+     * @param archiveType the archive type to check
+     * @return whether the sniffer supports the archive type
+     *
+     */
+    public boolean supportsArchiveType(ArchiveType archiveType) {
+        if (archiveType.toString().equals(osgiArchiveType.toString())) {
+            return true;
+        }
+        return false;
     }
 }
