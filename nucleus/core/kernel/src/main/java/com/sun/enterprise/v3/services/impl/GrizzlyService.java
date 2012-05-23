@@ -63,7 +63,7 @@ import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import com.sun.logging.LogDomains;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.glassfish.api.FutureProvider;
-import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
@@ -79,6 +79,7 @@ import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.jvnet.hk2.annotations.RunLevel;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -100,7 +101,8 @@ import org.jvnet.hk2.config.Transactions;
  */
 @Service
 @Scoped(Singleton.class)
-public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
+@RunLevel(value = StartupRunLevel.VAL, strict = false)
+public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -312,17 +314,6 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
     public GrizzlyMonitoring getMonitoring() {
         return monitoring;
     }
-
-    /**
-     * Returns the life expectency of the service
-     *
-     * @return the life expectency.
-     */
-    @Override
-    public Lifecycle getLifecycle() {
-        return Lifecycle.SERVER;                
-    }
-
 
     /**
      * The component has been injected with any dependency and

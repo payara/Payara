@@ -188,7 +188,7 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
         RunLevel rl = i.type().getAnnotation(RunLevel.class);
         if (startup) {
             // in this case we handle anything that doesn't have a RunLevel annotation on it
-            return (!i.isActive() && null == rl);
+            return (null == rl);
         } else {
             // in shutdown case we forcibly stop anything without a RunLevel OR anything that is
             // not a "strict" type RunLevel - see javadoc and site documentation for details.
