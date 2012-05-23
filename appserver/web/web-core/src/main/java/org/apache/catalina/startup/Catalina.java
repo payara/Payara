@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -515,14 +515,16 @@ public class Catalina extends Embedded {
             return;
         }
 
-        try {
-            inputSource.setByteStream(inputStream);
-            digester.push(this);
-            digester.parse(inputSource);
-            inputStream.close();
-        } catch (Exception e) {
-            log.log(Level.WARNING, "Catalina.start: ", e);
-            return;
+        if (inputStream != null) {
+            try {
+                inputSource.setByteStream(inputStream);
+                digester.push(this);
+                digester.parse(inputSource);
+                inputStream.close();
+            } catch (Exception e) {
+                log.log(Level.WARNING, "Catalina.start: ", e);
+                return;
+            }
         }
 
         // Start the new server

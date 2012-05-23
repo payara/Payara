@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -481,7 +481,7 @@ public class BaseModelMBean implements ModelMBean, MBeanRegistration {
             else if (t instanceof Error)
                 throw new RuntimeErrorException
                     ((Error) t, "Error invoking method " + name);
-            else
+            else if (t instanceof Exception)
                 throw new MBeanException
                     ((Exception)t, "Exception invoking method " + name);
         } catch (Exception e) {

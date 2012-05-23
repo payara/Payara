@@ -187,7 +187,7 @@ public class StandardService
         if ((oldContainer != null) && (oldContainer instanceof Engine))
             ((Engine) oldContainer).setService(null);
         this.container = container;
-        if ((this.container != null) && (this.container instanceof Engine))
+        if (this.container instanceof Engine)
             ((Engine) this.container).setService(this);
         if (started && (this.container != null) &&
             (this.container instanceof Lifecycle)) {

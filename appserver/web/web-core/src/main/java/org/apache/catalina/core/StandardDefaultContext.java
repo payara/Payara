@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1428,7 +1428,6 @@ public class StandardDefaultContext
     protected String domain;
     protected String suffix;
     protected ObjectName oname;
-    protected MBeanServer mserver;
 
     public ObjectName getObjectName() {
         return oname;
@@ -1449,7 +1448,6 @@ public class StandardDefaultContext
     public ObjectName preRegister(MBeanServer server,
                                   ObjectName name) throws Exception {
         oname=name;
-        mserver=server;
         domain=name.getDomain();
 
         type=name.getKeyProperty("type");

@@ -382,7 +382,6 @@ final class StandardWrapperValve extends ValveBase {
             log(sm.getString("standardWrapper.unloadException",
                              wrapper.getName()), e);
             if (throwable == null) {
-                throwable = e;
                 exception(request, response, e);
             }
         }

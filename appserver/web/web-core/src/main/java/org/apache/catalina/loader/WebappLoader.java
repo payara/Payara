@@ -301,7 +301,7 @@ public class WebappLoader
         support.firePropertyChange("container", oldContainer, this.container);
 
         // Register with the new Container (if any)
-        if ((this.container != null) && (this.container instanceof Context)) {
+        if (this.container instanceof Context) {
             setReloadable( ((Context) this.container).getReloadable() );
             ((Context) this.container).addPropertyChangeListener(this);
         }

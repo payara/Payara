@@ -135,7 +135,9 @@ final class StandardContextValve
      */
     public void setContainer(Container container) {
         super.setContainer(container);
-        context = (StandardContext) container;
+        if (container instanceof StandardContext) {
+            context = (StandardContext) container;
+        }
     }
 
 

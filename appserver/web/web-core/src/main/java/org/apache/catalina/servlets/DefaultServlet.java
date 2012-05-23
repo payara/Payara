@@ -1817,7 +1817,7 @@ public class DefaultServlet
             && (entry.resource != null)
             && ((length > sendfileSize) || (entry.resource.getContent() == null))
             && (entry.attributes.getCanonicalPath() != null)
-            && (Boolean.TRUE == request.getAttribute("org.apache.tomcat.sendfile.support"))
+            && (Boolean.TRUE.equals(request.getAttribute("org.apache.tomcat.sendfile.support")))
             && (request.getClass().getName().equals("org.apache.catalina.connector.RequestFacade"))
             && (response.getClass().getName().equals("org.apache.catalina.connector.ResponseFacade"))) {
             request.setAttribute("org.apache.tomcat.sendfile.filename", entry.attributes.getCanonicalPath());

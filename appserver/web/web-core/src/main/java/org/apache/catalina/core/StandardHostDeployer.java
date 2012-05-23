@@ -823,8 +823,12 @@ public class StandardHostDeployer implements Deployer {
      */
     public void addChild(Container child) {
 
-        Context context = (Context) child;
-        String contextPath = context.getPath();
+        Context context = null;
+        String contextPath = null;
+        if (child instanceof Context) {
+            context = (Context) child;
+            contextPath = context.getPath();
+        }
         if (contextPath == null)
             throw new IllegalArgumentException
                 (sm.getString("standardHost.pathRequired"));

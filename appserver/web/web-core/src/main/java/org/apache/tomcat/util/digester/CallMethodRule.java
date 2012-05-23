@@ -551,20 +551,20 @@ public class CallMethodRule extends Rule {
 
         // Construct the parameter values array we will need
         // We only do the conversion if the param value is a String and
-        // the specified paramType is not String. 
-        Object paramValues[] = new Object[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            // convert nulls and convert stringy parameters 
-            // for non-stringy param types
-            if(
-                parameters[i] == null ||
-                 (parameters[i] instanceof String && 
-                   !String.class.isAssignableFrom(paramTypes[i]))) {
-                
-                paramValues[i] =
-                        IntrospectionUtils.convert((String) parameters[i], paramTypes[i]);
-            } else {
-                paramValues[i] = parameters[i];
+        // the specified paramType is not String.
+        Object paramValues[] = null;
+        if (paramTypes != null) {
+            paramValues = new Object[paramTypes.length];
+            for (int i = 0; i < paramTypes.length; i++) {
+                // convert nulls and convert stringy parameters
+                // for non-stringy param types
+                if (parameters[i] == null ||
+                        (parameters[i] instanceof String && !String.class.isAssignableFrom(paramTypes[i]))) {
+                    paramValues[i] =
+                            IntrospectionUtils.convert((String) parameters[i], paramTypes[i]);
+                } else {
+                    paramValues[i] = parameters[i];
+                }
             }
         }
 
@@ -598,7 +598,7 @@ public class CallMethodRule extends Rule {
             sb.append(".");
             sb.append(methodName);
             sb.append("(");
-            for (int i = 0; i < paramValues.length; i++) {
+            for (int i = 0; paramValues!=null && i<paramValues.length; i++) {
                 if (i > 0) {
                     sb.append(",");
                 }
