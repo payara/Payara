@@ -427,6 +427,25 @@ public interface ModuleMonitoringLevels extends ConfigBeanProxy, Injectable, Pro
      *              {@link String }
      */
     public void setCloudOrchestrator(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the cloud Elasticity property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="OFF")
+    @Pattern(regexp="(OFF|LOW|HIGH)")
+    public String getCloudElasticity();
+
+    /**
+     * Sets the value of the cloud elasticity property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    public void setCloudElasticity(String value) throws PropertyVetoException;
+
     /**
     	Properties as per {@link PropertyBag}
      */
