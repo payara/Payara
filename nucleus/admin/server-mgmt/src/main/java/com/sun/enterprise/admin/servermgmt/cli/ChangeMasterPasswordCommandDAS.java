@@ -112,11 +112,8 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             if (mp == null)     throw new CommandException(strings.get("no.console"));
             if (!super.verifyMasterPassword(mp))
                 throw new CommandException(strings.get("incorrect.mp"));
-            ParamModelData nmpo = new ParamModelData("newmasterpassword",
-                String.class, false, null);
-            nmpo.description = strings.get("new.mp");
-            nmpo.param._password = true;
-            String nmp = super.getPassword(nmpo, null, true);
+            
+            String nmp = getPassword("newmasterpassword", strings.get("new.mp"), true);
             if (nmp == null)
                 throw new CommandException(strings.get("no.console"));
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);

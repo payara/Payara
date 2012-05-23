@@ -59,6 +59,7 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.IOException;
 import java.net.ConnectException;
+import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.security.common.FileRealmHelper;
 
@@ -81,18 +82,21 @@ import org.glassfish.security.common.FileRealmHelper;
  */
 @Service(name = "change-admin-password")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS})
+@I18n("change.admin.password")
 public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private ParameterMap params;
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ChangeAdminPasswordCommand.class);
 
-    private final String oldpwName = Environment.getPrefix() + "PASSWORD";
-    private final String newpwName = Environment.getPrefix() + "NEWPASSWORD";
-    
-    @Param(name = "domain_name", optional = true)
+    @Param(name="domain_name", optional=true)
     private String userArgDomainName;
+    
+    @Param(password=true, optional=true)
+    private String password;
+    
+    @Param(password=true, optional=true)
+    private String newpassword;
     
     private SecureAdmin secureAdmin = null;
 
@@ -130,14 +134,21 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
                     strings.get("AdminUserRequired"));
             }
         }
+        
+        if (password == null) {
+            // prompt for it (if interactive)
+            password = getPassword("password", strings.get("change.admin.password.password"), false);
+            if (password == null) {
+                throw new CommandValidationException(strings.get("AdminPwRequired"));
+            }
+        }
 
-        // now, prompt for the passwords
-        try {
-            String password = getPasswords();
-            programOpts.setPassword(password,
-                ProgramOptions.PasswordLocation.USER);
-        } catch (CommandValidationException cve) {
-            throw new CommandException(cve);
+        if (newpassword == null) {
+            // prompt for it (if interactive)
+            newpassword = getPassword("newpassword", strings.get("change.admin.password.newpassword"), true);
+            if (newpassword == null) {
+                throw new CommandValidationException(strings.get("AdminNewPwRequired"));
+            }
         }
 
         /*
@@ -146,8 +157,8 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
          */
         params = new ParameterMap();
         params.set("DEFAULT", programOpts.getUser());
-        params.set(oldpwName, passwords.get(oldpwName));
-        params.set(newpwName, passwords.get(newpwName));
+        params.set("password", password);
+        params.set("newpassword", newpassword);
     }
 
     /**
@@ -191,32 +202,6 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         
     }
 
-    /**
-     * Prompt for all the passwords needed by this command.
-     * Return the old password.
-     */
-    private String getPasswords() throws CommandValidationException {
-        String oldpassword = passwords.get(oldpwName);
-        if (oldpassword == null) {
-            oldpassword = readPassword(strings.get("AdminPasswordPrompt"));
-        }
-        
-        String newpassword = passwords.get(newpwName);
-        if (newpassword == null) {
-            newpassword = readPassword(strings.get("AdminNewPasswordPrompt"));
-            String newpasswordAgain =
-                readPassword(strings.get("AdminNewPasswordConfirmationPrompt"));
-            if (!newpassword.equals(newpasswordAgain)) {
-                throw new CommandValidationException(
-                    strings.get("OptionsDoNotMatch", "Admin Password"));
-            } 
-        }
-
-        passwords.put(oldpwName, oldpassword);
-        passwords.put(newpwName, newpassword);
-        return oldpassword;
-    }
-    
     private int changeAdminPasswordLocally(String domainDir, String domainName) throws CommandException {
         
         if(!isLocalHost(programOpts.getHost())) {
@@ -234,8 +219,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
             //If secure admin is enabled and if new password is null
             //throw new exception
             if(launcher.isSecureAdminEnabled()) {
-                String newPassword = (String) passwords.get(newpwName);
-                if ((newPassword == null) || (newPassword.isEmpty())) {
+                if ((newpassword == null) || (newpassword.isEmpty())) {
                     throw new CommandException(strings.get("NullNewPassword"));
                 }
             }
@@ -247,11 +231,11 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
                 FileRealmHelper helper = new FileRealmHelper(adminKeyFile);
 
                 //Authenticate the old password
-                String[] groups = helper.authenticate(programOpts.getUser(), ((String) passwords.get(oldpwName)).toCharArray());
+                String[] groups = helper.authenticate(programOpts.getUser(), password.toCharArray());
                 if (groups == null) {
                     throw new CommandException(strings.get("InvalidCredentials", programOpts.getUser()));
                 }
-                helper.updateUser(programOpts.getUser(), programOpts.getUser(), ((String) passwords.get(newpwName)).toCharArray(), null);
+                helper.updateUser(programOpts.getUser(), programOpts.getUser(), newpassword.toCharArray(), null);
                 helper.persist();
                 return SUCCESS;
 
@@ -269,7 +253,6 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
             throw new CommandException(ex);
         }
     }
- 
     
     private static boolean isLocalHost(String host) {        
         if(host != null && (NetUtils.isThisHostLocal(host) || NetUtils.isLocal(host))) {
@@ -277,7 +260,4 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
         }
         return false;
     }
-        
-
-
 }

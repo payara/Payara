@@ -1001,6 +1001,14 @@ public abstract class CLICommand implements PostConstruct {
         }
     }
 
+    protected String getPassword(String paramname, String localizedDesc, 
+            boolean create) throws CommandValidationException {
+        ParamModelData po = new ParamModelData(paramname, String.class, false, null);
+        po.description = localizedDesc;
+        po.param._password = true;
+        return getPassword(po, null, create);
+    }
+    
     /**
      * Get a password for the given option.
      * First, look in the passwords map.  If found, return it.
