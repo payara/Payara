@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -320,8 +320,9 @@ public class LruCache extends BaseCache {
 		    list.add(item);
 
                     count++;
-                } else
+                } else {
                     break;
+                }
             }
 
             // if there was at least one invalid item then item != tail.
@@ -388,6 +389,62 @@ public class LruCache extends BaseCache {
         protected LruCacheItem(int hashCode, Object key, Object value, int size) {
             super(hashCode, key, value, size);
         }
+
+        /**
+         * Return the next item
+         */
+         public LruCacheItem getLNext() {
+             return lNext;
+         }
+ 
+        /**
+         * Reset the next item reference
+         */
+         public void setLNext(LruCacheItem item) {
+             lNext = item;
+         }
+ 
+        /**
+         * Return the previous item
+         */
+         public LruCacheItem getLPrev() {
+             return lPrev;
+         }
+ 
+        /**
+         * Reset the previous item reference
+         */
+         public void setLPrev(LruCacheItem item) {
+             lPrev = item;
+         }
+ 
+        /**
+         * Return <code>true</code> if this item is trimmed
+         */
+         public boolean isTrimmed() {
+             return isTrimmed;
+         }
+ 
+        /**
+         * Set the trimmed flag
+         */
+         public void setTrimmed(boolean value) {
+             isTrimmed = value;
+         }
+ 
+        /**
+         * Return the last accessed timestamp
+         */
+         public long getLastAccessed() {
+             return lastAccessed;
+         }
+ 
+        /**
+         * Reset the last accessed timestamp
+         */
+         public void setLastAccessed(long l) {
+             lastAccessed = l;
+         }
     }
 }
 
