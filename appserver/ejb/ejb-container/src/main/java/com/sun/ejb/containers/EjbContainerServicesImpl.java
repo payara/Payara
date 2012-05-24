@@ -40,33 +40,27 @@
 
 package com.sun.ejb.containers;
 
-import com.sun.ejb.Container;
-import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.EJBException;
+import javax.ejb.NoSuchEJBException;
 
 import org.glassfish.ejb.api.EjbContainerServices;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Member;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
+import com.sun.ejb.Container;
 import com.sun.ejb.EJBUtils;
-
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.EJBException;
-
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.logging.LogDomains;
-
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  *

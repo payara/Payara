@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Map;
+
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
 
 /**
  * This class handle the method element 
@@ -53,33 +53,31 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class MethodNode extends DeploymentDescriptorNode {
-        
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+public class MethodNode extends DeploymentDescriptorNode<MethodDescriptor> {
+
+    private MethodDescriptor descriptor;
+
+    @Override
+    public MethodDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new MethodDescriptor();
+        return descriptor;
+    }
+
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(EjbTagNames.EJB_NAME, "setEjbName");
-        table.put(EjbTagNames.METHOD_INTF, "setEjbClassSymbol");
-        table.put(EjbTagNames.METHOD_NAME, "setName");
-        table.put(EjbTagNames.METHOD_PARAM, "addParameterClass");        
+        table.put(TagNames.EJB_NAME, "setEjbName");
+        table.put(TagNames.METHOD_INTF, "setEjbClassSymbol");
+        table.put(TagNames.METHOD_NAME, "setName");
+        table.put(TagNames.METHOD_PARAM, "addParameterClass");        
         return table;
-    }    
+    }
 
-    /**
-     * receives notification of the end of an XML element by the Parser
-     *
-     * @param element the xml tag identification
-     * @return true if this node is done processing the XML sub tree
-     */
+    @Override
     public boolean endElement(XMLElement element) {
         String qname = element.getQName();
-        if (EjbTagNames.METHOD_PARAMS.equals(qname)) {
-            MethodDescriptor desc = (MethodDescriptor) getDescriptor();
+        if (TagNames.METHOD_PARAMS.equals(qname)) {
+            MethodDescriptor desc = getDescriptor();
             // this means we have an empty method-params element
             // which means this method has no input parameter
             if (desc.getParameterClassNames() == null) {
@@ -89,29 +87,22 @@ public class MethodNode extends DeploymentDescriptorNode {
         return super.endElement(element);
     }
 
-    /**
-     * write the method descriptor class to a query-method DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
     public Node writeDescriptor(Node parent, String nodeName, MethodDescriptor descriptor, String ejbName) {        
         Node methodNode = super.writeDescriptor(parent, nodeName, descriptor);    
         writeLocalizedDescriptions(methodNode, descriptor);
         if (ejbName != null && ejbName.length() > 0)  {
-            appendTextChild(methodNode, EjbTagNames.EJB_NAME, ejbName);        
+            appendTextChild(methodNode, TagNames.EJB_NAME, ejbName);        
         }
         String methodIntfSymbol = descriptor.getEjbClassSymbol();
         if( (methodIntfSymbol != null) &&
             !methodIntfSymbol.equals(MethodDescriptor.EJB_BEAN) ) {
-            appendTextChild(methodNode, EjbTagNames.METHOD_INTF, 
+            appendTextChild(methodNode, TagNames.METHOD_INTF, 
                             methodIntfSymbol);
         }
-        appendTextChild(methodNode, EjbTagNames.METHOD_NAME, descriptor.getName());
+        appendTextChild(methodNode, TagNames.METHOD_NAME, descriptor.getName());
         if (descriptor.getParameterClassNames()!=null) {
-            Node paramsNode = appendChild(methodNode, EjbTagNames.METHOD_PARAMS);            
+            Node paramsNode = appendChild(methodNode, TagNames.METHOD_PARAMS);            
             writeMethodParams(paramsNode, descriptor);                
         }
         return methodNode;
@@ -127,8 +118,8 @@ public class MethodNode extends DeploymentDescriptorNode {
      */
     public Node writeQueryMethodDescriptor(Node parent, String nodeName, MethodDescriptor descriptor) {        
         Node methodNode = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(methodNode, EjbTagNames.METHOD_NAME, descriptor.getName());
-        Node paramsNode = appendChild(methodNode, EjbTagNames.METHOD_PARAMS);        
+        appendTextChild(methodNode, TagNames.METHOD_NAME, descriptor.getName());
+        Node paramsNode = appendChild(methodNode, TagNames.METHOD_PARAMS);        
         writeMethodParams(paramsNode, descriptor);           
         return methodNode;
     }

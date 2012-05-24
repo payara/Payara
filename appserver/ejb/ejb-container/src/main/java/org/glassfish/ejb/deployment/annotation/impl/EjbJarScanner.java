@@ -40,17 +40,20 @@
 
 package org.glassfish.ejb.deployment.annotation.impl;
 
-import com.sun.enterprise.deployment.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.logging.Level;
 
 /**
  * Implementation of the Scanner interface for Ejb jar.
@@ -61,41 +64,40 @@ import java.util.logging.Level;
 @Scoped(PerLookup.class)
 public class EjbJarScanner extends ModuleScanner<EjbBundleDescriptor> {
 
-    /**
-     * This scanner will scan the archiveFile for annotation processing.
-     * @param archiveFile
-     * @param classLoader
-     */
-    public void process(File archiveFile, EjbBundleDescriptor desc, 
-        ClassLoader classLoader) throws IOException {
+    @Override
+    public void process(File af, EjbBundleDescriptor desc, ClassLoader cl)
+            throws IOException {
+        this.archiveFile = af;
+        this.classLoader = cl;
+
         if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
             AnnotationUtils.getLogger().fine("archiveFile is " + archiveFile);
             AnnotationUtils.getLogger().fine("classLoader is " + classLoader);
         }
-        this.archiveFile = archiveFile;
-        this.classLoader = classLoader;
-        if (archiveFile.isDirectory()) {
-            addScanDirectory(archiveFile);
 
-            // always add session beans, message driven beans,
-            // interceptor classes that are defined in ejb-jar.xml r
-            // regardless of they have annotation or not
-            for (Iterator ejbs = desc.getEjbs().iterator(); ejbs.hasNext();) {
-                EjbDescriptor ejbDesc = (EjbDescriptor)ejbs.next();
-                if (ejbDesc instanceof EjbSessionDescriptor || 
-                    ejbDesc instanceof EjbMessageBeanDescriptor) {
-                    addScanClassName(ejbDesc.getEjbClassName());
-                }
+        if (!archiveFile.isDirectory()) return ; // in app client jar
+
+        addScanDirectories();
+        addClassesFromDescriptor(desc);
+    }
+
+    protected void addScanDirectories() throws IOException {
+        addScanDirectory(archiveFile);
+    }
+
+    protected void addClassesFromDescriptor(EjbBundleDescriptor desc) {
+        // always add session beans, message driven beans,
+        // interceptor classes that are defined in ejb-jar.xml
+        // regardless of they have annotation or not
+        for (EjbDescriptor ejbDesc : desc.getEjbs()) {
+            if (ejbDesc instanceof EjbSessionDescriptor || 
+                ejbDesc instanceof EjbMessageBeanDescriptor) {
+                addScanClassName(ejbDesc.getEjbClassName());
             }
+        }
 
-            for (Iterator interceptors = desc.getInterceptors().iterator(); 
-                interceptors.hasNext();) {
-                EjbInterceptor interceptor = 
-                    (EjbInterceptor)interceptors.next();
-                addScanClassName(interceptor.getInterceptorClassName());
-            }
-
-        } // else in app client jar
-
+        for (EjbInterceptor ei : desc.getInterceptors()) {
+            addScanClassName(ei.getInterceptorClassName());
+        }
     }
 }

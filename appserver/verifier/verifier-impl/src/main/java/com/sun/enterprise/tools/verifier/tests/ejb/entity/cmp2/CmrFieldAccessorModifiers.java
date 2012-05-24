@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp2;
 
-import com.sun.enterprise.deployment.RelationRoleDescriptor;
-import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.tools.verifier.Result;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
 
 /**
  * Container-managed fields declaration test.
@@ -63,7 +63,7 @@ public class CmrFieldAccessorModifiers extends CmrFieldTest {
      * 
      * @return true if the test passed
      */    
-    protected boolean runIndividualCmrTest(Descriptor entity, RelationRoleDescriptor rrd, Class c, Result result) {     
+    protected boolean runIndividualCmrTest(Descriptor entity, RelationRoleDescriptor rrd, Class c, Result result) {
         return accessorMethodModifiers(rrd.getCMRField(), c, result);
     }
 }

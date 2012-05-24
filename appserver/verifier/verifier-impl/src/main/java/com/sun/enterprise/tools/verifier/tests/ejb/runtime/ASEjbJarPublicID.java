@@ -40,18 +40,13 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.runtime;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.io.*;
-import java.util.jar.*;
-import java.util.zip.*;
-
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
-
-import com.sun.enterprise.tools.verifier.tests.*;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
-
 import com.sun.enterprise.deployment.xml.DTDRegistry;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
 
 /** DOCTYPE

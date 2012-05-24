@@ -40,12 +40,12 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-
-import java.util.Map;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 
 
 /**
@@ -57,27 +57,22 @@ public class GFEjbBundleRuntimeNode extends EjbBundleRuntimeNode {
     public GFEjbBundleRuntimeNode(EjbBundleDescriptor descriptor) {
         super(descriptor);
     }
-    
+
     public GFEjbBundleRuntimeNode() {
         super(null);
     }
-    /**
-     * @return the XML tag associated with this XMLNode
-     */
+
+    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.GF_EJB_RUNTIME_TAG);
-    }    
-    
-    /** 
-     * @return the DOCTYPE that should be written to the XML file
-     */
+    }
+
+    @Override
     public String getDocType() {
         return DTDRegistry.GF_EJBJAR_311_DTD_PUBLIC_ID;
     }
-    
-    /**
-     * @return the SystemID of the XML file
-     */
+
+    @Override
     public String getSystemID() {
         return DTDRegistry.GF_EJBJAR_311_DTD_SYSTEM_ID;
     }
@@ -91,5 +86,5 @@ public class GFEjbBundleRuntimeNode extends EjbBundleRuntimeNode {
    public static String registerBundle(Map publicIDToDTD) {    
        publicIDToDTD.put(DTDRegistry.GF_EJBJAR_311_DTD_PUBLIC_ID, DTDRegistry.GF_EJBJAR_311_DTD_SYSTEM_ID);
        return RuntimeTagNames.GF_EJB_RUNTIME_TAG;       
-   }    
+   }
 }

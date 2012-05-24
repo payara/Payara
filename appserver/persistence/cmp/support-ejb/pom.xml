@@ -120,7 +120,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
-            <artifactId>ejb-internal-api</artifactId>
+            <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

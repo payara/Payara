@@ -40,35 +40,32 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.runtime.PrefetchDisabledDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.runtime.PrefetchDisabledDescriptor;
 import org.w3c.dom.Node;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * This node handles the prefetch-disabled runtime deployment descriptors 
  *
  */
-public class PrefetchDisabledNode extends DeploymentDescriptorNode {
+public class PrefetchDisabledNode extends DeploymentDescriptorNode<PrefetchDisabledDescriptor> {
 
-    protected PrefetchDisabledDescriptor descriptor=null;
-    
-    /** Creates new PrefetchDisabledNode */
+    private PrefetchDisabledDescriptor descriptor;
+
     public PrefetchDisabledNode() {
-        registerElementHandler(new XMLElement(RuntimeTagNames.QUERY_METHOD), MethodNode.class);   
+        registerElementHandler(new XMLElement(RuntimeTagNames.QUERY_METHOD), MethodNode.class);
     }
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
+
+    @Override
+    public PrefetchDisabledDescriptor getDescriptor() {
         if (descriptor==null) {
             descriptor = new PrefetchDisabledDescriptor();
             Object parentDesc = getParentNode().getDescriptor();
@@ -78,14 +75,8 @@ public class PrefetchDisabledNode extends DeploymentDescriptorNode {
         }
         return descriptor;
     }
-    
 
-    /**
-     * Adds a new DOL descriptor instance to the descriptor instance associated
-     * with this XMLNode
-     *
-     * @param descriptor the new descriptor
-     */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof MethodDescriptor) {
             descriptor.addMethodDescriptor(
@@ -93,14 +84,7 @@ public class PrefetchDisabledNode extends DeploymentDescriptorNode {
         }
     }
 
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
         PrefetchDisabledDescriptor prefetchDisabledDescriptor) {    
 	Node prefetchDisabledNode = super.writeDescriptor(parent, nodeName, 

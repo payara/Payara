@@ -40,29 +40,30 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.ActivationConfigDescriptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.glassfish.ejb.deployment.descriptor.ActivationConfigDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.w3c.dom.Node;
+
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+
 /**
- * This class is responsible for hanlding the activation config elements.
+ * This class is responsible for handling the activation config elements.
  *
  * @author Qingqing Ouyang
  * @version 
  */
-public class ActivationConfigNode extends DeploymentDescriptorNode {
-    
+public class ActivationConfigNode extends DeploymentDescriptorNode<ActivationConfigDescriptor> {
+
     private ActivationConfigDescriptor descriptor = null;
     private String propertyName = null;
-    
+
     public ActivationConfigNode() {
         super();
         registerElementHandler(
@@ -71,38 +72,21 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
                 "setRuntimeActivationConfigDescriptor");
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
-    public Object getDescriptor() {
+    @Override
+    public ActivationConfigDescriptor getDescriptor() {
         if (descriptor == null) {
             descriptor = ((EjbMessageBeanDescriptor) getParentNode().getDescriptor()).getRuntimeActivationConfigDescriptor();
         } 
-        return descriptor;        
-    }    
-        
-    /**
-     * all sub-implementation of this class can use a dispatch table to 
-     * map xml element to method name on the descriptor class for setting 
-     * the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method 
-     *         as a value
-     */    
+        return descriptor;
+    }
+
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
-        Map table = super.getDispatchTable();
-        return table;
+        return super.getDispatchTable();
     }
-    
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {    
         if (RuntimeTagNames.ACTIVATION_CONFIG_PROPERTY_NAME.equals
                 (element.getQName())) {
@@ -116,23 +100,15 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
         }
         else super.setElementValue(element, value);
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
-                                ActivationConfigDescriptor descriptor) {        
+                                ActivationConfigDescriptor descriptor) {
 
         Node activationConfigNode = null;
         Set activationConfig = descriptor.getActivationConfig();
         if( activationConfig.size() > 0 ) {
-            activationConfigNode = 
-                appendChild(parent, nodeName);
+            activationConfigNode = appendChild(parent, nodeName);
             for(Iterator iter = activationConfig.iterator(); iter.hasNext();) {
                 Node activationConfigPropertyNode = 
                     appendChild(activationConfigNode, 
@@ -140,10 +116,10 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
                 EnvironmentProperty next = (EnvironmentProperty) iter.next();
                 appendTextChild(activationConfigPropertyNode, 
                         RuntimeTagNames.ACTIVATION_CONFIG_PROPERTY_NAME, 
-                        (String) next.getName());
+                        next.getName());
                 appendTextChild(activationConfigPropertyNode,
                         RuntimeTagNames.ACTIVATION_CONFIG_PROPERTY_VALUE, 
-                        (String) next.getValue());
+                        next.getValue());
             }
         }
         

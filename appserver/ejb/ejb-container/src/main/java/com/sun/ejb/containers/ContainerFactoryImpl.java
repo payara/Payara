@@ -40,31 +40,27 @@
 
 package com.sun.ejb.containers;
 
-import com.sun.ejb.Container;
-import com.sun.ejb.ContainerFactory;
-import com.sun.ejb.containers.builder.StatefulContainerBuilder;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
-import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
-import com.sun.enterprise.security.SecurityContext;
-import com.sun.logging.LogDomains;
-
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Service;
+import java.util.ArrayList;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.ejb.config.EjbContainer;
-
+import com.sun.ejb.Container;
+import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.EntityContainerProvider;
+import com.sun.ejb.containers.builder.StatefulContainerBuilder;
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.security.application.EJBSecurityManager;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 @Service
 public final class ContainerFactoryImpl implements ContainerFactory {

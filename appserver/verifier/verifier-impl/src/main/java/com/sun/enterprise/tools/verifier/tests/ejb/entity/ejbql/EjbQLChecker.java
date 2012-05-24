@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,19 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.ejbql;
 
-import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLC;
-import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLException;
-
-import com.sun.enterprise.deployment.PersistenceDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbCMPEntityDescriptor;
-import com.sun.enterprise.deployment.QueryDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.StringManagerHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLC;
+import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLException;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
+import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
+
 import java.lang.reflect.Method;
 import java.util.Iterator;
-import com.sun.enterprise.tools.verifier.tests.*;
 
 
 /**
@@ -84,7 +83,7 @@ public class EjbQLChecker {
      * @param ownerClassName Name of the class initiated the test.
      * @return whether any error has occurred.
      */
-    public static boolean checkSyntax (EjbDescriptor ejbDesc, 
+    public static boolean checkSyntax (EjbDescriptor ejbDesc,
             EJBQLC ejbqlDriver, Result result, String ownerClassName) {
         
         boolean hasError = false;

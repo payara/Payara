@@ -40,13 +40,13 @@
 
 package com.sun.ejb;
 
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.jvnet.hk2.annotations.Contract;
-import com.sun.enterprise.deployment.EjbDescriptor;
 
 @Contract
 public interface EntityContainerProvider {
 
-    Container getEntityContainer(EjbDescriptor descriptor, ClassLoader loader) 
+    Container getEntityContainer(EjbDescriptor descriptor, ClassLoader loader)
             throws Exception;
 
 }

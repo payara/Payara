@@ -40,28 +40,29 @@
 
 package org.glassfish.ejb.deployment.archivist;
 
+import java.io.IOException;
+import java.util.Set;
+import javax.inject.Inject;
+
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
-import com.sun.enterprise.deployment.util.EjbBundleValidator;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.ejb.EjbType;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.glassfish.ejb.deployment.io.EjbRuntimeDDFile;
 import org.glassfish.ejb.deployment.io.GFEjbRuntimeDDFile;
+import org.glassfish.ejb.deployment.util.EjbBundleValidator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.util.Set;
 
 /**
  * This class is responsible for handling J2EE EJB Bundlearchive files.
@@ -70,7 +71,7 @@ import java.util.Set;
  */
 @Service
 @Scoped(PerLookup.class)
-@ArchivistFor(org.glassfish.ejb.EjbType.ARCHIVE_TYPE)
+@ArchivistFor(EjbType.ARCHIVE_TYPE)
 public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
 
     /**
@@ -83,7 +84,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     private GFEjbRuntimeDDFile gfEjbRuntimeDD;
 
     @Inject
-    private org.glassfish.ejb.EjbType ejbType;
+    private EjbType ejbType;
 
     /**
      * @return the  module type handled by this archivist
@@ -161,7 +162,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      */
     @Override
     public EjbBundleDescriptor getDefaultBundleDescriptor() {
-        return  new EjbBundleDescriptor();
+        return new EjbBundleDescriptor();
     }
 
     /**

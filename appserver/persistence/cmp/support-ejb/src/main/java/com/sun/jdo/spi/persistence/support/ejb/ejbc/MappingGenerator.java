@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,70 +50,53 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.InputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-
-import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
-import org.glassfish.api.deployment.DeploymentContext;
-
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.DeployCommandParameters;
-
-import com.sun.jdo.api.persistence.mapping.ejb.beans.EntityMapping;
+import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
+import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
+import com.sun.jdo.api.persistence.mapping.ejb.MappingFile;
 import com.sun.jdo.api.persistence.mapping.ejb.beans.CmpFieldMapping;
 import com.sun.jdo.api.persistence.mapping.ejb.beans.CmrFieldMapping;
 import com.sun.jdo.api.persistence.mapping.ejb.beans.ColumnPair;
+import com.sun.jdo.api.persistence.mapping.ejb.beans.EntityMapping;
 import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMapping;
 import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
-
-import com.sun.jdo.api.persistence.mapping.ejb.ConversionHelper;
-import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
-import com.sun.jdo.api.persistence.mapping.ejb.MappingFile;
-import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
-
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.api.persistence.model.ModelException;
-
 import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
-
-import org.glassfish.persistence.common.I18NHelper;
-
+import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;
+import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
+import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
 import com.sun.jdo.spi.persistence.utility.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
-
-import org.glassfish.persistence.common.database.DBVendorTypeHelper;
-import org.glassfish.persistence.common.Java2DBProcessorHelper;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 import org.glassfish.persistence.common.DatabaseConstants;
-
-import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-
-import com.sun.jdo.spi.persistence.generator.database.DatabaseGenerator;
-
+import org.glassfish.persistence.common.I18NHelper;
+import org.glassfish.persistence.common.Java2DBProcessorHelper;
+import org.glassfish.persistence.common.database.DBVendorTypeHelper;
 import org.netbeans.modules.dbschema.DBException;
 import org.netbeans.modules.dbschema.DBIdentifier;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.dbschema.util.NameUtil;
-
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.ValidateException;
 

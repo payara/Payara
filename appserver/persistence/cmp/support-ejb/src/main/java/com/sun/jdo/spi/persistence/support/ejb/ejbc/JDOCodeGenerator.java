@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,55 +49,46 @@ package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-
-import java.util.*;
-
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import org.glassfish.api.deployment.DeploymentContext;
-import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.ResourceBundle;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
-
-//import com.sun.enterprise.deployment.backend.Deployer;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.deployment.interfaces.QueryParser;
-
-import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.MergedBundle;
-import com.sun.jdo.spi.persistence.utility.logging.Logger;
-import org.glassfish.persistence.common.DatabaseConstants;
-
 import com.sun.jdo.api.persistence.enhancer.generator.Main;
-
+import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.api.persistence.model.ModelException;
 import com.sun.jdo.api.persistence.model.mapping.MappingClassElement;
-
-import com.sun.jdo.api.persistence.mapping.ejb.ConversionException;
-
-import com.sun.jdo.spi.persistence.support.ejb.enhancer.meta.EJBMetaDataModelImpl;
-import com.sun.jdo.spi.persistence.support.ejb.model.DeploymentDescriptorModel;
-import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLException;
-import com.sun.jdo.spi.persistence.support.ejb.codegen.CMPGenerator;
-
 import com.sun.jdo.api.persistence.support.JDOUserException;
-
-import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-import com.sun.jdo.spi.persistence.support.sqlstore.query.jqlc.JDOQLParameterDeclarationParser;
-
 import com.sun.jdo.spi.persistence.generator.database.DDLGenerator;
 import com.sun.jdo.spi.persistence.generator.database.DatabaseOutputStream;
-
+import com.sun.jdo.spi.persistence.support.ejb.codegen.CMPGenerator;
+import com.sun.jdo.spi.persistence.support.ejb.codegen.GeneratorException;
+import com.sun.jdo.spi.persistence.support.ejb.ejbqlc.EJBQLException;
+import com.sun.jdo.spi.persistence.support.ejb.enhancer.meta.EJBMetaDataModelImpl;
+import com.sun.jdo.spi.persistence.support.ejb.model.DeploymentDescriptorModel;
+import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
+import com.sun.jdo.spi.persistence.support.sqlstore.query.jqlc.JDOQLParameterDeclarationParser;
+import com.sun.jdo.spi.persistence.utility.MergedBundle;
+import com.sun.jdo.spi.persistence.utility.logging.Logger;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.QueryParser;
+import org.glassfish.persistence.common.DatabaseConstants;
+import org.glassfish.persistence.common.I18NHelper;
 import org.netbeans.modules.dbschema.DBException;
 import org.netbeans.modules.dbschema.SchemaElement;
-
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+
+//import com.sun.enterprise.deployment.backend.Deployer;
 
 /*
  * This is the JDO specific generator for the concrete CMP beans and any
@@ -105,8 +96,7 @@ import org.netbeans.modules.schema2beans.Schema2BeansException;
  *
  * @author Marina Vatkina
  */
-public class JDOCodeGenerator 
-    implements CMPGenerator, DatabaseConstants {
+public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
 
     /**
      * Signature with CVS keyword substitution for identifying the generated code

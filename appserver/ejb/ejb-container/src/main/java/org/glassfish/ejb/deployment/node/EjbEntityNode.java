@@ -40,16 +40,22 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.node.DescriptorFactory;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import org.glassfish.deployment.common.Descriptor;
-import org.w3c.dom.Node;
-
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
+import org.w3c.dom.Node;
 
 /**
  *  This class handles all information pertinent to CMP and BMP entity beans
@@ -57,28 +63,24 @@ import java.util.Set;
  * @author  Jerome Dochez
  * @version 
  */
-public class EjbEntityNode  extends InterfaceBasedEjbNode {
-    
+public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
+
     private EjbEntityDescriptor descriptor;
-    
-    /** Creates new EjbSessionNode */
+
     public EjbEntityNode() { 
         super();      
         registerElementHandler(new XMLElement(EjbTagNames.CMP_FIELD), CmpFieldNode.class);          
         registerElementHandler(new XMLElement(EjbTagNames.QUERY), QueryNode.class);
     }
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public EjbDescriptor getEjbDescriptor() {
-        
-        if (descriptor==null) {
-            descriptor = (EjbEntityDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+
+    @Override
+    public EjbEntityDescriptor getEjbDescriptor() {
+        if (descriptor == null) {
+            descriptor = new EjbEntityDescriptor();
             descriptor.setEjbBundleDescriptor((EjbBundleDescriptor) getParentNode().getDescriptor());            
         }
         return descriptor;
-    }    
+    }
 
     /**
      * @return an instance of an EjbCMPEntityDescriptor initialized with all the 
@@ -91,13 +93,8 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
         }
         return (EjbCMPEntityDescriptor) descriptor;
     }
-    
-    /**
-     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
-     * this XMLNode
-     *
-     * @param descriptor the new descriptor
-     */    
+
+    @Override
     public void addDescriptor(Object  newDescriptor) {
         if (newDescriptor instanceof FieldDescriptor) {
            getCMPEntityDescriptor().getPersistenceDescriptor().addCMPField((FieldDescriptor) newDescriptor);           
@@ -108,15 +105,9 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
         } else {
             super.addDescriptor(newDescriptor);
         }
-    }       
-    
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -125,14 +116,8 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
         table.put(EjbTagNames.REENTRANT, "setReentrant");    
         return table;
     }
-    
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {
         if (EjbTagNames.CMP_VERSION.equals(element.getQName())) {
             if (EjbTagNames.CMP_1_VERSION.equals(value)) {
@@ -148,21 +133,9 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
             super.setElementValue(element, value);
         }
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
-        if (! (descriptor instanceof EjbEntityDescriptor)) {
-            throw new IllegalArgumentException(getClass() + " cannot handles descriptors of type " + descriptor.getClass());
-        }    
-        EjbEntityDescriptor ejbDesc = (EjbEntityDescriptor) descriptor;
-        
+
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, EjbEntityDescriptor ejbDesc) {
         Node ejbNode = super.writeDescriptor(parent, nodeName, descriptor);
         writeDisplayableComponentInfo(ejbNode, descriptor);
         writeCommonHeaderEjbDescriptor(ejbNode, ejbDesc);
@@ -173,7 +146,7 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
         // cmp entity beans related tags
         if (ejbDesc instanceof EjbCMPEntityDescriptor) {
             EjbCMPEntityDescriptor cmpDesc = (EjbCMPEntityDescriptor) ejbDesc;
-            if (cmpDesc.getCMPVersion()==cmpDesc.CMP_1_1) {
+            if (cmpDesc.getCMPVersion()==EjbCMPEntityDescriptor.CMP_1_1) {
                 appendTextChild(ejbNode, EjbTagNames.CMP_VERSION, EjbTagNames.CMP_1_VERSION);                   
             } else {
                 appendTextChild(ejbNode, EjbTagNames.CMP_VERSION, EjbTagNames.CMP_2_VERSION);                   
@@ -216,10 +189,10 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode {
         writeEntityManagerFactoryReferenceDescriptors(ejbNode, ejbDesc.getEntityManagerFactoryReferenceDescriptors().iterator());
         
         // post-construct
-        writePostConstructDescriptors(ejbNode, ejbDesc.getPostConstructDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.POST_CONSTRUCT, ejbDesc.getPostConstructDescriptors());
 
         // pre-destroy
-        writePreDestroyDescriptors(ejbNode, ejbDesc.getPreDestroyDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());

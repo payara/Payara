@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,15 +46,22 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
-import com.sun.enterprise.deployment.*;
-import org.netbeans.modules.dbschema.SchemaElement;
-
+import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
+import com.sun.jdo.api.persistence.mapping.ejb.ConversionHelper;
+import com.sun.jdo.api.persistence.mapping.ejb.EJBInfoHelper;
 import com.sun.jdo.api.persistence.model.Model;
-import com.sun.jdo.api.persistence.mapping.ejb.*;
 import com.sun.jdo.spi.persistence.support.ejb.model.DeploymentDescriptorModel;
 import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
+import org.netbeans.modules.dbschema.SchemaElement;
 
 /** This is a class which implements the EJBInfoHelper interface 
  * based on EjbBundleDescriptor and other DOL classes.
@@ -189,7 +196,7 @@ public class EJBBundleInfoHelper implements EJBInfoHelper {
 		// cache it in a map (same comment applies to getEjbNames and 
 		// getFieldsForEjb)
 		while (iterator.hasNext()) {
-			RelationshipDescriptor relD = 
+			RelationshipDescriptor relD =
 				(RelationshipDescriptor)iterator.next();
 			RelationRoleDescriptor testRole = relD.getSource();
 			String cmrField = null;

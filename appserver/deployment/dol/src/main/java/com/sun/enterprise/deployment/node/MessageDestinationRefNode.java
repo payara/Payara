@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.deployment.node;
 
+import java.util.Map;
+
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 /**
  * This class handles all information related to the message-destination-ref 
@@ -54,21 +54,17 @@ import java.util.Map;
  * @author  Kenneth Saks
  * @version 
  */
-public class MessageDestinationRefNode extends DeploymentDescriptorNode  {
-    
+public class MessageDestinationRefNode extends DeploymentDescriptorNode<MessageDestinationReferenceDescriptor> {
+
+    private MessageDestinationReferenceDescriptor descriptor;
+
     public MessageDestinationRefNode() {
         super();
         registerElementHandler(new XMLElement(TagNames.INJECTION_TARGET), 
-                                InjectionTargetNode.class, "addInjectionTarget");                          
+                                InjectionTargetNode.class, "addInjectionTarget");
     }
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to 
-     * map xml element to method name on the descriptor class for setting 
-     * the element value. 
-     *
-     * @return map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(TagNames.MESSAGE_DESTINATION_REFERENCE_NAME, "setName");    
@@ -78,18 +74,16 @@ public class MessageDestinationRefNode extends DeploymentDescriptorNode  {
                   "setMessageDestinationLinkName");
         table.put(TagNames.MAPPED_NAME, "setMappedName");
         table.put(TagNames.LOOKUP_NAME, "setLookupName");
-
         return table;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
+    public MessageDestinationReferenceDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new MessageDestinationReferenceDescriptor();
+        return descriptor;
+    }
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
                                 MessageDestinationReferenceDescriptor desc) {
     

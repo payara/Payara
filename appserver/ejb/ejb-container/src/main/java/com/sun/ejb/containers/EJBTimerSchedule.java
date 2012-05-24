@@ -40,10 +40,10 @@
 
 package com.sun.ejb.containers;
 
-import org.glassfish.common.util.timer.TimerSchedule;
-
 import javax.ejb.ScheduleExpression;
-import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
+
+import org.glassfish.common.util.timer.TimerSchedule;
+import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 
 /**
  * A runtime representation of the user-defined calendar-based 

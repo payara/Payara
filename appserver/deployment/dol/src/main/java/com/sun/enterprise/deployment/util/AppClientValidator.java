@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,18 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.*;
-
-import java.util.Iterator;
-import java.util.Set;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 
 /**
  * This class validates an application client descriptor
  *
  */
 public class AppClientValidator extends ApplicationValidator implements AppClientVisitor {
-    public AppClientValidator() {
-    }
 
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof ApplicationClientDescriptor) {
             ApplicationClientDescriptor appClientDesc = (ApplicationClientDescriptor)descriptor;
@@ -70,11 +68,7 @@ public class AppClientValidator extends ApplicationValidator implements AppClien
         }
     }
 
-
-    /**
-     * visits a appclient descriptor
-     * @param appclientdescriptor the application client descriptor
-     */
+    @Override
     public void accept(ApplicationClientDescriptor appclientdescriptor) {
         bundleDescriptor = appclientdescriptor;
         application = appclientdescriptor.getApplication();

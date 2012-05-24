@@ -41,40 +41,37 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-
-import java.util.Set;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
-import javax.ejb.Timeout;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
-import javax.ejb.Remote;
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
-import javax.ejb.RemoteHome;
 import javax.ejb.LocalHome;
-import javax.ejb.Stateless;
+import javax.ejb.Remote;
+import javax.ejb.RemoteHome;
+import javax.ejb.Timeout;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.util.TypeUtil;
-
-import org.glassfish.apf.AnnotatedElementHandler;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.jvnet.hk2.component.Habitat;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
-
+import org.glassfish.apf.AnnotatedElementHandler;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.apf.context.AnnotationContext;
+import org.glassfish.ejb.deployment.descriptor.DummyEjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.AnnotationTypesProvider;
+import org.jvnet.hk2.component.Habitat;
 
 
 
@@ -164,7 +161,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
                 ainfo.getProcessingContext().getHandler();
         if (aeHandler != null && aeHandler instanceof EjbContext) {
             EjbContext context = (EjbContext)aeHandler;
-            EjbDescriptor desc = context.getDescriptor();
+            EjbDescriptor desc = (EjbDescriptor) context.getDescriptor();
             if (isValidEjbDescriptor(desc, annotation)) {
                 return getDefaultProcessedResult();
             } else {
@@ -191,7 +188,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
             elementName = ejbClass.getSimpleName();            
         }
 
-        EjbBundleDescriptor currentBundle = ctx.getDescriptor();
+        EjbBundleDescriptor currentBundle = (EjbBundleDescriptor) ctx.getDescriptor();
         EjbDescriptor ejbDesc = null;
         try {
             ejbDesc = currentBundle.getEjbByName(elementName);

@@ -50,25 +50,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.ResourceBundle;
-
 import javax.sql.DataSource;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.jdo.api.persistence.support.JDOFatalUserException;
-import com.sun.jdo.api.persistence.support.PersistenceManagerFactory;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperPersistenceManager;
-
-import org.glassfish.persistence.common.I18NHelper;
-import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import com.sun.jdo.spi.persistence.utility.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
-import org.glassfish.persistence.common.DatabaseConstants;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.persistence.common.DatabaseConstants;
+import org.glassfish.persistence.common.I18NHelper;
+import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** 
@@ -97,20 +89,6 @@ public class DeploymentHelper
      */   
     public static String getDDLNamePrefix(Object info) { 
         return Java2DBProcessorHelper.getDDLNamePrefix(info);
-    }
-
-    /**
-     * Returns javatodb flag for this EjbBundleDescriptor
-     * @param bundle a EjbBundleDescriptor
-     * @return true if there is a property entry associated with the
-     * corresponding cmp-resource element, which contains "true" as
-     * the value for the <code>DatabaseConstants.JAVA_TO_DB_FLAG</code>
-     * key.
-     */  
-    public static boolean isJavaToDatabase(EjbBundleDescriptor bundle) {
-        Properties userPolicy = bundle.getCMPResourceReference()
-                .getSchemaGeneratorProperties();
-        return isJavaToDatabase(userPolicy);
     }
 
     /**

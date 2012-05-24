@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,15 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass;
 
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.Verifier;
+import com.sun.enterprise.tools.verifier.VerifierTestContext;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
 import com.sun.enterprise.tools.verifier.tests.ejb.RmiIIOPUtils;
-import com.sun.enterprise.deployment.EjbEntityDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
-import com.sun.enterprise.tools.verifier.*;
-import java.lang.ClassLoader;
-import com.sun.enterprise.tools.verifier.tests.*;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 
 /** 
  * Define primary key class which must be legal Value Type in RMI-IIOP test.  

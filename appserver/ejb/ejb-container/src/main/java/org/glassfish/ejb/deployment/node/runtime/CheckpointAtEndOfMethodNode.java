@@ -40,35 +40,32 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.runtime.CheckpointAtEndOfMethodDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
 import org.w3c.dom.Node;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * This node handles the checkpoint-at-end-of-method runtime deployment descriptors 
  *
  */
-public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode {
+public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode<CheckpointAtEndOfMethodDescriptor> {
 
-    protected CheckpointAtEndOfMethodDescriptor descriptor=null;
-    
-    /** Creates new CheckpointAtEndOfMethodNode */
+    private CheckpointAtEndOfMethodDescriptor descriptor;
+
     public CheckpointAtEndOfMethodNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.METHOD), MethodNode.class);   
     }
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
+
+    @Override
+    public CheckpointAtEndOfMethodDescriptor getDescriptor() {
         if (descriptor==null) {
             descriptor = new CheckpointAtEndOfMethodDescriptor();
             Object parentDesc = getParentNode().getDescriptor();
@@ -78,46 +75,28 @@ public class CheckpointAtEndOfMethodNode extends DeploymentDescriptorNode {
         }
         return descriptor;
     }
-    
 
-    /**
-     * Adds a new DOL descriptor instance to the descriptor instance associated
-     * with this XMLNode
-     *
-     * @param descriptor the new descriptor
-     */
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof MethodDescriptor) {
-            descriptor.addMethodDescriptor(
-                (MethodDescriptor) newDescriptor);
+            descriptor.addMethodDescriptor((MethodDescriptor) newDescriptor);
         }
     }
 
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
-        CheckpointAtEndOfMethodDescriptor checkpointMethodDescriptor) {    
-	Node checkpointMethodNode = super.writeDescriptor(parent, nodeName, 
+        CheckpointAtEndOfMethodDescriptor checkpointMethodDescriptor) {
+        Node checkpointMethodNode = super.writeDescriptor(parent, nodeName, 
             checkpointMethodDescriptor);
         ArrayList methodDescs = checkpointMethodDescriptor.getConvertedMethodDescs();
         if (!methodDescs.isEmpty()) {
             MethodNode methodNode = new MethodNode();
-            for (Iterator methodIterator = methodDescs.iterator();
-                methodIterator.hasNext();) {
-                MethodDescriptor methodDesc = 
-                    (MethodDescriptor) methodIterator.next();
+            for (Iterator<MethodDescriptor> it = methodDescs.iterator(); it.hasNext();) {
                 // do not write out ejb-name element for the method
                 methodNode.writeDescriptor(checkpointMethodNode, 
-                    RuntimeTagNames.METHOD, methodDesc, null);
+                    RuntimeTagNames.METHOD, it.next(), null);
             }
         }
-
-	return checkpointMethodNode;
+        return checkpointMethodNode;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.intf;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.Verifier;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
-import com.sun.enterprise.deployment.EjbEntityDescriptor;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 /**
  * Remote interfaces extend the EJBObject interface test. Local interfaces extend 
@@ -82,7 +82,7 @@ abstract public class ExtendsRightInterface extends EjbTest implements EjbCheck 
         String str = null;
         
         if (!(descriptor instanceof EjbSessionDescriptor) &&
-                !(descriptor instanceof EjbEntityDescriptor)) { 
+                !(descriptor instanceof EjbEntityDescriptor)) {
             addNaDetails(result, compName);
             result.notApplicable(smh.getLocalString
                     ("com.sun.enterprise.tools.verifier.tests.ejb.homeintf.HomeMethodTest.notApplicable1",

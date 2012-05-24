@@ -40,17 +40,27 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.EjbSessionDescriptor.ConcurrencyManagementType;
-import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import org.glassfish.deployment.common.Descriptor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
+import com.sun.enterprise.deployment.node.MethodNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.ConcurrentMethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor.ConcurrencyManagementType;
+import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import org.glassfish.ejb.deployment.descriptor.TimeoutValueDescriptor;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
-
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * This class handles all information pertinent to session beans
@@ -58,8 +68,8 @@ import java.util.ArrayList;
  * @author  Jerome Dochez
  * @version 
  */
-public class EjbSessionNode  extends InterfaceBasedEjbNode {
-    
+public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor> {
+
     private EjbSessionDescriptor descriptor;
 
     private boolean inDependsOn = false;
@@ -73,11 +83,11 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
 
        registerElementHandler(new XMLElement(EjbTagNames.AROUND_TIMEOUT_METHOD), AroundTimeoutNode.class, "addAroundTimeoutDescriptor");       
 
-       registerElementHandler(new XMLElement(EjbTagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");       
+       registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");       
 
-       registerElementHandler(new XMLElement(EjbTagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");       
+       registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");       
 
-       registerElementHandler(new XMLElement(EjbTagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+       registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
 
        registerElementHandler(new XMLElement(EjbTagNames.POST_ACTIVATE_METHOD), LifecycleCallbackNode.class, "addPostActivateDescriptor");       
 
@@ -102,25 +112,17 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
        registerElementHandler(new XMLElement(EjbTagNames.CONCURRENT_METHOD), ConcurrentMethodNode.class,
                "addConcurrentMethodFromXml");
     }
-        
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public EjbDescriptor getEjbDescriptor() {
-        
+
+    @Override
+    public EjbSessionDescriptor getEjbDescriptor() {
         if (descriptor==null) {
-            descriptor = (EjbSessionDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new EjbSessionDescriptor();
             descriptor.setEjbBundleDescriptor((EjbBundleDescriptor) getParentNode().getDescriptor());
         }
         return descriptor;
-    }    
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -130,20 +132,19 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
         return table;
     }
 
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
-
         if( EjbTagNames.LOCAL_BEAN.equals(element.getQName()) ) {
             descriptor.setLocalBean(true);
         } else if( EjbTagNames.DEPENDS_ON.equals(element.getQName())) {
             inDependsOn = true;
             dependsOn = new ArrayList<String>();
         }
-
         super.startElement(element, attributes);
     }
 
+    @Override
     public void setElementValue(XMLElement element, String value) {
-
         if (inDependsOn && EjbTagNames.EJB_NAME.equals(element.getQName())) {
             dependsOn.add(value);
         } else if( EjbTagNames.CONCURRENCY_MANAGEMENT_TYPE.equals(element.getQName())) {
@@ -153,8 +154,8 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
         }
     }
 
+    @Override
     public boolean endElement(XMLElement element) {
-
         if( EjbTagNames.DEPENDS_ON.equals(element.getQName())) {
             inDependsOn = false;
             descriptor.setDependsOn(dependsOn.toArray(new String[dependsOn.size()]));
@@ -163,23 +164,11 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
 
         return super.endElement(element);
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
-        if (! (descriptor instanceof EjbSessionDescriptor)) {
-            throw new IllegalArgumentException(getClass() + " cannot handles descriptors of type " + descriptor.getClass());
-        }    
-        EjbSessionDescriptor ejbDesc = (EjbSessionDescriptor) descriptor;
-        
-        Node ejbNode = super.writeDescriptor(parent, nodeName, descriptor);
-        writeDisplayableComponentInfo(ejbNode, descriptor);
+
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, EjbSessionDescriptor ejbDesc) {
+        Node ejbNode = super.writeDescriptor(parent, nodeName, ejbDesc);
+        writeDisplayableComponentInfo(ejbNode, ejbDesc);
         writeCommonHeaderEjbDescriptor(ejbNode, ejbDesc);
         appendTextChild(ejbNode, EjbTagNames.SESSION_TYPE, ejbDesc.getSessionType());
 
@@ -322,19 +311,19 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode {
         writeEntityManagerFactoryReferenceDescriptors(ejbNode, ejbDesc.getEntityManagerFactoryReferenceDescriptors().iterator());
         
         // post-construct
-        writePostConstructDescriptors(ejbNode, ejbDesc.getPostConstructDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.POST_CONSTRUCT, ejbDesc.getPostConstructDescriptors());
 
         // pre-destroy
-        writePreDestroyDescriptors(ejbNode, ejbDesc.getPreDestroyDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
 
         // post-activate-method
-        writePostActivateDescriptors(ejbNode, ejbDesc.getPostActivateDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());
 
         // pre-passivate-method
-        writePrePassivateDescriptors(ejbNode, ejbDesc.getPrePassivateDescriptors().iterator());
+        writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.PRE_PASSIVATE_METHOD, ejbDesc.getPrePassivateDescriptors());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

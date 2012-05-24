@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,23 @@
 
 package com.sun.ejb.codegen;
 
-import java.lang.reflect.*;
-import java.io.*;
-import java.util.*;
-
-import javax.ejb.EnterpriseBean;
-import javax.ejb.SessionBean;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Vector;
+import java.util.logging.Level;
 import javax.ejb.EntityBean;
-import javax.ejb.EJBHome;
+import javax.ejb.SessionBean;
 
-import org.glassfish.api.deployment.DeploymentContext;
-
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import java.util.logging.*;
-import com.sun.logging.*;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 
 /**

@@ -40,49 +40,50 @@
 
 package com.sun.ejb.containers;
 
-import org.glassfish.ejb.config.MdbContainer;
-import java.lang.reflect.Method;
-
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.ejb.*;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.EJBHome;
+import javax.ejb.MessageDrivenBean;
+import javax.ejb.RemoveException;
+import javax.transaction.Status;
+import javax.transaction.xa.XAResource;
 
-import javax.transaction.*;
-import javax.transaction.xa.*;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.api.MessageBeanListener;
+import org.glassfish.ejb.api.MessageBeanProtocolManager;
+import org.glassfish.ejb.api.ResourcesExceededException;
+import org.glassfish.ejb.config.MdbContainer;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.glassfish.ejb.spi.MessageBeanClient;
+import org.glassfish.ejb.spi.MessageBeanClientFactory;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import com.sun.appserv.connectors.internal.api.TransactedPoolManager;
-import com.sun.ejb.*;
+import com.sun.ejb.ComponentContext;
+import com.sun.ejb.EjbInvocation;
+import com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.util.pool.AbstractPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
+import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
+import com.sun.ejb.monitoring.stats.MessageDrivenBeanStatsProvider;
+import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
-import com.sun.appserv.connectors.internal.api.ResourceHandle;
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import org.glassfish.ejb.api.MessageBeanProtocolManager;
-import org.glassfish.ejb.api.ResourcesExceededException;
-import org.glassfish.ejb.api.MessageBeanListener;
-import org.glassfish.ejb.spi.MessageBeanClient;
-import org.glassfish.ejb.spi.MessageBeanClientFactory;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.MessageDrivenBeanStatsProvider;
-
-import java.util.logging.*;
-
-import com.sun.logging.*;
-import org.glassfish.api.admin.ServerEnvironment;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-
-import static com.sun.ejb.containers.EJBContextImpl.BeanState;
+import com.sun.logging.LogDomains;
 
 /**
  * This class provides container functionality specific to message-driven EJBs.

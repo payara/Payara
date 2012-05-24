@@ -40,15 +40,22 @@
 
 package com.sun.ejb.containers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.transaction.*;
 import javax.ejb.EJBException;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 
-import java.util.logging.*;
-import com.sun.logging.*;
-import com.sun.enterprise.deployment.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+
 import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
+import com.sun.logging.LogDomains;
 
 
 /**

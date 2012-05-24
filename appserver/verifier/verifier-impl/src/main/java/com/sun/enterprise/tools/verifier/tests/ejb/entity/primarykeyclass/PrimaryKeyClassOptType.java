@@ -40,14 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.primarykeyclass;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.lang.reflect.Method;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbEntityDescriptor;
-import com.sun.enterprise.tools.verifier.*;
-import java.lang.ClassLoader;
-import com.sun.enterprise.tools.verifier.tests.*;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 
 /** 
  * Entity bean's Primary Key Class type test. 

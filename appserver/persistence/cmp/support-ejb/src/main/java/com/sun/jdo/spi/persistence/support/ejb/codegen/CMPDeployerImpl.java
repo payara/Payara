@@ -41,12 +41,10 @@
 package com.sun.jdo.spi.persistence.support.ejb.codegen;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.util.logging.*;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.tools.Diagnostic;
@@ -56,28 +54,22 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
-import com.sun.jdo.spi.persistence.support.ejb.ejbc.JDOCodeGenerator;
-import com.sun.jdo.spi.persistence.support.ejb.ejbc.CMPProcessor;
-import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
-import org.glassfish.persistence.common.I18NHelper;
-import com.sun.jdo.spi.persistence.utility.logging.Logger;
-
-import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-
-import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
-
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
-import org.glassfish.ejb.spi.CMPDeployer;
+import com.sun.jdo.spi.persistence.support.ejb.ejbc.CMPProcessor;
+import com.sun.jdo.spi.persistence.support.ejb.ejbc.JDOCodeGenerator;
+import com.sun.jdo.spi.persistence.support.sqlstore.ejb.EJBHelper;
+import com.sun.jdo.spi.persistence.utility.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentException;
-import com.sun.enterprise.config.serverbeans.JavaConfig;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.spi.CMPDeployer;
+import org.glassfish.persistence.common.I18NHelper;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Generates concrete impls for CMP beans in an archive. 
@@ -159,7 +151,7 @@ public class CMPDeployerImpl implements CMPDeployer {
                                            + desc.getEjbClassName());
                     }
     
-                    if ( desc instanceof IASEjbCMPEntityDescriptor ) {
+                    if ( desc instanceof IASEjbCMPEntityDescriptor) {
     
                         // generate concrete CMP class implementation
                         IASEjbCMPEntityDescriptor entd = 

@@ -40,15 +40,17 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.RunAsNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import java.util.Map;
+
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
-import java.util.Map;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.RunAsNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.TagNames;
 
 /**
  * This node handles all information relative to security-indentity tag
@@ -57,31 +59,23 @@ import java.util.Map;
  * @version 
  */
 public class SecurityIdentityNode extends DeploymentDescriptorNode {
-    
-    /** Creates new SecurityIdentityNode */
+
     public SecurityIdentityNode() {
         super();        
-        registerElementHandler(new XMLElement(EjbTagNames.RUNAS_SPECIFIED_IDENTITY), RunAsNode.class);
+        registerElementHandler(new XMLElement(TagNames.RUNAS_SPECIFIED_IDENTITY), RunAsNode.class);
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
+    @Override
     public Object getDescriptor() {
         return null;
     }
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
     protected Map getDispatchTable() {
         return  null;
-    }        
+    }
 
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if( EjbTagNames.USE_CALLER_IDENTITY.equals(element.getQName()) ) {
             ((EjbDescriptor) getParentNode().getDescriptor()).
@@ -91,38 +85,25 @@ public class SecurityIdentityNode extends DeploymentDescriptorNode {
         }
         return;
     }
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {    
-        if (EjbTagNames.DESCRIPTION.equals(element.getQName())) {
+        if (TagNames.DESCRIPTION.equals(element.getQName())) {
             ((EjbDescriptor) getParentNode().getDescriptor()).setSecurityIdentityDescription(value);
         } else {
             super.setElementValue(element, value);
         }
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element for this DOM tree fragment
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
     public Node writeDescriptor(Node parent, String nodeName, EjbDescriptor descriptor) {    
         Node subNode = appendChild(parent, nodeName);
-        appendTextChild(subNode, EjbTagNames.DESCRIPTION, descriptor.getSecurityIdentityDescription());
+        appendTextChild(subNode, TagNames.DESCRIPTION, descriptor.getSecurityIdentityDescription());
         if (descriptor.getUsesCallerIdentity()) {
             Node useCaller = subNode.getOwnerDocument().createElement(EjbTagNames.USE_CALLER_IDENTITY);
             subNode.appendChild(useCaller);
         } else {
             RunAsNode runAs = new RunAsNode();
-            runAs.writeDescriptor(subNode, EjbTagNames.RUNAS_SPECIFIED_IDENTITY, descriptor.getRunAsIdentity());
+            runAs.writeDescriptor(subNode, TagNames.RUNAS_SPECIFIED_IDENTITY, descriptor.getRunAsIdentity());
         }
     return subNode;
     }

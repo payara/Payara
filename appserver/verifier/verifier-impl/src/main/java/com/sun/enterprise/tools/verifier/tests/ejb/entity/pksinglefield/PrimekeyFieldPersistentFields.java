@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,19 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.pksinglefield;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.lang.reflect.Field;
-import java.util.*;
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
-import com.sun.enterprise.tools.verifier.tests.*;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
+
+import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.Set;
 
 /** 
  * The primkey-field must be one of the fields declared in the cmp-field

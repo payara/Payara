@@ -40,12 +40,12 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import java.util.Map;
+
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 /**
  * This node handles the bean-pool runtime deployment descriptors 
@@ -53,26 +53,17 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class BeanPoolNode extends DeploymentDescriptorNode {
+public class BeanPoolNode extends DeploymentDescriptorNode<BeanPoolDescriptor> {
 
-    protected BeanPoolDescriptor descriptor=null;
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
-        if (descriptor==null) {
-	    descriptor = new BeanPoolDescriptor();
-	}
+    private BeanPoolDescriptor descriptor;
+
+    @Override
+    public BeanPoolDescriptor getDescriptor() {
+        if (descriptor==null) descriptor = new BeanPoolDescriptor();
         return descriptor;
     }
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
     protected Map getDispatchTable() {  
 	Map dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.STEADY_POOL_SIZE, "setSteadyPoolSize");
@@ -82,15 +73,8 @@ public class BeanPoolNode extends DeploymentDescriptorNode {
 	dispatchTable.put(RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS, "setMaxWaitTimeInMillis");
 	return dispatchTable;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, BeanPoolDescriptor descriptor) {    
 	Node beanpoolNode = super.writeDescriptor(parent, nodeName, descriptor);
 	appendTextChild(beanpoolNode, RuntimeTagNames.STEADY_POOL_SIZE, descriptor.getSteadyPoolSize());

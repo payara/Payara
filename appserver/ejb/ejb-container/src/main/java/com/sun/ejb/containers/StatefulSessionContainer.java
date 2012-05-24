@@ -40,73 +40,86 @@
 
 package com.sun.ejb.containers;
 
-import java.util.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-
-import javax.ejb.*;
-import javax.transaction.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.EJBObject;
+import javax.ejb.IllegalLoopbackException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.RemoveException;
+import javax.ejb.SessionBean;
+import javax.ejb.SessionSynchronization;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.ejb.ConcurrentAccessException;
-
 import javax.persistence.PersistenceContextType;
-
-import com.sun.ejb.*;
-import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
-import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import com.sun.enterprise.util.Utility;
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.transaction.api.JavaEETransaction;
-
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-
-import java.util.logging.*;
-
-import com.sun.logging.*;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 
 import com.sun.appserv.util.cache.CacheListener;
-
-import com.sun.ejb.base.stats.StatefulSessionStoreMonitor;
+import com.sun.ejb.ComponentContext;
+import com.sun.ejb.Container;
+import com.sun.ejb.EjbInvocation;
+import com.sun.ejb.InvocationInfo;
+import com.sun.ejb.MethodLockInfo;
 import com.sun.ejb.base.stats.HAStatefulSessionStoreMonitor;
-
+import com.sun.ejb.base.stats.StatefulSessionStoreMonitor;
 import com.sun.ejb.containers.util.cache.LruSessionCache;
-
+import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
+import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
+import com.sun.ejb.monitoring.stats.StatefulSessionBeanStatsProvider;
 import com.sun.ejb.spi.container.SFSBContainerCallback;
-import com.sun.ejb.spi.container.StatefulEJBContext;
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
-
+import com.sun.ejb.spi.container.StatefulEJBContext;
 import com.sun.ejb.spi.sfsb.util.CheckpointPolicy;
 import com.sun.ejb.spi.sfsb.util.SFSBUUIDUtil;
 import com.sun.ejb.spi.sfsb.util.SFSBVersionManager;
-
-import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
-import com.sun.enterprise.deployment.runtime.CheckpointAtEndOfMethodDescriptor;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-
 import com.sun.enterprise.container.common.impl.EntityManagerFactoryWrapper;
+import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
+import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.transaction.api.JavaEETransaction;
+import com.sun.enterprise.util.Utility;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
-import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
-
-import static com.sun.ejb.containers.EJBContextImpl.BeanState;
-
-
-import com.sun.ejb.monitoring.stats.StatefulSessionBeanStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
-import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.util.SimpleMetadata;
+
+import static com.sun.ejb.containers.EJBContextImpl.BeanState;
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 /**
  * This class provides container functionality specific to stateful

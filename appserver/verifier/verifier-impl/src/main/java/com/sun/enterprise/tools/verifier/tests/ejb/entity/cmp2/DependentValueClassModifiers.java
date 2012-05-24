@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,18 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp2;
 
-import java.util.*;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbUtils;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbUtils;
-import com.sun.enterprise.tools.verifier.tests.*;
-import org.glassfish.deployment.common.Descriptor;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -165,15 +169,15 @@ public class DependentValueClassModifiers extends CmpFieldTest {
         }
     }
     
-    private boolean isValidInterface(Class fieldType, Set entities, String interfaceType) {
+    private boolean isValidInterface(Class fieldType, Set<EjbDescriptor> entities, String interfaceType) {
         
         if (entities==null)
             return false;
         
-        Iterator iterator = entities.iterator();
+        Iterator<EjbDescriptor> iterator = entities.iterator();
 	if (interfaceType.equals(MethodDescriptor.EJB_REMOTE)) {
 	    while (iterator.hasNext()) {
-		EjbAbstractDescriptor entity = (EjbAbstractDescriptor) iterator.next();
+		EjbDescriptor entity = iterator.next();
 		if (fieldType.getName().equals(entity.getHomeClassName()) ||
 		    fieldType.getName().equals(entity.getRemoteClassName()))
 		    return true;
@@ -181,7 +185,7 @@ public class DependentValueClassModifiers extends CmpFieldTest {
 	}
  	if (interfaceType.equals(MethodDescriptor.EJB_LOCAL)) {
 	    while (iterator.hasNext()) {
-		EjbAbstractDescriptor entity = (EjbAbstractDescriptor) iterator.next();
+		EjbDescriptor entity = iterator.next();
 		if (fieldType.getName().equals(entity.getLocalHomeClassName()) ||
 		    fieldType.getName().equals(entity.getLocalClassName()))
 		    return true;

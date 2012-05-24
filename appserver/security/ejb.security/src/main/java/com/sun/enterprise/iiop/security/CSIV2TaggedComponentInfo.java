@@ -50,6 +50,7 @@ import java.util.logging.Logger ;
 
 import java.io.IOException ;
 
+import org.glassfish.security.common.Role;
 import org.omg.CORBA.ORB;
 
 import com.sun.enterprise.util.Utility;
@@ -283,7 +284,7 @@ public final class CSIV2TaggedComponentInfo
             return null ;
         }
 
-	Set iorDescSet = desc.getIORConfigurationDescriptors();
+	Set<EjbIORConfigurationDescriptor> iorDescSet = desc.getIORConfigurationDescriptors();
 	int size = iorDescSet.size();
 	if (size == 0) {
 	    // No IOR config descriptors:
@@ -303,7 +304,7 @@ public final class CSIV2TaggedComponentInfo
 
 	    // Check if method permissions are set on the descriptor.
 	    // If they are then enable username_password mechanism in as_context
-	    Set permissions = desc.getPermissionedRoles();
+	    Set<Role> permissions = desc.getPermissionedRoles();
 	    if (permissions.size() > 0) {
                 if(_logger.isLoggable(Level.FINE)){
                     _logger.log(Level.FINE,"IIOP:Application has protected methods");
@@ -324,7 +325,7 @@ public final class CSIV2TaggedComponentInfo
 	    }
 	}
 
-	return (Set<EjbIORConfigurationDescriptor>)iorDescSet ;
+	return iorDescSet;
     }
     
     // Type of simple closure used for createCompoundSecMechs

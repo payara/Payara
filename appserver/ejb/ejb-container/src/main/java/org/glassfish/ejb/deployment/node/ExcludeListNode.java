@@ -43,10 +43,9 @@ package org.glassfish.ejb.deployment.node;
 import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.enterprise.deployment.MethodPermissionDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
 
 /**
  * This class is responsible for handling the exclude-list DD tag
@@ -54,26 +53,21 @@ import com.sun.enterprise.deployment.xml.EjbTagNames;
  * @author  Jeromeochez
  * @version 
  */
-public class ExcludeListNode extends DeploymentDescriptorNode {
+public class ExcludeListNode extends DeploymentDescriptorNode<MethodPermissionDescriptor> {
 
     private MethodPermissionDescriptor descriptor;
-    
-    /** Creates new ExcludeListNode */
+
     public ExcludeListNode() {
        registerElementHandler(new XMLElement(EjbTagNames.METHOD), 
-                                                            MethodNode.class, "addMethod");                                 
+                                                            MethodNode.class, "addMethod");
     }
-    
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
-    public Object getDescriptor() {
+    @Override
+    public MethodPermissionDescriptor getDescriptor() {
         if (descriptor==null) {
-            descriptor = (MethodPermissionDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new MethodPermissionDescriptor();
             descriptor.addMethodPermission(MethodPermission.getExcludedMethodPermission());
         }
         return descriptor;
-    }    
+    }
 }

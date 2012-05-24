@@ -40,57 +40,47 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbApplicationExceptionInfo;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Map;
 
-public class EjbApplicationExceptionNode extends DeploymentDescriptorNode {
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
+import org.w3c.dom.Node;
+
+public class EjbApplicationExceptionNode extends DeploymentDescriptorNode<EjbApplicationExceptionInfo> {
+
+    private EjbApplicationExceptionInfo eaeInfo;
 
     public EjbApplicationExceptionNode() {
        super();
     }
-        
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
+    public EjbApplicationExceptionInfo getDescriptor() {
+        if (eaeInfo == null) eaeInfo = new EjbApplicationExceptionInfo();
+        return eaeInfo;
+    }
+
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
-
         table.put(EjbTagNames.APP_EXCEPTION_CLASS, "setExceptionClassName");
         table.put(EjbTagNames.APP_EXCEPTION_ROLLBACK, "setRollback");
         table.put(EjbTagNames.APP_EXCEPTION_INHERITED, "setInherited");
-
         return table;
-    }    
+    }
 
-   /**
-     * write the application exception info to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
                                 EjbApplicationExceptionInfo descriptor) {
-
         Node appExceptionNode = appendChild(parent, nodeName);
-        
         appendTextChild(appExceptionNode, EjbTagNames.APP_EXCEPTION_CLASS,
                         descriptor.getExceptionClassName());
         appendTextChild(appExceptionNode, EjbTagNames.APP_EXCEPTION_ROLLBACK,
                         Boolean.toString(descriptor.getRollback()));
         appendTextChild(appExceptionNode, EjbTagNames.APP_EXCEPTION_INHERITED,
                         Boolean.toString(descriptor.getInherited()));
-
-
         return appExceptionNode;
     }
 }

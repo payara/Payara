@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,7 @@ import java.util.Vector;
  * @author Danny Coward
  */
 
-class OrderedSet<T> extends Vector<T> implements Set<T> {
+public class OrderedSet<T> extends Vector<T> implements Set<T> { // FIXME by srini - can we instead change the usage to be TreeSet based?
 
     /**
      * Construct an empty collection.

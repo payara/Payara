@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,29 +40,29 @@
 
 package com.sun.enterprise.deployment.node;
 
-import org.glassfish.security.common.Role;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.SecurityRoleDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 /**
  *
  * @author  Jerome Dochez
  * @version 
  */
-public class SecurityRoleNode extends DeploymentDescriptorNode {
+public class SecurityRoleNode extends DeploymentDescriptorNode<SecurityRoleDescriptor> {
 
-   /**
-     * Declare the setName method as an action on the SecurityRoleDescriptor, as initialized by the
-     * DescriptorFactory.  
-     * <p>
-     * The DeploymentDescriptorNode superclass specifies the setDescription method for the description 
-     * element, so we just add the setName action to that dispatch table.
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */
+    private SecurityRoleDescriptor descriptor;
+
+    @Override
+    public SecurityRoleDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new SecurityRoleDescriptor();
+        return descriptor;
+    }
+
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(TagNames.ROLE_NAME, "setName");
@@ -83,19 +83,12 @@ public class SecurityRoleNode extends DeploymentDescriptorNode {
         appendTextChild(roleNode, TagNames.ROLE_NAME, descriptor.getName());
         return roleNode;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, SecurityRoleDescriptor descriptor) {
         Node roleNode = appendChild(parent, nodeName);
         appendTextChild(roleNode, TagNames.DESCRIPTION, descriptor.getDescription());        
         appendTextChild(roleNode, TagNames.ROLE_NAME, descriptor.getName());
         return roleNode;
-    }    
+    }
 }

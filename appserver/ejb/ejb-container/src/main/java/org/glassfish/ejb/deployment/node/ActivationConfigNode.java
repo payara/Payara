@@ -40,26 +40,26 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.ActivationConfigDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import org.w3c.dom.Node;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.ActivationConfigDescriptor;
+import org.w3c.dom.Node;
+
 /**
- * This class is responsible for hanlding the activation config elements.
+ * This class is responsible for handling the activation config elements.
  *
  * @author Kenneth Saks
  * @version 
  */
-public class ActivationConfigNode extends DeploymentDescriptorNode {
+public class ActivationConfigNode extends DeploymentDescriptorNode<ActivationConfigDescriptor> {
 
-    private ActivationConfigDescriptor descriptor = null;
+    private ActivationConfigDescriptor descriptor;
     private String propertyName = null;
 
     public ActivationConfigNode() {
@@ -69,23 +69,13 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
                                "setActivationConfigDescriptor");
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
-    public Object getDescriptor() {
-        if (descriptor == null) {
-            descriptor = (ActivationConfigDescriptor) super.getDescriptor();
-        } 
-        return descriptor;        
-    }                
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+    @Override
+    public ActivationConfigDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new ActivationConfigDescriptor();
+        return descriptor;
+    }
+
+    @Override
     public void setElementValue(XMLElement element, String value) {    
         if (EjbTagNames.ACTIVATION_CONFIG_PROPERTY_NAME.equals
             (element.getQName())) {
@@ -98,15 +88,8 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
             propertyName = null;
         }
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, 
                                 ActivationConfigDescriptor descriptor) {        
 
@@ -137,12 +120,12 @@ public class ActivationConfigNode extends DeploymentDescriptorNode {
                 EnvironmentProperty next = (EnvironmentProperty) iter.next();
                 appendTextChild(activationConfigPropertyNode, 
                                 EjbTagNames.ACTIVATION_CONFIG_PROPERTY_NAME, 
-                                (String) next.getName());
+                                next.getName());
                 appendTextChild(activationConfigPropertyNode,
                                 EjbTagNames.ACTIVATION_CONFIG_PROPERTY_VALUE, 
-                                (String) next.getValue());
-            }                   
-        }        
+                                next.getValue());
+            }
+        } 
         return activationConfigNode;
     }
 }

@@ -43,36 +43,33 @@ package org.glassfish.ejb.startup;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.AbstractSingletonContainer;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
-import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
-
+import com.sun.enterprise.security.PolicyLoader;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.security.application.EJBSecurityManager;
+import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.internal.data.ApplicationInfo;
-
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-
-import com.sun.enterprise.security.PolicyLoader;
-import com.sun.logging.LogDomains;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  * This class represents a logical collection of EJB components contained in one ejb-jar
@@ -90,7 +87,7 @@ public class EjbApplication
 
     private EjbBundleDescriptor ejbBundle;
     private Collection<EjbDescriptor> ejbs;
-    private Collection<Container> containers = new ArrayList();
+    private Collection<Container> containers = new ArrayList<Container>();
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
@@ -141,7 +138,7 @@ public class EjbApplication
 
     public boolean isStarted() {
         return started;
-    }                                                                                     // TODO handle singleton startup dependencies that refer to singletons in a different
+    }       // TODO handle singleton startup dependencies that refer to singletons in a different
             // module within the application
 
     void markAllContainersAsStarted() {

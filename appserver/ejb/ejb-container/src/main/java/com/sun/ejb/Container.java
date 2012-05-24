@@ -40,11 +40,19 @@
 
 package com.sun.ejb;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import org.glassfish.api.invocation.ComponentInvocation;
-
-import javax.ejb.*;
 import java.rmi.Remote;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBContext;
+import javax.ejb.EJBException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBMetaData;
+import javax.ejb.EJBObject;
+import javax.ejb.FinderException;
+
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
  * A Container stores EJB instances and is responsible for
