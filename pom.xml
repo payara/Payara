@@ -403,7 +403,7 @@
                     <dir>${project.build.outputDirectory}</dir>
                 </configuration>
             </plugin>
-            <!-- Enforces maven 3.0.3 and jdk 1.6.0-22 and above to be used -->
+            <!-- Enforces maven 2.2.1 and jdk 1.6.0-22 and above to be used -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -421,8 +421,8 @@
                                 <message>You need JDK 1.6.0_22 and above!</message>
                             </requireJavaVersion>
                             <requireMavenVersion>
-                                <version>[3.0.3,)</version>
-                                <message>You need Maven 3.0.3 or above!</message>
+                                <version>[2.2.1,)</version>
+                                <message>You need Maven 2.2.1 or above!</message>
                             </requireMavenVersion>
                         </rules>
                         </configuration>
