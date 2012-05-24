@@ -68,7 +68,7 @@ import javax.servlet.SessionTrackingMode;
  *
  * @author  Shing Wai Chan
  */
-public class WLSessionDescriptorNode extends RuntimeDescriptorNode {
+public class WLSessionDescriptorNode extends RuntimeDescriptorNode<WebBundleDescriptor> {
     private static final String COOKIE = "COOKIE";
     private static final String URL = "URL";
     private static final String SSL = "SSL";
@@ -90,6 +90,7 @@ public class WLSessionDescriptorNode extends RuntimeDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (name.equals(RuntimeTagNames.TIMEOUT_SECS)) {
@@ -142,6 +143,7 @@ public class WLSessionDescriptorNode extends RuntimeDescriptorNode {
      * @return true if this node is done with the processing of elements 
      * in the processing
      */
+    @Override
     public boolean endElement(XMLElement element) {
         if (RuntimeTagNames.SESSION_DESCRIPTOR.equals(element.getQName())) {
             com.sun.enterprise.deployment.runtime.web.SessionConfig runtimeSessionConfig =
@@ -179,17 +181,19 @@ public class WLSessionDescriptorNode extends RuntimeDescriptorNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */    
-    public Object getDescriptor() {
-        return null;
+    @Override
+    public WebBundleDescriptor getDescriptor() {
+        return (WebBundleDescriptor)getParentNode().getDescriptor();
     }
 
-    public Node writeDescriptor(Element root, WebBundleDescriptor webBundleDescriptor) {
+    @Override
+    public Node writeDescriptor(Node parent, WebBundleDescriptor webBundleDescriptor) {
         SessionConfig sessionConfig = webBundleDescriptor.getSessionConfig();
         com.sun.enterprise.deployment.runtime.web.SessionConfig runtimeSessionConfig =
                 webBundleDescriptor.getSunDescriptor().getSessionConfig();
         Node scNode = null;
         if (sessionConfig != null || runtimeSessionConfig != null) {
-            scNode = appendChild(root, RuntimeTagNames.SESSION_DESCRIPTOR);
+            scNode = appendChild(parent, RuntimeTagNames.SESSION_DESCRIPTOR);
         }
 
         if (runtimeSessionConfig != null) {

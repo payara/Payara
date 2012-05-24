@@ -55,8 +55,13 @@ import org.w3c.dom.Node;
  *
  * @author  Shing Wai Chan
  */
-public class WLServletDescriptorNode extends RuntimeDescriptorNode {
+public class WLServletDescriptorNode extends RuntimeDescriptorNode<WebComponentDescriptor> {
     private WebComponentDescriptor descriptor;
+
+    @Override
+    public WebComponentDescriptor getDescriptor() {
+        return descriptor;
+    }
 
     /**
      * receives notification of the value for a particular tag
@@ -64,6 +69,7 @@ public class WLServletDescriptorNode extends RuntimeDescriptorNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (name.equals(RuntimeTagNames.SERVLET_NAME)) {
@@ -78,9 +84,10 @@ public class WLServletDescriptorNode extends RuntimeDescriptorNode {
         }
     }
 
-    public Node writeDescriptor(Element root, WebComponentDescriptor descriptor) {        
+    @Override
+    public Node writeDescriptor(Node parent, WebComponentDescriptor descriptor) {        
         if (descriptor != null && descriptor.getRunAsIdentity() != null) {
-            Node servletNode =  appendChild(root, RuntimeTagNames.SERVLET_DESCRIPTOR);
+            Node servletNode =  appendChild(parent, RuntimeTagNames.SERVLET_DESCRIPTOR);
             appendTextChild(servletNode, RuntimeTagNames.SERVLET_NAME, descriptor.getCanonicalName());
 
             appendTextChild(servletNode, RuntimeTagNames.RUN_AS_PRINCIPAL_NAME, 

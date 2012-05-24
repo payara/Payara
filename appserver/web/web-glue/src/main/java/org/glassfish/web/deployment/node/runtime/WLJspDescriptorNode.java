@@ -59,13 +59,14 @@ import com.sun.enterprise.deployment.web.InitializationParameter;
  * @author Kin-man Chung
  */
 
-public class WLJspDescriptorNode extends WebRuntimeNode {
+public class WLJspDescriptorNode extends WebRuntimeNode<WebBundleDescriptor> {
 
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
-    public Object getDescriptor() {
-        return null;
+    @Override
+    public WebBundleDescriptor getDescriptor() {
+        return (WebBundleDescriptor)getParentNode().getDescriptor();
     }
 
     /**
@@ -74,6 +75,7 @@ public class WLJspDescriptorNode extends WebRuntimeNode {
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
 
         String name = element.getQName();
@@ -120,6 +122,7 @@ public class WLJspDescriptorNode extends WebRuntimeNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */
+    @Override
     public Node writeDescriptor(Node parent, WebBundleDescriptor wbd) {
 
         ArrayList<InitializationParameter> jspInits =

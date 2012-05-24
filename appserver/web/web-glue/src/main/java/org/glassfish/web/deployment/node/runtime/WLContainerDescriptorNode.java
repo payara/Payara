@@ -59,13 +59,14 @@ import org.w3c.dom.Node;
  *
  * @author  Shing Wai Chan
  */
-public class WLContainerDescriptorNode extends RuntimeDescriptorNode {
+public class WLContainerDescriptorNode extends RuntimeDescriptorNode<WebBundleDescriptor> {
     /**
      * receives notification of the value for a particular tag
      * 
      * @param element the xml element
      * @param value it's associated value
      */
+    @Override
     public void setElementValue(XMLElement element, String value) {
         String name = element.getQName();
         if (name.equals(RuntimeTagNames.INDEX_DIRECTORY_ENALBED)) {
@@ -73,10 +74,10 @@ public class WLContainerDescriptorNode extends RuntimeDescriptorNode {
         } else if (name.equals(RuntimeTagNames.INDEX_DIRECTORY_SORT_BY)) {
             setDefaultServletInitParam("sortedBy", value);
         } else if (name.equals(RuntimeTagNames.SAVE_SESSIONS_ENABLED)) {
-            WebBundleDescriptor descriptor = (WebBundleDescriptor)getParentNode().getDescriptor();
+            WebBundleDescriptor descriptor = getDescriptor();
             descriptor.setKeepState(value);
         } else if (name.equals(RuntimeTagNames.PREFER_WEB_INF_CLASSES)) {
-            WebBundleDescriptor descriptor = (WebBundleDescriptor)getParentNode().getDescriptor();
+            WebBundleDescriptor descriptor = getDescriptor();
             ClassLoader clBean = descriptor.getSunDescriptor().getClassLoader();
             if (clBean == null) {
                 clBean = new ClassLoader();
@@ -92,11 +93,13 @@ public class WLContainerDescriptorNode extends RuntimeDescriptorNode {
     /**
      * @return the descriptor instance to associate with this XMLNode
      */    
-    public Object getDescriptor() {
-        return null;
+    @Override
+    public WebBundleDescriptor getDescriptor() {
+        return (WebBundleDescriptor)getParentNode().getDescriptor();
     }
 
-    public Node writeDescriptor(Element root, WebBundleDescriptor webBundleDescriptor) {
+    @Override
+    public Node writeDescriptor(Node parent, WebBundleDescriptor webBundleDescriptor) {
         Node containerDescriptorNode = null;
         WebComponentDescriptor defaultServletDesc =
                 webBundleDescriptor.getWebComponentByCanonicalName("default");
@@ -106,7 +109,7 @@ public class WLContainerDescriptorNode extends RuntimeDescriptorNode {
                 defaultServletDesc, "sortedBy", false);
         ClassLoader clBean = webBundleDescriptor.getSunDescriptor().getClassLoader();
 
-        containerDescriptorNode = appendChild(root, RuntimeTagNames.CONTAINER_DESCRIPTOR);
+        containerDescriptorNode = appendChild(parent, RuntimeTagNames.CONTAINER_DESCRIPTOR);
 
         if (listingsParam != null) {
             appendTextChild(containerDescriptorNode,
@@ -132,7 +135,7 @@ public class WLContainerDescriptorNode extends RuntimeDescriptorNode {
 
 
     private void setDefaultServletInitParam(String name, String value) {
-        WebBundleDescriptor descriptor = (WebBundleDescriptor)getParentNode().getDescriptor();
+        WebBundleDescriptor descriptor = getDescriptor();
         WebComponentDescriptor defaultServletDesc =
                 descriptor.getWebComponentByCanonicalName("default");
         InitializationParameter initParam =
