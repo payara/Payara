@@ -170,9 +170,13 @@ public abstract class AppservPasswordLoginModule implements LoginModule
         // Add a Principal (authenticated identity) to the Subject
         // Assume the user we authenticated is the PrincipalImpl [RI]
         String realm_name = _currentRealm.getName();
-        PrincipalGroupFactory factory = Globals.getDefaultHabitat().forContract(PrincipalGroupFactory.class).get();
-        _userPrincipal = 
-            factory.getPrincipalInstance(getUsername(),realm_name);
+        PrincipalGroupFactory factory = Globals.getDefaultBaseServiceLocator().getComponent(PrincipalGroupFactory.class);
+        if (factory != null)
+            _userPrincipal = 
+                factory.getPrincipalInstance(getUsername(),realm_name);
+        else
+            _userPrincipal = new PrincipalImpl(getUsername());
+
         Set<Principal> principalSet = _subject.getPrincipals();
         if (!principalSet.contains(_userPrincipal)){
             principalSet.add(_userPrincipal);
@@ -182,8 +186,12 @@ public abstract class AppservPasswordLoginModule implements LoginModule
          */
         for(int i = 0; i<_groupsList.length; i++){
             if(_groupsList[i] != null){
-                Group g =
-                    factory.getGroupInstance(_groupsList[i], realm_name);
+                Group g;
+                if (factory != null)
+                    g = factory.getGroupInstance(_groupsList[i], realm_name);
+                else
+                    g = new Group(_groupsList[i]);
+
                 if(!principalSet.contains(g)){
                     principalSet.add(g);
                 }
