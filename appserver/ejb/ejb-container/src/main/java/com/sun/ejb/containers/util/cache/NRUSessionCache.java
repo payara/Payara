@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,8 +71,8 @@ public class NRUSessionCache
     protected void itemAccessed(CacheItem item) {
         LruCacheItem lc = (LruCacheItem) item;
         synchronized (this) {
-            if (lc.isTrimmed) {
-                lc.isTrimmed = false;
+            if (lc.isTrimmed()) {
+                lc.setTrimmed(false);
                 CacheItem overflow = super.itemAdded(item);
                 if (overflow != null) {
                     trimItem(overflow);

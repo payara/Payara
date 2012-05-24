@@ -96,7 +96,8 @@ public class FIFOEJBObjectCache
      * constructor with specified timeout
      */
     public FIFOEJBObjectCache(String name, long timeout) {
-        super(timeout);
+        super();
+        setTimeout(timeout);
         this.name = name;
     }
     
@@ -159,27 +160,28 @@ public class FIFOEJBObjectCache
         // remove the item from the LRU list
         synchronized (this) {
             // if the item is already trimmed from the LRU list, nothing to do.
-            if (l.isTrimmed) {
+            if (l.isTrimmed()) {
                 return;
             }
             
-            LruCacheItem prev = l.lPrev;
-            LruCacheItem next = l.lNext;
+            LruCacheItem prev = l.getLPrev();
+            LruCacheItem next = l.getLNext();
             
-            l.isTrimmed = true;
+            l.setTrimmed(true);
             
             // patch up the neighbors and make sure head/tail are correct
             if (prev != null)
-                prev.lNext = next;
+                prev.setLNext(next);
             else
                 head = next;
             
             if (next != null)
-                next.lPrev = prev;
+                next.setLPrev(prev);
             else
                 tail = prev;
             
-            l.lNext = l.lPrev = null;
+            l.setLNext(null);
+            l.setLPrev(null);
             
             listSize--;
         }
@@ -210,7 +212,7 @@ public class FIFOEJBObjectCache
                     if (_printRefCount) {
                         incrementReferenceCount();
                     }
-                    if (! eoItem.isTrimmed) {
+                    if (! eoItem.isTrimmed()) {
                         itemRemoved(eoItem);
                     }
                 }
@@ -249,7 +251,7 @@ public class FIFOEJBObjectCache
             if (oldItem == null) {
                 newItem = (EJBObjectCacheItem) 
                     createItem(hashCode, key, value, size);
-                newItem.isTrimmed = incrementRefCount;
+                newItem.setTrimmed(incrementRefCount);
                 
                 // add the item at the head of the bucket list
                 newItem.setNext( buckets[index] );
@@ -290,7 +292,7 @@ public class FIFOEJBObjectCache
     public void print() {
         System.out.println("EJBObjectCache:: size: " + getEntryCount() + 
                            "; listSize: " + listSize);
-        for (LruCacheItem run = head; run!=null; run=run.lNext) {
+        for (LruCacheItem run = head; run!=null; run=run.getLNext()) {
             System.out.print("("+run.getKey()+", "+run.getValue()+") ");
         }
         System.out.println();
@@ -395,11 +397,11 @@ public class FIFOEJBObjectCache
         synchronized (this) {
             // traverse LRU list till we reach a valid item; remove them at once
             for (item = tail; item != null && count < maxCount;
-                 item = item.lPrev) {
+                 item = item.getLPrev()) {
                 
                 if ((timeout != NO_TIMEOUT) &&
-                    (item.lastAccessed + timeout) <= currentTime) {
-                    item.isTrimmed = true;
+                    (item.getLastAccessed() + timeout) <= currentTime) {
+                    item.setTrimmed(true);
                     lastItem = item;
                     
                     count++;
@@ -410,10 +412,10 @@ public class FIFOEJBObjectCache
             
             // if there was at least one invalid item then item != tail.
             if (item != tail) {
-                lastItem.lPrev = null;
+                lastItem.setLPrev(null);
                 
                 if (item != null)
-                    item.lNext = null;
+                    item.setLNext(null);
                 else
                     head = null;
                 
@@ -428,7 +430,7 @@ public class FIFOEJBObjectCache
             
             ArrayList localVictims = new ArrayList(count);
             // trim the items from the BaseCache from the old tail backwards
-            for (item = lastItem; item != null; item = item.lPrev) {
+            for (item = lastItem; item != null; item = item.getLPrev()) {
                 localVictims.add(item.getKey());
             }
             

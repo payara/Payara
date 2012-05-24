@@ -55,7 +55,8 @@ public class PassivatedSessionCache
      * constructor with specified timeout
      */
     public PassivatedSessionCache(long timeout) {
-        super(timeout);
+        super();
+        setTimeout(timeout);
     }
 
     /**
@@ -70,13 +71,13 @@ public class PassivatedSessionCache
         LruCacheItem lc = (LruCacheItem) item;
 
         // set the timestamp
-        lc.lastAccessed = ((Long) item.getValue()).longValue();
+        lc.setLastAccessed(((Long) item.getValue()).longValue());
 
         // update the LRU
         synchronized (this) {
             if (head != null) {
-                head.lPrev = lc;
-                lc.lNext = head;
+                head.setLPrev(lc);
+                lc.setLNext(head);
             }
             else {
                 tail = lc;

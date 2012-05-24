@@ -171,8 +171,8 @@ public class LruSessionCache
     protected void itemAccessed(CacheItem item) {
         LruCacheItem lc = (LruCacheItem) item;
         synchronized (this) {
-	    if (lc.isTrimmed) {
-		lc.isTrimmed = false;
+	    if (lc.isTrimmed()) {
+		lc.setTrimmed(false);
 		numVictimsAccessed += 1;
 		CacheItem overflow = super.itemAdded(item);
 		if (overflow != null) {
@@ -394,7 +394,7 @@ public class LruSessionCache
                 for (item = buckets[index]; item != null; item = item.getNext()) {
                     if (item.getValue() == ctx) {
                         LruCacheItem lruSCItem = (LruCacheItem) item;
-                        if (lruSCItem.isTrimmed == false) {
+                        if (!lruSCItem.isTrimmed()) {
                             //Was accessed just after marked for passivation
                             if(_logger.isLoggable(Level.FINE)) {
                                 _logger.log(Level.FINE, cacheName +  ": session accessed after marked for passivation: " + sessionKey);
@@ -421,7 +421,7 @@ public class LruSessionCache
                 for (item = buckets[index]; item != null; item = item.getNext()) {
                     if (item.getValue() == ctx) {
                         LruCacheItem lruSCItem = (LruCacheItem) item;
-                        if (lruSCItem.isTrimmed == false) {
+                        if (!lruSCItem.isTrimmed()) {
                             //Was accessed just after marked for passivation
                             return false;
                         }
@@ -550,13 +550,13 @@ public class LruSessionCache
 		}
 
                 //Ensure that for head the lPrev is null
-                if( (item == head) && (item.lPrev != null) ) {
+                if( (item == head) && (item.getLPrev() != null) ) {
                     _logger.log(Level.WARNING, 
                         "[" + cacheName + "]: Iterator(), resetting head.lPrev");
-                    item.lPrev = null;
+                    item.setLPrev(null);
                 }
                 // traverse to the previous one
-                item = item.lPrev;
+                item = item.getLPrev();
 	    }
 	}
 
@@ -571,18 +571,18 @@ public class LruSessionCache
             while (item != null) {
                 StatefulEJBContext ctx = (StatefulEJBContext) item.getValue();
                 if (ctx != null) {
-                    item.isTrimmed = true;
+                    item.setTrimmed(true);
                     valueList.add(ctx);
                 }
 
                 // Ensure that for head the lPrev is null
-                if ((item == head) && (item.lPrev != null)) {
+                if ((item == head) && (item.getLPrev() != null)) {
                     _logger.log(Level.WARNING, "[" + cacheName
                             + "]: Iterator(), resetting head.lPrev");
-                    item.lPrev = null;
+                    item.setLPrev(null);
                 }
                 // traverse to the previous one
-                item = item.lPrev;
+                item = item.getLPrev();
             }
         }
 
@@ -636,29 +636,29 @@ public class LruSessionCache
                     // if we found a valid item, add it to the list
                     if ((ctx.getLastAccessTime() <= idleThresholdTime) &&
                         ctx.canBePassivated()) {
-                        item.isTrimmed = true;
+                        item.setTrimmed(true);
                         victimList.add(item);
                     } else {
                         break;
                     }
                 }
                 //Ensure that for head the lPrev is null
-                if( (item == head) && (item.lPrev != null) ) {
+                if( (item == head) && (item.getLPrev() != null) ) {
                     _logger.log(Level.WARNING, 
                         "[" + cacheName + "]: TrimTimedoutBeans(), resetting head.lPrev");
-                    item.lPrev = null;
+                    item.setLPrev(null);
                 }
                 // traverse to the previous one
-                item = item.lPrev;
+                item = item.getLPrev();
                 if (item == null) {
                     break;
                 }
                 //for the last item that was picked up as a victim disconnect
                 //it from the list
-                item.lNext.lPrev = null;
-                item.lNext.lNext = null;
+                item.getLNext().setLPrev(null);
+                item.getLNext().setLNext(null);
 
-                item.lNext = null;
+                item.setLNext(null);
             }
             if (item == tail) {			
                 // no items were selected for trimming
@@ -731,9 +731,9 @@ public class LruSessionCache
 					+ "because current cache state: " + currentCacheState);
 				    break;
 				}
-                                if (litem.isTrimmed == false) {
+                                if (!litem.isTrimmed()) {
                                     itemRemoved(litem);
-                                    litem.isTrimmed = true;
+                                    litem.setTrimmed(true);
                                     victims.add(litem);
                                 }
                             }
