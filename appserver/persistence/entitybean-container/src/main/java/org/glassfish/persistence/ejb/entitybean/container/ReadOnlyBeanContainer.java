@@ -63,9 +63,9 @@ import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import com.sun.ejb.containers.EJBContextImpl;
 import static com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
-import com.sun.ejb.containers.util.cache.EJBObjectCache;
-import com.sun.ejb.containers.util.cache.FIFOEJBObjectCache;
-import com.sun.ejb.containers.util.cache.UnboundedEJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.UnboundedEJBObjectCache;
 
 import com.sun.logging.*;
 

@@ -38,11 +38,13 @@
  * holder.
  */
 
-package com.sun.ejb.containers.util.cache;
+package org.glassfish.persistence.ejb.entitybean.container.cache;
 
 import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.CacheListener;
 import com.sun.appserv.util.cache.Constants;
+
+import com.sun.ejb.containers.util.cache.LruCache;
 
 import java.util.Map;
 import java.util.HashMap;

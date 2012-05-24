@@ -71,10 +71,10 @@ import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.BaseCache;
 import com.sun.appserv.util.cache.LruCache;
 import com.sun.appserv.util.cache.CacheListener;
-import com.sun.ejb.containers.util.cache.EJBObjectCache;
-import com.sun.ejb.containers.util.cache.EJBObjectCacheListener;
-import com.sun.ejb.containers.util.cache.FIFOEJBObjectCache;
-import com.sun.ejb.containers.util.cache.UnboundedEJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCacheListener;
+import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
+import org.glassfish.persistence.ejb.entitybean.container.cache.UnboundedEJBObjectCache;
 
 import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
 import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
