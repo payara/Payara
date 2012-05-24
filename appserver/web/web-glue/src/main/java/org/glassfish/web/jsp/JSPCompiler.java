@@ -56,7 +56,6 @@
 
 package org.glassfish.web.jsp;
 
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.runtime.web.JspConfig;
@@ -70,8 +69,6 @@ import org.apache.jasper.JspC;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.util.Enumeration;
@@ -81,7 +78,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public final class JSPCompiler {
-    private ServerContext serverContext;
 
 	public static void compile(File inWebDir, File outWebDir,
                                WebBundleDescriptor wbd, ServerContext serverContext)
