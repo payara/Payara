@@ -43,6 +43,7 @@ package com.sun.ejb.containers.util.cache;
 import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.CacheListener;
 import com.sun.appserv.util.cache.Constants;
+import com.sun.appserv.util.cache.LruCache;
 import com.sun.logging.*;
 
 import java.util.ArrayList;
@@ -55,17 +56,17 @@ import java.util.logging.*;
  * LRUCache
  * in-memory bounded cache with an LRU list
  */
-public class LruCache extends com.sun.appserv.util.cache.LruCache {
+public class LruEJBCache extends LruCache {
 
     protected static final Logger _logger =
-        LogDomains.getLogger(LruCache.class, LogDomains.EJB_LOGGER);
+        LogDomains.getLogger(LruEJBCache.class, LogDomains.EJB_LOGGER);
 
     protected String cacheName;
 
     /**
      * default constructor
      */
-    public LruCache() { }
+    public LruEJBCache() { }
 
     @Override
     protected CacheItem trimLru(long currentTime) {

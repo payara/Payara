@@ -59,7 +59,7 @@ import java.util.logging.*;
 
 
 public class LruSessionCache
-    extends LruCache
+    extends LruEJBCache
     implements EjbCacheStatsProviderDelegate
 {
 

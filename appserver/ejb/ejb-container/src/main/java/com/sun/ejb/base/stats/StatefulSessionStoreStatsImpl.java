@@ -399,7 +399,7 @@ public class StatefulSessionStoreStatsImpl
 
     //Some of the store attributes are (unfortunately) exposed through
     //	the LruSessionCache too
-    //Called from LruCache -> StatefulSessionStoreMonitor
+    //Called from LruSessionCache -> StatefulSessionStoreMonitor
     int getNumExpiredSessionCount() {
 	synchronized (expiredSessionCountLock) {
 	    return (int) expiredSessionCountVal;

@@ -41,7 +41,7 @@
 package com.sun.ejb.containers.util.cache;
 
 public class PassivatedSessionCache
-    extends LruCache
+    extends LruEJBCache
 {
 
     /**

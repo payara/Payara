@@ -44,7 +44,7 @@ import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.CacheListener;
 import com.sun.appserv.util.cache.Constants;
 
-import com.sun.ejb.containers.util.cache.LruCache;
+import com.sun.ejb.containers.util.cache.LruEJBCache;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ import com.sun.logging.*;
  * @author Mahesh Kannan
  */
 public class FIFOEJBObjectCache
-    extends LruCache
+    extends LruEJBCache
     implements EJBObjectCache
 {
     protected int maxCacheSize;
