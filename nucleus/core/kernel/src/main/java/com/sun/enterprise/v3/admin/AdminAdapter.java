@@ -327,11 +327,13 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     public boolean isSingleInstanceCommand(String commandName) {
 
         CommandModel model = commandRunner.getModel(getScope(commandName),getCommandAfterScope(commandName),aalogger) ;
-        ExecuteOn executeOn = model.getClusteringAttributes();
-        if ((executeOn != null) && (executeOn.value().length ==1) &&
-                executeOn.value()[0].equals(RuntimeType.SINGLE_INSTANCE)) {
-            return true;
+        if (model != null ) {
+            ExecuteOn executeOn = model.getClusteringAttributes();
+            if ((executeOn != null) && (executeOn.value().length ==1) &&
+                    executeOn.value()[0].equals(RuntimeType.SINGLE_INSTANCE)) {
+                return true;
 
+            }
         }
         return false;
     }
