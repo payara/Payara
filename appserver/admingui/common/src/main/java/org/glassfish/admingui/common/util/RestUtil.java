@@ -45,56 +45,52 @@
 
 package org.glassfish.admingui.common.util;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
+import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Locale;
-
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.context.FacesContext;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
-import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.security.ssl.SSLUtils;
-import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
-
+import org.glassfish.api.ActionReport.ExitCode;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import static org.glassfish.api.ActionReport.ExitCode;
 /**
  *
  * @author anilam
@@ -105,12 +101,15 @@ public class RestUtil {
     public static final String RESPONSE_TYPE = "application/json";
     public static final String GUI_TOKEN_FOR_EMPTY_PROPERTY_VALUE = "()";
 
-    private static final String REST_TOKEN_COOKIE = "gfresttoken";
+    public static final String REST_TOKEN_COOKIE = "gfresttoken";
     private static Client JERSEY_CLIENT;
 
-    public static Client getJerseyClient() {
+   public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
-            JERSEY_CLIENT = new Client();
+             ClientConfig clientConfig = new DefaultClientConfig();
+             clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+
+            JERSEY_CLIENT = Client.create(clientConfig);
             JERSEY_CLIENT.addFilter(new CsrfProtectionFilter());
 
         }
@@ -234,6 +233,70 @@ public class RestUtil {
 
         return parseResponse(restResponse, handlerCtx, endpoint, (useData && "post".equals(method))? data: attrs, quiet, throwException);
     }
+
+//    public static <T> T restRequest(String endpoint,
+//                                    Map<String, Object> attrs,
+//                                    String method,
+//                                    String contentType,
+//                                    Object data,
+//                                    boolean useData,
+//                                    boolean quiet,
+//                                    boolean throwException) {
+//        method = method.toLowerCase(new Locale("UTF-8"));
+//
+//        Logger logger = GuiUtil.getLogger();
+//        if (logger.isLoggable(Level.FINEST)) {
+//            Map maskedAttr = maskOffPassword(attrs);
+//            logger.log(Level.FINEST,
+//                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
+//                        new Object[]{
+//                            endpoint,
+//                            (useData && "post".equals(method))? data: attrs, method
+//                        }));
+//        }
+//
+//        // Execute the request...
+//        RestResponse restResponse = null;
+//        if ("post".equals(method)) {
+//            if (useData) {
+//                restResponse = post(endpoint, data, contentType);
+//            } else {
+//                restResponse = post(endpoint, attrs);
+//            }
+//        } else if ("put".equals(method)) {
+//            restResponse = put(endpoint, attrs);
+//        } else if ("get".equals(method)) {
+//            restResponse = get(endpoint, attrs);
+//        } else if ("delete".equals(method)) {
+//            restResponse = delete(endpoint, attrs);
+//        } else {
+//            throw new RuntimeException(GuiUtil.getCommonMessage("rest.invalid_method", new Object[]{method}));
+//        }
+//
+//        // If the REST request returns a 401 (authz required), the REST "session"
+//        // has likely expired.  If the requested console URL is NOT the login page,
+//        // invalidate the session and force the the user to log back in.
+//        if (restResponse.getResponseCode() == 401) {
+//            FacesContext fc = FacesContext.getCurrentInstance();
+//            HttpSession session = (HttpSession)fc.getExternalContext().getSession(false);
+//
+//            HttpServletRequest request = (HttpServletRequest)fc.getExternalContext().getRequest();
+//            HttpServletResponse response = (HttpServletResponse)fc.getExternalContext().getResponse();
+//            if (!"/login.jsf".equals(request.getServletPath())) {
+//                try {
+//                    response.sendRedirect("/");
+//
+//                    fc.responseComplete();
+//                    initialize(null);
+//                    session.invalidate();
+//                } catch (Exception ex) {
+//                    throw new RuntimeException(ex);
+//                }
+//            }
+//        }
+//
+//        return restResponse.;
+//    }
 
     public static Map maskOffPassword(Map<String, Object> attrs){
         Map masked = new HashMap();
@@ -463,6 +526,10 @@ public class RestUtil {
     //*******************************************************************************************************************
     protected static MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
         MultivaluedMap formData = new MultivaluedMapImpl();
+        if (payload == null || payload.isEmpty()) {
+            return formData;
+        }
+        
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             final Object value = entry.getValue();
             final String key = entry.getKey();
@@ -722,7 +789,7 @@ public class RestUtil {
      *        <p> This method returns the value of the REST token if it is
      *            successfully set in session scope.</p>
      */
-    private static String getRestToken() {
+    public static String getRestToken() {
         String token = null;
         FacesContext ctx = FacesContext.getCurrentInstance();
         if (ctx != null) {
