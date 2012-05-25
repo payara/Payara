@@ -41,12 +41,21 @@ package org.glassfish.admin.rest.composite;
 
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admin.rest.RestExtension;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
@@ -90,12 +99,12 @@ public class CompositeUtil {
      *
      * @param modelIface The base interface for the desired data model
      * @param similarClass the Class for the calling code, used to load the generated class into the Classloader
-     * @param interfaces An array of the interfaces, excluding the base interface, to implement
+     * @param extensions An array of the interfaces, excluding the base interface, to implement
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
     public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass,
-                                              Class<?>[] interfaces) throws Exception {
+                                              Class<?>[] extensions) throws Exception {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
@@ -105,28 +114,11 @@ public class CompositeUtil {
 //            };
             Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
 
-            for (Class<?> iface : interfaces) {
-                for (Method method : iface.getMethods()) {
-                    String name = method.getName();
-                    final boolean isGetter = name.startsWith("get");
-                    if (isGetter || name.startsWith("set")) {
-                        name = name.substring(3);
-                        Map<String, Object> property = properties.get(name);
-                        if (property == null) {
-                            property = new HashMap<String, Object>();
-                            properties.put(name, property);
-                        }
+            Set<Class<?>> interfaces = new HashSet<Class<?>>(Arrays.asList(extensions));
+            interfaces.add(modelIface);
 
-                        Attribute attr = method.getAnnotation(Attribute.class);
-                        if (attr != null) {
-                            property.put("defaultValue", attr.defaultValue());
-                        }
-                        Class<?> type = isGetter
-                                        ? method.getReturnType()
-                                        : method.getParameterTypes()[0];
-                        property.put("type", type);
-                    }
-                }
+            for (Class<?> iface : interfaces) {
+                analyzeInterface(iface, properties);
             }
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             visitClass(classWriter, className, interfaces, properties);
@@ -148,6 +140,30 @@ public class CompositeUtil {
         return (T) generatedClasses.get(className).newInstance();
     }
 
+    private static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
+        for (Method method : iface.getMethods()) {
+            String name = method.getName();
+            final boolean isGetter = name.startsWith("get");
+            if (isGetter || name.startsWith("set")) {
+                name = name.substring(3);
+                Map<String, Object> property = properties.get(name);
+                if (property == null) {
+                    property = new HashMap<String, Object>();
+                    properties.put(name, property);
+                }
+
+                Attribute attr = method.getAnnotation(Attribute.class);
+                if (attr != null) {
+                    property.put("defaultValue", attr.defaultValue());
+                }
+                Class<?> type = isGetter
+                                ? method.getReturnType()
+                                : method.getParameterTypes()[0];
+                property.put("type", type);
+            }
+        }
+    }
+
     // TODO: method enum?
     /**
      * Find and execute all resource extensions for the specified base resource and HTTP method
@@ -157,16 +173,68 @@ public class CompositeUtil {
      * @param data
      * @param method
      */
-    public static void getResourceExtensions(Habitat habitat, Class<?> baseClass, Object data, String method) {
-        Collection<RestExtension> extensions = habitat.getAllByContract(RestExtension.class);
+    public static Object getResourceExtensions(Habitat habitat, Class<?> baseClass, Object data, String method) {
+        List<RestExtension> extensions = new ArrayList<RestExtension>();
 
-        for (RestExtension extension : extensions) {
+        for (RestExtension extension : habitat.getAllByContract(RestExtension.class)) {
             if (baseClass.getName().equals(extension.getParent())) {
-                if ("get".equalsIgnoreCase(method)) {
-                    extension.get(data);
+                extensions.add(extension);
+//                if ("get".equalsIgnoreCase(method)) {
+//                    extension.get(data);
+//                    return void.class;
+//                } else if ("post".equalsIgnoreCase(method)) {
+//                    return handlePostExtensions(data);
+//                }
+            }
+        }
+        
+        if ("get".equalsIgnoreCase(method)) {
+            handleGetExtensions(extensions, data);
+        } else if ("post".equalsIgnoreCase(method)) {
+             return handlePostExtensions(extensions, data);
+        }
+
+        return void.class;
+    }
+
+    public static void addToParameterMap(ParameterMap parameters, String basePath,
+                                   Class<?> configBean, Object source) {
+        String name;
+        Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultBaseServiceLocator());
+        for (Method cbMethod : configBean.getMethods()) {
+            name = cbMethod.getName();
+            if (name.startsWith("set")/* && (cbMethod.getAnnotation(Attribute.class) !=null)*/) {
+                String getterName = "get" + name.substring(3, 4).toUpperCase() + name.substring(4);
+                try {
+                    Method getter = source.getClass().getMethod(getterName);
+                    final String key = ResourceUtil.convertToXMLName(name.substring(3));
+                    final Object value = getter.invoke(source);
+                    if (value != null) {
+                        String currentValue = currentValues.get(basePath + key);
+
+                        if ((currentValue == null) || "".equals(value) || (!currentValue.equals(value))) {
+                            parameters.add("DEFAULT", basePath + "." + key + "=" + value);
+                        }
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
+    }
+
+    private static void handleGetExtensions(List<RestExtension> extensions, Object data) {
+        for (RestExtension re : extensions) {
+            re.get(data);
+        }
+    }
+
+    private static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
+        ParameterMap parameters = new ParameterMap();
+        for (RestExtension re : extensions) {
+            parameters.mergeAll(re.post(data));
+        }
+        return parameters;
     }
 
     /**
@@ -185,9 +253,10 @@ public class CompositeUtil {
     /**
      * This method starts the class definition, adding the JAX-B annotations to allow for marshalling via JAX-RS
      */
-    protected static void visitClass(ClassWriter classWriter, String className, Class<?>[] ifaces, Map<String, Map<String, Object>> properties) {
-        String[] ifaceNames = new String[ifaces.length];
-        int i = 0;
+    protected static void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
+        String[] ifaceNames = new String[ifaces.size()+1];
+        int i = 1;
+        ifaceNames[0] = getInternalName(RestModel.class.getName());
         for (Class<?> iface : ifaces) {
             ifaceNames[i++] = iface.getName().replace(".", "/");
         }

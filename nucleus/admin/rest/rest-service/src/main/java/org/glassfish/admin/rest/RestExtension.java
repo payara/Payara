@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest;
 
+import org.glassfish.api.admin.ParameterMap;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -49,4 +50,5 @@ import org.jvnet.hk2.annotations.Contract;
 public interface RestExtension {
     String getParent();
     void get(Object data);
+    ParameterMap post(Object data);
 }

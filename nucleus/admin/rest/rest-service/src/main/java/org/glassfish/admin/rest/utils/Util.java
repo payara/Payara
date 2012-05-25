@@ -290,15 +290,33 @@ public class Util {
      * @return ActionReporter containing result of "set" execution
      */
     public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, BaseServiceLocator habitat) {
-        List<PathSegment> pathSegments = uriInfo.getPathSegments();
+        return applyChanges(data, getBasePathFromUri(uriInfo), habitat);
+    }
+    public static RestActionReporter applyChanges(Map<String, String> data, String basePath, BaseServiceLocator habitat) {
+        ParameterMap parameters = new ParameterMap();
+        Map<String, String> currentValues = getCurrentValues(basePath, habitat);
 
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            String currentValue = currentValues.get(basePath + entry.getKey());
+            if ((currentValue == null) || entry.getValue().equals("") || (!currentValue.equals(entry.getValue()))) {
+                parameters.add("DEFAULT", basePath + entry.getKey() + "=" + entry.getValue());
+            }
+        }
+        if (!parameters.entrySet().isEmpty()) {
+           return ResourceUtil.runCommand("set", parameters, habitat, ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        } else {
+            return new RestActionReporter(); // noop
+        }
+    }
+
+    private static String getBasePathFromUri(UriInfo uriInfo) {
+        List<PathSegment> pathSegments = uriInfo.getPathSegments();
         // Discard the last segment if it is empty. This happens if some one accesses the resource
         // with trailing '/' at end like in htto://host:port/mangement/domain/.../pathelement/
         PathSegment lastSegment = pathSegments.get(pathSegments.size() - 1);
         if(lastSegment.getPath().isEmpty()) {
             pathSegments = pathSegments.subList(0, pathSegments.size() - 1);
         }
-
         List<PathSegment> candidatePathSegment = null;
         if(pathSegments.size() != 1) {
             // Discard "domain"
@@ -309,30 +327,15 @@ public class Util {
             // Preserve "domain"
             candidatePathSegment = pathSegments;
         }
-
         final StringBuilder sb = new StringBuilder();
         for(PathSegment pathSegment :  candidatePathSegment) {
             sb.append(pathSegment.getPath());
             sb.append('.');
         }
-        String setBasePath = sb.toString();
-        ParameterMap parameters = new ParameterMap();
-        Map<String, String> currentValues = getCurrentValues(setBasePath, habitat);
-
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            String currentValue = currentValues.get(setBasePath + entry.getKey());
-            if ((currentValue == null) || entry.getValue().equals("") || (!currentValue.equals(entry.getValue()))) {
-                parameters.add("DEFAULT", setBasePath + entry.getKey() + "=" + entry.getValue());
-            }
-        }
-        if (!parameters.entrySet().isEmpty()) {
-           return ResourceUtil.runCommand("set", parameters, habitat, ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
-        } else {
-            return new RestActionReporter(); // noop
-        }
+        return sb.toString();
     }
 
-    private static Map<String, String> getCurrentValues(String basePath, BaseServiceLocator habitat) {
+    public static Map<String, String> getCurrentValues(String basePath, BaseServiceLocator habitat) {
         Map<String, String> values = new HashMap<String, String>();
         final String path = (basePath.endsWith(".")) ? basePath.substring(0, basePath.length()-1) : basePath;
         RestActionReporter gr = ResourceUtil.runCommand("get", new ParameterMap() {{

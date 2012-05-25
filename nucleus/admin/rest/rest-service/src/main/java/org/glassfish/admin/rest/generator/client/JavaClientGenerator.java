@@ -61,7 +61,6 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 
@@ -181,7 +180,7 @@ public class JavaClientGenerator extends ClientGenerator {
         FileWriter writer = null;
         try {
             String pom = new Scanner(Thread.currentThread().getContextClassLoader().getResourceAsStream("/client/pom.template.xml")).useDelimiter("\\Z").next();
-            pom = pom.replace("${glassfish.version}", versionString);
+            pom = pom.replace("{{glassfish.version}}", versionString);
             File out = File.createTempFile("pom", "xml");
             out.deleteOnExit();
             writer = new FileWriter(out);
