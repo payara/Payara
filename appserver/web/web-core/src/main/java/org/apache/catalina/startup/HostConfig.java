@@ -603,8 +603,9 @@ public class HostConfig
                             deployDescriptors(configBase(), configBase.list());
                             return;
                         }
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         // Ignore and continue
+                    } finally {
                         if (ostream != null) {
                             try {
                                 ostream.close();
