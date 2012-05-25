@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,8 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.Result;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /** ejb [0,n]
  *   resource-env-ref [0,n]

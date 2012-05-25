@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.runtime.resource;
 
-import java.util.*;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.tools.verifier.*;
-import com.sun.enterprise.tools.verifier.tests.*;
+import java.util.Iterator;
+import java.util.Set;
 
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /** ejb [0,n]
  *   resource-ref [0,n]
@@ -64,7 +65,7 @@ import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
  */
 public class ASEjbRRefName extends ASEjbResRef { 
 
-    public Result check(EjbDescriptor descriptor) 
+    public Result check(EjbDescriptor descriptor)
     {
         Result result = getInitializedResult();
 	ComponentNameConstructor compName = getVerifierContext().getComponentNameConstructor();
