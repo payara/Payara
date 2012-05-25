@@ -636,10 +636,12 @@ public class ReadOnlyBeanContainer
         }
     }
 
+    @Override
     protected EJBHomeInvocationHandler getEJBHomeInvocationHandler(Class homeIntfClass) throws Exception {
         return new ReadOnlyEJBHomeImpl(ejbDescriptor, homeIntfClass);
     }
 
+    @Override
     protected EJBLocalHomeInvocationHandler getEJBLocalHomeInvocationHandler(Class homeIntfClass) throws Exception {
         return new ReadOnlyEJBLocalHomeImpl(ejbDescriptor, homeIntfClass);
     }

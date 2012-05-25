@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,70 +40,44 @@
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
-import java.lang.reflect.Method;
-
-import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
-import com.sun.ejb.containers.util.MethodMap;
+import com.sun.ejb.Container;
+import com.sun.ejb.EjbInvocation;
+import com.sun.ejb.InvocationInfo;
+import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.EJBHomeInvocationHandler;
+import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.enterprise.deployment.EjbDescriptor;
 
 /**
- * Implementation of the EJBHome interface for ReadOnly Entity Beans.
- * This class is also the base class for all generated concrete ReadOnly
- * EJBHome implementations.
- * At deployment time, one instance of ReadOnlyEJBHomeImpl is created 
- * for each EJB class in a JAR that has a remote home. 
+ * Implementation of the EJBHome interface for Entity Beans.
  *
- * @author Mahesh Kannan
+ * @author mvatkina
  */
 
-public final class ReadOnlyEJBHomeImpl
-    extends EntityBeanHomeImpl
-    implements ReadOnlyEJBHome
-{
-    private ReadOnlyBeanContainer robContainer;
+public class EntityBeanHomeImpl extends EJBHomeInvocationHandler {
 
-    ReadOnlyEJBHomeImpl(EjbDescriptor ejbDescriptor,
+    EntityBeanHomeImpl(EjbDescriptor ejbDescriptor,
                              Class homeIntfClass)
             throws Exception {
         super(ejbDescriptor, homeIntfClass);
     }
 
-    /** 
-     * Called from ReadOnlyBeanContainer only.
+    /**
+     * EJBObjectImpl is created directly by the container, not by this call
      */
-    final void setReadOnlyBeanContainer(ReadOnlyBeanContainer container) {
-        this.robContainer = container;
+    @Override
+    public EJBObjectImpl createEJBObjectImpl() {
+        return null;
     }
 
+    @Override
+    protected void postCreate(Container container, EjbInvocation inv, 
+            InvocationInfo invInfo, Object primaryKey, Object[] args) 
+            throws Throwable {
+        container.postCreate(inv, primaryKey);
+        invokeTargetBeanMethod((BaseContainer)container, invInfo.targetMethod2,
+                 inv, inv.ejb, args);
 
-    /***********************************************/
-    /** Implementation of ReadOnlyEJBHome methods **/
-    /***********************************************/
-
-    public void _refresh_com_sun_ejb_containers_read_only_bean_(Object primaryKey)
-        throws java.rmi.RemoteException
-    {
-        robContainer.setRefreshFlag(primaryKey);
-    }
-
-    public void _refresh_All() throws java.rmi.RemoteException
-    {
-        robContainer.refreshAll();
-    }
-
-    protected boolean invokeSpecialEJBHomeMethod(Method method, Class methodClass, 
-            Object[] args) throws Exception {
-        if( methodClass == ReadOnlyEJBHome.class ) {
-            if( method.getName().equals("_refresh_All") ) {
-                _refresh_All();
-            } else {
-                _refresh_com_sun_ejb_containers_read_only_bean_
-                    (args[0]);
-            }
-
-            return true;
-        }
-        return false;
     }
 }
 

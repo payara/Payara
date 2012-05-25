@@ -82,6 +82,8 @@ import com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.EJBLocalObjectImpl;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
 import com.sun.ejb.containers.EJBObjectImpl;
+import com.sun.ejb.containers.EJBHomeInvocationHandler;
+import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCacheListener;
 import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
@@ -93,6 +95,7 @@ import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
+import com.sun.ejb.portable.EJBMetaDataImpl;
 import com.sun.ejb.portable.ObjrefEnumeration;
 import com.sun.ejb.spi.container.BeanStateSynchronization;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
@@ -103,6 +106,7 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
@@ -275,6 +279,7 @@ public class EntityContainer
             isContainerManagedPers = true;
         }
         
+        isBeanManagedTran = false;
         iased = ed.getIASEjbExtraDescriptors();
         if( iased != null) {
             beanCacheDes = iased.getBeanCache();
@@ -305,7 +310,59 @@ public class EntityContainer
         _logger.log(Level.FINE,"[EntityContainer] preInitialize==>isContainerManagedPers: "
                 + isContainerManagedPers);
     }
-    
+
+    @Override
+    protected void setEJBMetaData() throws Exception {
+        EjbEntityDescriptor ed = (EjbEntityDescriptor)ejbDescriptor;
+        Class primaryKeyClass = loader.loadClass(ed.getPrimaryKeyClassName());
+
+        metadata = new EJBMetaDataImpl(ejbHomeStub, homeIntf, remoteIntf, primaryKeyClass);
+    }
+
+    @Override
+    protected void validateTxAttr(MethodDescriptor md, int txAttr) throws EJBException {
+        super.validateTxAttr(md, txAttr);
+
+        // For EJB2.0 CMP EntityBeans, container is only required to support
+        // REQUIRED/REQUIRES_NEW/MANDATORY, see EJB2.0 section 17.4.1.
+        if (((EjbEntityDescriptor)ejbDescriptor).getPersistenceType().
+                equals(EjbEntityDescriptor.CONTAINER_PERSISTENCE)) {
+            EjbCMPEntityDescriptor e= (EjbCMPEntityDescriptor)ejbDescriptor;
+            if ( !e.getIASEjbExtraDescriptors().isIsReadOnlyBean() &&
+                     e.isEJB20() ) {
+                if ( txAttr != TX_REQUIRED && txAttr != TX_REQUIRES_NEW
+                        && txAttr != TX_MANDATORY ) {
+                    throw new EJBException(
+                            "Transaction attribute for EJB2.0 CMP EntityBeans" +
+                            " must be Required/RequiresNew/Mandatory");
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void adjustHomeTargetMethodInfo(InvocationInfo invInfo, String methodName, 
+            Class[] paramTypes) throws NoSuchMethodException {
+        if( invInfo.startsWithCreate ) {
+            String extraCreateChars = methodName.substring("create".length());
+            invInfo.targetMethod2 = ejbClass.getMethod
+                        ("ejbPostCreate" + extraCreateChars, paramTypes);
+
+        }
+    }
+
+    @Override
+    protected EJBHomeInvocationHandler getEJBHomeInvocationHandler(
+            Class homeIntfClass) throws Exception {
+        return new EntityBeanHomeImpl(ejbDescriptor, homeIntfClass);
+    }
+
+    @Override
+    protected EJBLocalHomeInvocationHandler getEJBLocalHomeInvocationHandler(
+            Class homeIntfClass) throws Exception {
+        return new EntityBeanLocalHomeImpl(ejbDescriptor, homeIntfClass);
+    }
+
     /**
      * setup a timer task to trim timed out entries in the cache.
      * @param cache cache which is used to setup the timer task
@@ -1541,6 +1598,7 @@ public class EntityContainer
     // Called from BaseContainer just before invoking a business method
     // whose tx attribute is TX_NEVER / TX_NOT_SUPPORTED / TX_SUPPORTS without
     // a client tx.
+    @Override
     protected void preInvokeNoTx(EjbInvocation inv) {
         EntityContextImpl context = (EntityContextImpl)inv.context;
         
@@ -1573,6 +1631,7 @@ public class EntityContainer
     
     // Called from BaseContainer after invoking a method with tx attribute
     // NotSupported or Never or Supports without client tx.
+    @Override
     protected void postInvokeNoTx(EjbInvocation inv) {
         // This calls ejbStore to allow bean to flush any state to database.
         // This is also sufficient for compliance with EJB2.0 section 12.1.6.1

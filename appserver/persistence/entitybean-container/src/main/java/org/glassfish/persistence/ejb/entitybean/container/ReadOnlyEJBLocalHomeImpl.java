@@ -43,7 +43,6 @@ package org.glassfish.persistence.ejb.entitybean.container;
 import java.lang.reflect.Method;
 
 import com.sun.appserv.ejb.ReadOnlyBeanLocalNotifier;
-import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import com.sun.ejb.containers.util.MethodMap;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
@@ -59,7 +58,7 @@ import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHo
  */
 
 public class ReadOnlyEJBLocalHomeImpl
-    extends EJBLocalHomeInvocationHandler
+    extends EntityBeanLocalHomeImpl
     implements ReadOnlyEJBLocalHome
 {
     private ReadOnlyBeanLocalNotifier robNotifier;

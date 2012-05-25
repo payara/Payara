@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,21 @@ public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializabl
     // Dont serialize the EJBHome ref directly, use the HomeHandle
     transient private EJBHome ejbHomeStub;
 
+
+    // this constructor is only called by the EntityContainer
+    public EJBMetaDataImpl(EJBHome ejbHomeStub, Class homeClass, 
+		   Class remoteClass, Class keyClass)
+    {
+        this(ejbHomeStub, homeClass, remoteClass, keyClass, false, false);
+    }
+
+    // this constructor is only called by non-entity-bean containers
+    public EJBMetaDataImpl(EJBHome ejbHomeStub, Class homeClass, 
+		   Class remoteClass, 
+		   boolean isSessionBean, boolean isStatelessSessionBean)
+    {
+        this(ejbHomeStub, homeClass, remoteClass, null, isSessionBean, isStatelessSessionBean);
+    }
 
     // this constructor is only called in the RI's EJB container
     public EJBMetaDataImpl(EJBHome ejbHomeStub, Class homeClass, 

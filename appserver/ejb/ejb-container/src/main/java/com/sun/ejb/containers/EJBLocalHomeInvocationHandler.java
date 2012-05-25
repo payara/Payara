@@ -40,6 +40,7 @@
 
 package com.sun.ejb.containers;
 
+import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.containers.util.MethodMap;
@@ -72,7 +73,6 @@ public class EJBLocalHomeInvocationHandler
         new LocalStringManagerImpl(EJBLocalHomeInvocationHandler.class);
 
     private boolean isStatelessSession_;
-    private boolean isEntity_;
 
     // Our associated proxy object.  Used when a caller needs EJBLocalObject
     // but only has InvocationHandler.
@@ -92,12 +92,10 @@ public class EJBLocalHomeInvocationHandler
         throws Exception {
 
         if( ejbDescriptor instanceof EjbSessionDescriptor ) {
-            isEntity_ = false;
             isStatelessSession_ = 
                 ((EjbSessionDescriptor)ejbDescriptor).isStateless();
         } else {
             isStatelessSession_ = false;
-            isEntity_ = true;
         }
 
         localHomeIntfClass_ = localHomeIntf;
@@ -183,9 +181,11 @@ public class EJBLocalHomeInvocationHandler
         EJBLocalObjectImpl localObjectImpl = null;
         Object returnValue = null;
 
-        if( !isEntity_ && invInfo.startsWithCreate ) {
+        if( invInfo.startsWithCreate ) {
             localObjectImpl = createEJBLocalObjectImpl();
-            returnValue = localObjectImpl.getClientObject();
+            if (localObjectImpl != null) {
+                returnValue = localObjectImpl.getClientObject();
+            }
         }
  
         if( !isStatelessSession_ ) {
@@ -214,7 +214,7 @@ public class EJBLocalHomeInvocationHandler
             inv.securityPermissions = invInfo.securityPermissions;
             inv.invocationInfo = invInfo;
 
-            if( !isEntity_ && invInfo.startsWithCreate ) {
+            if( localObjectImpl != null && invInfo.startsWithCreate ) {
                 inv.ejbObject = (EJBLocalRemoteObject) localObjectImpl;
             }
 
@@ -224,13 +224,9 @@ public class EJBLocalHomeInvocationHandler
 
                 if( invInfo.startsWithCreate ) {
 
-                    Object ejbCreateReturnValue = container.invokeTargetBeanMethod(
-                        invInfo.targetMethod1, inv, inv.ejb, args, null);
-                    if( isEntity_ ) {
-                        container.postCreate(inv, ejbCreateReturnValue);
-                        container.invokeTargetBeanMethod(invInfo.targetMethod2, 
-                                            inv, inv.ejb, args, null);
-                    } 
+                    Object ejbCreateReturnValue = invokeTargetBeanMethod(container,
+                        invInfo.targetMethod1, inv, inv.ejb, args);
+                    postCreate(container, inv, invInfo, ejbCreateReturnValue, args);
                     if( inv.ejbObject != null ) {
                         returnValue = ((EJBLocalObjectImpl)inv.ejbObject)
                             .getClientObject();
@@ -240,13 +236,13 @@ public class EJBLocalHomeInvocationHandler
 			invInfo.targetMethod1, inv, args);
                 } else if ( invInfo.startsWithFind ) {
 
-                    Object pKeys = container.invokeTargetBeanMethod(invInfo.targetMethod1,
-                                      inv, inv.ejb, args, null);
+                    Object pKeys = invokeTargetBeanMethod(container, invInfo.targetMethod1,
+                                      inv, inv.ejb, args);
                     returnValue = container.postFind(inv, pKeys, null);
                 } else {
 
-                    returnValue = container.invokeTargetBeanMethod(invInfo.targetMethod1,
-                                      inv, inv.ejb, args, null);
+                    returnValue = invokeTargetBeanMethod(container, invInfo.targetMethod1,
+                                      inv, inv.ejb, args);
 
                 }
             } catch(InvocationTargetException ite) {
@@ -283,4 +279,19 @@ public class EJBLocalHomeInvocationHandler
             Object[] args) throws Throwable {
         return null;
     }
+
+    // default impl to be overridden in subclass if necessary
+    protected void postCreate(Container container, EjbInvocation inv,
+            InvocationInfo invInfo, Object primaryKey, Object[] args)
+            throws Throwable {
+    }
+
+    // allow subclasses to execute a protected method in BaseContainer
+    protected Object invokeTargetBeanMethod(BaseContainer container, 
+            Method beanClassMethod, EjbInvocation inv, Object target, Object[] params)
+            throws Throwable {
+
+        return container.invokeTargetBeanMethod(beanClassMethod, inv, target, params, null);
+    }
+
 }

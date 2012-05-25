@@ -150,9 +150,7 @@ import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
 import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
@@ -399,7 +397,6 @@ public abstract class BaseContainer
     protected boolean isStatelessSession;
     protected boolean isStatefulSession;
     protected boolean isMessageDriven;
-    protected boolean isEntity;
     protected boolean isSingleton;
 
     protected EjbDescriptor ejbDescriptor;
@@ -423,7 +420,7 @@ public abstract class BaseContainer
     protected InvocationInfo[] ejbIntfMethodInfo;
 
     protected Properties envProps;
-    boolean isBeanManagedTran=false;
+    protected boolean isBeanManagedTran=false;
     
     
     protected boolean debugMonitorFlag = false;
@@ -545,20 +542,12 @@ public abstract class BaseContainer
 
             containerStateManager = new EJBContainerStateManager(this);
 
+            isBeanManagedTran = ejbDescriptor.getTransactionType().equals("Bean");
+
             if( ejbDescriptor.getType().equals(EjbMessageBeanDescriptor.TYPE) )
             {
                 assertFullProfile("is a Message-Driven Bean");
-
                 isMessageDriven = true;
-                EjbMessageBeanDescriptor mdb =
-                (EjbMessageBeanDescriptor) ejbDescriptor;
-
-                if ( mdb.getTransactionType().equals("Bean") ) {
-                    isBeanManagedTran = true;
-                }
-                else {
-                    isBeanManagedTran = false;
-                }
 
                 // Instantiate the ORB and Remote naming manager
                 // to allow client lookups of JMS queues/topics/connectionfactories
@@ -567,205 +556,174 @@ public abstract class BaseContainer
                 // Once that's available, this call can be removed.               
                 initializeProtocolManager();
             }
-            else {
-                
-                if(ejbDescriptor.getType().equals(EjbEntityDescriptor.TYPE)) {
-                    assertFullProfile("is an Entity Bean");
-                    isEntity = true;
+            else if( ejbDescriptor instanceof EjbSessionDescriptor) 
+            {
+                isSession = true;
+                EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
+    
+                if( !sd.isSessionTypeSet() ) {
+                    throw new RuntimeException(localStrings.getLocalString(
+                            "ejb.session_type_not_set", 
+                            "Invalid ejb Descriptor. Session type not set for {0}: {1}",
+                            sd.getName(), sd));
+                }
+   
+                if (sd.isSingleton()) {
+                    isSingleton = true;
                 } else {
-                    isSession = true;
-                    EjbSessionDescriptor sd = (EjbSessionDescriptor) ejbDescriptor;
+                    isStatelessSession = sd.isStateless();
+                    isStatefulSession  = !isStatelessSession;
+  
+                    if( isStatefulSession ) {
+ 
+                        /**
+                         * If bean class isn't explicitly marked Serializable, generate
+                         * a subclass that is.   We do this with a generator that uses
+                         * ASM directly instead of the CORBA codegen library since none
+                         * of the corba .jars are part of the Web Profile.
+                         */
+                        if( !Serializable.class.isAssignableFrom(ejbClass) ) {
 
-                    if( !sd.isSessionTypeSet() ) {
-                        throw new RuntimeException(localStrings.getLocalString(
-                                "ejb.session_type_not_set", 
-                                "Invalid ejb Descriptor. Session type not set for {0}: {1}",
-                                sd.getName(), sd));
-                    }
-
-                    if (sd.isSingleton()) {
-                        isSingleton = true;
-                    } else {
-                        isStatelessSession = sd.isStateless();
-                        isStatefulSession  = !isStatelessSession;
-
-                        if( isStatefulSession ) {
-
-                            /**
-                             * If bean class isn't explicitly marked Serializable, generate
-                             * a subclass that is.   We do this with a generator that uses
-                             * ASM directly instead of the CORBA codegen library since none
-                             * of the corba .jars are part of the Web Profile.
-                             */
-                            if( !Serializable.class.isAssignableFrom(ejbClass) ) {
-
-                                sfsbSerializedClass = EJBUtils.loadGeneratedSerializableClass(ejbClass.getClassLoader(),
-                                        ejbClass.getName());
-                            }
-
+                            sfsbSerializedClass = EJBUtils.loadGeneratedSerializableClass(ejbClass.getClassLoader(),
+                                    ejbClass.getName());
                         }
-                    }
-                    if ( sd.getTransactionType().equals("Bean") ) {
-                        isBeanManagedTran = true;
-                    } else {
-                        isBeanManagedTran = false;
-                    }
 
-                    hasAsynchronousInvocations = sd.hasAsynchronousMethods();
-
+                    }
                 }
 
-                if ( ejbDescriptor.isRemoteInterfacesSupported() ||
+                hasAsynchronousInvocations = sd.hasAsynchronousMethods();
+            }
+
+            if ( ejbDescriptor.isRemoteInterfacesSupported() ||
                      ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
 
                     assertFullProfile("exposes a Remote client view");
 
-                    initializeProtocolManager();
+                initializeProtocolManager();
 
-                }
+            }
 
-                if ( ejbDescriptor.isRemoteInterfacesSupported() ) {
+            if ( ejbDescriptor.isRemoteInterfacesSupported() ) {
 
-                    isRemote = true;
-                    hasRemoteHomeView = true;
+                isRemote = true;
+                hasRemoteHomeView = true;
 
-                    String homeClassName = ejbDescriptor.getHomeClassName();
+                String homeClassName = ejbDescriptor.getHomeClassName();
 
-                    homeIntf = loader.loadClass(homeClassName);
-                    remoteIntf = loader.loadClass
-                        (ejbDescriptor.getRemoteClassName());
+                homeIntf = loader.loadClass(homeClassName);
+                remoteIntf = loader.loadClass(ejbDescriptor.getRemoteClassName());
 
-                    String id = 
-                        Long.toString(ejbDescriptor.getUniqueId()) + "_RHome";
+                String id = Long.toString(ejbDescriptor.getUniqueId()) + "_RHome";
 
-                    remoteHomeRefFactory =
-                        getProtocolManager().getRemoteReferenceFactory(this, true, id);
+                remoteHomeRefFactory = getProtocolManager().getRemoteReferenceFactory(this, true, id);
 
-                }
+            }
                 
-                if( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
+            if( ejbDescriptor.isRemoteBusinessInterfacesSupported() ) {
                     
-                    isRemote = true;
-                    hasRemoteBusinessView = true;
+                isRemote = true;
+                hasRemoteBusinessView = true;
 
-                    remoteBusinessHomeIntf = 
-                        EJBUtils.loadGeneratedGenericEJBHomeClass(loader);
+                remoteBusinessHomeIntf = EJBUtils.loadGeneratedGenericEJBHomeClass(loader);
 
-                    for(String next : 
-                            ejbDescriptor.getRemoteBusinessClassNames()) {
+                for(String next : ejbDescriptor.getRemoteBusinessClassNames()) {
 
-                        // The generated remote business interface and the
-                        // client wrapper for the business interface are 
-                        // produced dynamically.  The following call must be 
-                        // made before any EJB 3.0 Remote business interface 
-                        // runtime behavior is needed for a particular
-                        // classloader.
-                        EJBUtils.loadGeneratedRemoteBusinessClasses
-                            (loader, next);
+                    // The generated remote business interface and the
+                    // client wrapper for the business interface are 
+                    // produced dynamically.  The following call must be 
+                    // made before any EJB 3.0 Remote business interface 
+                    // runtime behavior is needed for a particular
+                    // classloader.
+                    EJBUtils.loadGeneratedRemoteBusinessClasses(loader, next);
                         
-                        String nextGen =
-                            EJBUtils.getGeneratedRemoteIntfName(next);
+                    String nextGen = EJBUtils.getGeneratedRemoteIntfName(next);
 
-                        Class genRemoteIntf = loader.loadClass(nextGen);
+                    Class genRemoteIntf = loader.loadClass(nextGen);
 
-                        RemoteBusinessIntfInfo info = 
-                            new RemoteBusinessIntfInfo();
-                        info.generatedRemoteIntf = genRemoteIntf;
-                        info.remoteBusinessIntf  = loader.loadClass(next);
+                    RemoteBusinessIntfInfo info = new RemoteBusinessIntfInfo();
+                    info.generatedRemoteIntf = genRemoteIntf;
+                    info.remoteBusinessIntf  = loader.loadClass(next);
 
-                        // One remote reference factory for each remote 
-                        // business interface.  Id must be unique across
-                        // all ejb containers.
-                        String id = Long.toString(ejbDescriptor.getUniqueId()) 
+                    // One remote reference factory for each remote 
+                    // business interface.  Id must be unique across
+                    // all ejb containers.
+                    String id = Long.toString(ejbDescriptor.getUniqueId()) 
                              + "_RBusiness" + "_" + genRemoteIntf.getName();
 
-                        info.referenceFactory = getProtocolManager().
+                    info.referenceFactory = getProtocolManager().
                             getRemoteReferenceFactory(this, false, id);
 
-                        remoteBusinessIntfInfo.put(genRemoteIntf.getName(),
-                                                   info);
+                    remoteBusinessIntfInfo.put(genRemoteIntf.getName(), info);
                         
-                        addToGeneratedMonitoredMethodInfo(nextGen, genRemoteIntf); 
-                    }
-
+                    addToGeneratedMonitoredMethodInfo(nextGen, genRemoteIntf); 
                 }
 
-                if ( ejbDescriptor.isLocalInterfacesSupported() ) {
-                    // initialize class objects for LocalHome/LocalIntf etc.
-                    isLocal = true;
-                    hasLocalHomeView = true;
-
-                    String localHomeClassName = 
-                        ejbDescriptor.getLocalHomeClassName();
-
-                    localHomeIntf = 
-                        loader.loadClass(localHomeClassName);
-                    localIntf = loader.loadClass
-                        (ejbDescriptor.getLocalClassName());
-                }
-
-                if( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
-                    isLocal = true;
-                    hasLocalBusinessView = true;
-
-                    localBusinessHomeIntf = GenericEJBLocalHome.class;
-
-                    for(String next :
-                            ejbDescriptor.getLocalBusinessClassNames() ) {
-                        Class clz = loader.loadClass(next);
-                        localBusinessIntfs.add(clz);
-                        addToGeneratedMonitoredMethodInfo(next, clz);
-                    }
-                }
-
-                if( ejbDescriptor.isLocalBean() ) {
-                    isLocal = true;
-                    hasOptionalLocalBusinessView = true;
-
-                    ejbOptionalLocalBusinessHomeIntf = GenericEJBLocalHome.class;
-                    Class clz = loader.loadClass(ejbDescriptor.getEjbClassName());
-                    addToGeneratedMonitoredMethodInfo(ejbDescriptor.getEjbClassName(), clz);
-
-                    this.optIntfClassName = EJBUtils.getGeneratedOptionalInterfaceName(ejbClass.getName());
-                    optIntfClassLoader = new EjbOptionalIntfGenerator(loader);
-                    ((EjbOptionalIntfGenerator) optIntfClassLoader).generateOptionalLocalInterface(ejbClass, optIntfClassName);
-                    ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(optIntfClassName);
-                }
-
-                if( isStatelessSession || isSingleton ) {
-                    EjbBundleDescriptor bundle =
-                        ejbDescriptor.getEjbBundleDescriptor();
-                    WebServicesDescriptor webServices = bundle.getWebServices();
-                    Collection endpoints =
-                        webServices.getEndpointsImplementedBy(ejbDescriptor);
-                    // JSR 109 doesn't require support for a single ejb
-                    // implementing multiple port ex.
-                    if( endpoints.size() == 1 ) {
-
-                        assertFullProfile("is a Web Service Endpoint");
-
-                        webServiceEndpointIntf = loader.loadClass
-                           (ejbDescriptor.getWebServiceEndpointInterfaceName());
-                        isWebServiceEndpoint = true;
-                    }
-                }
-
-
-                try{
-                    // get Method objects for ejbPassivate/Activate/ejbRemove
-                    ejbPassivateMethod = 
-                        ejbClass.getMethod("ejbPassivate", NO_PARAMS);
-                    ejbActivateMethod = 
-                        ejbClass.getMethod("ejbActivate", NO_PARAMS);
-                    ejbRemoveMethod = 
-                        ejbClass.getMethod("ejbRemove", NO_PARAMS);
-                } catch(NoSuchMethodException nsme) {
-                    // ignore.  Will happen for EJB 3.0 session beans
-                }
-
-                
             }
-            
+
+            if ( ejbDescriptor.isLocalInterfacesSupported() ) {
+                // initialize class objects for LocalHome/LocalIntf etc.
+                isLocal = true;
+                hasLocalHomeView = true;
+
+                String localHomeClassName = ejbDescriptor.getLocalHomeClassName();
+
+                localHomeIntf = loader.loadClass(localHomeClassName);
+                localIntf = loader.loadClass (ejbDescriptor.getLocalClassName());
+            }
+
+            if( ejbDescriptor.isLocalBusinessInterfacesSupported() ) {
+                isLocal = true;
+                hasLocalBusinessView = true;
+
+                localBusinessHomeIntf = GenericEJBLocalHome.class;
+
+                for(String next : ejbDescriptor.getLocalBusinessClassNames() ) {
+                    Class clz = loader.loadClass(next);
+                    localBusinessIntfs.add(clz);
+                    addToGeneratedMonitoredMethodInfo(next, clz);
+                }
+            }
+
+            if( ejbDescriptor.isLocalBean() ) {
+                isLocal = true;
+                hasOptionalLocalBusinessView = true;
+
+                ejbOptionalLocalBusinessHomeIntf = GenericEJBLocalHome.class;
+                Class clz = loader.loadClass(ejbDescriptor.getEjbClassName());
+                addToGeneratedMonitoredMethodInfo(ejbDescriptor.getEjbClassName(), clz);
+
+                this.optIntfClassName = EJBUtils.getGeneratedOptionalInterfaceName(ejbClass.getName());
+                optIntfClassLoader = new EjbOptionalIntfGenerator(loader);
+                ((EjbOptionalIntfGenerator) optIntfClassLoader).generateOptionalLocalInterface(ejbClass, optIntfClassName);
+                ejbGeneratedOptionalLocalBusinessIntfClass = optIntfClassLoader.loadClass(optIntfClassName);
+            }
+
+            if( isStatelessSession || isSingleton ) {
+                EjbBundleDescriptor bundle = ejbDescriptor.getEjbBundleDescriptor();
+                WebServicesDescriptor webServices = bundle.getWebServices();
+                Collection endpoints = webServices.getEndpointsImplementedBy(ejbDescriptor);
+                // JSR 109 doesn't require support for a single ejb
+                // implementing multiple port ex.
+                if( endpoints.size() == 1 ) {
+
+                    assertFullProfile("is a Web Service Endpoint");
+
+                    webServiceEndpointIntf = loader.loadClass
+                           (ejbDescriptor.getWebServiceEndpointInterfaceName());
+                    isWebServiceEndpoint = true;
+                }
+            }
+
+
+            try{
+                // get Method objects for ejbPassivate/Activate/ejbRemove
+                ejbPassivateMethod = ejbClass.getMethod("ejbPassivate", NO_PARAMS);
+                ejbActivateMethod = ejbClass.getMethod("ejbActivate", NO_PARAMS);
+                ejbRemoveMethod = ejbClass.getMethod("ejbRemove", NO_PARAMS);
+            } catch(NoSuchMethodException nsme) {
+                // ignore.  Will happen for EJB 3.0 session beans
+            }
+
             if ( ejbDescriptor.isTimedObject() ) {
 
                 warnIfNotFullProfile("use of persistent EJB Timer Service");
@@ -1645,14 +1603,13 @@ public abstract class BaseContainer
                 new Object[]{this.ejbDescriptor.getName(), publishedInternalGlobalJndiNames});
         }
         
-        // create EJBMetaData
-        Class primaryKeyClass = null;
-        if ( isEntity ) {
-            EjbEntityDescriptor ed = (EjbEntityDescriptor)ejbDescriptor;
-            primaryKeyClass = loader.loadClass(ed.getPrimaryKeyClassName());
-        }
-        metadata = new EJBMetaDataImpl(ejbHomeStub, homeIntf, remoteIntf,
-            primaryKeyClass, isSession, isStatelessSession);
+        // set EJBMetaData
+        setEJBMetaData();
+    }
+
+    // default impl
+    protected void setEJBMetaData() throws Exception {
+        metadata = new EJBMetaDataImpl(ejbHomeStub, homeIntf, remoteIntf, isSession, isStatelessSession);
     }
 
     protected String getJavaGlobalJndiNamePrefix() {
@@ -3259,14 +3216,18 @@ public abstract class BaseContainer
         return invInfo;
     }
     
+    // default impl
+    protected void adjustHomeTargetMethodInfo(InvocationInfo invInfo, String methodName, 
+            Class[] paramTypes) throws NoSuchMethodException {
+         // Nothing todo
+    }
+
     private void setHomeTargetMethodInfo(InvocationInfo invInfo, 
                                          boolean isLocal) 
         throws EJBException {
                                          
         Class homeIntfClazz = isLocal ? 
             javax.ejb.EJBLocalHome.class : javax.ejb.EJBHome.class;
-
-        boolean isEntity = (ejbDescriptor instanceof EjbEntityDescriptor);
 
         Class methodClass  = invInfo.method.getDeclaringClass();
         Class[] paramTypes = invInfo.method.getParameterTypes();
@@ -3293,10 +3254,7 @@ public abstract class BaseContainer
                 invInfo.targetMethod1 = ejbClass.getMethod
                     ("ejbCreate" + extraCreateChars, paramTypes);
                 
-                if( isEntity ) {
-                    invInfo.targetMethod2 = ejbClass.getMethod
-                        ("ejbPostCreate" + extraCreateChars, paramTypes);
-                }
+                adjustHomeTargetMethodInfo(invInfo, methodName, paramTypes);
                 
             } else if ( invInfo.startsWithFind ) {
                 
@@ -3668,30 +3626,20 @@ public abstract class BaseContainer
             else if ( attr.equals(ContainerTransaction.NEVER) )
                 txAttr = TX_NEVER;
         }
-        
+        validateTxAttr(md, txAttr);
+
+        return txAttr;
+    }
+
+    /**
+     * Validate transaction attribute value. Allow subclasses to add their own validation.
+     */
+    protected void validateTxAttr(MethodDescriptor md, int txAttr) throws EJBException {
         if ( txAttr == -1 ) {
             throw new EJBException("Transaction Attribute not found for method "
                 + md.prettyPrint());
         }
         
-        // For EJB2.0 CMP EntityBeans, container is only required to support
-        // REQUIRED/REQUIRES_NEW/MANDATORY, see EJB2.0 section 17.4.1.
-        if ( isEntity ) {
-            if (((EjbEntityDescriptor)ejbDescriptor).getPersistenceType().
-                equals(EjbEntityDescriptor.CONTAINER_PERSISTENCE)) {
-                EjbCMPEntityDescriptor e= (EjbCMPEntityDescriptor)ejbDescriptor;
-                if ( !e.getIASEjbExtraDescriptors().isIsReadOnlyBean() && 
-                     e.isEJB20() ) {
-                    if ( txAttr != TX_REQUIRED && txAttr != TX_REQUIRES_NEW
-                    && txAttr != TX_MANDATORY )
-                        throw new EJBException( 
-                            "Transaction attribute for EJB2.0 CMP EntityBeans" + 
-                            " must be Required/RequiresNew/Mandatory");
-                }
-            }
-        }
-
-        return txAttr;
     }
 
     /**
@@ -4660,8 +4608,7 @@ public abstract class BaseContainer
                 if ( status != Status.STATUS_NO_TRANSACTION )
                     inv.clientTx = transactionManager.suspend();
                 checkUnfinishedTx(prevTx, inv);
-                if ( isEntity )
-                    preInvokeNoTx(inv);
+                preInvokeNoTx(inv);
                 break;
                 
             case TX_MANDATORY:
@@ -4699,8 +4646,7 @@ public abstract class BaseContainer
                     useClientTx(prevTx, inv);
                 else { // we need to invoke the EJB with no Tx.
                     checkUnfinishedTx(prevTx, inv);
-                    if ( isEntity )
-                        preInvokeNoTx(inv);
+                    preInvokeNoTx(inv);
                 }
                 break;
                 
@@ -4711,8 +4657,7 @@ public abstract class BaseContainer
                 
                 else { // we need to invoke the EJB with no Tx.
                     checkUnfinishedTx(prevTx, inv);
-                    if ( isEntity )
-                        preInvokeNoTx(inv);
+                    preInvokeNoTx(inv);
                 }
                 break;
                 
@@ -4940,8 +4885,7 @@ public abstract class BaseContainer
                 // EJB executed in no Tx
                 if ( exception != null )
                     newException = checkExceptionNoTx(context, exception);
-                if ( isEntity )
-                    postInvokeNoTx(inv);
+                postInvokeNoTx(inv);
                 
                 if ( inv.clientTx != null ) {
                     // there was a client Tx which was suspended
@@ -4996,8 +4940,7 @@ public abstract class BaseContainer
                     // EJB executed in no Tx
                     if ( exception != null )
                         newException = checkExceptionNoTx(context, exception);
-                    if ( isEntity )
-                        postInvokeNoTx(inv);
+                    postInvokeNoTx(inv);
                 }
                 break;
                 
@@ -5232,13 +5175,11 @@ public abstract class BaseContainer
     protected abstract void afterCompletion(EJBContextImpl context, int status);
     
     protected void preInvokeNoTx(EjbInvocation inv) {
-        throw new EJBException(
-            "Internal Error: BaseContainer.preInvokeNoTx called");
+        // No-op by default
     }
     
     protected void postInvokeNoTx(EjbInvocation inv) {
-        throw new EJBException(
-            "Internal Error: BaseContainer.postInvokeNoTx called");
+        // No-op by default
     }
     
     private Throwable processSystemException(Throwable sysEx) {
