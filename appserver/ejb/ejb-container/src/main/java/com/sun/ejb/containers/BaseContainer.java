@@ -438,8 +438,6 @@ public abstract class BaseContainer
     
     protected int containerState = CONTAINER_INITIALIZING;
     
-    protected int cmtTimeoutInSeconds = 0;
-
     protected HashMap			    methodMonitorMap;
     protected boolean			    monitorOn = false;
 
@@ -512,6 +510,7 @@ public abstract class BaseContainer
     private WSEjbEndpointRegistry wsejbEndpointRegistry;
 
     protected EJBContainerStateManager containerStateManager;
+    protected EJBContainerTransactionManager containerTransactionManager;
 
     /**
      * This constructor is called from ContainerFactoryImpl when an
@@ -537,10 +536,8 @@ public abstract class BaseContainer
             // get Class objects for creating new EJBs
             ejbClass = loader.loadClass(ejbDescriptor.getEjbImplClassName());
             
-            IASEjbExtraDescriptors iased = ejbDesc.getIASEjbExtraDescriptors();
-            cmtTimeoutInSeconds = iased.getCmtTimeoutInSeconds();
-
             containerStateManager = new EJBContainerStateManager(this);
+            containerTransactionManager = new EJBContainerTransactionManager(this, ejbDesc);
 
             isBeanManagedTran = ejbDescriptor.getTransactionType().equals("Bean");
 
@@ -943,10 +940,6 @@ public abstract class BaseContainer
         return isRemote;
     }
     
-    final boolean isBeanManagedTx() {
-        return isBeanManagedTran;
-    }
-
     public final ClassLoader getContainerClassLoader() {
         return loader;
     }
@@ -2945,7 +2938,7 @@ public abstract class BaseContainer
     {
         MethodDescriptor md = new MethodDescriptor(method, methodIntf);
         boolean flushEnabled = findFlushEnabledAttr(md);
-        int txAttr = findTxAttr(md);
+        int txAttr = containerTransactionManager.findTxAttr(md);
         InvocationInfo info = createInvocationInfo
             (method, txAttr, flushEnabled, methodIntf, originalIntf);
         boolean isHomeIntf = (methodIntf.equals(MethodDescriptor.EJB_HOME)
@@ -3600,46 +3593,10 @@ public abstract class BaseContainer
         }
     }
     
-    // Search for the transaction attribute for a method.
-    // This is only used during container initialization.  After that,
-    // tx attributes can be looked up with variations of getTxAttr()
-    protected int findTxAttr(MethodDescriptor md) {
-        int txAttr = -1;
-        
-        if ( isBeanManagedTran )
-            return TX_BEAN_MANAGED;
-
-        ContainerTransaction ct = ejbDescriptor.getContainerTransactionFor(md);
-                                                                    
-        if ( ct != null ) {
-            String attr = ct.getTransactionAttribute();
-            if ( attr.equals(ContainerTransaction.NOT_SUPPORTED) )
-                txAttr = TX_NOT_SUPPORTED;
-            else if ( attr.equals(ContainerTransaction.SUPPORTS) )
-                txAttr = TX_SUPPORTS;
-            else if ( attr.equals(ContainerTransaction.REQUIRED) )
-                txAttr = TX_REQUIRED;
-            else if ( attr.equals(ContainerTransaction.REQUIRES_NEW) )
-                txAttr = TX_REQUIRES_NEW;
-            else if ( attr.equals(ContainerTransaction.MANDATORY) )
-                txAttr = TX_MANDATORY;
-            else if ( attr.equals(ContainerTransaction.NEVER) )
-                txAttr = TX_NEVER;
-        }
-        validateTxAttr(md, txAttr);
-
-        return txAttr;
-    }
-
     /**
      * Validate transaction attribute value. Allow subclasses to add their own validation.
      */
     protected void validateTxAttr(MethodDescriptor md, int txAttr) throws EJBException {
-        if ( txAttr == -1 ) {
-            throw new EJBException("Transaction Attribute not found for method "
-                + md.prettyPrint());
-        }
-        
     }
 
     /**
@@ -3647,7 +3604,7 @@ public abstract class BaseContainer
      * this method if it's correct.
      */
     private void processTxAttrForScheduledTimeoutMethod(Method m) {
-        int txAttr = findTxAttr(new MethodDescriptor(m, MethodDescriptor.EJB_BEAN));
+        int txAttr = containerTransactionManager.findTxAttr(new MethodDescriptor(m, MethodDescriptor.EJB_BEAN));
         if( isBeanManagedTran ||
             txAttr == TX_REQUIRED ||
             txAttr == TX_REQUIRES_NEW ||
@@ -4528,184 +4485,13 @@ public abstract class BaseContainer
             }
         }
         
-        // Get existing Tx status: this tells us if the client
-        // started a transaction which was propagated on this invocation.
-        Integer preInvokeTxStatus = inv.getPreInvokeTxStatus();
-        int status = (preInvokeTxStatus != null) ?
-            preInvokeTxStatus.intValue() : transactionManager.getStatus();
-        
-        // For MessageDrivenBeans,ejbCreate/ejbRemove must be called without a Tx.
-        // For StatelessSessionBeans, ejbCreate/ejbRemove must be called without a Tx.
-        // For StatefullSessionBeans ejbCreate/ejbRemove/ejbFind can be called with or without a Tx.
-        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx so no special work needed.
-        if ( suspendTransaction(inv) ) {
-            // EJB2.0 section 7.5.7 says that ejbCreate/ejbRemove etc are called
-            // without a Tx. So suspend the client's Tx if any.
-    
-            // Note: ejbRemove cannot be called when EJB is associated with
-            // a Tx, according to EJB2.0 section 7.6.4. This check is done in
-            // the container's implementation of removeBean().
-
-            if ( status != Status.STATUS_NO_TRANSACTION ) {
-                // client request is associated with a Tx
-                try {
-                    inv.clientTx = transactionManager.suspend();
-                } catch (SystemException ex) {
-                    throw new EJBException(ex);
-                }
-            }
-            return;
-        }
-        
-        // isNullTx is true if the client sent a null tx context
-        // (i.e. a tx context with a null Coordinator objref)
-        // or if this server's tx interop mode flag is false.
-        // Follow the tables in EJB2.0 sections 19.6.2.2.1 and 19.6.2.2.2.
-        boolean isNullTx = false;
-        if (inv.isRemote) {
-            isNullTx = transactionManager.isNullTransaction();
-        }
-        
-        int txAttr = getTxAttr(inv);
-        
-        EJBContextImpl context = (EJBContextImpl)inv.context;
-        
-        // Note: in the code below, inv.clientTx is set ONLY if the
-        // client's Tx is actually suspended.
-        
-        // get the Tx associated with the EJB from previous invocation,
-        // if any.
-        Transaction prevTx = context.getTransaction();
-        
-        switch (txAttr) {
-            case TX_BEAN_MANAGED:
-                // TX_BEAN_MANAGED rules from EJB2.0 Section 17.6.1, Table 13
-                // Note: only MDBs and SessionBeans can be TX_BEAN_MANAGED
-                if ( status != Status.STATUS_NO_TRANSACTION ) {
-                    // client request associated with a Tx, always suspend
-                    inv.clientTx = transactionManager.suspend();
-                }
-                if ( isStatefulSession && prevTx != null
-                && prevTx.getStatus() != Status.STATUS_NO_TRANSACTION ) {
-                    // Note: if prevTx != null , then it means
-                    // afterCompletion was not called yet for the
-                    // previous transaction on the EJB.
-                    
-                    // The EJB was previously associated with a Tx which was
-                    // begun by the EJB itself in a previous invocation.
-                    // This is only possible for stateful SessionBeans
-                    // not for StatelessSession or Entity.
-                    transactionManager.resume(prevTx);
-                    
-                    // This allows the TM to enlist resources
-                    // used by the EJB with the transaction
-                    transactionManager.enlistComponentResources();
-                }
-                
-                break;
-                
-            case TX_NOT_SUPPORTED:
-                if ( status != Status.STATUS_NO_TRANSACTION )
-                    inv.clientTx = transactionManager.suspend();
-                checkUnfinishedTx(prevTx, inv);
-                preInvokeNoTx(inv);
-                break;
-                
-            case TX_MANDATORY:
-                if ( isNullTx || status == Status.STATUS_NO_TRANSACTION )
-                    throw new TransactionRequiredLocalException();
-                
-                useClientTx(prevTx, inv);
-                break;
-                
-            case TX_REQUIRED:
-                if ( isNullTx )
-                    throw new TransactionRequiredLocalException();
-                
-                if ( status == Status.STATUS_NO_TRANSACTION ) {
-                    inv.clientTx = null;
-                    startNewTx(prevTx, inv);
-                }
-                else { // There is a client Tx
-                    inv.clientTx = transactionManager.getTransaction();
-                    useClientTx(prevTx, inv);
-                }
-                break;
-                
-            case TX_REQUIRES_NEW:
-                if ( status != Status.STATUS_NO_TRANSACTION )
-                    inv.clientTx = transactionManager.suspend();
-                startNewTx(prevTx, inv);
-                break;
-                
-            case TX_SUPPORTS:
-                if ( isNullTx )
-                    throw new TransactionRequiredLocalException();
-                
-                if ( status != Status.STATUS_NO_TRANSACTION )
-                    useClientTx(prevTx, inv);
-                else { // we need to invoke the EJB with no Tx.
-                    checkUnfinishedTx(prevTx, inv);
-                    preInvokeNoTx(inv);
-                }
-                break;
-                
-            case TX_NEVER:
-                if ( isNullTx || status != Status.STATUS_NO_TRANSACTION )
-                    throw new EJBException(
-                        "EJB cannot be invoked in global transaction");
-                
-                else { // we need to invoke the EJB with no Tx.
-                    checkUnfinishedTx(prevTx, inv);
-                    preInvokeNoTx(inv);
-                }
-                break;
-                
-            default:
-                throw new EJBException("Bad transaction attribute");
-        }
+        containerTransactionManager.preInvokeTx(inv);
     }
     
     
     // Called before invoking a bean with no Tx or with a new Tx.
     // Check if the bean is associated with an unfinished tx.
     protected void checkUnfinishedTx(Transaction prevTx, EjbInvocation inv) {
-    }
-    
-    
-    private void startNewTx(Transaction prevTx, EjbInvocation inv)
-        throws Exception
-    {
-        checkUnfinishedTx(prevTx, inv);
-        
-        if (cmtTimeoutInSeconds > 0) {
-            transactionManager.begin(cmtTimeoutInSeconds);
-        } else {
-            transactionManager.begin();
-        }
-        
-        EJBContextImpl context = (EJBContextImpl)inv.context;
-        Transaction tx = transactionManager.getTransaction();
-        if (! isSingleton) {
-            context.setTransaction(tx);
-        }
-        
-        // This allows the TM to enlist resources used by the EJB
-        // with the transaction
-        transactionManager.enlistComponentResources();
-        
-        // register synchronization for methods other than finders/home methods
-        if ( !inv.invocationInfo.isHomeFinder ) {
-            // Register for Synchronization notification
-            ejbContainerUtilImpl.getContainerSync(tx).addBean(context);
-        }
-        
-        // Call afterBegin/ejbLoad. If ejbLoad throws exceptions,
-        // the completeNewTx machinery called by postInvokeTx
-        // will rollback the tx. Since we have already registered
-        // a Synchronization object with the TM, the afterCompletion
-        // will get called.
-        afterBegin(context);
     }
     
     // Called from preInvokeTx to check if transaction needs to be suspended 
@@ -4723,99 +4509,7 @@ public abstract class BaseContainer
     // Called from preInvokeTx before invoking the bean with the client's Tx
     // Also called from EntityContainer.removeBean for cascaded deletes
     protected void useClientTx(Transaction prevTx, EjbInvocation inv) {
-        Transaction clientTx;
-        int status=-1;
-        int prevStatus=-1;
-        try {
-            // Note: inv.clientTx will not be set at this point.
-            clientTx = transactionManager.getTransaction();
-            status = clientTx.getStatus();  // clientTx cant be null
-            if ( prevTx != null )
-                prevStatus = prevTx.getStatus();
-        } catch (Exception ex) {
-            try {
-                transactionManager.setRollbackOnly();
-            } catch ( Exception e ) { 
-				//FIXME: Use LogStrings.properties
-				_logger.log(Level.FINEST, "", e); 
-			} 
-            throw new TransactionRolledbackLocalException("", ex);
-        }
-        
-        // If the client's tx is going to rollback, it is fruitless
-        // to invoke the EJB, so throw an exception back to client.
-        if ( status == Status.STATUS_MARKED_ROLLBACK
-        || status == Status.STATUS_ROLLEDBACK
-        || status == Status.STATUS_ROLLING_BACK )
-            throw new TransactionRolledbackLocalException(
-                "Client's transaction aborted");
-        
-        validateEMForClientTx(inv, (JavaEETransaction) clientTx);
-
-        if ( prevTx == null
-        || prevStatus == Status.STATUS_NO_TRANSACTION ) {
-            // First time the bean is running in this new client Tx
-            EJBContextImpl context = (EJBContextImpl)inv.context;
-
-            //Must change this for singleton
-            if (! isSingleton) {
-                context.setTransaction(clientTx);
-            }
-            try {
-                transactionManager.enlistComponentResources();
-                
-                if ( !isStatelessSession && !isMessageDriven && !isSingleton) {
-                    // Create a Synchronization object.
-                    
-                    // Not needed for stateless beans or message-driven beans
-                    // or singletons because they cant have Synchronization callbacks,
-                    // and they cant be associated with a tx across
-                    // invocations.
-                    // Register sync for methods other than finders/home methods
-                    if ( !inv.invocationInfo.isHomeFinder ) {
-                        ejbContainerUtilImpl.getContainerSync(clientTx).addBean(
-                        context);
-                    }
-                    
-                    afterBegin(context);
-                }
-            } catch (Exception ex) {
-                try {
-                    transactionManager.setRollbackOnly();
-                } catch ( Exception e ) { 
-					//FIXME: Use LogStrings.properties
-					_logger.log(Level.FINEST, "", e); 
-				} 
-                throw new TransactionRolledbackLocalException("", ex);
-            }
-        }
-        else { // Bean already has a transaction associated with it.
-            if ( !prevTx.equals(clientTx) ) {
-                // There is already a different Tx in progress !!
-                // Note: this can only happen for stateful SessionBeans.
-                // EntityBeans will get a different context for every Tx.
-                if ( isSession ) {
-                    // Row 2 in Table E
-                    throw new IllegalStateException(
-                    "EJB is already associated with an incomplete transaction");
-                }
-            }
-            else { // Bean was invoked again with the same transaction
-                // This allows the TM to enlist resources used by the EJB
-                // with the transaction
-                try {
-                    transactionManager.enlistComponentResources();
-                } catch (Exception ex) {
-                    try {
-                        transactionManager.setRollbackOnly();
-                    } catch ( Exception e ) { 
-                        //FIXME: Use LogStrings.properties
-                        _logger.log(Level.FINEST, "", e); 
-					}
-                    throw new TransactionRolledbackLocalException("", ex);
-                }
-            }
-        }
+        containerTransactionManager.useClientTx(prevTx, inv);
     }
 
     protected void validateEMForClientTx(EjbInvocation inv, JavaEETransaction t) {
@@ -4829,209 +4523,11 @@ public abstract class BaseContainer
      * NOTE: postInvokeTx is called even if the EJB was not invoked
      * because of an exception thrown from preInvokeTx.
      */
-    public void postInvokeTx(EjbInvocation inv)
+    void postInvokeTx(EjbInvocation inv)
         throws Exception
     {
         
-        InvocationInfo invInfo = inv.invocationInfo;
-        Throwable exception = inv.exception;
-        
-        // For StatelessSessionBeans, ejbCreate/ejbRemove was called without a Tx,
-        // so resume client's Tx if needed.
-        // For StatefulSessionBeans ejbCreate/ejbRemove was called with or without a Tx,
-        // so resume client's Tx if needed.
-        // For EntityBeans, ejbCreate/ejbRemove/ejbFind must be called with a Tx 
-        // so no special processing needed.
-        if ( resumeTransaction(inv) ) {
-           // check if there was a suspended client Tx
-            if ( inv.clientTx != null )
-                transactionManager.resume(inv.clientTx);
-
-            if ( inv.exception != null
-                     && inv.exception instanceof PreInvokeException ) {
-                inv.exception = ((PreInvokeException)exception).exception;
-            }
-
-            return;
-        }
-        
-        EJBContextImpl context = (EJBContextImpl)inv.context;
-        
-        int status = transactionManager.getStatus();
-        int txAttr = inv.invocationInfo.txAttr;
-        
-        Throwable newException = exception; // default
-        
-        // Note: inv.exception may have been thrown by the container
-        // during preInvoke (i.e. bean may never have been invoked).
-        
-        // Exception and Tx handling rules. See EJB2.0 Sections 17.6, 18.3.
-        switch (txAttr) {
-            case TX_BEAN_MANAGED:
-                // EJB2.0 section 18.3.1, Table 16
-                // Note: only SessionBeans can be TX_BEAN_MANAGED
-                newException = checkExceptionBeanMgTx(context, exception,
-                status);
-                if ( inv.clientTx != null ) {
-                    // there was a client Tx which was suspended
-                    transactionManager.resume(inv.clientTx);
-                }
-                break;
-                
-            case TX_NOT_SUPPORTED:
-            case TX_NEVER:
-                // NotSupported and Never are handled in the same way
-                // EJB2.0 sections 17.6.2.1, 17.6.2.6.
-                // EJB executed in no Tx
-                if ( exception != null )
-                    newException = checkExceptionNoTx(context, exception);
-                postInvokeNoTx(inv);
-                
-                if ( inv.clientTx != null ) {
-                    // there was a client Tx which was suspended
-                    transactionManager.resume(inv.clientTx);
-                }
-                
-                break;
-                
-            case TX_MANDATORY:
-                // EJB2.0 section 18.3.1, Table 15
-                // EJB executed in client's Tx
-                if ( exception != null )
-                    newException = checkExceptionClientTx(context, exception);
-                break;
-                
-            case TX_REQUIRED:
-                // EJB2.0 section 18.3.1, Table 15
-                if ( inv.clientTx == null ) {
-                    // EJB executed in new Tx started in preInvokeTx
-                    newException = completeNewTx(context, exception, status);
-                }
-                else {
-                    // EJB executed in client's tx
-                    if ( exception != null ) {
-                        newException = checkExceptionClientTx(context,
-                        exception);
-                    }
-                }
-                break;
-                
-            case TX_REQUIRES_NEW:
-                // EJB2.0 section 18.3.1, Table 15
-                // EJB executed in new Tx started in preInvokeTx
-                newException = completeNewTx(context, exception, status);
-                
-                if ( inv.clientTx != null ) {
-                    // there was a client Tx which was suspended
-                    transactionManager.resume(inv.clientTx);
-                }
-                break;
-                
-            case TX_SUPPORTS:
-                // EJB2.0 section 18.3.1, Table 15
-                if ( status != Status.STATUS_NO_TRANSACTION ) {
-                    // EJB executed in client's tx
-                    if ( exception != null ) {
-                        newException = checkExceptionClientTx(context,
-                        exception);
-                    }
-                }
-                else {
-                    // EJB executed in no Tx
-                    if ( exception != null )
-                        newException = checkExceptionNoTx(context, exception);
-                    postInvokeNoTx(inv);
-                }
-                break;
-                
-            default:
-        }
-        
-        inv.exception = newException;
-        
-        // XXX If any of the TM commit/rollback/suspend calls throws an
-        // exception, should the transaction be rolled back if not already so ?
-    }
-    
-    private EJBException destroyBeanAndRollback(EJBContextImpl context, String type) throws Exception {
-        try {
-            forceDestroyBean(context);
-        } finally {
-            transactionManager.rollback();
-        }
-        
-        EJBException ex = null;
-        if (type != null) {
-            ex = new EJBException(type + " method returned without" + 
-                    " completing transaction");
-            _logger.log(Level.FINE, "ejb.incomplete_sessionbean_txn_exception",logParams);
-            _logger.log(Level.FINE,"",ex);
-        }
-        return ex;
-    }
-    
-    private Throwable checkExceptionBeanMgTx(EJBContextImpl context,
-            Throwable exception, int status)
-        throws Exception
-    {
-        Throwable newException = exception;
-        // EJB2.0 section 18.3.1, Table 16
-        if ( exception != null
-        && exception instanceof PreInvokeException ) {
-            // A PreInvokeException was thrown, so bean was not invoked
-            newException= ((PreInvokeException)exception).exception;
-        }
-        else if ( status == Status.STATUS_NO_TRANSACTION ) {
-            // EJB was invoked, EJB's Tx is complete.
-            if ( exception != null )
-                newException = checkExceptionNoTx(context, exception);
-        }
-        else {
-            // EJB was invoked, EJB's Tx is incomplete.
-            // See EJB2.0 Section 17.6.1
-            if ( isStatefulSession ) {
-                if ( !isSystemUncheckedException(exception) ) {
-                    if( isAppExceptionRequiringRollback(exception) ) {
-                        transactionManager.rollback();
-                    } else {
-                        transactionManager.suspend();
-                    }
-                }
-                else {
-                    // system/unchecked exception was thrown by EJB
-                    destroyBeanAndRollback(context, null);
-                    newException = processSystemException(exception);
-                }
-            }
-            else if( isStatelessSession  ) { // stateless SessionBean
-                newException = destroyBeanAndRollback(context, "Stateless SessionBean");
-            }
-            else if( isSingleton ) {
-                newException = destroyBeanAndRollback(context, "Singleton SessionBean");
-            }
-            else { // MessageDrivenBean
-                newException = destroyBeanAndRollback(context, "MessageDrivenBean");
-            }
-        }
-        return newException;
-    }
-    
-    private Throwable checkExceptionNoTx(EJBContextImpl context, 
-        Throwable exception)
-        throws Exception
-    {
-        if ( exception instanceof PreInvokeException )
-            // A PreInvokeException was thrown, so bean was not invoked
-            return ((PreInvokeException)exception).exception;
-        
-        // If PreInvokeException was not thrown, EJB was invoked with no Tx
-        Throwable newException = exception;
-        if ( isSystemUncheckedException(exception) ) {
-            // Table 15, EJB2.0
-            newException = processSystemException(exception);
-            forceDestroyBean(context);
-        }
-        return newException;
+        containerTransactionManager.postInvokeTx(inv);
     }
     
     // this is the counterpart of useClientTx
@@ -5041,100 +4537,8 @@ public abstract class BaseContainer
         Throwable exception)
         throws Exception
     {
-        if ( exception instanceof PreInvokeException )
-            // A PreInvokeException was thrown, so bean was not invoked
-            return ((PreInvokeException)exception).exception;
-        
-        // If PreInvokeException wasn't thrown, EJB was invoked with client's Tx
-        Throwable newException = exception;
-        if ( isSystemUncheckedException(exception) ) {
-            // Table 15, EJB2.0
-            try {
-                forceDestroyBean(context);
-            } finally {
-                transactionManager.setRollbackOnly();
-            }
-            if ( exception instanceof Exception ) {
-                newException = new TransactionRolledbackLocalException(
-                	"Exception thrown from bean", (Exception)exception);
-            } else {
-                newException = new TransactionRolledbackLocalException(
-                	"Exception thrown from bean: "+exception.toString());
-                newException.initCause(exception);
-            }
-        } else if( isAppExceptionRequiringRollback(exception ) ) {
-            transactionManager.setRollbackOnly();
-        }
-
-        return newException;
+        return containerTransactionManager.checkExceptionClientTx(context, exception);
     }
-    
-    // this is the counterpart of startNewTx
-    private Throwable completeNewTx(EJBContextImpl context, Throwable exception, int status)
-        throws Exception
-    {
-        Throwable newException = exception;
-        if ( exception instanceof PreInvokeException )
-            newException = ((PreInvokeException)exception).exception;
-        
-        if ( status == Status.STATUS_NO_TRANSACTION ) {
-            // no tx was started, probably an exception was thrown
-            // before tm.begin() was called
-            return newException;
-        }
-
-        if ( isStatefulSession && (context instanceof SessionContextImpl)) {
-            ((SessionContextImpl) context).setTxCompleting(true);
-        }
-
-        // A new tx was started, so we must commit/rollback
-        if ( newException != null
-        && isSystemUncheckedException(newException) ) {
-            // EJB2.0 section 18.3.1, Table 15
-            // Rollback the Tx we started
-            destroyBeanAndRollback(context, null);
-            newException = processSystemException(newException);
-        }
-        else {
-            try {
-                if ( status == Status.STATUS_MARKED_ROLLBACK ) {
-                    // EJB2.0 section 18.3.1, Table 15, and 18.3.6:
-                    // rollback tx, no exception
-                    if (transactionManager.isTimedOut()) {
-                        _logger.log(Level.WARNING, "ejb.tx_timeout",
-                                    new Object[] { 
-                            transactionManager.getTransaction(),
-                                ejbDescriptor.getName()});
-                    }
-                    transactionManager.rollback();
-                }
-                else {
-                    if( (newException != null) &&
-                        isAppExceptionRequiringRollback(newException) ) {
-                        transactionManager.rollback();
-                    } else {
-                        // Note: if exception is an application exception
-                        // we do a commit as in EJB2.0 Section 18.3.1, 
-                        // Table 15. Commit the Tx we started
-                        transactionManager.commit();
-                    }
-                }
-            } catch (RollbackException ex) {
-                _logger.log(Level.FINE, "ejb.transaction_abort_exception", ex);
-                // EJB2.0 section 18.3.6
-                newException = new EJBException("Transaction aborted", ex);
-            } catch ( Exception ex ) {
-                _logger.log(Level.FINE, "ejb.cmt_exception", ex);
-                // Commit or rollback failed.
-                // EJB2.0 section 18.3.6
-                newException = new EJBException("Unable to complete" +
-                    " container-managed transaction.", ex);
-            }
-        }
-        return newException;
-    }
-    
-    
     
     // Implementation of Container method.
     // Called from UserTransactionImpl after the EJB started a Tx,
@@ -5182,24 +4586,6 @@ public abstract class BaseContainer
         // No-op by default
     }
     
-    private Throwable processSystemException(Throwable sysEx) {
-        Throwable newException;
-        if ( sysEx instanceof EJBException)
-            return sysEx;
-        
-        // EJB2.0 section 18.3.4
-        if ( sysEx instanceof NoSuchEntityException ) { // for EntityBeans only
-            newException = new NoSuchObjectLocalException
-                ("NoSuchEntityException thrown by EJB method.");
-            newException.initCause(sysEx);
-        } else {
-            newException = new EJBException();
-            newException.initCause(sysEx);
-        }
-
-        return newException;
-    }
-    
     protected boolean isApplicationException(Throwable exception) {
         return !isSystemUncheckedException(exception);
     }
@@ -5234,39 +4620,6 @@ public abstract class BaseContainer
         }
     }
 
-    /**
-     * Returns true if this exception is an Application Exception and
-     * it requires rollback of the transaction in which it was thrown.
-     */
-    protected boolean isAppExceptionRequiringRollback
-        (Throwable exception) {
-
-        boolean appExceptionRequiringRollback = false;
-
-        if ( exception != null ) {
-
-            Class clazz = exception.getClass();
-            String exceptionClassName = clazz.getName();
-            Map<String, EjbApplicationExceptionInfo> appExceptions = 
-                    ejbDescriptor.getEjbBundleDescriptor().getApplicationExceptions();
-            while (clazz != null) {
-                String eClassName = clazz.getName();
-                if (appExceptions.containsKey(eClassName)) {
-                    if( exceptionClassName.equals(eClassName) ||
-                            appExceptions.get(eClassName).getInherited() == true) {
-                        // Exact exception is specified as an ApplicationException
-                        // or superclass exception is inherited
-                        appExceptionRequiringRollback = appExceptions.get(eClassName).getRollback();
-                    }
-                    break;
-                }
-                clazz = clazz.getSuperclass();
-            }
-        }
-
-        return appExceptionRequiringRollback;
-    }
-    
     public boolean getDebugMonitorFlag() {
         return debugMonitorFlag;
     }
@@ -5309,7 +4662,7 @@ public abstract class BaseContainer
                 if( lcd.getLifecycleCallbackClass().equals(ejbDescriptor.getEjbClassName())) {
 
                     Method callbackMethod = lcd.getLifecycleCallbackMethodObject(loader);
-                    int lcTxAttr = findTxAttr(
+                    int lcTxAttr = containerTransactionManager.findTxAttr(
                         new MethodDescriptor(callbackMethod, MethodDescriptor.EJB_BEAN));
                     // Since default attribute is set up, override the value if it's validateTxAttr
                     for (int t : validateTxAttr) {
