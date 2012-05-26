@@ -1678,7 +1678,7 @@ public final class StatefulSessionContainer
         }
     }
 
-    void postInvokeTx(EjbInvocation inv) throws Exception {
+    public void postInvokeTx(EjbInvocation inv) throws Exception {
 
         // Intercept postInvokeTx call to perform any @Remove logic
         // before tx commits.  super.postInvokeTx() must *always*
