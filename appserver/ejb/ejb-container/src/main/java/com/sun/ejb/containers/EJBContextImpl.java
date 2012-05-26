@@ -498,7 +498,7 @@ public abstract class EJBContextImpl
         
         // EJB2.0 section 7.5.2: only EJBs with container managed transactions
         // can use this method.
-        if ( container.isBeanManagedTx() )
+        if ( container.isBeanManagedTran )
             throw new IllegalStateException(
                 "Illegal operation for bean-managed transactions");
         
@@ -539,7 +539,7 @@ public abstract class EJBContextImpl
         
         // EJB2.0 section 7.5.2: only EJBs with container managed transactions
         // can use this method.
-        if ( container.isBeanManagedTx() )
+        if ( container.isBeanManagedTran )
             throw new IllegalStateException(
                 "Illegal operation for bean-managed transactions");
         
