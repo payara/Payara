@@ -47,7 +47,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -101,6 +103,9 @@ public class CreateJMSHost implements AdminCommand {
     @Param(optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
+    @Param(optional=true, defaultValue="false")
+    Boolean force;
+
     @Param(name="jms_host_name", alias="host", primary=true)
     String jmsHostName;
 
@@ -109,6 +114,9 @@ public class CreateJMSHost implements AdminCommand {
 
     /*@Inject
     Configs configs;*/
+
+    @Inject
+    CommandRunner commandRunner;
 
     @Inject
     Domain domain;
@@ -148,13 +156,26 @@ public class CreateJMSHost implements AdminCommand {
                      jmsservice = c.getJmsService();
             }*/
 
-        // ensure we don't already have one of this name
+        // ensure we don't already have one of this name before creating it.
         for (JmsHost jmsHost : jmsservice.getJmsHost()) {
                 if (jmsHostName.equals(jmsHost.getName())) {
-                    report.setMessage(localStrings.getLocalString("create.jms.host.duplicate",
-                            "A JMS Host named {0} already exists.", jmsHostName));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
+                    if (force) {
+                        ActionReport deleteReport = report.addSubActionsReport();
+                        ParameterMap parameters = new ParameterMap();
+                         parameters.set("DEFAULT", jmsHostName);
+                         parameters.set("target", target);
+                        commandRunner.getCommandInvocation("delete-jms-host", deleteReport).parameters(parameters).execute();
+                        if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            return;
+                        }
+                        break;
+                    } else {
+                        report.setMessage(localStrings.getLocalString("create.jms.host.duplicate",
+                                "A JMS Host named {0} already exists.", jmsHostName));
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
+                    }
                 }
             }
 

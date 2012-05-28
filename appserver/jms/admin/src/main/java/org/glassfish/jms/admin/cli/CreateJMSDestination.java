@@ -42,6 +42,8 @@ package org.glassfish.jms.admin.cli;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.ServerContext;
@@ -101,6 +103,9 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
     @Param(name = "property", optional = true, separator = ':')
     Properties props;
 
+    @Param(optional=true, defaultValue="false")
+    Boolean force;
+
     @Param(name = "dest_name", primary = true)
     String destName;
 
@@ -109,6 +114,9 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
 
     @Inject
     com.sun.appserv.connectors.internal.api.ConnectorRuntime connectorRuntime;
+
+    @Inject
+    CommandRunner commandRunner;
 
     @Inject
     Domain domain;
@@ -144,7 +152,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             }
         }
         try {
-            createJMSDestination();
+            createJMSDestination(report);
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("create.jms.destination.CannotCreateJMSDest",
                     "Unable to create JMS Destination."));
@@ -154,7 +162,7 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
     }
 
     // create-jmsdest
-    private void createJMSDestination() throws Exception {
+    private void createJMSDestination(ActionReport report) throws Exception {
 
         MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
 
@@ -166,6 +174,34 @@ public class CreateJMSDestination extends JMSDestination implements AdminCommand
             String[] signature = null;
             AttributeList destAttrs = null;
             Object[] params = null;
+
+            if (force) {
+                signature = new String[] {};
+                params = new Object[] {};
+                ObjectName[] dests = (ObjectName[]) mbsc.invoke(on, "getDestinations", params, signature);
+                boolean destExists = false;
+                if (dests != null) {
+                    String type = destType.equalsIgnoreCase(JMS_DEST_TYPE_TOPIC) ? "t" : "q";
+                    for (ObjectName dest : dests) {
+                        if (dest.toString().indexOf("desttype=" + type + ",name=" + ObjectName.quote(destName)) != -1) {
+                            destExists = true;
+                            break;
+                        }
+                    }
+                }
+                if (destExists) {
+                    ActionReport deleteReport = report.addSubActionsReport();
+                    ParameterMap parameters = new ParameterMap();
+                    parameters.set("DEFAULT", destName);
+                    parameters.set("destType", destType);
+                    parameters.set("target", target);
+                    commandRunner.getCommandInvocation("delete-jmsdest", deleteReport).parameters(parameters).execute();
+                    if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
+                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        return;
+                    }
+                }
+            }
 
             if (props != null) {
                 destAttrs = convertProp2Attrs(props);

@@ -43,6 +43,8 @@ package org.glassfish.jms.admin.cli;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.connectors.config.AdminObjectResource;
+import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -91,6 +93,9 @@ public class CreateJMSResource implements AdminCommand {
 
     @Param(name="description", optional=true)
     String description;
+
+    @Param(optional=true, defaultValue="false")
+    Boolean force;
 
     @Param(name="jndi_name", primary=true)
     String jndiName;
@@ -148,6 +153,27 @@ public class CreateJMSResource implements AdminCommand {
             return;
 
         }
+
+        if (force) {
+            Resource res = null;
+            if (resourceType.equals(TOPIC) || resourceType.equals(QUEUE))
+                res = ConnectorsUtil.getResourceByName(domain.getResources(), AdminObjectResource.class, jndiName);
+            else
+                res = ConnectorsUtil.getResourceByName(domain.getResources(), ConnectorResource.class, jndiName);
+
+            if (res != null) {
+                ActionReport deleteReport = report.addSubActionsReport();
+                ParameterMap parameters = new ParameterMap();
+                parameters.set(DEFAULT_OPERAND, jndiName);
+                parameters.set("target", target);
+                commandRunner.getCommandInvocation("delete-jms-resource", deleteReport).parameters(parameters).execute();
+                if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
+        }
+
         //Populate the JMS RA map
         populateJmsRAMap();
 
