@@ -209,6 +209,9 @@
             -->
             <id>release-phase2</id>
 
+            <modules>
+                <module>repo-import</module>
+            </modules>
             <build>
                 <plugins>
                     <!-- The installer module requires the dependency of jdk tools.jar -->

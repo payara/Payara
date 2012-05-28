@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>glassfish-main-parent</artifactId>
+        <version>4.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>glassfish-build-setup-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Build setup Modules</name>
+    
+    <profiles>
+        <profile>
+            <id>obr</id>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>glassfish-obr-builder</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>release-phase2</id>
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>glassfishbuild-repo-setup</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

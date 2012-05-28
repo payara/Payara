@@ -45,15 +45,14 @@
 
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-main-parent</artifactId>
+        <artifactId>glassfish-build-setup-parent</artifactId>
 	<version>4.0-SNAPSHOT</version>
-	<relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfishbuild-repo-setup</artifactId>
     <name>GlassFish IPS repository initial setup</name>
-    <packaging>distribution-base-zip</packaging>
+    <packaging>pom</packaging>
 
     <build>
         <plugins>
@@ -63,6 +62,7 @@
                 <configuration>
 		    <tasks>
                         <ant dir="." antfile="build.xml" target="default.target"/>
+                        <ant dir="." antfile="build.xml" target="copy.packages"/>
                     </tasks>
                 </configuration>
              </plugin>
@@ -132,30 +132,4 @@
             <type>zip</type>
        </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <!--
-                Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
-            <id>ips</id>
-	    <activation>
-	      <activeByDefault>false</activeByDefault>
-	    </activation>
-	    <build>
-                <plugins>
-                <plugin>
-                    <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                    <artifactId>maven-antrun-extended-plugin</artifactId>
-                    <configuration>
-		        <tasks>
-                            <ant dir="." antfile="build.xml" target="copy.packages"/>
-                        </tasks>
-                    </configuration>
-                 </plugin>
-                 </plugins>
-	     </build>
-            </profile>
-   </profiles>
-
 </project>
