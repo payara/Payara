@@ -65,7 +65,7 @@
                         <goals>
                             <goal>run</goal>
                         </goals>
-                        <phase>phase</phase>
+                        <phase>package</phase>
                         <configuration>
                             <tasks>
                                 <ant dir="." antfile="build.xml" target="default.target"/>
