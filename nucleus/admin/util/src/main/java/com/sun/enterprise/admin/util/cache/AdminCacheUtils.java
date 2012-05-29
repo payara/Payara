@@ -39,36 +39,53 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.regex.Pattern;
+import org.jvnet.hk2.annotations.Service;
 
-/**
+/** Tooling for AdminCache {@link DataProvider} implementation.
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+@Service
+public class AdminCacheUtils {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
+    private static final AdminCacheUtils instance = new AdminCacheUtils();
+    
+    private final Map<Class, DataProvider> providers = new HashMap<Class, DataProvider>();
+    private final Pattern keyPattern = Pattern.compile("([-_.a-zA-Z0-9]+/?)+");
+    private final ServiceLoader<DataProvider> dataProviderLoader = ServiceLoader.<DataProvider>load(DataProvider.class);
+    
+    private AdminCacheUtils() {
     }
     
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
+    public DataProvider getProvider(final Class clazz) {
+        DataProvider result = providers.get(clazz);
+        if (result == null) {
+            for (DataProvider provider : dataProviderLoader) {
+                if (provider.accept(clazz)) {
+                    result = provider;
+                    providers.put(clazz, result);
+                }
+            }
         }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+        return result;
+    }
+    
+    public final boolean validateKey(final String key) {
+        return keyPattern.matcher(key).matches();
+    }
+    
+    /** Return preferred {@link AdminCache}
+     */
+    public static AdminCache getCache() {
+        return AdminCacheMemStore.getInstance();
+    }
+    
+    public static AdminCacheUtils getInstance() {
+        return instance;
     }
     
 }

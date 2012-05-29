@@ -64,6 +64,7 @@ import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
+import java.util.logging.Level;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -118,6 +119,11 @@ public class RemoteCommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
+        }
+        
+        @Override
+        public void fetchCommandModel() throws CommandException {
+            super.fetchCommandModel();
         }
 
         /**
@@ -266,7 +272,7 @@ public class RemoteCommand extends CLICommand {
             try {
                 ((ClientCookieStore) cookieManager.getCookieStore()).load();
             } catch (IOException e) {
-                logger.fine("Unable to load cookies: " + e.toString());
+                logger.log(Level.FINE, "Unable to load cookies: {0}", e.toString());
                 return;
             }
 
@@ -489,6 +495,47 @@ public class RemoteCommand extends CLICommand {
         this.responseFormatType = responseFormatType;
         this.userOut = userOut;
     }
+    
+    /** Helper for situation, where {@code CommandModel} is from cache and
+     * something shows, that server side signature of command was changed
+     */
+    private void reExecuteAfterMetadataUpdate() throws ReExecuted, CommandException {
+        //Check CommandModel
+        if (rac == null) {
+            return;
+        }
+        if (rac.getCommandModel() == null) {
+            return;
+        }
+        if (!rac.isCommandModelFromCache()) {
+            return;
+        }
+        //Refetch command model
+        String eTag = CachedCommandModel.computeETag(rac.getCommandModel());
+        rac = null;
+        initializeRemoteAdminCommand();
+        rac.fetchCommandModel();
+        String newETag = CachedCommandModel.computeETag(rac.getCommandModel());
+        if (eTag != null && eTag.equals(newETag)) {
+            return; //Nothing change in command model
+        }
+        logger.log(Level.WARNING, "Command signature of {0} command was changed. Re executing with new metadata.", name);
+        //clean state of this instance
+        this.options = null;
+        this.operands = null;
+        //Reexecute it
+        int result = execute(argv);
+        throw new ReExecuted(result);
+    }
+    
+    @Override
+    public int execute(String... argv) throws CommandException {
+        try {
+            return super.execute(argv);
+        } catch (ReExecuted reex) {
+            return reex.getExecutionResult();
+        }
+    }
 
     /**
      * Set the directory in which any returned files will be stored.
@@ -512,10 +559,12 @@ public class RemoteCommand extends CLICommand {
              */
             initializeRemoteAdminCommand();
 
-            if (responseFormatType != null)
+            if (responseFormatType != null) {
                 rac.setResponseFormatType(responseFormatType);
-            if (userOut != null)
+            }
+            if (userOut != null) {
                 rac.setUserOut(userOut);
+            }
 
             /*
              * Initialize a CookieManager so that we can retreive
@@ -548,6 +597,16 @@ public class RemoteCommand extends CLICommand {
             throw new CommandException(e.getMessage());
         }
     }
+    
+    @Override
+    protected void prevalidate() throws CommandException {
+        try {
+            super.prevalidate();
+        } catch (CommandException ex) {
+            reExecuteAfterMetadataUpdate();
+            throw ex;
+        }
+    }
 
     /**
      * If it's a help request, don't prompt for any missing options.
@@ -555,11 +614,27 @@ public class RemoteCommand extends CLICommand {
     @Override
     protected void validate()
             throws CommandException, CommandValidationException  {
-        if (programOpts.isHelp())
+        if (programOpts.isHelp()) {
             return;
-        super.validate();
+        }
+        try {
+            super.validate();
+        } catch (CommandValidationException ex) {
+            reExecuteAfterMetadataUpdate();
+            throw ex;
+        }
     }
-
+    
+    @Override
+    protected void inject() throws CommandException {
+        try {
+            super.prevalidate();
+        } catch (CommandValidationException ex) {
+            reExecuteAfterMetadataUpdate();
+            throw ex;
+        }
+    }
+    
     /**
      * We do all our help processing in executeCommand.
      */
@@ -585,6 +660,9 @@ public class RemoteCommand extends CLICommand {
                     logger.info(output);
                 }
             }
+        } catch (CommandValidationException cve) {
+            reExecuteAfterMetadataUpdate();
+            throw cve;
         } catch (CommandException ex) {
             // if a --help request failed, try to emulate it locally
             if (programOpts.isHelp()) {
@@ -740,7 +818,8 @@ public class RemoteCommand extends CLICommand {
                 programOpts.isSecure(), programOpts.getUser(),
                 programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
-            rac.setInteractive(programOpts.isInteractive());;
+            rac.setInteractive(programOpts.isInteractive());
+            rac.setOmitCache(programOpts.isIgnoreCache()); //todo: [mmar] Remove after implementation CLI->ReST done
         }
     }
 

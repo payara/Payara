@@ -45,6 +45,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ExecutionContext;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
+import org.glassfish.api.admin.progress.ProgressStatusImpl;
 
 /**
  * Useful services for administrative commands implementation
@@ -58,6 +59,7 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     private final Payload.Inbound inboundPayload;
     private final Payload.Outbound outboundPayload;
     private Subject subject;
+    private ProgressStatus dummyProgressStatus; //This implementation provides only unconnected ProgressStatus
 
     public AdminCommandContextImpl(Logger logger, ActionReport report) {
         this(logger, report, null, null);
@@ -105,6 +107,14 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     @Override
     public void setSubject(Subject subject) {
         this.subject = subject;
+    }
+
+    @Override
+    public ProgressStatus getProgressStatus() {
+        if (dummyProgressStatus == null) {
+            dummyProgressStatus = new ProgressStatusImpl();
+        }
+        return dummyProgressStatus;
     }
 
 }

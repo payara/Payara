@@ -39,15 +39,25 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import java.io.UnsupportedEncodingException;
-import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.util.io.FileUtils;
+import java.io.*;
+import java.nio.charset.Charset;
 
 /** DataProvider for String
  *
  * @author mmares
  */
-@Service
 public class StringDataProvider implements DataProvider {
+    
+    private Charset charset;
+    
+    public StringDataProvider() {
+        try {
+            charset = Charset.forName("UTF-8");
+        } catch (Exception ex) {
+            charset = Charset.defaultCharset();
+        }
+    }
 
     @Override
     public boolean accept(Class clazz) {
@@ -55,22 +65,16 @@ public class StringDataProvider implements DataProvider {
     }
 
     @Override
-    public byte[] toByteArray(Object o) {
+    public void writeToStream(Object o, OutputStream stream) throws IOException {
         String str = (String) o;
-        try {
-            return str.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            return str.getBytes();
-        }
+        stream.write(str.getBytes(charset));
     }
 
     @Override
-    public Object toInstance(byte[] data, Class clazz) {
-        try {
-            return new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            return new String(data);
-        }
+    public Object toInstance(InputStream stream, Class clazz) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtils.copy(stream, baos, 0);
+        return new String(baos.toByteArray(), charset);
     }
     
 }

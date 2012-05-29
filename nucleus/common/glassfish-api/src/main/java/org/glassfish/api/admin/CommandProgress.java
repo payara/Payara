@@ -37,38 +37,72 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package org.glassfish.api.admin;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import java.util.Date;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
 
-/**
+/** Base interface of progress status implementation. Provides information
+ * about overall progress.
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+public interface CommandProgress extends ProgressStatus {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
-    }
-    
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
+    public class CommandResult {
+        
+        private ActionReport actionReport;
+        private Payload.Outbound payload;
+
+        public CommandResult(ActionReport actionReport, Payload.Outbound payload) {
+            this.actionReport = actionReport;
+            this.payload = payload;
         }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+
+        public ActionReport getActionReport() {
+            return actionReport;
+        }
+
+        public Payload.Outbound getPayload() {
+            return payload;
+        }
+
     }
+    
+    /** Completes whole progress and records result
+     * 
+     * @param actionReport result message
+     * @param payload result data
+     */
+    public void complete(ActionReport actionReport, Payload.Outbound payload);
+    
+    /** If progress was completed result data will be returned else {@code null}
+     * 
+     * @return 
+     */
+    public CommandResult getCommandResult();
+    
+    /** Timestamp of command complete event or {@code null} for running command
+     */ 
+    public Date getEndTime();
+    
+    /** Timestamp of command creation
+     */
+    public Date getStartTime();
+    
+    /** Creates child for mirroring (supplemental commands)
+     */
+    public ProgressStatusMirroringImpl createMirroringChild(int allocatedSteps);
+    
+    /** Unique id of this command
+     */
+    public String getId();
+    
+    public String getName();
+    
+    public float computeCompletePortion();
+    
+    public String getLastMessage();
     
 }

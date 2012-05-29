@@ -84,6 +84,13 @@ public interface CommandRunner {
      * is not found
      */
     public CommandModel getModel(String scope, String name, Logger logger);
+    
+    /** Checks if given command model eTag is equal to current command model eTag
+     * 
+     * @param command Command to be checked
+     * @param eTag ETag to validate
+     */
+    public boolean validateCommandModelETag(String commandName, AdminCommand command, String eTag);
 
     /**
      * Obtain and return the command implementation defined by the passed commandName 

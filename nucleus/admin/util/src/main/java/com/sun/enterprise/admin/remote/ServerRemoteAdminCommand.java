@@ -79,6 +79,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
         super(name, host, port, secure, "admin", "", logger);
+        super.setOmitCache(true); //todo: [mmar] Remove after implementation CLI->ReST done
         completeInit(habitat);
     }
 

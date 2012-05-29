@@ -37,45 +37,64 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package com.sun.enterprise.v3.admin;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
+import org.glassfish.api.ActionReport;
+import org.glassfish.grizzly.http.util.HttpStatus;
 
-/** Tooling for AdminCache {@link DataProvider} implementation.
+/** Inform, that HttpCommandExecution has problem. Must change status code.
  *
  * @author mmares
  */
-@Service
-public class AdminCahceUtils {
+public class ProcessHttpCommandRequestException extends Exception {
     
-    private final Map<Class, DataProvider> providers = new HashMap<Class, DataProvider>();
-    private final Pattern keyPattern = Pattern.compile("([-_.a-zA-Z0-9]+/?)+");
-    
-    @Inject
-    private Habitat habitat;
-    
-    public DataProvider getProvider(final Class clazz) {
-        DataProvider result = providers.get(clazz);
-        if (result == null) {
-            Collection<DataProvider> allproviders = habitat.getAllByContract(DataProvider.class);
-            for (DataProvider provider : allproviders) {
-                if (provider.accept(clazz)) {
-                    result = provider;
-                    providers.put(clazz, result);
-                }
-            }
-        }
-        return result;
+    private ActionReport report;
+    private HttpStatus responseStatus = HttpStatus.OK_200;
+
+    /**
+     * Constructs an instance of
+     * <code>InvalidPreconditionException</code> with the specified detail
+     * message.
+     *
+     * @param report Report with result
+     */
+    public ProcessHttpCommandRequestException(ActionReport report) {
+        this(report, null);
     }
     
-    public final boolean validateKey(final String key) {
-        return keyPattern.matcher(key).matches();
+    /**
+     * Constructs an instance of
+     * <code>InvalidPreconditionException</code> with the specified detail
+     * message.
+     *
+     * @param responseStatus HttpResponse status code
+     */
+    public ProcessHttpCommandRequestException(HttpStatus responseStatus) {
+        this(null, responseStatus);
+    }
+    
+    /**
+     * Constructs an instance of
+     * <code>InvalidPreconditionException</code> with the specified detail
+     * message.
+     *
+     * @param report Report with result
+     * @param responseStatus HttpResponse status code
+     */
+    public ProcessHttpCommandRequestException(ActionReport report, HttpStatus responseStatus) {
+        super();
+        this.report = report;
+        if (responseStatus != null) {
+            this.responseStatus = responseStatus;
+        }
+    }
+
+    public ActionReport getReport() {
+        return report;
+    }
+
+    public HttpStatus getResponseStatus() {
+        return responseStatus;
     }
     
     

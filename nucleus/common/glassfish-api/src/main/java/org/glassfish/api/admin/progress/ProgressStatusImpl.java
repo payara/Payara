@@ -37,38 +37,60 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package org.glassfish.api.admin.progress;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
-/**
+/** {@code ProgressStatus} implementation suggested for {@code AdminCommand}
+ * implementation.
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+//TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
+public class ProgressStatusImpl extends ProgressStatusBase {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
+    /** Constructor for instancing dummy (without propagation) instance.
+     */
+    public ProgressStatusImpl() {
+        this(null, -1, null, "no-id");
     }
     
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
-        }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+    /** Construct unnamed {@code ProgressStatusImpl}
+     * 
+     * @param parent Parent {@code ProgressStatusBase}
+     * @param id Is useful for event transfer
+     */  
+    protected ProgressStatusImpl(ProgressStatusBase parent, String id) {
+        super(null, -1, parent, id);
+    }
+    
+    /** Construct named {@code ProgressStatusImpl}.
+     * 
+     * @param name of the {@code ProgressStatus} implementation is used 
+     *        to identify source of progress messages.
+     * @param parent Parent {@code ProgressStatusBase}
+     * @param id Is useful for event transfer
+     */
+    protected ProgressStatusImpl(String name, ProgressStatusBase parent, String id) {
+        super(name, -1, parent, id);
+    }
+    
+    /** Construct named {@code ProgressStatusImpl} with defined expected count 
+     * of steps.
+     * 
+     * @param name of the {@code ProgressStatus} implementation is used 
+     *        to identify source of progress messages.
+     * @param totalStepCount How many steps are expected in this 
+     *        {@code ProgressStatus}
+     * @param parent Parent {@code ProgressStatusBase}
+     * @param id Is useful for event transfer
+     */
+    protected ProgressStatusImpl(String name, int totalStepCount, ProgressStatusBase parent, String id) {
+        super(name, totalStepCount, parent, id);
+    }
+
+    @Override
+    protected ProgressStatusBase doCreateChild(String name, int totalStepCount) {
+        String childId = (id == null ? "" : id) + "." + (childs.size() + 1);
+        return new ProgressStatusImpl(name, totalStepCount, this, childId);
     }
     
 }

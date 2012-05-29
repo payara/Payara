@@ -37,38 +37,77 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package org.glassfish.api.admin;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import java.util.logging.Logger;
+import javax.security.auth.Subject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.Payload.Inbound;
+import org.glassfish.api.admin.Payload.Outbound;
 
-/**
+/** Most of {@link AdminCommandContext} attributes are used in any phase 
+ * of command execution (supplemental commands, replication) but some 
+ * of them must be different for every instance. This wrapper provides 
+ * such staff.
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+public class AdminCommandContextForInstance implements AdminCommandContext {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
-    }
-    
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
+    private AdminCommandContext wrapped;
+    private ProgressStatus progressStatus;
+
+    public AdminCommandContextForInstance(AdminCommandContext wrapped, ProgressStatus progressStatus) {
+        if (wrapped == null) {
+            throw new IllegalArgumentException("Argument wrapped can not be null");
         }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+        this.wrapped = wrapped;
+        this.progressStatus = progressStatus;
     }
+
+    @Override
+    public ActionReport getActionReport() {
+        return wrapped.getActionReport();
+    }
+
+    @Override
+    public void setActionReport(ActionReport newReport) {
+        wrapped.setActionReport(newReport);
+    }
+
+    @Override
+    public Logger getLogger() {
+        return wrapped.getLogger();
+    }
+
+    @Override
+    public Inbound getInboundPayload() {
+        return wrapped.getInboundPayload();
+    }
+
+    @Override
+    public Outbound getOutboundPayload() {
+        return wrapped.getOutboundPayload();
+    }
+
+    @Override
+    public Subject getSubject() {
+        return wrapped.getSubject();
+    }
+
+    @Override
+    public void setSubject(Subject subject) {
+        wrapped.setSubject(subject);
+    }
+
+    @Override
+    public ProgressStatus getProgressStatus() {
+        if (progressStatus == null) {
+            return wrapped.getProgressStatus();
+        } else {
+            return progressStatus;
+        }
+    }
+
     
 }

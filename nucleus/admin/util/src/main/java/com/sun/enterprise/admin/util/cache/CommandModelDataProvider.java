@@ -42,41 +42,56 @@ package com.sun.enterprise.admin.util.cache;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import javax.xml.stream.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
-import org.jvnet.hk2.annotations.Service;
 
 /** 
  * Works with {@link com.sun.enterprise.admin.util.CachedCommandModel} and
- * {@link com.sun.enterprise.admin.util.CommandModelData).
+ * {@link com.sun.enterprise.admin.util.CommandModelData).<br/>
+ * This is <i>hand made</i> implementation which is focused on human readability
+ * and fastness. 
  *
  * @author mmares
  */
-@Service
+//It is ugly hand made code bud fast and with readable result. Maybe rewrite to some JAX-B based on performance result.
 public class CommandModelDataProvider implements DataProvider {
+    private static final String ADDEDUPLOADOPTIONS_ELEMENT = "added-upload-options";
     private static final String ALIAS_ELEMENT = "alias";
     private static final String CLASS_ELEMENT = "class";
     private static final String DEFAULT_VALUE_ELEMENT = "default-value";
+    private static final String DESCRIPTION_ELEMENT = "description";
     private static final String ETAG_ELEMENT = "e-tag";
     private static final String NAME_ELEMENT = "name";
     private static final String OBSOLETE_ELEMENT = "obsolete";
     private static final String OPTIONAL_ELEMENT = "optional";
     private static final String PARAMETERS_ELEMENT = "parameters";
     private static final String PARAMETER_ELEMENT = "parameter";
+    private static final String PASSWORD_ELEMENT = "password";
     private static final String SHORTNAME_ELEMENT = "short-name";
     private static final String UNKNOWN_ARE_OPERANDS_ELEMENT = "unknown-are-operands";
+    private static final String ROOT_ELEMENT = "command-model";
+    private static final String PRIMARY_ELEMENT = "primary";
+    private static final String MULTIPLE_ELEMENT = "multiple";
+    private static final String USAGE_ELEMENT = "usage";
     
     private XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
     private XMLInputFactory inputFactory = XMLInputFactory.newInstance();
     
-    private static final String ROOT_ELEMENT = "command-model";
+    private Charset charset;
+    
+    public CommandModelDataProvider() {
+        try {
+            charset = Charset.forName("UTF-8");
+        } catch (Exception ex) {
+            charset = Charset.defaultCharset();
+        }
+    }
     
     @Override
     public boolean accept(Class clazz) {
@@ -86,200 +101,304 @@ public class CommandModelDataProvider implements DataProvider {
     }
     
     @Override
-    public byte[] toByteArray(Object o) {
+    public void writeToStream(Object o, OutputStream stream) throws IOException {
         if (o == null) {
-            return new byte[0];
+            return;
         }
-        CommandModel cm = (CommandModel) o;
-        //Manual implementation based on stax for good performance
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BufferedOutputStream bos = new BufferedOutputStream(baos);
+        writeToStreamSimpleFormat((CommandModel) o, stream);
+    }
+    
+    /** Super simple format possible because there can't be any problematic
+     * symbol like EOL in attributes.
+     * 
+     * @throws IOException 
+     */ 
+    public void writeToStreamSimpleFormat(CommandModel cm, OutputStream stream) throws IOException {
+        if (cm == null) {
+            return;
+        }
         // @todo Java SE 7: Managed source
-        XMLStreamWriter xml = null;
+        BufferedWriter bw = null;
+        OutputStreamWriter writer = null;
         try {
-            xml = outputFactory.createXMLStreamWriter(bos, "UTF-8");
-            xml.writeStartDocument();
-            xml.writeStartElement(ROOT_ELEMENT);
-            //ETag
-            if (o instanceof CachedCommandModel) {
-                CachedCommandModel ccm = (CachedCommandModel) o;
-                xml.writeStartElement(ETAG_ELEMENT);
-                xml.writeCharacters(ccm.getETag());
-                xml.writeEndElement();
-            }
+            writer = new OutputStreamWriter(stream, charset);
+            bw = new BufferedWriter(writer);
             //command name
             String str = cm.getCommandName();
             if (str != null && !str.isEmpty()) {
-                xml.writeStartElement(NAME_ELEMENT);
-                xml.writeCharacters(str);
-                xml.writeEndElement();
+                bw.write(ROOT_ELEMENT);
+                bw.write(": ");
+                bw.write(str);
+                bw.newLine();
             }
+            //ETag
+            bw.write(ETAG_ELEMENT);
+            bw.write(": ");
+            bw.write(CachedCommandModel.computeETag(cm));
+            bw.newLine();
             //unknown are operands
             if (cm.unknownOptionsAreOperands()) {
-                xml.writeStartElement(UNKNOWN_ARE_OPERANDS_ELEMENT);
-                xml.writeCharacters("true");
-                xml.writeEndElement();
+                bw.write(UNKNOWN_ARE_OPERANDS_ELEMENT);
+                bw.write(": true");
+                bw.newLine();
+            }
+            //CachedCommandModel specific staff
+            if (cm instanceof CachedCommandModel) {
+                CachedCommandModel ccm = (CachedCommandModel) cm;
+                //unknown are operands
+                if (ccm.isAddedUploadOption()) {
+                    bw.write(ADDEDUPLOADOPTIONS_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
+                }
+                //usage
+                str = ccm.getUsage();
+                if (str != null && !str.isEmpty()) {
+                    bw.write(USAGE_ELEMENT);
+                    bw.write(": ");
+                    bw.write(escapeEndLines(str));
+                    bw.newLine();
+                }
             }
             //Parameters
-            xml.writeStartElement(PARAMETERS_ELEMENT);
             for (CommandModel.ParamModel paramModel : cm.getParameters()) {
-                xml.writeStartElement(PARAMETER_ELEMENT);
+                bw.newLine();
                 //parameter / name
-                str = paramModel.getName();
-                if (str != null && !str.isEmpty()) {
-                    xml.writeStartElement(NAME_ELEMENT);
-                    xml.writeCharacters(str);
-                    xml.writeEndElement();
-                }
+                bw.write(NAME_ELEMENT);
+                bw.write(": ");
+                bw.write(paramModel.getName());
+                bw.newLine();
                 //parameter / class
                 if (paramModel.getType() != null) {
-                    xml.writeStartElement(CLASS_ELEMENT);
-                    xml.writeCharacters(paramModel.getType().getName());
-                    xml.writeEndElement();
+                    bw.write(CLASS_ELEMENT);
+                    bw.write(": ");
+                    bw.write(paramModel.getType().getName());
+                    bw.newLine();
                 }
                 Param param = paramModel.getParam();
                 //parameter / shortName
                 str = param.shortName();
                 if (str != null && !str.isEmpty()) {
-                    xml.writeStartElement(SHORTNAME_ELEMENT);
-                    xml.writeCharacters(str);
-                    xml.writeEndElement();
+                    bw.write(SHORTNAME_ELEMENT);
+                    bw.write(": ");
+                    bw.write(str);
+                    bw.newLine();
                 }
                 //parameter / alias
                 str = param.alias();
                 if (str != null && !str.isEmpty()) {
-                    xml.writeStartElement(ALIAS_ELEMENT);
-                    xml.writeCharacters(str);
-                    xml.writeEndElement();
+                    bw.write(ALIAS_ELEMENT);
+                    bw.write(": ");
+                    bw.write(str);
+                    bw.newLine();
                 }
                 //parameter / optional
                 if (param.optional()) {
-                    xml.writeStartElement(OPTIONAL_ELEMENT);
-                    xml.writeCharacters("true");
-                    xml.writeEndElement();
+                    bw.write(OPTIONAL_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
                 }
                 //parameter / obsolete
                 if (param.obsolete()) {
-                    xml.writeStartElement(OBSOLETE_ELEMENT);
-                    xml.writeCharacters("true");
-                    xml.writeEndElement();
+                    bw.write(OBSOLETE_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
                 }
                 //parameter / defaultValue
                 str = param.defaultValue();
                 if (str != null && !str.isEmpty()) {
-                    xml.writeStartElement(DEFAULT_VALUE_ELEMENT);
-                    xml.writeCharacters(str);
-                    xml.writeEndElement();
+                    bw.write(DEFAULT_VALUE_ELEMENT);
+                    bw.write(": ");
+                    bw.write(str);
+                    bw.newLine();
                 }
-                xml.writeEndElement(); //parameter
+                //parameter / primary
+                if (param.primary()) {
+                    bw.write(PRIMARY_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
+                }
+                //parameter / multiple
+                if (param.multiple()) {
+                    bw.write(MULTIPLE_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
+                }
+                //parameter / password
+                if (param.password()) {
+                    bw.write(PASSWORD_ELEMENT);
+                    bw.write(": true");
+                    bw.newLine();
+                }
+                //parameter / description
+                if (paramModel instanceof ParamModelData) {
+                    str = ((ParamModelData) paramModel).getDescription();
+                    if (str != null && !str.isEmpty()) {
+                        bw.write(DESCRIPTION_ELEMENT);
+                        bw.write(": ");
+                        bw.write(escapeEndLines(str));
+                        bw.newLine();
+                    }
+                }
             }
-            xml.writeEndElement();
-            //root
-            xml.writeEndElement();
-            xml.writeEndDocument();
-        } catch (XMLStreamException ex) {
-            return new byte[0];
         } finally {
-            try {xml.close();} catch (Exception ex) {}
-            try {bos.close();} catch (Exception ex) {}
+            try { bw.close(); } catch (Exception ex) {}
+            try { writer.close(); } catch (Exception ex) {}
         }
-        return baos.toByteArray();
     }
-
-    @Override
-    public Object toInstance(byte[] data, Class clazz) {
-        if (data == null || data.length == 0) {
+    
+    private String escapeEndLines(String str) {
+        if (str == null) {
             return null;
         }
-        boolean inCommandModel = false;
+        return str.replace("\n", "${NL}").replace("\r", "${RC}");
+    }
+    
+    private String resolveEndLines(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.replace("${NL}", "\n").replace("${RC}", "\r");
+    }
+    
+    @Override
+    public Object toInstance(InputStream stream, Class clazz) throws IOException {
+        return toInstanceSimpleFormat(stream);
+    }
+    
+    private CommandModel toInstanceSimpleFormat(InputStream stream) throws IOException {
+        CachedCommandModel result = null;
+        InputStreamReader isr = null;
+        BufferedReader r = null;
         boolean inParam = false;
-        String eTag = null;
         String name = null;
+        String eTag = null;
         boolean unknownAreOperands = false;
+        String usage = null;
+        boolean addedUploadOption = false;
         String pName = null;
         Class pCls = null;
-        String pShortName = null;
-        String pAlias = null;
         boolean pOptional = false;
-        boolean pObsolete = false;
         String pDefaultValue = null;
-        String currentElement = null;
-        List<CommandModelData.ParamModelData> params = new ArrayList<CommandModelData.ParamModelData>();
-        InputStream is = new ByteArrayInputStream(data);
+        String pShortName = null;
+        boolean pObsolete = false;
+        String pAlias = null;
+        boolean pPrimary = false;
+        boolean pMultiple = false;
+        boolean pPassword = false;
+        String pDescription = null;
         try {
-            XMLStreamReader xml = inputFactory.createXMLStreamReader(is);
-            while (xml.hasNext()) {
-                xml.next();
-                //Start element
-                if (xml.getEventType() == XMLStreamReader.START_ELEMENT) {
-                    currentElement = xml.getLocalName();
-                    if (!inCommandModel) {
-                        if (!ROOT_ELEMENT.equals(currentElement)) {
-                            return null;
-                        } else {
-                            inCommandModel = true;
-                        }
-                    } else if (PARAMETER_ELEMENT.equals(currentElement)) {
-                        //reset for new param
-                        inParam = true;
-                        pName = null;
-                        pCls = null;
-                        pShortName = null;
-                        pAlias = null;
-                        pOptional = false;
-                        pObsolete = false;
-                        pDefaultValue = null;
-                    }
-                } else
-                //End element
-                if (xml.getEventType() == XMLStreamReader.END_ELEMENT) {
-                    if (PARAMETER_ELEMENT.equals(xml.getLocalName())) {
-                        inParam = false;
-                        params.add(new CommandModelData.ParamModelData(pName, 
+            isr = new InputStreamReader(stream, charset);
+            r = new BufferedReader(isr);
+            String line;
+            while ((line = r.readLine()) != null) {
+                int ind = line.indexOf(':');
+                if (ind <= 0) {
+                    continue;
+                }
+                String key = line.substring(0, ind);
+                String value = line.substring(ind + 1).trim();
+                // @todo Java SE 7: String switch-case 
+                if (inParam) {
+                    if (NAME_ELEMENT.equals(key)) {
+                        //Add before parameter
+                        CommandModelData.ParamModelData pmd = 
+                                new CommandModelData.ParamModelData(pName, 
                                 pCls, pOptional, pDefaultValue, pShortName, 
-                                pObsolete, pAlias));
+                                pObsolete, pAlias);
+                        pmd.param._primary = pPrimary;
+                        pmd.param._multiple = pMultiple;
+                        pmd.param._password = pPassword;
+                        pmd.description = pDescription;
+                        result.add(pmd);
+                        //Reset values
+                        pCls = null;
+                        pOptional = false;
+                        pDefaultValue = null;
+                        pShortName = null;
+                        pObsolete = false;
+                        pAlias = null;
+                        pPrimary = false;
+                        pMultiple = false;
+                        pPassword = false;
+                        pDescription = null;
+                        //New param
+                        pName = value;
+                    } else if (CLASS_ELEMENT.equals(key)) {
+                        if (!value.isEmpty()) {
+                            try {
+                                pCls = Class.forName(value);
+                            } catch (Exception ex) {
+                            }
+                        }
+                    } else if (OPTIONAL_ELEMENT.equals(key)) {
+                        pOptional = value.startsWith("t");
+                    } else if (DEFAULT_VALUE_ELEMENT.equals(key)) {
+                        pDefaultValue = value;
+                    } else if (SHORTNAME_ELEMENT.equals(key)) {
+                        pShortName = value;
+                    } else if (OBSOLETE_ELEMENT.equals(key)) {
+                        pObsolete = value.startsWith("t");
+                    } else if (ALIAS_ELEMENT.equals(key)) {
+                        pAlias = value;
+                    } else if (PRIMARY_ELEMENT.equals(key)) {
+                        pPrimary = value.startsWith("t");
+                    } else if (MULTIPLE_ELEMENT.equals(key)) {
+                        pMultiple = value.startsWith("t");
+                    } else if (PASSWORD_ELEMENT.equals(key)) {
+                        pPassword = value.startsWith("t");
+                    } else if (DESCRIPTION_ELEMENT.equals(key)) {
+                        pAlias = resolveEndLines(value);
                     }
-                    currentElement = null;
-                } else
-                //Characters
-                if (xml.getEventType() == XMLStreamReader.CHARACTERS) {
-                    // @toto JavaSE 7: String switch case
-                    if (inParam) {
-                        if (NAME_ELEMENT.equals(currentElement)) {
-                            pName = xml.getText();
-                        } else if (CLASS_ELEMENT.equals(currentElement)) {
-                            pCls = Class.forName(xml.getText());
-                        } else if (SHORTNAME_ELEMENT.equals(currentElement)) {
-                            pShortName = xml.getText();
-                        } else if (ALIAS_ELEMENT.equals(currentElement)) {
-                            pAlias = xml.getText();
-                        } else if (DEFAULT_VALUE_ELEMENT.equals(currentElement)) {
-                            pDefaultValue = xml.getText();
-                        } else if (OPTIONAL_ELEMENT.equals(currentElement)) {
-                            pOptional = Boolean.parseBoolean(xml.getText());
-                        } else if (OBSOLETE_ELEMENT.equals(currentElement)) {
-                            pObsolete = Boolean.parseBoolean(xml.getText());
-                        }
-                    } else {
-                        if (NAME_ELEMENT.equals(currentElement)) {
-                            name = xml.getText();
-                        } else if (ETAG_ELEMENT.equals(currentElement)) {
-                            eTag = xml.getText();
-                        } else if (UNKNOWN_ARE_OPERANDS_ELEMENT.equals(currentElement)) {
-                            unknownAreOperands = Boolean.parseBoolean(xml.getText());
-                        }
+                } else {
+                    if (ROOT_ELEMENT.equals(key)) {
+                        name = value;
+                    } else if (ETAG_ELEMENT.equals(key)) {
+                        eTag = value;
+                    } else if (UNKNOWN_ARE_OPERANDS_ELEMENT.equals(key)) {
+                        unknownAreOperands = value.startsWith("t");
+                    } else if (ADDEDUPLOADOPTIONS_ELEMENT.equals(key)) {
+                        addedUploadOption = value.startsWith("t");
+                    } else if (USAGE_ELEMENT.equals(key)) {
+                        usage = resolveEndLines(value);
+                    } else if (NAME_ELEMENT.equals(key)) {
+                        //Create base
+                        result = new CachedCommandModel(name, eTag);
+                        result.dashOk = unknownAreOperands;
+                        result.setUsage(usage);
+                        result.setAddedUploadOption(addedUploadOption);
+                        //Continue in params
+                        inParam = true;
+                        pName = value;
                     }
                 }
             }
-            //Build result
-            CachedCommandModel result = new CachedCommandModel(name, eTag);
-            result.dashOk = unknownAreOperands;
-            for (ParamModelData paramModel : params) {
-                result.add(paramModel);
+            if (inParam) {
+                //Add parameter
+                CommandModelData.ParamModelData pmd = 
+                        new CommandModelData.ParamModelData(pName, 
+                        pCls, pOptional, pDefaultValue, pShortName, 
+                        pObsolete, pAlias);
+                pmd.param._primary = pPrimary;
+                pmd.param._multiple = pMultiple;
+                pmd.param._password = pPassword;
+                pmd.description = pDescription;
+                result.add(pmd);
+            } else if (result == null && name != null && !name.isEmpty()) {
+                result = new CachedCommandModel(name, eTag);
+                result.dashOk = unknownAreOperands;
+                result.setUsage(usage);
+                result.setAddedUploadOption(addedUploadOption);
             }
-            return result;
-        } catch (Exception e) {
-            return null;
+            if (eTag != null && !eTag.isEmpty() && !eTag.startsWith("v1")) {
+                return null;
+            }
+        } finally {
+            try {r.close();} catch (Exception ex) {}
+            try {isr.close();} catch (Exception ex) {}
         }
+        return result;
     }
+
+    
 }

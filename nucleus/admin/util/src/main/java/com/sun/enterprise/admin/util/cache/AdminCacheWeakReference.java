@@ -43,8 +43,6 @@ import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
 
 /** {@link AdminCache} based on week references and backgrounded by 
  * {@link AdminCacheFileStore} layer. <br/>
@@ -54,7 +52,6 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author mmares
  */
-@Service(name=AdminCacheWeakReference.SERVICE_NAME)
 public class AdminCacheWeakReference implements AdminCache {
     
     private final class CachedItem {
@@ -107,12 +104,13 @@ public class AdminCacheWeakReference implements AdminCache {
         
     }
     
-    public static final String SERVICE_NAME = "week-reference";
+    private static final AdminCacheWeakReference instance = new AdminCacheWeakReference();
     
-    @Inject()
-    private AdminCacheFileStore fileCache;
-    
+    private AdminCacheFileStore fileCache = AdminCacheFileStore.getInstance();
     private final Map<String, CachedItem> cache = new HashMap<String, CachedItem>();
+    
+    private AdminCacheWeakReference() {
+    }
 
     @Override
     public <A> A get(final String key, final Class<A> clazz) {
@@ -189,6 +187,10 @@ public class AdminCacheWeakReference implements AdminCache {
             }
         }
         return result;
+    }
+    
+    public static AdminCacheWeakReference getInstance() {
+        return instance;
     }
     
 }

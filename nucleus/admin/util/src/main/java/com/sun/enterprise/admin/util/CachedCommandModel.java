@@ -53,6 +53,8 @@ import org.glassfish.api.admin.CommandModel;
 public class CachedCommandModel extends CommandModelData {
     
     private String eTag;
+    private String usage;
+    private boolean addedUploadOption = false;
     
     public CachedCommandModel(String name) {
         super(name);
@@ -74,49 +76,152 @@ public class CachedCommandModel extends CommandModelData {
         this.eTag = eTag;
     }
     
-    public static String computeETag(CommandModel cm) {
-        try {
-            Charset chs = Charset.forName("UTF-16");
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            if (cm.getCommandName() != null) {
-                md.update(cm.getCommandName().getBytes(chs));
-            }
-            md.update((cm.unknownOptionsAreOperands()) ? (byte) 1 : (byte) 0);
-            for (ParamModel paramModel : cm.getParameters()) {
-                if (paramModel.getName() != null) {
-                    md.update(paramModel.getName().getBytes(chs));
-                }
-                if (paramModel.getClass() != null) {
-                    md.update(paramModel.getClass().getCanonicalName().getBytes(chs));
-                }
-                Param param = paramModel.getParam();
-                if (param.optional()) {
-                    if (param.obsolete()) {
-                        md.update((byte) 4);
-                    } else {
-                        md.update((byte) 3);
-                    }
-                } else {
-                    if (param.obsolete()) {
-                        md.update((byte) 2);
-                    } else {
-                        md.update((byte) 1);
-                    }
-                }
-                if (param.defaultValue() != null && !param.defaultValue().isEmpty()) {
-                    md.update(param.defaultValue().getBytes(chs));
-                }
-                if (param.shortName() != null && !param.shortName().isEmpty()) {
-                    md.update(param.shortName().getBytes(chs));
-                }
-                if (param.alias() != null && !param.shortName().isEmpty()) {
-                    md.update(param.alias().getBytes(chs));
-                }
-            }
-            return DatatypeConverter.printBase64Binary(md.digest());
-        } catch (NoSuchAlgorithmException ex) {
-            return null;
+    private static int strLen(String str) {
+        if (str == null) {
+            return 0;
+        } else {
+            return str.length();
         }
     }
+
+    public String geteTag() {
+        return eTag;
+    }
+
+    public void seteTag(String eTag) {
+        this.eTag = eTag;
+    }
+
+    public String getUsage() {
+        return usage;
+    }
+
+    public void setUsage(String usage) {
+        this.usage = usage;
+    }
+
+    public boolean isAddedUploadOption() {
+        return addedUploadOption;
+    }
+
+    public void setAddedUploadOption(boolean addedUploadOption) {
+        this.addedUploadOption = addedUploadOption;
+    }
+    
+    //TODO: This is very light algorithm. But have allways problem to find something - keep searching
+    public static String computeETag(CommandModel cm) {
+        if (cm instanceof CachedCommandModel) {
+            String result = ((CachedCommandModel) cm).eTag;
+            if (result != null && !result.isEmpty()) {
+                return ((CachedCommandModel) cm).eTag;
+            }
+        }
+        StringBuilder tag = new StringBuilder();
+        tag.append("v1"); //Just symbol for loaders
+        tag.append(strLen(cm.getCommandName()));
+        if (cm.unknownOptionsAreOperands()) {
+            tag.append('y');
+        }
+        if (cm.getParameters() != null) {
+            int size = cm.getParameters().size();
+            int totalStrings = 0;
+            int totalAliasStrings = 0;
+            int totalOptional = 0;
+            boolean existPrimaty = false;
+            boolean isPrimaryMultiple = false;
+            int withShortName = 0;
+            int totalObsoletes = 0;
+            for (ParamModel paramModel : cm.getParameters()) {
+                if ("upload".equals(paramModel.getName())) {
+                    //Skip because potentialy generated on client side
+                    size--;
+                    continue;
+                }
+                totalStrings += strLen(paramModel.getName());
+                Param param = paramModel.getParam();
+                if (param.multiple()) {
+                    isPrimaryMultiple = true;
+                }
+                if (param.optional()) {
+                    totalOptional++;
+                }
+                if (param.primary()) {
+                    existPrimaty = true;
+                    continue;
+                }
+                if (param.obsolete()) {
+                    totalObsoletes++;
+                }
+                if (param.shortName() != null && !param.shortName().isEmpty()) {
+                    withShortName++;
+                }
+                totalAliasStrings += strLen(param.alias());
+            }
+            tag.append(size);
+            tag.append(totalStrings);
+            tag.append(totalAliasStrings);
+            tag.append(totalOptional);
+            tag.append(withShortName);
+            tag.append(totalObsoletes);
+            tag.append(totalStrings);
+            if (existPrimaty) {
+                tag.append(isPrimaryMultiple ? 'b' : 'a');
+            } else {
+                tag.append(isPrimaryMultiple ? 'c' : 'd');
+            }
+        }
+        return tag.toString();
+    }
+    
+    
+//    public static String computeETag(CommandModel cm) {
+//        if (cm instanceof CachedCommandModel) {
+//            String result = ((CachedCommandModel) cm).eTag;
+//            if (result != null && !result.isEmpty()) {
+//                return ((CachedCommandModel) cm).eTag;
+//            }
+//        }
+//        try {
+//            Charset chs = Charset.forName("UTF-16");
+//            MessageDigest md = MessageDigest.getInstance("MD5");
+//            if (cm.getCommandName() != null) {
+//                md.update(cm.getCommandName().getBytes(chs));
+//            }
+//            md.update((cm.unknownOptionsAreOperands()) ? (byte) 1 : (byte) 0);
+//            for (ParamModel paramModel : cm.getParameters()) {
+//                if (paramModel.getName() != null) {
+//                    md.update(paramModel.getName().getBytes(chs));
+//                }
+////                if (paramModel.getClass() != null) {
+////                    md.update(paramModel.getClass().getCanonicalName().getBytes(chs));
+////                }
+//                Param param = paramModel.getParam();
+//                if (param.optional()) {
+//                    md.update((byte) 9);
+//                }
+//                if (param.obsolete()) {
+//                    md.update((byte) 7);
+//                }
+////                if (param.defaultValue() != null && !param.defaultValue().isEmpty()) {
+////                    md.update(param.defaultValue().getBytes(chs));
+////                }
+//                if (param.shortName() != null && !param.shortName().isEmpty()) {
+//                    md.update(param.shortName().getBytes(chs));
+//                }
+//                if (param.alias() != null && !param.shortName().isEmpty()) {
+//                    md.update(param.alias().getBytes(chs));
+//                }
+//                if (param.primary()) {
+//                    md.update((byte) 13);
+//                }
+//                if (param.multiple()) {
+//                    md.update((byte) 12);
+//                }
+//            }
+//            return DatatypeConverter.printBase64Binary(md.digest());
+//        } catch (NoSuchAlgorithmException ex) {
+//            return null;
+//        }
+//    }
     
 }

@@ -45,13 +45,9 @@ import static org.junit.Assert.*;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import org.junit.Test;
 import org.junit.Before;
-import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.ParameterMap;
 
-import java.lang.reflect.AnnotatedElement;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModel;
@@ -116,12 +112,14 @@ public class CommandRunnerTest {
         @Param(optional=false, primary=true)
         String world;
             
+        @Override
         public void execute(AdminCommandContext context) {}
     }
 
         //mock-up SkipValidationCommand
     public class SkipValidationCommand implements AdminCommand {
         boolean skipParamValidation=true;
+        @Override
         public void execute(AdminCommandContext context) {}        
     }
     

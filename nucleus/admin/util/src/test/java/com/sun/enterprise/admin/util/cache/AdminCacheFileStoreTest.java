@@ -46,7 +46,7 @@ package com.sun.enterprise.admin.util.cache;
 public class AdminCacheFileStoreTest extends AdminCacheTstBase {
     
     public AdminCacheFileStoreTest() {
-        super(AdminCacheFileStore.SERVICE_NAME);
+        super(AdminCacheFileStore.getInstance());
     }
     
 }

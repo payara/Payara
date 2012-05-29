@@ -37,38 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package org.glassfish.api.admin.progress;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
-/**
+/** {@code ProgressStatus} is changed
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+//TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
+public class ProgressStatusEvent {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
+    public enum Changed {
+        NEW_CHILD, STEPS, TOTAL_STEPS, COMPLETED;
     }
     
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
+    private ProgressStatusBase source;
+    private Changed[] changed;
+    private String message;
+    private int allocatedSteps = 0; //For new child only
+
+    ProgressStatusEvent(ProgressStatusBase source, String message, Changed... changed) {
+        this.source = source;
+        if (changed == null) {
+            changed = new Changed[0];
         }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+        this.changed = changed;
+        this.message = message;
+    }
+
+    /** Constructor only for {@code Changed.NEW_CHILD}
+     */
+    public ProgressStatusEvent(ProgressStatusBase source, int allocatedSteps) {
+        this.source = source;
+        this.changed = new Changed[] {Changed.NEW_CHILD};
+        this.allocatedSteps = allocatedSteps;
+    }
+
+    public int getAllocatedSteps() {
+        return allocatedSteps;
+    }
+
+    public Changed[] getChanged() {
+        return changed;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public ProgressStatusBase getSource() {
+        return source;
     }
     
 }

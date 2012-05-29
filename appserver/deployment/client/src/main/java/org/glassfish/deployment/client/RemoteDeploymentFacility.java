@@ -71,10 +71,12 @@ import java.util.Properties;
  */
 public class RemoteDeploymentFacility extends AbstractDeploymentFacility {
     
+    @Override
     protected boolean doConnect() {
         return true;
     }
 
+    @Override
     public boolean doDisconnect() {
         return true;
     }

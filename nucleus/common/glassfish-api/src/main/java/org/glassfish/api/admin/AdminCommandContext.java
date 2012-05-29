@@ -100,5 +100,13 @@ public interface AdminCommandContext extends ExecutionContext {
      * @param subject
      */
     public void setSubject(Subject subject);
+    
+    /** 
+     * ProgressStatus can be used to inform about step by step progress 
+     * of the command. It is always ready to use but propagated to 
+     * the client only if {@code @Progress} annotation is on the command
+     * implementation.
+     */
+    public ProgressStatus getProgressStatus();
 
 }

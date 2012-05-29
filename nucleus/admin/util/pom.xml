@@ -106,7 +106,7 @@
            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*.1</include>
+                    <include>**/*</include>
                 </includes>
             </resource>
         </resources>

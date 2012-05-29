@@ -37,38 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package com.sun.enterprise.v3.admin.progress;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
+import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.api.admin.progress.ProgressStatusImpl;
+import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
+import org.junit.AfterClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+public class CommandProgressImplTest {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
+    public CommandProgressImplTest() {
     }
-    
+
+//    @BeforeClass
+//    public static void setUpClass() throws Exception {
+//    }
+//
+//    @AfterClass
+//    public static void tearDownClass() throws Exception {
+//    }
+
+
     @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
-        }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+    public void testCreateMirroringChild() {
+        CommandProgressImpl cp = new CommandProgressImpl("first");
+        cp.setTotalStepCount(2);
+        ProgressStatusMirroringImpl ch1 = cp.createMirroringChild(1);
+        assertNotNull(ch1);
+        ProgressStatus ch2 = cp.createChild(1);
+        assertNotNull(ch1);
+        assertTrue(ch2 instanceof ProgressStatusImpl);
     }
     
 }

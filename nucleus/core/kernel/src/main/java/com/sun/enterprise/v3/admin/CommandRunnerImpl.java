@@ -39,6 +39,9 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.admin.util.CachedCommandModel;
+import java.util.EnumSet;
+import java.util.Map;
 import org.glassfish.api.admin.CommandWrapperImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -88,6 +91,7 @@ import java.lang.annotation.Annotation;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 
 /**
  * Encapsulates the logic needed to execute a server-side command (for example,
@@ -123,6 +127,11 @@ public class CommandRunnerImpl implements CommandRunner {
     private AdminCommandLock adminLock;
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
+    @Inject
+    CommandProgressRegistry progressRegistry;
+    
+    //private final Map<Class<? extends AdminCommand>, String> commandModelEtagMap = new WeakHashMap<Class<? extends AdminCommand>, String>();
+    private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
 
     @Inject
     private CommandSecurityChecker commandSecurityChecker;
@@ -174,6 +183,31 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         return command == null ? null : getModel(command);
     }
+    
+    @Override
+    public boolean validateCommandModelETag(String commandName, AdminCommand command, String eTag) {
+        if (command == null) {
+            return true; //Everithing is ok for unexisting command
+        }
+        if (eTag == null || eTag.isEmpty()) {
+            return false;
+        }
+//        NameCommandClassPair key = new NameCommandClassPair(commandName, command.getClass());
+//        String actualETag = commandModelEtagMap.get(key);
+//        if (actualETag == null) {
+            CommandModel model = getModel(command);
+            if (model == null) {
+                return true; //Unexisting model => it is ok (but weard in fact)
+            }
+            String actualETag = CachedCommandModel.computeETag(model);
+//            commandModelEtagMap.put(key, actualETag);
+//        } else {
+//            if (logger.isLoggable(Level.FINEST)) {
+//                logger.log(Level.FINEST, "validateCommandModelETag({0}, {1}): Found in local cache!");
+//            }
+//        }
+        return eTag.equals(actualETag);
+    } 
 
     /**
      * Obtain and return the command implementation defined by
@@ -274,6 +308,7 @@ public class CommandRunnerImpl implements CommandRunner {
      * @param report where to place the status of the command execution
      * @return a new command invocation for that command name
      */
+    @Override
     public CommandInvocation getCommandInvocation(String name,
             ActionReport report) {
         return getCommandInvocation(null, name, report);
@@ -389,7 +424,8 @@ public class CommandRunnerImpl implements CommandRunner {
     private ActionReport doCommand(
             final CommandModel model,
             final AdminCommand command,
-            final AdminCommandContext context) {
+            final AdminCommandContext context,
+            final CommandRunnerProgressHelper progressHelper) {
 
         ActionReport report = context.getActionReport();
         report.setActionDescription(model.getCommandName() + " AdminCommand");
@@ -427,7 +463,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         
         try {
-            wrappedCommand.execute(context);
+            wrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
         } catch (Throwable e) {
             logger.log(Level.SEVERE,
                     adminStrings.getLocalString("adapter.exception",
@@ -876,17 +912,23 @@ public class CommandRunnerImpl implements CommandRunner {
         Set<CommandTarget> targetTypesAllowed = new HashSet<CommandTarget>();
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
+        CommandRunnerProgressHelper progressHelper = 
+                new CommandRunnerProgressHelper(command, model.getCommandName(), progressRegistry); 
+                
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
         // lets not even look Supplemental command and such. A small optimization
         boolean doReplication = false;
-        if ((domain.getServers().getServer().size() > 1) || (domain.getClusters().getCluster().size() != 0)) {
+        if ((domain.getServers().getServer().size() > 1) || (!domain.getClusters().getCluster().isEmpty())) {
             doReplication = true;
         } else {
             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.devmode",
                     "The GlassFish environment does not have any clusters or instances present; Replication is turned off"));
         }
         try {
+            //Get list of suplemental commands
+            Collection<SupplementalCommand> suplementalCommands = 
+                    supplementalExecutor.listSuplementalCommands(model.getCommandName());
             try {
                 /*
                  * Extract any uploaded files and build a map from parameter names
@@ -902,8 +944,10 @@ public class CommandRunnerImpl implements CommandRunner {
                             new DelegatedInjectionResolver(model, inv.typedParams(),
                             ufm.optionNameToFileMap());
                     if (injectParameters(model, command, injectionTarget, context).equals(ActionReport.ExitCode.SUCCESS)) {
-                        inv.setReport(doCommand(model, command, context));
+                        //TODO: MMar - it must be registered ProgressStatusRegistry here in this case (non standard flow)
+                        inv.setReport(doCommand(model, command, context, progressHelper));
                     }
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -924,6 +968,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                 AdminCommandResponse.GENERATED_HELP, "true");
                         getHelp(command, report);
                     }
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -949,6 +994,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     ActionReport.MessagePart childPart =
                             report.getTopMessagePart().addChild();
                     childPart.setMessage(getUsageText(command, model));
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -957,6 +1003,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         new MapInjectionResolver(model, parameters,
                         ufm.optionNameToFileMap());
                 if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -975,6 +1022,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(adminStrings.getLocalString("commandrunner.noauth",
                             "User is not authorized for this command"));
+                    progressHelper.complete(context);
                     return;
                 }
                     
@@ -1014,6 +1062,7 @@ public class CommandRunnerImpl implements CommandRunner {
                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.targettype.unallowed",
                                "Target type is not allowed on single instance command {0}  ,"
                                        , model.getCommandName()));
+                       progressHelper.complete(context);
                        return;
                    }
                    //Do not replicate the command when there is
@@ -1044,6 +1093,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.das.unallowed",
                                 "Not authorized to execute command {0} on DAS"
                                         , model.getCommandName()));
+                        progressHelper.complete(context);
                         return;
                     }*/
 
@@ -1054,9 +1104,9 @@ public class CommandRunnerImpl implements CommandRunner {
                         for (CommandTarget c : tgtTypeAnnotation.value()) {
                             targetTypesAllowed.add(c);
                         }
-                    };
+                    }
                     //If not @TargetType, default it
-                    if (targetTypesAllowed.size() == 0) {
+                    if (targetTypesAllowed.isEmpty()) {
                         targetTypesAllowed.add(CommandTarget.DAS);
                         targetTypesAllowed.add(CommandTarget.STANDALONE_INSTANCE);
                         targetTypesAllowed.add(CommandTarget.CLUSTER);
@@ -1087,6 +1137,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtarget",
                                 "Unable to find a valid target with name {0}", targetName));
+                        progressHelper.complete(context);
                         return;
                     }
                     //Does this command allow this target type
@@ -1102,12 +1153,13 @@ public class CommandRunnerImpl implements CommandRunner {
                         StringBuilder validTypes = new StringBuilder();
                         it = targetTypesAllowed.iterator();
                         while (it.hasNext()) {
-                            validTypes.append(it.next().getDescription() + ", ");
+                            validTypes.append(it.next().getDescription()).append(", ");
                         }
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtargettype",
                                 "Target {0} is not a supported type. Command {1} supports these types of targets only : {2}",
                                 targetName, model.getCommandName(), validTypes.toString()));
+                        progressHelper.complete(context);
                         return;
                     }
                     //If target is a clustered instance and the allowed types does not allow operations on clustered
@@ -1119,13 +1171,13 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.instanceopnotallowed",
                                 "The {0} command is not allowed on instance {1} because it is part of cluster {2}",
                                 model.getCommandName(), targetName, c.getName()));
+                        progressHelper.complete(context);
                         return;
                     }
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.replicationvalidationdone",
                             "All @ExecuteOn attribute and type validation completed successfully. Starting replication stages"));
                 }
-
-
+                
                 /**
                  * We're finally ready to actually execute the command instance.
                  * Acquire the appropriate lock.
@@ -1136,6 +1188,11 @@ public class CommandRunnerImpl implements CommandRunner {
                     // XXX: The owner of the lock should not be hardcoded.  The
                     //      value is not used yet. 
                     lock = adminLock.getLock(command, "asadmin");
+                    
+                    //Set there progress statuses
+                    for (SupplementalCommand supplementalCommand : suplementalCommands) {
+                        progressHelper.addProgressStatusToSupplementalCommand(supplementalCommand);
+                    }
 
                     // If command is undoable, then invoke prepare method
                     if (command instanceof UndoableCommand) {
@@ -1147,6 +1204,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorinprepare",
                                     "The command {0} cannot be completed because the preparation for the command failed "
                                     + "indicating potential issues : {1}", model.getCommandName(), report.getMessage()));
+                            progressHelper.complete(context);
                             return;
                         }
                     }
@@ -1156,12 +1214,13 @@ public class CommandRunnerImpl implements CommandRunner {
                     // Run Supplemental commands that have to run before this command on this instance type
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.presupplemental",
                             "Command execution stage 2 : Call pre supplemental commands for {0}", inv.name()));
-                    preSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                    preSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
                             Supplemental.Timing.Before, context, parameters, ufm.optionNameToFileMap());
                     if (preSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                         report.setActionExitCode(preSupplementalReturn);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                 "A supplemental command failed; cannot proceed further"));
+                        progressHelper.complete(context);
                         return;
                     }
                     //Run main command if it is applicable for this instance type
@@ -1172,7 +1231,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             || (serverEnv.isInstance() && runtimeTypes.contains(RuntimeType.INSTANCE))) {
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.maincommand",
                                 "Command execution stage 3 : Calling main command implementation for {0}", inv.name()));
-                        report = doCommand(model, command, context);
+                        report = doCommand(model, command, context, progressHelper);
                         inv.setReport(report);
                     }
 
@@ -1183,12 +1242,13 @@ public class CommandRunnerImpl implements CommandRunner {
                         //Run Supplemental commands that have to be run after this command on this instance type
                         logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.postsupplemental",
                                 "Command execution stage 4 : Call post supplemental commands for {0}", inv.name()));
-                        postSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                        postSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
                                 Supplemental.Timing.After, context, parameters, ufm.optionNameToFileMap());
                         if (postSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                             report.setActionExitCode(postSupplementalReturn);
                             report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                     "A supplemental command failed; cannot proceed further"));
+                            progressHelper.complete(context);
                             return;
                         }
                     }
@@ -1248,6 +1308,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 ActionReport.MessagePart childPart =
                         report.getTopMessagePart().addChild();
                 childPart.setMessage(getUsageText(command, model));
+                progressHelper.complete(context);
                 return;
             }
             /*
@@ -1260,6 +1321,7 @@ public class CommandRunnerImpl implements CommandRunner {
              */
 
             if (processEnv.getProcessType().isEmbedded()) {
+                progressHelper.complete(context);
                 return;
             }
             if (preSupplementalReturn == ActionReport.ExitCode.WARNING
@@ -1295,12 +1357,13 @@ public class CommandRunnerImpl implements CommandRunner {
                                 report.getActionExitCode()).equals(ActionReport.ExitCode.FAILURE)) {
                             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.afterreplsupplemental",
                                     "Command execution stage 5 : Call post-replication supplemental commands for {0}", inv.name()));
-                            ActionReport.ExitCode afterReplicationSupplementalReturn = supplementalExecutor.execute(model.getCommandName(),
+                            ActionReport.ExitCode afterReplicationSupplementalReturn = supplementalExecutor.execute(suplementalCommands,
                                     Supplemental.Timing.AfterReplication, context, parameters, ufm.optionNameToFileMap());
                             if (afterReplicationSupplementalReturn.equals(ActionReport.ExitCode.FAILURE)) {
                                 report.setActionExitCode(afterReplicationSupplementalReturn);
                                 report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                         "A supplemental command failed; cannot proceed further"));
+                                progressHelper.complete(context);
                                 return;
                             }
                         }
@@ -1329,7 +1392,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 ufm.close();
             }
         }
-
+        progressHelper.complete(context);
     }
     
     private Map<String,Object> buildEnvMap(final ParameterMap params) {
@@ -1367,26 +1430,31 @@ public class CommandRunnerImpl implements CommandRunner {
             this.report = report;
         }
 
+        @Override
         public CommandInvocation parameters(CommandParameters paramObject) {
             this.paramObject = paramObject;
             return this;
         }
 
+        @Override
         public CommandInvocation parameters(ParameterMap params) {
             this.params = params;
             return this;
         }
 
+        @Override
         public CommandInvocation inbound(Payload.Inbound inbound) {
             this.inbound = inbound;
             return this;
         }
 
+        @Override
         public CommandInvocation outbound(Payload.Outbound outbound) {
             this.outbound = outbound;
             return this;
         }
 
+        @Override
         public void execute() {
             execute(null);
         }
@@ -1423,6 +1491,7 @@ public class CommandRunnerImpl implements CommandRunner {
             return outbound;
         }
 
+        @Override
         public void execute(AdminCommand command) {
             CommandRunnerImpl.this.doCommand(this, command);
 
@@ -1538,7 +1607,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
         }
     }
-
+    
     /**
      * Is the boolean valued parameter specified?
      * If so, and it has a value, is the value "true"?
@@ -1549,6 +1618,45 @@ public class CommandRunnerImpl implements CommandRunner {
             return false;
         }
         return val.length() == 0 || Boolean.valueOf(val).booleanValue();
+    }
+    
+    /** Works as a key in ETag cache map
+     */
+    private class NameCommandClassPair {
+        private String name;
+        private Class<? extends AdminCommand> clazz;
+        private int hash; //immutable, we can cache it
+
+        public NameCommandClassPair(String name, Class<? extends AdminCommand> clazz) {
+            this.name = name;
+            this.clazz = clazz;
+            hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 79 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameCommandClassPair other = (NameCommandClassPair) obj;
+            if (this.clazz != other.clazz) {
+                return false;
+            }
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+        
     }
 
     /**

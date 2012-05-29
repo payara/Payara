@@ -39,13 +39,17 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.util.io.FileUtils;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 
 /** DataProvider for byte array. (Super simple)
  *
  * @author mmares
  */
-@Service
 public class ByteArrayDataProvider implements DataProvider {
 
     @Override
@@ -54,13 +58,15 @@ public class ByteArrayDataProvider implements DataProvider {
     }
 
     @Override
-    public byte[] toByteArray(Object o) {
-        return (byte[]) o;
+    public void writeToStream(Object o, OutputStream stream) throws IOException {
+        stream.write((byte[]) o);
     }
 
     @Override
-    public Object toInstance(byte[] data, Class clazz) {
-        return data;
+    public Object toInstance(InputStream stream, Class clazz) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        FileUtils.copy(stream, baos, 0);
+        return baos.toByteArray();
     }
     
 }

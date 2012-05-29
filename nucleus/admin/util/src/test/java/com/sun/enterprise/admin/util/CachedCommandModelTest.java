@@ -55,7 +55,10 @@ public class CachedCommandModelTest {
     public static CachedCommandModel createBeateles() {
         CachedCommandModel result = new CachedCommandModel("TheBeatles");
         result.dashOk = true;
-        result.add(new CommandModelData.ParamModelData("Lennon", String.class, false, "John Winston Ono Lennon", "J", false, null));
+        CommandModelData.ParamModelData prm = new CommandModelData.ParamModelData("Lennon", String.class, false, "John Winston Ono Lennon", "J", false, null);
+        prm.param._primary = true;
+        prm.param._multiple = true;
+        result.add(prm);
         result.add(new CommandModelData.ParamModelData("McCartney", String.class, false, null, "P", false, "Paul"));
         result.add(new CommandModelData.ParamModelData("Harrison", String.class, false, null, "G", false, null));
         result.add(new CommandModelData.ParamModelData("Starr", String.class, true, null, null, false, "Ringo"));

@@ -37,38 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.util.cache;
+package com.sun.enterprise.v3.admin.progress;
 
-import com.sun.enterprise.security.store.AsadminSecurityUtil;
-import java.io.File;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import java.util.*;
+import org.glassfish.api.admin.CommandProgress;
+import org.glassfish.api.admin.CommandProgressRegistry;
+import org.jvnet.hk2.annotations.Service;
 
-/**
+/** Basic implementation of registry
  *
  * @author mmares
  */
-public class AdminCacheWeakReferenceTest extends AdminCacheTstBase {
+//TODO: This is under construction
+@Service
+public class CommandProgressRegistryImpl implements CommandProgressRegistry {
     
-    public AdminCacheWeakReferenceTest() {
-        super(AdminCacheWeakReference.getInstance());
+    private static final int MAX_SIZE = 5;
+    
+    private Map<String, CommandProgress> map = new HashMap<String, CommandProgress>();
+    private List<String> ids = new ArrayList<String>(MAX_SIZE);
+    
+    @Override
+    public synchronized String registr(CommandProgress cp) {
+        if (cp == null) {
+            return null;
+        }
+        if (ids.size() >= MAX_SIZE) {
+            String rid = ids.remove(0);
+            map.remove(rid);
+        }
+        map.put(cp.getId(), cp);
+        ids.add(cp.getId());
+        return cp.getId();
     }
     
-    @Test
-    public void testWithFileDelete() {
-        if (isSkipThisTest()) {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete(): Must skip this unit test, because something is wrong with file cache writing during build");
-        } else {
-            System.out.println(this.getClass().getName() + ".testWithFileDelete()");
-        }
-        String floyd1 = "Wish You Were Here";
-        String floyd1Key = TEST_CACHE_COTEXT + "Pink.Floyd.1";
-        getCache().put(floyd1Key, floyd1);
-        String holder = getCache().get(floyd1Key, String.class); //To be shure that it stay in memory
-        assertEquals(floyd1, holder);
-        recursiveDelete(new File(AsadminSecurityUtil.getDefaultClientDir(), TEST_CACHE_COTEXT));
-        assertEquals(floyd1, getCache().get(floyd1Key, String.class));
-        System.out.println(this.getClass().getName() + ".testWithFileDelete(): Done");
+    @Override
+    public synchronized Collection<CommandProgress> list() {
+        return new ArrayList<CommandProgress>(map.values());  //Copy because need time snapshot
+    }
+    
+    @Override
+    public synchronized CommandProgress get(String id) {
+        return map.get(id);
     }
     
 }

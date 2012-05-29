@@ -85,6 +85,7 @@ public class ProgramOptions {
     public static final String HELP             = "help";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
+    public static final String IGNORECACHE      = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
 
     private static final Logger logger =
         Logger.getLogger(ProgramOptions.class.getPackage().getName());
@@ -125,6 +126,7 @@ public class ProgramOptions {
         addMetaOption(opts, HELP, '?', Boolean.class, false, "false");
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
+        addMetaOption(opts, IGNORECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
     }
 
@@ -437,6 +439,23 @@ public class ProgramOptions {
         } else
             terse = env.getBooleanOption(TERSE);
         return terse;
+    }
+    
+    /**
+     * @return the ignore-cache
+     */
+    //todo: [mmar] Remove after implementation CLI->ReST done
+    public boolean isIgnoreCache() {
+        boolean ignrCache;
+        if (options.containsKey(IGNORECACHE)) {
+            String value = options.getOne(IGNORECACHE);
+            if (ok(value))
+                ignrCache = Boolean.parseBoolean(value);
+            else
+                ignrCache = true;
+        } else
+            ignrCache = env.getBooleanOption(IGNORECACHE);
+        return ignrCache;
     }
 
     /**

@@ -39,19 +39,25 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import org.jvnet.hk2.annotations.Contract;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-/** Provides ability to convert some instance into {@code byte[]} and back.
+/** Provides ability to convert some instance into {@code byte[]} and back.<br/>
+ * Implementations of this interface are located using standard {@code ServiceLoader}
  *
  * @author mmares
  */
-@Contract
 public interface DataProvider {
     
     public boolean accept(Class clazz);
     
-    public byte[] toByteArray(Object o);
+//    public byte[] toByteArray(Object o);
     
-    public Object toInstance(byte[] data, Class clazz);
+    public void writeToStream(Object o, OutputStream stream) throws IOException;
+    
+//    public Object toInstance(byte[] data, Class clazz);
+    
+    public Object toInstance(InputStream stream, Class clazz) throws IOException;
     
 }

@@ -649,8 +649,8 @@ public abstract class CLICommand implements PostConstruct {
             Parser rcp = new Parser(argv, 0,
                             ProgramOptions.getValidOptions(), true);
             ParameterMap params = rcp.getOptions();
-            List<String> operands = rcp.getOperands();
-            argv = operands.toArray(new String[operands.size()]);
+            List<String> oprds = rcp.getOperands();
+            argv = oprds.toArray(new String[oprds.size()]);
             if (params.size() > 0) {
                 // at least one program option specified after command name
                 logger.finer("Update program options");

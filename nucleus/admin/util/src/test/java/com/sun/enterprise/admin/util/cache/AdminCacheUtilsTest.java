@@ -41,8 +41,10 @@ package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CachedCommandModelTest;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.glassfish.api.admin.CommandModel;
-import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -50,12 +52,11 @@ import org.junit.Test;
  *
  * @author mmares
  */
-public class AdminCahceUtilsTest {
+public class AdminCacheUtilsTest {
     
-    private AdminCahceUtils acu;
+    private AdminCacheUtils acu = AdminCacheUtils.getInstance();
     
-    public AdminCahceUtilsTest() {
-        this.acu = Utils.getNewHabitat().getComponent(AdminCahceUtils.class);
+    public AdminCacheUtilsTest() {
     }
 
 //    @BeforeClass
@@ -65,22 +66,28 @@ public class AdminCahceUtilsTest {
 //    @AfterClass
 //    public static void tearDownClass() throws Exception {
 //    }
-
+    
     @Test
-    public void testSimpleGetProvider() {
+    public void testSimpleGetProvider() throws IOException {
         DataProvider provider;
         byte[] data;
         //String
         Object o = "The Man Who Sold The World";
         assertNotNull(provider = acu.getProvider(o.getClass()));
-        assertNotNull(data = provider.toByteArray(o));
-        assertTrue(o.equals(provider.toInstance(data, o.getClass())));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        provider.writeToStream(o, baos);
+        assertNotNull(data = baos.toByteArray());
+        assertTrue(o.equals(provider.toInstance(new ByteArrayInputStream(data), 
+                o.getClass())));
         //byte array
         o = "The Man Who Sold The World".getBytes();
         assertNotNull(provider = acu.getProvider(o.getClass()));
-        assertNotNull(data = provider.toByteArray(o));
+        baos = new ByteArrayOutputStream();
+        provider.writeToStream(o, baos);
+        assertNotNull(data = baos.toByteArray());
         assertArrayEquals((byte[]) o, data);
-        assertArrayEquals((byte[]) o, (byte[]) provider.toInstance(data, byte[].class));
+        assertArrayEquals((byte[]) o, (byte[]) provider.toInstance(
+                new ByteArrayInputStream(data), byte[].class));
     }
     
     @Test
@@ -89,8 +96,13 @@ public class AdminCahceUtilsTest {
         byte[] data;
         assertNotNull(provider = acu.getProvider(CommandModel.class));
         CachedCommandModel beatles1 = CachedCommandModelTest.createBeateles();
-        assertNotNull(data = provider.toByteArray(beatles1));
-        CommandModel beatles2 = (CommandModel) provider.toInstance(data, CommandModel.class);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        provider.writeToStream(beatles1, baos);
+        assertNotNull(data = baos.toByteArray());
+        System.out.println("BTW: " + new String(data, "UTF-8"));
+        CachedCommandModel beatles2 = (CachedCommandModel) provider.toInstance(
+                new ByteArrayInputStream(data), CachedCommandModel.class);
+        beatles2.setETag(null);
         assertEquals(beatles1.getETag(), CachedCommandModel.computeETag(beatles2));
     }
 

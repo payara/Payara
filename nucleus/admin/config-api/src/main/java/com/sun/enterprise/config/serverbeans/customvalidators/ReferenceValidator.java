@@ -58,13 +58,11 @@ import org.jvnet.hk2.config.Dom;
  */
 public class ReferenceValidator implements ConstraintValidator<ReferenceConstraint, ConfigBeanProxy> {
     
-    class RemoteKeyInfo {
+    static class RemoteKeyInfo {
         final Method method;
-        final Class sourceClass;
         final ReferenceConstraint.RemoteKey annotation;
-        public RemoteKeyInfo(Method method, Class sourceClass, ReferenceConstraint.RemoteKey annotation) {
+        public RemoteKeyInfo(Method method, ReferenceConstraint.RemoteKey annotation) {
             this.method = method;
-            this.sourceClass = sourceClass;
             this.annotation = annotation;
         }
     }
@@ -143,7 +141,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
         for (Method method : methods) {
             ReferenceConstraint.RemoteKey annotation = method.getAnnotation(ReferenceConstraint.RemoteKey.class);
             if (annotation != null) {
-                result.add(new RemoteKeyInfo(method, c, annotation));
+                result.add(new RemoteKeyInfo(method, annotation));
             }
         }
         Class superclass = c.getSuperclass();

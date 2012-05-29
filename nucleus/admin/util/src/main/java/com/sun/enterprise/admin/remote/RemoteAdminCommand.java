@@ -58,8 +58,9 @@ import com.sun.enterprise.universal.GFBase64Encoder;
 import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.util.AuthenticationInfo;
+import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.HttpConnectorAddress;
-import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.admin.util.cache.AdminCacheUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.admin.payload.PayloadFilesManager;
@@ -109,6 +110,7 @@ public class RemoteAdminCommand {
     private static final String COMMAND_NAME_REGEXP =
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
+    public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
     private static final int defaultReadTimeout; // read timeout for URL conns
 
     private String              responseFormatType = "hk2-agent";
@@ -126,6 +128,7 @@ public class RemoteAdminCommand {
     // constructor parameters
     protected String            name;
     protected String            host;
+    private String              canonicalHostCache; //Used by getCanonicalHost() to cache resolved value
     protected int               port;
     protected boolean           secure;
     protected String            user;
@@ -140,10 +143,12 @@ public class RemoteAdminCommand {
     protected List<String>      operands;
 
     private CommandModel        commandModel;
+    private boolean             commandModelFromCache = false;
     private StringBuilder       metadataErrors; // XXX
     private int                 readTimeout = defaultReadTimeout;
     private int                 connectTimeout = -1;
     private boolean             interactive = true;
+    private boolean             omitCache = false;
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
 
@@ -217,10 +222,6 @@ public class RemoteAdminCommand {
                 throws CommandException, IOException;
     }
 
-    /**
-     * Helper ctor
-     * 
-     */
     public RemoteAdminCommand(String name, String host, int port)
             throws CommandException {
 
@@ -292,6 +293,7 @@ public class RemoteAdminCommand {
      */
     public void setCommandModel(CommandModel commandModel) {
         this.commandModel = commandModel;
+        this.commandModelFromCache = false;
     }
 
     /**
@@ -319,6 +321,15 @@ public class RemoteAdminCommand {
     public void setInteractive(boolean state) {
         this.interactive = state;
     }
+    
+    /**
+     * Omit local {@code AdminCache} to process command metadata. 
+     * If {@code true} it will download the metadata from remote server.<br/>
+     * <i>Default value is</i> {@code false}
+     */
+    public void setOmitCache(boolean omitCache) {
+        this.omitCache = omitCache;
+    }
 
     /**
      * Get the CommandModel for the command from the server.
@@ -329,10 +340,41 @@ public class RemoteAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
+        if (commandModel == null && !omitCache) {
+            long startNanos = System.nanoTime();
+            try {
+                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
+                if (commandModel != null) {
+                    this.commandModelFromCache = true;
+                    if (commandModel instanceof CachedCommandModel) {
+                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
+                        this.usage = ccm.getUsage();
+                        addedUploadOption = ccm.isAddedUploadOption();
+                    }
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+                    }
+                } else {
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
+                    }
+                }
+            } catch (Exception ex) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
+                }
+            }
+        }
         if (commandModel == null) {
             fetchCommandModel();
         }
         return commandModel;
+    }
+    
+    /** If command model was load from local cache.
+     */
+    public boolean isCommandModelFromCache() {
+        return commandModelFromCache;
     }
 
     /**
@@ -374,8 +416,9 @@ public class RemoteAdminCommand {
             initializeDoUpload();
 
             // if uploading, we need a payload
-            if (doUpload)
+            if (doUpload) {
                 outboundPayload = PayloadImpl.Outbound.newInstance();
+            }
 
             StringBuilder uriString = getCommandURI();
             ParamModel operandParam = null;
@@ -520,8 +563,9 @@ public class RemoteAdminCommand {
                 }
 
                 // add any user-specified headers
-                for (Header h : requestHeaders)
+                for (Header h : requestHeaders) {
                     urlConnection.addRequestProperty(h.getName(), h.getValue());
+                }
 
                 if (doUpload) {
                     outboundPayload.writeTo(urlConnection.getOutputStream());
@@ -640,19 +684,19 @@ public class RemoteAdminCommand {
              */
             shouldTryCommandAgain = false;
             try {
-
-                logger.log(Level.FINER, "URI: {0}", uriString);
-                logger.log(Level.FINER, "URL: {0}", url.toString());
-                logger.log(Level.FINER, "URL: {0}", url.toURL(uriString).toString());
-                logger.log(Level.FINER, "Password options: {0}", passwordOptions);
-                logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}", 
-                        new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "URI: {0}", uriString);
+                    logger.log(Level.FINER, "URL: {0}", url.toString());
+                    logger.log(Level.FINER, "URL: {0}", url.toURL(uriString).toString());
+                    logger.log(Level.FINER, "Password options: {0}", passwordOptions);
+                    logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}", 
+                            new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
+                }
                 final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null) {
                     url.setAuthenticationInfo(authInfo);
                 }
-                urlConnection = (HttpURLConnection)
-                        url.openConnection(uriString);
+                urlConnection = (HttpURLConnection) url.openConnection(uriString);
                 urlConnection.setRequestProperty("User-Agent", responseFormatType);
                 if (passwordOptions != null) {
                     urlConnection.setRequestProperty("X-passwords", passwordOptions.toString());
@@ -671,6 +715,12 @@ public class RemoteAdminCommand {
                     urlConnection.setRequestProperty(
                             SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME,
                             (isForMetadata ? AuthTokenManager.markTokenForReuse(authToken) : authToken));
+                }
+                if (commandModel != null && isCommandModelFromCache() && commandModel instanceof CachedCommandModel) {
+                    urlConnection.setRequestProperty(COMMAND_MODEL_MATCH_HEADER, ((CachedCommandModel) commandModel).getETag());
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.log(Level.FINER, "CommandModel ETag: {0}", ((CachedCommandModel) commandModel).getETag());
+                    }
                 }
                 urlConnection.setRequestMethod(httpMethod);
                 urlConnection.setReadTimeout(readTimeout);
@@ -942,6 +992,9 @@ public class RemoteAdminCommand {
     private String checkConnect(HttpURLConnection urlConnection)
                                 throws IOException, CommandException {
         int code = urlConnection.getResponseCode();
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Response code: " + code);
+        }
         if (code == -1) {
             URL url = urlConnection.getURL();
             throw new CommandException(
@@ -950,6 +1003,9 @@ public class RemoteAdminCommand {
         if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
             throw new AuthenticationException(reportAuthenticationException());
         }
+        if (code == HttpURLConnection.HTTP_PRECON_FAILED) {
+            throw new CommandValidationException("Code: " + HttpURLConnection.HTTP_PRECON_FAILED + ": Cached CommandModel is invalid.");
+        }
         /*
          * The DAS might be redirecting to a secure port.  If so, follow
          * the redirection.
@@ -957,9 +1013,10 @@ public class RemoteAdminCommand {
         if (isStatusRedirection(code)) {
             return urlConnection.getHeaderField("Location");
         }
-        if (code != HttpURLConnection.HTTP_OK)
+        if (code != HttpURLConnection.HTTP_OK) {
             throw new CommandException(strings.get("BadResponse", "" + code,
                                         urlConnection.getResponseMessage()));
+        }
         /*
          * If the connection worked then return null, indicating no
          * redirection is needed.
@@ -1123,8 +1180,10 @@ public class RemoteAdminCommand {
     /**
      * Fetch the command metadata from the remote server.
      */
-    private void fetchCommandModel() throws CommandException {
-
+    protected void fetchCommandModel() throws CommandException {
+        long startNanos = System.nanoTime();
+        commandModel = null; //For sure not be used during request header construction
+        
         // XXX - there should be a "help" command, that returns XML output
         //StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
                 //append("help").append(QUERY_STRING_INTRODUCER);
@@ -1143,6 +1202,7 @@ public class RemoteAdminCommand {
                 urlConnection.setRequestProperty("User-Agent", "metadata");
             }
 
+            @Override
             public void useConnection(HttpURLConnection urlConnection)
                     throws CommandException, IOException {
 
@@ -1180,11 +1240,48 @@ public class RemoteAdminCommand {
             }
         });
         if (commandModel == null) {
-            if (metadataErrors != null)
+            if (metadataErrors != null) {
                 throw new InvalidCommandException(metadataErrors.toString());
-            else
+            } else {
                 throw new InvalidCommandException(strings.get("unknownError"));
+            }
+        } else {
+            this.commandModelFromCache = false;
+            if (!omitCache) {
+                try {
+                    AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
+                } catch (Exception ex) {
+                    if (logger.isLoggable(Level.WARNING)) {
+                        logger.log(Level.WARNING, "Can not put data to cache under key {0}", createCommandCacheKey());
+                    }
+                }
+            }
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+            }
         }
+    }
+    
+    private String createCommandCacheKey() {
+        StringBuilder result = new StringBuilder(getCanonicalHost().length() + name.length() + 6);
+        result.append(getCanonicalHost()).append('_').append(port);
+        result.append('/').append(name);
+        return result.toString();
+    } 
+    
+    protected String getCanonicalHost() {
+        if (canonicalHostCache == null) {
+            try {
+                InetAddress address = InetAddress.getByName(host);
+                canonicalHostCache = address.getCanonicalHostName();
+            } catch (UnknownHostException ex) {
+                canonicalHostCache = host;
+                if (canonicalHostCache != null) {
+                    canonicalHostCache = canonicalHostCache.trim().toLowerCase();
+                }
+            }
+        }
+        return canonicalHostCache;
     }
 
     /**
@@ -1206,12 +1303,12 @@ public class RemoteAdminCommand {
             logger.finer("------- RAW METADATA RESPONSE ---------");
         }
 
-        CommandModelData cm = new CommandModelData(name);
+        CachedCommandModel cm = new CachedCommandModel(name);
         boolean sawFile = false;
         try {
             DocumentBuilder d =
                     DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc = d.parse(in);
+            Document doc = d.parse(in); 
             NodeList cmd = doc.getElementsByTagName("command");
             Node cmdnode = cmd.item(0);
             if (cmdnode == null) {
@@ -1232,6 +1329,7 @@ public class RemoteAdminCommand {
             }
             NamedNodeMap cmdattrs = cmdnode.getAttributes();
             usage = getAttr(cmdattrs, "usage");
+            cm.setUsage(usage);
             String dashOk = getAttr(cmdattrs, "unknown-options-are-operands");
             if (dashOk != null)
                 cm.dashOk = Boolean.parseBoolean(dashOk);
@@ -1265,18 +1363,20 @@ public class RemoteAdminCommand {
                 Node n = opts.item(i);
                 NamedNodeMap attributes = n.getAttributes();
                 Class<?> type = typeOf(getAttr(attributes, "type"));
-                if (type == File.class)
+                if (type == File.class) {
                     sawFile = true;
+                }
                 int min = Integer.parseInt(getAttr(attributes, "min"));
                 String max = getAttr(attributes, "max");
                 boolean multiple = false;
                 if (max.equals("unlimited")) {
                     multiple = true;
                     // XXX - should convert to array of whatever
-                    if (type == File.class)
+                    if (type == File.class) {
                         type = File[].class;
-                    else
+                    } else {
                         type = List.class;
+                    }
                 }
                 ParamModelData pm = new ParamModelData(
                     getAttr(attributes, "name"), type, min == 0, null);
@@ -1295,6 +1395,7 @@ public class RemoteAdminCommand {
                 cm.add(new ParamModelData("upload", Boolean.class,
                         true, null));
                 addedUploadOption = true;
+                cm.setAddedUploadOption(true);
             }
         } catch (ParserConfigurationException pex) {
             // ignore for now

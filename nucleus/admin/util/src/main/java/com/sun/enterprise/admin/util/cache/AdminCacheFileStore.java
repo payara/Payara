@@ -46,24 +46,24 @@ import java.io.*;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
 
 /** {@link AdminCahce} based on file system.<br/>
+ * <i>Singleton</i>
  *
  * @author mmares
  */
-@Service(name=AdminCacheFileStore.SERVICE_NAME)
 public class AdminCacheFileStore implements AdminCache {
     
-    public static final String SERVICE_NAME = "file-store";
     private static final String DEFAULT_FILENAME = "#default#.cache";
+    private static final AdminCacheFileStore instance = new AdminCacheFileStore();
     
     private static final Logger logger = LogDomains.getLogger(AdminCacheFileStore.class,
             LogDomains.ADMIN_LOGGER);
     
-    @Inject
-    private AdminCahceUtils adminCahceUtils;
+    private AdminCacheUtils adminCahceUtils = AdminCacheUtils.getInstance();
+    
+    private AdminCacheFileStore() {
+    }
     
     @Override
     public <A> A get(String key, Class<A> clazz) {
@@ -77,10 +77,25 @@ public class AdminCacheFileStore implements AdminCache {
         if (provider == null) {
             return null;
         }
-        return (A) provider.toInstance(get(key), clazz);
+        // @todo Java SE 7 - use try with resources
+        InputStream is = null;
+        try {
+            is = getInputStram(key);
+            return (A) provider.toInstance(is, clazz);
+        } catch (FileNotFoundException ex) {
+            return null;
+        } catch (IOException ex) {
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.log(Level.WARNING, "Can not read admin cache file for {0}", key); //TODO localise
+            }
+            return null;
+        } finally {
+            try { is.close(); } catch (Exception ex) {}
+        }
+            
     }
     
-    public byte[] get(String key) {
+    private InputStream getInputStram(String key) throws FileNotFoundException {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Attribute key must be unempty.");
         }
@@ -88,26 +103,7 @@ public class AdminCacheFileStore implements AdminCache {
             throw new IllegalArgumentException("Attribute key must be in form (([-_.a-zA-Z0-9]+/?)+)");
         }
         File f = getCacheFile(key);
-        if (!f.exists()) {
-            return null;
-        }
-        // @todo Java SE 7 - use try with resources
-        InputStream is = null;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            is = new BufferedInputStream(new FileInputStream(f));
-            FileUtils.copy(is, baos, 0);
-        } catch (IOException ex) {
-            if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, "Can not read admin cache file: {0}", f.getPath());
-            }
-            //File is not readable. Same as unexisting file => no result
-            return null;
-        } finally {
-            try { is.close(); } catch (Exception ex) {}
-            try { baos.close(); } catch (Exception ex) {}
-        }
-        return baos.toByteArray();
+        return new BufferedInputStream(new FileInputStream(f));
     }
     
     private File getCacheFile(String key) {
@@ -142,11 +138,12 @@ public class AdminCacheFileStore implements AdminCache {
             throw new IllegalStateException("There is no data provider for " + data.getClass());
         }
         File cacheFile = getCacheFile(key);
+        // @todo Java SE 7 - use try with resources
         OutputStream os = null;
         try {
             File tempFile = File.createTempFile("temp", "cache", cacheFile.getParentFile());
-            os = new FileOutputStream(tempFile);
-            os.write(provider.toByteArray(data));
+            os = new BufferedOutputStream(new FileOutputStream(tempFile));
+            provider.writeToStream(data, os);
             os.close();
             cacheFile.delete();
             if (!tempFile.renameTo(cacheFile)) {
@@ -189,6 +186,10 @@ public class AdminCacheFileStore implements AdminCache {
             return null;
         }
         return new Date(cacheFile.lastModified());
+    }
+    
+    public static AdminCacheFileStore getInstance() {
+        return instance;
     }
     
 }

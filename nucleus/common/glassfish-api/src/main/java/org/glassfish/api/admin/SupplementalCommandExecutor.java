@@ -47,16 +47,44 @@ import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.component.MultiMap;
 
 import java.io.File;
-import java.util.Map;
+import java.util.*;
 
 /**
- * An executor responsible for executing suplemental commands registered for a main command
+ * An executor responsible for executing supplemental commands registered for a main command
  *
  * @author Vijay Ramachandran
  */
 @Contract
 public interface SupplementalCommandExecutor {
+    
+    public Collection<SupplementalCommand> listSuplementalCommands(String commandName);
 
-    public ActionReport.ExitCode execute(String commandName, Supplemental.Timing time,
-                             AdminCommandContext context, ParameterMap parameters, MultiMap<String, File> optionFileMap);
+    public ActionReport.ExitCode execute(Collection<SupplementalCommand> suplementals, Supplemental.Timing time,
+                             AdminCommandContext context, ParameterMap parameters, 
+                             MultiMap<String, File> optionFileMap);
+    
+    public interface SupplementalCommand {
+        
+        public void execute(AdminCommandContext ctxt);
+        
+        public AdminCommand getCommand();
+
+        public boolean toBeExecutedBefore();
+
+        public boolean toBeExecutedAfter();
+
+        public boolean toBeExecutedAfterReplication();
+        
+        public FailurePolicy onFailure();
+
+        public List<RuntimeType> whereToRun();
+
+        public ProgressStatus getProgressStatus();
+
+        public void setProgressStatus(ProgressStatus progressStatus);
+        
+        public Progress getProgressAnnotation();
+        
+    }
+    
 }

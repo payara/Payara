@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
  * @author mmares
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.TYPE})
 public @interface Progress {
     
     /** Optional: Context of the progress.   Generally this is the command

@@ -40,13 +40,11 @@
 package com.sun.enterprise.admin.util.cache;
 
 import java.util.Date;
-import org.jvnet.hk2.annotations.Contract;
 
 /** Simple cache for administration framework.
- * {@
+ * 
  * @author mmares
  */
-@Contract
 public interface AdminCache {
     
     /** Retrieve data from cache.

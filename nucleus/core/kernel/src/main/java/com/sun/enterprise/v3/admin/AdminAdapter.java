@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import java.security.Principal;
 import java.util.Set;
 
@@ -97,6 +98,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.grizzly.http.util.HttpStatus;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
 /**
@@ -208,6 +210,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
         LogHelper.getDefaultLogger().log(Level.FINER, "Received something on {0}", req.getRequestURI());
         LogHelper.getDefaultLogger().log(Level.FINER, "QueryString = {0}", req.getQueryString());
+        
+        HttpStatus statusCode = HttpStatus.OK_200;
 
         String requestURI = req.getRequestURI();
     /*    if (requestURI.startsWith("/__asadmin/ADMINGUI")) {
@@ -232,6 +236,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                     return;
                 report = doCommand(requestURI, req, report, outboundPayload);
             }
+        } catch (ProcessHttpCommandRequestException reqEx) {
+            report = reqEx.getReport();
+            statusCode = reqEx.getResponseStatus();
         } catch(InterruptedException e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage("V3 cannot process this command at this time, please wait");                        
@@ -241,7 +248,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         }
         
         try {
-            res.setStatus(200);
+            res.setStatus(statusCode);
             /*
              * Format the command result report into the first part (part #0) of
              * the outbound payload and set the response's content type based
@@ -549,7 +556,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     protected abstract boolean validatePrivacy(AdminCommand command);
 
     private ActionReport doCommand(String requestURI, Request req, ActionReport report,
-            Payload.Outbound outboundPayload) {
+            Payload.Outbound outboundPayload) throws ProcessHttpCommandRequestException {
 
         if (!requestURI.startsWith(getContextRoot())) {
             String msg = adminStrings.getLocalString("adapter.panic",
@@ -561,8 +568,9 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
         // wbn handle no command and no slash-suffix
         String command ="";
-        if (requestURI.length() > getContextRoot().length() + 1)
+        if (requestURI.length() > getContextRoot().length() + 1) {
             command = requestURI.substring(getContextRoot().length() + 1);
+        }
 
         String scope = getScope(command);
         command = getCommandAfterScope(command);
@@ -594,6 +602,18 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return report;
             }
+            //Validate admin command eTag
+            String modelETag = req.getHeader(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER);
+            if (modelETag != null && !commandRunner.validateCommandModelETag(command, adminCommand, modelETag)) {
+                String message =
+                    adminStrings.getLocalString("commandmodel.etag.invalid",
+                        "Cached command model for command {0} is invalid.", command);
+                aalogger.log(Level.FINE, message);
+                report.setMessage(message);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                throw new ProcessHttpCommandRequestException(report, HttpStatus.PRECONDITION_FAILED_412);
+            }
+            //Execute
             if (validatePrivacy(adminCommand)) {
             //if (adminCommand.getClass().getAnnotation(Visibility.class).privacy().equals(visibility.privacy())) {
                 // todo : needs to be changed, we should reuse adminCommand
@@ -615,6 +635,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 return report;
 
             }
+        } catch (ProcessHttpCommandRequestException reqEx) {
+            throw reqEx;
         } catch (Throwable t) {
             /*
              * Must put the error information into the report

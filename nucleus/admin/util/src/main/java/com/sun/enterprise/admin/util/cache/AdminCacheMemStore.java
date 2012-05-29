@@ -53,7 +53,6 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author mmares
  */
-@Service(name=AdminCacheMemStore.SERVICE_NAME)
 public class AdminCacheMemStore implements AdminCache {
     
      private final class CachedItem implements Comparable<CachedItem> {
@@ -78,17 +77,18 @@ public class AdminCacheMemStore implements AdminCache {
         
      }
      
-     public static final String SERVICE_NAME = "memory";
-    
+     private static final AdminCacheMemStore instance = new AdminCacheMemStore();
+     
     /** Maximal count of items in cache. Rotation is based on last used first 
      * out.
      */
     private static final int MAX_CACHED_ITEMS_COUNT = 16;
     
     private final Map<String, CachedItem> cache = new HashMap<String, CachedItem>(MAX_CACHED_ITEMS_COUNT + 1);
+    private AdminCacheWeakReference underCache = AdminCacheWeakReference.getInstance();
     
-    @Inject
-    private AdminCacheWeakReference underCache;
+    private AdminCacheMemStore() {
+    }
 
     @Override
     public <A> A get(String key, final Class<A> clazz) {
@@ -150,6 +150,10 @@ public class AdminCacheMemStore implements AdminCache {
     @Override
     public Date lastUpdated(String key) {
         return underCache.lastUpdated(key);
+    }
+    
+    public static AdminCacheMemStore getInstance() {
+        return instance;
     }
     
 }

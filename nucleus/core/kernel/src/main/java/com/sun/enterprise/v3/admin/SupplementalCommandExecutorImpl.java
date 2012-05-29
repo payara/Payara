@@ -44,9 +44,12 @@ import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.hk2.component.InjectionResolver;
 import com.sun.logging.LogDomains;
+import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.Progress;
 import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.jvnet.hk2.component.*;
 import org.glassfish.common.util.admin.CommandModelImpl;
@@ -57,7 +60,10 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.Supplemental.Timing;
 import org.glassfish.internal.api.ServerContext;
 
 /**
@@ -83,50 +89,65 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     @Inject
     private ServerContext sc;
 
-    private final Logger logger = LogDomains.getLogger(SupplementalCommandExecutorImpl.class,
+    private static final Logger logger = LogDomains.getLogger(SupplementalCommandExecutorImpl.class,
                                         LogDomains.ADMIN_LOGGER);
 
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(SupplementalCommandExecutor.class);
 
     private Map<String, List<Inhabitant<? extends Supplemental>>> supplementalCommandsMap = null;
+    
+    public Collection<SupplementalCommand> listSuplementalCommands(String commandName) {
+        List<Inhabitant<? extends Supplemental>> supplementalList = getSupplementalCommandsList().get(commandName);
+        if (supplementalList == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<SupplementalCommand> result = new ArrayList<SupplementalCommand>(supplementalList.size());
+        for (Inhabitant<? extends Supplemental> inh : supplementalList) {
+            AdminCommand cmdObject = (AdminCommand) inh.get();
+            SupplementalCommand aCmd = new SupplementalCommandImpl(cmdObject);
+            if( (serverEnv.isDas() && aCmd.whereToRun().contains(RuntimeType.DAS)) ||
+                (serverEnv.isInstance() && aCmd.whereToRun().contains(RuntimeType.INSTANCE)) ) {
+                result.add(aCmd);
+            }
+        }
+        return result;
+    }
 
-    public ActionReport.ExitCode execute(String commandName, Supplemental.Timing time,
-                             AdminCommandContext context, ParameterMap parameters, MultiMap<String, File> optionFileMap) {
+    @Override
+    public ActionReport.ExitCode execute(Collection<SupplementalCommand> suplementals, Supplemental.Timing time,
+                             AdminCommandContext context, ParameterMap parameters, 
+                             MultiMap<String, File> optionFileMap) {
         //TODO : Use the executor service to parallelize this
         ActionReport.ExitCode finalResult = ActionReport.ExitCode.SUCCESS;
-        if(!getSupplementalCommandsList().isEmpty() && getSupplementalCommandsList().containsKey(commandName)) {
-            List<Inhabitant<? extends Supplemental>> supplementalList = getSupplementalCommandsList().get(commandName);
-            for(Inhabitant<? extends Supplemental> inh : supplementalList) {
-                AdminCommand cmdObject = (AdminCommand) inh.get();
-                Supplemental ann = cmdObject.getClass().getAnnotation(Supplemental.class);
-                SupplementalCommand aCmd = new SupplementalCommand(cmdObject, ann.on(), ann.ifFailure());
-                if( (serverEnv.isDas() && aCmd.whereToRun().contains(RuntimeType.DAS)) ||
-                    (serverEnv.isInstance() && aCmd.whereToRun().contains(RuntimeType.INSTANCE)) ) {
-                    if( (time.equals(Supplemental.Timing.Before) && aCmd.toBeExecutedBefore()) ||
-                        (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter())   ||
-                        (time.equals(Supplemental.Timing.AfterReplication) && aCmd.toBeExecutedAfterReplication())) {
-                        ActionReport.ExitCode result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(),
-                                inject(aCmd, getInjector(aCmd.command, parameters, optionFileMap),
-                                        context.getActionReport()));
-                        if(!result.equals(ActionReport.ExitCode.SUCCESS)) {
-                            if(finalResult.equals(ActionReport.ExitCode.SUCCESS))
-                                finalResult = result;
-                            continue;
-                        }
-                        logger.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.supplementalexec",
-                                "Executing supplemental command " + aCmd.getClass().getCanonicalName()));
-                        aCmd.execute(context);
-                        if(context.getActionReport().hasFailures()) {
-                            result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(), ActionReport.ExitCode.FAILURE);
-                        } else if(context.getActionReport().hasWarnings()) {
-                            result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(), ActionReport.ExitCode.WARNING);
-                        }
-                        if(!result.equals(ActionReport.ExitCode.SUCCESS)) {
-                            if(finalResult.equals(ActionReport.ExitCode.SUCCESS))
-                                finalResult = result;
-                        }
-                    }
+        if (suplementals == null) {
+            return finalResult;
+        }
+        for (SupplementalCommand aCmd : suplementals) {
+            if ((time.equals(Supplemental.Timing.Before) && aCmd.toBeExecutedBefore()) ||
+                (time.equals(Supplemental.Timing.After) && aCmd.toBeExecutedAfter())   ||
+                (time.equals(Supplemental.Timing.AfterReplication) && aCmd.toBeExecutedAfterReplication())) {
+                ActionReport.ExitCode result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(),
+                        inject(aCmd, getInjector(aCmd.getCommand(), parameters, optionFileMap),
+                                context.getActionReport()));
+                if(!result.equals(ActionReport.ExitCode.SUCCESS)) {
+                    if(finalResult.equals(ActionReport.ExitCode.SUCCESS))
+                        finalResult = result;
+                    continue;
+                }
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.supplementalexec",
+                            "Executing supplemental command " + aCmd.getClass().getCanonicalName()));
+                }
+                aCmd.execute(context);
+                if(context.getActionReport().hasFailures()) {
+                    result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(), ActionReport.ExitCode.FAILURE);
+                } else if(context.getActionReport().hasWarnings()) {
+                    result = FailurePolicy.applyFailurePolicy(aCmd.onFailure(), ActionReport.ExitCode.WARNING);
+                }
+                if(!result.equals(ActionReport.ExitCode.SUCCESS)) {
+                    if(finalResult.equals(ActionReport.ExitCode.SUCCESS))
+                        finalResult = result;
                 }
             }
         }
@@ -134,7 +155,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     }
 
     /**
-     * Get list of all supplemental commands, map it to various commands and cache htis list
+     * Get list of all supplemental commands, map it to various commands and cache this list
      */
     private Map<String, List<Inhabitant<? extends Supplemental>>> getSupplementalCommandsList() {
         if(supplementalCommandsMap == null) {
@@ -174,11 +195,11 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         return new MapInjectionResolver(model, parameters, map);
     }
 
-    private ActionReport.ExitCode inject(SupplementalCommand cmd,InjectionResolver<Param> injector, ActionReport subActionReport) {
-
+    private ActionReport.ExitCode inject(SupplementalCommand cmd, 
+            InjectionResolver<Param> injector, ActionReport subActionReport) {
         ActionReport.ExitCode result = ActionReport.ExitCode.SUCCESS;
         try {
-            new InjectionManager().inject(cmd.command, injector);
+            new InjectionManager().inject(cmd.getCommand(), injector);
         } catch (Exception e) {
             result = ActionReport.ExitCode.FAILURE;
             subActionReport.setActionExitCode(result);
@@ -188,37 +209,43 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         return result;
     }
 
-    private class SupplementalCommand {
+    public class SupplementalCommandImpl implements SupplementalCommand  {
+        
         private AdminCommand command;
         private Supplemental.Timing timing;
         private FailurePolicy failurePolicy;
-        private List<RuntimeType> whereToRun = new ArrayList<RuntimeType>();
+        private List<RuntimeType> whereToRun = new ArrayList<RuntimeType>(2);
+        private ProgressStatus progressStatus;
+        private Progress progressAnnotation;
 
-        public SupplementalCommand(AdminCommand cmd, Supplemental.Timing time, FailurePolicy onFail) {
+        private SupplementalCommandImpl(AdminCommand cmd) {
             command = cmd;
-            timing = time;
-            failurePolicy = onFail;
-            org.glassfish.api.admin.ExecuteOn ann =
-                    cmd.getClass().getAnnotation(org.glassfish.api.admin.ExecuteOn.class);
-            if( ann == null) {
+            Supplemental supAnn = cmd.getClass().getAnnotation(Supplemental.class);
+            timing = supAnn.on(); 
+            failurePolicy = supAnn.ifFailure();
+            ExecuteOn onAnn = cmd.getClass().getAnnotation(ExecuteOn.class);
+            progressAnnotation = cmd.getClass().getAnnotation(Progress.class);
+            if (onAnn == null) {
                 whereToRun.add(RuntimeType.DAS);
                 whereToRun.add(RuntimeType.INSTANCE);
             } else {
-                if(ann.value().length == 0) {
+                if(onAnn.value().length == 0) {
                     whereToRun.add(RuntimeType.DAS);
                     whereToRun.add(RuntimeType.INSTANCE);
                 } else {
-                    for(RuntimeType t : ann.value()) {
-                        whereToRun.add(t);
-                    }
+                    whereToRun.addAll(Arrays.asList(onAnn.value()));
                 }
             }
         }
 
+        @Override
         public void execute(AdminCommandContext ctxt) {
                 Thread thread = Thread.currentThread();
                 ClassLoader origCL = thread.getContextClassLoader();
                 ClassLoader ccl = sc.getCommonClassLoader();
+                if (progressStatus != null) {
+                    ctxt = new AdminCommandContextForInstance(ctxt, progressStatus);
+                }
                 if (origCL != ccl) {
                     try {
                         thread.setContextClassLoader(ccl);
@@ -230,25 +257,52 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
                     command.execute(ctxt);
                 }
         }
+        
+        @Override
+        public AdminCommand getCommand() {
+            return this.command;
+        }
 
+        @Override
         public boolean toBeExecutedBefore() {
             return timing.equals(Supplemental.Timing.Before);
         }
 
+        @Override
         public boolean toBeExecutedAfter() {
             return timing.equals(Supplemental.Timing.After);
         }
 
+        @Override
         public boolean toBeExecutedAfterReplication() {
             return timing.equals(Supplemental.Timing.AfterReplication);
         }
         
+        @Override
         public FailurePolicy onFailure() {
             return failurePolicy;
         }
 
+        @Override
         public List<RuntimeType> whereToRun() {
             return whereToRun;
         }
+
+        @Override
+        public ProgressStatus getProgressStatus() {
+            return progressStatus;
+        }
+
+        @Override
+        public void setProgressStatus(ProgressStatus progressStatus) {
+            this.progressStatus = progressStatus;
+        }
+
+        @Override
+        public Progress getProgressAnnotation() {
+            return progressAnnotation;
+        }
+        
     }
+    
 }

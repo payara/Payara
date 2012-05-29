@@ -60,8 +60,8 @@ public abstract class AdminCacheTstBase {
     private static boolean skipThisTest = false;
     private AdminCache cache;
 
-    public AdminCacheTstBase(String serviceName) {
-        this.cache = Utils.getNewHabitat().getComponent(AdminCache.class, serviceName);
+    public AdminCacheTstBase(AdminCache cache) {
+        this.cache = cache;
     }
 
     @BeforeClass
