@@ -638,6 +638,9 @@ public class ConnectorDescriptor extends BundleDescriptor {
     public ConnectionDefDescriptor 
     getConnectionDefinitionByCFType (String type, boolean useDefault)
     {
+        if (this.outboundRA == null) {
+            return null;
+        }
         Iterator it = this.outboundRA.getConnectionDefs().iterator();
         while (it.hasNext())
         {
@@ -660,6 +663,9 @@ public class ConnectorDescriptor extends BundleDescriptor {
 
     public int getNumOfSupportedCFs ()
     {
+        if (outboundRA == null) {
+            return 0;
+        }
         return outboundRA.getConnectionDefs().size();
     }
 
