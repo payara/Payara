@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,20 @@
 
 package com.sun.ejb.containers;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.ejb.ConcurrentAccessException;
-import javax.ejb.ConcurrentAccessTimeoutException;
-import javax.ejb.IllegalLoopbackException;
-import javax.ejb.LockType;
-
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+
+import javax.ejb.ConcurrentAccessTimeoutException;
+import javax.ejb.ConcurrentAccessException;
+import javax.ejb.IllegalLoopbackException;
+import javax.ejb.LockType;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+
+
 
 /**
  * @author Mahesh Kannan

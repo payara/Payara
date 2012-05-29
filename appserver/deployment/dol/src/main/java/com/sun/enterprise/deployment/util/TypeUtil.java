@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,14 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.sun.enterprise.deployment.FieldDescriptor;
+
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Datatype management utility methods
@@ -507,6 +505,37 @@ public class TypeUtil {
         }
 
         return false;
+    }
+
+    public static Vector getPossibleCmpCmrFields(ClassLoader cl,
+                                                 String className) 
+        throws Exception {
+
+        Vector fieldDescriptors = new Vector();
+        Class theClass = cl.loadClass(className);
+
+        // Start with all *public* methods
+        Method[] methods = theClass.getMethods();
+
+        // Find all accessors that could be cmp fields. This list 
+        // will contain all cmr field accessors as well, since there
+        // is no good way to distinguish between the two purely based
+        // on method signature.
+        for(int mIndex = 0; mIndex < methods.length; mIndex++) {
+            Method next = methods[mIndex];
+            String nextName = next.getName();
+            int nextModifiers = next.getModifiers();
+            if( Modifier.isAbstract(nextModifiers) ) {
+                if( nextName.startsWith("get") &&
+                    nextName.length() > 3 ) {
+                    String field = 
+                        nextName.substring(3,4).toLowerCase() + 
+                        nextName.substring(4);
+                    fieldDescriptors.add(new FieldDescriptor(field));
+                }
+            }
+        }
+        return fieldDescriptors;
     }
 
     /**

@@ -40,21 +40,24 @@
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbEntityDescriptor;
+import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
+
+import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.sun.ejb.Container;
-import com.sun.ejb.EntityContainerProvider;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.ServerEnvironment;
+
 import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.ServerEnvironment;
+
+import com.sun.ejb.EntityContainerProvider;
+import com.sun.ejb.Container;
 
 @Service
 public final class EntityContainerProviderImpl implements EntityContainerProvider {

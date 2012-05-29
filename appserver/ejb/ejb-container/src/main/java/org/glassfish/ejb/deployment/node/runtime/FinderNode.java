@@ -40,24 +40,33 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Map;
-
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.runtime.IASEjbCMPFinder;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbCMPFinder;
 import org.w3c.dom.Node;
 
-public class FinderNode extends DeploymentDescriptorNode<IASEjbCMPFinder> {
+import java.util.Map;
 
+public class FinderNode extends DeploymentDescriptorNode {
+    
     private IASEjbCMPFinder descriptor;
-
-    @Override
-    public IASEjbCMPFinder getDescriptor() {
-        if (descriptor==null) descriptor = new IASEjbCMPFinder();
-        return descriptor;
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
+	if (descriptor==null) {
+	    descriptor = new IASEjbCMPFinder();
+	} 
+	return descriptor;
     }
-
-    @Override
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {  
 	Map dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.METHOD_NAME, "setMethodName");
@@ -67,8 +76,15 @@ public class FinderNode extends DeploymentDescriptorNode<IASEjbCMPFinder> {
 	dispatchTable.put(RuntimeTagNames.QUERY_ORDERING, "setQueryOrdering");
 	return dispatchTable;
     }
-
-    @Override
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the descriptor
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, IASEjbCMPFinder finder) {    
 	Node finderNode = super.writeDescriptor(parent, nodeName, finder);
 	appendTextChild(finderNode, RuntimeTagNames.METHOD_NAME, finder.getMethodName());

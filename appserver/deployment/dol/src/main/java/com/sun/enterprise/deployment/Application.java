@@ -40,54 +40,29 @@
 
 package com.sun.enterprise.deployment;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.persistence.EntityManagerFactory;
-
-import com.sun.enterprise.deployment.node.ApplicationNode;
-import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
-import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
-import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.RoleMappingContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-import com.sun.enterprise.deployment.util.ApplicationVisitor;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import org.glassfish.deployment.versioning.VersioningUtils;
-import org.glassfish.internal.api.Globals;
+import com.sun.enterprise.deployment.node.ApplicationNode;
+import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
+import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
+import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
+import com.sun.enterprise.deployment.types.*;
+import com.sun.enterprise.deployment.util.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.deployment.common.*;
 import org.glassfish.security.common.Role;
 import org.jvnet.hk2.component.BaseServiceLocator;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManagerFactory;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Objects of this type encapsulate the data and behaviour of a J2EE
@@ -1254,8 +1229,8 @@ public class Application extends BundleDescriptor
     /**
      * Return the Vector of ejb deployment objects.
      */
-    public Vector<EjbDescriptor> getEjbDescriptors() {
-        Vector<EjbDescriptor> ejbDescriptors = new Vector<EjbDescriptor>();
+    public Vector getEjbDescriptors() {
+        Vector ejbDescriptors = new Vector();
         for (EjbBundleDescriptor ejbBundleDescriptor : getBundleDescriptors(EjbBundleDescriptor.class)) {
             ejbDescriptors.addAll(ejbBundleDescriptor.getEjbs());
         }

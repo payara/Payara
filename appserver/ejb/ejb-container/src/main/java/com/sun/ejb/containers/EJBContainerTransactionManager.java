@@ -43,12 +43,11 @@ package com.sun.ejb.containers;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchEntityException;
 import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.TransactionRolledbackLocalException;
 import javax.ejb.TransactionRequiredLocalException;
+import javax.ejb.TransactionRolledbackLocalException;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -57,12 +56,11 @@ import javax.transaction.Transaction;
 import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
+import com.sun.enterprise.deployment.ContainerTransaction;
+import com.sun.enterprise.deployment.EjbApplicationExceptionInfo;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
-import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-
+import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 
@@ -737,7 +735,7 @@ public class EJBContainerTransactionManager {
 
             Class clazz = exception.getClass();
             String exceptionClassName = clazz.getName();
-            Map<String, EjbApplicationExceptionInfo> appExceptions = 
+            Map<String, EjbApplicationExceptionInfo> appExceptions =
                     ejbDescriptor.getEjbBundleDescriptor().getApplicationExceptions();
             while (clazz != null) {
                 String eClassName = clazz.getName();

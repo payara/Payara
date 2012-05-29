@@ -40,16 +40,11 @@
 
 package org.glassfish.deployment.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
+
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * This descriptor contains all common information amongst root element 
@@ -93,7 +88,7 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      */
     protected ModuleDescriptor moduleDescriptor;
 
-    private final static List<?> emptyList = Collections.emptyList();
+    private final static List<?> emptyList = new ArrayList();
 
     /**
      * Construct a new RootDeploymentDescriptor 
@@ -295,12 +290,11 @@ public abstract class RootDeploymentDescriptor extends Descriptor {
      * @return an unmodifiable collection of extensions or empty collection if none.
      */
     public <T extends RootDeploymentDescriptor> Collection<T> getExtensionsDescriptors(Class<T> type) {
-        for (Map.Entry<Class<? extends RootDeploymentDescriptor>, List<RootDeploymentDescriptor>> entry : extensions.entrySet()) {
-            if (type.isAssignableFrom(entry.getKey())) {
-                return Collections.unmodifiableCollection((Collection<T>) entry.getValue());
-            }
+        if (extensions.containsKey(type)) {
+            return Collections.unmodifiableCollection((Collection<T>) extensions.get(type));
+        } else {
+            return (Collection<T>) emptyList;
         }
-        return (Collection<T>) emptyList;
     }
 
     /**

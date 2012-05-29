@@ -40,57 +40,43 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.DisplayableComponentNode;
-import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
-import com.sun.enterprise.deployment.node.EjbReferenceNode;
-import com.sun.enterprise.deployment.node.EntityManagerFactoryReferenceNode;
-import com.sun.enterprise.deployment.node.EntityManagerReferenceNode;
-import com.sun.enterprise.deployment.node.EnvEntryNode;
-import com.sun.enterprise.deployment.node.JndiEnvRefNode;
-import com.sun.enterprise.deployment.node.MessageDestinationRefNode;
-import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.ResourceRefNode;
-import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
-import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.internal.api.Globals;
 import org.w3c.dom.Node;
+import org.jvnet.hk2.component.BaseServiceLocator;
+
+import java.util.Map;
+import java.util.Iterator;
+import java.util.logging.Level;
 
 /**
  * This class is responsible for handling all common information
- * shared by all types of enterprise beans (MDB, session, entity)
+ * shared by all types of entreprise beans (MDB, session, entity)
  *
  * @author  Jerome Dochez
  * @version 
  */
-public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableComponentNode<S> {
+public abstract class EjbNode extends DisplayableComponentNode {
 
     /** Creates new EjbNode */
     public EjbNode() {
         super();
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                                                              EnvEntryNode.class, "addEnvironmentProperty");                          
-        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
-        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);     
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
         JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), 
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(EjbTagNames.SECURITY_IDENTITY),
@@ -105,7 +91,12 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(EjbTagNames.TIMER), ScheduledTimerNode.class, "addScheduledTimerDescriptorFromDD");
     }
 
-    @Override
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param descriptor the new descriptor
+     */    
     public void addDescriptor(Object  newDescriptor) {       
         if (newDescriptor instanceof EjbReference) {            
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
@@ -133,16 +124,20 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         } else {
             super.addDescriptor(newDescriptor);
         }
-    }
-
-    @Override
-    public S getDescriptor() {
+    }      
+    
+    public Object getDescriptor() {
         return getEjbDescriptor();
     }
-
-    public abstract S getEjbDescriptor();
-
-    @Override
+    
+    public abstract EjbDescriptor getEjbDescriptor();
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -187,7 +182,7 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         SecurityRoleRefNode node = new SecurityRoleRefNode();
         for (;refs.hasNext();) {
             RoleReference roleRef = (RoleReference) refs.next();
-            node.writeDescriptor(parentNode, TagNames.ROLE_REFERENCE, roleRef);
+            node.writeDescriptor(parentNode, EjbTagNames.ROLE_REFERENCE, roleRef);
         }
     }
 

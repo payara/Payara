@@ -55,6 +55,7 @@ import org.jboss.weld.ejb.spi.BusinessInterfaceDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.EjbRemovalInfo;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -167,7 +168,9 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor) ejbDesc;
             if( sessionDesc.isStateful() && sessionDesc.hasRemoveMethods() ) {
 
-                for(MethodDescriptor mDesc : sessionDesc.getRemoveMethodDescriptors()) {
+                for(EjbRemovalInfo next : sessionDesc.getAllRemovalInfo()) {
+
+                    MethodDescriptor mDesc = next.getRemoveMethod();
                     Method m = mDesc.getMethod(ejbDesc);
                     if( m == null ) {
                         throw new IllegalStateException("Can't resolve remove method " +

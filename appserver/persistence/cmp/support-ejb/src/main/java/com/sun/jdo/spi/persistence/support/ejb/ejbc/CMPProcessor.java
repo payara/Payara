@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,23 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.persistence.common.DatabaseConstants;
-import org.glassfish.persistence.common.Java2DBProcessorHelper;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+
+import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
+import com.sun.jdo.api.persistence.support.JDOFatalUserException;
+import com.sun.jdo.spi.persistence.utility.logging.Logger;
+
+import org.glassfish.persistence.common.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * If the application contains cmp 2.x beans process them. Check if

@@ -40,47 +40,35 @@
 
 package org.glassfish.javaee.core.deployment;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.inject.Inject;
-
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.*;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.Param;
+import org.glassfish.api.I18n;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.internal.deployment.Deployment;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import com.sun.enterprise.deployment.EjbEntityDescriptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
-import org.glassfish.api.admin.RestParam;
-import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.versioning.VersioningSyntaxException;
-import org.glassfish.deployment.versioning.VersioningUtils;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.deployment.Deployment;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Inject;
 import org.jvnet.hk2.component.PerLookup;
+
+import java.util.*;
+
+import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.deployment.versioning.VersioningSyntaxException;
 
 /**
  * list-sub-components command
@@ -363,7 +351,7 @@ public class ListSubComponentsCommand implements AdminCommand {
                 StringBuffer sb = new StringBuffer();    
                 String ejbName = ejbDesc.getName();
                 sb.append("<");
-                String ejbType = ejbDesc.getEjbTypeForDisplay();
+                String ejbType = getEjbType(ejbDesc);
                 sb.append(ejbType);
                 sb.append(">"); 
                 moduleSubComponentMap.put(ejbName, sb.toString());
@@ -372,6 +360,27 @@ public class ListSubComponentsCommand implements AdminCommand {
         }
 
         return moduleSubComponentMap;
+    }
+
+
+    private String getEjbType(EjbDescriptor ejbDesc) {
+        String type = null;
+        if (ejbDesc.getType().equals(EjbSessionDescriptor.TYPE)) {
+            EjbSessionDescriptor sessionDesc = (EjbSessionDescriptor)ejbDesc;
+            if (sessionDesc.isStateful()) {
+                type = "StatefulSessionBean";
+            } else if (sessionDesc.isStateless()) {
+                type = "StatelessSessionBean";
+            } else if (sessionDesc.isSingleton()) {
+                type = "SingletonSessionBean";
+            }
+        } else if (ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE)) {
+            type = "MessageDrivenBean";
+        } else if (ejbDesc.getType().equals(EjbEntityDescriptor.TYPE)) {
+            type = "EntityBean";
+        }
+
+        return type;
     }
 
     private String getModuleType(ModuleDescriptor modDesc) {

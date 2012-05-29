@@ -40,39 +40,46 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
+import com.sun.enterprise.deployment.EjbInitInfo;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
 
-public class EjbInitNode extends DeploymentDescriptorNode<EjbInitInfo> {
+import java.util.Map;
 
-    private EjbInitInfo ejbInitInfo;
+public class EjbInitNode extends DeploymentDescriptorNode {
 
     public EjbInitNode() {
        super();
+
        registerElementHandler(new XMLElement(EjbTagNames.INIT_CREATE_METHOD), MethodNode.class, "setCreateMethod");       
        registerElementHandler(new XMLElement(EjbTagNames.INIT_BEAN_METHOD), MethodNode.class, "setBeanMethod");       
-    }
 
-    @Override
-    public EjbInitInfo getDescriptor() {
-        if (ejbInitInfo == null) ejbInitInfo = new EjbInitInfo();
-        return ejbInitInfo;
-    }
 
-    @Override
+    }
+        
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
         return table;
-    }
+    }    
 
-    @Override
+   /**
+     * write the relationships descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, EjbInitInfo initMethod) {
         Node initNode = appendChild(parent, nodeName);        
         MethodNode methodNode = new MethodNode();

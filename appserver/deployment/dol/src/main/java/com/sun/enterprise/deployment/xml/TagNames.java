@@ -70,12 +70,6 @@ public interface TagNames {
     
     public static final String EJB_LOCAL_REFERENCE = "ejb-local-ref";
 
-    public final static String EJB_NAME = "ejb-name";
-    public final static String HOME = "home";
-    public final static String REMOTE = "remote";
-    public final static String LOCAL_HOME = "local-home";
-    public final static String LOCAL = "local";
-
     public static final String LOOKUP_NAME = "lookup-name";
     
     public static final String RESOURCE_REFERENCE = "resource-ref";
@@ -147,12 +141,6 @@ public interface TagNames {
 
     public static final String NAME_VALUE_PAIR_NAME = "name";
     public static final String NAME_VALUE_PAIR_VALUE = "value";
-
-    // FIXME by srini - should go away from here, longer term.
-    public final static String METHOD_NAME = "method-name";
-    public final static String METHOD_INTF = "method-intf";
-    public final static String METHOD_PARAMS = "method-params";
-    public final static String METHOD_PARAM = "method-param";
 
     // injection tags
     public static final String INJECTION_TARGET = "injection-target";

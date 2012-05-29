@@ -40,12 +40,12 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
+import com.sun.enterprise.deployment.FieldDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * This node is responsible for handling all sub-element of cmp-field tag
@@ -53,28 +53,32 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class CmpFieldNode extends DeploymentDescriptorNode<FieldDescriptor> {
+public class CmpFieldNode extends DeploymentDescriptorNode {
 
-    private FieldDescriptor fieldDescriptor;
-
-    @Override
-    public FieldDescriptor getDescriptor() {
-        if (fieldDescriptor == null) fieldDescriptor = new FieldDescriptor();
-        return fieldDescriptor;
-    }
-
-    @Override
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.FIELD_NAME, "setName");
         return table;
     }
-
-    @Override
-    public Node writeDescriptor(Node parent, String nodeName, FieldDescriptor descriptor) {
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
+    public Node writeDescriptor(Node parent, String nodeName, FieldDescriptor descriptor) {    
         Node cmpField = appendChild(parent, nodeName);
         writeLocalizedDescriptions(cmpField, descriptor);
-        appendTextChild(cmpField, EjbTagNames.FIELD_NAME, descriptor.getName());
+        appendTextChild(cmpField, EjbTagNames.FIELD_NAME, descriptor.getName());           
         return cmpField;
     }
 }

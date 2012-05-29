@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,21 @@
 
 package com.sun.ejb.base.container.util;
 
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
+
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
+import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
+
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 import com.sun.logging.LogDomains;
+import org.jvnet.hk2.annotations.Service;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.TimeUnit;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-import org.jvnet.hk2.annotations.Service;
 
 /**
  * A util class to read the bean cache related entries from

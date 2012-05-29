@@ -40,45 +40,43 @@
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
-import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBObject;
-import javax.ejb.EntityBean;
-import javax.ejb.FinderException;
-import javax.ejb.NoSuchEntityException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
+import java.util.*;
+import java.lang.reflect.Method;
+
+import javax.ejb.*;
 
 import com.sun.ejb.ComponentContext;
+import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
-import com.sun.ejb.containers.EJBContextImpl;
+import com.sun.ejb.spi.container.BeanStateSynchronization;
+import com.sun.enterprise.deployment.*;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.*;
+
+import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.BaseContainer.PreInvokeException;
 import com.sun.ejb.containers.EJBHomeInvocationHandler;
 import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
+import com.sun.ejb.containers.EJBContextImpl;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.UnboundedEJBObjectCache;
-import com.sun.ejb.spi.container.BeanStateSynchronization;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+
+import com.sun.logging.*;
+
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
 import org.glassfish.persistence.ejb.entitybean.container.distributed.DistributedEJBServiceFactory;
 import org.glassfish.persistence.ejb.entitybean.container.distributed.DistributedReadOnlyBeanService;
 import org.glassfish.persistence.ejb.entitybean.container.distributed.ReadOnlyBeanRefreshEventHandler;
 
-import static com.sun.ejb.containers.EJBContextImpl.BeanState;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * The Container that manages instances of ReadOnly Beans. This container

@@ -48,44 +48,53 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ejb.CreateException;
+import java.util.logging.Level;
+
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
 import javax.sql.DataSource;
+
 import javax.transaction.TransactionManager;
 
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.ejb.spi.container.DistributedEJBTimerService;
-import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
+
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.config.EjbTimerService;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+
+import com.sun.ejb.spi.container.DistributedEJBTimerService;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.ejb.config.EjbTimerService;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.persistence.common.DatabaseConstants;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
+
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.logging.LogDomains;
+
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
+
 /*
  * Persistence part of the EJBTimerService 
  *

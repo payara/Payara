@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,23 +43,21 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import javax.ejb.Asynchronous;
-import javax.ejb.Local;
-import javax.ejb.Remote;
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
 
+import java.util.logging.Level;
+
+import javax.ejb.*;
+
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -80,7 +78,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
             EjbContext[] ejbContexts) throws AnnotationProcessorException {
         
         for (EjbContext ejbContext : ejbContexts) {
-            EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
+            EjbDescriptor ejbDesc = ejbContext.getDescriptor();
 
             if (ElementType.TYPE.equals(ainfo.getElementType())) {
                 ejbContext.addPostProcessInfo(ainfo, this);
@@ -117,7 +115,7 @@ public class AsynchronousHandler extends AbstractAttributeHandler
      */
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
+        EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         Class classAn = (Class)ainfo.getAnnotatedElement();
 
         Method[] methods = classAn.getDeclaredMethods();

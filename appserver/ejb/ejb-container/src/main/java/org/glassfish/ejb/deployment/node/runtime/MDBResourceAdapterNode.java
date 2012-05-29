@@ -40,14 +40,14 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.w3c.dom.Node;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is responsible for handling the runtime resource
@@ -64,22 +64,41 @@ public class MDBResourceAdapterNode extends DeploymentDescriptorNode {
                 ActivationConfigNode.class);
                 //"setRuntimeActivationConfigDescriptor");
     }
-
-    @Override
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
     public Object getDescriptor() {
         return getParentNode().getDescriptor();
-    }
-
-    @Override
+    }        
+    
+   
+    /**
+     * all sub-implementation of this class can use a dispatch table to 
+     * map xml element to method name on the descriptor class for setting 
+     * the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method 
+     *         as a value
+     */
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table =  new HashMap();
         table.put(RuntimeTagNames.RESOURCE_ADAPTER_MID, "setResourceAdapterMid");
         return table;
-    }
-
+    }    
+    
+    /**
+     * write the ejbmessage descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor( Node parent, 
             String nodeName, EjbMessageBeanDescriptor descriptor) {
+
         Node raNode = super.writeDescriptor(parent, nodeName, descriptor);
         appendTextChild(raNode, RuntimeTagNames.RESOURCE_ADAPTER_MID, 
                 descriptor.getResourceAdapterMid()); 

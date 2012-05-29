@@ -40,16 +40,12 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.deployment.MethodPermissionDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
-
-import org.glassfish.ejb.deployment.EjbTagNames;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -61,30 +57,33 @@ import org.xml.sax.Attributes;
  * @author  Jerome Dochez
  * @version 
  */
-public class MethodPermissionNode extends DeploymentDescriptorNode<MethodPermissionDescriptor> {
+public class MethodPermissionNode extends DeploymentDescriptorNode {
 
     private MethodPermissionDescriptor descriptor;
-
+    
     /** Creates new MethodPermissionNode */
     public MethodPermissionNode() {       
         super();
-        registerElementHandler(new XMLElement(EjbTagNames.METHOD), 
+       registerElementHandler(new XMLElement(EjbTagNames.METHOD), 
                                                             MethodNode.class, "addMethod");                 
-    }
-
-    @Override
-    public MethodPermissionDescriptor getDescriptor() {
+    }   
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */       
+    public Object getDescriptor() {
+        
        if (descriptor==null) {
-            descriptor = new MethodPermissionDescriptor();
+            descriptor = (MethodPermissionDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
         }
         return descriptor;
-    }
-
+    }   
+    
     /**
      * SAX Parser API implementation, we don't really care for now.
      */
-    @Override
     public void startElement(XMLElement element, Attributes attributes) {
+        
         if (EjbTagNames.UNCHECKED.equals(element.getQName())) {
             descriptor.addMethodPermission(MethodPermission.getUncheckedMethodPermission());
         } else 
@@ -92,14 +91,13 @@ public class MethodPermissionNode extends DeploymentDescriptorNode<MethodPermiss
     }
         
     /**
-     * receives notification of the value for a particular tag
+     * receives notiification of the value for a particular tag
      * 
      * @param element the xml element
      * @param value it's associated value
      */    
-    @Override
     public void setElementValue(XMLElement element, String value) {
-        if (TagNames.ROLE_NAME.equals(element.getQName())) {
+        if (EjbTagNames.ROLE_NAME.equals(element.getQName())) {
             Role role = new Role(value);
             descriptor.addMethodPermission(new MethodPermission(role));
         } else {
@@ -107,6 +105,7 @@ public class MethodPermissionNode extends DeploymentDescriptorNode<MethodPermiss
         }
     }
 
+    
     /**
      * write the descriptor class to a DOM tree and return it
      *
@@ -116,11 +115,13 @@ public class MethodPermissionNode extends DeploymentDescriptorNode<MethodPermiss
      * @return the DOM tree top node
      */
     public Node writeDescriptor(Node parent, String nodeName, MethodPermissionDescriptor descriptor, 
-                EjbDescriptor ejb) {
+                EjbDescriptor ejb) {        
+                    
         Node subNode = super.writeDescriptor(parent, nodeName, descriptor);        
         return writeDescriptorInNode(subNode, descriptor, ejb);
     }
-
+    
+    
     /**
      * Write the descriptor in a DOM tree which root element is provided
      * 
@@ -142,7 +143,7 @@ public class MethodPermissionNode extends DeploymentDescriptorNode<MethodPermiss
                 appendChild(subNode, EjbTagNames.UNCHECKED);
             } else {
                 for (int i=0;i<mps.length;i++) {
-                    appendTextChild(subNode, TagNames.ROLE_NAME, mps[i].getRole().getName());
+                    appendTextChild(subNode, EjbTagNames.ROLE_NAME, mps[i].getRole().getName());
                 }        
             }
         } 

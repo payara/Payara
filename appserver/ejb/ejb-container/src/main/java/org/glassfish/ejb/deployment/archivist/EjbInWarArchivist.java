@@ -40,9 +40,7 @@
 
 package org.glassfish.ejb.deployment.archivist;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
@@ -51,7 +49,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 import org.glassfish.ejb.deployment.io.EjbInWarDeploymentDescriptorFile;
 import org.glassfish.ejb.deployment.io.EjbInWarRuntimeDDFile;
 import org.glassfish.ejb.deployment.io.GFEjbInWarRuntimeDDFile;
@@ -59,6 +56,9 @@ import org.glassfish.ejb.deployment.io.WLSEjbInWarRuntimeDDFile;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * @author Mahesh Kannan
@@ -132,7 +132,6 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
         return moduleType != null && moduleType.equals(DOLUtils.warType());
     }
 
-    @Override
     public RootDeploymentDescriptor getDefaultDescriptor() {
         return new EjbBundleDescriptor();
     }

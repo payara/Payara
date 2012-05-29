@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.deployment;
 
-import java.io.Serializable;
-
 import org.glassfish.deployment.common.Descriptor;
+
+import java.io.Serializable;
 
     /** I am a pairing between a descriptor and a descriptor that has a JNDI name.
     *@author Danny Coward
@@ -63,7 +63,7 @@ public class NamedReferencePair implements Serializable {
     public static NamedReferencePair createEjbPair
         (EjbDescriptor referant, EjbDescriptor referee) 
     {
-        return new NamedReferencePair((Descriptor) referant, referee, EJB); // FIXME by srini - can we extract intf to avoid this
+        return new NamedReferencePair(referant, referee, EJB);
     }
         
     public static NamedReferencePair createEjbRefPair

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,20 +46,11 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.model.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.sun.jdo.api.persistence.mapping.ejb.AbstractNameMapper;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
+
+import com.sun.enterprise.deployment.*;
 
 /** This is a class which helps translate between the various names of the 
  * CMP (ejb name, abstract schema, abstract bean, concrete bean, local
@@ -108,7 +99,7 @@ public abstract class NameMapper extends AbstractNameMapper
 			// gather list of generated cmr fields by examining source and sink
 			while (iterator.hasNext())
 			{
-				RelationshipDescriptor relationship =
+				RelationshipDescriptor relationship = 
 					(RelationshipDescriptor)iterator.next();
 
 				if (relationship.getSource().getCMRField() == null)

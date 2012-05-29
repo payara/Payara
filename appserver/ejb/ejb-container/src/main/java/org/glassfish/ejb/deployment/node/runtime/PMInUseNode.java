@@ -40,13 +40,13 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.PersistenceManagerInUse;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.w3c.dom.Node;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.runtime.PersistenceManagerInUse;
-import org.w3c.dom.Node;
 
 /**
  * This node handles the pm-inuse runtime xml element
@@ -55,30 +55,33 @@ import org.w3c.dom.Node;
  * @version 
  */
 
-public class PMInUseNode extends RuntimeDescriptorNode<PersistenceManagerInUse> {
-
-    private PersistenceManagerInUse descriptor;
-
-    @Override
-    public PersistenceManagerInUse getDescriptor() {
-        if (descriptor == null) descriptor = new PersistenceManagerInUse();
-        return descriptor;
-    }
-
-    @Override
-    protected Map getDispatchTable() {
+public class PMInUseNode extends RuntimeDescriptorNode {
+	
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
+    protected Map getDispatchTable() {    
         Map table = new HashMap();
         table.put(RuntimeTagNames.PM_IDENTIFIER, "set_pm_identifier");
-        table.put(RuntimeTagNames.PM_VERSION, "set_pm_version");
-        return table;
+	table.put(RuntimeTagNames.PM_VERSION, "set_pm_version");
+	return table;
     }
-
-
-    @Override
+	
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name 
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, PersistenceManagerInUse descriptor) {
-        Node pmInUse = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(pmInUse, RuntimeTagNames.PM_IDENTIFIER, descriptor.get_pm_identifier());
-        appendTextChild(pmInUse, RuntimeTagNames.PM_VERSION, descriptor.get_pm_version());
-        return pmInUse;
+	Node pmInUse = super.writeDescriptor(parent, nodeName, descriptor);
+	appendTextChild(pmInUse, RuntimeTagNames.PM_IDENTIFIER, descriptor.get_pm_identifier());
+	appendTextChild(pmInUse, RuntimeTagNames.PM_VERSION, descriptor.get_pm_version());
+	return pmInUse;
     }
 }

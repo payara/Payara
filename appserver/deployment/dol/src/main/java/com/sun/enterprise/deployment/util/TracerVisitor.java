@@ -40,24 +40,25 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebService;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.types.*;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  *
  * @author  dochez
  * @version 
  */
-public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisitor {
+public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisitor, EjbBundleVisitor {
 
-    @Override
+    /** Creates new TracerVisitor */
+    public TracerVisitor() {
+    }
+    
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
@@ -86,6 +87,24 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
                acd.visit(getSubDescriptorVisitor(acd));
             }
             super.accept(descriptor);
+        } else if (descriptor instanceof EjbBundleDescriptor) {
+            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor)descriptor;
+            accept(ejbBundle);
+
+            for (EjbDescriptor anEjb : ejbBundle.getEjbs()) {
+                anEjb.visit(getSubDescriptorVisitor(anEjb));
+            }
+            if (ejbBundle.hasRelationships()) {
+                for (Iterator itr = ejbBundle.getRelationships().iterator();itr.hasNext();) {
+                    RelationshipDescriptor rd = (RelationshipDescriptor) itr.next();
+                    accept(rd);
+                }
+            }
+            for (WebService aWebService : ejbBundle.getWebServices().getWebServices()) {
+                accept(aWebService);
+            }
+
+            super.accept(descriptor);
         } else {
             super.accept(descriptor);
         }
@@ -95,46 +114,237 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
      * visit an application object
      * @param the application descriptor
      */
-    @Override
     public void accept(Application application) {
 	DOLUtils.getDefaultLogger().info("Application");
 	DOLUtils.getDefaultLogger().info("name " + application.getName());
 	DOLUtils.getDefaultLogger().info("smallIcon " + application.getSmallIconUri());
     }
+    
+    /**
+     * visits an ejb bundle descriptor
+     * @param an ejb bundle descriptor
+     */
+    public void accept(EjbBundleDescriptor bundleDescriptor) {
+        DOLUtils.getDefaultLogger().info("Ejb Bundle " + bundleDescriptor.getName());
+    }
+    
+    /**
+     * visits an ejb descriptor
+     * @param ejb descriptor
+     */
+    protected void accept(EjbDescriptor ejb) {
+        DOLUtils.getDefaultLogger().info("==================");                
+        DOLUtils.getDefaultLogger().info(ejb.getType() + " Bean " + ejb.getName());        
+	DOLUtils.getDefaultLogger().info("\thomeClassName " + ejb.getHomeClassName());
+	DOLUtils.getDefaultLogger().info("\tremoteClassName " + ejb.getRemoteClassName());
+	DOLUtils.getDefaultLogger().info("\tlocalhomeClassName " +ejb.getLocalHomeClassName());
+	DOLUtils.getDefaultLogger().info("\tlocalClassName " + ejb.getLocalClassName());
+	DOLUtils.getDefaultLogger().info("\tremoteBusinessIntfs " + ejb.getRemoteBusinessClassNames());
+	DOLUtils.getDefaultLogger().info("\tlocalBusinessIntfs " + ejb.getLocalBusinessClassNames());
 
+	DOLUtils.getDefaultLogger().info("\tjndiName " + ejb.getJndiName());        
+	DOLUtils.getDefaultLogger().info("\tejbClassName " + ejb.getEjbClassName());
+	DOLUtils.getDefaultLogger().info("\ttransactionType " + ejb.getTransactionType());
+        if (ejb.getUsesCallerIdentity() == false) {
+            DOLUtils.getDefaultLogger().info("\trun-as role " + ejb.getRunAsIdentity());             
+        } else {
+            DOLUtils.getDefaultLogger().info("\tuse-caller-identity " + ejb.getUsesCallerIdentity()); 
+        }
+
+        for (Iterator itr = ejb.getEjbReferenceDescriptors().iterator(); itr.hasNext();) {
+            EjbReference aRef = (EjbReference) itr.next();
+            accept(aRef);
+        }
+
+        for (Iterator e = ejb.getPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
+            MethodPermission nextPermission = (MethodPermission) e.next();
+            Set methods = (Set) ejb.getPermissionedMethodsByPermission().get(nextPermission);
+            accept(nextPermission, methods.iterator());
+        }
+
+        if (ejb.getStyledPermissionedMethodsByPermission() != null) {
+            for (Iterator e = ejb.getStyledPermissionedMethodsByPermission().keySet().iterator(); e.hasNext();) {
+                MethodPermission nextPermission = (MethodPermission) e.next();
+                Set methods = (Set) ejb.getStyledPermissionedMethodsByPermission().get(nextPermission);
+                accept(nextPermission, methods.iterator());
+            }
+        }
+
+        for (Iterator e = ejb.getRoleReferences().iterator(); e.hasNext();) {
+            RoleReference roleRef = (RoleReference) e.next();
+            accept(roleRef);
+        }
+
+        for (Iterator e = ejb.getMethodContainerTransactions().keySet().iterator(); e.hasNext();) {
+            MethodDescriptor md = (MethodDescriptor) e.next();
+            ContainerTransaction ct = (ContainerTransaction) ejb.getMethodContainerTransactions().get(md);
+            accept(md, ct);
+        }
+
+        for (Iterator e = ejb.getEnvironmentProperties().iterator(); e.hasNext();) {
+            EnvironmentProperty envProp = (EnvironmentProperty) e.next();
+            accept(envProp);
+        }
+
+        for (Iterator it = ejb.getResourceReferenceDescriptors().iterator();
+             it.hasNext();) {
+            ResourceReferenceDescriptor next =
+                    (ResourceReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = ejb.getResourceEnvReferenceDescriptors().iterator(); it.hasNext();) {
+            ResourceEnvReferenceDescriptor next =
+                    (ResourceEnvReferenceDescriptor) it.next();
+            accept(next);
+        }
+
+        for (Iterator it = ejb.getMessageDestinationReferenceDescriptors().iterator(); it.hasNext();) {
+            MessageDestinationReferencer next =
+                    (MessageDestinationReferencer) it.next();
+            accept(next);
+        }
+
+        // If this is a message bean, it can be a message destination
+        // referencer as well.
+        if (ejb.getType().equals(EjbMessageBeanDescriptor.TYPE)) {
+            MessageDestinationReferencer msgDestReferencer =
+                    (MessageDestinationReferencer) ejb;
+            if (msgDestReferencer.getMessageDestinationLinkName() != null) {
+                accept(msgDestReferencer);
+            }
+        }
+
+        Set serviceRefs = ejb.getServiceReferenceDescriptors();
+        for (Iterator itr = serviceRefs.iterator(); itr.hasNext();) {
+            accept((ServiceReferenceDescriptor) itr.next());
+        }
+
+        if (ejb instanceof EjbCMPEntityDescriptor) {
+            EjbCMPEntityDescriptor cmp = (EjbCMPEntityDescriptor)ejb;
+            PersistenceDescriptor persistenceDesc = cmp.getPersistenceDescriptor();
+            for (Iterator e=persistenceDesc.getCMPFields().iterator();e.hasNext();) {
+                FieldDescriptor fd = (FieldDescriptor) e.next();
+                accept(fd);
+            }
+            for (Iterator e=persistenceDesc.getQueriedMethods().iterator();e.hasNext();) {
+                Object method = e.next();
+                if (method instanceof MethodDescriptor) {
+                    QueryDescriptor qd = persistenceDesc.getQueryFor((MethodDescriptor) method);
+                    accept((MethodDescriptor) method, qd);
+                }
+            }
+        }
+    }
 
     /**
      * visits an ejb reference  for the last J2EE component visited
      * @param the ejb reference
      */
-    @Override
     protected void accept(EjbReference ejbRef) {
         DOLUtils.getDefaultLogger().info(ejbRef.toString());
     }
-
-    @Override
+    
     protected void accept(MessageDestinationReferencer referencer) {
-        DOLUtils.getDefaultLogger().info(referencer.getMessageDestinationLinkName());
+        DOLUtils.getDefaultLogger().info
+            (referencer.getMessageDestinationLinkName());
     }
     
     protected void accept(WebService webService) {
         DOLUtils.getDefaultLogger().info(webService.getName());
     }
 
-    @Override
     protected void accept(ServiceReferenceDescriptor serviceRef) {
         DOLUtils.getDefaultLogger().info(serviceRef.getName());
     }
 
+    /**
+     * visits a method permission and permitted methods  for the last J2EE component visited
+     * @param ejb descriptor the role is referenced from
+     * @param method permission 
+     * @param the methods associated with the above permission
+     */
+    protected void accept(MethodPermission pm, Iterator methods) {
+        DOLUtils.getDefaultLogger().info("For method permission : " + pm.toString());
+        while (methods.hasNext()) {
+            DOLUtils.getDefaultLogger().info("\t"  + ((MethodDescriptor) methods.next()).prettyPrint());
+        }
+    }
+    
+    /**
+     * visits a role reference  for the last J2EE component visited
+     * @param ejb descriptor the role is referenced from*
+     * @param role reference
+     */
+    protected void accept(RoleReference roleRef) {
+        DOLUtils.getDefaultLogger().info("Security Role Reference : " 
+                                + roleRef.getName() + " link " + roleRef.getValue());
+    }
+    /**
+     * visists a method transaction  for the last J2EE component visited
+     * @param ejb descritptor this method applies to
+     * @param method descriptor the method
+     * @param container transaction
+     */
+    protected void accept(MethodDescriptor method, ContainerTransaction ct) {
+            
+        DOLUtils.getDefaultLogger().info( ct.getTransactionAttribute() 
+                                + " Container Transaction for method "
+                                + method.prettyPrint() );
+            
+    }
+    
+    /**
+     * visists an environment property  for the last J2EE component visited
+     * @paren the environment property
+     */
     protected void accept(EnvironmentProperty envEntry) {
-        DOLUtils.getDefaultLogger().info( envEntry.toString());
+        DOLUtils.getDefaultLogger().info( envEntry.toString());    
     }
 
+    /**
+     * visits a CMP field definition (for CMP entity beans)
+     * @param field descriptor for the CMP field
+     */
+    protected void accept(FieldDescriptor fd) {
+        DOLUtils.getDefaultLogger().info("CMP Field "  +fd);
+    }
+    
+    /**
+     * visits a query method
+     * @param method descriptor for the method
+     * @param query descriptor
+     */
+    protected void accept(MethodDescriptor method, QueryDescriptor qd) {
+        DOLUtils.getDefaultLogger().info(qd.toString());
+    }
+
+    /**
+     * visits an ejb relationship descriptor
+     * @param the relationship descriptor
+     */
+    protected void accept(RelationshipDescriptor descriptor) {
+        DOLUtils.getDefaultLogger().info("============ Relationships ===========");
+        DOLUtils.getDefaultLogger().info("From EJB " + descriptor.getSource().getName()  
+                                                                    + " cmr field : " + descriptor.getSource().getCMRField() 
+                                                                    + "(" + descriptor.getSource().getCMRFieldType() + ")  to EJB " + descriptor.getSink().getName() 
+                                                                    + " isMany " + descriptor.getSource().getIsMany() 
+                                                                    + " cascade-delete " + descriptor.getSource().getCascadeDelete());                                                                    
+        
+       DOLUtils.getDefaultLogger().info("To  EJB " + descriptor.getSink().getName()
+                                                                    + " isMany " + descriptor.getSink().getIsMany() 
+                                                                    + " cascade-delete " + descriptor.getSink().getCascadeDelete());        
+
+        if (descriptor.getIsBidirectional()) {        
+            DOLUtils.getDefaultLogger().info( "Bidirectional cmr field : " + descriptor.getSink().getCMRField()
+                                                                    + "(" + descriptor.getSink().getCMRFieldType() + ")");
+        }
+    }    
+    
     /**
      * visits a J2EE descriptor
      * @param the descriptor
      */
-    @Override
     public void accept(Descriptor descriptor) {
         DOLUtils.getDefaultLogger().info(descriptor.toString());
     } 
@@ -143,7 +353,6 @@ public class TracerVisitor extends DefaultDOLVisitor implements ApplicationVisit
      * get the visitor for its sub descriptor
      * @param sub descriptor to return visitor for
      */
-    @Override
     public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
         if (subDescriptor instanceof BundleDescriptor) {
             DescriptorVisitor tracerVisitor = ((BundleDescriptor)subDescriptor).getTracerVisitor();

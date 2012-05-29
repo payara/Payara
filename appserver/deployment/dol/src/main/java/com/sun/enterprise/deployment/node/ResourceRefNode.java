@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * This node handles all resource-ref xml tag elements
@@ -53,44 +54,47 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class ResourceRefNode  extends DeploymentDescriptorNode<ResourceReferenceDescriptor> {
-
-    private ResourceReferenceDescriptor descriptor;
-
+public class ResourceRefNode  extends DeploymentDescriptorNode {
+    
     public ResourceRefNode() {
         super();
         registerElementHandler(new XMLElement(TagNames.INJECTION_TARGET), 
-                                InjectionTargetNode.class, "addInjectionTarget");
-    }
-
-    @Override
-    public ResourceReferenceDescriptor getDescriptor() {
-        if (descriptor == null) descriptor = new ResourceReferenceDescriptor();
-        return descriptor;
-    }
-
-    @Override
+                                InjectionTargetNode.class, "addInjectionTarget");                          
+    }        
+  /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
-        table.put(TagNames.RESOURCE_REFERENCE_NAME, "setName");
-        table.put(TagNames.RESOURCE_TYPE, "setType");        
-        table.put(TagNames.RESOURCE_AUTHORIZATION, "setAuthorization");
-        table.put(TagNames.RESOURCE_SHARING_SCOPE, "setSharingScope");
+        table.put(EjbTagNames.RESOURCE_REFERENCE_NAME, "setName");
+        table.put(EjbTagNames.RESOURCE_TYPE, "setType");        
+        table.put(EjbTagNames.RESOURCE_AUTHORIZATION, "setAuthorization");
+        table.put(EjbTagNames.RESOURCE_SHARING_SCOPE, "setSharingScope");
         table.put(TagNames.MAPPED_NAME, "setMappedName");
         table.put(TagNames.LOOKUP_NAME, "setLookupName");
         return table;
     }
-
-    @Override
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, ResourceReferenceDescriptor descriptor) {    
         Node ejbResNode = appendChild(parent, nodeName);
         writeLocalizedDescriptions(ejbResNode, descriptor);
         
-        appendTextChild(ejbResNode, TagNames.RESOURCE_REFERENCE_NAME, descriptor.getName());      
-        appendTextChild(ejbResNode, TagNames.RESOURCE_TYPE, descriptor.getType());      
-        appendTextChild(ejbResNode, TagNames.RESOURCE_AUTHORIZATION, descriptor.getAuthorization());               
-        appendTextChild(ejbResNode, TagNames.RESOURCE_SHARING_SCOPE, descriptor.getSharingScope());  
+        appendTextChild(ejbResNode, EjbTagNames.RESOURCE_REFERENCE_NAME, descriptor.getName());      
+        appendTextChild(ejbResNode, EjbTagNames.RESOURCE_TYPE, descriptor.getType());      
+        appendTextChild(ejbResNode, EjbTagNames.RESOURCE_AUTHORIZATION, descriptor.getAuthorization());               
+        appendTextChild(ejbResNode, EjbTagNames.RESOURCE_SHARING_SCOPE, descriptor.getSharingScope());  
         appendTextChild(ejbResNode, TagNames.MAPPED_NAME, descriptor.getMappedName());
         if( descriptor.isInjectable() ) {
             InjectionTargetNode ijNode = new InjectionTargetNode();

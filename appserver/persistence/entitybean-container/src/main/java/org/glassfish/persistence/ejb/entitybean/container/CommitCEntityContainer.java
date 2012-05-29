@@ -41,17 +41,17 @@
 package org.glassfish.persistence.ejb.entitybean.container;
 
 import com.sun.ejb.EjbInvocation;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
 
-/*
-* This class implements the Commit-Option C as described in
-* the EJB Specification.
-*
-* The CommitOptionC Container extends Entity Container and
-* hence all the life cycle management is still in Entitycontainer
-*
-* @author Mahesh Kannan
-*/
+ /*
+  * This class implements the Commit-Option C as described in
+  * the EJB Specification.
+  *
+  * The CommitOptionC Container extends Entity Container and
+  * hence all the life cycle management is still in Entitycontainer
+  *
+  * @author Mahesh Kannan
+  */
 
 public class CommitCEntityContainer
     extends EntityContainer

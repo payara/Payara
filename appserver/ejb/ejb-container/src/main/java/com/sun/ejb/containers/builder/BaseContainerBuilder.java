@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,24 @@
 package com.sun.ejb.containers.builder;
 
 import java.net.InetAddress;
+
 import java.util.logging.Logger;
 
+import com.sun.ejb.base.container.util.CacheProperties;
+
+import com.sun.ejb.base.sfsb.util.CheckpointPolicyImpl;
+import com.sun.ejb.base.sfsb.util.ScrambledKeyGenerator;
+import com.sun.ejb.base.sfsb.util.SimpleKeyGenerator;
+
 import com.sun.ejb.containers.BaseContainer;
+
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+
 import com.sun.enterprise.util.Utility;
+
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 
 /**
  * (Abstract)Base class for all ContainerBuilders

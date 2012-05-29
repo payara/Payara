@@ -40,37 +40,34 @@
 
 package com.sun.ejb.containers;
 
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.EJBObject;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-import javax.ejb.SessionBean;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.util.pool.AbstractPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
+
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
+
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
+import org.glassfish.api.invocation.ComponentInvocation;
+
+import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
+
+import javax.ejb.*;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import javax.transaction.SystemException;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import org.glassfish.ejb.config.EjbContainer;
 
 /** This class provides container functionality specific to stateless 
  *  SessionBeans.

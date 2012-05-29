@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,17 @@
 
 package com.sun.ejb.codegen;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.logging.*;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.logging.LogDomains;
+import com.sun.logging.*;
+
+import java.io.IOException;
+
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+
+import com.sun.enterprise.deployment.*;
 
 
 /**
@@ -73,7 +69,7 @@ public abstract class Generator {
 
     /**
      * Get the package name from the class name.
-     * @param className class name.
+     * @param the class name.
      * @return the package name.
      */
     protected String getPackageName(String className) {

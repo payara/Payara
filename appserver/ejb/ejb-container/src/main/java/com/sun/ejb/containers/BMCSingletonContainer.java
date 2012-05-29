@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,16 @@
 
 package com.sun.ejb.containers;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+
+import javax.transaction.Transaction;
+import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.glassfish.ejb.startup.SingletonLifeCycleManager;
 
 /**
  * @author Mahesh Kannan

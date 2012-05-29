@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
+import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * This node is responsible for handling all env-entry related xml tags
@@ -53,9 +54,8 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> {
-
-    private EnvironmentProperty envProp;
+public class EnvEntryNode extends DeploymentDescriptorNode {
+    
     private boolean setValueCalled = false;
 
     public EnvEntryNode() {
@@ -63,14 +63,13 @@ public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> 
         registerElementHandler(new XMLElement(TagNames.INJECTION_TARGET), 
                                 InjectionTargetNode.class, "addInjectionTarget");                          
     }
-
-    @Override
-    public EnvironmentProperty getDescriptor() {
-        if (envProp == null) envProp = new EnvironmentProperty();
-        return envProp;
-    }
-
-    @Override
+    
+   /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(TagNames.ENVIRONMENT_PROPERTY_NAME, "setName");
@@ -79,10 +78,10 @@ public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> 
         table.put(TagNames.MAPPED_NAME, "setMappedName");
         table.put(TagNames.LOOKUP_NAME, "setLookupName");
         return table;
-    }
-
-    @Override
+    }    
+    
     public boolean endElement(XMLElement element) {
+
         if (TagNames.ENVIRONMENT_PROPERTY_NAME.equals(element.getQName())) {
             // name element is always right before value, so initialize
             // setValueCalled to false when it is processed.
@@ -91,10 +90,10 @@ public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> 
                    (element.getQName()) ) {
             setValueCalled = true;
         }
+
         return super.endElement(element);
     } 
 
-    @Override
     public void addDescriptor(Object newDescriptor) {
         if( setValueCalled ) {
             super.addDescriptor(newDescriptor);
@@ -104,9 +103,21 @@ public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> 
         }
     }
 
-    @Override
-    public Node writeDescriptor(Node parent, String nodeName, EnvironmentProperty envProp) {
-        Node envEntryNode = super.writeDescriptor(parent, nodeName, envProp);
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
+    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
+        if (!(descriptor instanceof EnvironmentProperty)) {
+            throw new IllegalArgumentException(getClass() + " cannot handles descriptors of type " + descriptor.getClass());
+        }            
+        EnvironmentProperty envProp = (EnvironmentProperty) descriptor;
+        Node envEntryNode = super.writeDescriptor(parent, nodeName, descriptor);
+        
         writeLocalizedDescriptions(envEntryNode, envProp);
         appendTextChild(envEntryNode, TagNames.ENVIRONMENT_PROPERTY_NAME, envProp.getName());
         appendTextChild(envEntryNode, TagNames.ENVIRONMENT_PROPERTY_TYPE, envProp.getType());
@@ -119,6 +130,7 @@ public class EnvEntryNode extends DeploymentDescriptorNode<EnvironmentProperty> 
             }
         }
         appendTextChild(envEntryNode, TagNames.LOOKUP_NAME, envProp.getLookupName());
+
         return envEntryNode;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,10 +43,7 @@ package com.sun.enterprise.tools.verifier.tests.ejb;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.Verifier;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import com.sun.enterprise.deployment.*;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -84,10 +81,10 @@ public class LocalInterfaceExposed extends EjbTest implements EjbCheck {
         }
         
         EjbBundleDescriptor bundle = descriptor.getEjbBundleDescriptor();
-        Iterator<EjbDescriptor> iterator = (bundle.getEjbs()).iterator();
+        Iterator iterator = (bundle.getEjbs()).iterator();
         Set<String> localInterfaces = new HashSet<String>();
         while(iterator.hasNext()) {
-            EjbDescriptor entity = iterator.next();
+            EjbAbstractDescriptor entity = (EjbAbstractDescriptor) iterator.next();
             if (entity.getLocalClassName() != null) 
                 localInterfaces.add(entity.getLocalClassName());
             localInterfaces.addAll(entity.getLocalBusinessClassNames());

@@ -40,11 +40,7 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.PropertiesNode;
@@ -54,8 +50,12 @@ import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.node.runtime.common.RuntimeNameValuePairNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
 
 /**
  * This node handles the cmp-resource runtime xml tag
@@ -63,26 +63,33 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class CmpResourceNode extends RuntimeDescriptorNode<ResourceReferenceDescriptor> {
+public class CmpResourceNode extends RuntimeDescriptorNode {
 
-    private ResourceReferenceDescriptor descriptor;
-
+    ResourceReferenceDescriptor descriptor= new ResourceReferenceDescriptor();
+    
+    /** Creates new CmpResourceNode */
     public CmpResourceNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), 
                                DefaultResourcePrincipalNode.class, "setResourcePrincipal");
-        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
-                               RuntimeNameValuePairNode.class, "addProperty");		
+	registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
+				RuntimeNameValuePairNode.class, "addProperty");		
         registerElementHandler(new XMLElement(RuntimeTagNames.SCHEMA_GENERATOR_PROPERTIES), 
                                 PropertiesNode.class, "setSchemaGeneratorProperties");
     }
-
-    @Override
-    public ResourceReferenceDescriptor getDescriptor() {
-        if (descriptor == null) descriptor = new ResourceReferenceDescriptor();
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
         return descriptor;
-    }
+    }           
 
-    @Override
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
@@ -91,8 +98,10 @@ public class CmpResourceNode extends RuntimeDescriptorNode<ResourceReferenceDesc
         table.put(RuntimeTagNames.DATABASE_VENDOR_NAME, "setDatabaseVendorName");
         return table;
     } 
-
-    @Override
+    
+    /**
+     * notification of the end of XML parsing for this node
+     */
     public void postParsing() {
         EjbBundleDescriptor bd = (EjbBundleDescriptor) getParentNode().getDescriptor();
         if (bd==null) {
@@ -101,9 +110,15 @@ public class CmpResourceNode extends RuntimeDescriptorNode<ResourceReferenceDesc
             return;
         }
         bd.setCMPResourceReference(descriptor);
-    }
-
-    @Override
+    }    
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, 
                                 ResourceReferenceDescriptor descriptor) {     
         Node cmp = super.writeDescriptor(parent, nodeName, descriptor);

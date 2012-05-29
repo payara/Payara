@@ -40,20 +40,15 @@
 
 package org.glassfish.ejb.deployment.node;
 
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbCMPEntityDescriptor;
+import com.sun.enterprise.deployment.RelationRoleDescriptor;
+import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.w3c.dom.Node;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.node.ConfigurableNode;
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.LocalizedInfoNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.XMLNode;
-import com.sun.enterprise.deployment.xml.TagNames;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
-import org.w3c.dom.Node;
 
 /**
  * This class is responsible for handling the ejb-relationship-role xml elements
@@ -61,16 +56,18 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRoleDescriptor> {
+public class EjbRelationshipRoleNode extends DeploymentDescriptorNode {
 
-    private RelationRoleDescriptor descriptor;
+    RelationRoleDescriptor descriptor;
 
     public EjbRelationshipRoleNode() {
        super();
-       registerElementHandler(new XMLElement(TagNames.DESCRIPTION), LocalizedInfoNode.class);           
+       registerElementHandler(new XMLElement(EjbTagNames.DESCRIPTION), LocalizedInfoNode.class);           
     }
-
-    @Override
+    
+    /**
+     * @return the handler registered for the subtag element of the curent  XMLNode
+     */
     public  XMLNode getHandlerFor(XMLElement element) {
         if (EjbTagNames.RELATIONSHIP_ROLE_SOURCE.equals(element.getQName())) {
             Map dispatchTable = new HashMap();
@@ -86,8 +83,11 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
             return super.getHandlerFor(element);
         }       
     }  
-
-    @Override
+    
+    /**
+     *  @return true if the element tag can be handled by any registered sub nodes of the
+     * current XMLNode
+     */
     public boolean handlesElement(XMLElement element) {
         if (EjbTagNames.RELATIONSHIP_ROLE_SOURCE.equals(element.getQName())) {
             return true;
@@ -97,14 +97,23 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
         } 
         return super.handlesElement(element);
     }
-
-    @Override
-    public RelationRoleDescriptor getDescriptor() {
-        if (descriptor==null) descriptor = new RelationRoleDescriptor();
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
+        if (descriptor==null) {
+            descriptor = (RelationRoleDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+        } 
         return descriptor;
-    }
-
-    @Override
+    }        
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -112,17 +121,27 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
         table.put(EjbTagNames.CMR_FIELD_NAME, "setCMRField");
         table.put(EjbTagNames.CMR_FIELD_TYPE, "setCMRFieldType");
         return table;
-    }
-
-    @Override
+    }    
+    
+    /** 
+     * receives notification of the end of an XML element by the Parser
+     * 
+     * @param element the xml tag identification
+     * @return true if this node is done processing the XML sub tree
+     */
     public boolean endElement(XMLElement element) {
         if (EjbTagNames.CASCADE_DELETE.equals(element.getQName())) {
                 descriptor.setCascadeDelete(true);
         }
         return super.endElement(element);
-    }
-
-    @Override
+    }    
+    
+    /**
+     * receives notiification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
+     */
     public void setElementValue(XMLElement element, String value) {    
         if (EjbTagNames.MULTIPLICITY.equals(element.getQName())) {
             if ( value.equals("Many") )
@@ -159,14 +178,21 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
             return (EjbBundleDescriptor) parentDesc;
         }  else {
             throw new IllegalArgumentException("Cannot find bundle descriptor");
-        }
+        }            
     } 
-
-    @Override
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, RelationRoleDescriptor descriptor) {   
         Node roleNode = super.writeDescriptor(parent, nodeName, descriptor);
         LocalizedInfoNode localizedNode = new LocalizedInfoNode();
-        localizedNode.writeLocalizedMap(roleNode, TagNames.DESCRIPTION, descriptor.getLocalizedDescriptions());        
+        localizedNode.writeLocalizedMap(roleNode, EjbTagNames.DESCRIPTION, descriptor.getLocalizedDescriptions());        
         if (descriptor.getRelationRoleName() != null) {
             appendTextChild(roleNode, EjbTagNames.EJB_RELATIONSHIP_ROLE_NAME, 
                 descriptor.getRelationRoleName());        
@@ -185,7 +211,7 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
         }
         
         Node roleSourceNode = appendChild(roleNode, EjbTagNames.RELATIONSHIP_ROLE_SOURCE);
-        appendTextChild(roleSourceNode, TagNames.DESCRIPTION, descriptor.getRoleSourceDescription());
+        appendTextChild(roleSourceNode, EjbTagNames.DESCRIPTION, descriptor.getRoleSourceDescription());
         appendTextChild(roleSourceNode, EjbTagNames.EJB_NAME, descriptor.getOwner().getName());
         
 	// cmr-field
@@ -193,7 +219,7 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
             Node cmrFieldNode = appendChild(roleNode, EjbTagNames.CMR_FIELD);
             
 	    // description
-            appendTextChild(cmrFieldNode, TagNames.DESCRIPTION, 
+            appendTextChild(cmrFieldNode, EjbTagNames.DESCRIPTION, 
                                         descriptor.getCMRFieldDescription());
 	    // cmr-field-name
 	    appendTextChild(cmrFieldNode, EjbTagNames.CMR_FIELD_NAME, 
@@ -203,5 +229,5 @@ public class EjbRelationshipRoleNode extends DeploymentDescriptorNode<RelationRo
                                         descriptor.getCMRFieldType());
 	}              
         return roleNode;
-    }
+    }        
 }

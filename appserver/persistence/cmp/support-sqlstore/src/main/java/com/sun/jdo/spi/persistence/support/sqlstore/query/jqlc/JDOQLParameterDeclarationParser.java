@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,12 @@
 
 package com.sun.jdo.spi.persistence.support.sqlstore.query.jqlc;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import antlr.ANTLRException;
 import antlr.collections.AST;
+import com.sun.enterprise.deployment.interfaces.QueryParser;
 import com.sun.jdo.api.persistence.support.JDOFatalInternalException;
-import org.glassfish.ejb.deployment.descriptor.QueryParser;
 import org.glassfish.persistence.common.I18NHelper;
 
 /** Helper class to support parsing of JDOQL parameter declarations.

@@ -40,55 +40,31 @@
 
 package com.sun.appserv.connectors.internal.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import org.glassfish.connectors.config.*;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import com.sun.enterprise.config.serverbeans.Resource;
+import org.jvnet.hk2.annotations.Service;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.jvnet.hk2.config.types.Property;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.runtime.connector.SunConnector;
+import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.logging.LogDomains;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ServerEnvironment;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.ResourcePool;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbInterceptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.ManagedBeanDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
-import com.sun.enterprise.deployment.runtime.connector.SunConnector;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.connectors.config.AdminObjectResource;
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.ConnectorResource;
-import org.glassfish.connectors.config.ConnectorService;
-import org.glassfish.connectors.config.ResourceAdapterConfig;
-import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
 
 @Service
 public class AppSpecificConnectorClassLoaderUtil {
@@ -166,12 +142,12 @@ public class AppSpecificConnectorClassLoaderUtil {
 
     private void processDescriptorForRAReferences(Application app, Descriptor descriptor, String moduleName) {
         if (descriptor instanceof JndiNameEnvironment) {
-            processDescriptorForRAReferences(app, moduleName, (JndiNameEnvironment) descriptor);
+            processDescriptorForRAReferences(app, moduleName, descriptor);
         }
         // ejb descriptors
         if (descriptor instanceof EjbBundleDescriptor) {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
-            Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
+            Set<EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 processDescriptorForRAReferences(app, moduleName, ejbDescriptor);
 
@@ -227,24 +203,28 @@ public class AppSpecificConnectorClassLoaderUtil {
     }
 
     private void processDescriptorForRAReferences(com.sun.enterprise.deployment.Application app,
-                                                  String moduleName, JndiNameEnvironment jndiEnv) {
-        // resource-ref
-        for (Object resourceRef : jndiEnv.getResourceReferenceDescriptors()) {
-            ResourceReferenceDescriptor resRefDesc = (ResourceReferenceDescriptor) resourceRef;
-            String jndiName = resRefDesc.getJndiName();
-            //ignore refs where jndi-name is not available
-            if(jndiName != null){
-                detectResourceInRA(app, moduleName, jndiName);
-            }
-        }
+                                                  String moduleName, Descriptor descriptor) {
+        if (descriptor instanceof JndiNameEnvironment) {
+            JndiNameEnvironment jndiEnv = (JndiNameEnvironment) descriptor;
 
-        // resource-env-ref
-        for (Object resourceEnvRef : jndiEnv.getResourceEnvReferenceDescriptors()) {
-            ResourceEnvReferenceDescriptor resourceEnvRefDesc = (ResourceEnvReferenceDescriptor) resourceEnvRef;
-            String jndiName = resourceEnvRefDesc.getJndiName();
-            //ignore refs where jndi-name is not available
-            if(jndiName != null){
-                detectResourceInRA(app, moduleName, jndiName);
+            // resource-ref
+            for (Object resourceRef : jndiEnv.getResourceReferenceDescriptors()) {
+                ResourceReferenceDescriptor resRefDesc = (ResourceReferenceDescriptor) resourceRef;
+                String jndiName = resRefDesc.getJndiName();
+                //ignore refs where jndi-name is not available
+                if(jndiName != null){
+                    detectResourceInRA(app, moduleName, jndiName);
+                }
+            }
+
+            // resource-env-ref
+            for (Object resourceEnvRef : jndiEnv.getResourceEnvReferenceDescriptors()) {
+                ResourceEnvReferenceDescriptor resourceEnvRefDesc = (ResourceEnvReferenceDescriptor) resourceEnvRef;
+                String jndiName = resourceEnvRefDesc.getJndiName();
+                //ignore refs where jndi-name is not available
+                if(jndiName != null){
+                    detectResourceInRA(app, moduleName, jndiName);
+                }
             }
         }
     }

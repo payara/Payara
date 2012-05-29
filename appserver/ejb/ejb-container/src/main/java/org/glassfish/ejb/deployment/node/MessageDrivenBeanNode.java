@@ -40,20 +40,14 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Node;
 
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
-import com.sun.enterprise.deployment.node.MethodNode;
-import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
+import java.util.Map;
 
 /**
  * This class handles message-driven related xml information
@@ -61,10 +55,10 @@ import com.sun.enterprise.deployment.xml.TagNames;
  * @author  Jerome Dochez
  * @version 
  */
-public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
+public class MessageDrivenBeanNode extends EjbNode {
 
     private EjbMessageBeanDescriptor descriptor;
-
+        
     public MessageDrivenBeanNode() {
         super();
         registerElementHandler(new XMLElement(EjbTagNames.ACTIVATION_CONFIG),
@@ -83,19 +77,27 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
 
         registerElementHandler(new XMLElement(EjbTagNames.TIMEOUT_METHOD), MethodNode.class, "setEjbTimeoutMethod");      
 
-        registerElementHandler(new XMLElement(TagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");
+        registerElementHandler(new XMLElement(EjbTagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");
     }
 
-    @Override
-    public EjbMessageBeanDescriptor getEjbDescriptor() {
-        if (descriptor == null) {
-            descriptor = new EjbMessageBeanDescriptor();
-            descriptor.setEjbBundleDescriptor((EjbBundleDescriptor) getParentNode().getDescriptor());
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */    
+    public EjbDescriptor getEjbDescriptor() {
+        
+        if (descriptor==null) {
+            descriptor = (EjbMessageBeanDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor.setEjbBundleDescriptor((EjbBundleDescriptor) getParentNode().getDescriptor());                        
         }
         return descriptor;
-    }
+    }        
 
-    @Override
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -115,10 +117,22 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         table.put(EjbTagNames.JMS_SUBSCRIPTION_DURABILITY, 
                   "setSubscriptionDurability");        
         return table;
-    }
-
-    @Override
-    public Node writeDescriptor(Node parent, String nodeName, EjbMessageBeanDescriptor ejbDesc) {
+    }    
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
+    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
+        if (! (descriptor instanceof EjbMessageBeanDescriptor)) {
+            throw new IllegalArgumentException(getClass() + " cannot handles descriptors of type " + descriptor.getClass());
+        }    
+        EjbMessageBeanDescriptor ejbDesc = (EjbMessageBeanDescriptor) descriptor;
+        
         Node ejbNode = super.writeDescriptor(parent, nodeName, descriptor);
         writeDisplayableComponentInfo(ejbNode, descriptor);
         writeCommonHeaderEjbDescriptor(ejbNode, ejbDesc);
@@ -187,10 +201,10 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         writeEntityManagerFactoryReferenceDescriptors(ejbNode, ejbDesc.getEntityManagerFactoryReferenceDescriptors().iterator());
 
         // post-construct
-        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.POST_CONSTRUCT, ejbDesc.getPostConstructDescriptors());
+        writePostConstructDescriptors(ejbNode, ejbDesc.getPostConstructDescriptors().iterator());
 
         // pre-destroy
-        writeLifeCycleCallbackDescriptors(ejbNode, TagNames.PRE_DESTROY, ejbDesc.getPreDestroyDescriptors());
+        writePreDestroyDescriptors(ejbNode, ejbDesc.getPreDestroyDescriptors().iterator());
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());

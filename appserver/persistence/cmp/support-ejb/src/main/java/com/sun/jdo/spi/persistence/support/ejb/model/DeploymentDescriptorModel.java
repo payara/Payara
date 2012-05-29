@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,27 +46,16 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.model;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.io.*;
+import java.util.*;
+import java.lang.reflect.*;
 
+import com.sun.enterprise.deployment.*;
 import com.sun.jdo.api.persistence.model.RuntimeModel;
-import com.sun.jdo.api.persistence.model.jdo.PersistenceFieldElement;
-import com.sun.jdo.api.persistence.model.jdo.RelationshipElement;
 import com.sun.jdo.spi.persistence.support.ejb.model.util.NameMapper;
+import com.sun.jdo.api.persistence.model.jdo.RelationshipElement;
+import com.sun.jdo.api.persistence.model.jdo.PersistenceFieldElement;
 import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
 
 /** This is a subclass of RuntimeModel which uses the deployment descriptor 
  * to augment the java metadata for a non-existent persistence-capable
@@ -790,7 +779,7 @@ public class DeploymentDescriptorModel extends RuntimeModel
 
 		if (descriptor != null)
 		{
-			PersistenceDescriptor persistenceDescriptor =
+			PersistenceDescriptor persistenceDescriptor = 
 				descriptor.getPersistenceDescriptor();
 
 			if (persistenceDescriptor != null)

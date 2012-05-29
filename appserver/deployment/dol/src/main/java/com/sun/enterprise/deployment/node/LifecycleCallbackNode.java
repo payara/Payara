@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,25 +40,27 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
+import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
-import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 
 /**
  * This node handles all information relative to injection-complete xml tag
  */
-public class LifecycleCallbackNode extends DeploymentDescriptorNode<LifecycleCallbackDescriptor> {
+public class LifecycleCallbackNode extends DeploymentDescriptorNode {
 
     private LifecycleCallbackDescriptor descriptor;
-
-    @Override
-    public LifecycleCallbackDescriptor getDescriptor() {
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */       
+    public Object getDescriptor() {
         
        if (descriptor==null) {
             descriptor = new LifecycleCallbackDescriptor();
@@ -78,23 +80,37 @@ public class LifecycleCallbackNode extends DeploymentDescriptorNode<LifecycleCal
             // available at this point
         }
         return descriptor;
-    }
-
-    @Override
+    }    
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
-        table.put(TagNames.LIFECYCLE_CALLBACK_CLASS, "setLifecycleCallbackClass");
-        table.put(TagNames.LIFECYCLE_CALLBACK_METHOD, "setLifecycleCallbackMethod");
+        table.put(TagNames.LIFECYCLE_CALLBACK_CLASS, 
+            "setLifecycleCallbackClass");
+        table.put(TagNames.LIFECYCLE_CALLBACK_METHOD, 
+            "setLifecycleCallbackMethod");
         return table;
-    }
-
-    @Override
+    }    
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, LifecycleCallbackDescriptor descriptor) {
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, TagNames.LIFECYCLE_CALLBACK_CLASS, 
-            descriptor.getLifecycleCallbackClass());
+            descriptor.getLifecycleCallbackClass());                        
         appendTextChild(myNode, TagNames.LIFECYCLE_CALLBACK_METHOD, 
-            descriptor.getLifecycleCallbackMethod());
+            descriptor.getLifecycleCallbackMethod());                        
         return myNode;
     }
 }

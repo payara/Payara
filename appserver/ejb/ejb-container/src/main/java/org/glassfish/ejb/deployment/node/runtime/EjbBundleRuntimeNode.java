@@ -40,10 +40,8 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.List;
-import java.util.Map;
-
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
@@ -52,11 +50,13 @@ import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.glassfish.deployment.common.SecurityRoleMapper;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
 import org.glassfish.ejb.deployment.node.EjbBundleNode;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * This node handles runtime deployment descriptors for ejb bundle
@@ -66,7 +66,8 @@ import org.w3c.dom.Node;
  */
 public class EjbBundleRuntimeNode extends
         RuntimeBundleNode<EjbBundleDescriptor> {
-
+    
+    /** Creates new EjbBundleRuntimeNode */
     public EjbBundleRuntimeNode(EjbBundleDescriptor descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
@@ -74,36 +75,42 @@ public class EjbBundleRuntimeNode extends
         registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING),
                 SecurityRoleMappingNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.EJBS),
-                EnterpriseBeansRuntimeNode.class);
+                EntrepriseBeansRuntimeNode.class);
     }
-
+    
+    /** Creates new EjbBundleRuntimeNode */
     public EjbBundleRuntimeNode() {
-        this(null);
-    }
-
-    @Override
+        this(null);    
+    }    
+    
+    /** 
+     * @return the DOCTYPE that should be written to the XML file
+     */
     public String getDocType() {
-        return DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID;
+	return DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID;
     }
-
-    @Override
+    
+    /**
+     * @return the SystemID of the XML file
+     */
     public String getSystemID() {
-        return DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID;
+	return DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID;
     }
 
     /**
      * @return NULL for all runtime nodes.
      */
-    @Override
     public List<String> getSystemIDs() {
         return null;
     }
-
-    @Override
+    
+    /**
+     * @return the XML tag associated with this XMLNode
+     */    
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.S1AS_EJB_RUNTIME_TAG);
-    }
-
+    }   
+    
    /**
     * register this node as a root node capable of loading entire DD files
     * 
@@ -122,14 +129,21 @@ public class EjbBundleRuntimeNode extends
            publicIDToDTD.put(DTDRegistry.SUN_EJBJAR_210beta_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_210beta_DTD_SYSTEM_ID);
        }           
        return RuntimeTagNames.S1AS_EJB_RUNTIME_TAG;
-   }
-
-    @Override
+   }    
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
     public EjbBundleDescriptor getDescriptor() {
         return descriptor;
-    }
+    }                
 
-    @Override
+   /**
+     * receives notification of the value for a particular tag
+     *
+     * @param element the xml element
+     * @param value it's associated value
+     */
     public void setElementValue(XMLElement element, String value) {
         if (element.getQName().equals(RuntimeTagNames.COMPATIBILITY)) {
             descriptor.setCompatibility(value);
@@ -143,7 +157,13 @@ public class EjbBundleRuntimeNode extends
         }
     }
 
-    @Override
+
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param newDescriptor the new descriptor
+     */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof SecurityRoleMapping) {
             SecurityRoleMapping roleMap = (SecurityRoleMapping)newDescriptor;
@@ -168,7 +188,13 @@ public class EjbBundleRuntimeNode extends
         }
     }
 
-    @Override
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param bundleDescriptor the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, EjbBundleDescriptor bundleDescriptor) {    
         Node ejbs = super.writeDescriptor(parent, bundleDescriptor);
 
@@ -180,7 +206,7 @@ public class EjbBundleRuntimeNode extends
         }
 	
 	    // entreprise-beans
-        EnterpriseBeansRuntimeNode ejbsNode = new EnterpriseBeansRuntimeNode();
+        EntrepriseBeansRuntimeNode ejbsNode = new EntrepriseBeansRuntimeNode();
         ejbsNode.writeDescriptor(ejbs, RuntimeTagNames.EJBS, bundleDescriptor);
 
         // compatibility

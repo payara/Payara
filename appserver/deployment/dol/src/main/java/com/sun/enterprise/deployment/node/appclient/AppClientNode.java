@@ -40,36 +40,22 @@
 
 package com.sun.enterprise.deployment.node.appclient;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.enterprise.deployment.node.AbstractBundleNode;
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
-import com.sun.enterprise.deployment.node.EjbReferenceNode;
-import com.sun.enterprise.deployment.node.EntityManagerFactoryReferenceNode;
-import com.sun.enterprise.deployment.node.EnvEntryNode;
-import com.sun.enterprise.deployment.node.JndiEnvRefNode;
-import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
-import com.sun.enterprise.deployment.node.MessageDestinationNode;
-import com.sun.enterprise.deployment.node.MessageDestinationRefNode;
-import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.ResourceRefNode;
-import com.sun.enterprise.deployment.node.SaxParserHandler;
-import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.node.runtime.AppClientRuntimeNode;
 import com.sun.enterprise.deployment.node.runtime.GFAppClientRuntimeNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ApplicationClientTagNames;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.Node;
+import org.glassfish.internal.api.Globals;
+
+import java.util.*;
 
 /**
  * This class is responsible for handling app clients
@@ -105,17 +91,18 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         systemIDs.add(SCHEMA_ID_15);
         return Collections.unmodifiableList(systemIDs);
     }
-
+    
+    /** Creates new AppClientNode */
     public AppClientNode() {
 	registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                                                              EnvEntryNode.class, "addEnvironmentProperty");     
-        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
-        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);     
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
         JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), 
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");   
 	    registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 
                                                             ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
@@ -137,7 +124,6 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
      * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
      * @return the doctype tag name
      */
-    @Override
     public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
@@ -151,8 +137,13 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         result.put(GFAppClientRuntimeNode.registerBundle(publicIDToDTD), GFAppClientRuntimeNode.class);
         return result;
     }
-
-    @Override
+    
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param newDescriptor the new descriptor
+     */    
     public void addDescriptor(Object  newDescriptor) {       
         if (newDescriptor instanceof EjbReference) {            
             DOLUtils.getDefaultLogger().fine("Adding ejb ref " + newDescriptor);
@@ -161,42 +152,54 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         } else {
             super.addDescriptor(newDescriptor);
         }
-    }
-
+    }      
+    
     @Override
     protected ApplicationClientDescriptor createDescriptor() {
         return new ApplicationClientDescriptor();
     }
-
-    @Override
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
-        table.put(ApplicationClientTagNames.CALLBACK_HANDLER, "setCallbackHandler");        
+	table.put(ApplicationClientTagNames.CALLBACK_HANDLER, "setCallbackHandler");        
         return table;
-    }
-
-    @Override
+    }    
+        
+    /**
+     * @return the XML tag associated with this XMLNode
+     */
     protected XMLElement getXMLRootTag() {
         return tag;
     }
 
-    @Override
+     /**
+     * @return the DOCTYPE of the XML file
+     */
     public String getDocType() {
         return null;
     }
-
-    @Override
+    
+    /**
+     * @return the SystemID of the XML file
+     */
     public String getSystemID() {
         return SCHEMA_ID;
     }
 
-    @Override
+    /**
+     * @return the list of SystemID of the XML schema supported
+     */
     public List<String> getSystemIDs() {
         return systemIDs;
     }
 
-    @Override
     public void setElementValue(XMLElement element, String value) {
         if (TagNames.MODULE_NAME.equals(element.getQName())) {
             getDescriptor().getModuleDescriptor().setModuleName(value);
@@ -205,7 +208,13 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         }
     }
 
-    @Override
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param appclientDesc the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, 
         ApplicationClientDescriptor appclientDesc) {
         Node appclientNode = super.writeDescriptor(parent, appclientDesc);      
@@ -232,10 +241,10 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         writeEntityManagerFactoryReferenceDescriptors(appclientNode, appclientDesc.getEntityManagerFactoryReferenceDescriptors().iterator());
 
         // post-construct
-        writeLifeCycleCallbackDescriptors(appclientNode, TagNames.POST_CONSTRUCT, appclientDesc.getPostConstructDescriptors());
+        writePostConstructDescriptors(appclientNode, appclientDesc.getPostConstructDescriptors().iterator());
         
         // pre-destroy
-        writeLifeCycleCallbackDescriptors(appclientNode, TagNames.PRE_DESTROY, appclientDesc.getPreDestroyDescriptors());
+        writePreDestroyDescriptors(appclientNode, appclientDesc.getPreDestroyDescriptors().iterator());
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(appclientNode, appclientDesc.getDataSourceDefinitionDescriptors().iterator());
@@ -249,8 +258,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
 	return appclientNode;
               
     }
-
-    @Override
+    /**
+     * @return the default spec version level this node complies to
+     */
     public String getSpecVersion() {
         return SPEC_VERSION;
     }

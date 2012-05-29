@@ -40,52 +40,74 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Map;
-
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.DefaultResourcePrincipalNode;
+import com.sun.enterprise.deployment.runtime.MdbConnectionFactoryDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.runtime.MdbConnectionFactoryDescriptor;
 import org.w3c.dom.Node;
 
-public class MDBConnectionFactoryNode extends DeploymentDescriptorNode<MdbConnectionFactoryDescriptor> {
+import java.util.Map;
 
-    private MdbConnectionFactoryDescriptor descriptor;
-
+public class MDBConnectionFactoryNode extends DeploymentDescriptorNode {
+    
+    protected MdbConnectionFactoryDescriptor descriptor;
+    
     public MDBConnectionFactoryNode() {
-        registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), DefaultResourcePrincipalNode.class);
+	registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), DefaultResourcePrincipalNode.class);
     }
-
-    @Override
-    public MdbConnectionFactoryDescriptor getDescriptor() {
-        if (descriptor==null) descriptor = new MdbConnectionFactoryDescriptor();
-        return descriptor;
+    
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
+	if (descriptor==null) {
+	    descriptor = new MdbConnectionFactoryDescriptor();
+	} 
+	return descriptor;
     }
-
-    @Override
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {  
 	Map dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
 	return dispatchTable;
     }
-
-    @Override
+    
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param descriptor the new descriptor
+     */
     public void addDescriptor(Object newDescriptor) {
 	if (newDescriptor instanceof ResourcePrincipal) {
 	    descriptor.setDefaultResourcePrincipal((ResourcePrincipal) newDescriptor);
 	} else super.addDescriptor(newDescriptor);
     }
-
-    @Override
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the descriptor
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, MdbConnectionFactoryDescriptor mcf) {    
-        Node mcfNode = super.writeDescriptor(parent, nodeName, mcf);
-        appendTextChild(mcfNode, RuntimeTagNames.JNDI_NAME, mcf.getJndiName());
+	Node mcfNode = super.writeDescriptor(parent, nodeName, mcf);
+	appendTextChild(mcfNode, RuntimeTagNames.JNDI_NAME, mcf.getJndiName());
         if (mcf.getDefaultResourcePrincipal()!=null) {
             DefaultResourcePrincipalNode subNode = new DefaultResourcePrincipalNode();
             subNode.writeDescriptor(mcfNode, RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL, mcf.getDefaultResourcePrincipal());
         }
-        return mcfNode;
+	return mcfNode;
     }
 }

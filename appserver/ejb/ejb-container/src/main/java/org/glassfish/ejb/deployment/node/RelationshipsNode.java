@@ -40,17 +40,16 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
-import org.w3c.dom.Node;
-
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.RelationshipDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.w3c.dom.Node;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class is responsible for handling the ejb-relationships xml element 
@@ -63,34 +62,57 @@ public class RelationshipsNode extends DeploymentDescriptorNode {
     public RelationshipsNode() {
         super();
         registerElementHandler(new XMLElement(EjbTagNames.EJB_RELATION),
-                                                            EjbRelationNode.class);
+                                                            EjbRelationNode.class);                   
     }
-
-    @Override
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
     public Object getDescriptor() {
         return getParentNode().getDescriptor();
-    }
-
-    @Override
+    }        
+    
+   
+    /** 
+     * receives notification of the end of an XML element by the Parser
+     * 
+     * @param element the xml tag identification
+     * @return true if this node is done processing the XML sub tree
+     */
     public boolean endElement(XMLElement element) {
         return element.equals(getXMLRootTag());
-    }
-
-    @Override
+    }    
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table =  new HashMap();
         table.put(EjbTagNames.DESCRIPTION, "setRelationshipsDescription");
         return table;
-    }
-
+    }    
+    
+    /**
+     * write the relationships descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, EjbBundleDescriptor descriptor) {
         Node relationshipsNode = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(relationshipsNode, TagNames.DESCRIPTION, descriptor.getRelationshipsDescription()); 
+        appendTextChild(relationshipsNode, EjbTagNames.DESCRIPTION, descriptor.getRelationshipsDescription()); 
         EjbRelationNode subNode = new EjbRelationNode();
-        for (RelationshipDescriptor rd : descriptor.getRelationships()) {
+        for (Iterator e=descriptor.getRelationships().iterator();e.hasNext();) {
+            RelationshipDescriptor rd = (RelationshipDescriptor) e.next();
             subNode.writeDescriptor(relationshipsNode, EjbTagNames.EJB_RELATION, rd);
         }
+        
         return relationshipsNode;
     }
 }

@@ -40,19 +40,21 @@
 
 package com.sun.ejb.codegen;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.ReflectPermission;
-import java.security.AccessController;
-import java.security.Permission;
-import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
+import org.objectweb.asm.*;
+import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import java.lang.reflect.Constructor;
+
+import java.io.Serializable;
+
+import com.sun.enterprise.deployment.util.TypeUtil;
+
+import java.security.ProtectionDomain ;
+import java.security.PrivilegedAction ;
+import java.security.AccessController ;
+import java.security.Permission ;
+import java.lang.reflect.ReflectPermission ;
 
 public class AsmSerializableBeanGenerator
     implements Opcodes {
@@ -220,6 +222,12 @@ public class AsmSerializableBeanGenerator
 
     }
 
+      // Name that Java uses for constructor methods
+    private static final String CONSTRUCTOR_METHOD_NAME = "<init>" ;
+
+    // Name that Java uses for a classes static initializer method
+    private static final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>" ;
+    
      // A Method for the protected ClassLoader.defineClass method, which we access
     // using reflection.  This requires the supressAccessChecks permission.
     private static final java.lang.reflect.Method defineClassMethod = AccessController.doPrivileged(

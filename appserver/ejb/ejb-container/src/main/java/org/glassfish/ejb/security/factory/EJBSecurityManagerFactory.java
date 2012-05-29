@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,25 +46,25 @@
 
 package org.glassfish.ejb.security.factory;
 
+import com.sun.enterprise.security.factory.SecurityManagerFactory;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.logging.LogDomains;
+import org.glassfish.ejb.security.application.EJBSecurityManager;
+//TODOL : this class needs to go, after prelude
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
 import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
-import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Singleton;
-
-import com.sun.enterprise.security.audit.AuditManager;
-import com.sun.enterprise.security.factory.SecurityManagerFactory;
-import com.sun.logging.LogDomains;
 
 /**
  * EJB Security Manager Factory Implementation

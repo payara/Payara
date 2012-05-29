@@ -40,39 +40,49 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
+import com.sun.enterprise.deployment.RelationRoleDescriptor;
+import com.sun.enterprise.deployment.RelationshipDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.XMLElement;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  *
  * @author  dochez
  * @version 
  */
-public class EjbRelationNode extends DeploymentDescriptorNode<RelationshipDescriptor> {
+public class EjbRelationNode extends DeploymentDescriptorNode {
 
-    private RelationRoleDescriptor source;
-    private RelationRoleDescriptor sink;
-    private RelationshipDescriptor descriptor;
-
+    RelationRoleDescriptor source = null;
+    RelationRoleDescriptor sink = null;
+    RelationshipDescriptor descriptor = null; 
+    
     public EjbRelationNode() {
        super();
        registerElementHandler(new XMLElement(EjbTagNames.EJB_RELATIONSHIP_ROLE),
                                                             EjbRelationshipRoleNode.class);                   
     }
-
-    @Override
-    public RelationshipDescriptor getDescriptor() {
-        if (descriptor==null) descriptor = new RelationshipDescriptor();
+        
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
+        if (descriptor==null) {
+            descriptor = (RelationshipDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+        } 
         return descriptor;
-    }
-
-    @Override
+    }        
+    
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param descriptor the new descriptor
+     */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof RelationRoleDescriptor) {
             if (source==null) {
@@ -94,16 +104,28 @@ public class EjbRelationNode extends DeploymentDescriptorNode<RelationshipDescri
             }
         }
     }
-
-    @Override
+        
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.EJB_RELATION_NAME, "setName");
         return table;
-    }
+    }    
 
-    @Override
+   /**
+     * write the relationships descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element of this xml fragment      
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, RelationshipDescriptor descriptor) {
         Node ejbRelationNode = super.writeDescriptor(parent, nodeName, descriptor);        
         writeLocalizedDescriptions(ejbRelationNode, descriptor);

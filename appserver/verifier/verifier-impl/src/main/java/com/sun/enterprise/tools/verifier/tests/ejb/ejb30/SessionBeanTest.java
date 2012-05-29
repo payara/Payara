@@ -40,12 +40,11 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.ejb30;
 
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
 
 /**
  * Base class for EJB 3.0 session bean tests.

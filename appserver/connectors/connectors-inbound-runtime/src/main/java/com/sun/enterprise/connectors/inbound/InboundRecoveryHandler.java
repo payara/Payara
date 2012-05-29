@@ -40,40 +40,35 @@
 
 package com.sun.enterprise.connectors.inbound;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
+import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
+import com.sun.enterprise.connectors.util.RARUtils;
+import com.sun.enterprise.connectors.util.SetMethodAction;
+import com.sun.enterprise.connectors.ConnectorRegistry;
+import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.logging.LogDomains;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jvnet.hk2.annotations.Service;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ApplicationInfo;
+
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.resource.spi.ActivationSpec;
 import javax.transaction.xa.XAResource;
-
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.connectors.ConnectorRegistry;
-import com.sun.enterprise.connectors.service.ConnectorAdminServiceUtils;
-import com.sun.enterprise.connectors.util.RARUtils;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.enterprise.connectors.util.SetMethodAction;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
-import com.sun.logging.LogDomains;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.annotations.Service;
 
 
 /**
@@ -265,7 +260,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
                 for (BundleDescriptor descriptor : descriptors) {
                     if (descriptor instanceof EjbBundleDescriptor) {
                         EjbBundleDescriptor ejbBundleDescriptor = (EjbBundleDescriptor) descriptor;
-                        Set<? extends EjbDescriptor> ejbDescriptorsSet = ejbBundleDescriptor.getEjbs();
+                        Set<EjbDescriptor> ejbDescriptorsSet = ejbBundleDescriptor.getEjbs();
                         for (EjbDescriptor ejbDescriptor : ejbDescriptorsSet) {
                             ejbDescriptors.add(ejbDescriptor);
                         }

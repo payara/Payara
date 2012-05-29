@@ -40,16 +40,14 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp;
 
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.Verifier;
-import com.sun.enterprise.tools.verifier.VerifierTestContext;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import java.lang.ClassLoader;
+import com.sun.enterprise.tools.verifier.tests.*;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
 
 /**  
  * Entity Bean's with container managed persistence ejbCreate(...) and 

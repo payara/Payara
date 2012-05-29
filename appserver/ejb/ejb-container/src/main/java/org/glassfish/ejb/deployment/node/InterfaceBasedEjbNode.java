@@ -40,14 +40,15 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Map;
-
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class is responsible for reading/writing all information
@@ -56,15 +57,20 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public abstract class InterfaceBasedEjbNode<S extends EjbDescriptor> extends EjbNode<S> {
+public abstract class InterfaceBasedEjbNode extends EjbNode {
 
    public InterfaceBasedEjbNode() {
        super();
        // register sub XMLNodes
-       registerElementHandler(new XMLElement(TagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");
-    }
-
-    @Override
+       registerElementHandler(new XMLElement(EjbTagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");       
+   }   
+   
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
@@ -77,8 +83,14 @@ public abstract class InterfaceBasedEjbNode<S extends EjbDescriptor> extends Ejb
         table.put(EjbTagNames.SERVICE_ENDPOINT_INTERFACE,
                   "setWebServiceEndpointInterfaceName");
         return table;
-    }
-
+    }    
+    
+    /**
+     * write the common descriptor info to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param the descriptor to write
+     */    
     @Override
     protected void writeCommonHeaderEjbDescriptor(Node ejbNode, EjbDescriptor descriptor) {    
         super.writeCommonHeaderEjbDescriptor(ejbNode, descriptor);
@@ -101,6 +113,7 @@ public abstract class InterfaceBasedEjbNode<S extends EjbDescriptor> extends Ejb
 
         appendTextChild(ejbNode, EjbTagNames.SERVICE_ENDPOINT_INTERFACE,
                         descriptor.getWebServiceEndpointInterfaceName());
-        appendTextChild(ejbNode, EjbTagNames.EJB_CLASS, descriptor.getEjbClassName());
+        appendTextChild(ejbNode, EjbTagNames.EJB_CLASS, 
+                        descriptor.getEjbClassName());              
     }
 }

@@ -40,36 +40,30 @@
 
 package org.glassfish.ejb.deployment;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
+import java.lang.reflect.*;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.util.BeanMethodCalculator;
 import com.sun.logging.LogDomains;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  * Utility class to calculate the list of methods required  to have transaction
  * attributes
  * 
  * @author  Jerome Dochez
+ * @version 
  */
-final public class BeanMethodCalculatorImpl {
+@Service
+@Scoped(PerLookup.class)
+public class BeanMethodCalculatorImpl implements BeanMethodCalculator {
     
     // TODO - change logger if/when other EJB deployment classes are changed
-    static final protected Logger _logger = LogDomains.getLogger(BeanMethodCalculatorImpl.class, LogDomains.DPL_LOGGER);
+    static final protected Logger _logger = LogDomains.getLogger(BeanMethodCalculator.class, LogDomains.DPL_LOGGER);
 
     public Vector getPossibleCmpCmrFields(ClassLoader cl,
                                                  String className)
@@ -102,7 +96,7 @@ final public class BeanMethodCalculatorImpl {
         return fieldDescriptors;
     }
       
-    public Vector getMethodsFor(com.sun.enterprise.deployment.EjbDescriptor ejbDescriptor, ClassLoader classLoader)
+    public Vector getMethodsFor(EjbDescriptor ejbDescriptor, ClassLoader classLoader)
             throws ClassNotFoundException
     {
         Vector methods = new Vector();
@@ -149,10 +143,9 @@ final public class BeanMethodCalculatorImpl {
      * @return a collection of MethodDescriptor for all the methods of my 
      * ejb which are elligible to have a particular transaction setting.
      */
-    public Collection getTransactionalMethodsFor(com.sun.enterprise.deployment.EjbDescriptor desc, ClassLoader loader)
+    public Collection getTransactionalMethodsFor(EjbDescriptor ejbDescriptor, ClassLoader loader)
         throws ClassNotFoundException, NoSuchMethodException
     {
-        EjbDescriptor ejbDescriptor = (EjbDescriptor) desc;
         // only set if desc is a stateful session bean.  NOTE that 
         // !statefulSessionBean does not imply stateless session bean
         boolean statefulSessionBean = false;

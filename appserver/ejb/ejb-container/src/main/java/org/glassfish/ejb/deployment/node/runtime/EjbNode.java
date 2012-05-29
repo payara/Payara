@@ -40,37 +40,21 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.Map;
-import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.EjbRefNode;
-import com.sun.enterprise.deployment.node.runtime.MessageDestinationRefNode;
-import com.sun.enterprise.deployment.node.runtime.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.runtime.ResourceRefNode;
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.node.runtime.ServiceRefNode;
-import com.sun.enterprise.deployment.node.runtime.WebServiceEndpointRuntimeNode;
-import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.deployment.node.runtime.*;
+import com.sun.enterprise.deployment.runtime.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.FlushAtEndOfMethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
-import org.glassfish.ejb.deployment.descriptor.runtime.MdbConnectionFactoryDescriptor;
+import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * This node handles all runtime information for ejbs
@@ -78,26 +62,27 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
+public class EjbNode extends DeploymentDescriptorNode {
 
     private EjbDescriptor descriptor;
     private String availEnabled;
-
+    
+    /** Creates new EjbNode */
     public EjbNode() {
         super();
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_REFERENCE), 
                                ResourceRefNode.class);
-        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), 
+        registerElementHandler(new XMLElement(RuntimeTagNames.EJB_REFERENCE), 
                                EjbRefNode.class);             
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 
+        registerElementHandler(new XMLElement(RuntimeTagNames.RESOURCE_ENV_REFERENCE), 
                                ResourceEnvRefNode.class);
-        registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), 
+        registerElementHandler(new XMLElement(RuntimeTagNames.MESSAGE_DESTINATION_REFERENCE), 
                                MessageDestinationRefNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.CMP), 
                                CmpNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.MDB_CONNECTION_FACTORY), 
+	registerElementHandler(new XMLElement(RuntimeTagNames.MDB_CONNECTION_FACTORY), 
 				MDBConnectionFactoryNode.class);         
         registerElementHandler(new XMLElement(RuntimeTagNames.IOR_CONFIG), 
                                IORConfigurationNode.class,"addIORConfigurationDescriptor");
@@ -109,22 +94,23 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                 		MDBResourceAdapterNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.WEB_SERVICE_ENDPOINT), 
                                WebServiceEndpointRuntimeNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.FLUSH_AT_END_OF_METHOD), FlushAtEndOfMethodNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.CHECKPOINT_AT_END_OF_METHOD), CheckpointAtEndOfMethodNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.FLUSH_AT_END_OF_METHOD), FlushAtEndOfMethodNode.class);   	   			       
+        registerElementHandler(new XMLElement(RuntimeTagNames.CHECKPOINT_AT_END_OF_METHOD), CheckpointAtEndOfMethodNode.class);   	   			       
     }
-
-    @Override
-    public EjbDescriptor getDescriptor() {
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
         return descriptor;
     }
-
+    
     /**
      * receives notification of the value for a particular tag
      * 
      * @param element the xml element
      * @param value it's associated value
      */
-    @Override
     public void setElementValue(XMLElement element, String value) {        
         if (RuntimeTagNames.EJB_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
@@ -138,7 +124,7 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                             new Object[]{element , value}); 
             } else {
                 if (availEnabled != null) {
-                    descriptor.getIASEjbExtraDescriptors().setAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED, availEnabled);
+                    descriptor.getIASEjbExtraDescriptors().setAttributeValue(descriptor.getIASEjbExtraDescriptors().AVAILABILITY_ENABLED, availEnabled);
                 }
             }
             return;
@@ -186,7 +172,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */    
-    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         
@@ -219,7 +204,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      *
      * @param descriptor the new descriptor
      */
-    @Override
     public void addDescriptor(Object newDescriptor) {
 	if (newDescriptor instanceof MdbConnectionFactoryDescriptor) {
 	    descriptor.getIASEjbExtraDescriptors().setMdbConnectionFactory(
@@ -249,13 +233,12 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
-    @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbDescriptor ejbDescriptor) {    
         Element ejbNode = (Element)super.writeDescriptor(parent, nodeName, ejbDescriptor);
         appendTextChild(ejbNode, RuntimeTagNames.EJB_NAME, ejbDescriptor.getName());
         appendTextChild(ejbNode, RuntimeTagNames.JNDI_NAME, ejbDescriptor.getJndiName());
 	
-        RuntimeDescriptorNode.writeCommonComponentInfo(ejbNode, ejbDescriptor);
+        RuntimeDescriptorNode.writeCommonComponentInfo(ejbNode, (Descriptor) ejbDescriptor);
 
 	appendTextChild(ejbNode, RuntimeTagNames.PASS_BY_REFERENCE, 
 		String.valueOf(ejbDescriptor.getIASEjbExtraDescriptors().getPassByReference()));
@@ -295,8 +278,9 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 	
 	// ior-configuration
         IORConfigurationNode iorNode = new IORConfigurationNode();
-        for (EjbIORConfigurationDescriptor iorConf : ejbDescriptor.getIORConfigurationDescriptors()) {
-            iorNode.writeDescriptor(ejbNode,RuntimeTagNames.IOR_CONFIG, iorConf);
+        for (Iterator iorIterator = ejbDescriptor.getIORConfigurationDescriptors().iterator();
+            iorIterator.hasNext();) {
+                iorNode.writeDescriptor(ejbNode,RuntimeTagNames.IOR_CONFIG, (EjbIORConfigurationDescriptor) iorIterator.next());
         }               
         
 	appendTextChild(ejbNode, RuntimeTagNames.IS_READ_ONLY_BEAN, 
@@ -359,16 +343,16 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
             appendTextChild(ejbNode, RuntimeTagNames.PER_REQUEST_LOAD_BALANCING, String.valueOf(ejbDescriptor.getIASEjbExtraDescriptors().getPerRequestLoadBalancing()));
         }
         // availability-enabled
-        setAttribute(ejbNode, RuntimeTagNames.AVAILABILITY_ENABLED, ejbDescriptor.getIASEjbExtraDescriptors().getAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED));
+        setAttribute(ejbNode, RuntimeTagNames.AVAILABILITY_ENABLED, (String) ejbDescriptor.getIASEjbExtraDescriptors().getAttributeValue(ejbDescriptor.getIASEjbExtraDescriptors().AVAILABILITY_ENABLED));
 
         return ejbNode;
     }
 
     /**
-     * write all the classes info generated at deployment 
-     * @param parent node for the information
-     * @param descriptor the descriptor containing the generated info
-     */
+   * write all the classes info generated at deployment 
+   * @param parent node for the information
+   * @param descriptor the descriptor containing the generated info
+   */
     private void writeGenClasses(Node parent, EjbDescriptor ejbDescriptor) {
         // common to all ejbs but mdb...
         Node genClasses = appendChild(parent, RuntimeTagNames.GEN_CLASSES);
@@ -384,5 +368,8 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
         
         appendTextChild(genClasses, RuntimeTagNames.LOCAL_HOME_IMPL,
             ejbDescriptor.getLocalHomeImplClassName());
+
+
+
     }    
 }

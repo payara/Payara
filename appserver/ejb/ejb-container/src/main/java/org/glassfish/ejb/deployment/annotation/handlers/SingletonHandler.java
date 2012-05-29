@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,21 @@
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-
 import org.glassfish.apf.AnnotationHandlerFor;
+import org.jvnet.hk2.annotations.Service;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.util.logging.Level;
+
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.DependsOn;
 
 
 /**

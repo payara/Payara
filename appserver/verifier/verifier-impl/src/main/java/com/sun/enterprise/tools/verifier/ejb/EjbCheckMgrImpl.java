@@ -40,32 +40,22 @@
 
 package com.sun.enterprise.tools.verifier.ejb;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.tools.verifier.CheckMgr;
-import com.sun.enterprise.tools.verifier.JarCheck;
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.TestInformation;
-import com.sun.enterprise.tools.verifier.VerifierFrameworkContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.Set;
+
+import com.sun.enterprise.deployment.*;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.util.EjbBundleValidator;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.dd.ParseDD;
 import com.sun.enterprise.tools.verifier.wsclient.WebServiceClientCheckMgrImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.jdo.spi.persistence.support.ejb.ejbc.JDOCodeGenerator;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
-import org.glassfish.ejb.deployment.util.EjbBundleValidator;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Ejb harness
@@ -225,15 +215,15 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
      */ 
     protected boolean isApplicable(TestInformation test, Descriptor descriptor) {
         String testName = test.getClassName();
-        if(descriptor instanceof EjbSessionDescriptor &&
+        if(descriptor instanceof EjbSessionDescriptor && 
                 (testName.indexOf("tests.ejb.entity")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.messagebean")>=0)) // NOI18N
             return false;
-        if(descriptor instanceof EjbEntityDescriptor &&
+        if(descriptor instanceof EjbEntityDescriptor && 
                 (testName.indexOf("tests.ejb.session")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.messagebean")>=0)) // NOI18N
             return false;
-        if(descriptor instanceof EjbMessageBeanDescriptor &&
+        if(descriptor instanceof EjbMessageBeanDescriptor && 
                 (testName.indexOf("tests.ejb.session")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.entity")>=0)) // NOI18N
             return false;

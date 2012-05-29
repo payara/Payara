@@ -40,18 +40,22 @@
 
 package org.glassfish.ejb.deployment.node;
 
+import com.sun.enterprise.deployment.TimeoutValueDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+
+
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.w3c.dom.Node;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.XMLElement;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.TimeoutValueDescriptor;
-import org.w3c.dom.Node;
+public class TimeoutValueNode extends DeploymentDescriptorNode {
 
-public class TimeoutValueNode extends DeploymentDescriptorNode<TimeoutValueDescriptor> {
+    TimeoutValueDescriptor descriptor = null;
 
     private static final Map<String, TimeUnit> elementToTimeUnit;
     private static final Map<TimeUnit, String> timeUnitToElement;
@@ -73,16 +77,25 @@ public class TimeoutValueNode extends DeploymentDescriptorNode<TimeoutValueDescr
         }
     }
 
-    private TimeoutValueDescriptor descriptor = null;
-
-    @Override
-    public TimeoutValueDescriptor getDescriptor() {
-        if (descriptor == null) descriptor = new TimeoutValueDescriptor();
+    /**
+     * @return the Descriptor subclass that was populated  by reading
+     * the source XML file
+     */
+    public Object getDescriptor() {
+        if (descriptor == null) {
+            descriptor = (TimeoutValueDescriptor) new TimeoutValueDescriptor();
+        }
         return descriptor;
     }
 
-    @Override
+    /**
+     * receives notiification of the value for a particular tag
+     *
+     * @param element the xml element
+     * @param value it's associated value
+     */
     public void setElementValue(XMLElement element, String value) {
+
         if (EjbTagNames.TIMEOUT_VALUE.equals(element.getQName())) {
             descriptor.setValue(new Long(value));
         } else if(EjbTagNames.TIMEOUT_UNIT.equals(element.getQName())) {
@@ -91,13 +104,29 @@ public class TimeoutValueNode extends DeploymentDescriptorNode<TimeoutValueDescr
             super.setElementValue(element, value);
         }
     }
+        
+   /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the root element of this xml fragment
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
+    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
+        if (! (descriptor instanceof TimeoutValueDescriptor)) {
+            throw new IllegalArgumentException(getClass() + " cannot handles descriptors of type " + descriptor.getClass());
+        }
+        TimeoutValueDescriptor desc = (TimeoutValueDescriptor) descriptor;
 
-    @Override
-    public Node writeDescriptor(Node parent, String nodeName, TimeoutValueDescriptor desc) {
         Node timeoutNode = super.writeDescriptor(parent, nodeName, descriptor);
+
+
         appendTextChild(timeoutNode, EjbTagNames.TIMEOUT_VALUE, Long.toString(desc.getValue()));
         appendTextChild(timeoutNode, EjbTagNames.TIMEOUT_UNIT, timeUnitToElement.get(desc.getUnit()));
+
         return timeoutNode;     
      }
+
 
 }

@@ -40,8 +40,25 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.ArrayList;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRuntimeNode;
+import com.sun.enterprise.deployment.node.runtime.application.gf.GFApplicationRuntimeNode;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.Collection;
+import org.glassfish.deployment.common.ModuleDescriptor;
+
+import com.sun.enterprise.deployment.xml.ApplicationTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.w3c.dom.Node;
+import org.glassfish.internal.api.Globals;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,21 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.application.gf.GFApplicationRuntimeNode;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.ApplicationTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.w3c.dom.Node;
 
 
 /**
@@ -153,14 +155,14 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         registerElementHandler(new XMLElement(ApplicationTagNames.MODULE), ModuleNode.class, "addModule");    
         registerElementHandler(new XMLElement(ApplicationTagNames.ROLE), SecurityRoleNode.class, "addAppRole");            
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvEntryNode.class, "addEnvironmentProperty");
-        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);
-        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);
+        registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
         JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF); 
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
 
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE),
+        registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE),
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
                                                             ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");

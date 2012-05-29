@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,17 +46,10 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
+import java.util.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
-import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
+import com.sun.enterprise.deployment.*;
 
 /** This is a helper class which extracts the information needed for method
  * code generation of the concrete bean class.
@@ -203,7 +196,7 @@ abstract public class AbstractMethodHelper
 	 */
 	protected QueryDescriptor getQueryDescriptor (Method method)
 	{
-		PersistenceDescriptor persistenceDescriptor =
+		PersistenceDescriptor persistenceDescriptor = 
 			getDescriptor().getPersistenceDescriptor();
 		return persistenceDescriptor.getQueryFor(method);
 	}

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,14 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.elements;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import java.util.*;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.tools.verifier.tests.*;
 
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.*;
 
 /** 
  * The method-intf element must be one of the following "Remote" or "Home" or "LocalHome" or "Local".
@@ -75,7 +69,7 @@ public class EjbMethodIntfElement extends EjbTest implements EjbCheck {
 
 
         // method-intf don't make sense for messagedriven bean
-        if (descriptor instanceof EjbMessageBeanDescriptor) {
+        if (descriptor instanceof EjbMessageBeanDescriptor) {   
 	    result.addNaDetails(smh.getLocalString
 				  ("tests.componentNameConstructor",
 				   "For [ {0} ]",

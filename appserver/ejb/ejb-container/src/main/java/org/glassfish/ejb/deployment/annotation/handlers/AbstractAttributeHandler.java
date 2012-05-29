@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,23 @@
 
 package org.glassfish.ejb.deployment.annotation.handlers;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.annotation.context.ComponentContext;
-import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
-import com.sun.enterprise.deployment.annotation.context.EjbsContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import com.sun.enterprise.deployment.annotation.handlers.*;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.annotation.context.*;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.reflect.AnnotatedElement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * This is an abstract class encapsulate generic behaviour of annotation

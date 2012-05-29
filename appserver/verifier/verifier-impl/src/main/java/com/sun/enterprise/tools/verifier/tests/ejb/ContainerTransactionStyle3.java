@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,20 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.sun.enterprise.deployment.*;
+import java.lang.ClassLoader;
+import java.util.*;
+import java.lang.reflect.*;
+import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.tools.verifier.tests.*;
 
 /** 
  * ContainerTransaction Style 3 - Each container transaction element consists 
@@ -119,7 +111,7 @@ public class ContainerTransactionStyle3 extends EjbTest implements EjbCheck {
           this.descriptor = descriptor;
           
           if (!(descriptor instanceof EjbSessionDescriptor) &&
-                  !(descriptor instanceof EjbEntityDescriptor)) {
+                  !(descriptor instanceof EjbEntityDescriptor)) { 
               result.notApplicable(smh.getLocalString
                                     ("com.sun.enterprise.tools.verifier.tests.ejb.homeintf.HomeMethodTest.notApplicable1",
                                     "Test apply only to session or entity beans."));

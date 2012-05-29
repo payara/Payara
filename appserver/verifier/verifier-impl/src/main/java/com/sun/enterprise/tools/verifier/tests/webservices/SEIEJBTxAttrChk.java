@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,11 @@
 
 package com.sun.enterprise.tools.verifier.tests.webservices;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-
-import java.util.Collection;
-import java.util.Iterator;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.tools.verifier.*;
+import java.util.*;
+import com.sun.enterprise.tools.verifier.tests.*;
+import java.lang.reflect.*;
 
 /* 
  *   @class.setup_props: ; 
@@ -77,7 +73,7 @@ public class SEIEJBTxAttrChk extends WSTest implements WSCheck {
 
         if (wsdescriptor.implementedByEjbComponent()) {
 
-          EjbDescriptor descriptor = (EjbDescriptor) wsdescriptor.getEjbComponentImpl();
+          EjbDescriptor descriptor = wsdescriptor.getEjbComponentImpl();
 
 	  try  {
              ContainerTransaction ctx = descriptor.getContainerTransaction();

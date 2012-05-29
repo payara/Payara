@@ -42,21 +42,20 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import javax.ejb.MessageDriven;
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Stateless;
 
+import java.util.logging.Level;
+
+import javax.ejb.*;
+
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.ScheduledTimerDescriptor;
+
+import org.glassfish.apf.*;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import org.glassfish.apf.AnnotationHandlerFor;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import org.glassfish.ejb.deployment.annotation.handlers.AbstractAttributeHandler;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -83,7 +82,7 @@ public class ScheduleHandler extends AbstractAttributeHandler {
             throws AnnotationProcessorException {
 
         for (EjbContext ejbContext : ejbContexts) {
-            EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
+            EjbDescriptor ejbDesc = ejbContext.getDescriptor();
 
             if (ElementType.METHOD.equals(ainfo.getElementType())) {
                 Method annMethod = (Method) ainfo.getAnnotatedElement();

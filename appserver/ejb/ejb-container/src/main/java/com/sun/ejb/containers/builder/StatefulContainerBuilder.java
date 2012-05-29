@@ -43,31 +43,37 @@ package com.sun.ejb.containers.builder;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.logging.Level;
 
 import com.sun.appserv.util.cache.CacheListener;
+
 import com.sun.ejb.base.container.util.CacheProperties;
+
 import com.sun.ejb.base.sfsb.util.CheckpointPolicyImpl;
-import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.ejb.base.sfsb.util.ScrambledKeyGenerator;
 import com.sun.ejb.base.sfsb.util.SimpleKeyGenerator;
-import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
+
 import com.sun.ejb.containers.StatefulSessionContainer;
+
+import com.sun.ejb.containers.BaseContainer;
+
 import com.sun.ejb.containers.util.cache.FIFOSessionCache;
 import com.sun.ejb.containers.util.cache.LruSessionCache;
 import com.sun.ejb.containers.util.cache.NRUSessionCache;
 import com.sun.ejb.containers.util.cache.UnBoundedSessionCache;
+
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.deployment.EjbDescriptor;
+
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
-import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import org.glassfish.api.admin.ServerEnvironment;
+
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbContainerAvailability;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.ha.store.api.BackingStore;
@@ -75,9 +81,11 @@ import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
 import org.glassfish.ha.store.util.SimpleMetadata;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Optional;
+import javax.inject.Named;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 

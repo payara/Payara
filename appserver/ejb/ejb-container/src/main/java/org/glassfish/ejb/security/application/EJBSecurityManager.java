@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,66 +40,54 @@
 
 package org.glassfish.ejb.security.application;
 
-import java.lang.reflect.Method;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.CodeSource;
-import java.security.Permission;
-import java.security.Permissions;
-import java.security.Policy;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import java.lang.reflect.Method;
+import java.util.Collections;
 import javax.security.auth.Subject;
 import javax.security.auth.SubjectDomainCombiner;
 import javax.security.jacc.EJBMethodPermission;
 import javax.security.jacc.EJBRoleRefPermission;
-import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyConfigurationFactory;
+import javax.security.jacc.PolicyConfiguration;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationException;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.glassfish.internal.api.Globals;
-
-import com.sun.ejb.EjbInvocation;
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.deployment.RoleReference;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityManager;
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.security.ee.SecurityUtil;
+import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import com.sun.enterprise.deployment.web.SecurityRoleReference;
+import com.sun.enterprise.security.common.AppservAccessController;
+import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
-import com.sun.enterprise.security.common.AppservAccessController;
+import com.sun.enterprise.security.audit.AuditManager;
+
+import java.util.logging.*;
+
+import com.sun.logging.LogDomains;
+import com.sun.ejb.EjbInvocation;
+import com.sun.enterprise.security.ee.PermissionCacheFactory;
 import com.sun.enterprise.security.ee.CachedPermission;
 import com.sun.enterprise.security.ee.CachedPermissionImpl;
 import com.sun.enterprise.security.ee.PermissionCache;
-import com.sun.enterprise.security.ee.PermissionCacheFactory;
-import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.logging.LogDomains;
+
+import java.security.*;
+
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.invocation.InvocationException;
+
+import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
 
 /**
  * This class is used by the EJB server to manage security. All
@@ -361,7 +349,10 @@ public final class EJBSecurityManager
         assert pc != null;
         if (pc != null) {
             String eName = eDescriptor.getName();
-            for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
+            Iterator iroleref = eDescriptor.getRoleReferences().iterator();
+            while (iroleref.hasNext()) {
+                SecurityRoleReference roleRef =
+                        (SecurityRoleReference) iroleref.next();
                 String rolename = roleRef.getRolename();
                 EJBRoleRefPermission ejbrr =
                         new EJBRoleRefPermission(eName, rolename);

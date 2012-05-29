@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,19 +46,15 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
+import com.sun.enterprise.deployment.*;
+
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
+
 import com.sun.jdo.spi.persistence.utility.StringHelper;
-import org.glassfish.ejb.deployment.descriptor.CMRFieldInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
+import com.sun.jdo.spi.persistence.utility.JavaTypeHelper;
 
 /** This is a subclass of 
  * {@link com.sun.jdo.spi.persistence.support.ejb.model.util.NameMapper} (in 
@@ -423,7 +419,7 @@ public class NameMapper extends
 		{
 			PersistenceDescriptor persistenceDescriptor =
 				descriptor.getPersistenceDescriptor();
-			CMRFieldInfo cmrf =
+			CMRFieldInfo cmrf = 
 				persistenceDescriptor.getCMRFieldInfoByName(ejbFieldName);
 			
 			return cmrf.role.getPartner().getOwner();

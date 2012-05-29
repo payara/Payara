@@ -40,43 +40,26 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
+import org.jvnet.hk2.component.BaseServiceLocator;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Superclass of all Nodes implementation
@@ -85,10 +68,10 @@ import org.xml.sax.Attributes;
  * SAX parser when reading and are constructed to build the DOM tree for 
  * saving the XML files.
  *
- * XMLNode are organized like a tree with one root XMLNode (which 
+ * XMLNode are orgnalized like a tree with one root XMLNode (which 
  * implement the RootXMLNode interface) and sub XMLNodes responsible
  * for handling subparts of the XML documents. Sub XMLNodes register 
- * themselves to their parent XMLNode as handlers for a particular XML 
+ * themselfves to their parent XMLNode as handlers for a particular XML 
  * subtag of the tag handled by the parent XMLNode
  *
  * Each XMLNode is therefore associated with a xml tag (located anywhere 
@@ -938,21 +921,71 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         }        
     }
 
-    /**
-     * write a list of life-cycle-callback descriptors to a DOM Tree
-     *
-     * @param parentNode parent node for the DOM tree
-     * @param tagName the tag name for the descriptors
-     * @param lifecycleCallbacks the iterator over the descriptors to write
-     */
-    protected void writeLifeCycleCallbackDescriptors(Node parentNode,String tagName,
-            Collection<LifecycleCallbackDescriptor> lifecycleCallbacks) {
-        if (lifecycleCallbacks == null || lifecycleCallbacks.isEmpty())
+    protected void writePostActivateDescriptors
+        (Node parentNode, Iterator postActivateDescs) {
+        if (postActivateDescs == null || !postActivateDescs.hasNext())
             return;
 
         LifecycleCallbackNode subNode = new LifecycleCallbackNode();
-        for (LifecycleCallbackDescriptor lcd : lifecycleCallbacks) {
-            subNode.writeDescriptor(parentNode, tagName, lcd);
+        for(; postActivateDescs.hasNext();) {
+            LifecycleCallbackDescriptor next =
+                (LifecycleCallbackDescriptor) postActivateDescs.next();
+            subNode.writeDescriptor(parentNode, 
+                                    EjbTagNames.POST_ACTIVATE_METHOD, next);
+        }
+
+    }
+
+    protected void writePrePassivateDescriptors
+        (Node parentNode, Iterator prePassivateDescs) {
+        if (prePassivateDescs == null || !prePassivateDescs.hasNext())
+            return;
+
+        LifecycleCallbackNode subNode = new LifecycleCallbackNode();
+        for(; prePassivateDescs.hasNext();) {
+            LifecycleCallbackDescriptor next =
+                (LifecycleCallbackDescriptor) prePassivateDescs.next();
+            subNode.writeDescriptor(parentNode, 
+                                    EjbTagNames.PRE_PASSIVATE_METHOD, next);
+        }
+
+    }
+
+    /**
+     * write a list of post-construct descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param postConstructDescs the iterator over the descriptors to write
+     */
+    protected void writePostConstructDescriptors
+        (Node parentNode, Iterator<LifecycleCallbackDescriptor> postConstructDescs) {
+        if (postConstructDescs == null || !postConstructDescs.hasNext())
+            return;
+
+        LifecycleCallbackNode subNode = new LifecycleCallbackNode();
+        for (; postConstructDescs.hasNext();) {
+            LifecycleCallbackDescriptor next = postConstructDescs.next();
+            subNode.writeDescriptor(parentNode, TagNames.POST_CONSTRUCT,
+                                    next);
+        }
+    }
+    
+    /**
+     * write a list of pre-destroy descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param preDestroyDescs the iterator over the descriptors to write
+     */
+    protected void writePreDestroyDescriptors
+        (Node parentNode, Iterator<LifecycleCallbackDescriptor> preDestroyDescs) {
+        if (preDestroyDescs == null || !preDestroyDescs.hasNext())
+            return;
+
+        LifecycleCallbackNode subNode = new LifecycleCallbackNode();
+        for (; preDestroyDescs.hasNext();) {
+            LifecycleCallbackDescriptor next = preDestroyDescs.next();
+            subNode.writeDescriptor(parentNode, TagNames.PRE_DESTROY,
+                                    next);
         }
     }
 
@@ -1048,7 +1081,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 		   minOccurs="0"
 		   maxOccurs="unbounded"/>
          */
-         writeLifeCycleCallbackDescriptors(node, TagNames.POST_CONSTRUCT, descriptor.getPostConstructDescriptors());
+         writePostConstructDescriptors(node, descriptor.getPostConstructDescriptors().iterator());
          
 
         /*      <xsd:element name="pre-destroy"
@@ -1056,7 +1089,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
 		   minOccurs="0"
 		   maxOccurs="unbounded"/>
          */
-         writeLifeCycleCallbackDescriptors(node, TagNames.PRE_DESTROY, descriptor.getPreDestroyDescriptors());
+         writePreDestroyDescriptors(node, descriptor.getPreDestroyDescriptors().iterator());
     }
     
     /**

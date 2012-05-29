@@ -40,32 +40,35 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.runtime.FlushAtEndOfMethodDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.runtime.FlushAtEndOfMethodDescriptor;
 import org.w3c.dom.Node;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * This node handles the flush-at-end-of-method runtime deployment descriptors 
  *
  */
-public class FlushAtEndOfMethodNode extends DeploymentDescriptorNode<FlushAtEndOfMethodDescriptor> {
+public class FlushAtEndOfMethodNode extends DeploymentDescriptorNode {
 
-    private FlushAtEndOfMethodDescriptor descriptor;
-
+    protected FlushAtEndOfMethodDescriptor descriptor=null;
+    
+    /** Creates new FlushAtEndOfMethodNode */
     public FlushAtEndOfMethodNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.METHOD), MethodNode.class);   
     }
-
-    @Override
-    public FlushAtEndOfMethodDescriptor getDescriptor() {
+    
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
         if (descriptor==null) {
             descriptor = new FlushAtEndOfMethodDescriptor();
             Object parentDesc = getParentNode().getDescriptor();
@@ -75,8 +78,14 @@ public class FlushAtEndOfMethodNode extends DeploymentDescriptorNode<FlushAtEndO
         }
         return descriptor;
     }
+    
 
-    @Override
+    /**
+     * Adds a new DOL descriptor instance to the descriptor instance associated
+     * with this XMLNode
+     *
+     * @param descriptor the new descriptor
+     */
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof MethodDescriptor) {
             descriptor.addMethodDescriptor(
@@ -84,7 +93,14 @@ public class FlushAtEndOfMethodNode extends DeploymentDescriptorNode<FlushAtEndO
         }
     }
 
-    @Override
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the descriptor
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, 
         FlushAtEndOfMethodDescriptor flushMethodDescriptor) {    
 	Node flushMethodNode = super.writeDescriptor(parent, nodeName, 
@@ -102,6 +118,6 @@ public class FlushAtEndOfMethodNode extends DeploymentDescriptorNode<FlushAtEndO
             }
         }
 
-        return flushMethodNode;
+	return flushMethodNode;
     }
 }

@@ -64,6 +64,8 @@ import com.sun.logging.LogDomains;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
 
+import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
+
 // TODO Only needed for checkpointing
 // import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 
@@ -282,9 +284,11 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
 	    // CSIv2 Policy
 	    policies.add(new CSIv2Policy(ejbDescriptor));
 
-	    String threadPoolName = container.getUseThreadPoolId();
+	    IASEjbExtraDescriptors extraDesc
+	        = ejbDescriptor.getIASEjbExtraDescriptors();
+	    String threadPoolName = extraDesc.getUseThreadPoolId();
 	    int threadPoolNumericID = 0;
-	    boolean usePassByReference = container.getPassByReference();
+	    boolean usePassByReference = extraDesc.getPassByReference();
 
 	    if (usePassByReference) {
 	        policies.add(new CopyObjectPolicy(PASS_BY_REFERENCE_ID));

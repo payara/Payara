@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,42 +46,46 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.Map;
-
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
+
+import java.util.Map;
 
 /**
  * This class handles the run-as xml fragment
  *
- * @author  Jerome Dochez
+ * @author  Jer ome Dochez
  * @version 
  */
-public class RunAsNode extends DeploymentDescriptorNode <RunAsIdentityDescriptor>{
+public class RunAsNode extends DeploymentDescriptorNode {
 
-    private RunAsIdentityDescriptor descriptor;
-
-    @Override
-    public RunAsIdentityDescriptor getDescriptor() {
-        if (descriptor == null) descriptor = new RunAsIdentityDescriptor();
-        return descriptor;
-    }
-
-    @Override
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
-        table.put(TagNames.ROLE_NAME, "setRoleName");    
+        table.put(EjbTagNames.ROLE_NAME, "setRoleName");    
         return table;
-    }
+    }    
 
-    @Override
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node in the DOM tree 
+     * @param node name for the root element for this DOM tree fragment
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */
     public Node writeDescriptor(Node parent, String nodeName, RunAsIdentityDescriptor descriptor) {    
         Node subNode = super.writeDescriptor(parent, nodeName, descriptor);
         writeLocalizedDescriptions(subNode, descriptor);
-        appendTextChild(subNode, TagNames.ROLE_NAME, descriptor.getRoleName());
+        appendTextChild(subNode, EjbTagNames.ROLE_NAME, descriptor.getRoleName());
         return subNode;
     }
-
+    
 }

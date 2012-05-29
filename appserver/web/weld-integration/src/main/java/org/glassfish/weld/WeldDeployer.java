@@ -364,13 +364,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             appInfo.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);
         }
 
+        Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
         EjbBundleDescriptor ejbBundle = getEjbBundleFromContext(context);
 
         EjbServices ejbServices = null;
 
-        Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
         if( ejbBundle != null ) {
-            ejbs.addAll(ejbBundle.getEjbs());
+            ejbs = ejbBundle.getEjbs();
             ejbServices = new EjbServicesImpl(services);
         }
 

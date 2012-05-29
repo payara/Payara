@@ -40,20 +40,19 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
-
+import com.sun.enterprise.deployment.ContainerTransaction;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.TagNames;
-import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import com.sun.enterprise.deployment.xml.EjbTagNames;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
 /**
  * This node is responsible for handling the container-transaction XML node
  *
@@ -65,24 +64,38 @@ public class ContainerTransactionNode extends DeploymentDescriptorNode {
     private String trans_attribute;
     private String description;    
     private Vector methods = new Vector();
-
+    
+    /** Creates new ContainerTransactionNode */
     public ContainerTransactionNode() {
        registerElementHandler(new XMLElement(EjbTagNames.METHOD), MethodNode.class);
     }
-
-    @Override
+    
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param newDescriptor the new descriptor
+     */    
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof MethodDescriptor) {
             methods.add(newDescriptor);
         }
     }
 
-    @Override
+    /**
+     * @return the Descriptor subclass that was populated  by reading
+     * the source XML file
+     */
     public Object getDescriptor() {
         return null;
     }
-
-    @Override
+    
+    /** 
+     * receives notification of the end of an XML element by the Parser
+     * 
+     * @param element the xml tag identification
+     * @return true if this node is done processing the XML sub tree
+     */    
     public boolean endElement(XMLElement element) {
         boolean doneWithNode = super.endElement(element);
         
@@ -97,10 +110,15 @@ public class ContainerTransactionNode extends DeploymentDescriptorNode {
         }        
         return doneWithNode;
     }
-
-    @Override
+    
+    /**
+     * receives notiification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
+     */    
     public void setElementValue(XMLElement element, String value) {
-        if (TagNames.DESCRIPTION.equals(element.getQName())) {
+        if (EjbTagNames.DESCRIPTION.equals(element.getQName())) {
             description = value;
         } 
         if (EjbTagNames.TRANSACTION_ATTRIBUTE.equals(element.getQName())) {

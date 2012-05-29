@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,6 @@
 
 package com.sun.enterprise.deployment.node.runtime;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-
 import com.sun.enterprise.deployment.MailConfiguration;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
@@ -52,8 +48,11 @@ import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * This node handles the runtime deployment descriptors for resource-ref tag
@@ -61,31 +60,43 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
-public class ResourceRefNode extends DeploymentDescriptorNode<ResourceReferenceDescriptor> {
+public class ResourceRefNode extends DeploymentDescriptorNode {
 
-    private ResourceReferenceDescriptor descriptor;
-
+    ResourceReferenceDescriptor descriptor=null;
+    
+    /** Creates new ResourceRefNode */
     public ResourceRefNode() {        
         registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), 
-                               DefaultResourcePrincipalNode.class, "setResourcePrincipal");
+                               DefaultResourcePrincipalNode.class, "setResourcePrincipal");                 
     }
 
-    @Override
-    public ResourceReferenceDescriptor getDescriptor() {
-        if (descriptor == null) descriptor = new ResourceReferenceDescriptor();
+   /**
+    * @return the descriptor instance to associate with this XMLNode
+    */    
+    public Object getDescriptor() {
         return descriptor;
-    }
-
-    @Override
+    }            
+    
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */    
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
     }
-
-    @Override
+    
+    /**
+     * receives notiification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
+     */
     public void setElementValue(XMLElement element, String value) {
-        if (TagNames.RESOURCE_REFERENCE_NAME.equals(element.getQName())) {
+        if (RuntimeTagNames.RESOURCE_REFERENCE_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
             if (parentDesc instanceof ResourceReferenceContainer) {
                 try {
@@ -97,8 +108,13 @@ public class ResourceRefNode extends DeploymentDescriptorNode<ResourceReferenceD
             }
         } else super.setElementValue(element, value);
     }
-
-    @Override
+    
+    /**
+     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
+     * this XMLNode
+     *
+     * @param descriptor the new descriptor
+     */    
     public void addDescriptor(Object newDescriptor) {    
         if (descriptor == null) {
             DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment.backend.addDescriptorFailure",
@@ -114,11 +130,18 @@ public class ResourceRefNode extends DeploymentDescriptorNode<ResourceReferenceD
                     new Object[]{"In " + this + " do not know what to do with " + newDescriptor});
         }
     }
-
-    @Override
+    
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param node name for the descriptor
+     * @param the descriptor to write
+     * @return the DOM tree top node
+     */    
     public Node writeDescriptor(Node parent, String nodeName, ResourceReferenceDescriptor rrDescriptor) {        
         Node rrNode = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(rrNode, TagNames.RESOURCE_REFERENCE_NAME, rrDescriptor.getName());
+        appendTextChild(rrNode, RuntimeTagNames.RESOURCE_REFERENCE_NAME, rrDescriptor.getName());
         appendTextChild(rrNode, RuntimeTagNames.JNDI_NAME, rrDescriptor.getJndiName());
         if (rrDescriptor.getResourcePrincipal() != null) {
             DefaultResourcePrincipalNode drpNode = new DefaultResourcePrincipalNode();
@@ -135,15 +158,16 @@ public class ResourceRefNode extends DeploymentDescriptorNode<ResourceReferenceD
      * @param the J2EE component containing ejb references
      */    
     public static void writeResourceReferences(Node parent, ResourceReferenceContainer descriptor) {
+        
         // resource-ref*
         Iterator rrs = descriptor.getResourceReferenceDescriptors().iterator();
         if (rrs.hasNext()) {
             
             ResourceRefNode rrNode = new ResourceRefNode();                
             while (rrs.hasNext()) {
-                rrNode.writeDescriptor(parent, TagNames.RESOURCE_REFERENCE,
+                rrNode.writeDescriptor(parent, RuntimeTagNames.RESOURCE_REFERENCE,
                     (ResourceReferenceDescriptor) rrs.next());
             }
         }  
-    }
+    }    
 }

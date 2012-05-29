@@ -40,37 +40,35 @@
 
 package com.sun.ejb.containers;
 
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.RemoveException;
-
 import com.sun.ejb.ComponentContext;
-import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
-import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.SingletonBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ResourceHandler;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
+
+import com.sun.ejb.monitoring.stats.SingletonBeanStatsProvider;
+
+import javax.ejb.*;
+import javax.transaction.Transaction;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import com.sun.ejb.Container;
+import com.sun.ejb.InvocationInfo;
+import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 
 
 public abstract class AbstractSingletonContainer
