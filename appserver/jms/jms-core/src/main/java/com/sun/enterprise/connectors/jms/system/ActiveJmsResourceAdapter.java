@@ -534,7 +534,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
           }
 
           boolean useMasterBroker = true;
-          if(as != null && as.getExtensionByType(JmsAvailability.class) != null && ! MASTERBROKER.equalsIgnoreCase(as.getExtensionByType(JmsAvailability.class).getConfigStoreType()))
+          if(as.getExtensionByType(JmsAvailability.class) != null && ! MASTERBROKER.equalsIgnoreCase(as.getExtensionByType(JmsAvailability.class).getConfigStoreType()))
             useMasterBroker = false;
 
           //jmsService.getUseMasterBroker() != null ? Boolean.valueOf(jmsService.getUseMasterBroker()) :true;
