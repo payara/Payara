@@ -59,13 +59,22 @@
             <plugin>
                 <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                 <artifactId>maven-antrun-extended-plugin</artifactId>
-                <configuration>
-		    <tasks>
-                        <ant dir="." antfile="build.xml" target="default.target"/>
-                        <ant dir="." antfile="build.xml" target="copy.packages"/>
-                    </tasks>
-                </configuration>
-             </plugin>
+                <executions>
+                    <execution>
+                        <id>repo-import</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>phase</phase>
+                        <configuration>
+                            <tasks>
+                                <ant dir="." antfile="build.xml" target="default.target"/>
+                                <ant dir="." antfile="build.xml" target="copy.packages"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
      </build>
 
