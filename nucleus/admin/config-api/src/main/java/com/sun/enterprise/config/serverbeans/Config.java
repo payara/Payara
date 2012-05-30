@@ -466,11 +466,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                     // ignore, not the right type.
                 }
             }
-            if (configExtension == null) {
                 ConfigSnippetLoader loader = new ConfigSnippetLoader(c,type);
                 return loader.createConfigBeanForType(type);
-            }
-            return null;
         }
 
         public static NetworkListener getAdminListener(Config c) {
@@ -511,10 +508,9 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
         }
 
         public static <P extends ConfigBeanProxy> boolean checkIfConfigExists(Config c, Class<P> configBeanType) {
-            P configExtension = null;
             for (Container extension : c.getContainers()) {
                 try {
-                    configExtension = configBeanType.cast(extension);
+                    configBeanType.cast(extension);
                     return true;
                 } catch (Exception e) {
                     // ignore, not the right type.

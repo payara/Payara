@@ -209,9 +209,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
                 "oracle.jdbc.xa.client.OracleXADataSource",
                 "com.sun.enterprise.transaction.jts.recovery.OracleXAResource");
 
-        if(txService==null){
-            txService= config.getExtensionByType(txService.getClass());
-        }
+        txService = config.getExtensionByType(txService.getClass());
         List<Property> properties = txService.getProperty();
 
         if (properties != null) {

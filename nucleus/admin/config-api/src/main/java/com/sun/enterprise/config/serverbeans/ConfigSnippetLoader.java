@@ -72,7 +72,7 @@ public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> 
     public <U extends ConfigExtension> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
 
         if (isConfigSnippetPresent(configExtensionType)) {
-            final ConfigExtension configBeanFromSnippet = addConfigBeanFor(configExtensionType, configLoader);
+            addConfigBeanFor(configExtensionType, configLoader);
         } else {
             final Class<U> parentElem = configExtensionType;
             ConfigSupport.apply(new SingleConfigCode<Config>() {

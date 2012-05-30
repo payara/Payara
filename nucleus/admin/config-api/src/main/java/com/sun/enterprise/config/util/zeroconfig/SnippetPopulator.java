@@ -65,7 +65,7 @@ public class SnippetPopulator implements Populator {
     public void run(org.jvnet.hk2.config.ConfigParser parser) {
         if (snippetUrl != null) {
             try {
-                DomDocument newElement = parser.parse(snippetUrl, doc, Dom.unwrap(loader));
+                parser.parse(snippetUrl, doc, Dom.unwrap(loader));
             } catch (Exception e) {
                 e.printStackTrace();
             }
