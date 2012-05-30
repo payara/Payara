@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 
 package org.glassfish.webservices;
 
+import com.sun.xml.ws.api.server.LazyMOMProvider;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.external.amx.MBeanListener;
 import org.glassfish.gmbal.ManagedObjectManager;
 import org.glassfish.gmbal.ManagedObjectManagerFactory;
 import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
@@ -54,6 +56,7 @@ import org.jvnet.hk2.component.Singleton;
 
 import javax.management.ObjectName;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 
 /**
  * Web services container service
@@ -61,7 +64,7 @@ import java.io.IOException;
  */
 @Service(name="org.glassfish.webservices.WebServicesContainer")
 @Scoped(Singleton.class)
-public class WebServicesContainer implements Container, PostConstruct, PreDestroy {
+public class WebServicesContainer extends MBeanListener.CallbackImpl implements Container, PostConstruct, PreDestroy {
     private final WebServicesDeploymentMBean deploymentBean = new WebServicesDeploymentMBean();
     private ManagedObjectManager mom;
 
@@ -72,6 +75,15 @@ public class WebServicesContainer implements Container, PostConstruct, PreDestro
 
     @Override
     public void postConstruct() {
+        // Register listener for AMX DomainRoot loaded
+        final AMXGlassfish amxg = AMXGlassfish.DEFAULT;
+        amxg.listenForDomainRoot(ManagementFactory.getPlatformMBeanServer(), this);
+        
+        LazyMOMProvider.INSTANCE.initMOMForScope(LazyMOMProvider.Scope.GLASSFISH_NO_JMX);
+    }
+
+    @Override
+    public void mbeanRegistered(javax.management.ObjectName objectName, org.glassfish.external.amx.MBeanListener listener) {
         ObjectName MONITORING_SERVER = AMXGlassfish.DEFAULT.serverMon(AMXGlassfish.DEFAULT.dasName());
         mom = ManagedObjectManagerFactory.createFederated(MONITORING_SERVER);
         if (mom != null) {
@@ -79,6 +91,8 @@ public class WebServicesContainer implements Container, PostConstruct, PreDestro
             mom.stripPackagePrefix();
             mom.createRoot(deploymentBean, "webservices-deployment");
         }
+        
+        LazyMOMProvider.INSTANCE.initMOMForScope(LazyMOMProvider.Scope.GLASSFISH_JMX);
     }
 
     public WebServicesDeploymentMBean getDeploymentBean() {
