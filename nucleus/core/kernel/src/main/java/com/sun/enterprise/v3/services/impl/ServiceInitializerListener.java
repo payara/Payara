@@ -69,10 +69,9 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
     }
 
     @Override
-    protected void configureTransport(final Habitat habitat,
-            final NetworkListener networkListener,
-            final Transport transportConfig,
-            final FilterChainBuilder filterChainBuilder) {
+    protected void configureTransport(final NetworkListener networkListener,
+                                      final Transport transportConfig,
+                                      final FilterChainBuilder filterChainBuilder) {
         
         transport = TCPNIOTransportBuilder.newInstance().build();
 

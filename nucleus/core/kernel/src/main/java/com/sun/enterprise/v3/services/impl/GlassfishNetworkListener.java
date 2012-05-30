@@ -106,12 +106,11 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     }
 
     @Override
-    protected void configureTransport(final Habitat habitat,
-            final NetworkListener networkListener,
-            final Transport transportConfig,
-            final FilterChainBuilder filterChainBuilder) {
+    protected void configureTransport(final NetworkListener networkListener,
+                                      final Transport transportConfig,
+                                      final FilterChainBuilder filterChainBuilder) {
 
-        super.configureTransport(habitat, networkListener, transportConfig,
+        super.configureTransport(networkListener, transportConfig,
                 filterChainBuilder);
 
         transport.getConnectionMonitoringConfig().addProbes(new ConnectionMonitor(
@@ -185,23 +184,22 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     }
 
     @Override
-    protected HttpHandler getHttpHandler(Http http) {
+    protected HttpHandler getHttpHandler() {
         return httpAdapter.getMapper();
     }
 
     @Override
-    protected KeepAlive configureKeepAlive(Habitat habitat, Http http) {
-        final KeepAlive keepAlive = super.configureKeepAlive(habitat, http);
+    protected KeepAlive configureKeepAlive(Http http) {
+        final KeepAlive keepAlive = super.configureKeepAlive(http);
         keepAlive.getMonitoringConfig().addProbes(new KeepAliveMonitor(
                 grizzlyService.getMonitoring(), name, keepAlive));
         return keepAlive;
     }
 
     @Override
-    protected FileCache configureHttpFileCache(Habitat habitat,
-            org.glassfish.grizzly.config.dom.FileCache cache) {
+    protected FileCache configureHttpFileCache(org.glassfish.grizzly.config.dom.FileCache cache) {
         
-        final FileCache fileCache = super.configureHttpFileCache(habitat, cache);
+        final FileCache fileCache = super.configureHttpFileCache(cache);
         fileCache.getMonitoringConfig().addProbes(new FileCacheMonitor(
                 grizzlyService.getMonitoring(), name, fileCache));
         
@@ -209,11 +207,10 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     }
 
     @Override
-    protected ThreadPoolConfig configureThreadPoolConfig(final Habitat habitat,
-            final NetworkListener networkListener,
-            final ThreadPool threadPool) {
+    protected ThreadPoolConfig configureThreadPoolConfig(final NetworkListener networkListener,
+                                                         final ThreadPool threadPool) {
         
-        final ThreadPoolConfig config = super.configureThreadPoolConfig(habitat,
+        final ThreadPoolConfig config = super.configureThreadPoolConfig(
                 networkListener, threadPool);
         config.getInitialMonitoringConfig().addProbes(new ThreadPoolMonitor(
                 grizzlyService.getMonitoring(), name, config));
