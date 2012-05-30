@@ -85,7 +85,7 @@ public class ProgramOptions {
     public static final String HELP             = "help";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
-    public static final String IGNORECACHE      = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
+    public static final String USECACHE         = "ignore-cache"; //todo: [mmar] Remove after implementation CLI->ReST done
 
     private static final Logger logger =
         Logger.getLogger(ProgramOptions.class.getPackage().getName());
@@ -126,7 +126,7 @@ public class ProgramOptions {
         addMetaOption(opts, HELP, '?', Boolean.class, false, "false");
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
-        addMetaOption(opts, IGNORECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
+        addMetaOption(opts, USECACHE, '\0', Boolean.class, false, "false"); //todo: [mmar] Remove after implementation CLI->ReST done
         programOptions = Collections.unmodifiableSet(opts);
     }
 
@@ -445,17 +445,17 @@ public class ProgramOptions {
      * @return the ignore-cache
      */
     //todo: [mmar] Remove after implementation CLI->ReST done
-    public boolean isIgnoreCache() {
-        boolean ignrCache;
-        if (options.containsKey(IGNORECACHE)) {
-            String value = options.getOne(IGNORECACHE);
+    public boolean isUseCache() {
+        boolean useCache;
+        if (options.containsKey(USECACHE)) {
+            String value = options.getOne(USECACHE);
             if (ok(value))
-                ignrCache = Boolean.parseBoolean(value);
+                useCache = Boolean.parseBoolean(value);
             else
-                ignrCache = true;
+                useCache = true;
         } else
-            ignrCache = env.getBooleanOption(IGNORECACHE);
-        return ignrCache;
+            useCache = env.getBooleanOption(USECACHE);
+        return useCache;
     }
 
     /**

@@ -148,7 +148,7 @@ public class RemoteAdminCommand {
     private int                 readTimeout = defaultReadTimeout;
     private int                 connectTimeout = -1;
     private boolean             interactive = true;
-    private boolean             omitCache = false;
+    private boolean             omitCache = true;
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
 
@@ -340,31 +340,31 @@ public class RemoteAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
-//        if (commandModel == null && !omitCache) {
-//            long startNanos = System.nanoTime();
-//            try {
-//                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
-//                if (commandModel != null) {
-//                    this.commandModelFromCache = true;
-//                    if (commandModel instanceof CachedCommandModel) {
-//                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
-//                        this.usage = ccm.getUsage();
-//                        addedUploadOption = ccm.isAddedUploadOption();
-//                    }
-//                    if (logger.isLoggable(Level.FINEST)) {
-//                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
-//                    }
-//                } else {
-//                    if (logger.isLoggable(Level.FINEST)) {
-//                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
-//                    }
-//                }
-//            } catch (Exception ex) {
-//                if (logger.isLoggable(Level.FINEST)) {
-//                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
-//                }
-//            }
-//        }
+        if (commandModel == null && !omitCache) {
+            long startNanos = System.nanoTime();
+            try {
+                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
+                if (commandModel != null) {
+                    this.commandModelFromCache = true;
+                    if (commandModel instanceof CachedCommandModel) {
+                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
+                        this.usage = ccm.getUsage();
+                        addedUploadOption = ccm.isAddedUploadOption();
+                    }
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+                    }
+                } else {
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
+                    }
+                }
+            } catch (Exception ex) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
+                }
+            }
+        }
         if (commandModel == null) {
             fetchCommandModel();
         }
@@ -1247,7 +1247,7 @@ public class RemoteAdminCommand {
             }
         } else {
             this.commandModelFromCache = false;
-            if (!omitCache) {
+            //if (!omitCache) {
                 try {
                     AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
                 } catch (Exception ex) {
@@ -1255,7 +1255,7 @@ public class RemoteAdminCommand {
                         logger.log(Level.WARNING, "Can not put data to cache under key {0}", createCommandCacheKey());
                     }
                 }
-            }
+            //}
             if (logger.isLoggable(Level.FINEST)) {
                 logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
             }
