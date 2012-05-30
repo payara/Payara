@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.quality.ToDo;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.api.admin.config.ConfigExtension;
@@ -346,7 +347,7 @@ public interface EjbContainer extends ConfigBeanProxy, Injectable, PropertyBag, 
      * @return possible object is
      *         {@link String }
      */
-    @Attribute
+    @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/session-store")
     String getSessionStore();
 
     /**
@@ -367,6 +368,7 @@ public interface EjbContainer extends ConfigBeanProxy, Injectable, PropertyBag, 
      *         {@link EjbTimerService }
      */
     @Element
+    @NotNull
     EjbTimerService getEjbTimerService();
 
     /**

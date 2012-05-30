@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
-import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -60,13 +59,14 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigInjector;
 
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -78,13 +78,13 @@ import java.util.logging.Logger;
  */
 @TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
-@Service(name = "create-default-config")
+@Service(name = "create-module-config")
 @Scoped(PerLookup.class)
-@I18n("create.default.config")
-public final class CreateDefaultConfigCommand implements AdminCommand {
-    private final Logger LOG = Logger.getLogger(CreateDefaultConfigCommand.class.getName());
+@I18n("create.module.config")
+public final class CreateModuleConfigCommand implements AdminCommand {
+    private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
-            new LocalStringManagerImpl(CreateDefaultConfigCommand.class);
+            new LocalStringManagerImpl(CreateModuleConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
 
     @Inject
@@ -92,6 +92,9 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
 
     @Inject
     ModulesRegistry registry;
+
+    @Inject
+    Habitat habitat;
 
     private final static String PROPERTY_PREFIX = "-";
 
@@ -113,7 +116,7 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
         final ActionReport report = context.getActionReport();
         String defaultConfigurationElements = null;
         if (isAll && serviceName != null) {
-            report.setMessage(localStrings.getLocalString("create.default.config.service.name.ignored",
+            report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
                     "You can only use --all or specify a service name. These two options are exclusive."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
@@ -121,9 +124,8 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
 
         if (!isAll && serviceName == null) {
             //TODO check for usability options, should we create the default configs, show them or fail the execution?
-            report.setMessage(localStrings.getLocalString("create.default.config.no.service.no.all",
+            report.setMessage(localStrings.getLocalString("create.module.config.no.service.no.all",
                     DEFAULT_FORMAT, target));
-//            report.appendMessage("\n");
 
             try {
                 defaultConfigurationElements = getAllDefaultConfigurationElements(target);
@@ -131,7 +133,7 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
                     report.setMessage(defaultConfigurationElements);
                 }
             } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.default.config.failure",
+                String msg = localStrings.getLocalString("create.module.config.failure",
                         DEFAULT_FORMAT, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
@@ -140,16 +142,15 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
                 return;
             }
         } else if (isAll && dryRun) {
-            report.setMessage(localStrings.getLocalString("create.default.config.show.all",
+            report.setMessage(localStrings.getLocalString("create.module.config.show.all",
                     DEFAULT_FORMAT, target));
-//            report.appendMessage("\n");
             try {
                 defaultConfigurationElements = getAllDefaultConfigurationElements(target);
                 if (defaultConfigurationElements != null) {
                     report.setMessage(defaultConfigurationElements);
                 }
             } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.default.config.show.all.failed",
+                String msg = localStrings.getLocalString("create.module.config.show.all.failed",
                         DEFAULT_FORMAT, target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
@@ -158,12 +159,12 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
                 return;
             }
         } else if (isAll && !dryRun) {
-            report.setMessage(localStrings.getLocalString("create.default.config.creating.all",
+            report.setMessage(localStrings.getLocalString("create.module.config.creating.all",
                     DEFAULT_FORMAT, target));
             try {
                 createAllMissingElements(target);
             } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.default.config.creating.all.failed",
+                String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
                         DEFAULT_FORMAT, target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setMessage(msg);
@@ -172,28 +173,28 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
                 return;
             }
         } else if (serviceName != null) {
-            report.setMessage(localStrings.getLocalString("create.default.config.creating.for.service.name",
-                    DEFAULT_FORMAT, serviceName, target));
             String className = ZeroConfigUtils.convertConfigElementNameToClassNAme(serviceName);
             Class configBeanType = null;
             configBeanType = getClassFor(className, serviceName, report);
             if (configBeanType == null) {
-                String msg = localStrings.getLocalString("create.default.config.not.such.a.service.found",
+                String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
                 return;
             }
             try {
-                if (!dryRun) {
-                    createMissingElementFor(configBeanType, serviceName, target, report);
-                } else {
+                if (dryRun) {
                     String serviceDefaultConfig = getDefaultConfigFor(configBeanType, report, serviceName);
-                    report.setMessage(serviceDefaultConfig);
+                    if (serviceDefaultConfig != null) {
+                        report.setMessage(serviceDefaultConfig);
+                    }
+                } else {
+                    createMissingElementFor(configBeanType, serviceName, target, report);
                 }
 
             } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.default.config.creating.for.service.name",
+                String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
                         DEFAULT_FORMAT, serviceName, target, e.getLocalizedMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -210,7 +211,7 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
     private String getDefaultConfigFor(Class configBean, ActionReport report, String serviceName) throws Exception {
         String configurationContent = null;
         if (getDefaultSnippetUrl(configBean) == null) {
-            report.setMessage(localStrings.getLocalString("create.default.config.config.embedded.in.class", DEFAULT_FORMAT, serviceName));
+            report.setMessage(localStrings.getLocalString("create.module.config.config.embedded.in.class", DEFAULT_FORMAT, serviceName));
             //No snippet, try creating the xml using the bean itself. but add the message telling the user it comes
             // form the bean itself and not the snippet.
         } else {
@@ -220,21 +221,25 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
         return configurationContent;
     }
 
-    private void createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
+
+
+    private boolean createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
+        boolean defaultConfigCreated=false;
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             if (c.checkIfConfigExists(configBeanType)) {
-                report.setMessage(localStrings.getLocalString("create.default.config.already.exists", DEFAULT_FORMAT, serviceName));
-                return;
+                report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
             c.getExtensionByType(configBeanType);
+            defaultConfigCreated=true;
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfConfigExists(configBeanType)) {
-                report.setMessage(localStrings.getLocalString("create.default.config.already.exists", DEFAULT_FORMAT, serviceName));
-                return;
+                report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
             domain.getExtensionByType(configBeanType);
+            defaultConfigCreated=true;
         }
+        return defaultConfigCreated;
     }
 
 
@@ -250,29 +255,21 @@ public final class CreateDefaultConfigCommand implements AdminCommand {
     }
 
     private <P extends ConfigBeanProxy> URL getDefaultSnippetUrl(Class<P> configBean) {
-        Collection<Module> modules = registry.getModules();
-        Class cls = null;
         String xmlSnippetFileLocation = "META-INF/" + configBean.getSimpleName() + ".xml";
-        for (Module m : modules) {
-            URL url = m.getClassLoader().getResource(xmlSnippetFileLocation);
-            if (url != null) return url;
-        }
-        return null;
+        return configBean.getClassLoader().getResource(xmlSnippetFileLocation);
     }
 
     private Class getClassFor(String className, String serviceName, ActionReport report) {
-        Collection<Module> modules = registry.getModules();
-        Class cls = null;
-        for (Module m : modules) {
+        ConfigInjector injector = ((Habitat) habitat).getComponent(ConfigInjector.class, serviceName);
+        String clzName = null;
+        if (injector != null) {
+            clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
             try {
-                cls = m.getClassLoader().loadClass(className);
-                if (cls != null) {
-                 break;
-                }
+                return injector.getClass().getClassLoader().loadClass(clzName);
             } catch (ClassNotFoundException e) {
-                //ignore it, not the right classloader
+                return null;
             }
         }
-        return cls;
+        return null;
     }
 }

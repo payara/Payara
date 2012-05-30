@@ -84,6 +84,8 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
+
     private TransactionService txService;
 
     @Inject
@@ -207,6 +209,9 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
                 "oracle.jdbc.xa.client.OracleXADataSource",
                 "com.sun.enterprise.transaction.jts.recovery.OracleXAResource");
 
+        if(txService==null){
+            txService= config.getExtensionByType(txService.getClass());
+        }
         List<Property> properties = txService.getProperty();
 
         if (properties != null) {

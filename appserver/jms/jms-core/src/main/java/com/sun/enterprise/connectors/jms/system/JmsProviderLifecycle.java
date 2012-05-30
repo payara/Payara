@@ -85,14 +85,13 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
-    
+
     @Inject
     private Provider<JMSConfigListener> jmsConfigListenerProvider;
-    
+
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
-    
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+
     private Provider<JmsService> jmsServiceProvider;
 
     @Inject
@@ -133,7 +132,7 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
         String integrationMode =jmsService.getType();
         List <JmsHost> jmsHostList = jmsService.getJmsHost();
         if (jmsHostList == null) return false;
-        
+
         String defaultJmsHostName = jmsService.getDefaultJmsHost();
         JmsHost defaultJmsHost = null;
         for (JmsHost host : jmsHostList){
@@ -172,6 +171,6 @@ public class JmsProviderLifecycle implements  PostStartup, PostConstruct{
     }
 
     private JmsService getJmsService() {
-            return jmsServiceProvider.get();
-        }
+        return config.getExtensionByType(JmsService.class);
+    }
 }

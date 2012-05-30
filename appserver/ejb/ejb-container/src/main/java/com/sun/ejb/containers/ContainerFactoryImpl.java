@@ -43,6 +43,7 @@ package com.sun.ejb.containers;
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.builder.StatefulContainerBuilder;
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.EjbSessionDescriptor;
@@ -75,8 +76,11 @@ public final class ContainerFactoryImpl implements ContainerFactory {
     @Inject
     private Provider<EntityContainerProvider> entityContainerProvider;
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
+
+       @Inject
+       @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+       private Config serverConfig;
     
     private static final Logger _logger = 
     	LogDomains.getLogger(ContainerFactoryImpl.class, LogDomains.EJB_LOGGER);
@@ -88,6 +92,9 @@ public final class ContainerFactoryImpl implements ContainerFactory {
 	     throws Exception 
     {
         BaseContainer container = null;
+        if (ejbContainerDesc == null) {
+                ejbContainerDesc = serverConfig.getExtensionByType(EjbContainer.class);
+            }
 
         try {
             // instantiate container class

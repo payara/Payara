@@ -68,8 +68,10 @@ public class JMSConfigListener implements ConfigListener{
     // Injecting @Configured type triggers the corresponding change
     // events to be sent to this instance
 
+    private JmsService jmsService;
+
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    private JmsService jmsservice;
+    private Config serverConfig;
    
     @Inject
     private Servers servers;
@@ -92,6 +94,7 @@ public class JMSConfigListener implements ConfigListener{
         /** Implementation of org.jvnet.hk2.config.ConfigListener */
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         //Events that we can't process now because they require server restart.
+        jmsService = serverConfig.getExtensionByType(JmsService.class);
         List<UnprocessedChangeEvent> unprocessedEvents = new ArrayList<UnprocessedChangeEvent>();
         _logger.log(Level.FINE, "In JMSConfigListener - received config event");
         Domain domain = Globals.get(Domain.class);
@@ -146,7 +149,7 @@ public class JMSConfigListener implements ConfigListener{
                  {
                      Node node = domain.getNodeNamed(newMBServer.getNodeRef());
                      String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
-                     if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
+                     if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsService).getPort();
                      String newMasterBrokerHost = node.getNodeHost();
                      aresourceAdapter.setMasterBroker(newMasterBrokerHost + ":" + newMasterBrokerPort);
                  }

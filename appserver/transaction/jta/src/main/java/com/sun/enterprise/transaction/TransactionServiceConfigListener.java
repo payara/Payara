@@ -80,9 +80,6 @@ public class TransactionServiceConfigListener implements ConfigListener, PostCon
     private static final Logger _logger = LogDomains.getLogger(
             TransactionServiceConfigListener.class, LogDomains.JTA_LOGGER);
 
-    // Injecting @Configured type triggers the corresponding change 
-    // events to be sent to this instance
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService ts;
 
     @Inject
@@ -105,6 +102,7 @@ public class TransactionServiceConfigListener implements ConfigListener, PostCon
     public void postConstruct() {
         // Listen to monitoring level changes
         Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        ts = c.getExtensionByType(TransactionService.class);
         ModuleMonitoringLevels mml = c.getMonitoringService().getModuleMonitoringLevels();
         ((ObservableBean)ConfigSupport.getImpl(mml)).addListener(this);
     }

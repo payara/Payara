@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.transaction.config;
 
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -68,7 +69,7 @@ import javax.validation.constraints.Min;
 }) */
 
 @Configured
-public interface TransactionService extends ConfigBeanProxy, Injectable, PropertyBag, Container {
+public interface TransactionService extends ConfigBeanProxy, Injectable, PropertyBag, ConfigExtension, Container {
 
     /**
      * Gets the value of the automaticRecovery property.
@@ -122,7 +123,7 @@ public interface TransactionService extends ConfigBeanProxy, Injectable, Propert
      * @return possible object is
      *         {@link String }
      */
-    @Attribute
+    @Attribute(defaultValue = "${com.sun.aas.instanceRoot}/logs")
     public String getTxLogDir();
 
     /**

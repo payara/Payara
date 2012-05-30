@@ -98,6 +98,7 @@ import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.component.PostConstruct;
@@ -277,7 +278,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     @Inject
     private Provider<Servers> serversProvider;
     
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Provider<JmsService> jmsServiceProvider;
     
     @Inject
@@ -285,6 +285,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
+
+    @Inject
+     private BaseServiceLocator habitat;
     
     /**
      * Constructor for an active Jms Adapter.
@@ -2234,7 +2237,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private JmsService getJmsService(){
-        return jmsServiceProvider.get();
+        Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                return c.getExtensionByType(JmsService.class);
     }
 
     private ServerContext getServerContext(){

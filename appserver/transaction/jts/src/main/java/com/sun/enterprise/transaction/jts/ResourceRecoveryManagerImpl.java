@@ -44,9 +44,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.transaction.xa.XAResource;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
@@ -76,7 +76,6 @@ import org.jvnet.hk2.component.PostConstruct;
 @Service
 public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecoveryManager {
 
-    @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private TransactionService txnService;
 
     @Inject 
@@ -223,6 +222,10 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     public void recoverXAResources(boolean force) {
         if (force) {
             try {
+                if (txnService == null) {
+                    Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                    txnService = c.getExtensionByType(TransactionService.class);
+                }
                 if (!Boolean.valueOf(txnService.getAutomaticRecovery())) {
                     return;
                 }
