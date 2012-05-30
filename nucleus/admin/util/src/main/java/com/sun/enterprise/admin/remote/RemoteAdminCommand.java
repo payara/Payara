@@ -340,31 +340,31 @@ public class RemoteAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
-        if (commandModel == null && !omitCache) {
-            long startNanos = System.nanoTime();
-            try {
-                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
-                if (commandModel != null) {
-                    this.commandModelFromCache = true;
-                    if (commandModel instanceof CachedCommandModel) {
-                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
-                        this.usage = ccm.getUsage();
-                        addedUploadOption = ccm.isAddedUploadOption();
-                    }
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
-                    }
-                } else {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
-                    }
-                }
-            } catch (Exception ex) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
-                }
-            }
-        }
+//        if (commandModel == null && !omitCache) {
+//            long startNanos = System.nanoTime();
+//            try {
+//                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
+//                if (commandModel != null) {
+//                    this.commandModelFromCache = true;
+//                    if (commandModel instanceof CachedCommandModel) {
+//                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
+//                        this.usage = ccm.getUsage();
+//                        addedUploadOption = ccm.isAddedUploadOption();
+//                    }
+//                    if (logger.isLoggable(Level.FINEST)) {
+//                        logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+//                    }
+//                } else {
+//                    if (logger.isLoggable(Level.FINEST)) {
+//                        logger.log(Level.FINEST, "Command model for command {0} is not in cache. It must be fatched from server.", name);
+//                    }
+//                }
+//            } catch (Exception ex) {
+//                if (logger.isLoggable(Level.FINEST)) {
+//                    logger.log(Level.FINEST, "Can not get data from cache under key " + createCommandCacheKey(), ex);
+//                }
+//            }
+//        }
         if (commandModel == null) {
             fetchCommandModel();
         }
