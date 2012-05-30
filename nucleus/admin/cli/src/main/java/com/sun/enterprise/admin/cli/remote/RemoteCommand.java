@@ -819,7 +819,7 @@ public class RemoteCommand extends CLICommand {
                 programOpts.getPassword(), logger, programOpts.getAuthToken());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
-            rac.setOmitCache(!programOpts.isIgnoreCache()); //todo: [mmar] Remove after implementation CLI->ReST done
+            rac.setOmitCache(!programOpts.isUseCache()); //todo: [mmar] Remove after implementation CLI->ReST done
         }
     }
 
