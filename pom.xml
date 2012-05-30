@@ -208,7 +208,12 @@
                 RE profile for release purposes.
             -->
             <id>release-phase2</id>
-
+            <activation>
+                <property>
+                    <name>release-phase-all</name>
+                    <value>true</value>
+                </property>
+            </activation>
             <modules>
                 <module>repo-import</module>
             </modules>
@@ -370,6 +375,11 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.3</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>                
             </plugins>
         </pluginManagement>
 
