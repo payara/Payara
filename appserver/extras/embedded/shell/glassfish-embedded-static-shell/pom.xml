@@ -41,17 +41,19 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.0-b39</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>glassfish-embedded-static-shell</artifactId>
-    <version>4.0-b39</version>
+    <version>4.0-SNAPSHOT</version>
     <name>Embedded GlassFish Static Shell</name>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
@@ -120,12 +122,12 @@
                       </goals>
                       <configuration>
                           <tasks>
-                              <property name="output.file" value="${project.build.finalName}.jar" />
-                              <property name="output.dir" value="${project.build.directory}" />
-                              <property name="stage.dir" value="${project.build.directory}/stage" />
-                              <property name="classpath.file" value="${classpath.file}" />
-                	      <property name="bundlename" value="org.glassfish.embedded.static-shell" />
-                              <ant antfile="../fixup.xml" />
+                              <property name="output.file" value="${project.build.finalName}.jar"/>
+                              <property name="output.dir" value="${project.build.directory}"/>
+                              <property name="stage.dir" value="${project.build.directory}/stage"/>
+                              <property name="classpath.file" value="${classpath.file}"/>
+                	      <property name="bundlename" value="org.glassfish.embedded.static-shell"/>
+                              <ant antfile="../fixup.xml"/>
                           </tasks>
                       </configuration>
                   </execution>

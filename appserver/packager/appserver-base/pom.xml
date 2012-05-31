@@ -41,11 +41,12 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.0-b39</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>appserver-base</artifactId>
@@ -62,20 +63,21 @@
                         <phase>process-sources</phase>
                         <configuration>
                             <tasks>
-                                <delete file="src/main/resources/glassfish-version.properties" />
-                                <copy file="src/main/resources/glassfish-version.properties.template" tofile="src/main/resources/glassfish-version.properties">
+                                <delete file="src/main/resources/glassfish-version.properties"/>
+                                <copy file="src/main/resources/glassfish-version.properties.template"
+                                      tofile="src/main/resources/glassfish-version.properties">
                                     <filterset>
-                                        <filter token="BRAND_NAME" value="${brand_name}" />
-                                        <filter token="PRODUCT_NAME" value="${product.name}" />
-                                        <filter token="BRIEF_PRODUCT_NAME" value="${brief_product_name}" />
-                                        <filter token="ABBREV_PRODUCT_NAME" value="${abbrev_product_name}" />
-                                        <filter token="FULL_VERSION" value="${project.version}" />
-                                        <filter token="MAJOR_VERSION" value="${major_version}" />
-                                        <filter token="MINOR_VERSION" value="${minor_version}" />
-                                        <filter token="UPDATE_VERSION" value="${update_version}" />
-                                        <filter token="BUILD_ID" value="${build.id}" />
-                                        <filter token="VERSION_PREFIX" value="${version_prefix}" />
-                                        <filter token="VERSION_SUFFIX" value="${version_suffix}" />
+                                        <filter token="BRAND_NAME" value="${brand_name}"/>
+                                        <filter token="PRODUCT_NAME" value="${product.name}"/>
+                                        <filter token="BRIEF_PRODUCT_NAME" value="${brief_product_name}"/>
+                                        <filter token="ABBREV_PRODUCT_NAME" value="${abbrev_product_name}"/>
+                                        <filter token="FULL_VERSION" value="${project.version}"/>
+                                        <filter token="MAJOR_VERSION" value="${major_version}"/>
+                                        <filter token="MINOR_VERSION" value="${minor_version}"/>
+                                        <filter token="UPDATE_VERSION" value="${update_version}"/>
+                                        <filter token="BUILD_ID" value="${build.id}"/>
+                                        <filter token="VERSION_PREFIX" value="${version_prefix}"/>
+                                        <filter token="VERSION_SUFFIX" value="${version_suffix}"/>
                                     </filterset>
                                 </copy>
                             </tasks>

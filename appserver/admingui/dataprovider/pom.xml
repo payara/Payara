@@ -41,11 +41,12 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.0-b39</version>
+        <version>4.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -85,11 +86,11 @@
                                      version, it fails. So, to simulate clean build, we clean
                                      the outputDir. Sahoo.
                                 -->
-                                <delete dir="${project.build.outputDirectory}" quiet="true" />
+                                <delete dir="${project.build.outputDirectory}" quiet="true"/>
                                 <!-- Because, we inherit the plugin from parent and the parent
                                      configures manifest task, it fails when classes dir does not
                                      exist. So, we create one -->
-                                <mkdir dir="${project.build.outputDirectory}" />
+                                <mkdir dir="${project.build.outputDirectory}"/>
                             </tasks>
                         </configuration>
                         <goals>

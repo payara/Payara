@@ -41,22 +41,22 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-main-parent</artifactId>
-        <version>4.0-b39</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-parent</artifactId>
     <packaging>pom</packaging>
     <name>GlassFish Parent Project</name>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.0-b39/trunk/main/appserver</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.0-b39/trunk/main/appserver</developerConnection>
-      <url>https://github.com/sonatype/jvnet-parent/glassfish-main-parent/glassfish-parent/tags/4.0-b39/jvnet-parent/glassfish-main-parent/glassfish-parent</url>
-  </scm>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</developerConnection>
+    </scm>
     <issueManagement>
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>

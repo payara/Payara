@@ -41,7 +41,8 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.java</groupId>
@@ -52,13 +53,12 @@
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-main-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0-b39</version>
+    <version>4.0-SNAPSHOT</version>
     <name>GlassFish Main Parent Project</name>
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.0-b39/trunk/main</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.0-b39/trunk/main</developerConnection>
-      <url>https://github.com/sonatype/jvnet-parent/glassfish-main-parent/tags/4.0-b39/jvnet-parent/glassfish-main-parent</url>
-  </scm>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</developerConnection>
+    </scm>
     <issueManagement>
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>
@@ -118,11 +118,11 @@
         <product.name>GlassFish Server Open Source Edition</product.name>
         <brief_product_name>GlassFish Server</brief_product_name>
         <abbrev_product_name>glassfish</abbrev_product_name>
-        <version_prefix />
+        <version_prefix></version_prefix>
         <major_version>4</major_version>
         <minor_version>0</minor_version>
-        <update_version />
-        <version_suffix />
+        <update_version></update_version>
+        <version_suffix></version_suffix>
         <build.id>${user.name}-private</build.id><!-- on Hudson and RE, this gets replaced by real build ID -->
         <stax-api.version>1.0-2</stax-api.version>
         <jsftemplating.version>2.1.0</jsftemplating.version>
@@ -165,7 +165,7 @@
         <mimepull.version>1.8</mimepull.version>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
-        <findbugs.exclude />
+        <findbugs.exclude></findbugs.exclude>
         <findbugs.version>2.4.0</findbugs.version>
         <btrace.version>1.0.5</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
@@ -455,7 +455,7 @@
                 <configuration>
                     <!-- By default, we don't export anything.
                     -->
-                    <Export-Package />
+                    <Export-Package></Export-Package>
                     <!-- Since, we are in a top level pom and
                          we we don't want it to be active for plain jar type artifacts,
                          enable the plugin for hk2-jar and bundle packaging type only,

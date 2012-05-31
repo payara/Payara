@@ -45,7 +45,7 @@
   <parent>
       <groupId>org.glassfish.main</groupId>
       <artifactId>api-pom</artifactId>
-      <version>4.0-b39</version>
+      <version>4.0-SNAPSHOT</version>
       <relativePath>../../javaee-api/api-pom/pom.xml</relativePath>
   </parent>
     <modelVersion>4.0.0</modelVersion>
