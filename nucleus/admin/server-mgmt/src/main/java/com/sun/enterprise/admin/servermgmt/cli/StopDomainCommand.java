@@ -171,10 +171,14 @@ public class StopDomainCommand extends LocalDomainCommand {
         // run the remote stop-domain command and throw away the output
         RemoteCommand cmd = new RemoteCommand(getName(), programOpts, env);
         cmd.executeAndReturnOutput("stop-domain", "--force", force.toString());
-        waitForDeath();
-
-        if (kill && local) {
-            kill();
+        try {
+            waitForDeath();
+        } catch (CommandException ex) {
+            if (kill && local) {
+                kill();
+            } else {
+                throw ex;
+            }
         }
     }
 
