@@ -53,10 +53,10 @@ import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.JdbcResource;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceInfo;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Provider;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -83,8 +83,7 @@ import org.jvnet.hk2.annotations.Service;
 public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
 
     @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    Config config;
+    BaseServiceLocator habitat;
 
     private TransactionService txService;
 
@@ -209,7 +208,9 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
                 "oracle.jdbc.xa.client.OracleXADataSource",
                 "com.sun.enterprise.transaction.jts.recovery.OracleXAResource");
 
-        txService = config.getExtensionByType(txService.getClass());
+        Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        txService =  c.getExtensionByType(TransactionService.class);
+
         List<Property> properties = txService.getProperty();
 
         if (properties != null) {
