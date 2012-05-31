@@ -44,22 +44,15 @@ public class DistributedEJBServiceFactory
     implements DistributedEJBService 
 {
 
-    protected static DistributedEJBService distributedEJBService = null;
+    private static DistributedEJBService distributedEJBService 
+            = new DistributedEJBServiceFactory();
 
     private static DistributedReadOnlyBeanService _distributedReadOnlyBeanService
-        = new DistributedReadOnlyBeanServiceImpl();
-    public static DistributedEJBService getDistributedEJBService() {
-        if(distributedEJBService == null) {
-            distributedEJBService = new DistributedEJBServiceFactory();
-        } 
+            = new DistributedReadOnlyBeanServiceImpl();
 
+    public static DistributedEJBService getDistributedEJBService() {
         return distributedEJBService;
     }
-
-    protected DistributedEJBServiceFactory() {
-        distributedEJBService = this;
-    }
-
 
     public DistributedReadOnlyBeanService getDistributedReadOnlyBeanService() {
         return _distributedReadOnlyBeanService;
