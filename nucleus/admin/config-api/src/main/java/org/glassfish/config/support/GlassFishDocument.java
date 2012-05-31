@@ -85,21 +85,21 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                 ConfigBeanProxy source = (ConfigBeanProxy) event.getSource();
                 ConfigBean configBean = (ConfigBean) Dom.unwrap(source);
                 DomDocument doc = (DomDocument) configBean.document;
-                for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
-                    try {
-                        if (doc.getRoot().getProxyType().equals(Domain.class)) {
-                            Dom domainRoot = doc.getRoot();
-                            domainRoot.attribute("version", Version.getBuildVersion());
-                            pers.save(doc);
+                if (doc.getRoot().getProxyType().equals(Domain.class)) {
+                    for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
+                        try {
+                           Dom domainRoot = doc.getRoot();
+                           domainRoot.attribute("version", Version.getBuildVersion());
+                           pers.save(doc);
+                        } catch (IOException e) {
+                            logger.log(Level.SEVERE, "GlassFishDocument.IOException",
+                                    new String[] { e.getMessage() });
+                            logger.log(Level.FINE, e.getMessage(), e);
+                        } catch (XMLStreamException e) {
+                            logger.log(Level.SEVERE, "GlassFishDocument.XMLException",
+                                    new String[] { e.getMessage() });
+                            logger.log(Level.SEVERE, e.getMessage(), e);
                         }
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, "GlassFishDocument.IOException",
-                                new String[] { e.getMessage() });
-                        logger.log(Level.FINE, e.getMessage(), e);
-                    } catch (XMLStreamException e) {
-                        logger.log(Level.SEVERE, "GlassFishDocument.XMLException",
-                                new String[] { e.getMessage() });
-                        logger.log(Level.SEVERE, e.getMessage(), e);
                     }
                 }
             }
