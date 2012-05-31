@@ -66,7 +66,11 @@ import javax.security.auth.login.LoginException;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
+import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.AppservAccessController;
+
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
 
@@ -85,6 +89,9 @@ import org.glassfish.security.services.config.SecurityProviderConfig;
 public class AuthenticationServiceImpl implements AuthenticationService, PostConstruct {
 	@Inject
 	private Domain domain;
+
+	@Inject
+	ServerContext serverContext;
 
 	// Authentication Service Configuration Information
 	private String name = null;
@@ -140,6 +147,13 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
         	if (!lmEntries.isEmpty())
         		configuration = new AuthenticationJaasConfiguration(name,lmEntries);
         }
+
+        // If required, initialize the currently configured Realm instances
+        // TODO - Reconcile initialization with SecurityLifeCycle
+        if (usePasswordCredential && (realmName != null)) {
+        	RealmsManager realmsManager = Globals.getDefaultBaseServiceLocator().getComponent(RealmsManager.class);
+        	realmsManager.createRealms();
+        }
     }
 
 	@Override
@@ -166,6 +180,8 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 		if (_subject == null)
 			_subject = new Subject();
 
+		ClassLoader tcl = null;
+		boolean restoreTcl = false;
 		try {
 			// Unable to login without a JAAS Configuration instance
 			// TODO - Dynamic configuration handling?
@@ -179,6 +195,23 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 				setupPasswordCredential(_subject, handler);
 			}
 
+			// When needed, setup the Context ClassLoader so JAAS can load the LoginModule(s)
+			tcl = (ClassLoader) AppservAccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+				public ClassLoader run() {
+					return Thread.currentThread().getContextClassLoader();
+				}
+			});
+			final ClassLoader ccl = serverContext.getCommonClassLoader();
+			if (!ccl.equals(tcl)) {
+				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						Thread.currentThread().setContextClassLoader(ccl);
+						return null;
+					}
+				});
+				restoreTcl = true;
+			}
+
 			// Perform the login via the JAAS LoginContext
 			LoginContext context = new LoginContext(name, _subject, handler, configuration);
 			context.login();
@@ -189,6 +222,16 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 
 			throw (LoginException) new LoginException(
 					"AuthenticationService: "+ exc.getMessage()).initCause(exc);
+		} finally {
+			if (restoreTcl) {
+				final ClassLoader cl = tcl;
+				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						Thread.currentThread().setContextClassLoader(cl);
+						return null;
+					}
+				});
+			}
 		}
 
 		// Return the Subject that was logged in
