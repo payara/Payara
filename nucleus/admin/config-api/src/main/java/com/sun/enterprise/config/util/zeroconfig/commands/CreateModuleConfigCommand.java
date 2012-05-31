@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
-import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -61,11 +60,13 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigInjector;
+import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
-import java.io.InputStream;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.*;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,12 +92,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
     private Domain domain;
 
     @Inject
-    ModulesRegistry registry;
-
-    @Inject
     Habitat habitat;
-
-    private final static String PROPERTY_PREFIX = "-";
 
     @Param(optional = true, defaultValue = "false", name = "dryRun")
     private Boolean dryRun;
@@ -114,7 +110,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        String defaultConfigurationElements = null;
+        String defaultConfigurationElements;
         if (isAll && serviceName != null) {
             report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
                     "You can only use --all or specify a service name. These two options are exclusive."));
@@ -174,8 +170,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
             }
         } else if (serviceName != null) {
             String className = ZeroConfigUtils.convertConfigElementNameToClassNAme(serviceName);
-            Class configBeanType = null;
-            configBeanType = getClassFor(className, serviceName, report);
+            Class configBeanType = getClassFor(className, serviceName, report);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -204,24 +199,17 @@ public final class CreateModuleConfigCommand implements AdminCommand {
             }
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        return;
-
     }
 
-    private String getDefaultConfigFor(Class configBean, ActionReport report, String serviceName) throws Exception {
-        String configurationContent = null;
-        if (getDefaultSnippetUrl(configBean) == null) {
+    private String getDefaultConfigFor(Class configBeanType, ActionReport report, String serviceName) throws Exception {
+        if (getDefaultSnippetUrl(configBeanType) == null) {
             report.setMessage(localStrings.getLocalString("create.module.config.config.embedded.in.class", DEFAULT_FORMAT, serviceName));
-            //No snippet, try creating the xml using the bean itself. but add the message telling the user it comes
-            // form the bean itself and not the snippet.
+            return serializeConfigBeanByType(configBeanType);
         } else {
-            InputStream st = getDefaultSnippetUrl(configBean).openStream();
-            configurationContent = ZeroConfigUtils.streamToString(st, "utf-8");
+            InputStream st = getDefaultSnippetUrl(configBeanType).openStream();
+            return ZeroConfigUtils.streamToString(st, "utf-8");
         }
-        return configurationContent;
     }
-
-
 
     private boolean createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
         boolean defaultConfigCreated=false;
@@ -260,10 +248,9 @@ public final class CreateModuleConfigCommand implements AdminCommand {
     }
 
     private Class getClassFor(String className, String serviceName, ActionReport report) {
-        ConfigInjector injector = ((Habitat) habitat).getComponent(ConfigInjector.class, serviceName);
-        String clzName = null;
+        ConfigInjector injector = habitat.getComponent(ConfigInjector.class, serviceName);
         if (injector != null) {
-            clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
+            String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
             try {
                 return injector.getClass().getClassLoader().loadClass(clzName);
             } catch (ClassNotFoundException e) {
@@ -271,5 +258,25 @@ public final class CreateModuleConfigCommand implements AdminCommand {
             }
         }
         return null;
+    }
+
+    private String serializeConfigBeanByType(Class configBeanType) {
+        ConfigBeanProxy configBeanProxy = (ConfigBeanProxy) habitat.getComponent(configBeanType);
+        return serializeConfigBean(configBeanProxy);
+    }
+
+    private String serializeConfigBean(ConfigBeanProxy configBean) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
+        try {
+            XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
+            IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
+            Dom configBeanDom =  Dom.unwrap(configBean);
+            configBeanDom.writeTo(configBeanDom.model.getTagName(), indentingXMLStreamWriter);
+            indentingXMLStreamWriter.close();
+        } catch (XMLStreamException e) {
+            return null;
+        }
+        return bos.toString();
     }
 }
