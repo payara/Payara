@@ -146,8 +146,6 @@ public class EJBTimerService
     // amount of time the container waits between timer redelivery attempts.
     private long redeliveryInterval_      = REDELIVERY_INTERVAL;
 
-    private static final String TIMER_SERVICE_FILE =
-        "__timer_service_shutdown__.dat";
     private static final String TIMER_SERVICE_DOWNTIME_FORMAT =
         "yyyy/MM/dd HH:mm:ss";
 

@@ -396,7 +396,7 @@ public abstract class BaseContainer
 
     protected InterceptorManager interceptorManager;
 
-    protected static final Class[] lifecycleCallbackAnnotationClasses = {
+    private static final Class[] lifecycleCallbackAnnotationClasses = {
         PostConstruct.class, PrePassivate.class,
         PostActivate.class, PreDestroy.class
     };

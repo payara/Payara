@@ -122,6 +122,10 @@ public class PersistenceEJBTimerService extends EJBTimerService
     EjbTimerService ejbt = null;
     private DataSource timerDataSource = null;
 
+    private static final String TIMER_RESOURCE_JNDI = "jdbc/__TimerPool";
+    private static final String TIMER_SERVICE_APP_NAME = "ejb-timer-service-app";
+    private static final String TIMER_SERVICE_BEAN_NAME = "TimerBean";
+
     // Determines what needs to be done on connection failure
     private static final String ON_CONECTION_FAILURE = "operation-on-connection-failure";
     private static final String OP_REDELIVER = "redeliver";
@@ -1358,12 +1362,12 @@ public class PersistenceEJBTimerService extends EJBTimerService
         boolean is_upgrade = isUpgrade(resourceName, _ejbt, root);
 
         File rootScratchDir = _ejbContainerUtil.getServerEnvironment().getApplicationStubPath();
-        File appScratchFile = new File(rootScratchDir, EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+        File appScratchFile = new File(rootScratchDir, TIMER_SERVICE_APP_NAME);
 
         // Remember the value before the file is created during deploy
         boolean removeOldTimers = is_upgrade && !appScratchFile.exists();
 
-        boolean available = _ejbContainerUtil.getDeployment().isRegistered(EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+        boolean available = _ejbContainerUtil.getDeployment().isRegistered(TIMER_SERVICE_APP_NAME);
         if (available) {
             logger.log (Level.WARNING, "EJBTimerService had been explicitly deployed.");
         } else {
@@ -1378,8 +1382,8 @@ public class PersistenceEJBTimerService extends EJBTimerService
         if (available) {
             try {
                 ts = new PersistenceEJBTimerService("java:global/" +
-                        EjbContainerUtil.TIMER_SERVICE_APP_NAME + "/" +
-                        EjbContainerUtil.TIMER_SERVICE_BEAN_NAME, removeOldTimers);
+                        TIMER_SERVICE_APP_NAME + "/" + TIMER_SERVICE_BEAN_NAME, 
+                        removeOldTimers);
 
                 logger.log(Level.INFO, "ejb.timer_service_started", new Object[] { resourceName } );
             } catch (Exception ex) {
@@ -1408,7 +1412,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
     }
 
     private static String getTimerResource(EjbTimerService _ejbt) {
-        String resource = EjbContainerUtil.TIMER_RESOURCE_JNDI;
+        String resource = TIMER_RESOURCE_JNDI;
         if (_ejbt != null) {
             if (_ejbt.getTimerDatasource() != null) {
                 resource = _ejbt.getTimerDatasource();
@@ -1426,7 +1430,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
         logger.log (Level.INFO, "Loading EJBTimerService. Please wait.");
         File app = null;
         try {
-            app = FileUtils.getManagedFile(EjbContainerUtil.TIMER_SERVICE_APP_NAME + ".war",
+            app = FileUtils.getManagedFile(TIMER_SERVICE_APP_NAME + ".war",
                     new File(root, "lib/install/applications/"));
         } catch (Exception e) {
             logger.log (Level.WARNING, "Caught unexpected exception", e);
@@ -1434,11 +1438,10 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
         if (app == null || !app.exists()) {
             logger.log (Level.WARNING, "Cannot deploy or load persistent EJBTimerService: " +
-                    "required WAR file (" +
-                    EjbContainerUtil.TIMER_SERVICE_APP_NAME + ".war) is not installed");
+                    "required WAR file (" + TIMER_SERVICE_APP_NAME + ".war) is not installed");
         } else {
             DeployCommandParameters params = new DeployCommandParameters(app);
-            params.name = EjbContainerUtil.TIMER_SERVICE_APP_NAME;
+            params.name = TIMER_SERVICE_APP_NAME;
 
             try {
                 // appScratchFile is a marker file and needs to be created on Das on the
@@ -1515,8 +1518,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
                     logger.log (Level.WARNING, "Cannot upgrade EJBTimerService: " +
                             "required directory is not available");
                 } else {
-                    Java2DBProcessorHelper h = new Java2DBProcessorHelper(
-                            EjbContainerUtil.TIMER_SERVICE_APP_NAME);
+                    Java2DBProcessorHelper h = new Java2DBProcessorHelper(TIMER_SERVICE_APP_NAME);
                     success = h.executeDDLStatement(
                             dir.getCanonicalPath() + "/ejbtimer_upgrade_", resource);
                     ConfigSupport.apply(new SingleConfigCode<Property>() {

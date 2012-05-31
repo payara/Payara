@@ -684,8 +684,10 @@ public abstract class AbstractSingletonContainer
                             CallbackType.PRE_DESTROY, singletonCtx);
 
                 } catch ( Throwable t ) {
-                    ejbInv.exception = t;
-                     _logger.log(Level.FINE, "ejbRemove exception", t);                    
+                    if( ejbInv != null ) {
+                        ejbInv.exception = t;
+                    }
+                    _logger.log(Level.FINE, "ejbRemove exception", t);                    
                 } finally {
                     singletonCtx.setInEjbRemove(false);
                     if( ejbInv != null ) {

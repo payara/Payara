@@ -76,17 +76,13 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 @Contract
 public interface EjbContainerUtil {
 
-    public String TIMER_SERVICE_APP_NAME = "ejb-timer-service-app";
-
-    public String TIMER_SERVICE_BEAN_NAME = "TimerBean";
-
-    public String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
-
-    public String TIMER_RESOURCE_JNDI = "jdbc/__TimerPool";
-    
     public static final String DEFAULT_THREAD_POOL_NAME = "__ejb-thread-pool";
 
+    // Used by the TimerService upgrade
     public long MINIMUM_TIMER_DELIVERY_INTERVAL = 1000;
+
+    // Used by the TimerService upgrade
+    public String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
 
     public GlassFishORBHelper getORBHelper();
     
