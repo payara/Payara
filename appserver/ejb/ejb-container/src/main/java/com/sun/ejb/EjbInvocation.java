@@ -80,7 +80,7 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 
 public class EjbInvocation
     extends ComponentInvocation
-    implements InvocationContext, TransactionOperationsManager, Cloneable,
+    implements InvocationContext, TransactionOperationsManager, 
          org.glassfish.ejb.api.EJBInvocation, InterceptorManager.AroundInvokeContext
 {
   

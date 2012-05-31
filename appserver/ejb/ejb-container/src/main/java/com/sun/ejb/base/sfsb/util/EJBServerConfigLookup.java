@@ -240,11 +240,10 @@ public final class EJBServerConfigLookup {
         }
 
         String easString = eas.getAvailabilityEnabled();
-        Boolean bool = this.toBoolean(easString);
-        if (bool == null) {
+        if (easString == null) {
             return globalAvailabilityEnabled;
         } else {
-            return bool.booleanValue();
+            return toBoolean(easString);
         }
     }
 
@@ -261,11 +260,10 @@ public final class EJBServerConfigLookup {
         }
 
         String easString = eas.getAvailabilityEnabled();
-        Boolean bool = this.toBoolean(easString);
-        if (bool == null) {
+        if (easString == null) {
             return inheritedValue;
         } else {
-            return bool.booleanValue();
+            return toBoolean(easString);
         }
     }
 
@@ -293,11 +291,10 @@ public final class EJBServerConfigLookup {
         String availabilityEnabledString =
                 extraDescriptors.getAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED);
 
-        Boolean bool = this.toBoolean(availabilityEnabledString);
-        if (bool == null) {
+        if (availabilityEnabledString == null) {
             return true;
         } else {
-            return bool.booleanValue();
+            return toBoolean(availabilityEnabledString);
         }
 
     }
@@ -316,11 +313,10 @@ public final class EJBServerConfigLookup {
         String availabilityEnabledString =
                 extraDescriptors.getAttributeValue(IASEjbExtraDescriptors.AVAILABILITY_ENABLED);
 
-        Boolean bool = this.toBoolean(availabilityEnabledString);
-        if (bool == null) {
+        if (availabilityEnabledString == null) {
             return inheritedValue;
         } else {
-            return bool.booleanValue();
+            return toBoolean(availabilityEnabledString);
         }
 
     }
@@ -419,22 +415,19 @@ public final class EJBServerConfigLookup {
     }
 
     /**
-     * convert the input value to the appropriate Boolean value
-     * if input value is null, return null
+     * convert the input value to the appropriate boolean value
      */
-    protected Boolean toBoolean(String value) {
-        if (value == null) return null;
-
+    private boolean toBoolean(String value) {
         if (value.equalsIgnoreCase("true"))
-            return Boolean.TRUE;
+            return true;
         if (value.equalsIgnoreCase("yes"))
-            return Boolean.TRUE;
+            return true;
         if (value.equalsIgnoreCase("on"))
-            return Boolean.TRUE;
+            return true;
         if (value.equalsIgnoreCase("1"))
-            return Boolean.TRUE;
+            return true;
 
-        return Boolean.FALSE;
+        return false;
     }
 
     private boolean isReplicationTypeMemory() {
