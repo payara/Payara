@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0-b39</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-common-web-l10n</artifactId>
@@ -63,7 +63,7 @@
                         <if test="${do.compression}">
 			    <property name="compression" value="true" />
 			</if>
-                        <ant dir="." antfile="build.xml" target="create.package"/>
+                        <ant dir="." antfile="build.xml" target="create.package" />
                     </tasks>
                 </configuration>               
              </plugin>

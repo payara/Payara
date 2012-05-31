@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-build-setup-parent</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0-b39</version>
     </parent>
 
     <artifactId>glassfish-obr-builder</artifactId>
