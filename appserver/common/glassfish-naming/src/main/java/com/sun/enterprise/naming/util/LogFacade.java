@@ -40,7 +40,8 @@
 
 package com.sun.enterprise.naming.util;
 
-import org.glassfish.logging.LoggerInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 import java.util.logging.Logger;
 
@@ -48,7 +49,10 @@ public class LogFacade {
     @LoggerInfo(subsystem = "glassfish-naming", description = "logger for GlassFish appserver naming", publish = true)
     public static final String NAMING_LOGGER_NAME = "org.glassfish.naming";
 
-    public static final Logger logger = Logger.getLogger(NAMING_LOGGER_NAME, NAMING_LOGGER_NAME + ".LogMessages");
+    @LogMessagesResourceBundle
+    public static final String NAMING_LOGGER_RB = NAMING_LOGGER_NAME + ".LogMessages";
+
+    public static final Logger logger = Logger.getLogger(NAMING_LOGGER_NAME, NAMING_LOGGER_RB);
 
     private LogFacade() {}
 

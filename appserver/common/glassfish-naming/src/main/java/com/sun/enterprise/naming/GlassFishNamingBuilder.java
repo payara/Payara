@@ -43,7 +43,7 @@ package com.sun.enterprise.naming;
 import com.sun.enterprise.naming.impl.SerialInitContextFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;

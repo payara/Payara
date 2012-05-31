@@ -41,7 +41,7 @@
 package com.sun.enterprise.naming.impl;
 
 import com.sun.enterprise.naming.util.NamingUtilsImpl;
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.omg.CORBA.ORB;
 
 import javax.naming.CompositeName;

@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.naming.util;
 
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;

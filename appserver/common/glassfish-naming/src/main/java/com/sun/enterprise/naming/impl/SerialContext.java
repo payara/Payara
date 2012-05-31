@@ -47,7 +47,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.omg.CORBA.ORB;
