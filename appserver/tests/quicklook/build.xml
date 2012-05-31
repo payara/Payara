@@ -52,7 +52,7 @@
     <description>Builds, tests, and runs the project V3 Quicklook</description>
 
     <target name="all_cluster">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <antcall target="start-server-felix"/>
         <antcall target="build-cluster"/>
         <antcall target="runtest">
@@ -60,16 +60,16 @@
         </antcall>
         <antcall target="stop-server"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <target name="all_embedded">
-        <record name="embeddedrun.output" action="start"/>
+        <record name="${basedir}/embeddedrun.output" action="start"/>
 	<ant dir="ejb/embedded" target="build"/>
         <antcall target="runtest-embedded">
             <param name="testng.xml" value="testng/testng_em.xml"/>
         </antcall>
-        <record name="embeddedrun.output" action="stop"/>
+        <record name="${basedir}/embeddedrun.output" action="stop"/>
     </target>
 
     <target name="build-cluster">
@@ -80,7 +80,7 @@
 
     <!-- target name="all_wd" depends="clean" -->
     <target name="all_wd" >
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <property name="env.security_manager" value="OFF"/>
         <antcall target="verify-xml"/>
         <antcall target="start-derby"/>
@@ -95,11 +95,11 @@
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-WP-report.html"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <target name="all_wd_security">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <antcall target="add-quicklook-policy-grants" />
         <property name="env.security_manager" value="ON"/>
 
@@ -117,7 +117,7 @@
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-WP-report.html"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <target name="start_server_with_security_manager_enabled">
@@ -141,7 +141,7 @@
 
     <!-- Target for testing glassfish distribution (containing EJB)  -->
     <target name="all" depends="clean">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <property name="env.security_manager" value="OFF"/>
         <antcall target="verify-xml"/>
         <antcall target="start-derby"/>
@@ -159,12 +159,12 @@
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <!-- Target for testing glassfish distribution (containing EJB)  -->
     <target name="all_ri" depends="clean">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <property name="env.security_manager" value="OFF"/>
         <antcall target="verify-xml"/>
         <antcall target="start-derby"/>
@@ -181,12 +181,12 @@
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <!-- Target for testing glassfish distribution (containing EJB)  -->
     <target name="all_gd_security" depends="clean">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <antcall target="add-quicklook-policy-grants" />
         <property name="env.security_manager" value="ON"/>
         <antcall target="verify-xml"/>
@@ -210,12 +210,12 @@
         <copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <!-- Target for testing glassfish distribution (containing EJB)  -->
     <target name="dev_debug" depends="clean">
-        <record name="allrun.output" action="start"/>
+        <record name="${basedir}/allrun.output" action="start"/>
         <antcall target="verify-xml"/>
         <antcall target="start-derby"/>
         <antcall target="build-deploy"/>
@@ -225,11 +225,11 @@
         <antcall target="stop-derby"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
-        <record name="allrun.output" action="stop"/>
+        <record name="${basedir}/allrun.output" action="stop"/>
     </target>
 
     <target name="build-deploy">
-        <record name="build.output" action="start"/>
+        <record name="${basedir}/build.output" action="start"/>
         <echo message="ANT PROJECT ${ant.project.name}"/>
         <ant dir="amx" target="build"/>
         <ant dir="admin" target="build"/>
@@ -250,7 +250,7 @@
         <ant dir="weld/numberguess" target="build-deploy"/>
         <ant dir="weld/osgiweld" target="build-deploy"/>
         <ant dir="weld/extensions" target="build-deploy"/>
-        <record name="build.output" action="stop"/>
+        <record name="${basedir}/build.output" action="stop"/>
     </target>
 
     <target name="build-deploy-gd">
@@ -268,7 +268,7 @@
     </target>
 
     <target name="undeploy">
-        <record name="undeploy.output" action="start"/>
+        <record name="${basedir}/undeploy.output" action="start"/>
         <ant dir="web/helloworld" target="undeploy"/>
         <ant dir="web/jsfastrologer" target="undeploy"/>
         <ant dir="web/jsfinjection" target="undeploy"/>
@@ -283,7 +283,7 @@
         <ant dir="weld/numberguess" target="undeploy"/>
         <ant dir="weld/osgiweld" target="undeploy"/>
         <ant dir="weld/extensions" target="undeploy"/>
-        <record name="undeploy.output" action="stop"/>
+        <record name="${basedir}/undeploy.output" action="stop"/>
     </target>
 
     <target name="undeploy-gd">
@@ -325,7 +325,7 @@
     
     <!-- Target is re-definted here as didn't want to specify ws.root property -->
     <target  name="runtest" depends="initprops,setOSConditions,asenv-unix,asenv-windows">    
-        <record name="runtestng.output" action="start"/>
+        <record name="${basedir}/runtestng.output" action="start"/>
         <echo message="=============Starting TestNG functional tests from ${testng.xml} ============"/>    
         <property name="hasTestNGXML" value="true"/>
         
@@ -343,11 +343,11 @@
             <!--<classfileset dir="classes/test" includes="**/SeleniumTest.class"/>-->         
             <xmlfileset dir="." includes="${testng.xml}"/>
         </testng>
-        <record name="runtestng.output" action="stop"/>
+        <record name="${basedir}/runtestng.output" action="stop"/>
     </target>  
     
     <target  name="runtest-embedded" depends="initprops">
-        <record name="runtestng.output" action="start"/>
+        <record name="${basedir}/runtestng.output" action="start"/>
         <mkdir dir="${test.report}"/>    
         <testng outputdir="${test.report}"
                 classpathref="embedded.testng.classpath">
@@ -356,7 +356,7 @@
             <sysproperty key="BASEDIR" value="${basedir}"/>
             <xmlfileset dir="." includes="${testng.xml}"/>
         </testng>
-        <record name="runtestng.output" action="stop"/>
+        <record name="${basedir}/runtestng.output" action="stop"/>
     </target>
 
     <!-- Generate the TestNG report -->
