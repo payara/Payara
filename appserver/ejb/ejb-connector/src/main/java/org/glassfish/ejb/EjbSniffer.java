@@ -56,7 +56,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.io.File;
@@ -74,9 +73,6 @@ import java.lang.annotation.Annotation;
 @Service(name="Ejb")
 @Scoped(Singleton.class)
 public class EjbSniffer  extends GenericSniffer {
-
-    @Inject
-    BaseServiceLocator habitat;    
 
     @Inject EjbType ejbType;
 
