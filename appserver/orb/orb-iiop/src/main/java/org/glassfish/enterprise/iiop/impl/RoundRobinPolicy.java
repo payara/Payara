@@ -45,7 +45,7 @@ import com.sun.corba.ee.spi.folb.SocketInfo;
 import com.sun.jndi.cosnaming.IiopUrl;
 import com.sun.logging.LogDomains;
 import org.glassfish.internal.api.ORBLocator;
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;

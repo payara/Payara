@@ -76,22 +76,7 @@
                 <artifactId>hk2-maven-plugin</artifactId>
                 <configuration>
                     <generatedSourcesDirectory>generated-sources/src/main/java</generatedSourcesDirectory>
-                    <compilerArguments>
-                        <processor>org.glassfish.annotation.processing.LogMessageInfoAnnotationProcessor</processor>
-                        <!--
-                            Required parameter: Package where LogMessages.properties will be generated.
-                            It will typically be the top level package in the module.
-                        -->
-                        <A>-AresourceBundlePackage=org.glassfish.orb</A>
-                    </compilerArguments>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.glassfish.annotations</groupId>
-                        <artifactId>source-annotation-processor</artifactId>
-                        <version>1.0</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -173,8 +158,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
-            <artifactId>source-annotation-processor</artifactId>
-            <version>1.0</version>
+            <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

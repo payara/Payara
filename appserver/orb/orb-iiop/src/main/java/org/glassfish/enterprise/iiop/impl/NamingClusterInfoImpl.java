@@ -46,8 +46,9 @@ import org.glassfish.api.naming.NamingObjectsProvider;
 import org.glassfish.hk2.Provider;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.api.ORBLocator;
-import org.glassfish.logging.LogMessageInfo;
-import org.glassfish.logging.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
@@ -71,7 +72,10 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
     @LoggerInfo(subsystem = "orb", description = "logger for GlassFish appserver orb modules", publish = true)
     public static final String ORB_LOGGER_NAME = "org.glassfish.orb";
 
-    public static final Logger logger = Logger.getLogger(ORB_LOGGER_NAME, ORB_LOGGER_NAME + ".LogMessages");
+    @LogMessagesResourceBundle
+    public static final String ORB_LOGGER_RB = ORB_LOGGER_NAME + ".LogMessages";
+
+    public static final Logger logger = Logger.getLogger(ORB_LOGGER_NAME, ORB_LOGGER_RB);
 
     @LogMessageInfo(message = "Exception occurred when resolving {0}",
     cause = "org.omg.CORBA.ORBPackage.InvalidName when trying to resolve GroupInfoService",

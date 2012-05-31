@@ -44,7 +44,7 @@ package org.glassfish.enterprise.iiop.impl;
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.GroupInfoService;
 import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
-import org.glassfish.logging.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.util.List;
 import java.util.logging.Level;
