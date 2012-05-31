@@ -436,6 +436,12 @@
 	<property name="Java_SE" value="${basedir}/classes/EJB_remoteview/app"/>
         <property name="test.report" value="${basedir}/test-output"/>
         <mkdir dir="${test.report}"/>
+        <path id="junit.path">
+            <pathelement path="${plugin_classpath}"/>
+        </path>
+        <typedef name="junitreport"
+                 classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator"
+                 classpathref="junit.path"/>
         <path id="run.testng.classpath">
             <fileset dir="${glassfish.home}/modules">
                <include name="**/hk2*.jar"/>
