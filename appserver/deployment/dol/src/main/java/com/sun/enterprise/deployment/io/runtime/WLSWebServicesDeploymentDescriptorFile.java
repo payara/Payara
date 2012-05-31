@@ -62,8 +62,10 @@ public class WLSWebServicesDeploymentDescriptorFile extends DeploymentDescriptor
     private String descriptorPath;
 
     public WLSWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {
-        descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(DOLUtils.warType())) ?
+        if (desc instanceof WebServicesDescriptor) {
+            descriptorPath = (((WebServicesDescriptor)desc).getBundleDescriptor().getModuleType().equals(DOLUtils.warType())) ?
                 WLDescriptorConstants.WL_WEB_WEBSERVICES_JAR_ENTRY : WLDescriptorConstants.WL_EJB_WEBSERVICES_JAR_ENTRY;
+        }
     }
 
     @Override

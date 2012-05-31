@@ -70,7 +70,6 @@ public class AnnotationScanner implements ClassVisitor {
            String[] interfaces) {
 
         this.className = name;
-        this.signature = signature;
     }
 
     public void visitSource(String s, String s1) {}

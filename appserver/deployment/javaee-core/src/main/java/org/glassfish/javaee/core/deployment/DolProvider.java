@@ -322,7 +322,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             deployment.getSniffers(archiveHandler, null, context);
             return processDOL(context);
         } finally  {
-            if (cl != null) {
+            if (cl != null && cl instanceof PreDestroy) {
                 try {
                     PreDestroy.class.cast(cl).preDestroy();
                 } catch (Exception e) {

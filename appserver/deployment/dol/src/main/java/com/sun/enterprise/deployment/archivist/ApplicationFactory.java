@@ -161,22 +161,21 @@ public class ApplicationFactory implements ContractProvider {
         // we are not reading the runtime deployment descriptor now...
         archivist.setHandleRuntimeInfo(false);
 
-        RootDeploymentDescriptor descriptor = archivist.open(in);
+        BundleDescriptor descriptor = archivist.open(in);
         Application application;
         if (descriptor instanceof Application) {
             application = (Application) descriptor;
             application.setAppName(appName);
             application.setRegistrationName(appName);
         } else {
-            BundleDescriptor aBundle = (BundleDescriptor) descriptor;
-            if (aBundle == null) {
+            if (descriptor == null) {
                 logger.log(Level.SEVERE, localStrings.getLocalString(
                         "enterprise.deployment.cannotreadDDs",
                         "Cannot read the Deployment Descriptors for module {0}",
                         new Object[]{in.getURI()}));
                 return null;
             }
-            ModuleDescriptor newModule = archivist.createModuleDescriptor(aBundle);
+            ModuleDescriptor newModule = archivist.createModuleDescriptor(descriptor);
             newModule.setArchiveUri(in.getURI().getSchemeSpecificPart());
             application = Application.createVirtualApplication(appName,newModule);
         }
@@ -211,13 +210,12 @@ public class ApplicationFactory implements ContractProvider {
         if (xmlValidationLevel.equals("none")) {
             archivist.setXMLValidation(false);
         }
-        RootDeploymentDescriptor desc = archivist.readStandardDeploymentDescriptor(archive);
+        BundleDescriptor desc = archivist.readStandardDeploymentDescriptor(archive);
         Application application = null;
         if (desc instanceof Application) {
             application = (Application)desc;
-        } else if (desc instanceof BundleDescriptor) {
-            BundleDescriptor aBundle = (BundleDescriptor)desc;
-            ModuleDescriptor newModule = archivist.createModuleDescriptor(aBundle);
+        } else {
+            ModuleDescriptor newModule = archivist.createModuleDescriptor(desc);
             newModule.setArchiveUri(archive.getURI().getSchemeSpecificPart());
             String moduleName = newModule.getModuleName();
             application = Application.createVirtualApplication(moduleName, newModule);

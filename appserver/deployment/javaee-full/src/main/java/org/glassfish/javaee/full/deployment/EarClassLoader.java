@@ -123,7 +123,10 @@ public class EarClassLoader extends ASURLClassLoader
 
     private boolean isRARCL(ClassLoader loader) {
         DelegatingClassLoader connectorCL = (DelegatingClassLoader) this.getParent();
-        return connectorCL.getDelegates().contains(loader);
+        if (!(loader instanceof DelegatingClassLoader.ClassFinder)) {
+            return false;
+        }
+        return connectorCL.getDelegates().contains((DelegatingClassLoader.ClassFinder)loader);
     }
 
     private static class ClassLoaderHolder {
