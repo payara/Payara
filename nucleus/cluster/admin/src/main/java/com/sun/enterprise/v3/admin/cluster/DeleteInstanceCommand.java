@@ -94,7 +94,7 @@ public class DeleteInstanceCommand implements AdminCommand {
     @Param(name = "instance_name", primary = true)
     private String instanceName;
 
-    @Param(defaultValue = "false")
+    @Param(defaultValue = "false", optional=true)
     private boolean terse;
 
     private Server instance;
