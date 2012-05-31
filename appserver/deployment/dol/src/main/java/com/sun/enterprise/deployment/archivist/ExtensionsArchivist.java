@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -54,6 +55,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.List;
 
 /**
  * An extension archivist is processing extensions deployment descriptors like
@@ -70,6 +72,16 @@ public abstract class ExtensionsArchivist  {
 
     protected final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
+    // configuration DD files associated with this archivist
+    protected List<DeploymentDescriptorFile> confDDFiles;
+
+    // the sorted configuration DD files with precedence from
+    // high to low
+    private List<DeploymentDescriptorFile> sortedConfDDFiles;
+
+    // configuration DD file that will be used
+    private DeploymentDescriptorFile confDD;
+
     /**
      * @return the DeploymentDescriptorFile responsible for handling
      *         standard deployment descriptor
@@ -77,18 +89,23 @@ public abstract class ExtensionsArchivist  {
     public abstract DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor);
 
     /**
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
+     */
+    public abstract List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor);
+
+    /**
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        DeploymentDescriptorFile ddFile = getWLSConfigurationDDFile(descriptor);
-        if (ddFile == null) {
-            ddFile = getGFConfigurationDDFile(descriptor);
+    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+        if (confDD == null) {
+            getSortedConfigurationDDFiles(descriptor, archive);
+            if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {
+               confDD = sortedConfDDFiles.get(0);
+            }
         }
-        if (ddFile == null) {
-            ddFile = getSunConfigurationDDFile(descriptor);
-        }
-        return ddFile;
+        return confDD;
     }
 
     /**
@@ -110,32 +127,6 @@ public abstract class ExtensionsArchivist  {
     public ModuleScanner getScanner() {
         return null;
     }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the WLS configuration deployment descriptors
-     */
-    public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return null;
-    }
-
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the GlassFish configuration deployment descriptors
-     */
-    public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return null;
-    }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the Sun configuration deployment descriptors
-     */
-    public DeploymentDescriptorFile getSunConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return null;
-    }
-
 
     /**
      * Add the extension descriptor to the main descriptor
@@ -200,7 +191,7 @@ public abstract class ExtensionsArchivist  {
      public Object readRuntimeDeploymentDescriptor(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
             throws IOException, SAXParseException {
 
-        DeploymentDescriptorFile ddFile = getConfigurationDDFile(descriptor);
+        DeploymentDescriptorFile ddFile = getConfigurationDDFile(descriptor, archive);
 
         // if this extension archivist has no runtime DD, just return the 
         // original descriptor
@@ -208,103 +199,15 @@ public abstract class ExtensionsArchivist  {
             return descriptor;
         }
 
-        InputStream is = null;
-        InputStream gfIs = null;
-        InputStream sunIs = null;
-        try {
-            DeploymentDescriptorFile confDD = getWLSConfigurationDDFile(descriptor);
-            if (confDD != null) {
-                is = archive.getEntry(confDD.getDeploymentDescriptorPath());
-            }
+        DOLUtils.readRuntimeDeploymentDescriptor(getSortedConfigurationDDFiles(descriptor, archive), archive, descriptor, main,true);
 
-            DeploymentDescriptorFile gfConfDD = getGFConfigurationDDFile(descriptor);
-            if (gfConfDD != null) {
-                gfIs = archive.getEntry(gfConfDD.getDeploymentDescriptorPath());
-            }
-
-            DeploymentDescriptorFile sunConfDD = getSunConfigurationDDFile(descriptor);
-            if (sunConfDD != null) {
-                sunIs = archive.getEntry(sunConfDD.getDeploymentDescriptorPath());
-            }
-
-            // use WLS DD if it exists, then the GF DD, then the Sun DD
-            if (is != null && confDD != null) {
-                if (gfIs != null) {
-                    logger.log(Level.WARNING, "wls.counterpart.configdd.exists",
-                        new Object[] {
-                        gfConfDD.getDeploymentDescriptorPath(),
-                        archive.getURI().getSchemeSpecificPart(),
-                        confDD.getDeploymentDescriptorPath()});
-                }
-                if (sunIs != null) {
-                    logger.log(Level.WARNING, "wls.counterpart.configdd.exists",
-                        new Object[] {
-                        sunConfDD.getDeploymentDescriptorPath(),
-                        archive.getURI().getSchemeSpecificPart(),
-                        confDD.getDeploymentDescriptorPath()});
-                }
-                if (archive.getURI() != null) {
-                    confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
-                }
-                confDD.setXMLValidation(main.getRuntimeXMLValidation());
-                confDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
-                confDD.read(descriptor, is);
-            } else {
-                if (gfIs != null) {
-                     if (sunIs != null) {
-                         logger.log(Level.WARNING,
-                         "gf.counterpart.configdd.exists",
-                         new Object[] {
-                         sunConfDD.getDeploymentDescriptorPath(),
-                         archive.getURI().getSchemeSpecificPart(),
-                         gfConfDD.getDeploymentDescriptorPath()});
-                     }
-                     if (archive.getURI() != null) {
-                        gfConfDD.setErrorReportingString(
-                            archive.getURI().getSchemeSpecificPart());
-                     }
-                     gfConfDD.setXMLValidation(main.getRuntimeXMLValidation());
-                     gfConfDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
-                     gfConfDD.read(descriptor, gfIs);
-                } else {
-                    if (sunIs != null && sunConfDD != null) {
-                        // try to read from the legacy sun deployment descriptor
-                        logger.log(Level.FINE, "sun.configdd.deprecate",
-                            new Object[] {
-                            sunConfDD.getDeploymentDescriptorPath(),
-                            archive.getURI().getSchemeSpecificPart(),
-                            gfConfDD.getDeploymentDescriptorPath()});
-
-                        if (archive.getURI() != null) {
-                            sunConfDD.setErrorReportingString(
-                                archive.getURI().getSchemeSpecificPart());
-                        }
-                        sunConfDD.setXMLValidation(main.getRuntimeXMLValidation());
-                        sunConfDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
-                        sunConfDD.read(descriptor, sunIs);
-                    }
-                }
-            }
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) {                
-                }
-            }
-            if (gfIs != null) {
-                try {
-                    gfIs.close();
-                } catch (IOException ioe) {
-                }
-            }
-            if (sunIs != null) {
-                try {
-                    sunIs.close();
-                } catch (IOException ioe) {
-                }
-            }
-        }
         return descriptor;
+    }
+
+    private List<DeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+        if (sortedConfDDFiles == null) {
+            sortedConfDDFiles = DOLUtils.processConfigurationDDFiles(getConfigurationDDFiles(descriptor), archive);
+        }
+        return sortedConfDDFiles;
     }
 }

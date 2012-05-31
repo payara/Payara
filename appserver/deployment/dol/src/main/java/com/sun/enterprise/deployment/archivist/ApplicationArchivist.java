@@ -789,33 +789,21 @@ public class ApplicationArchivist extends Archivist<Application> {
         return standardDD;
     }   
     
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the glassfish configuration deployment descriptors
-     */
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        return new GFApplicationRuntimeDDFile();
-    }   
 
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the Sun configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getSunConfigurationDDFile() {
-        return new ApplicationRuntimeDDFile();
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new WLSApplicationRuntimeDDFile());
+            confDDFiles.add(new GFApplicationRuntimeDDFile());
+            confDDFiles.add(new ApplicationRuntimeDDFile());
+        }
+        return confDDFiles;
     }
 
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the WL configuration deployment descriptors
-     */
-    @Override
-    public DeploymentDescriptorFile getWLSConfigurationDDFile() {
-        return new WLSApplicationRuntimeDDFile();
-    }
-    
     /**
      * Perform Optional packages dependencies checking on an archive 
      */

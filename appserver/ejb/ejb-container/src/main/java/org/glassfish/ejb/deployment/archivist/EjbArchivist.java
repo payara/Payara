@@ -62,6 +62,8 @@ import org.jvnet.hk2.component.PerLookup;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This class is responsible for handling J2EE EJB Bundlearchive files.
@@ -78,10 +80,6 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      */
     private EjbDeploymentDescriptorFile standardDD;
     
-    private EjbRuntimeDDFile ejbRuntimeDD;
-
-    private GFEjbRuntimeDDFile gfEjbRuntimeDD;
-
     @Inject
     private org.glassfish.ejb.EjbType ejbType;
 
@@ -124,26 +122,16 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     }
 
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the glassfish configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        if (gfEjbRuntimeDD == null) {
-            gfEjbRuntimeDD = new GFEjbRuntimeDDFile();
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new GFEjbRuntimeDDFile());
+            confDDFiles.add(new EjbRuntimeDDFile());
         }
-        return gfEjbRuntimeDD;
-    }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the Sun configuration deployment descriptors
-     */
-    public DeploymentDescriptorFile getSunConfigurationDDFile() {
-        if (ejbRuntimeDD == null) {
-            ejbRuntimeDD = new EjbRuntimeDDFile();
-        }
-        return ejbRuntimeDD;
+        return confDDFiles;
     }
 
     /**

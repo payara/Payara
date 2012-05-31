@@ -57,6 +57,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
@@ -104,14 +106,16 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
     }
     
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the glassfish configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        return new ConnectorRuntimeDDFile();
-    }   
-    
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new ConnectorRuntimeDDFile());
+        }
+        return confDDFiles;
+    }
 
     /**
      * @return a default BundleDescriptor for this archivist

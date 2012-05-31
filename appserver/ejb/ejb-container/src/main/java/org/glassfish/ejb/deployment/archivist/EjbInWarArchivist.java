@@ -41,6 +41,9 @@
 package org.glassfish.ejb.deployment.archivist;
 
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import java.util.List;
+import java.util.ArrayList;
+
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
@@ -74,12 +77,6 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
 
     private EjbInWarDeploymentDescriptorFile standardDD;
 
-    private WLSEjbInWarRuntimeDDFile wlsEjbInWarRuntimeDD;
-
-    private GFEjbInWarRuntimeDDFile gfEjbInWarRuntimeDD;
-
-    private EjbInWarRuntimeDDFile ejbInWarRuntimeDD;
-
     /**
      * @return the DeploymentDescriptorFile responsible for handling
      *         standard deployment descriptor
@@ -92,28 +89,18 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
         return standardDD;
     }
 
-    @Override
-    public DeploymentDescriptorFile getWLSConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        if (wlsEjbInWarRuntimeDD == null) {
-            wlsEjbInWarRuntimeDD = new WLSEjbInWarRuntimeDDFile();
+    /**
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
+     */
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new WLSEjbInWarRuntimeDDFile());
+            confDDFiles.add(new GFEjbInWarRuntimeDDFile());
+            confDDFiles.add(new EjbInWarRuntimeDDFile());
         }
-        return wlsEjbInWarRuntimeDD;
-    }
-
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        if (gfEjbInWarRuntimeDD == null) {
-            gfEjbInWarRuntimeDD = new GFEjbInWarRuntimeDDFile();
-        }
-        return gfEjbInWarRuntimeDD;
-    }
-
-    @Override
-    public DeploymentDescriptorFile getSunConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        if (ejbInWarRuntimeDD == null) {
-            ejbInWarRuntimeDD = new EjbInWarRuntimeDDFile();
-        }
-        return ejbInWarRuntimeDD;
+        return confDDFiles;
     }
 
     /**

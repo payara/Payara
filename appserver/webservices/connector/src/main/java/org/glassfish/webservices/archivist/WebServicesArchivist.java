@@ -55,6 +55,8 @@ import org.glassfish.webservices.io.WebServicesDeploymentDescriptorFile;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -68,8 +70,16 @@ public class WebServicesArchivist extends ExtensionsArchivist {
         return new WebServicesDeploymentDescriptorFile(descriptor);
     }
 
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return new WLSWebServicesDeploymentDescriptorFile(descriptor); 
+    /**
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
+     */
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new WLSWebServicesDeploymentDescriptorFile(descriptor));
+        }
+        return confDDFiles;
     }
 
     public boolean supportsModuleType(ArchiveType moduleType) {

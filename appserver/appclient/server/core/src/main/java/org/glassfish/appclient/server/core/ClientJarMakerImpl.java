@@ -214,9 +214,9 @@ class ClientJarMakerImpl implements ClientJarMaker {
                     embeddedFiles);
 
                 // every module may not have a sun descriptor, e.g. par file does not have one.
-                if(moduleArchivist.getConfigurationDDFile()!=null) {
+                if(moduleArchivist.getConfigurationDDFile(subSource)!=null) {
                     copy(subSource, subSource2, subTarget,
-                        moduleArchivist.getConfigurationDDFile().getDeploymentDescriptorPath(),
+                        moduleArchivist.getConfigurationDDFile(subSource).getDeploymentDescriptorPath(),
                         embeddedFiles);
                 }
 
@@ -290,8 +290,7 @@ class ClientJarMakerImpl implements ClientJarMaker {
             archivist.getStandardDDFile().getDeploymentDescriptorPath(),
             xmlFiles);
         copy(source, source2, target, 
-            archivist.getConfigurationDDFile().getDeploymentDescriptorPath(),
-            xmlFiles);
+            archivist.getConfigurationDDFile(source).getDeploymentDescriptorPath(), xmlFiles);
     }
 
     /**

@@ -48,6 +48,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -66,11 +67,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -78,6 +82,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
+import org.xml.sax.SAXParseException;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.ContractLocator;
 import org.glassfish.hk2.classmodel.reflect.Types;
@@ -249,6 +254,95 @@ public class DOLUtils {
         return result;
     }
 
+    // process the list of the configuration files, and return the sorted
+    // configuration file with precedence from high to low
+    // this list does not take consideration of what runtime files are 
+    // present in the current archive
+    private static List<DeploymentDescriptorFile> sortConfigurationDDFiles(List<DeploymentDescriptorFile> ddFiles) {
+        DeploymentDescriptorFile wlsConfDD = null;
+        DeploymentDescriptorFile gfConfDD = null;
+        DeploymentDescriptorFile sunConfDD = null;
+        for (DeploymentDescriptorFile ddFile : ddFiles) {
+            String ddPath = ddFile.getDeploymentDescriptorPath();
+            if (ddPath.indexOf(DescriptorConstants.WLS) != -1) {
+                wlsConfDD = ddFile;
+            } else if (ddPath.indexOf(DescriptorConstants.GF_PREFIX) != -1) {
+                gfConfDD = ddFile;
+            } else if (ddPath.indexOf(DescriptorConstants.S1AS_PREFIX) != -1) {
+                sunConfDD = ddFile;
+            }
+        }
+        List<DeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<DeploymentDescriptorFile>(); 
+        if (wlsConfDD != null) { 
+            sortedConfDDFiles.add(wlsConfDD);
+        }
+        if (gfConfDD != null) {
+            sortedConfDDFiles.add(gfConfDD);
+        }
+        if (sunConfDD != null) {
+            sortedConfDDFiles.add(sunConfDD);
+        }
+        return sortedConfDDFiles;
+    }
+
+    // process the list of the configuration files, and return the sorted
+    // configuration file with precedence from high to low
+    // this list takes consideration of what runtime files are 
+    // present in the current archive
+    public static List<DeploymentDescriptorFile> processConfigurationDDFiles(List<DeploymentDescriptorFile> ddFiles, ReadableArchive archive) throws IOException {
+        List<DeploymentDescriptorFile> processedConfDDFiles = new ArrayList<DeploymentDescriptorFile>();
+        for (DeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles)) {
+            if (archive.exists(ddFile.getDeploymentDescriptorPath())) {
+                processedConfDDFiles.add(ddFile);
+            }
+        }
+        return processedConfDDFiles;
+    }
+
+    /**
+     * Read the runtime deployment descriptors (can contained in one or
+     * many file) set the corresponding information in the passed descriptor.
+     * By default, the runtime deployment descriptors are all contained in
+     * the xml file characterized with the path returned by
+     *
+     * @param confDDFiles the sorted configuration files for this archive
+     * @param archive the archive
+     * @param descriptor the initialized deployment descriptor
+     * @param archivist the main archivist
+     * @param warnIfMultipleDDs whether to log warnings if both the GlassFish and the legacy Sun descriptors are present
+     */
+    public static void readRuntimeDeploymentDescriptor(List<DeploymentDescriptorFile> confDDFiles, ReadableArchive archive, RootDeploymentDescriptor descriptor, Archivist main, final boolean warnIfMultipleDDs) throws IOException, SAXParseException {
+        if (confDDFiles == null || confDDFiles.isEmpty()) {
+            return;
+        }
+        DeploymentDescriptorFile confDD = confDDFiles.get(0);
+        InputStream is = null;
+        try {
+            is = archive.getEntry(confDD.getDeploymentDescriptorPath());
+            for (int i = 1; i < confDDFiles.size(); i++) {
+                if (warnIfMultipleDDs) {
+                    logger.log(Level.WARNING, "counterpart.configdd.exists",
+                        new Object[] {
+                        confDDFiles.get(i).getDeploymentDescriptorPath(),
+                        archive.getURI().getSchemeSpecificPart(),
+                        confDD.getDeploymentDescriptorPath()});
+                }
+            }
+            confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
+            confDD.setXMLValidation(main.getRuntimeXMLValidation());
+            confDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
+            confDD.read(descriptor, is);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ioe) {
+                }
+            }
+        }
+    }
+
+
     public static void setExtensionArchivistForSubArchivist(BaseServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app, Archivist subArchivist) {
         try {
             Collection<Sniffer> sniffers = getSniffersForModule(habitat, archive, md, app);
@@ -344,4 +438,5 @@ public class DOLUtils {
         }
         return allIncompatTypes;
     }
+
 }

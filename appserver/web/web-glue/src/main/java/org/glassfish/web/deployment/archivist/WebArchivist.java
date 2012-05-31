@@ -79,6 +79,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Vector;
 import java.net.URL;
@@ -106,12 +107,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
      */
     private DeploymentDescriptorFile<WebBundleDescriptor> standardDD = null;
-
-    private WebRuntimeDDFile webRuntimeDDFile = null;
-
-    private GFWebRuntimeDDFile gfWebRuntimeDDFile = null;
-
-    private WLSWebRuntimeDDFile wlsWebRuntimeDDFile = null;
 
     private WebBundleDescriptor defaultWebXmlBundleDescriptor = null;
 
@@ -164,39 +159,17 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
     }
 
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the glassfish configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        if (gfWebRuntimeDDFile == null) {
-            gfWebRuntimeDDFile = new GFWebRuntimeDDFile();
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new WLSWebRuntimeDDFile());
+            confDDFiles.add(new GFWebRuntimeDDFile());
+            confDDFiles.add(new WebRuntimeDDFile());
         }
-        return gfWebRuntimeDDFile;
-    }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the Sun configuration deployment descriptors
-     */
-    @Override
-    public DeploymentDescriptorFile getSunConfigurationDDFile() {
-        if (webRuntimeDDFile == null) {
-            webRuntimeDDFile = new WebRuntimeDDFile();
-        }
-        return webRuntimeDDFile;
-    }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the WLS configuration deployment descriptors
-     */
-    @Override
-    public DeploymentDescriptorFile getWLSConfigurationDDFile() {
-        if (wlsWebRuntimeDDFile == null) {
-            wlsWebRuntimeDDFile = new WLSWebRuntimeDDFile();
-        }
-        return wlsWebRuntimeDDFile;
+        return confDDFiles;
     }
 
     /**

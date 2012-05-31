@@ -54,6 +54,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Enumeration;
 
@@ -69,8 +72,12 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         return new PersistenceDeploymentDescriptorFile();
     }
 
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor) {
-        return null; 
+    /**
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
+     */
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
+        return Collections.emptyList();
     }
 
     @Override

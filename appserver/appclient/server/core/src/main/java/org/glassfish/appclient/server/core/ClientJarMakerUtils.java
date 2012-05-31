@@ -208,7 +208,7 @@ class ClientJarMakerUtils {
                 archivist.getStandardDDFile().getDeploymentDescriptorPath());
         //runtime dd
         copy(source, target,
-                archivist.getConfigurationDDFile().getDeploymentDescriptorPath());
+                archivist.getConfigurationDDFile(original).getDeploymentDescriptorPath());
     }
 
     /**

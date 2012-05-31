@@ -52,6 +52,9 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.IOException;
 import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 /**
@@ -118,14 +121,13 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
     }
     
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     * handling the configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getConfigurationDDFile() {
-        return null;
-    }      
-    
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        return Collections.emptyList();
+    }
+
     /**
      * @return a default BundleDescriptor for this archivist
      */

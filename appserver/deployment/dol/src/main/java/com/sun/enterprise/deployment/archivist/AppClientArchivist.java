@@ -60,6 +60,8 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -139,20 +141,16 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
     }
 
     /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the glassfish configuration deployment descriptors
+     * @return the list of the DeploymentDescriptorFile responsible for
+     *         handling the configuration deployment descriptors
      */
-    @Override
-    public DeploymentDescriptorFile getGFConfigurationDDFile() {
-        return new GFAppClientRuntimeDDFile();
-    }
-
-    /**
-     * @return if exists the DeploymentDescriptorFile responsible for
-     *         handling the Sun configuration deployment descriptors
-     */
-    public DeploymentDescriptorFile getSunConfigurationDDFile() {
-        return new AppClientRuntimeDDFile();
+    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+        if (confDDFiles == null) {
+            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles.add(new GFAppClientRuntimeDDFile());
+            confDDFiles.add(new AppClientRuntimeDDFile());
+        }
+        return confDDFiles;
     }
 
     /**
