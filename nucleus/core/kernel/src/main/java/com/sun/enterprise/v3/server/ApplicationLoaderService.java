@@ -78,7 +78,8 @@ import org.glassfish.internal.api.*;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Priority;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 import java.io.File;
@@ -98,7 +99,9 @@ import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 /**
  * This service is responsible for loading all deployed applications...
@@ -115,7 +118,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
     Deployment deployment;
 
     @Inject
-    Holder<ArchiveFactory> archiveFactory;
+    Provider<ArchiveFactory> archiveFactoryProvider;
 
     @Inject
     SnifferManager snifferManager;
@@ -245,7 +248,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                 sourceFile = sourceFile.getAbsoluteFile();
                 ReadableArchive sourceArchive=null;
                 try {
-                    sourceArchive = archiveFactory.get().openArchive(sourceFile);
+                    sourceArchive = archiveFactoryProvider.get().openArchive(sourceFile);
 
                     DeployCommandParameters parameters = new DeployCommandParameters(sourceFile);
                     parameters.name = sourceFile.getName();
@@ -277,9 +280,9 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                             ArchiveHandler handler = deployment.getArchiveHandler(sourceArchive);
                             final String appName = handler.getDefaultApplicationName(sourceArchive);
                             DeploymentContextImpl dummyContext = new DeploymentContextImpl(report, logger, sourceArchive, parameters, env);
-                            handler.expand(sourceArchive, archiveFactory.get().createArchive(tmpDir), dummyContext);
-                            sourceArchive = 
-                                archiveFactory.get().openArchive(tmpDir);
+                            handler.expand(sourceArchive, archiveFactoryProvider.get().createArchive(tmpDir), dummyContext);
+                            sourceArchive =
+                                    archiveFactoryProvider.get().openArchive(tmpDir);
                             logger.log(Level.INFO, "source.not.directory", new Object[] {tmpDir.getAbsolutePath()});
                             parameters.name = appName;
                         }
@@ -374,7 +377,7 @@ public class ApplicationLoaderService implements Startup, PreDestroy, PostConstr
                         deploymentParams.type = DeploymentProperties.OSGI;
                     }
 
-                    archive = archiveFactory.get().openArchive(sourceFile, deploymentParams);
+                    archive = archiveFactoryProvider.get().openArchive(sourceFile, deploymentParams);
 
                     ActionReport report = new HTMLActionReporter();
                     ExtendedDeploymentContext depContext = deployment.getBuilder(logger, deploymentParams, report).source(archive).build();
