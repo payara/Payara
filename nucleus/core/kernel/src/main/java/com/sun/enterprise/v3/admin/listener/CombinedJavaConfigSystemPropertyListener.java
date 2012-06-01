@@ -48,6 +48,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Profiler;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.logging.LogDomains;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
 import java.beans.PropertyChangeEvent;
@@ -64,7 +65,6 @@ import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 
-import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.Changed;
@@ -77,6 +77,8 @@ import org.jvnet.hk2.config.NotProcessed;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import javax.inject.Inject;
 
 /**
  *  Listens for the changes to the configuration of JVM and Java system

@@ -46,8 +46,9 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import java.util.logging.Logger;
 
 /**

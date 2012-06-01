@@ -56,13 +56,18 @@ import org.glassfish.external.statistics.Statistic;
 import org.glassfish.external.statistics.Stats;
 import org.glassfish.external.statistics.impl.StatisticImpl;
 import org.glassfish.internal.api.*;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
-import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.PerLookup;
+
+import javax.inject.Inject;
+
 import static com.sun.enterprise.util.SystemPropertyConstants.MONDOT;
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 
@@ -658,7 +663,8 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private AdminCommandContext context;
     private String pattern;
     private String userarg;
-    @Inject @Optional
+    @Inject
+    @Optional
     private MonitoringRuntimeDataRegistry datareg;
     @Inject
     private Domain domain;

@@ -50,11 +50,14 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.universal.Duration;
 import org.glassfish.api.admin.*;
+
+import javax.inject.Inject;
 
 /**
  * uptime command
