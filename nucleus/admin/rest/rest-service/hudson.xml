@@ -75,8 +75,8 @@
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
 
     <target name="download">
-        <get src="${ant.contrib.url}" dest="ant-contrib.jar" skipexisting="true"/>
-        <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar" skipexisting="true"/>
+        <get src="${ant.contrib.url}" dest="ant-contrib.jar"/>
+        <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar"/>
         <get src="${glassfish.dist.url}" dest="${glassfish.download}" usetimestamp="true"/>
 
         <delete dir="${install.dir}"/>
