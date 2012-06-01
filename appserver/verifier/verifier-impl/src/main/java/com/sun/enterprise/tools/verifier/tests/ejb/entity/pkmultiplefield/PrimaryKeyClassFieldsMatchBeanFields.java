@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,20 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.pkmultiplefield;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.lang.ClassLoader;
-import com.sun.enterprise.tools.verifier.tests.*;
-import java.lang.reflect.*;
-
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
-import java.util.*;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.Verifier;
+import com.sun.enterprise.tools.verifier.VerifierTestContext;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
 import com.sun.enterprise.tools.verifier.tests.ejb.EjbUtils;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
+
+import java.lang.reflect.Field;
+import java.util.Vector;
 
 /** 
  * Enterprise Java Bean primary key maps to multiple fields in the Entity bean

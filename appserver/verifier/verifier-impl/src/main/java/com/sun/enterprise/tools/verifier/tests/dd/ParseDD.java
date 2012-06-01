@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,24 @@
 
 package com.sun.enterprise.tools.verifier.tests.dd;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.deployment.EjbSessionDescriptor;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.StringManagerHelper;
+import com.sun.enterprise.tools.verifier.tests.VerifierTest;
 import com.sun.enterprise.tools.verifier.util.LogDomains;
 import com.sun.enterprise.tools.verifier.util.XMLValidationHandler;
-import com.sun.enterprise.tools.verifier.tests.*;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.SAXException;
 
-import java.io.*;
-
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

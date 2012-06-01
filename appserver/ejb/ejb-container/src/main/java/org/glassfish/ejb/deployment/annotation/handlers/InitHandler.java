@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,26 +41,19 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.lang.NoSuchMethodException;
 import java.util.logging.Level;
-
 import javax.ejb.Init;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbInitInfo;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.util.TypeUtil;
-
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import org.glassfish.ejb.deployment.annotation.handlers.AbstractAttributeHandler;
+import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**

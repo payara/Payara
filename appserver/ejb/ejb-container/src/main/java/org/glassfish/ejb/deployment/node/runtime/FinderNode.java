@@ -40,33 +40,24 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.runtime.IASEjbCMPFinder;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Map;
 
-public class FinderNode extends DeploymentDescriptorNode {
-    
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbCMPFinder;
+import org.w3c.dom.Node;
+
+public class FinderNode extends DeploymentDescriptorNode<IASEjbCMPFinder> {
+
     private IASEjbCMPFinder descriptor;
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
-	if (descriptor==null) {
-	    descriptor = new IASEjbCMPFinder();
-	} 
-	return descriptor;
+
+    @Override
+    public IASEjbCMPFinder getDescriptor() {
+        if (descriptor==null) descriptor = new IASEjbCMPFinder();
+        return descriptor;
     }
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
     protected Map getDispatchTable() {  
 	Map dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.METHOD_NAME, "setMethodName");
@@ -76,15 +67,8 @@ public class FinderNode extends DeploymentDescriptorNode {
 	dispatchTable.put(RuntimeTagNames.QUERY_ORDERING, "setQueryOrdering");
 	return dispatchTable;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, IASEjbCMPFinder finder) {    
 	Node finderNode = super.writeDescriptor(parent, nodeName, finder);
 	appendTextChild(finderNode, RuntimeTagNames.METHOD_NAME, finder.getMethodName());

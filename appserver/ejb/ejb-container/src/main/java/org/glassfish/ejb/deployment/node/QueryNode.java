@@ -40,66 +40,49 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.QueryDescriptor;
+import java.util.Map;
+import java.util.logging.Level;
+
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
 import org.w3c.dom.Node;
 
-import java.util.Map;
-import java.util.logging.Level;
-
 /**
- * This class is responsible for hanlding the query element
+ * This class is responsible for handling the query element
  *
  * @author  Jerome Dochez
  * @version 
  */
-public class QueryNode extends DeploymentDescriptorNode {
+public class QueryNode extends DeploymentDescriptorNode<QueryDescriptor> {
 
-    private QueryDescriptor descriptor = null;
-    
-    /** Creates new QueryNode */
+    private QueryDescriptor descriptor;
+
     public QueryNode() {
         super();
         registerElementHandler(new XMLElement(EjbTagNames.QUERY_METHOD), 
                                                                 MethodNode.class, "setQueryMethodDescriptor");                 
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
-    public Object getDescriptor() {
-        if (descriptor == null) {
-            descriptor = (QueryDescriptor) super.getDescriptor();
-        } 
+    @Override
+    public QueryDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new QueryDescriptor();
         return descriptor;        
-    }    
-        
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+ 
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.EJB_QL, "setQuery");    
         return table;
     }
-    
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {    
         if (EjbTagNames.QUERY_RESULT_TYPE_MAPPING.equals(element.getQName())) {
             if (EjbTagNames.QUERY_REMOTE_TYPE_MAPPING.equals(value)) {
@@ -114,15 +97,8 @@ public class QueryNode extends DeploymentDescriptorNode {
             super.setElementValue(element, value);
         }
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, QueryDescriptor descriptor) {        
         Node queryNode = super.writeDescriptor(parent, nodeName, descriptor);
 

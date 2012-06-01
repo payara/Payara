@@ -40,57 +40,46 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbRemovalInfo;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
 import org.w3c.dom.Node;
 
-import java.util.Map;
+public class EjbRemoveNode extends DeploymentDescriptorNode<EjbRemovalInfo> {
 
-public class EjbRemoveNode extends DeploymentDescriptorNode {
+    private EjbRemovalInfo ejbRemovalInfo;
 
     public EjbRemoveNode() {
        super();
-
-       registerElementHandler(new XMLElement(EjbTagNames.REMOVE_BEAN_METHOD), MethodNode.class, "setRemoveMethod");       
-
+       registerElementHandler(new XMLElement(EjbTagNames.REMOVE_BEAN_METHOD), MethodNode.class, "setRemoveMethod");
     }
-        
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+
+    @Override
+    public EjbRemovalInfo getDescriptor() {
+        if (ejbRemovalInfo == null) ejbRemovalInfo = new EjbRemovalInfo();
+        return ejbRemovalInfo;
+    }
+
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.REMOVE_RETAIN_IF_EXCEPTION, "setRetainIfException");
         return table;
-    }    
+    }
 
-   /**
-     * write the relationships descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbRemovalInfo descriptor) {
         Node removeNode = appendChild(parent, nodeName);
-        
         MethodNode methodNode = new MethodNode();
-
-        methodNode.writeJavaMethodDescriptor
-            (removeNode, EjbTagNames.REMOVE_BEAN_METHOD, 
+        methodNode.writeJavaMethodDescriptor(removeNode, EjbTagNames.REMOVE_BEAN_METHOD,
              descriptor.getRemoveMethod());
-
         appendTextChild(removeNode, EjbTagNames.REMOVE_RETAIN_IF_EXCEPTION,
             Boolean.toString(descriptor.getRetainIfException()));
-
         return removeNode;
     }
 }

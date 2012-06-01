@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * An object representing a link to another ejb.
@@ -51,15 +50,12 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  *
 */
 
-public class EjbReferenceDescriptor extends EnvironmentProperty implements com.sun.enterprise.deployment.types.EjbReference, NamedDescriptor {
+public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbReference, NamedDescriptor {
 
     // In case the reference has been resolved, the ejbDescriptor will
     // be the referenced ejb.
     private EjbDescriptor ejbDescriptor;
-    
-    private static LocalStringManagerImpl localStrings =
-	    new LocalStringManagerImpl(EjbReferenceDescriptor.class);
-    
+
     // We need the referring bundle for what ?
     private BundleDescriptor referringBundle;
 
@@ -123,7 +119,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     
     /**
      * constructs an local or remote ejb reference to the given ejb descriptor, 
-     * the desciption and the name of the reference
+     * the description and the name of the reference
      * 
      * @param name is the name of the reference
      * @param description is a human readable description of the reference
@@ -137,7 +133,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     }
     
     /** 
-    * Constructs a reference in the extrernal state.
+    * Constructs a reference in the exterrnal state.
     */
     
     public EjbReferenceDescriptor() {
@@ -147,6 +143,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Set the referring bundle, i.e. the bundle within which this
      * EJB reference is declared. 
      */
+    @Override
     public void setReferringBundleDescriptor(BundleDescriptor referringBundle)
     {
 	this.referringBundle = referringBundle;
@@ -156,6 +153,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Get the referring bundle, i.e. the bundle within which this
      * EJB reference is declared.  
      */
+    @Override
     public BundleDescriptor getReferringBundleDescriptor()
     {
 	return referringBundle;
@@ -163,8 +161,9 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     
     /**
      * Sets the ejb descriptor to which I refer.
-     * @param ejbDescriptor the ejb descriptor referenced, null if it is unknow at this time
+     * @param ejbDescriptor the ejb descriptor referenced, null if it is unknown at this time
      */
+    @Override
     public void setEjbDescriptor(EjbDescriptor ejbDescriptor) {
 	if (this.ejbDescriptor != null) {
             this.ejbDescriptor.removeEjbReferencer(this); // remove previous referencer
@@ -193,12 +192,14 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
 
     
     /**
-    * Sets the jndi name of the bean tyo whoch I am referring.*/
+    * Sets the jndi name of the bean type which I am referring.*/
     
+    @Override
     public void setJndiName(String jndiName) {
 	this.setValue(jndiName);
     }
 
+    @Override
     public boolean hasJndiName() {
         String name = getJndiName();
         return ( (name != null) && !name.equals("") );
@@ -215,6 +216,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * @return the name of the ejb to which I refer 
     */
     
+    @Override
     public String getLinkName() {
 	if (ejbDescriptor==null) {
             return ejbLink;
@@ -229,6 +231,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     /** 
      * Sets the name of the ejb to which I refer.
      */
+    @Override
     public void setLinkName(String linkName) {
         ejbLink = linkName;
     }    
@@ -236,6 +239,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * return the jndi name of the bean to which I refer.
      */
     
+    @Override
     public String getJndiName() {
         String jndiName = this.getValue();
         if( isLocal() ) {
@@ -253,6 +257,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     * Return the jndi name of the bean to which I refer.
     */
     
+    @Override
     public String getValue() {
 	if (ejbDescriptor == null) {
             return super.getValue();
@@ -265,14 +270,17 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
         }
     }
 
+    @Override
     public void setLookupName(String l) {
         lookupName = l;
     }
 
+    @Override
     public String getLookupName() {
         return (lookupName != null)? lookupName : "";
     }
 
+    @Override
     public boolean hasLookupName() {
         return (lookupName != null && lookupName.length() > 0);
     }
@@ -280,6 +288,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     /** return the ejb to whoch I refer.
     */
     
+    @Override
     public EjbDescriptor getEjbDescriptor() {
 	return ejbDescriptor;
     }  
@@ -287,6 +296,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     /**
      * @return true if the EJB reference uses the local interfaces of the EJB
      */
+    @Override
     public boolean isLocal() {
         return isLocal;
     }
@@ -295,6 +305,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Set whether this EJB Reference uses local interfaces or remote
      * @param local true if the EJB reference use local interfaces
      */
+    @Override
     public void setLocal(boolean local) {
         this.isLocal = local;
     }
@@ -303,6 +314,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     * Retusn the type of the ejb to whioch I refer.
     */
     
+    @Override
     public String getType() {
         if (ejbDescriptor==null) {
             return refType;
@@ -313,15 +325,18 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     
     /** Assigns the type of the ejb to whcoih I refer.
     */
+    @Override
     public void setType(String type) {
 	refType=type;
     }
 
+    @Override
     public String getInjectResourceType() {
         return isEJB30ClientView() ?
             getEjbInterface() : getEjbHomeInterface();
     }
 
+    @Override
     public void setInjectResourceType(String resourceType) {
         if (isEJB30ClientView()) { 
             setEjbInterface(resourceType); 
@@ -364,6 +379,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Gets the home classname of the referee EJB. 
      * @return the class name of the EJB home.
      */
+    @Override
     public String getEjbHomeInterface() {
         return getHomeClassName();
     }
@@ -372,6 +388,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Sets the local or remote home classname of the referee EJB. 
      * @param homeClassName the class name of the EJB home.
      */
+    @Override
     public void setEjbHomeInterface(String homeClassName) {
         setHomeClassName(homeClassName);
     }
@@ -380,6 +397,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Gets the local or remote interface classname of the referee EJB. 
      * @return the classname of the EJB remote object.
      */
+    @Override
     public String getEjbInterface() {
         return getBeanClassName();
     }
@@ -387,6 +405,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
      * Sets the local or remote bean interface classname of the referee EJB. 
      * @param remoteClassName the classname of the EJB remote object.
      */
+    @Override
     public void setEjbInterface(String remoteClassName) {
         setBeanClassName(remoteClassName);
     }
@@ -394,6 +413,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     /**
      * @return true if the EJB reference is a 30 client view
      */
+    @Override
     public boolean isEJB30ClientView() {
         return (getHomeClassName() == null);
     }
@@ -401,6 +421,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     /** returns a formatted string representing me.
     */
     
+    @Override
     public void print(StringBuffer toStringBuffer) {
         String localVsRemote = isLocal() ? "Local" : "Remote";
         toStringBuffer.append(localVsRemote + " ejb-ref ");
@@ -427,6 +448,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements com.s
     }
     
     /* Equality on name. */
+    @Override
     public boolean equals(Object object) {
 	if (object instanceof EjbReference) {
 	    EjbReference ejbReference = (EjbReference) object;

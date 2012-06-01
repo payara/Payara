@@ -40,17 +40,60 @@
 
 package com.sun.enterprise.deployment.node;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import com.sun.enterprise.deployment.xml.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
+import com.sun.enterprise.deployment.AbsoluteOrderingDescriptor;
+import com.sun.enterprise.deployment.AdminObject;
+import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
+import com.sun.enterprise.deployment.AuthMechanism;
+import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
+import com.sun.enterprise.deployment.ConnectionDefDescriptor;
+import com.sun.enterprise.deployment.ConnectorConfigProperty;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.CookieConfigDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.ErrorPageDescriptor;
+import com.sun.enterprise.deployment.InboundResourceAdapter;
+import com.sun.enterprise.deployment.JspConfigDescriptor;
+import com.sun.enterprise.deployment.JspGroupDescriptor;
+import com.sun.enterprise.deployment.LicenseDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
+import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
+import com.sun.enterprise.deployment.LoginConfigurationImpl;
+import com.sun.enterprise.deployment.MessageListener;
+import com.sun.enterprise.deployment.MimeMappingDescriptor;
+import com.sun.enterprise.deployment.MultipartConfigDescriptor;
+import com.sun.enterprise.deployment.NameValuePairDescriptor;
+import com.sun.enterprise.deployment.OrderingDescriptor;
+import com.sun.enterprise.deployment.OrderingOrderingDescriptor;
+import com.sun.enterprise.deployment.OutboundResourceAdapter;
+import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
+import com.sun.enterprise.deployment.SecurityConstraintImpl;
+import com.sun.enterprise.deployment.SecurityPermission;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.ServletFilterDescriptor;
+import com.sun.enterprise.deployment.ServletFilterMappingDescriptor;
+import com.sun.enterprise.deployment.SessionConfigDescriptor;
+import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
+import com.sun.enterprise.deployment.UserDataConstraintImpl;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.WebFragmentDescriptor;
+import com.sun.enterprise.deployment.WebResourceCollectionImpl;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.ConnectorTagNames;
+import com.sun.enterprise.deployment.xml.PersistenceTagNames;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import com.sun.enterprise.deployment.xml.WebTagNames;
+
 /**
- * This class is responsible for instanciating  Descriptor classes
+ * This class is responsible for instantiating  Descriptor classes
  *
  * @author  Jerome Dochez
  * @version 
@@ -65,61 +108,9 @@ public class DescriptorFactory {
 
     private static void initMapping() {
         descriptorClasses = new HashMap();
-	
+
         // Application
         register(new XMLElement(RuntimeTagNames.APPLICATION_PARAM), EnvironmentProperty.class);        
-        
-	//EJB
-        register(new XMLElement(EjbTagNames.EJB_BUNDLE_TAG), EjbBundleDescriptor.class);
-        register(new XMLElement(EjbTagNames.SESSION), EjbSessionDescriptor.class);       
-        register(new XMLElement(EjbTagNames.ENTITY), EjbEntityDescriptor.class);     
-        register(new XMLElement(EjbTagNames.MESSAGE_DRIVEN), EjbMessageBeanDescriptor.class);        
-        register(new XMLElement(EjbTagNames.ACTIVATION_CONFIG), 
-                 ActivationConfigDescriptor.class);        
-        register(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceDescriptor.class);       
-        register(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbReferenceDescriptor.class);                
-        register(new XMLElement(TagNames.ROLE), SecurityRoleDescriptor.class);
-        register(new XMLElement(EjbTagNames.EXCLUDE_LIST), MethodPermissionDescriptor.class);        
-        register(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), ResourceReferenceDescriptor.class);
-        register(new XMLElement(EjbTagNames.CMP_FIELD), FieldDescriptor.class);
-        register(new XMLElement(EjbTagNames.METHOD), MethodDescriptor.class);          
-        register(new XMLElement(EjbTagNames.METHOD_PERMISSION), MethodPermissionDescriptor.class);
-        register(new XMLElement(EjbTagNames.RUNAS_SPECIFIED_IDENTITY), RunAsIdentityDescriptor.class);
-        register(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvironmentProperty.class);
-        register(new XMLElement(EjbTagNames.ROLE_REFERENCE), RoleReference.class);
-        register(new XMLElement(EjbTagNames.QUERY), QueryDescriptor.class);
-        register(new XMLElement(EjbTagNames.QUERY_METHOD), MethodDescriptor.class);    
-        register(new XMLElement(RuntimeTagNames.JAVA_METHOD), MethodDescriptor.class);
-        register(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), ResourceEnvReferenceDescriptor.class);
-        register(new XMLElement(TagNames.MESSAGE_DESTINATION_REFERENCE), MessageDestinationReferenceDescriptor.class);
-        register(new XMLElement(EjbTagNames.EJB_RELATION), RelationshipDescriptor.class);
-        register(new XMLElement(EjbTagNames.EJB_RELATIONSHIP_ROLE), RelationRoleDescriptor.class);
-        register(new XMLElement(EjbTagNames.AROUND_INVOKE_METHOD), LifecycleCallbackDescriptor.class);
-       register(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackDescriptor.class);
-       register(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackDescriptor.class);
-       register(new XMLElement(EjbTagNames.POST_ACTIVATE_METHOD), LifecycleCallbackDescriptor.class);
-       register(new XMLElement(EjbTagNames.PRE_PASSIVATE_METHOD), LifecycleCallbackDescriptor.class);
-       register(new XMLElement(EjbTagNames.TIMEOUT_METHOD), MethodDescriptor.class);
-       register(new XMLElement(EjbTagNames.INIT_BEAN_METHOD), MethodDescriptor.class);
-       register(new XMLElement(EjbTagNames.INIT_CREATE_METHOD), MethodDescriptor.class);
-       register(new XMLElement(EjbTagNames.INIT_METHOD), EjbInitInfo.class);
-       register(new XMLElement(EjbTagNames.REMOVE_METHOD), EjbRemovalInfo.class);
-       register(new XMLElement(EjbTagNames.INTERCEPTOR), EjbInterceptor.class);
-       register(new XMLElement(EjbTagNames.INTERCEPTOR_BINDING), 
-                InterceptorBindingDescriptor.class);
-       register(new XMLElement(EjbTagNames.APPLICATION_EXCEPTION), 
-                EjbApplicationExceptionInfo.class);
-        register(new XMLElement(EjbTagNames.STATEFUL_TIMEOUT), TimeoutValueDescriptor.class);
-        register(new XMLElement(EjbTagNames.TIMER_SCHEDULE), ScheduledTimerDescriptor.class);
-        register(new XMLElement(EjbTagNames.AFTER_BEGIN_METHOD), MethodDescriptor.class);
-        register(new XMLElement(EjbTagNames.AFTER_COMPLETION_METHOD), MethodDescriptor.class);
-        register(new XMLElement(EjbTagNames.BEFORE_COMPLETION_METHOD), MethodDescriptor.class);
-        register(new XMLElement(EjbTagNames.CONCURRENT_METHOD), MethodDescriptor.class);
-        register(new XMLElement(EjbTagNames.CONCURRENT_ACCESS_TIMEOUT), TimeoutValueDescriptor.class);
-        register(new XMLElement(EjbTagNames.ASYNC_METHOD), MethodDescriptor.class);
-        
-        
-
 
 	//connector
 	register(new XMLElement(ConnectorTagNames.CONNECTOR), ConnectorDescriptor.class);

@@ -40,22 +40,32 @@
 
 package com.sun.enterprise.tools.verifier.ejb;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Iterator;
-import java.util.Set;
-
-import com.sun.enterprise.deployment.*;
-import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.util.EjbBundleValidator;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import com.sun.enterprise.tools.verifier.*;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.tools.verifier.CheckMgr;
+import com.sun.enterprise.tools.verifier.JarCheck;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.TestInformation;
+import com.sun.enterprise.tools.verifier.VerifierFrameworkContext;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.dd.ParseDD;
 import com.sun.enterprise.tools.verifier.wsclient.WebServiceClientCheckMgrImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.jdo.spi.persistence.support.ejb.ejbc.JDOCodeGenerator;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.ejb.deployment.util.EjbBundleValidator;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Ejb harness
@@ -82,7 +92,7 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
      */
     public void check(Descriptor descriptor) throws Exception {
         // run persistence tests first.
-        checkPersistenceUnits(EjbBundleDescriptor.class.cast(descriptor));
+        checkPersistenceUnits(EjbBundleDescriptorImpl.class.cast(descriptor));
         // an EjbBundleDescriptor can have an WebServicesDescriptor
         checkWebServices(descriptor);
         // an EjbBundleDescriptor can have  WebService References
@@ -92,7 +102,7 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
                 !verifierFrameworkContext.isEjb())
             return;
 
-        EjbBundleDescriptor bundleDescriptor = (EjbBundleDescriptor) descriptor;
+        EjbBundleDescriptorImpl bundleDescriptor = (EjbBundleDescriptorImpl) descriptor;
         setDescClassLoader(bundleDescriptor);
         // DOL (jerome): is asking us to call this in some cases, like when
         // an ejb-ref is unresolved etc.
@@ -175,7 +185,7 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
         if (verifierFrameworkContext.isPartition() &&
                 !verifierFrameworkContext.isWebServicesClient())
             return;
-        EjbBundleDescriptor desc = (EjbBundleDescriptor) descriptor;
+        EjbBundleDescriptorImpl desc = (EjbBundleDescriptorImpl) descriptor;
         WebServiceClientCheckMgrImpl webServiceClientCheckMgr = new WebServiceClientCheckMgrImpl(
                 verifierFrameworkContext);
         if (desc.hasWebServiceClients()) {
@@ -205,7 +215,7 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
         r.setModuleName(Result.EJB);
     }
 
-    protected EjbBundleDescriptor getBundleDescriptor(Descriptor descriptor) {
+    protected EjbBundleDescriptorImpl getBundleDescriptor(Descriptor descriptor) {
         return ((EjbDescriptor) descriptor).getEjbBundleDescriptor();
     }
 
@@ -215,22 +225,22 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
      */ 
     protected boolean isApplicable(TestInformation test, Descriptor descriptor) {
         String testName = test.getClassName();
-        if(descriptor instanceof EjbSessionDescriptor && 
+        if(descriptor instanceof EjbSessionDescriptor &&
                 (testName.indexOf("tests.ejb.entity")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.messagebean")>=0)) // NOI18N
             return false;
-        if(descriptor instanceof EjbEntityDescriptor && 
+        if(descriptor instanceof EjbEntityDescriptor &&
                 (testName.indexOf("tests.ejb.session")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.messagebean")>=0)) // NOI18N
             return false;
-        if(descriptor instanceof EjbMessageBeanDescriptor && 
+        if(descriptor instanceof EjbMessageBeanDescriptor &&
                 (testName.indexOf("tests.ejb.session")>=0 || // NOI18N
                 testName.indexOf("tests.ejb.entity")>=0)) // NOI18N
             return false;
         return true;
     }
 
-    private String getAbstractArchiveUri(EjbBundleDescriptor desc) {
+    private String getAbstractArchiveUri(EjbBundleDescriptorImpl desc) {
         String archBase = context.getAbstractArchive().getURI().toString();
         ModuleDescriptor mdesc = desc.getModuleDescriptor();
         if(mdesc.isStandalone()) {
@@ -241,7 +251,7 @@ public class EjbCheckMgrImpl extends CheckMgr implements JarCheck {
         }
     }
 
-    private void setDescClassLoader(EjbBundleDescriptor bundleDescriptor) {
+    private void setDescClassLoader(EjbBundleDescriptorImpl bundleDescriptor) {
         Iterator bundleItr = bundleDescriptor.getEjbs().iterator();
         while (bundleItr.hasNext()) {
             EjbDescriptor descriptor = (EjbDescriptor) bundleItr.next();

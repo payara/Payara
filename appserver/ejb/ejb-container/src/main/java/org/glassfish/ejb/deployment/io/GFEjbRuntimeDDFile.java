@@ -40,12 +40,13 @@
 
 package org.glassfish.ejb.deployment.io;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.node.runtime.GFEjbBundleRuntimeNode;
+
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.ejb.deployment.node.runtime.GFEjbBundleRuntimeNode;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -67,8 +68,8 @@ public class GFEjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
      *         descriptors associated with this J2EE module
      */
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
-        if (descriptor instanceof EjbBundleDescriptor) {
-            return new GFEjbBundleRuntimeNode((EjbBundleDescriptor) descriptor);
+        if (descriptor instanceof EjbBundleDescriptorImpl) {
+            return new GFEjbBundleRuntimeNode((EjbBundleDescriptorImpl) descriptor);
         }
         return null;
     }

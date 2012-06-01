@@ -40,13 +40,13 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
+import java.util.Map;
+
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 /**
  * This node handles the bean-cache untime deployment descriptors 
@@ -54,40 +54,26 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class BeanCacheNode extends DeploymentDescriptorNode {
+public class BeanCacheNode extends DeploymentDescriptorNode<BeanCacheDescriptor> {
 
-    protected BeanCacheDescriptor descriptor=null;
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
-        if (descriptor==null) {
-	    descriptor = new BeanCacheDescriptor();
-	}
+    private BeanCacheDescriptor descriptor;
+
+    @Override
+    public BeanCacheDescriptor getDescriptor() {
+        if (descriptor==null) descriptor = new BeanCacheDescriptor();
         return descriptor;
     }
-    
-    /**
-     * receives notification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {
 	if (RuntimeTagNames.IS_CACHE_OVERFLOW_ALLOWED.equals(element.getQName())) {
 	    descriptor.setIsCacheOverflowAllowed(Boolean.valueOf(value));
 	} else 
         super.setElementValue(element, value);
     }
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
-    protected Map getDispatchTable() {  
+
+    @Override
+    protected Map getDispatchTable() {
 	Map dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.MAX_CACHE_SIZE, "setMaxCacheSize");
 	dispatchTable.put(RuntimeTagNames.RESIZE_QUANTITY, "setResizeQuantity");
@@ -96,15 +82,8 @@ public class BeanCacheNode extends DeploymentDescriptorNode {
 	dispatchTable.put(RuntimeTagNames.VICTIM_SELECTION_POLICY, "setVictimSelectionPolicy");
 	return dispatchTable;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, BeanCacheDescriptor descriptor) {
 	Node beanCacheNode = super.writeDescriptor(parent, nodeName, descriptor);
 	appendTextChild(beanCacheNode, RuntimeTagNames.MAX_CACHE_SIZE, descriptor.getMaxCacheSize());	

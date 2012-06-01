@@ -40,11 +40,11 @@
 
 package org.glassfish.ejb.deployment.io;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
 
 
@@ -72,8 +72,8 @@ public class EjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
      */
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
 
-        if (descriptor instanceof EjbBundleDescriptor) {
-            return new EjbBundleRuntimeNode((EjbBundleDescriptor) descriptor);
+        if (descriptor instanceof EjbBundleDescriptorImpl) {
+            return new EjbBundleRuntimeNode((EjbBundleDescriptorImpl) descriptor);
         }
         return null;
     }

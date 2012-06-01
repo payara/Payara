@@ -40,18 +40,38 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.naming.NamingException;
+
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import com.sun.logging.LogDomains;
 import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.JdbcResource;
-import org.glassfish.resources.api.ResourceConflictException;
-import org.glassfish.resources.api.ResourceDeployer;
-import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
+import org.glassfish.resources.api.ResourceConflictException;
+import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.naming.ResourceNamingService;
@@ -60,14 +80,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.naming.NamingException;
-import java.beans.PropertyVetoException;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 
 /**
@@ -170,7 +182,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         //ejb descriptor
         if (descriptor instanceof EjbBundleDescriptor) {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
-            Set<EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
+            Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 for (DataSourceDefinitionDescriptor dsd : ejbDescriptor.getDataSourceDefinitionDescriptors()) {
                     registerDSDReferredByApplication(appName, dsd);
@@ -231,7 +243,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         //ejb descriptor
         if (descriptor instanceof EjbBundleDescriptor) {
             EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
-            Set<EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
+            Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 for (DataSourceDefinitionDescriptor dsd : ejbDescriptor.getDataSourceDefinitionDescriptors()) {
                     unregisterDSDReferredByApplication(dsd);

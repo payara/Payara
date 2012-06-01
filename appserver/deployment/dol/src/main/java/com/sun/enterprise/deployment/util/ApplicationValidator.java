@@ -40,19 +40,28 @@
 
 package com.sun.enterprise.deployment.util;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.types.*;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 
-import org.glassfish.deployment.common.ModuleDescriptor;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.ModuleDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -63,9 +72,10 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service(name="application_deploy")
-public class ApplicationValidator extends EjbBundleValidator 
+public class ApplicationValidator extends ComponentValidator 
     implements ApplicationVisitor, ManagedBeanVisitor {
     
+    @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
@@ -111,6 +121,7 @@ public class ApplicationValidator extends EjbBundleValidator
      * visit an application object
      * @param application the application descriptor
      */
+    @Override
     public void accept(Application application) {
         this.application = application;
         if (application.getBundleDescriptors().size() == 0) {
@@ -158,40 +169,32 @@ public class ApplicationValidator extends EjbBundleValidator
         }
     }
 
-    /**
-     * visits an ejb bundle descriptor
-     * @param bundleDescriptor an ejb bundle descriptor
-     */
+//    FIXME by srini - add support in the new structure
     public void accept(EjbBundleDescriptor bundleDescriptor) {
-        
         this.bundleDescriptor = bundleDescriptor;
         application = bundleDescriptor.getApplication();
         super.accept(bundleDescriptor);
         /** set the realm name on each ejb to match the ones on this application
-         * this is required right now to pass the stringent CSIv2 criteria 
-         * whereby the realm-name for the ejb being authenticated on 
+         * this is required right now to pass the stringent CSIv2 criteria
+         * whereby the realm-name for the ejb being authenticated on
          * has to match the one on the application. We look at the IORConfigurator
          * descriptor
-         * @todo: change the csiv2 layer so that it does not look at 
-         * IORConfiguratorDescriptor. 
+         * @todo: change the csiv2 layer so that it does not look at
+         * IORConfiguratorDescriptor.
          * @see iiop/security/SecurityMechanismSelector.evaluateClientConformance.
          */
         String rlm = application.getRealm();
-        Iterator ejbs = bundleDescriptor.getEjbs().iterator();
-        for(; ejbs.hasNext();){
-            EjbDescriptor ejb = (EjbDescriptor) ejbs.next();
-            Iterator iorconfig = ejb.getIORConfigurationDescriptors().iterator();
-            for (;iorconfig.hasNext(); ){
-                EjbIORConfigurationDescriptor desc = 
-                    (EjbIORConfigurationDescriptor)iorconfig.next();
-                if(rlm != null){
+        if (rlm != null) {
+            for(EjbDescriptor ejb : bundleDescriptor.getEjbs()) {
+                for (EjbIORConfigurationDescriptor desc : ejb.getIORConfigurationDescriptors()) {
                     desc.setRealmName(rlm);
                 }
             }
         }
     }
 
-     public void accept(ManagedBeanDescriptor managedBean) {
+    @Override
+    public void accept(ManagedBeanDescriptor managedBean) {
         this.bundleDescriptor = managedBean.getBundle();
         this.application = bundleDescriptor.getApplication(); 
 
@@ -224,34 +227,24 @@ public class ApplicationValidator extends EjbBundleValidator
         }
     }
 
-    
-    /**
-     * @return a vector of EjbDescriptor for this bundle
-     */
-    protected Collection getEjbDescriptors() {
+    @Override
+    protected Collection<EjbDescriptor> getEjbDescriptors() {
         if (application!=null) 
             return application.getEjbDescriptors();
-        return new HashSet();
-    }     
-    
-    /**
-     * @return the Application object if any
-     */
+        return new HashSet<EjbDescriptor>();
+    }
+
+    @Override
     protected Application getApplication() {
         return application;
     }
-    
-    /**
-     * @return the bundleDescriptor we are validating
-     */
+
+    @Override
     protected BundleDescriptor getBundleDescriptor() {
         return bundleDescriptor;
-    }    
+    }
 
-    /**
-     * get the visitor for its sub descriptor
-     * @param sub descriptor to return visitor for
-     */
+    @Override
     public DescriptorVisitor getSubDescriptorVisitor(Descriptor subDescriptor) {
         if (subDescriptor instanceof BundleDescriptor) {
             return ((BundleDescriptor)subDescriptor).getBundleVisitor();

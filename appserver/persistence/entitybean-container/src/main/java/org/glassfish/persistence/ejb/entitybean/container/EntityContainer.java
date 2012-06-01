@@ -43,64 +43,76 @@ package org.glassfish.persistence.ejb.entitybean.container;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.CreateException;
+import javax.ejb.EJBContext;
+import javax.ejb.EJBException;
+import javax.ejb.EJBLocalObject;
+import javax.ejb.EJBObject;
+import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
+import javax.ejb.NoSuchEntityException;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.RemoveException;
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.ejb.*;
-import javax.transaction.*;
-
-
-import com.sun.ejb.Container;
+import com.sun.appserv.util.cache.BaseCache;
+import com.sun.appserv.util.cache.Cache;
+import com.sun.appserv.util.cache.CacheListener;
+import com.sun.appserv.util.cache.Constants;
+import com.sun.appserv.util.cache.LruCache;
 import com.sun.ejb.ComponentContext;
-import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.EJBUtils;
+import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
-import com.sun.ejb.containers.EJBHomeInvocationHandler;
-import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
-import com.sun.ejb.portable.EJBMetaDataImpl;
-import com.sun.ejb.portable.ObjrefEnumeration;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBContextImpl.BeanState;
+import com.sun.ejb.containers.EJBLocalObjectImpl;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
 import com.sun.ejb.containers.EJBObjectImpl;
-import com.sun.ejb.containers.EJBLocalObjectImpl;
-
-import com.sun.ejb.containers.util.pool.*;
-import com.sun.ejb.spi.container.BeanStateSynchronization;
-import com.sun.appserv.util.cache.Constants;
-import com.sun.appserv.util.cache.Cache;
-import com.sun.appserv.util.cache.BaseCache;
-import com.sun.appserv.util.cache.LruCache;
-import com.sun.appserv.util.cache.CacheListener;
+import com.sun.ejb.containers.EJBHomeInvocationHandler;
+import com.sun.ejb.containers.EJBLocalHomeInvocationHandler;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.EJBObjectCacheListener;
 import org.glassfish.persistence.ejb.entitybean.container.cache.FIFOEJBObjectCache;
 import org.glassfish.persistence.ejb.entitybean.container.cache.UnboundedEJBObjectCache;
-
-import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
-import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
-import org.glassfish.persistence.ejb.entitybean.container.stats.EntityBeanStatsProvider;
-
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
-import com.sun.enterprise.deployment.runtime.BeanCacheDescriptor;
-import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.admin.monitor.callflow.ComponentType;
-
-
-import com.sun.enterprise.transaction.api.JavaEETransaction;
-
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
+import com.sun.ejb.containers.util.pool.AbstractPool;
+import com.sun.ejb.containers.util.pool.NonBlockingPool;
+import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProviderDelegate;
-import org.glassfish.ejb.config.EjbContainer;
-import org.glassfish.api.invocation.ComponentInvocation;
-
+import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
+import com.sun.ejb.portable.EJBMetaDataImpl;
+import com.sun.ejb.portable.ObjrefEnumeration;
+import com.sun.ejb.spi.container.BeanStateSynchronization;
+import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.ejb.config.EjbContainer;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
+import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
+import org.glassfish.persistence.ejb.entitybean.container.stats.EntityBeanStatsProvider;
 
 /**
  * This class implements the Container interface for EntityBeans.

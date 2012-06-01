@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,17 @@
 
 package com.sun.ejb.codegen;
 
-import java.lang.reflect.*;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Vector;
 
-import org.glassfish.api.deployment.DeploymentContext;
-
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
  * This class is used to generate the type specific EJBObject implementation

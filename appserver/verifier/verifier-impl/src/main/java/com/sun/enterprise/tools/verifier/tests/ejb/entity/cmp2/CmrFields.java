@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,16 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp2;
 
-import java.util.*;
-import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.*;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.CMRFieldInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Container managed relationship type field must be :
@@ -91,7 +96,7 @@ public class CmrFields extends CmrFieldTest {
                 foundIt = true;
             } 
         } else {
-	    EjbBundleDescriptor bundle = ((EjbDescriptor) descriptor).getEjbBundleDescriptor();
+	    EjbBundleDescriptorImpl bundle = ((EjbDescriptor) descriptor).getEjbBundleDescriptor();
 	    if(((EjbDescriptor) descriptor).getLocalClassName() != null && 
 	       !"".equals(((EjbDescriptor) descriptor).getLocalClassName())) {
 		if (isValidInterface(info.type, bundle.getEjbs())) {
@@ -128,14 +133,14 @@ public class CmrFields extends CmrFieldTest {
   
     }
     
-    private boolean isValidInterface(Class fieldType, Set entities) {
+    private boolean isValidInterface(Class fieldType, Set<EjbDescriptor> entities) {
         String component = "";
         if (entities==null)
             return false;
 	// only local interface can be a valid interface
-        Iterator iterator = entities.iterator();
+        Iterator<EjbDescriptor> iterator = entities.iterator();
         while (iterator.hasNext()) {
-            EjbAbstractDescriptor entity = (EjbAbstractDescriptor) iterator.next();
+            EjbDescriptor entity = iterator.next();
 	    if (fieldType.getName().equals(entity.getLocalClassName()))
 		return true;
 	}

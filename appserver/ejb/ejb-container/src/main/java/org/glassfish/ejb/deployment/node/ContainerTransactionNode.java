@@ -40,19 +40,20 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.ContainerTransaction;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
+
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.w3c.dom.Node;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
 /**
  * This node is responsible for handling the container-transaction XML node
  *
@@ -64,38 +65,24 @@ public class ContainerTransactionNode extends DeploymentDescriptorNode {
     private String trans_attribute;
     private String description;    
     private Vector methods = new Vector();
-    
-    /** Creates new ContainerTransactionNode */
+
     public ContainerTransactionNode() {
        registerElementHandler(new XMLElement(EjbTagNames.METHOD), MethodNode.class);
     }
-    
-    /**
-     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
-     * this XMLNode
-     *
-     * @param newDescriptor the new descriptor
-     */    
+
+    @Override
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof MethodDescriptor) {
             methods.add(newDescriptor);
         }
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
+    @Override
     public Object getDescriptor() {
         return null;
     }
-    
-    /** 
-     * receives notification of the end of an XML element by the Parser
-     * 
-     * @param element the xml tag identification
-     * @return true if this node is done processing the XML sub tree
-     */    
+
+    @Override
     public boolean endElement(XMLElement element) {
         boolean doneWithNode = super.endElement(element);
         
@@ -103,22 +90,17 @@ public class ContainerTransactionNode extends DeploymentDescriptorNode {
             ContainerTransaction ct =  new ContainerTransaction(trans_attribute, description);
             for (Iterator methodsIterator = methods.iterator();methodsIterator.hasNext();) {
                 MethodDescriptor md = (MethodDescriptor) methodsIterator.next();
-                EjbBundleDescriptor bundle = (EjbBundleDescriptor) getParentNode().getDescriptor();
+                EjbBundleDescriptorImpl bundle = (EjbBundleDescriptorImpl) getParentNode().getDescriptor();
                 EjbDescriptor ejb = bundle.getEjbByName(md.getEjbName(), true);
                 ejb.getMethodContainerTransactions().put(md, ct);
             }
         }        
         return doneWithNode;
     }
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */    
+
+    @Override
     public void setElementValue(XMLElement element, String value) {
-        if (EjbTagNames.DESCRIPTION.equals(element.getQName())) {
+        if (TagNames.DESCRIPTION.equals(element.getQName())) {
             description = value;
         } 
         if (EjbTagNames.TRANSACTION_ATTRIBUTE.equals(element.getQName())) {

@@ -43,26 +43,29 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
-
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.ejb.MessageDriven;
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
 
-import javax.ejb.*;
-
-import com.sun.enterprise.deployment.util.TypeUtil;
-import com.sun.enterprise.deployment.ContainerTransaction;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
-
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
+import com.sun.enterprise.deployment.util.TypeUtil;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import com.sun.enterprise.deployment.annotation.context.EjbContext;
-import com.sun.enterprise.deployment.annotation.handlers.PostProcessor;
+import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -85,7 +88,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
             (TransactionAttribute) ainfo.getAnnotation();
 
         for (EjbContext ejbContext : ejbContexts) {
-            EjbDescriptor ejbDesc = ejbContext.getDescriptor();
+            EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
             ContainerTransaction containerTransaction =
                 getContainerTransaction(taAn.value());
 
@@ -197,7 +200,7 @@ public class TransactionAttributeHandler extends AbstractAttributeHandler
      */
     public void postProcessAnnotation(AnnotationInfo ainfo, EjbContext ejbContext)
             throws AnnotationProcessorException {
-        EjbDescriptor ejbDesc = ejbContext.getDescriptor();
+        EjbDescriptor ejbDesc = (EjbDescriptor) ejbContext.getDescriptor();
         TransactionAttribute taAn = 
             (TransactionAttribute) ainfo.getAnnotation();
         ContainerTransaction containerTransaction =

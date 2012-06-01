@@ -40,30 +40,31 @@
 
 package org.glassfish.ejb.deployment.archivist;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import javax.inject.Inject;
+
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
-import com.sun.enterprise.deployment.util.EjbBundleValidator;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.ejb.EjbType;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.glassfish.ejb.deployment.io.EjbRuntimeDDFile;
 import org.glassfish.ejb.deployment.io.GFEjbRuntimeDDFile;
+import org.glassfish.ejb.deployment.util.EjbBundleValidator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
-
-import javax.inject.Inject;
-import java.io.IOException;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * This class is responsible for handling J2EE EJB Bundlearchive files.
@@ -72,8 +73,8 @@ import java.util.ArrayList;
  */
 @Service
 @Scoped(PerLookup.class)
-@ArchivistFor(org.glassfish.ejb.EjbType.ARCHIVE_TYPE)
-public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
+@ArchivistFor(EjbType.ARCHIVE_TYPE)
+public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
 
     /**
      * The DeploymentDescriptorFile handlers we are delegating for XML i/o
@@ -81,7 +82,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     private EjbDeploymentDescriptorFile standardDD;
     
     @Inject
-    private org.glassfish.ejb.EjbType ejbType;
+    private EjbType ejbType;
 
     /**
      * @return the  module type handled by this archivist
@@ -99,9 +100,9 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
     public void setDescriptor(Application descriptor) {
         // this is acceptable if the application actually represents
         // a standalone module
-        Set ejbBundles = descriptor.getBundleDescriptors(EjbBundleDescriptor.class);
+        Set ejbBundles = descriptor.getBundleDescriptors(EjbBundleDescriptorImpl.class);
         if (ejbBundles.size()>0) {
-            this.descriptor = (EjbBundleDescriptor) ejbBundles.iterator().next();
+            this.descriptor = (EjbBundleDescriptorImpl) ejbBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())
                 return;
             else
@@ -148,8 +149,8 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      * @return a default BundleDescriptor for this archivist
      */
     @Override
-    public EjbBundleDescriptor getDefaultBundleDescriptor() {
-        return  new EjbBundleDescriptor();
+    public EjbBundleDescriptorImpl getDefaultBundleDescriptor() {
+        return new EjbBundleDescriptorImpl();
     }
 
     /**
@@ -159,7 +160,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptor> {
      * @param archive the module archive
      */
     @Override
-    protected void postOpen(EjbBundleDescriptor descriptor, ReadableArchive archive)
+    protected void postOpen(EjbBundleDescriptorImpl descriptor, ReadableArchive archive)
         throws IOException
     {
         super.postOpen(descriptor, archive);

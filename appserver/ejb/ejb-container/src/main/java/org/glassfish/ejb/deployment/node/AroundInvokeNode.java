@@ -40,29 +40,26 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import org.glassfish.deployment.common.Descriptor;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.EjbTagNames;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 
 /**
  * This node handles all information relative to injection-complete xml tag
  */
-public class AroundInvokeNode extends DeploymentDescriptorNode {
+public class AroundInvokeNode extends DeploymentDescriptorNode<LifecycleCallbackDescriptor> {
 
     private LifecycleCallbackDescriptor descriptor;
-    
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */       
-    public Object getDescriptor() {
-        
+
+    @Override
+    public LifecycleCallbackDescriptor getDescriptor() {
        if (descriptor==null) {
             descriptor = new LifecycleCallbackDescriptor();
             Descriptor parentDesc = 
@@ -79,14 +76,9 @@ public class AroundInvokeNode extends DeploymentDescriptorNode {
             } 
         }
         return descriptor;
-    }    
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.AROUND_INVOKE_CLASS_NAME, 
@@ -94,16 +86,9 @@ public class AroundInvokeNode extends DeploymentDescriptorNode {
         table.put(EjbTagNames.AROUND_INVOKE_METHOD_NAME, 
             "setLifecycleCallbackMethod");
         return table;
-    }    
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+    }
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, LifecycleCallbackDescriptor descriptor) {
         Node myNode = appendChild(parent, nodeName);
         appendTextChild(myNode, EjbTagNames.AROUND_INVOKE_CLASS_NAME, 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,16 +42,17 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-
 import javax.ejb.ApplicationException;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbApplicationExceptionInfo;
-
-import org.glassfish.apf.*;
 import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import org.glassfish.apf.AnnotatedElementHandler;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -77,7 +78,7 @@ public class ApplicationExceptionHandler extends AbstractHandler {
         if (aeHandler instanceof EjbBundleContext) {
             EjbBundleContext ejbBundleContext = (EjbBundleContext)aeHandler;
             
-            EjbBundleDescriptor ejbBundle = ejbBundleContext.getDescriptor();
+            EjbBundleDescriptorImpl ejbBundle = (EjbBundleDescriptorImpl) ejbBundleContext.getDescriptor();
 
             ApplicationException appExcAnn = (ApplicationException) annotation;
 

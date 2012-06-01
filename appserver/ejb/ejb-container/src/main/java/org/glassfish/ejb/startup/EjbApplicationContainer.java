@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,9 @@
 
 package org.glassfish.ejb.startup;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
 
@@ -53,12 +53,12 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name="ejb")
 public class EjbApplicationContainer
-    implements ApplicationContainer<EjbBundleDescriptor> {
+    implements ApplicationContainer<EjbBundleDescriptorImpl> {
 
     Object containerFactory;
-    EjbBundleDescriptor bundleDesc;
+    EjbBundleDescriptorImpl bundleDesc;
 
-    public EjbApplicationContainer(Object containerFactory, EjbBundleDescriptor bundleDesc) {
+    public EjbApplicationContainer(Object containerFactory, EjbBundleDescriptorImpl bundleDesc) {
         this.containerFactory = containerFactory;
         this.bundleDesc = bundleDesc;
     }
@@ -91,7 +91,7 @@ public class EjbApplicationContainer
         return false;
     }
 
-    public EjbBundleDescriptor getDescriptor() {
+    public EjbBundleDescriptorImpl getDescriptor() {
         return bundleDesc;
     }
 

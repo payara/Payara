@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,36 +40,38 @@
 
 package com.sun.enterprise.connectors.inbound;
 
-import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.MessageListener;
-import com.sun.enterprise.resource.ResourceHandle;
-import com.sun.enterprise.connectors.util.*;
-import com.sun.enterprise.connectors.*;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
-import com.sun.appserv.connectors.internal.api.*;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.UnavailableException;
 import javax.transaction.xa.XAResource;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.connectors.ActiveResourceAdapter;
+import com.sun.enterprise.connectors.ConnectorRegistry;
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.util.SetMethodAction;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.MessageListener;
+import com.sun.enterprise.resource.ResourceHandle;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
+import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.api.MessageBeanProtocolManager;
 import org.glassfish.ejb.spi.MessageBeanClient;
-import org.glassfish.ejb.api.MessageBeanListener;
 
 /**
  * Main helper implementation for message-beans associated with
@@ -154,7 +156,6 @@ public final class ConnectorMessageBeanClient
 
         if (resourceAdapterMid == null) {
             String messageListener = descriptor_.getMessageListenerType();
-            descriptor_.getActivationConfigDescriptor().getActivationConfig();
             //DOL of MDB descriptor has default value as "javax.jms.MessageListener" which
             //will take care of the case when the message-listener-type is not specified in the DD
             if(ConnectorConstants.JMS_MESSAGE_LISTENER.equals(messageListener)){

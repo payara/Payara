@@ -40,25 +40,25 @@
 
 package com.sun.ejb.base.sfsb.util;
 
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Properties;
-
-import com.sun.logging.LogDomains;
-
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.runtime.IASEjbExtraDescriptors;
-import com.sun.enterprise.config.serverbeans.*;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.jvnet.hk2.component.PerLookup;
+
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.AvailabilityService;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.deployment.Application;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbContainerAvailability;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  * @author lwhite

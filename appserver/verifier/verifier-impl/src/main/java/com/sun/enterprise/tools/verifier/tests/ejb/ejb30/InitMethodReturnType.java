@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.ejb30;
 
-import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.deployment.EjbSessionDescriptor;
-import com.sun.enterprise.deployment.EjbInitInfo;
-
-import java.util.Set;
 import java.lang.reflect.Method;
+import java.util.Set;
+
+import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+
+import com.sun.enterprise.tools.verifier.Result;
 
 /**
  * The Init annotation is used to specify the correspondence of a method on the 

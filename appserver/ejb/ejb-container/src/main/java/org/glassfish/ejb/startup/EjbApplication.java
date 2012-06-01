@@ -43,36 +43,33 @@ package org.glassfish.ejb.startup;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.containers.AbstractSingletonContainer;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
-import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
-
+import com.sun.enterprise.security.PolicyLoader;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.api.deployment.UndeployCommandParameters;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.security.application.EJBSecurityManager;
+import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.internal.data.ApplicationInfo;
-
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-
-import com.sun.enterprise.security.PolicyLoader;
-import com.sun.logging.LogDomains;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.api.deployment.UndeployCommandParameters;
-import org.glassfish.internal.data.ApplicationRegistry;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
  * This class represents a logical collection of EJB components contained in one ejb-jar
@@ -88,9 +85,9 @@ public class EjbApplication
     private static final Logger _logger =
                 LogDomains.getLogger(EjbApplication.class, LogDomains.EJB_LOGGER);
 
-    private EjbBundleDescriptor ejbBundle;
+    private EjbBundleDescriptorImpl ejbBundle;
     private Collection<EjbDescriptor> ejbs;
-    private Collection<Container> containers = new ArrayList();
+    private Collection<Container> containers = new ArrayList<Container>();
     private ClassLoader ejbAppClassLoader;
     private DeploymentContext dc;
     
@@ -115,7 +112,7 @@ public class EjbApplication
     static final String KEEP_STATE = "org.glassfish.ejb.startup.keepstate";
 
     public EjbApplication(
-            EjbBundleDescriptor bundle, DeploymentContext dc,
+            EjbBundleDescriptorImpl bundle, DeploymentContext dc,
             ClassLoader cl, Habitat services,
             EJBSecurityManagerFactory ejbSecMgrFactory) {
         this.ejbBundle = bundle;
@@ -135,13 +132,13 @@ public class EjbApplication
         return ejbs;
     }
 
-    public EjbBundleDescriptor getEjbBundleDescriptor() {
+    public EjbBundleDescriptorImpl getEjbBundleDescriptor() {
         return ejbBundle;
     }
 
     public boolean isStarted() {
         return started;
-    }                                                                                     // TODO handle singleton startup dependencies that refer to singletons in a different
+    }       // TODO handle singleton startup dependencies that refer to singletons in a different
             // module within the application
 
     void markAllContainersAsStarted() {
@@ -384,7 +381,7 @@ public class EjbApplication
      * and keep-state element in descriptors; false otherwise.
      */
     private boolean resolveKeepStateOptions(DeploymentContext deployContext, boolean isDeploy,
-            EjbBundleDescriptor bundleDesc) {
+            EjbBundleDescriptorImpl bundleDesc) {
         Boolean isredeploy = Boolean.FALSE;
         Boolean keepState = null;
         if (isDeploy) {

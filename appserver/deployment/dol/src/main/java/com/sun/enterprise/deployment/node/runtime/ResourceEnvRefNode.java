@@ -40,16 +40,17 @@
 
 package com.sun.enterprise.deployment.node.runtime;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
-
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * This node is responsible for handling runtime descriptor
@@ -58,37 +59,26 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class ResourceEnvRefNode extends DeploymentDescriptorNode {
+public class ResourceEnvRefNode extends DeploymentDescriptorNode<ResourceEnvReferenceDescriptor> {
 
     private ResourceEnvReferenceDescriptor descriptor;
-    
-       /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
+
+    @Override
+    public ResourceEnvReferenceDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new ResourceEnvReferenceDescriptor();
         return descriptor;
-    }   
-    
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
     }
-    
-    /**
-     * receives notiification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
-     */
+
+    @Override
     public void setElementValue(XMLElement element, String value) {
-        if (RuntimeTagNames.RESOURCE_ENV_REFERENCE_NAME.equals(element.getQName())) {
+        if (TagNames.RESOURCE_ENV_REFERENCE_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
             if (parentDesc instanceof ResourceEnvReferenceContainer) {
                 try {
@@ -99,22 +89,15 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode {
             }
         } else super.setElementValue(element, value);
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, ResourceEnvReferenceDescriptor ejbRef) {          
+
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, ResourceEnvReferenceDescriptor ejbRef) {
         Node resRefNode = super.writeDescriptor(parent, nodeName, ejbRef);
-        appendTextChild(resRefNode, RuntimeTagNames.RESOURCE_ENV_REFERENCE_NAME, ejbRef.getName());
+        appendTextChild(resRefNode, TagNames.RESOURCE_ENV_REFERENCE_NAME, ejbRef.getName());
         appendTextChild(resRefNode, RuntimeTagNames.JNDI_NAME, ejbRef.getJndiName());
         return resRefNode;
-    }  
-    
+    }
+
     /**
      * writes all the runtime information for resource environment references
      * 
@@ -127,10 +110,10 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode {
         if (resRefs.hasNext()) {
             ResourceEnvRefNode resourceEnvRefNode = new ResourceEnvRefNode();
             while (resRefs.hasNext()) {
-                resourceEnvRefNode.writeDescriptor(parent, RuntimeTagNames.RESOURCE_ENV_REFERENCE, 
+                resourceEnvRefNode.writeDescriptor(parent, TagNames.RESOURCE_ENV_REFERENCE, 
                     (ResourceEnvReferenceDescriptor) resRefs.next());
             }
-        }       
+        }
     }
-    
+
 }

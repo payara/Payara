@@ -40,22 +40,20 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.ConcurrentMethodDescriptor;
-import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.TimeoutValueDescriptor;
 
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.ConcurrentMethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.TimeoutValueDescriptor;
 import org.w3c.dom.Node;
 
-public class ConcurrentMethodNode extends DeploymentDescriptorNode {
+public class ConcurrentMethodNode extends DeploymentDescriptorNode<ConcurrentMethodDescriptor> {
 
-    ConcurrentMethodDescriptor descriptor = null;
-
-    private static final String READ_LOCK = "Read";
     private static final String WRITE_LOCK = "Write";
+
+    private ConcurrentMethodDescriptor descriptor = null;
 
     public ConcurrentMethodNode() {
         super();
@@ -67,48 +65,23 @@ public class ConcurrentMethodNode extends DeploymentDescriptorNode {
 
     }
 
-    /**
-     * @return the Descriptor subclass that was populated  by reading
-     * the source XML file
-     */
-    public Object getDescriptor() {
-        if (descriptor == null) {
-            descriptor = (ConcurrentMethodDescriptor) new ConcurrentMethodDescriptor();
-        }
+    @Override
+    public ConcurrentMethodDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new ConcurrentMethodDescriptor();
         return descriptor;
     }
 
-    /**
-     * receives notiification of the value for a particular tag
-     *
-     * @param element the xml element
-     * @param value it's associated value
-     */
+    @Override
     public void setElementValue(XMLElement element, String value) {
-
         if (EjbTagNames.CONCURRENT_LOCK.equals(element.getQName())) {
             descriptor.setWriteLock(value.equals(WRITE_LOCK));
         } else {
             super.setElementValue(element, value);
         }
     }
-        
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the root element of this xml fragment
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
-    public Node writeDescriptor(Node parent, String nodeName, Descriptor descriptor) {
-        if (! (descriptor instanceof ConcurrentMethodDescriptor)) {
-            throw new IllegalArgumentException(getClass()
-                    + " cannot handles descriptors of type " + descriptor.getClass());
-        }
 
-        ConcurrentMethodDescriptor desc = (ConcurrentMethodDescriptor) descriptor;
-
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, ConcurrentMethodDescriptor desc) {
         Node concurrentNode = super.writeDescriptor(parent, nodeName, descriptor);
 
         MethodNode methodNode = new MethodNode();

@@ -40,42 +40,20 @@
 
 package org.glassfish.ejb.deployment.annotation.impl;
 
-import com.sun.enterprise.deployment.*;
-import org.glassfish.apf.impl.AnnotationUtils;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.logging.Level;
-
 @Service
 @Scoped(PerLookup.class)
-public class EjbInWarScanner
-    extends EjbJarScanner {
+public class EjbInWarScanner extends EjbJarScanner {
 
-    /**
-     * This scanner will scan the archiveFile for annotation processing.
-     * @param archiveFile
-     * @param classLoader
-     */
-    public void process(File archiveFile, EjbBundleDescriptor desc,
-        ClassLoader classLoader) throws IOException {
-        if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
-            AnnotationUtils.getLogger().fine("archiveFile is " + archiveFile);
-            AnnotationUtils.getLogger().fine("classLoader is " + classLoader);
-        }
-        this.archiveFile = archiveFile;
-        this.classLoader = classLoader;
-
-        if (!archiveFile.isDirectory()) {
-            // on client side
-            return;
-        }
-
+    @Override
+    protected void addScanDirectories() throws IOException {
         // add WEB-INF/classes
         File webinf = new File(archiveFile, "WEB-INF");
         File classes = new File(webinf, "classes");
@@ -87,7 +65,8 @@ public class EjbInWarScanner
         File lib = new File(webinf, "lib");
         if (lib.exists()) {
             File[] jarFiles = lib.listFiles(new FileFilter() {
-                 public boolean accept(File pathname) {
+                 @Override
+                public boolean accept(File pathname) {
                      return (pathname.getAbsolutePath().endsWith(".jar"));
                  }
             });
@@ -103,26 +82,6 @@ public class EjbInWarScanner
                 }
             }
         }
-
-
-        // always add session beans, message driven beans,
-        // interceptor classes that are defined in ejb-jar.xml r
-        // regardless of they have annotation or not
-        for (Iterator ejbs = desc.getEjbs().iterator(); ejbs.hasNext();) {
-            EjbDescriptor ejbDesc = (EjbDescriptor)ejbs.next();
-            if (ejbDesc instanceof EjbSessionDescriptor ||
-                ejbDesc instanceof EjbMessageBeanDescriptor) {
-                addScanClassName(ejbDesc.getEjbClassName());
-            }
-        }
-
-        for (Iterator interceptors = desc.getInterceptors().iterator();
-            interceptors.hasNext();) {
-            EjbInterceptor interceptor =
-                (EjbInterceptor)interceptors.next();
-            addScanClassName(interceptor.getInterceptorClassName());
-        }
-
     }
 
 }

@@ -40,16 +40,16 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.IASPersistenceManagerDescriptor;
-import com.sun.enterprise.deployment.runtime.PersistenceManagerInUse;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Iterator;
 import java.util.Vector;
+
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASPersistenceManagerDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.PersistenceManagerInUse;
+import org.w3c.dom.Node;
 
 /**
  * This node handles the pm-descriptors runtime xml element
@@ -60,14 +60,13 @@ import java.util.Vector;
 
 public class PMDescriptorsNode extends RuntimeDescriptorNode {
 
-    /** Creates new CmpNode */
     public PMDescriptorsNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.PM_DESCRIPTOR), 
                                PMDescriptorNode.class, "addPersistenceManager");
         registerElementHandler(new XMLElement(RuntimeTagNames.PM_INUSE), 
                                PMInUseNode.class, "setPersistenceManagerInUse");        
     }
-	
+
     /**
      * write the descriptor class to a DOM tree and return it
      *
@@ -76,7 +75,7 @@ public class PMDescriptorsNode extends RuntimeDescriptorNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
-    public Node writeDescriptor(Node parent, String nodeName, EjbBundleDescriptor descriptor) {
+    public Node writeDescriptor(Node parent, String nodeName, EjbBundleDescriptorImpl descriptor) {
 		
 	Node pms = null;
 	Vector pmDescriptors = descriptor.getPersistenceManagers();

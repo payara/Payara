@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,29 +40,54 @@
 
 package com.sun.appserv.connectors.internal.api;
 
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deploy.shared.FileArchive;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
-
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.sql.Connection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URISyntaxException;
 
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.BindableResource;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.api.admin.*;
-import org.glassfish.connectors.config.*;
+import org.glassfish.connectors.config.AdminObjectResource;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.connectors.config.ConnectorResource;
+import org.glassfish.connectors.config.ConnectorService;
+import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.connectors.config.ResourceAdapterConfig;
+import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import com.sun.enterprise.config.serverbeans.Resource;
 import org.glassfish.resources.api.GenericResourceInfo;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceConstants;
@@ -70,6 +95,7 @@ import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
+
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 
 /**
@@ -901,7 +927,7 @@ public class ConnectorsUtil {
         return ResourceUtil.getActualModuleName(moduleName);
     }
 
-    public static String getModuleName(EjbMessageBeanDescriptor descriptor) {
+    public static String getModuleName(EjbDescriptor descriptor) {
         String appName = descriptor.getApplication().getAppName();
         String moduleName = descriptor.getEjbBundleDescriptor().getModuleID();
         String actualModuleName = moduleName;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,14 +40,11 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.lang.reflect.*;
-import java.util.*;
-import java.rmi.*;
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
-import java.lang.ClassLoader;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
+
+import java.lang.reflect.Field;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * Exceptions checked for CreateException, FinderException, RemoteException

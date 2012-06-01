@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.deployment.node;
 
+import java.util.Map;
+
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
-
-import java.util.Map;
 
 /**
  * This class handles all information related to the resource-env-ref 
@@ -54,21 +54,23 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
-public class ResourceEnvRefNode extends DeploymentDescriptorNode  {
-    
-    
+public class ResourceEnvRefNode extends DeploymentDescriptorNode<ResourceEnvReferenceDescriptor> {
+
+    private ResourceEnvReferenceDescriptor descriptor;
+
     public ResourceEnvRefNode() {
         super();
         registerElementHandler(new XMLElement(TagNames.INJECTION_TARGET), 
                                 InjectionTargetNode.class, "addInjectionTarget");                          
-    }    
-    
-   /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    }
+
+    @Override
+    public ResourceEnvReferenceDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new ResourceEnvReferenceDescriptor();
+        return descriptor;
+    }
+
+    @Override
     protected Map getDispatchTable() {
         Map table = super.getDispatchTable();
         table.put(TagNames.RESOURCE_ENV_REFERENCE_NAME, "setName");    
@@ -77,15 +79,8 @@ public class ResourceEnvRefNode extends DeploymentDescriptorNode  {
         table.put(TagNames.LOOKUP_NAME, "setLookupName");
         return table;
     }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param node name for the root element of this xml fragment      
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, ResourceEnvReferenceDescriptor descriptor) {    
         Node ejbResNode = appendChild(parent, nodeName);
         

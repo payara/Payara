@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,12 @@
 
 package com.sun.enterprise.deployment.annotation.context;
 
+import java.lang.annotation.ElementType;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
@@ -57,12 +63,7 @@ import com.sun.enterprise.deployment.util.TypeUtil;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.impl.ComponentDefinition;
-
-import java.lang.annotation.ElementType;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import org.glassfish.deployment.common.Descriptor;
 
 /**
  *
@@ -76,7 +77,7 @@ public class EjbContext extends ResourceContainerContextImpl {
             new ArrayList<PostProcessInfo>();
 
     public EjbContext(EjbDescriptor currentEjb, Class ejbClass) {
-        super(currentEjb);
+        super((Descriptor) currentEjb); // FIXME by srini - can we extract intf to avoid this
         componentClassName = currentEjb.getEjbClassName();
         ComponentDefinition cdef = new ComponentDefinition(ejbClass);
         methods = cdef.getMethods();
@@ -89,7 +90,7 @@ public class EjbContext extends ResourceContainerContextImpl {
     }
 
     public void setDescriptor(EjbDescriptor currentEjb) {
-        descriptor = currentEjb;
+        descriptor = (Descriptor) currentEjb;  // FIXME by srini - can we extract intf to avoid this
     }
 
     public void setEndpoint(WebServiceEndpoint endpoint) {

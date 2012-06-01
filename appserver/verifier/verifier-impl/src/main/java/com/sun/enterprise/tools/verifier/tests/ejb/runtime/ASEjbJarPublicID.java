@@ -40,18 +40,13 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.runtime;
 
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
-import java.io.*;
-import java.util.jar.*;
-import java.util.zip.*;
-
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.tools.verifier.*;
-
-import com.sun.enterprise.tools.verifier.tests.*;
-import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
-
 import com.sun.enterprise.deployment.xml.DTDRegistry;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbCheck;
+import com.sun.enterprise.tools.verifier.tests.ejb.EjbTest;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
 
 /** DOCTYPE
@@ -85,7 +80,7 @@ public class ASEjbJarPublicID extends EjbTest implements EjbCheck {
                                        DTDRegistry.SUN_EJBJAR_210_DTD_SYSTEM_ID};
             
             boolean foundDOCTYPE = false, foundPubid = false, foundURL = false;
-            EjbBundleDescriptor ejbBundleDesc = descriptor.getEjbBundleDescriptor();
+            EjbBundleDescriptorImpl ejbBundleDesc = descriptor.getEjbBundleDescriptor();
             EjbBundleRuntimeNode ejbBundleRuntimeNode = new EjbBundleRuntimeNode(ejbBundleDesc);
             
             String s = ejbBundleRuntimeNode.getDocType();

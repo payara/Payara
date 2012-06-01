@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,19 +46,18 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ResourceBundle;
-import java.lang.reflect.Method;
 
-import com.sun.enterprise.deployment.runtime.IASEjbCMPFinder;
-import com.sun.enterprise.deployment.runtime.PrefetchDisabledDescriptor;
-import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.QueryDescriptor;
-
-import org.glassfish.persistence.common.I18NHelper;
 import com.sun.jdo.spi.persistence.utility.generator.JavaClassWriterHelper;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbCMPFinder;
+import org.glassfish.ejb.deployment.descriptor.runtime.PrefetchDisabledDescriptor;
+import org.glassfish.persistence.common.I18NHelper;
 
 /** This is a subclass of {@link AbstractMethodHelper} 
  * which provides overridden method implementations based on an SunONE

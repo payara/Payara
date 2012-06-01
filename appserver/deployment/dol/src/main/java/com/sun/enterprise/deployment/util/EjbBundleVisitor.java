@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,8 +41,6 @@
 package com.sun.enterprise.deployment.util;
 
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.RelationshipDescriptor;
-import com.sun.enterprise.deployment.WebService;
 
 /**
  * This class defines a Visitor API for the DOL Ejb bundle related 
@@ -55,7 +53,7 @@ public interface EjbBundleVisitor extends ComponentVisitor {
 
     /**
      * visits an ejb bundle descriptor
-     * @param an ejb bundle descriptor
+     * @param bundleDescriptor ejb bundle descriptor
      */
     public void accept(EjbBundleDescriptor bundleDescriptor);    
 

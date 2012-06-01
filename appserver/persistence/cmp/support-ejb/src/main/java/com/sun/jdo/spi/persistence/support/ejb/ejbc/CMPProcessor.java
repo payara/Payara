@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,13 @@
 
 package com.sun.jdo.spi.persistence.support.ejb.ejbc;
 
-import org.glassfish.api.deployment.DeploymentContext;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-
 import com.sun.jdo.spi.persistence.support.sqlstore.ejb.DeploymentHelper;
-import com.sun.jdo.api.persistence.support.JDOFatalUserException;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
-
-import org.glassfish.persistence.common.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.persistence.common.DatabaseConstants;
+import org.glassfish.persistence.common.Java2DBProcessorHelper;
 
 /**
  * If the application contains cmp 2.x beans process them. Check if
@@ -85,7 +75,7 @@ public class CMPProcessor {
      */
     public void process() {
       
-        EjbBundleDescriptor bundle = ctx.getModuleMetaData(EjbBundleDescriptor.class);
+        EjbBundleDescriptorImpl bundle = ctx.getModuleMetaData(EjbBundleDescriptorImpl.class);
         ResourceReferenceDescriptor cmpResource = bundle.getCMPResourceReference();
 
         // If this bundle's beans are not created by Java2DB, there is nothing to do.
@@ -152,7 +142,7 @@ public class CMPProcessor {
      * create default filenames
      * @param ejbBundle the ejb bundle descriptor being worked on.
      */
-    private void  constructJdbcFileNames(EjbBundleDescriptor ejbBundle) {
+    private void  constructJdbcFileNames(EjbBundleDescriptorImpl ejbBundle) {
         String filePrefix = DeploymentHelper.getDDLNamePrefix(ejbBundle);
     
         helper.setCreateJdbcFileName(filePrefix + DatabaseConstants.CREATE_DDL_JDBC_FILE_SUFFIX, 

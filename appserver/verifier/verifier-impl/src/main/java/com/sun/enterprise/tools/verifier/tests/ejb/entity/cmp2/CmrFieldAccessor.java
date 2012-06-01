@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.tools.verifier.tests.ejb.entity.cmp2;
 
-import com.sun.enterprise.deployment.RelationRoleDescriptor;
-import com.sun.enterprise.deployment.CMRFieldInfo;
 import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.tools.verifier.tests.*;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.CMRFieldInfo;
+import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
 
 /**
  * Container-managed fields declaration test.

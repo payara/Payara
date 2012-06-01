@@ -40,24 +40,36 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbInterceptor;
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.types.EjbReference;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
-import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.w3c.dom.Node;
-
 import java.util.Map;
 import java.util.logging.Level;
 
-public class EjbInterceptorNode extends DeploymentDescriptorNode {
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
+import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
+import com.sun.enterprise.deployment.node.EjbReferenceNode;
+import com.sun.enterprise.deployment.node.EntityManagerFactoryReferenceNode;
+import com.sun.enterprise.deployment.node.EntityManagerReferenceNode;
+import com.sun.enterprise.deployment.node.EnvEntryNode;
+import com.sun.enterprise.deployment.node.JndiEnvRefNode;
+import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
+import com.sun.enterprise.deployment.node.MessageDestinationRefNode;
+import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
+import com.sun.enterprise.deployment.node.ResourceRefNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.w3c.dom.Node;
+
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+
+public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor> {
     private EjbInterceptor descriptor;
-    private CallbackType tempType;
 
     public EjbInterceptorNode() {
         super();
@@ -74,13 +86,13 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode {
 
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                EnvEntryNode.class, "addEnvironmentProperty");
-        registerElementHandler(new XMLElement(EjbTagNames.EJB_REFERENCE), EjbReferenceNode.class);     
-        registerElementHandler(new XMLElement(EjbTagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
+        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
+        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
         JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
-        registerElementHandler(new XMLElement(EjbTagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
                ResourceRefNode.class, "addResourceReferenceDescriptor");   
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
                ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
@@ -89,47 +101,30 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode {
         registerElementHandler(new XMLElement(TagNames.PERSISTENCE_UNIT_REF), EntityManagerFactoryReferenceNode.class, "addEntityManagerFactoryReferenceDescriptor");
     }
 
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+    @Override
     protected Map getDispatchTable() {
         // no need to be synchronized for now
         Map table = super.getDispatchTable();
         table.put(EjbTagNames.INTERCEPTOR_CLASS, "setInterceptorClassName");
         return table;
-    }    
+    }
 
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getDescriptor() {
-        
+    @Override
+    public EjbInterceptor getDescriptor() {
         if (descriptor==null) {
-            descriptor = (EjbInterceptor)DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new EjbInterceptor();
             descriptor.setEjbBundleDescriptor((EjbBundleDescriptor)getParentNode().getDescriptor());
         }
         return descriptor;
     }
 
-    private EjbInterceptor getInterceptor() {
-        return (EjbInterceptor)getDescriptor();
-    }
-
-    /**
-     * Adds  a new DOL descriptor instance to the descriptor instance associated with 
-     * this XMLNode
-     *
-     * @param newDescriptor the new descriptor
-     */    
+    @Override
     public void addDescriptor(Object  newDescriptor) {       
         if (newDescriptor instanceof EjbReference) {            
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
                 DOLUtils.getDefaultLogger().fine("Adding ejb ref " + newDescriptor);
             }
-            getInterceptor().addEjbReferenceDescriptor(
+            getDescriptor().addEjbReferenceDescriptor(
                         (EjbReference) newDescriptor);
         } else if( newDescriptor instanceof 
                    MessageDestinationReferenceDescriptor ) {
@@ -140,21 +135,14 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode {
             // EjbBundle might not be set yet on EjbInterceptor, so set it
             // explicitly here.
             msgDestRef.setReferringBundleDescriptor(ejbBundle);
-            getInterceptor().addMessageDestinationReferenceDescriptor
+            getDescriptor().addMessageDestinationReferenceDescriptor
                 (msgDestRef);
         } else {
             super.addDescriptor(newDescriptor);
         }
-    }      
+    }
 
-   /**
-     * write the relationships descriptor class to a DOM tree and return it
-     *
-     * @param parent node in the DOM tree 
-     * @param nodeName name for the root element of this xml fragment
-     * @param  descriptor to write
-     * @return the DOM tree top node
-     */
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbInterceptor descriptor) {
         Node interceptorNode = appendChild(parent, nodeName);
 
@@ -171,20 +159,20 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode {
                 descriptor.getAroundTimeoutDescriptors().iterator());
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.POST_CONSTRUCT)) {
-            writePostConstructDescriptors(interceptorNode,
-                descriptor.getCallbackDescriptors(CallbackType.POST_CONSTRUCT).iterator());
+            writeLifeCycleCallbackDescriptors(interceptorNode, TagNames.POST_CONSTRUCT, 
+                descriptor.getCallbackDescriptors(CallbackType.POST_CONSTRUCT));
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.PRE_DESTROY)) {
-            writePreDestroyDescriptors(interceptorNode,
-                descriptor.getCallbackDescriptors(CallbackType.PRE_DESTROY).iterator());
+            writeLifeCycleCallbackDescriptors(interceptorNode, TagNames.PRE_DESTROY,
+                descriptor.getCallbackDescriptors(CallbackType.PRE_DESTROY));
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.POST_ACTIVATE)) {
-            writePostActivateDescriptors(interceptorNode,
-                descriptor.getCallbackDescriptors(CallbackType.POST_ACTIVATE).iterator());
+            writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.POST_ACTIVATE_METHOD,
+                descriptor.getCallbackDescriptors(CallbackType.POST_ACTIVATE));
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.PRE_PASSIVATE)) {
-            writePrePassivateDescriptors(interceptorNode,
-                descriptor.getCallbackDescriptors(CallbackType.PRE_PASSIVATE).iterator());
+            writeLifeCycleCallbackDescriptors(interceptorNode, EjbTagNames.PRE_PASSIVATE_METHOD,
+                descriptor.getCallbackDescriptors(CallbackType.PRE_PASSIVATE));
         }
 
         //TODO V3 should we check for the availability of datasource-definition similar to above ? (hasCallbackDescriptor)

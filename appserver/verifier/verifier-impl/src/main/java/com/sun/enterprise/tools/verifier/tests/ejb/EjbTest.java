@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,18 +41,17 @@
 package com.sun.enterprise.tools.verifier.tests.ejb;
 
 
-import com.sun.enterprise.tools.verifier.tests.VerifierTest;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.WebServicesDescriptor;
+import com.sun.enterprise.tools.verifier.Result;
+import com.sun.enterprise.tools.verifier.Verifier;
+import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.VerifierCheck;
-import com.sun.enterprise.tools.verifier.*;
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.tools.verifier.tests.VerifierTest;
+import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import com.sun.enterprise.tools.verifier.Verifier;
-import java.lang.ClassLoader;
-import com.sun.enterprise.tools.verifier.tests.*;
-import com.sun.enterprise.util.io.FileUtils;
-
-import java.io.File;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 
 /**
  * Superclass for all EJB tests, contains common services.

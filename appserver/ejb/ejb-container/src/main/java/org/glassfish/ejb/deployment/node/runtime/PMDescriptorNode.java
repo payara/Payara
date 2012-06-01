@@ -40,13 +40,13 @@
 
 package org.glassfish.ejb.deployment.node.runtime;
 
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.IASPersistenceManagerDescriptor;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.w3c.dom.Node;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.ejb.deployment.descriptor.runtime.IASPersistenceManagerDescriptor;
+import org.w3c.dom.Node;
 
 /**
  * This node handles the pm-descriptor runtime xml element
@@ -55,14 +55,19 @@ import java.util.Map;
  * @version 
  */
 
-public class PMDescriptorNode extends RuntimeDescriptorNode {
-	
-    /**
-     * all sub-implementation of this class can use a dispatch table to map xml element to
-     * method name on the descriptor class for setting the element value. 
-     *  
-     * @return the map with the element name as a key, the setter method as a value
-     */    
+public class PMDescriptorNode extends RuntimeDescriptorNode<IASPersistenceManagerDescriptor> {
+
+    private IASPersistenceManagerDescriptor descriptor;
+
+    @Override
+    public IASPersistenceManagerDescriptor getDescriptor() {
+        if (descriptor == null) {
+            descriptor = new IASPersistenceManagerDescriptor();
+        }
+        return descriptor;
+    }
+
+    @Override
     protected Map getDispatchTable() {    
         Map table = new HashMap();
         table.put(RuntimeTagNames.PM_IDENTIFIER, "setPersistenceManagerIdentifier");
@@ -71,16 +76,9 @@ public class PMDescriptorNode extends RuntimeDescriptorNode {
         table.put(RuntimeTagNames.PM_CLASS_GENERATOR, "setPersistenceManagerClassGenerator");
         table.put(RuntimeTagNames.PM_MAPPING_FACTORY, "setPersistenceManagerMappingFactory");
         return table;
-    }	
-	
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
-     * @return the DOM tree top node
-     */    
+    }
+
+    @Override
     public Node writeDescriptor(Node parent, String nodeName, IASPersistenceManagerDescriptor descriptor) {
 	Node pd = super.writeDescriptor(parent, nodeName, descriptor);
 	appendTextChild(pd, RuntimeTagNames.PM_IDENTIFIER, descriptor.getPersistenceManagerIdentifier());

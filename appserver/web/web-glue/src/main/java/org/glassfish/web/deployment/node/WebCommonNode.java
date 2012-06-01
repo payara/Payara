@@ -50,8 +50,6 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import java.util.*;
 
@@ -398,11 +396,9 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         writeEntityManagerFactoryReferenceDescriptors(jarNode, webBundleDesc.getEntityManagerFactoryReferenceDescriptors().iterator());
         
         // post-construct
-        writePostConstructDescriptors(jarNode, webBundleDesc.getPostConstructDescriptors().iterator());
-
+        writeLifeCycleCallbackDescriptors(jarNode, TagNames.POST_CONSTRUCT, webBundleDesc.getPostConstructDescriptors());
         // pre-destroy
-        writePreDestroyDescriptors(jarNode, webBundleDesc.getPreDestroyDescriptors().iterator());
-
+        writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getDataSourceDefinitionDescriptors().iterator());
 

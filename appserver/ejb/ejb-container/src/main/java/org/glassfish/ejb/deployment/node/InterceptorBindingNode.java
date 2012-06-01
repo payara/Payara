@@ -40,29 +40,37 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
+import java.util.List;
+import java.util.Map;
+
 import com.sun.enterprise.deployment.EjbInterceptor;
-import com.sun.enterprise.deployment.InterceptorBindingDescriptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.EjbTagNames;
+import org.glassfish.ejb.deployment.EjbTagNames;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.InterceptorBindingDescriptor;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
-import java.util.List;
-import java.util.Map;
-
-public class InterceptorBindingNode extends DeploymentDescriptorNode {
+public class InterceptorBindingNode extends DeploymentDescriptorNode<InterceptorBindingDescriptor> {
 
     private MethodDescriptor businessMethod = null;
     private boolean needsOverloadResolution = false;
+    private InterceptorBindingDescriptor descriptor;
 
     public InterceptorBindingNode() {
         super();
     }
-    
+
+    @Override
+    public InterceptorBindingDescriptor getDescriptor() {
+        if (descriptor == null) descriptor = new InterceptorBindingDescriptor();
+        return descriptor;
+    }
+
+    @Override
     public void startElement(XMLElement element, Attributes attributes) {
 
         if( EjbTagNames.METHOD.equals(element.getQName()) ) {
@@ -83,9 +91,9 @@ public class InterceptorBindingNode extends DeploymentDescriptorNode {
           
         super.startElement(element, attributes);
     }
-   
-    public void setElementValue(XMLElement element, String value) {
 
+    @Override
+    public void setElementValue(XMLElement element, String value) {
         if( EjbTagNames.METHOD_NAME.equals(element.getQName()) ) {
             businessMethod.setName(value);
         } else if( EjbTagNames.METHOD_PARAM.equals(element.getQName()) ) {
@@ -106,12 +114,12 @@ public class InterceptorBindingNode extends DeploymentDescriptorNode {
      * @param element the xml tag identification
      * @return true if this node is done processing the XML sub tree
      */
+    @Override
     public boolean endElement(XMLElement element) {
 
         if (EjbTagNames.INTERCEPTOR_ORDER.equals(element.getQName())) {
 
-            InterceptorBindingDescriptor desc = (InterceptorBindingDescriptor)
-                getDescriptor();
+            InterceptorBindingDescriptor desc = getDescriptor();
             desc.setIsTotalOrdering(true);
 
         } else if (EjbTagNames.METHOD_PARAMS.equals(element.getQName())) {
@@ -122,8 +130,7 @@ public class InterceptorBindingNode extends DeploymentDescriptorNode {
             }
         }else if( EjbTagNames.METHOD.equals(element.getQName()) ) {
 
-            InterceptorBindingDescriptor bindingDesc = 
-                (InterceptorBindingDescriptor) getDescriptor();
+            InterceptorBindingDescriptor bindingDesc = getDescriptor();
             businessMethod.setEjbClassSymbol(MethodDescriptor.EJB_BEAN);
             bindingDesc.setBusinessMethod(businessMethod);
             
@@ -145,6 +152,7 @@ public class InterceptorBindingNode extends DeploymentDescriptorNode {
      *  
      * @return the map with the element name as a key, the setter method as a value
      */
+    @Override
     protected Map getDispatchTable() {
         Map table =  super.getDispatchTable();
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +40,34 @@
 
 package com.sun.ejb.containers.interceptors;
 
-import com.sun.ejb.containers.BaseContainer;
-import com.sun.ejb.containers.StatelessSessionContainer;
-import com.sun.ejb.containers.MessageBeanContainer;
-import com.sun.ejb.containers.EJBContextImpl;
-import com.sun.enterprise.deployment.*;
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-
-import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
-import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
+import javax.ejb.EJBException;
 import javax.interceptor.InvocationContext;
 
 import com.sun.ejb.EJBUtils;
+import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.EJBContextImpl;
+import com.sun.ejb.containers.MessageBeanContainer;
+import com.sun.ejb.containers.StatelessSessionContainer;
+import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.InterceptorDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
 
 /**

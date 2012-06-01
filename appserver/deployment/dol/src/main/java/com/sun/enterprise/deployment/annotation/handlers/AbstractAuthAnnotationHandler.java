@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,27 +40,28 @@
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.annotation.context.*;
-import com.sun.enterprise.deployment.util.TypeUtil;
-import org.glassfish.apf.AnnotationInfo;
-import org.glassfish.apf.AnnotationProcessorException;
-import org.glassfish.apf.HandlerProcessingResult;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.annotation.context.EjbContext;
+import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
+import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import com.sun.enterprise.deployment.util.TypeUtil;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
 
 /**
  * This is an abstract class encapsulate generic behaviour of auth annotations,
@@ -254,7 +255,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
      */
     private boolean hasMethodPermissionsFromDD(MethodDescriptor methodDesc,
             EjbDescriptor ejbDesc) {
-        HashMap methodPermissionsFromDD = ejbDesc.getMethodPermissionsFromDD();
+        Map methodPermissionsFromDD = ejbDesc.getMethodPermissionsFromDD();
         if (methodPermissionsFromDD != null) {
             Set allMethods = ejbDesc.getMethodDescriptors();
             for (Object mdObjsObj : methodPermissionsFromDD.values()) {

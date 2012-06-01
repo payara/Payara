@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,18 +53,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.enterprise.deployment.CMRFieldInfo;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.PersistenceDescriptor;
-import com.sun.enterprise.deployment.PersistentFieldInfo;
-import com.sun.enterprise.deployment.RelationshipDescriptor;
-import com.sun.enterprise.deployment.RelationRoleDescriptor;
-
-import com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor;
-
 import com.sun.jdo.api.persistence.mapping.ejb.ConversionHelper;
-
 import com.sun.jdo.spi.persistence.support.ejb.model.util.NameMapper;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
+import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
+import org.glassfish.ejb.deployment.descriptor.PersistentFieldInfo;
+import org.glassfish.ejb.deployment.descriptor.RelationRoleDescriptor;
+import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
 
 /*
  * This class implements ConversionHelper interface by using data from
@@ -75,7 +71,7 @@ import com.sun.jdo.spi.persistence.support.ejb.model.util.NameMapper;
 public class EjbConversionHelper implements ConversionHelper {
 
     private NameMapper nameMapper = null;
-    private EjbBundleDescriptor bundle = null;
+    private EjbBundleDescriptorImpl bundle = null;
     private HashMap ejbDescMap = new HashMap();
     private HashMap ejbFieldMap = new HashMap();
     private HashMap ejbKeyMap = new HashMap();
