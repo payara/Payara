@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
+import com.sun.enterprise.util.shared.ArchivistUtils;
 import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -62,6 +64,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipException;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -344,7 +347,7 @@ public abstract class AppClientDeployerHelper {
         OutputStream os = target.putNextEntry(JarFile.MANIFEST_NAME);
         mf.write(os);
         target.closeEntry();
-        ClientJarMakerUtils.copyArchive(source, target, Collections.EMPTY_SET);
+        copyArchive(source, target, Collections.EMPTY_SET);
         target.close();
         return new File(target.getURI());
     }
@@ -494,7 +497,7 @@ public abstract class AppClientDeployerHelper {
         }
         String splash = srcMainAttrs.getValue(AppClientDeployer.SPLASH_SCREEN_IMAGE);
         if (splash != null) {
-            ClientJarMakerUtils.copy(source, facadeArchive, splash);
+            copy(source, facadeArchive, splash);
         }
         /*
          * Write the manifest to the facade.
@@ -521,6 +524,73 @@ public abstract class AppClientDeployerHelper {
         facadeArchive.close();
     }
 
+    /**
+     * copy the entryName element from the source abstract archive into
+     * the target abstract archive
+     */
+    static void copy(
+            ReadableArchive source, WritableArchive target, String entryName)
+            throws IOException {
+
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = source.getEntry(entryName);
+            if (is != null) {
+                try {
+                    os = target.putNextEntry(entryName);
+                } catch (ZipException ze) {
+                    // this is a duplicate...
+                    return;
+                }
+                ArchivistUtils.copyWithoutClose(is, os);
+            } else {
+                // This may be a directory specification if there is no entry
+                // in the source for it...for example, a directory expression
+                // in the Class-Path entry from a JAR's manifest.  
+                // 
+                // Try to copy all entries from the source that have the 
+                // entryName as a prefix.
+                for (Enumeration e = source.entries(entryName); e.hasMoreElements();) {
+                    copy(source, target, (String) e.nextElement());
+                }
+            }
+        } catch (IOException ioe) {
+            throw ioe;
+        } finally {
+            IOException closeEntryIOException = null;
+            if (os != null) {
+                try {
+                    target.closeEntry();
+                } catch (IOException ioe) {
+                    closeEntryIOException = ioe;
+                }
+            }
+            if (is != null) {
+                is.close();
+            }
+
+            if (closeEntryIOException != null) {
+                throw closeEntryIOException;
+            }
+        }
+    }
+    
+    static void copyArchive(
+            ReadableArchive source, WritableArchive target, Set excludeList) {
+        for (Enumeration e = source.entries(); e.hasMoreElements();) {
+            String entryName = String.class.cast(e.nextElement());
+            if (excludeList.contains(entryName)) {
+                continue;
+            }
+            try {
+                copy(source, target, entryName);
+            } catch (IOException ioe) {
+                // duplicate, we ignore
+            }
+        }
+    }
+    
     private void copyClass(final WritableArchive facadeArchive,
             final String classResourcePath) throws IOException {
         OutputStream os = facadeArchive.putNextEntry(classResourcePath);

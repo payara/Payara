@@ -328,7 +328,7 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
         OutputStream os = target.putNextEntry(JarFile.MANIFEST_NAME);
         originalManifest.write(os);
         target.closeEntry();
-        ClientJarMakerUtils.copyArchive(originalSource, target, Collections.EMPTY_SET);
+        copyArchive(originalSource, target, Collections.EMPTY_SET);
         target.close();
         originalSource.close();
     }
