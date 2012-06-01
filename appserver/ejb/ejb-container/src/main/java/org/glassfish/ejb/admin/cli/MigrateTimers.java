@@ -50,8 +50,10 @@ import com.sun.logging.LogDomains;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
-import com.sun.ejb.spi.container.DistributedEJBTimerService;
+import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.EjbContainerUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -100,7 +102,7 @@ public class MigrateTimers implements AdminCommand {
     public String fromServer;
 
     @Inject
-    DistributedEJBTimerService timerService;
+    private EjbContainerUtil ejbContainerUtil;
 
     @Inject
     private Domain domain;
@@ -141,7 +143,7 @@ public class MigrateTimers implements AdminCommand {
                 return;
             }
             
-            int totalTimersMigrated = timerService.migrateTimers(fromServer);
+            int totalTimersMigrated = migrateTimers(fromServer);
             report.setMessage(localStrings.getString("migrate.timers.count", 
                     totalTimersMigrated, fromServer, target));
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -199,5 +201,24 @@ public class MigrateTimers implements AdminCommand {
     private boolean isServerRunning(String serverName) {
         Server server = domain.getServerNamed(serverName);
         return (server == null) ? false : server.isRunning();
+    }
+
+    private int migrateTimers( String serverId ) {
+        if (logger.isLoggable(Level.INFO)) {
+            logger.log(Level.INFO, "[MigrateTimers] migrating timers from " + serverId);
+        }
+
+        int result = 0;
+        if (ejbContainerUtil.isEJBTimerServiceLoaded()) {
+            EJBTimerService ejbTimerService = ejbContainerUtil.getEJBTimerService();
+            if (ejbTimerService != null) {
+                result = ejbTimerService.migrateTimers( serverId );
+            }
+        } else {
+            //throw new IllegalStateException("EJB Timer service is null. "
+                    //+ "Cannot migrate timers for: " + serverId);
+        }
+
+        return result;
     }
 }

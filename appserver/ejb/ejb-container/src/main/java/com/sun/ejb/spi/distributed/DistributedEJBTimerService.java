@@ -45,7 +45,6 @@ import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.PersistenceEJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
-import com.sun.ejb.spi.container.DistributedEJBTimerService;
 
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
@@ -62,8 +61,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 @Service
-public class DistributedEJBTimerServiceImpl
-    implements DistributedEJBTimerService, RecoveryEventListener, PostConstruct, CallBack {
+public class DistributedEJBTimerService
+    implements RecoveryEventListener, PostConstruct, CallBack {
 
     @Inject
     private EjbContainerUtil ejbContainerUtil;
@@ -143,13 +142,23 @@ public class DistributedEJBTimerServiceImpl
      * Methods implemented for DistributedEJBTimerService
      *--------------------------------------------------------------
      */
-    public int migrateTimers( String serverId ) {
+    public boolean getPerformDBReadBeforeTimeout() {
+        return defaultDBReadValue;
+    }
+
+    /**
+     *--------------------------------------------------------------
+     * Private methods for DistributedEJBTimerService
+     *--------------------------------------------------------------
+     */
+    private int migrateTimers( String serverId ) {
         Logger logger = ejbContainerUtil.getLogger();
         if (logger.isLoggable(Level.INFO)) {
             logger.log(Level.INFO, "[DistributedEJBTimerServiceImpl] migrating timers from " + serverId);
         }
 
         int result = 0;
+        // Force loading TimerService if it hadn't been started
         EJBTimerService ejbTimerService = ejbContainerUtil.getEJBTimerService();
         if (ejbTimerService != null) {
             result = ejbTimerService.migrateTimers( serverId );
@@ -159,27 +168,6 @@ public class DistributedEJBTimerServiceImpl
         }
         
         return result;
-    }
-
-    public String[] listTimers( String[] serverIds ) {
-        String[] result = new String[serverIds.length];
-        EJBTimerService ejbTimerService = ejbContainerUtil.getEJBTimerService();
-        if (ejbTimerService != null) {
-            result = ejbTimerService.listTimers( serverIds );
-        } else {
-            //FIXME: Should throw IllegalStateException
-            for (int i=0; i<serverIds.length; i++) {
-                result[i] = "0";
-            }
-            //throw new com.sun.enterprise.admin.common.exception.AFException("EJB Timer service is null. "
-                    //+ "Cannot list timers.");
-        }
-        
-        return result;
-    }
-
-    public boolean getPerformDBReadBeforeTimeout() {
-        return defaultDBReadValue;
     }
 
     private void setPerformDBReadBeforeTimeout( boolean value ) {

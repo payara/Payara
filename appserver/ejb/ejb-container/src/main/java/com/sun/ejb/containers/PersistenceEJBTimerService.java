@@ -65,7 +65,7 @@ import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.ejb.spi.container.DistributedEJBTimerService;
+import com.sun.ejb.spi.distributed.DistributedEJBTimerService;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
@@ -91,9 +91,7 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Marina Vatkina
  */
-public class PersistenceEJBTimerService extends EJBTimerService
-        /**implements com.sun.ejb.spi.container.DistributedEJBTimerService **/ {
-
+public class PersistenceEJBTimerService extends EJBTimerService {
 
     private TimerLocal timerLocal_;
 
@@ -142,7 +140,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
         // load DistributedEJBTimerService if available and adjust performDBReadBeforeTimeout
         // if it is not set explicitly
         DistributedEJBTimerService dts = ejbContainerUtil.getServices().
-                forContract(DistributedEJBTimerService.class).get();
+                byType(DistributedEJBTimerService.class).get();
 
         boolean doDBReadBeforeTimeout = ((dts == null)? !ejbContainerUtil.isDas() : 
                 dts.getPerformDBReadBeforeTimeout());
@@ -182,7 +180,7 @@ public class PersistenceEJBTimerService extends EJBTimerService
 
     /**
      *--------------------------------------------------------------
-     * Methods to be implemented for DistributedEJBTimerService
+     * Methods to be implemented for Admin CLI
      *--------------------------------------------------------------
      */
 

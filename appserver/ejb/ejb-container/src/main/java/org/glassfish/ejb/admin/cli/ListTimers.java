@@ -46,7 +46,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.List;
 
-import com.sun.ejb.spi.container.DistributedEJBTimerService;
+import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.EjbContainerUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -88,7 +89,7 @@ public class ListTimers implements AdminCommand {
     String target;
 
     @Inject
-    DistributedEJBTimerService timerService;
+    private EjbContainerUtil ejbContainerUtil;
 
     @Inject
     Target targetUtil;
@@ -112,7 +113,7 @@ public class ListTimers implements AdminCommand {
             serverIds = new String[] {target};
         }
         try {
-            String[] timerCounts = timerService.listTimers(serverIds);
+            String[] timerCounts = listTimers(serverIds);
             for (int i = 0; i < serverIds.length; i++) {
                 final ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                 part.setMessage(serverIds[i] + ": " + timerCounts[i]);
@@ -125,4 +126,24 @@ public class ListTimers implements AdminCommand {
             report.setFailureCause(e);
         }
     }
+
+    private String[] listTimers( String[] serverIds ) {
+        String[] result = new String[serverIds.length];
+        if (ejbContainerUtil.isEJBTimerServiceLoaded()) {
+            EJBTimerService ejbTimerService = ejbContainerUtil.getEJBTimerService();
+            if (ejbTimerService != null) {
+                result = ejbTimerService.listTimers( serverIds );
+            }
+        } else {
+            //FIXME: Should throw IllegalStateException
+            for (int i=0; i<serverIds.length; i++) {
+                result[i] = "0";
+            }
+            //throw new com.sun.enterprise.admin.common.exception.AFException("EJB Timer service is null. "
+                    //+ "Cannot list timers.");
+        }
+
+        return result;
+    }
+
 }

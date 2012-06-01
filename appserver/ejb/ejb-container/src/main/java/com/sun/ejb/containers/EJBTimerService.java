@@ -85,8 +85,7 @@ import org.glassfish.server.ServerEnvironmentImpl;
  * @author Kenneth Saks
  * @author Marina Vatkina
  */
-public class EJBTimerService 
-        /**implements com.sun.ejb.spi.container.DistributedEJBTimerService **/ {
+public class EJBTimerService {
 
     EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
 
@@ -225,12 +224,13 @@ public class EJBTimerService
 
     /**
      *--------------------------------------------------------------
-     * Methods to be implemented for DistributedEJBTimerService
+     * Methods to be implemented for Admin CLI
      *--------------------------------------------------------------
      */
 
     /**
-     * Provide a count of timers owned by each server
+     * Provide a count of timers owned by each server. Persistence
+     * timers are unknown to non-persistent timer service
      */
     public String[] listTimers( String[] serverIds ) {
         String[] result = new String[serverIds.length];
