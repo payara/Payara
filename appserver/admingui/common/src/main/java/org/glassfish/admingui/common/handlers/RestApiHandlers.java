@@ -229,10 +229,11 @@ public class RestApiHandlers {
                 }
                 Map maskedAttr = RestUtil.maskOffPassword(attrs);
                 GuiUtil.getLogger().log(
-                    Level.SEVERE,
-                    ex.getMessage() + ";\n" +
-                    ex.getCause() + ";\n" + 
-                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO", new Object[]{endpoint, maskedAttr, method}));
+                    Level.SEVERE, "{0};\n{1};\n{2}", new Object[]{
+                        ex.getMessage(),
+                        ex.getCause(),
+                        GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
+                        new Object[]{endpoint, maskedAttr, method})});
                 GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.error.checkLog"));
                 return;
             }
