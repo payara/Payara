@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.webservices;
 
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.i18n.StringManager;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -55,13 +54,13 @@ import java.text.MessageFormat;
 public class JAXWSAdapterRegistry {
     
     private static JAXWSAdapterRegistry registry = null;
-    private Map store;
+    private final Map<String, ContextAdapter> store;
 
     final Logger logger = LogDomains.getLogger(JAXWSAdapterRegistry.class,LogDomains.WEBSERVICES_LOGGER);
     private  ResourceBundle rb = logger.getResourceBundle();
     /** Creates a new instance of JAXWSServletUtil */
     private JAXWSAdapterRegistry() {
-        store = new HashMap();
+        store = Collections.synchronizedMap(new HashMap<String, ContextAdapter>());
     }
     
     public static synchronized JAXWSAdapterRegistry getInstance() {
@@ -74,43 +73,46 @@ public class JAXWSAdapterRegistry {
             Adapter info) {
         if (contextRoot == null)
             contextRoot = "";
-        ContextAdapter contextRtInfo = 
-                (ContextAdapter)store.get(contextRoot);
-        if(contextRtInfo == null) {
-            contextRtInfo = new ContextAdapter();
-        }        
-        contextRtInfo.addAdapter(urlPattern, info);
-        store.put(contextRoot, contextRtInfo);
+        synchronized (store) {
+            ContextAdapter contextRtInfo = store.get(contextRoot);
+            if(contextRtInfo == null) {
+                contextRtInfo = new ContextAdapter();
+            }
+            contextRtInfo.addAdapter(urlPattern, info);
+            store.put(contextRoot, contextRtInfo);
+        }
     }
     
      public Adapter getAdapter(String contextRoot,
              String path, String urlPattern ) {
-         ContextAdapter serviceInfo = 
-                (ContextAdapter)store.get(contextRoot);        
-        if(serviceInfo == null)
-             return null;        
-         return serviceInfo.getAdapter(path, urlPattern);
+            ContextAdapter serviceInfo = store.get(contextRoot);
+            if(serviceInfo == null) {
+                return null;
+            }
+            return serviceInfo.getAdapter(path, urlPattern);
      }
   
      public void removeAdapter(String contextRoot) {
          if(contextRoot == null)
              contextRoot = "";
-         ContextAdapter serviceInfo = 
-                (ContextAdapter)store.get(contextRoot);
-        if(serviceInfo == null)
-             return ;
-        store.remove(contextRoot);
+         synchronized (store) {
+            ContextAdapter serviceInfo = store.get(contextRoot);
+            if(serviceInfo == null) {
+                return ;
+            }
+            store.remove(contextRoot);
+         }
      }
      
     class  ContextAdapter {
 
-        Map fixedUrlPatternEndpoints;
-        List<Adapter> pathUrlPatternEndpoints;
+        final Map<String, Adapter> fixedUrlPatternEndpoints;
+        final List<Adapter> pathUrlPatternEndpoints;
 
         ContextAdapter() {
 
-            fixedUrlPatternEndpoints = new HashMap();
-            pathUrlPatternEndpoints = new ArrayList();
+            fixedUrlPatternEndpoints = Collections.synchronizedMap(new HashMap<String, Adapter>());
+            pathUrlPatternEndpoints = Collections.synchronizedList(new ArrayList<Adapter>());
         }
 
         void addAdapter(String urlPattern, Adapter info) {
@@ -121,26 +123,30 @@ public class JAXWSAdapterRegistry {
             } else if (urlPattern.endsWith("/*")) {
                 pathUrlPatternEndpoints.add(info);
             } else {
-                if (fixedUrlPatternEndpoints.containsKey(urlPattern)) {
-                    logger.log(Level.SEVERE, 
+                synchronized (fixedUrlPatternEndpoints) {
+                    if (fixedUrlPatternEndpoints.containsKey(urlPattern)) {
+                        logger.log(Level.SEVERE,
                            format( rb.getString("enterprise.webservice.duplicateService"),
                             urlPattern));
+                    }
+                    fixedUrlPatternEndpoints.put(urlPattern, info);
                 }
-                fixedUrlPatternEndpoints.put(urlPattern, info);
             }
         }
 
         Adapter getAdapter(String path, String urlPattern) {
-            Adapter result = (Adapter) fixedUrlPatternEndpoints.get(path);
+            Adapter result = fixedUrlPatternEndpoints.get(path);
             if (result == null) {                
                 // This loop is unnecessary.Essentially what it is doing to always
                 // return the first element from pathUrlPatternEndpoints
                 // TO DO clean up after SCF required
-                for (Iterator iter = pathUrlPatternEndpoints.iterator(); iter.hasNext();) {
-                    Adapter candidate = (Adapter) iter.next();
-                    if (path.startsWith(getValidPathForEndpoint(urlPattern))) {
-                        result = candidate;
-                        break;
+                synchronized (pathUrlPatternEndpoints) {
+                    for (Iterator<Adapter> iter = pathUrlPatternEndpoints.iterator(); iter.hasNext();) {
+                        Adapter candidate = iter.next();
+                        if (path.startsWith(getValidPathForEndpoint(urlPattern))) {
+                            result = candidate;
+                            break;
+                        }
                     }
                 }
             }
