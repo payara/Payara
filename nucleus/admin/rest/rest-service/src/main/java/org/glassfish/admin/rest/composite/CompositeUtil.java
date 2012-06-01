@@ -39,11 +39,11 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import com.sun.enterprise.v3.common.ActionReporter;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,9 +51,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
@@ -88,7 +93,6 @@ import static org.objectweb.asm.Opcodes.V1_6;
  * @author jdlee
  */
 public class CompositeUtil {
-
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
     /**
@@ -173,18 +177,12 @@ public class CompositeUtil {
      * @param data
      * @param method
      */
-    public static Object getResourceExtensions(Habitat habitat, Class<?> baseClass, Object data, String method) {
+    public static Object getResourceExtensions(Class<?> baseClass, Object data, String method) {
         List<RestExtension> extensions = new ArrayList<RestExtension>();
 
-        for (RestExtension extension : habitat.getAllByContract(RestExtension.class)) {
+        for (RestExtension extension : Globals.getDefaultBaseServiceLocator().getAllByContract(RestExtension.class)) {
             if (baseClass.getName().equals(extension.getParent())) {
                 extensions.add(extension);
-//                if ("get".equalsIgnoreCase(method)) {
-//                    extension.get(data);
-//                    return void.class;
-//                } else if ("post".equalsIgnoreCase(method)) {
-//                    return handlePostExtensions(data);
-//                }
             }
         }
         
@@ -197,7 +195,7 @@ public class CompositeUtil {
         return void.class;
     }
 
-    public static void addToParameterMap(ParameterMap parameters, String basePath,
+    public static ParameterMap addToParameterMap(ParameterMap parameters, String basePath,
                                    Class<?> configBean, Object source) {
         String name;
         Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultBaseServiceLocator());
@@ -217,10 +215,27 @@ public class CompositeUtil {
                         }
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
+
+        return parameters;
+    }
+
+    public static ActionReporter executeCommand(String command, ParameterMap parameters) {
+        RestActionReporter ar;
+        if (!parameters.entrySet().isEmpty()) {
+            ar = ResourceUtil.runCommand(command, parameters, Globals.getDefaultBaseServiceLocator(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+            if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(ar.getCombinedMessage()).
+                        build());
+            }
+        } else {
+            ar = new RestActionReporter();
+            ar.setActionExitCode(ExitCode.SUCCESS);
+        }
+        return ar;
     }
 
     private static void handleGetExtensions(List<RestExtension> extensions, Object data) {
