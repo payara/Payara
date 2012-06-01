@@ -240,6 +240,8 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         // if the system property is already set, we don't need to do anything
         if (System.getProperty("java.util.logging.config.file") != null) {
+            System.out.println("\n\n\n#!## LogManagerService.postConstruct : java.util.logging.config.file=" +System.getProperty("java.util.logging.config.file"));
+
             return;
         }
 
@@ -249,18 +251,31 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         // reset settings
         try {
+
+
             logging = getLoggingFile();
             System.setProperty("java.util.logging.config.file", logging.getAbsolutePath());
+
+
+
+            String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+            String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
+            File src = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
+            File dest = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
+
+            System.out.println("\n\n\n#!## LogManagerService.postConstruct : rootFolder=" +rootFolder);
+            System.out.println("#!## LogManagerService.postConstruct : templateDir=" +templateDir);
+            System.out.println("#!## LogManagerService.postConstruct : src=" +src);
+            System.out.println("#!## LogManagerService.postConstruct : dest=" +dest);
+
             if (!logging.exists()) {
                 Logger.getAnonymousLogger().log(Level.WARNING, logging.getAbsolutePath() + " not found, creating new file from template.");
-                String rootFolder = env.getProps().get(com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
-                String templateDir = rootFolder + File.separator + "lib" + File.separator + "templates";
-                File src = new File(templateDir, ServerEnvironmentImpl.kLoggingPropertiesFileName);
-                File dest = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
                 FileUtils.copy(src, dest);
                 logging = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
             }
             logMgr.readConfiguration();
+
+
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Cannot read logging configuration file : ", e);
         }

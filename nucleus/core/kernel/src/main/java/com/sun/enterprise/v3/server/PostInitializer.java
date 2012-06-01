@@ -40,10 +40,12 @@
 
 package com.sun.enterprise.v3.server;
 
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.*;
+
+import javax.inject.Inject;
 
 /**
  * Optimization to force the loading of sniffers post deployment. 
