@@ -75,8 +75,8 @@
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
 
     <target name="download">
-        <get src="${ant.contrib.url}" dest="ant-contrib.jar"/>
-        <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar"/>
+        <get src="${ant.contrib.url}" dest="ant-contrib.jar" usetimestamp="true"/>
+        <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar" usetimestamp="true"/>
         <get src="${glassfish.dist.url}" dest="${glassfish.download}" usetimestamp="true"/>
 
         <delete dir="${install.dir}"/>
@@ -155,6 +155,7 @@
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <arg value="-Dmaven.repo.local=m2"/>
                     <arg value="-Prest-devtest"/>
                     <arg value="test"/>
                 </artifact:mvn>
