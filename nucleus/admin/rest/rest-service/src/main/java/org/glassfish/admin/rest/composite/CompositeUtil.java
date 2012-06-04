@@ -265,7 +265,7 @@ public class CompositeUtil {
                : ("L" + getInternalName(type.getName()) + ";");
     }
 
-    private String getPropertyName(String name) {
+    private static String getPropertyName(String name) {
         return name.substring(0,1).toLowerCase() + name.substring(1);
     }
 
@@ -330,6 +330,7 @@ public class CompositeUtil {
     protected static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
         final String type = getInternalTypeString(fieldClass);
         Object value = defaultValue;
+        fieldName = getPropertyName(fieldName);
 
         if (fieldClass.isPrimitive()) {
             switch (Primitive.getPrimitive(type)) {
@@ -381,7 +382,7 @@ public class CompositeUtil {
      */
     protected static void createField(ClassWriter cw, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
-        FieldVisitor field = cw.visitField(ACC_PRIVATE, name, internalType, null, null);
+        FieldVisitor field = cw.visitField(ACC_PRIVATE, getPropertyName(name), internalType, null, null);
         field.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
         field.visitEnd();
     }
@@ -397,7 +398,7 @@ public class CompositeUtil {
         MethodVisitor getter = cw.visitMethod(ACC_PUBLIC, "get" + name, "()" + internalType, null, null);
         getter.visitCode();
         getter.visitVarInsn(ALOAD, 0);
-        getter.visitFieldInsn(GETFIELD, className, name, internalType);
+        getter.visitFieldInsn(GETFIELD, className, getPropertyName(name), internalType);
         getter.visitInsn(type.isPrimitive()
                          ? Primitive.getPrimitive(internalType).getReturnOpcode()
                          : ARETURN);
@@ -411,7 +412,7 @@ public class CompositeUtil {
         setter.visitVarInsn(type.isPrimitive()
                             ? Primitive.getPrimitive(internalType).getSetOpCode()
                             : ALOAD, 1);
-        setter.visitFieldInsn(PUTFIELD, className, name, internalType);
+        setter.visitFieldInsn(PUTFIELD, className, getPropertyName(name), internalType);
         setter.visitInsn(RETURN);
         setter.visitMaxs(0, 0);
         setter.visitEnd();
