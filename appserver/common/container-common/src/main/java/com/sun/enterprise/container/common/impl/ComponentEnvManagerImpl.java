@@ -91,14 +91,11 @@ public class ComponentEnvManagerImpl
     private static final String JAVA_APP_PREFIX = "java:app/";
     private static final String JAVA_GLOBAL_PREFIX = "java:global/";
 
-
-    private static final String EIS_STRING = "/eis/";
-
     @Inject
     private BaseServiceLocator habitat;
 
     @Inject
-    private Logger _logger;
+    private static Logger _logger;
 
     @Inject
     GlassfishNamingManager namingManager;
@@ -866,11 +863,6 @@ public class ComponentEnvManagerImpl
 
     }
 
-
-    private static boolean isConnector(String logicalJndiName){
-        return (logicalJndiName.indexOf(EIS_STRING) != -1);
-    }
-
     private class FactoryForEntityManagerWrapper
         implements NamingObjectProxy {
 
@@ -925,9 +917,9 @@ public class ComponentEnvManagerImpl
 
     }
 
-    private class ValidatorProxy
+    private static class ValidatorProxy
         implements NamingObjectProxy {
-
+        private static final String nameForValidator = "java:comp/Validator";
         private volatile ValidatorFactory validatorFactory;
         private volatile Validator validator;
 
@@ -937,7 +929,6 @@ public class ComponentEnvManagerImpl
         @Override
         public Object create(Context ctx)
                 throws NamingException {
-            final String nameForValidator = "java:comp/Validator";
             String exceptionMessage = "Can not obtain reference to Validator instance ";
 
             // Phase 1, obtain a reference to the Validator
@@ -977,9 +968,8 @@ public class ComponentEnvManagerImpl
 
     }
 
-    private class ValidatorFactoryProxy
-        implements NamingObjectProxy {
-
+    private static class ValidatorFactoryProxy implements NamingObjectProxy {
+        private static final String nameForValidatorFactory = "java:comp/ValidatorFactory";
         private volatile ValidatorFactory validatorFactory;
 
         ValidatorFactoryProxy() {
@@ -988,9 +978,6 @@ public class ComponentEnvManagerImpl
         @Override
         public Object create(Context ctx)
                 throws NamingException {
-            final String nameForValidatorFactory = "java:comp/ValidatorFactory";
-            String exceptionMessage = "Can not obtain reference to ValidatorFactory instance ";
-
             // Phase 1, obtain a reference to the ValidatorFactory
 
             // case 1, try to look in the ctx
@@ -998,9 +985,7 @@ public class ComponentEnvManagerImpl
                 try {
                     validatorFactory = (ValidatorFactory)
                             ctx.lookup(nameForValidatorFactory);
-                } catch (NamingException ne) {
-                    exceptionMessage = "Unable to lookup " +
-                            nameForValidatorFactory + ":" + ne.toString();
+                } catch (NamingException ne) {  //ignore
                 }
             }
 
@@ -1009,14 +994,17 @@ public class ComponentEnvManagerImpl
                 try {
                     validatorFactory = Validation.buildDefaultValidatorFactory();
                 } catch (ValidationException e) {
-                    exceptionMessage = "Could not build a default Bean Validator factory: " +
-                                e.toString();
+                    _logger.log(Level.WARNING,
+                            "Unable to lookup {0}, or build a default Bean Validator Factory: {1}",
+                            new Object[]{nameForValidatorFactory, e});
+                    NameNotFoundException ne = new NameNotFoundException();
+                    ne.initCause(e);
+                    throw ne;
                 }
             }
 
             return validatorFactory;
         }
-
     }
 
     private class WebServiceRefProxy
@@ -1085,7 +1073,7 @@ public class ComponentEnvManagerImpl
                 synchronized (this) {
                     if (ejbRefMgr == null) {
                         ejbRefMgr = habitat.getByContract(EjbNamingReferenceManager.class);
-                        cacheable = new Boolean(ejbRefMgr.isEjbReferenceCacheable(ejbRef));
+                        cacheable = ejbRefMgr.isEjbReferenceCacheable(ejbRef);
                     }
                 }
             }
