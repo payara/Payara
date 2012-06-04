@@ -42,6 +42,7 @@ package org.glassfish.admin.mbeanserver;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.external.amx.BootAMXMBean;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
@@ -59,8 +60,12 @@ class BootAMXListener implements NotificationListener
 {
     private final JMXConnectorServer mServer;
     private final BootAMXMBean mBooter;
-    private final Logger mLogger = LogDomains.getLogger(BootAMXListener.class, LogDomains.JMX_LOGGER);
+    
+    private static final Logger LOGGER = JMXStartupService.JMX_LOGGER;
 
+    @LogMessageInfo(message = "Booting AMX Listener, connection made for {0}, now booting AMX MBeans", 
+            level="INFO")
+    private static final String JMX_BOOTING_AMX_LISTENER="AS-JMX-00008";
 
     public BootAMXListener(
         final JMXConnectorServer server,
@@ -78,14 +83,14 @@ class BootAMXListener implements NotificationListener
             final JMXConnectionNotification n = (JMXConnectionNotification) notif;
             if (n.getType().equals(JMXConnectionNotification.OPENED))
             {
-                mLogger.log(Level.INFO,"jmx.bootingamx.listener",handback);
+                LOGGER.log(Level.INFO,JMX_BOOTING_AMX_LISTENER,handback);
                 mBooter.bootAMX();
 
                 // job is done, stop listening
                 try
                 {
                     mServer.removeNotificationListener(this);
-                    mLogger.fine("ConnectorStartupService.BootAMXListener: AMX is booted, stopped listening");
+                    LOGGER.fine("ConnectorStartupService.BootAMXListener: AMX is booted, stopped listening");
                 }
                 catch (final ListenerNotFoundException e)
                 {

@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.mbeanserver;
 
-import com.sun.logging.LogDomains;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,6 +59,8 @@ import javax.management.remote.MBeanServerForwarder;
 import javax.security.auth.Subject;
 import org.glassfish.internal.api.AdminAccessController;
 
+import com.sun.enterprise.util.i18n.StringManager;
+
 /**
  * Allows per-access security checks on MBean attribute set/get and other
  * invoked operations.
@@ -76,7 +77,9 @@ import org.glassfish.internal.api.AdminAccessController;
  */
 public class AdminAuthorizedMBeanServer {
     
-    private final static Logger mLogger = LogDomains.getLogger(AdminAuthorizedMBeanServer.class, LogDomains.JMX_LOGGER);
+    private final static Logger mLogger = JMXStartupService.JMX_LOGGER;
+    
+    private final static String JMX_NOACCESS="jmx.noaccess";
 
     private static final Set<String> RESTRICTED_METHOD_NAMES = new HashSet<String>(Arrays.asList(
             "setAttribute",
@@ -104,9 +107,9 @@ public class AdminAuthorizedMBeanServer {
                 if ((args[0] != null) && (args[0] instanceof ObjectName)) {
                     objectNameString  = ((ObjectName) args[0]).toString();
                 }
-                final String msg = MessageFormat.format(
-                        mLogger.getResourceBundle().getString("jmx.noaccess"),
-                        methodName, objectNameString, AdminAccessController.Access.READONLY);
+                StringManager sm = StringManager.getManager(AdminAuthorizedMBeanServer.class);
+                final String msg = sm.getString(JMX_NOACCESS, methodName, 
+                        objectNameString, AdminAccessController.Access.READONLY);
                 throw new AccessControlException(msg);
             }
             
