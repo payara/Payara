@@ -56,6 +56,7 @@ import java.rmi.MarshalException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.glassfish.api.ParamDefaultCalculator;
 
 public class GenericCommandModel extends CommandModel {
 
@@ -266,6 +267,11 @@ public class GenericCommandModel extends CommandModel {
 
                 public String defaultValue() {
                     return attr.defaultValue();
+                }
+
+                @Override
+                public Class<ParamDefaultCalculator> defaultCalculator() {
+                    return ParamDefaultCalculator.class;
                 }
 
                 public boolean password() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,6 +110,14 @@ public @interface Param {
      * @return the parameter default value
      */
     public String defaultValue() default "";
+    
+    /**
+     * Returns a class that calculates the default value associated with the 
+     * parameter.
+     * 
+     * @return a parameter default value calculator
+     */
+    public Class<? extends ParamDefaultCalculator> defaultCalculator() default ParamDefaultCalculator.class;
     
     /**
      * Returns true if the parameter is a password

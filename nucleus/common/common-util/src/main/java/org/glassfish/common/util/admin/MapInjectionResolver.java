@@ -40,18 +40,27 @@
 
 package org.glassfish.common.util.admin;
 
-import java.lang.reflect.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.hk2.component.InjectionResolver;
+import java.io.File;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
-import java.io.File;
-import java.io.IOException;
-import org.jvnet.hk2.component.ComponentException;
-import com.sun.hk2.component.InjectionResolver;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.validation.Validator;
+import org.glassfish.api.ExecutionContext;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.ParamDefaultCalculator;
 import org.glassfish.api.admin.CommandModel;
-import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.admin.ParameterMap;
+import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.MultiMap;
 
@@ -63,17 +72,20 @@ import org.jvnet.hk2.component.MultiMap;
 public class MapInjectionResolver extends InjectionResolver<Param> {
     private final CommandModel model;
     private final ParameterMap parameters;
+    private ExecutionContext context = null;
 
     private final MultiMap<String,File> optionNameToUploadedFileMap;
 
     public static final LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(MapInjectionResolver.class);
+    private static Validator beanValidator = null;
+
     
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters) {
         this(model, parameters, null);
     }
-
+    
     public MapInjectionResolver(CommandModel model,
 					ParameterMap parameters,
                                         final MultiMap<String,File> optionNameToUploadedFileMap) {
@@ -83,6 +95,13 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
         this.optionNameToUploadedFileMap = optionNameToUploadedFileMap;
     }
 
+    /**
+     * Set the context that is passed to the DynamicParamImpl.defaultValue method.
+     */
+    public void setContext(ExecutionContext context) {
+        this.context = context;
+    }
+    
     @Override
     public boolean isOptional(AnnotatedElement element, Param annotation) {
        String name = CommandModel.getParamName(annotation, element);
@@ -112,13 +131,19 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
                     value = filePaths;
                     // replace the file name operands with the uploaded files
                     parameters.set("DEFAULT", value); 
+                } else {
+                    for (String s : value) {
+                        checkAgainstAcceptableValues(target, s);
+                    }
+                    
                 }
 		// let's also copy this value to the cmd with a real name
 		parameters.set(paramName, value);
-		return (V) convertListToObject(target, type, value);
+                V paramValue = (V) convertListToObject(target, type, value);
+                return paramValue;
 	    }
 	}
-	String paramValueStr = getParamValueString(parameters, param, target);
+	String paramValueStr = getParamValueString(parameters, param, target, context);
 
         /*
          * If the parameter is an uploaded file, replace the client-provided
@@ -131,11 +156,10 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
             parameters.set(paramName, paramValueStr);
         }
 	checkAgainstAcceptableValues(target, paramValueStr);
-	if (paramValueStr != null) {
-	    return (V) convertStringToObject(target, type, paramValueStr);
-	}
-	// return default value
-	return (V) getParamField(component, target);
+        
+        return paramValueStr != null ?
+                (V) convertStringToObject(target, type, paramValueStr) :
+                (V) getParamField(component, target);
     }
 
     /**
@@ -210,7 +234,8 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
     // package-private, for testing
     static String getParamValueString(final ParameterMap parameters,
                                final Param param,
-                               final AnnotatedElement target) {
+                               final AnnotatedElement target,
+                               final ExecutionContext context) {
         String paramValueStr = getParameterValue(parameters,
                                       CommandModel.getParamName(param, target),
                                       true);
@@ -228,6 +253,21 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
         if (paramValueStr == null) {
             final String defaultValue = param.defaultValue();
             paramValueStr = defaultValue.equals("") ? null : defaultValue;
+        }
+        // if paramValueStr is still null, then check to see if a defaultCalculator
+        // is defined, and if so, call the class to get the default value
+        if (paramValueStr == null) {
+            Class<? extends ParamDefaultCalculator> dc = param.defaultCalculator();
+            if (dc != ParamDefaultCalculator.class) {
+                try {
+                    ParamDefaultCalculator pdc = dc.newInstance();
+                    paramValueStr = pdc.defaultValue(context);
+                } catch (InstantiationException ex) { // @todo Java SE 7 - use multi catch
+                    Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(MapInjectionResolver.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
         return paramValueStr;
     }

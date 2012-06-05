@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,18 +40,17 @@
 
 package org.glassfish.common.util.admin;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.Before;
-
-import java.util.Properties;
-import java.util.List;
-import java.util.ArrayList;
 import java.lang.reflect.AnnotatedElement;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import org.glassfish.api.ExecutionContext;
 import org.glassfish.api.Param;
+import org.glassfish.api.ParamDefaultCalculator;
+import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 
 /**
@@ -240,18 +239,24 @@ public class MapInjectionResolverTest {
             ParameterMap params = new ParameterMap();
             params.set("foo", "true");
             String val =
-                MapInjectionResolver.getParamValueString(params, param, ae);
+                MapInjectionResolver.getParamValueString(params, param, ae, null);
             assertEquals("val should be true", "true", val);
 
             ae = (AnnotatedElement)cl.getDeclaredField("bar");
             param = ae.getAnnotation(Param.class);
-            val = MapInjectionResolver.getParamValueString(params, param, ae);
+            val = MapInjectionResolver.getParamValueString(params, param, ae, null);
             assertEquals("val should be false", "false", val);
 
             ae = (AnnotatedElement)cl.getDeclaredField("hello");
             param = ae.getAnnotation(Param.class);
-            val = MapInjectionResolver.getParamValueString(params, param, ae);
+            val = MapInjectionResolver.getParamValueString(params, param, ae, null);
             assertEquals("val should be null", null, val);
+            
+            ae = (AnnotatedElement)cl.getDeclaredField("dyn");
+            param = ae.getAnnotation(Param.class);
+            val = MapInjectionResolver.getParamValueString(params, param, ae, null);
+            assertEquals("val should be dynamic-default-value", "dynamic-default-value", val);
+            
         }
         catch (Exception ex) {
             ex.printStackTrace();
@@ -269,13 +274,39 @@ public class MapInjectionResolverTest {
             assertEquals("obj should be world", "world", (String)obj);
             ae = (AnnotatedElement)cl.getDeclaredField("prop");
             obj = MapInjectionResolver.getParamField(dc, ae);
-            assertEquals("obj should be null", null, obj);            
+            assertEquals("obj should be null", null, obj);   
+            
+            ae = (AnnotatedElement)cl.getDeclaredField("dyn3");
+            obj = MapInjectionResolver.getParamField(dc, ae);
+            assertEquals("obj should be dynamic-default-value", "dynamic-default-value", (String)obj);
         }
         catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
+    @Test
+    public void getParamValueTest() {
+        try {
+            DummyCommand dc = new DummyCommand();
+            Class<?> cl = dc.getClass();
+            ParameterMap params = new ParameterMap();
+            params.add("hello", "world");
+            
+            CommandModel dccm = new CommandModelImpl(dc.getClass());
+            MapInjectionResolver mir = new MapInjectionResolver(dccm, params);
+            
+            AnnotatedElement ae =
+                (AnnotatedElement)cl.getDeclaredField("hello");
+            String hello = mir.getValue(dc, null, ae, null, String.class);
+            assertEquals("hello should be world", "world", hello);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("unexpected exception");
+        } 
+    }
+    
     @Test
     public void convertStringToListTest() {
         String listStr = "server1\\:server2:\\\\server3:server4";
@@ -299,6 +330,21 @@ public class MapInjectionResolverTest {
             MapInjectionResolver.convertStringToStringArray(strArray, ',');
         assertEquals(strArrayExpected, strArrayActual);
     }
+    
+    public static class DynTest extends ParamDefaultCalculator {
+        public DynTest() {}
+        @Override
+        public String defaultValue(ExecutionContext ec) {
+            return "dynamic-default-value";
+        }
+    }
+    
+    public static class DynCalculator {
+        public static String getDefault() {
+            return "dynamic-default-value";
+        }
+    }
+
 
         //mock-up DummyCommand object
     public class DummyCommand {
@@ -322,5 +368,11 @@ public class MapInjectionResolverTest {
         List<String> lstrm;
         @Param(name="astrm", multiple=true)
         String[] astrm;
+        
+        @Param(name="dyn", optional=true, defaultCalculator=DynTest.class)
+        String dyn;
+        
+        @Param(optional=true)
+        String dyn3 = DynCalculator.getDefault();
     }
 }

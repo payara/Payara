@@ -40,25 +40,36 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import java.io.*;
-import java.util.*;
-
+import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
-
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import static java.lang.annotation.ElementType.TYPE;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Target;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.inject.Inject;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.Payload;
+import javax.validation.constraints.Pattern;
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Inject;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -76,16 +87,22 @@ import org.jvnet.hk2.component.PerLookup;
         path="_get-habitat-info", 
         description="_get-habitat-info")
 })
+@GetHabitatInfo.Constraint
 public class GetHabitatInfo implements AdminCommand {
     @Inject
     Habitat habitat;
     @Inject
     ModulesRegistry modulesRegistry;
+    
+    @JavaClassName
     @Param(primary = true, optional = true)
     String contract = null;
+    
+    @Pattern(regexp="true|false")
     @Param(optional = true)
     String started = "false";
 
+    @Override
     public void execute(AdminCommandContext context) {
         StringBuilder sb = new StringBuilder();
         if (contract == null) {
@@ -180,4 +197,32 @@ public class GetHabitatInfo implements AdminCommand {
         sb.append("\n\n*********** List of all Registered Modules **************\n\n");
         sb.append(baos.toString());
     }
+    /*
+     * NOTE: this valdation is here just to test the AdminCommand validation 
+     * implementation.
+     */
+    @Retention(RUNTIME)
+    @Target({TYPE})
+    @javax.validation.Constraint(validatedBy = GetHabitatInfo.Validator.class)
+    public static @interface Constraint {
+        String message() default "The contract argument is test but started is true.";
+        Class<?>[] groups() default {};
+        Class<? extends Payload>[] payload() default {}; 
+    }
+    
+    public static class Validator 
+        implements ConstraintValidator<GetHabitatInfo.Constraint, GetHabitatInfo>, Payload {
+
+        @Override
+        public void initialize(final GetHabitatInfo.Constraint constraint) { }
+
+        @Override
+        public boolean isValid(final GetHabitatInfo bean,
+            final ConstraintValidatorContext constraintValidatorContext) {
+            if (bean.contract.equals("test") && bean.started.equals("true"))
+                return false;
+            return true;
+        }
+    }
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.Map;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import org.glassfish.api.ParamDefaultCalculator;
 
 /**
  * A command and parameter model that allows the data to be supplied directly.
@@ -240,6 +241,10 @@ public class CommandModelData extends CommandModel {
         public boolean primary() { return _primary; }
         @Override
         public String defaultValue() { return _defaultValue; }
+        @Override
+        public Class<? extends ParamDefaultCalculator> defaultCalculator() { 
+            return ParamDefaultCalculator.class;
+        }
         @Override
         public boolean password() { return _password; }
         @Override
