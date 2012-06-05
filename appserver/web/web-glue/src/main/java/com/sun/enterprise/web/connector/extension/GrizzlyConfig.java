@@ -212,6 +212,11 @@ public class GrizzlyConfig implements MonitoringLevelListener{
         try{
             String onStr = domain + ":type=Selector,name=http" + port;
             ObjectName objectName = new ObjectName(onStr);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "invokeGrizzly method={0} objectName={1}",
+                        new Object[] {methodToInvoke, objectName});
+            }
+            
         } catch ( Exception ex ){
             String msg = rb.getString("grizzlyConfig.invokeMBeanException");
             msg = MessageFormat.format(msg, methodToInvoke); 
