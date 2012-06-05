@@ -112,8 +112,9 @@ public final class ServerSentEventServlet extends HttpServlet {
 
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("text/event-stream");
+        resp.flushBuffer();	// writes status code and headers
         AsyncContext ac = req.startAsync(req, resp);
-        ac.setTimeout(0);      // no timeout. need config ?
+        ac.setTimeout(0);	// no timeout. need config ?
         ServerSentEventConnectionImpl con = sseApp.createConnection(req, sseh, cc, ac);
         ac.addListener(con);
         con.init();

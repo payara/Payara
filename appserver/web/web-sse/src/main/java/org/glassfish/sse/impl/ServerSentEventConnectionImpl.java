@@ -63,7 +63,7 @@ final class ServerSentEventConnectionImpl extends ServerSentEventConnection impl
     final ServerSentEventHandler sseh;
     final AsyncContext asyncContext;
     final CreationalContext<?> cc;
-    private ServerSentEventApplication owner;
+    private final ServerSentEventApplication owner;
 
     ServerSentEventConnectionImpl(ServerSentEventApplication owner, HttpServletRequest request,
                 ServerSentEventHandler sseh, CreationalContext<?> cc, AsyncContext asyncContext) {
