@@ -42,6 +42,7 @@ package org.glassfish.admin.rest.resources;
 
 
 
+import javax.security.auth.Subject;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -111,7 +112,9 @@ public class SessionsResource {
         String hostName = data.get("remoteHostName");
         AdminAccessController.Access access = AdminAccessController.Access.NONE;
         try {
-            access = (hostName == null ? AdminAccessController.Access.FULL : ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName) ) ;
+            final Subject subject = ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName);
+            access = (hostName == null) ? AdminAccessController.Access.FULL :  
+                    ResourceUtil.chooseAccess(habitat, subject, hostName);
         } catch (Exception e) {
             ar.setMessage("Error while authenticating " + e);
         }

@@ -63,6 +63,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -1096,47 +1097,32 @@ public class ResourceUtil {
      * Authenticate the given req as originated from given remoteHost against
      * admin realm.
      *
-     * @return Access as granted by authenticator
+     * @return subject identifying the user/client
      */
-    public static AdminAccessController.Access authenticateViaAdminRealm(BaseServiceLocator habitat, Request req, String remoteHost) throws LoginException, IOException {
-        String[] up = AdminAdapter.getUserPassword(req);
-        String user = up[0];
-        String password = up.length > 1 ? up[1] : "";
-        AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
-        AdminAccessController.Access access = AdminAccessController.Access.FULL; //if the authenticator is not available, allow all access - per Jerome
+    public static Subject authenticateViaAdminRealm(BaseServiceLocator habitat, Request req, String remoteHost) throws LoginException, IOException {
+        Subject subject = null;
+        final AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
         if (authenticator != null) {
             // This is temporary workaround for a Grizzly issue that prohibits uploading (deploy)  files larger than 2MB when secure admin is enabled.
             // The workaround will not be required in trunk when the corresponding Grizzly issue is fixed.
             // Please see http://java.net/jira/browse/GLASSFISH-16665 for details
             // The workaround duplicates code from AdminAdapter.
-            ServerEnvironment serverEnvironment = habitat.getByContract(ServerEnvironment.class);
-            final Principal sslPrincipal = !serverEnvironment.isDas() || Boolean.getBoolean(DAS_LOOK_FOR_CERT_PROPERTY_NAME) ? req.getUserPrincipal() : null;
-
-            AdminService as = habitat.getByType(AdminService.class);
-            access = authenticator.loginAsAdmin(user, password, as.getAuthRealmName(), remoteHost, getAuthRelatedHeaders(req), sslPrincipal);
+    
+            subject = authenticator.loginAsAdmin(req, remoteHost);
         }
-        return access;
+        return subject;
     }
-
+    
     /**
-     * Extract authentication related headers from Grizzly request. This headers
-     * enables us to authenticate a request coming from DAS without a password.
-     * The headers will be present if secured admin is not turned on and a
-     * request is sent from DAS to an instance.
-     *
-     * @param req
-     * @return Authentication related headers
+     * Returns the access to be granted to the specified subject.
+     * @param habitat
+     * @param subject
+     * @param remoteHost
+     * @return 
      */
-    private static Map<String, String> getAuthRelatedHeaders(Request req) {
-        Map<String, String> authRelatedHeaders = new HashMap<String, String>();
-        String adminIndicatorHeader = req.getHeader(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME);
-        if (adminIndicatorHeader != null) {
-            authRelatedHeaders.put(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, adminIndicatorHeader);
-        }
-        String authToken = req.getHeader(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME);
-        if (authToken != null) {
-            authRelatedHeaders.put(SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME, authToken);
-        }
-        return authRelatedHeaders;
+    public static AdminAccessController.Access chooseAccess(final BaseServiceLocator habitat, final Subject subject, final String remoteHost) {
+        final AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
+        final AdminAccessController.Access access = authenticator.chooseAccess(subject, remoteHost);
+        return access;
     }
 }

@@ -65,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -85,7 +86,6 @@ import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -101,7 +101,6 @@ import org.jvnet.hk2.component.PostConstruct;
  * @author Rajeshwar Patil, Ludovic Champenois
  */
 public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdapter, PostConstruct {
-    protected static final String COOKIE_REST_TOKEN = "gfresttoken";
     protected static final String COOKIE_GF_REST_UID = "gfrestuid";
     protected static final String HEADER_ACCEPT = "Accept";
     protected static final String HEADER_USER_AGENT = "User-Agent";
@@ -127,7 +126,10 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Inject
     private SessionManager sessionManager;
-
+    
+    @Inject
+    private AdminAccessController adminAuthenticator;
+    
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile HttpHandler adapter = null;
     private boolean isRegistered = false;
@@ -167,7 +169,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     }
                 }
 
-                AdminAccessController.Access access = authenticate(req);
+                final Subject s = adminAuthenticator.loginAsAdmin(req);
+                AdminAccessController.Access access = adminAuthenticator.chooseAccess(s, req.getRemoteHost());
                 if (access.isOK()) {
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
@@ -217,65 +220,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         }
     }
     
-    /**
-     * Authenticate given request
-     * @return Access as determined by authentication process.
-     *         If authentication succeeds against local password or rest token FULL access is granted
-     *         else the access is as returned by admin authenticator
-     * @see ResourceUtil#authenticateViaAdminRealm
-     *
-     */
-    private AdminAccessController.Access authenticate(Request req) throws LoginException, IOException {
-        AdminAccessController.Access access = AdminAccessController.Access.FULL;
-        if (!authenticateViaLocalPassword(req)) {
-            if (!authenticateViaRestToken(req)) {
-                access = ResourceUtil.authenticateViaAdminRealm(habitat, req, req.getRemoteHost());
-            }
-        }
-        return access;
-    }
-
-    private boolean authenticateViaRestToken(Request req) {
-        boolean authenticated = false;
-        Cookie[] cookies = req.getCookies();
-        String restToken = null;
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (COOKIE_REST_TOKEN.equals(cookie.getName())) {
-                    restToken = cookie.getValue();
-                }
-            }
-        }
-        
-        if (restToken == null) {
-            restToken = req.getHeader(HEADER_X_AUTH_TOKEN);
-        }
-
-        if(restToken != null) {
-            authenticated  = sessionManager.authenticate(restToken, req);
-        }
-        return authenticated;
-    }
-
-    private boolean authenticateViaLocalPassword(Request req) {
-        Cookie[] cookies = req.getCookies();
-        boolean authenticated = false;
-        String uid = RestService.getRestUID();
-        if (uid != null) {
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals(COOKIE_GF_REST_UID)) {
-                        if (cookie.getValue().equals(uid)) {
-                            authenticated = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return authenticated;
-    }
-
     private String getAcceptedMimeType(Request req) {
         String type = null;
         String requestURI = req.getRequestURI();

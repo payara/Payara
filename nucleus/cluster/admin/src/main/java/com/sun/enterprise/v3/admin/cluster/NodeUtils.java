@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Level;
+import javax.security.auth.Subject;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
@@ -133,7 +134,7 @@ public class NodeUtils {
      * @param node
      * @return version string
      */
-    String getGlassFishVersionOnNode(Node node) throws CommandValidationException {
+    String getGlassFishVersionOnNode(Node node, AdminCommandContext context) throws CommandValidationException {
         if (node == null)
             return "";
 
@@ -145,7 +146,7 @@ public class NodeUtils {
 
         StringBuilder output = new StringBuilder();
         try {
-            int commandStatus = nr.runAdminCommandOnNode(node, output, command);
+            int commandStatus = nr.runAdminCommandOnNode(node, output, command, context);
             if (commandStatus != 0) {
                 return "unknown version: " + output.toString();
             }
@@ -594,7 +595,7 @@ public class NodeUtils {
         NodeRunner nr = new NodeRunner(habitat, logger);
         try {
             int status = nr.runAdminCommandOnNode(node, output, waitForReaderThreads,
-                    command);
+                    command, context);
             if (status != 0) {
                 // Command ran, but didn't succeed. Log full information
                 msg2 = Strings.get("node.command.failed", nodeName,

@@ -41,6 +41,22 @@
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
+<security-configurations>
+    <authentication-service default="true" name="adminAuth" use-password-credential="true">
+      <security-provider name="filerealm" type="LoginModule" provider-name="adminFile">
+        <login-module-config name="adminFileLM" control-flag="sufficient" module-class="com.sun.enterprise.security.auth.login.FileLoginModule">
+          <property name="config" value="server-config"></property>
+          <property name="auth-realm" value="admin-realm"></property>
+        </login-module-config>
+      </security-provider>
+      <security-provider name="spcrealm" type="LoginModule" provider-name="adminSpc">
+        <login-module-config name="adminSpecialLM" control-flag="sufficient" module-class="com.sun.enterprise.admin.util.AdminLoginModule">
+          <property name="config" value="server-config"></property>
+          <property name="auth-realm" value="admin-realm"></property>
+        </login-module-config>
+      </security-provider>
+    </authentication-service>
+  </security-configurations>
   <system-applications />
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />

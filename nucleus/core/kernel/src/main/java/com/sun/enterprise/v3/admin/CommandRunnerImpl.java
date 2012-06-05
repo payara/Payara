@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import java.util.EnumSet;
 import java.util.Map;
+import javax.security.auth.Subject;
 import org.glassfish.api.admin.CommandWrapperImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -926,7 +927,7 @@ public class CommandRunnerImpl implements CommandRunner {
     /**
      * Called from ExecutionContext.execute.
      */
-    private void doCommand(ExecutionContext inv, AdminCommand command) {
+    private void doCommand(ExecutionContext inv, AdminCommand command, final Subject subject) {
 
         if (command == null) {
             command = getCommand(inv.scope(), inv.name(), inv.report(), logger);
@@ -948,7 +949,7 @@ public class CommandRunnerImpl implements CommandRunner {
         final AdminCommandContext context = new AdminCommandContextImpl(
                 LogDomains.getLogger(command.getClass(), LogDomains.ADMIN_LOGGER),
                 report, inv.inboundPayload(), inv.outboundPayload());
-
+        context.setSubject(subject);
         List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
         FailurePolicy fp = null;
         Set<CommandTarget> targetTypesAllowed = new HashSet<CommandTarget>();
@@ -1466,6 +1467,7 @@ public class CommandRunnerImpl implements CommandRunner {
         protected CommandParameters paramObject;
         protected Payload.Inbound inbound;
         protected Payload.Outbound outbound;
+        protected Subject subject;
 
         private ExecutionContext(String scope, String name, ActionReport report) {
             this.scope = scope;
@@ -1497,6 +1499,13 @@ public class CommandRunnerImpl implements CommandRunner {
             return this;
         }
 
+        @Override
+        public CommandInvocation subject(Subject subject) {
+            this.subject = subject;
+            return this;
+        }
+
+        
         @Override
         public void execute() {
             execute(null);
@@ -1536,7 +1545,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
         @Override
         public void execute(AdminCommand command) {
-            CommandRunnerImpl.this.doCommand(this, command);
+            CommandRunnerImpl.this.doCommand(this, command, subject);
 
             // bnevins
             ActionReport r = report;

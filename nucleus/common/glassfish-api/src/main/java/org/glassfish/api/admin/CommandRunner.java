@@ -41,11 +41,10 @@
 package org.glassfish.api.admin;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.*;
 import org.jvnet.hk2.annotations.Contract;
 
-import java.util.Properties;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 
 /**
  * CommandRunner is a service that allows you to run administrative commands.
@@ -172,6 +171,14 @@ public interface CommandRunner {
          */
         CommandInvocation outbound(Payload.Outbound outbound);
 
+        /**
+         * Sets the Subject associated with the command invocation
+         * 
+         * @param subject
+         * @return itself
+         */
+        CommandInvocation subject(Subject subject);
+        
         /**
          * Executes the command and populate the report with the command
          * execution result. Parameters must have been set before invoking

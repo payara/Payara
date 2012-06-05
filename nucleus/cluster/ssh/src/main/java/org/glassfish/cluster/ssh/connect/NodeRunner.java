@@ -42,6 +42,7 @@ package org.glassfish.cluster.ssh.connect;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.common.util.admin.AsadminInput;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.SSHCommandExecutionException;
@@ -123,18 +124,20 @@ public class NodeRunner {
      * @throws IllegalArgumentException     The passed node is malformed.
      */
     public int runAdminCommandOnNode(Node node, StringBuilder output,
-            List<String> args) throws
+            List<String> args,
+            AdminCommandContext context) throws
             SSHCommandExecutionException,
             ProcessManagerException,
             UnsupportedOperationException,
             IllegalArgumentException {
 
-        return runAdminCommandOnNode(node, output, false, args);
+        return runAdminCommandOnNode(node, output, false, args, context);
     }
 
     public int runAdminCommandOnNode(Node node, StringBuilder output,
             boolean waitForReaderThreads,
-            List<String> args) throws
+            List<String> args,
+            AdminCommandContext context) throws
             SSHCommandExecutionException,
             ProcessManagerException,
             UnsupportedOperationException,
@@ -147,7 +150,7 @@ public class NodeRunner {
 
         final List<String> stdinLines = new ArrayList<String>();
         stdinLines.add(AsadminInput.versionSpecifier());
-        stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken());
+        stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken(context.getSubject()));
         args.add(0, "--interactive=false");            // No prompting!
 
         if (node.isLocal()) {

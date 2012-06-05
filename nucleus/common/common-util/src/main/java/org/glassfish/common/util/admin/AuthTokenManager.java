@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
@@ -125,13 +126,19 @@ public class AuthTokenManager {
         private int usesRemaining = 2; // each token is used once to get metadata, once to execute
         private long expiration;
         private final long lifetime;
+        private final Subject subject;
         
-        private TokenInfo(final String value, final long lifetime) {
+        private TokenInfo(final Subject subject, final String value, final long lifetime) {
+            this.subject = subject;
             this.token = value;
             this.lifetime = lifetime;
             this.expiration = System.currentTimeMillis() + (lifetime);
         }
 
+        private synchronized boolean isOKTouse(final long now) {
+            return  ! isUsedUp(now);
+        }
+        
         private synchronized boolean use(final boolean isBeingReused, final long now) {
             if (isUsedUp(now)) {
                 if (logger.isLoggable(Level.FINER)) {
@@ -163,14 +170,15 @@ public class AuthTokenManager {
     /**
      * Creates a new limited use authentication token with the specified
      * lifetime (in ms).
+     * @param subject the Subject to associate with this token when it is consumed
      * @param lifetime how long each use of the token extends its lifetime
      * @return auth token
      */
-    public String createToken(final long lifetime) {
+    public String createToken(final Subject subject, final long lifetime) {
         final byte[] newToken = new byte[TOKEN_SIZE];
         rng.nextBytes(newToken);
         final String token = toHex(newToken);
-        liveTokens.put(token, new TokenInfo(token, lifetime));
+        liveTokens.put(token, new TokenInfo(subject, token, lifetime));
         logger.log(Level.FINER, "Auth token {0} created", token);
         return token;
     }
@@ -183,7 +191,61 @@ public class AuthTokenManager {
     public String createToken() {
         return createToken(DEFAULT_TOKEN_LIFETIME);
     }
+    
+    /**
+     * Creates a new limited use authentication token with the given Subject
+     * and the default lifetime.
+     * @param subject the Subject to associated with this token when it is consumed
+     * @return 
+     */
+    public String createToken(final Subject subject) {
+        return createToken(subject, DEFAULT_TOKEN_LIFETIME);
+    }
+    
+    /**
+     * Creates a new limited use authentication token with the specified
+     * lifetime but no Subject.
+     * @param lifetime how long each use of the token extends its lifetime
+     * @return 
+     */
+    public String createToken(final long lifetime) {
+        return createToken (new Subject(), lifetime);
+    }
 
+    /**
+     * Locates the Subject for the specified token (if any) without consuming 
+     * the token.  
+     * <p>
+     * Use this method only from authentication logic that needs to find the
+     * token.  Later command processing will consume the token if it is present.
+     * This avoids having to force the special admin LoginModule to run even if
+     * username/password authentication works.
+     * 
+     * @param token the token to find
+     * @return Subject for the token; null if the token does not exist;
+     */
+    public Subject findToken(final String token) {
+        final TokenInfo ti = findTokenInfo(token, System.currentTimeMillis());
+        return (ti != null ? ti.subject : null);
+    }
+    
+    private TokenInfo findTokenInfo(final String token, final long now) {
+        final int firstReuseMarker = token.indexOf(REUSE_TOKEN_MARKER);
+        final String tokenAsRecorded = (isReusedToken(token) ? token.substring(0, firstReuseMarker) : token);
+        
+        final TokenInfo ti = liveTokens.get(tokenAsRecorded);
+        if (ti == null) {
+            logger.log(Level.WARNING,
+                        localStrings.getLocalString(
+                            "AuthTokenNonexistent",
+                            "Attempt to use non-existent auth token {0}",
+                            logger.isLoggable(Level.FINER) ? tokenAsRecorded : SUPPRESSED_TOKEN_OUTPUT)
+                            );
+            return null;
+        }
+        return (ti.isOKTouse(now) ? ti : null);
+    }
+    
     /**
      * Records the use of an authentication token by an admin request.
      * <p>
@@ -197,30 +259,35 @@ public class AuthTokenManager {
      * it is already present.
      *
      * @param token the token consumed, with 0 or more cppies of the reuse marker appended
-     * @return true if the token was valid (and had remaining uses on it); false otherwise
+     * @return the Subject stored with the token when it was created; null if none was provided
      */
-    public boolean consumeToken(final String token) {
+    public Subject consumeToken(final String token) {
+        Subject result = null;
         final long now = System.currentTimeMillis();
-        final int firstReuseMarker = token.indexOf(REUSE_TOKEN_MARKER);
-        final boolean isReusedToken = (firstReuseMarker != -1);
-        final String tokenAsRecorded = (isReusedToken ? token.substring(0, firstReuseMarker) : token);
-
-        final TokenInfo ti = liveTokens.get(tokenAsRecorded);
-        if (ti == null) {
-            logger.log(Level.WARNING,
-                    localStrings.getLocalString(
-                        "AuthTokenNonexistent",
-                        "Attempt to use non-existent auth token {0}",
-                        logger.isLoggable(Level.FINER) ? tokenAsRecorded : SUPPRESSED_TOKEN_OUTPUT)
-                        );
+        final TokenInfo ti = findTokenInfo(token, now);
+        if (ti != null) {
+            if (ti.use(isReusedToken(token), now)) {
+                /*
+                 * We found the token info for this token and it is still valid,
+                 * so prepare to return the stored Subject.
+                 */
+                result = ti.subject;
+            }
         }
-        final boolean result =  ti != null && ti.use(isReusedToken, now);
-
         retireExpiredTokens(now);
 
         return result;
     }
 
+    private boolean isReusedToken(final String token) {
+        return token.indexOf(REUSE_TOKEN_MARKER) != -1;
+    }
+    
+    public Subject subject(final String token) {
+        final TokenInfo ti = liveTokens.get(token);
+        return (ti != null) ? ti.subject : null;
+    }
+    
     public static String markTokenForReuse(final String token) {
         return token + REUSE_TOKEN_MARKER;
     }

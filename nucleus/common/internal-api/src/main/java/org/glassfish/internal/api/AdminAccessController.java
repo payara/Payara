@@ -40,10 +40,10 @@
 
 package org.glassfish.internal.api;
 
-import java.security.Principal;
-import java.util.Map;
-import org.jvnet.hk2.annotations.Contract;
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
+import org.glassfish.grizzly.http.server.Request;
+import org.jvnet.hk2.annotations.Contract;
 
 /** Determines the behavior of administrative access to GlassFish v3. It should be enhanced to take into account
  *  Role-based Access Control. As of GlassFish v3, this takes care of authentication alone.
@@ -92,9 +92,9 @@ public interface AdminAccessController {
      * @param realm String representing the name of the admin realm for given server
      * @param originHost the host from which the request was sent
      * @throws LoginException if there is any error in underlying implementation
-     * @return level of access to be granted
+     * @return Subject for an admin user; null if the login failed or was not for an admin user
      */
-    AdminAccessController.Access loginAsAdmin(String user, String password,
+    Subject loginAsAdmin(String user, String password,
             String realm, String originHost) throws LoginException;
 
     /** Authenticates the admin user by delegating to the underlying realm. The implementing classes
@@ -109,16 +109,39 @@ public interface AdminAccessController {
      *  this variant should pass the Principal associated with the request as
      *  reported by the secure transport and the value from the X-GlassFish-admin header
      *  (null if no such header exists).
-     * @param user String representing the user name of the user doing an admin opearation
-     * @param password String representing clear-text password of the user doing an admin operation
-     * @param realm String representing the name of the admin realm for given server
-     * @param originHost the host from which the request was sent
-     * @param authRelatedHeaders authentication-related headers from the incoming admin request
-     * @param requestPrincipal Principal associated with the incoming admin request (can be null)
+     * @Param request The Grizzly request containing the admin request
      * @throws LoginException if there is any error in underlying implementation
-     * @return true if authentication succeeds, false otherwise
+     * @return Subject for an admin user; null if the login failed or was not for an admin user
      */
-    AdminAccessController.Access loginAsAdmin(String user, String password, String realm,
-            String originHost, Map<String,String> authRelatedHeaders,
-            Principal requestPrincipal) throws LoginException;
+    Subject loginAsAdmin(
+            Request request) throws LoginException;
+    
+    /** Authenticates the admin user by delegating to the underlying realm. The implementing classes
+     *  should use the GlassFish security infrastructure constructs like LoginContextDriver. This method assumes that
+     *  the realm infrastructure is available in both the configuration and runtime of the server.
+     *  <p>
+     *  This variant also logs the requester in as an admin if the specified Principal
+     *  matches the Principal from the certificate in the truststore associated with
+     *  the alias configured in the domain configuration.
+     *
+     *  Typically, methods invoking
+     *  this variant should pass the Principal associated with the request as
+     *  reported by the secure transport and the value from the X-GlassFish-admin header
+     *  (null if no such header exists).
+     * @Param request The Grizzly request containing the admin request
+     * @param hostname the originating host
+     * @throws LoginException if there is any error in underlying implementation
+     * @return Subject for an admin user; null if the login failed or was not for an admin user
+     */
+    Subject loginAsAdmin(
+            Request request, String hostname) throws LoginException;
+    
+    /**
+     * Returns the access that should be granted to the given subject, given where
+     * the request originated from.
+     * @param subject Subject, typically previously returned from loginAsAdmin
+     * @param originHost host from which the request originated
+     * @return 
+     */
+    AdminAccessController.Access chooseAccess(Subject subject, String originHost);
 }

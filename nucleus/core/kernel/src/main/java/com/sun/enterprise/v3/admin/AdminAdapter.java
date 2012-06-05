@@ -41,14 +41,10 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
+import com.sun.enterprise.config.serverbeans.*;
 import java.security.Principal;
 import java.util.Set;
 
-import com.sun.enterprise.config.serverbeans.AdminService;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.common_impl.LogHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -77,12 +73,11 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.net.HttpURLConnection;
 import com.sun.enterprise.universal.GFBase64Decoder;
+import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 import org.glassfish.api.event.EventTypes;
@@ -98,6 +93,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.security.auth.Subject;
 import org.glassfish.grizzly.http.util.HttpStatus;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -107,6 +103,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  */
 public abstract class AdminAdapter extends StaticHttpHandler implements Adapter, PostConstruct, EventListener {
 
+    private final static Logger logger = LogHelper.getDefaultLogger();
     public final static String VS_NAME="__asadmin";
     public final static String PREFIX_URI = "/" + VS_NAME;
     private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminAdapter.class);
@@ -126,10 +123,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
     private static final String QUERY_STRING_SEPARATOR = "&";
 
-    private static final String[] authRelatedHeaderNames = {
-        SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME,
-        SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME};
-
     @Inject
     ModulesRegistry modulesRegistry;
 
@@ -144,7 +137,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
-
+    
     private AdminEndpointDecider epd = null;
     
     @Inject
@@ -168,6 +161,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     final Class<? extends Privacy> privacyClass;
 
     private boolean isRegistered = false;
+    
+    private SecureAdmin secureAdmin = null;
             
     CountDownLatch latch = new CountDownLatch(1);
 
@@ -188,6 +183,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         
         epd = new AdminEndpointDecider(config, aalogger);
         addDocRoot(env.getProps().get(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY) + "/asadmindocroot/");
+        
+        secureAdmin = domain.getSecureAdmin();
     }
 
     /**
@@ -232,9 +229,11 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("V3 cannot process this command at this time, please wait");            
             } else {
-                if (!authenticate(req, report, res))
+                final Subject s = authenticator.loginAsAdmin(req);
+                if ( ! checkAccess(s, req.getRemoteHost(), report, res)) {
                     return;
-                report = doCommand(requestURI, req, report, outboundPayload);
+                }
+                report = doCommand(requestURI, req, report, outboundPayload, s);
             }
         } catch (ProcessHttpCommandRequestException reqEx) {
             report = reqEx.getReport();
@@ -386,41 +385,11 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     }
 
     public AdminAccessController.Access authenticate(Request req) throws Exception {
-        String[] up = getUserPassword(req);
-        String user = up[0];
-        String password = up.length > 1 ? up[1] : "";
-        if (authenticator != null) {
-            /*
-             * If an admin request includes a large payload and secure admin is
-             * enabled and the request does NOT include a client cert, then
-             * the getUsePrincipal invocation can cause problems.  When secure
-             * admin is enabled, we set the admin listener configuration on the DAS
-             * to suppress renegotiation for the cert if the client provided none.  The
-             * GlassFish processes, when secure admin is enabled, will provide
-             * their client certs to each other to start with, so no renegotiation
-             * would be needed because the client cert will be available 
-             * immediately to the server.  By suppressing renegotiation this 
-             * way we prevent the problem in which renegotiation interrupts
-             * a large payload.
-             */
-            final Principal sslPrincipal = req.getUserPrincipal();
-            return authenticator.loginAsAdmin(user, password, as.getAuthRealmName(),
-                    req.getRemoteHost(), authRelatedHeaders(req), sslPrincipal);
-        }
-        return AdminAccessController.Access.FULL;   //if the authenticator is not available, allow all access - per Jerome
+        final Subject s = authenticator.loginAsAdmin(req);
+        return authenticator.chooseAccess(s, req.getRemoteHost());
     }
     
-    private Map<String,String> authRelatedHeaders(final Request gr) {
-        final Map<String,String> result = new HashMap<String,String>();
-        for (String authRelatedHeaderName : authRelatedHeaderNames) {
-            final String value = gr.getHeader(authRelatedHeaderName);
-            if (value != null) {
-                result.put(authRelatedHeaderName, value);
-            }
-        }
-        return result;
-    }
-
+    
     /** A convenience method to extract user name from a request. It assumes the HTTP Basic Auth.
      *
      * @param req instance of Request
@@ -443,10 +412,10 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         return new String[] { dec.substring(0, i), dec.substring(i + 1) };
     }
 
-    private boolean authenticate(Request req, ActionReport report, Response res)
+    private boolean checkAccess(Subject subject, String originHost, ActionReport report, Response res)
             throws Exception {
         
-        AdminAccessController.Access access = authenticate(req);
+        AdminAccessController.Access access = authenticator.chooseAccess(subject, originHost);
         /*
          * Admin requests through this adapter are assumed to change the
          * configuration, which means the access granted needs to be FULL.
@@ -556,7 +525,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     protected abstract boolean validatePrivacy(AdminCommand command);
 
     private ActionReport doCommand(String requestURI, Request req, ActionReport report,
-            Payload.Outbound outboundPayload) throws ProcessHttpCommandRequestException {
+            Payload.Outbound outboundPayload, Subject subject) throws ProcessHttpCommandRequestException {
 
         if (!requestURI.startsWith(getContextRoot())) {
             String msg = adminStrings.getLocalString("adapter.panic",
@@ -618,7 +587,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             //if (adminCommand.getClass().getAnnotation(Visibility.class).privacy().equals(visibility.privacy())) {
                 // todo : needs to be changed, we should reuse adminCommand
                 CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(scope, command, report);
-                inv.parameters(parameters).inbound(inboundPayload).outbound(outboundPayload).execute();
+                inv.parameters(parameters).inbound(inboundPayload).outbound(outboundPayload).subject(subject).execute();
                 try {
                     // note it has become extraordinarily difficult to change the reporter!
                     CommandRunnerImpl.ExecutionContext inv2 = (CommandRunnerImpl.ExecutionContext) inv;
