@@ -284,11 +284,11 @@ public class RemoteCommand extends CLICommand {
                 return;
             }
 
-            StringBuilder sb = new StringBuilder("$Version=\"1\"");
+            StringBuilder sb = new StringBuilder("$Version=1");
             boolean hasCookies = false;
             for (HttpCookie cookie: cookieManager.getCookieStore().getCookies()) {
                 hasCookies = true;
-                sb.append("; ").append(cookie.toString());
+                sb.append("; ").append(cookie.getName()).append("=").append(cookie.getValue());
             }
             if (hasCookies) {
                 urlConnection.setRequestProperty(COOKIE_HEADER, sb.toString());

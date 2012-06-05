@@ -68,7 +68,7 @@ public class ClientCookieStore implements CookieStore {
     private final CookieStore cookieStore;
     private File cookieStoreFile;
     private static final int CACHE_WRITE_DELTA = 60 * 60 * 1000;  // 60 minutes
-    private static final String COOKIE_URI = "http://CLISession/";
+    private static final String COOKIE_URI = "http://CLI_Session/";
     private static final String CACHE_COMMENT = 
               "# These cookies are used strictly for command routing.\n"
             + "# These cookies are not used for authentication and they are\n"
@@ -237,7 +237,9 @@ public class ClientCookieStore implements CookieStore {
             // won't update the mod time on the file.
             return false;
         }
-        cookieStoreFile.setLastModified(System.currentTimeMillis());
+
+        boolean ignore = cookieStoreFile.setLastModified(
+            System.currentTimeMillis());
         return true;
     }
 }
