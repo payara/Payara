@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,10 +64,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -103,7 +100,7 @@ import java.util.logging.Logger;
  * @version $Revision: 1.23.2.3 $ $Date: 2008/04/17 18:37:20 $
  */
 
-public abstract class ManagerBase implements Manager, MBeanRegistration {
+public abstract class ManagerBase implements Manager {
     protected Logger log = Logger.getLogger(ManagerBase.class.getName());
 
     // ----------------------------------------------------- Instance Variables
@@ -671,9 +668,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     
     // --------------------------------------------------------- Public Methods
     public void destroy() {
-        if( oname != null )
-            // Do not register unused tomcat mbeans
-            //Registry.getRegistry(null, null).unregisterComponent(oname);
         if (randomIS!=null) {
             try {
                 randomIS.close();
@@ -704,8 +698,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
                 }   
                 oname=new ObjectName(domain + ":type=Manager,path="
                 + path + ",host=" + hst.getName());
-                // Do not register unused tomcat mbeans
-                //Registry.getRegistry(null, null).registerComponent(this, oname, null );
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Error registering ", e);
             }
@@ -1288,7 +1280,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
     // -------------------- JMX and Registration  --------------------
     protected String domain;
     protected ObjectName oname;
-    protected MBeanServer mserver;
 
     public ObjectName getObjectName() {
         return oname;
@@ -1296,26 +1287,6 @@ public abstract class ManagerBase implements Manager, MBeanRegistration {
 
     public String getDomain() {
         return domain;
-    }
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        domain=name.getDomain();
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-        // NOOP
-    }
-
-    public void preDeregister() throws Exception {
-        // NOOP
-    }
-
-    public void postDeregister() {
-        // NOOP
     }
     
     //START OF 6364900

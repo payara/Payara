@@ -106,7 +106,6 @@ import org.apache.catalina.connector.RequestFacade;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.apache.tomcat.util.modeler.Registry;
 import org.glassfish.web.valve.GlassFishValve;
 // END GlassFish 1343
 
@@ -141,7 +140,6 @@ public class StandardWrapper
         super();
         swValve=new StandardWrapperValve();
         pipeline.setBasic(swValve);
-        broadcaster = new NotificationBroadcasterSupport();
 
     }
 
@@ -156,12 +154,14 @@ public class StandardWrapper
      * servlet is considered permanent.
      */
     private long available = 0L;
-    
+
+
     /**
-     * The broadcaster that sends j2ee notifications. 
+     * The broadcaster that sends j2ee notifications.
      */
     private NotificationBroadcasterSupport broadcaster = null;
-    
+
+
     /**
      * The count of allocations that are currently active (even if they
      * are for the same instance, as will be true on a non-STM servlet).
@@ -2063,10 +2063,8 @@ public class StandardWrapper
     
         // Send j2ee.state.starting notification 
         if (this.getObjectName() != null) {
-            Notification notification = new Notification("j2ee.state.starting", 
-                                                        this.getObjectName(), 
-                                                        sequenceNumber++);
-            broadcaster.sendNotification(notification);
+            Notification notification = new Notification("j2ee.state.starting", this, sequenceNumber++);
+            sendNotification(notification);
         }
         
         // Start up this component
@@ -2083,9 +2081,8 @@ public class StandardWrapper
         // Send j2ee.state.running notification 
         if (this.getObjectName() != null) {
             Notification notification = 
-                new Notification("j2ee.state.running", this.getObjectName(), 
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.running", this, sequenceNumber++);
+            sendNotification(notification);
         }
 
     }
@@ -2104,9 +2101,8 @@ public class StandardWrapper
         // Send j2ee.state.stopping notification 
         if (this.getObjectName() != null) {
             Notification notification = 
-                new Notification("j2ee.state.stopping", this.getObjectName(), 
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.stopping", this, sequenceNumber++);
+            sendNotification(notification);
         }
         
         // Shut down our servlet instance (if it has been initialized)
@@ -2123,23 +2119,16 @@ public class StandardWrapper
         // Send j2ee.state.stoppped notification 
         if (this.getObjectName() != null) {
             Notification notification = 
-                new Notification("j2ee.state.stopped", this.getObjectName(), 
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.stopped", this, sequenceNumber++);
+            sendNotification(notification);
         }
         
         if( oname != null ) {
-            Registry.getRegistry(null, null).unregisterComponent(oname);
             
             // Send j2ee.object.deleted notification 
             Notification notification = 
-                new Notification("j2ee.object.deleted", this.getObjectName(), 
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
-        }
-
-        if (isJspServlet && jspMonitorON != null ) {
-            Registry.getRegistry(null, null).unregisterComponent(jspMonitorON);
+                new Notification("j2ee.object.deleted", this, sequenceNumber++);
+            sendNotification(notification);
         }
 
     }
@@ -2166,15 +2155,11 @@ public class StandardWrapper
         try {
             oname=new ObjectName(onameStr);
             controller=oname;
-            Registry.getRegistry(null, null).registerComponent(this, oname, null );
             
             // Send j2ee.object.created notification 
             if (this.getObjectName() != null) {
-                Notification notification = new Notification(
-                                                "j2ee.object.created", 
-                                                this.getObjectName(), 
-                                                sequenceNumber++);
-                broadcaster.sendNotification(notification);
+                Notification notification = new Notification( "j2ee.object.created", this, sequenceNumber++);
+                sendNotification(notification);
             }
         } catch( Exception ex ) {
             if (log.isLoggable(Level.INFO)) {
@@ -2191,8 +2176,6 @@ public class StandardWrapper
                        + ",J2EEServer=" + ctx.getJ2EEServer();
             try {
                 jspMonitorON = new ObjectName(onameStr);
-                Registry.getRegistry(null, null)
-                    .registerComponent(instance, jspMonitorON, null);
             } catch( Exception ex ) {
                 if (log.isLoggable(Level.INFO)) {
                     log.log(Level.INFO,
@@ -2202,6 +2185,17 @@ public class StandardWrapper
             }
         }
 
+    }
+
+    public void sendNotification(Notification notification) {
+
+        if (broadcaster == null) {
+            broadcaster = ((StandardEngine)getParent().getParent().getParent()).getService().getBroadcaster();
+        }
+        if (broadcaster != null) {
+            broadcaster.sendNotification(notification);
+        }
+        return;
     }
     
 

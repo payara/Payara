@@ -67,8 +67,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
@@ -86,7 +84,6 @@ import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.net.ServerSocketFactory;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.glassfish.grizzly.http.server.util.Mapper;
@@ -99,7 +96,7 @@ import org.glassfish.grizzly.http.server.util.Mapper;
  * @version $Revision: 1.23 $ $Date: 2007/07/09 20:46:45 $
  */
 public class Connector
-    implements org.apache.catalina.Connector, Lifecycle, MBeanRegistration
+    implements org.apache.catalina.Connector, Lifecycle
 {
     protected static final Logger log = Logger.getLogger(Connector.class.getName());
 
@@ -363,11 +360,6 @@ public class Connector
     protected Mapper mapper;
 
     /**
-     * Mapper listener.
-     */
-    protected MapperListener mapperListener;
-
-    /**
      * URI encoding.
      */
     /* GlassFish Issue 2339
@@ -606,10 +598,6 @@ public class Connector
      */
     @Override
     public Container getContainer() {
-        if( container==null ) {
-            // Lazy - maybe it was added later
-            findContainer();     
-        }
         return container;
     }
 
@@ -1319,16 +1307,11 @@ public class Connector
             mapper = new Mapper();
         }
         
-        mapperListener = new MapperListener(mapper);
-
-        
         if( oname == null && (container instanceof StandardEngine)) {
             try {
                 // we are loaded directly, via API - and no name was given to us
                 StandardEngine cb=(StandardEngine)container;
                 oname = createObjectName(domain, "Connector");
-                Registry.getRegistry(null, null)
-                    .registerComponent(this, oname, Connector.class.getName());
                 controller=oname;
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Error registering connector ", e);
@@ -1506,25 +1489,6 @@ public class Connector
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
-        // We can't register earlier - the JMX registration of this happens
-        // in Server.start callback
-        if ( this.oname != null ) {
-            // We are registred - register the handler as well.
-            try {
-                Registry.getRegistry(null, null).registerComponent
-                    (protocolHandler, createObjectName(this.domain, "ProtocolHandler"), null);
-            } catch (Exception ex) {
-                log.log(Level.SEVERE,
-                        sm.getString("coyoteConnector.protocolRegistrationFailed"),
-                        ex);
-            }
-        } else {
-            if (log.isLoggable(Level.INFO)) {
-                log.info(sm.getString
-                         ("coyoteConnector.cannotRegisterProtocol"));
-            }
-        }
-
         try {
             protocolHandler.start();
         } catch (Exception e) {
@@ -1533,30 +1497,6 @@ public class Connector
                  ("coyoteConnector.protocolHandlerStartFailed", e));
         }
 
-        if( this.domain != null ) {
-            if (!"admin-listener".equals(getName())) {
-                // See IT 8255
-                mapper.removeContext(defaultHost, "");
-                mapper.removeHost(defaultHost);
-            }
-            mapperListener.setDomain(domain);
-            // BEGIN S1AS 5000999
-            mapperListener.setNetworkListenerName(this.getName());
-            mapperListener.setDefaultHost(this.defaultHost);
-            // END S1AS 5000999
-            //mapperListener.setEngine( service.getContainer().getName() );
-            mapperListener.setInstanceName(instanceName);
-            mapperListener.init();
-            try {
-                ObjectName mapperOname = createObjectName(this.domain, "Mapper");
-                Registry.getRegistry(null, null).registerComponent
-                        (mapper, mapperOname, "Mapper");
-            } catch (Exception ex) {
-                log.log(Level.SEVERE,
-                        sm.getString("coyoteConnector.protocolRegistrationFailed"),
-                        ex);
-            }
-        }
     }
 
     /**
@@ -1575,21 +1515,6 @@ public class Connector
         }
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
         started = false;
-
-        // START PWC 6393300
-        if ( domain != null){
-            try {
-                Registry.getRegistry(null, null).unregisterComponent(
-                    createObjectName(this.domain, "Mapper"));
-                Registry.getRegistry(null, null).unregisterComponent(
-                    createObjectName(this.domain, "ProtocolHandler"));
-            } catch (MalformedObjectNameException e) {
-                if (log.isLoggable(Level.INFO)) {
-                    log.log(Level.INFO, "Error unregistering mapper ", e);
-                }
-            }
-        } 
-        // END PWC 6393300
 
         try {
             protocolHandler.destroy();
@@ -1864,7 +1789,6 @@ public class Connector
 
     protected String domain;
     protected ObjectName oname;
-    protected MBeanServer mserver;
     ObjectName controller;
 
     public ObjectName getController() {
@@ -1889,75 +1813,6 @@ public class Connector
     public void setDomain(String domain){
         this.domain = domain;
     }
-    
-    @Override
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        domain=name.getDomain();
-        return name;
-    }
-
-    @Override
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    @Override
-    public void preDeregister() throws Exception {
-    }
-
-    @Override
-    public void postDeregister() {
-        try {
-            if( started ) {
-                stop();
-            }
-        } catch( Throwable t ) {
-            log.log(Level.SEVERE, "Unregistering - can't stop", t);
-        }
-    }
-    
-    private void findContainer() {
-        try {
-            // Register to the service
-            ObjectName parentName=new ObjectName( domain + ":" +
-                    "type=Service");
-            
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Adding to " + parentName );
-            }
-            if( mserver.isRegistered(parentName )) {
-                mserver.invoke(parentName, "addConnector", new Object[] { this },
-                        new String[] {"org.apache.catalina.Connector"});
-                // As a side effect we'll get the container field set
-                // Also initialize will be called
-                //return;
-            }
-            // XXX Go directly to the Engine
-            // initialize(); - is called by addConnector
-            ObjectName engName=new ObjectName( domain + ":" + "type=Engine");
-            if( mserver.isRegistered(engName )) {
-                Object obj=mserver.getAttribute(engName, "managedResource");
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Found engine " + obj + " " + obj.getClass());
-                }
-                container=(Container)obj;
-                
-                // Internal initialize - we now have the Engine
-                initialize();
-                
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Initialized");
-                }
-                // As a side effect we'll get the container field set
-                // Also initialize will be called
-                return;
-            }
-        } catch( Exception ex ) {
-            log.log(Level.SEVERE, "Error finding container", ex);
-        }
-    }
 
     public void init() throws Exception {
 
@@ -1967,9 +1822,6 @@ public class Connector
             }
             return;
         }
-        if( container==null ) {
-            findContainer();
-        }
     }
 
     public void destroy() throws Exception {
@@ -1977,7 +1829,6 @@ public class Connector
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Unregister itself " + oname );
             }
-            Registry.getRegistry(null, null).unregisterComponent(oname);
         }
         if( getService() == null)
             return;

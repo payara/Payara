@@ -74,8 +74,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.directory.DirContext;
@@ -97,11 +95,9 @@ import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.logger.LoggerBase;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.ProxyDirContext;
-import org.apache.tomcat.util.modeler.Registry;
 import org.glassfish.web.valve.GlassFishValve;
 
 /**
@@ -165,7 +161,7 @@ import org.glassfish.web.valve.GlassFishValve;
  */
 
 public abstract class ContainerBase
-    implements Container, Lifecycle, Pipeline, MBeanRegistration {
+    implements Container, Lifecycle, Pipeline {
 
     private static Logger log = Logger.getLogger(
         ContainerBase.class.getName());
@@ -1166,22 +1162,6 @@ public abstract class ContainerBase
             return;
         }
         
-        // Do not register unused tomcat mbeans 
-        /*
-        if( logger instanceof LoggerBase ) {
-            LoggerBase lb=(LoggerBase)logger;
-            if( lb.getObjectName()==null ) {
-                ObjectName lname=lb.createObjectName();
-                try {
-                    Registry.getRegistry(null, null).registerComponent(lb, lname,
-                } catch( Exception ex ) {
-                    log.log(Level.SEVERE, "Can't register logger " + lname,
-                            ex);
-                }
-            }
-        }
-        */
-        
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
 
@@ -1288,20 +1268,6 @@ public abstract class ContainerBase
             ((Lifecycle) loader).stop();
         }
 
-        if( logger instanceof LoggerBase ) {
-            LoggerBase lb=(LoggerBase)logger;
-            if( lb.getObjectName()!=null ) {
-                try {             
-                    // Do not register unused tomcat mbeans
-                    //Registry.getRegistry(null, null).unregisterComponent(lb.getObjectName());
-                } catch( Exception ex ) {
-                    log.log(Level.SEVERE,
-                            "Can't unregister logger " + lb.getObjectName(),
-                            ex);
-                }
-            }
-        }
-
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
     }
@@ -1316,21 +1282,8 @@ public abstract class ContainerBase
      * the object will unregister.
      * 
      * @throws Exception
-     */ 
+     */
     public void init() throws Exception {
-
-        if( this.getParent() == null ) {
-            // "Life" update
-            ObjectName parentName=getParentName();
-
-            //log.info("Register " + parentName );
-            if( parentName != null && 
-                    mserver.isRegistered(parentName)) 
-            {
-                mserver.invoke(parentName, "addChild", new Object[] { this },
-                        new String[] {"org.apache.catalina.Container"});
-            }
-        }      
         initialized=true;
     }
     
@@ -1348,7 +1301,6 @@ public abstract class ContainerBase
         if( oname != null ) {
             try {
                 if( controller == oname ) {
-                    Registry.getRegistry(null, null).unregisterComponent(oname);
                     if (log.isLoggable(Level.FINE)) {
                         log.fine("unregistering " + oname);
                     }
@@ -1604,7 +1556,6 @@ public abstract class ContainerBase
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected MBeanServer mserver;
 
     public ObjectName getJmxName() {
         return oname;
@@ -1642,41 +1593,6 @@ public abstract class ContainerBase
         return suffix;
     }
 
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        if (name == null ){
-            return null;
-        }
-
-        domain=name.getDomain();
-
-        type=name.getKeyProperty("type");
-        if( type==null ) {
-            type=name.getKeyProperty("j2eeType");
-        }
-
-        String j2eeApp=name.getKeyProperty("J2EEApplication");
-        String j2eeServer=name.getKeyProperty("J2EEServer");
-        if( j2eeApp==null ) {
-            j2eeApp="none";
-        }
-        if( j2eeServer==null ) {
-            j2eeServer="none";
-        }
-        suffix=",J2EEApplication=" + j2eeApp + ",J2EEServer=" + j2eeServer;
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
-    }
 
     public ObjectName[] getChildren() {
         synchronized(children) {

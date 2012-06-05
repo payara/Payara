@@ -62,10 +62,8 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
+import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -83,7 +81,7 @@ import java.util.logging.Logger;
  */
 
 public class StandardService
-        implements Lifecycle, Service, MBeanRegistration 
+        implements Lifecycle, Service
  {
     private static Logger log = Logger.getLogger(
         StandardService.class.getName());
@@ -159,6 +157,22 @@ public class StandardService
      * Has this component been initialized?
      */
     protected boolean initialized = false;
+
+    /**
+     * The broadcaster that sends j2ee notifications.
+     */
+    private NotificationBroadcasterSupport broadcaster = null;
+
+
+    // ----------------------------------------------------------- Constructors
+
+     /**
+      * Construct a default instance of this class.
+      */
+
+     public StandardService() {
+         this.broadcaster = new NotificationBroadcasterSupport();
+     }
 
 
     // ------------------------------------------------------------- Properties
@@ -301,6 +315,27 @@ public class StandardService
         this.server = server;
 
     }
+
+     /**
+      * Return the <code>NotificationBroadcasterSupport</code> that sends notification for this Service.
+      */
+     public NotificationBroadcasterSupport getBroadcaster() {
+
+         return broadcaster;
+
+     }
+
+     /**
+      * Set the <code>NotificationBroadcasterSupport</code> that sends notification for this Service
+      *
+      * @param broadcaster The new NotificationBroadcasterSupport
+      */
+
+     public void setBroadcaster(NotificationBroadcasterSupport broadcaster) {
+
+         this.broadcaster = broadcaster;
+
+     }
 
 
     // --------------------------------------------------------- Public Methods
@@ -600,15 +635,6 @@ public class StandardService
             }
         }
 
-        /* CR 6368091
-        if( oname==controller ) {
-            // we registered ourself on init().
-            // That should be the typical case - this object is just for
-            // backward compat, nobody should bother to load it explicitly
-            Registry.getRegistry(null, null).unregisterComponent(oname);
-        }        
-        */
-
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
 
@@ -638,7 +664,6 @@ public class StandardService
                 domain=engine.getName();
                 oname=new ObjectName(domain + ":type=Service,serviceName="+name);
                 this.controller=oname;
-                Registry.getRegistry(null, null).registerComponent(this, oname, null);
             } catch (Exception e) {
                 log.log(Level.SEVERE,
                         sm.getString("standardService.register.failed",
@@ -669,12 +694,6 @@ public class StandardService
         // unregister should be here probably
         // START CR 6368091
         if (initialized) {
-            if( oname==controller ) {
-                // we registered ourself on init().
-                // That should be the typical case - this object is just for
-                // backward compat, nobody should bother to load it explicitly
-                Registry.getRegistry(null, null).unregisterComponent(oname);
-            }
             initialized = false;
         }
         // END CR 6368091
@@ -695,7 +714,6 @@ public class StandardService
     protected String suffix;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected MBeanServer mserver;
 
     public ObjectName getObjectName() {
         return oname;
@@ -703,23 +721,6 @@ public class StandardService
 
     public String getDomain() {
         return domain;
-    }
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        domain=name.getDomain();
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
     }
 
 }

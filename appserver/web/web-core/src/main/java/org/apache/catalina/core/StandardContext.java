@@ -78,8 +78,6 @@ import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.WARDirContext;
-import org.apache.tomcat.util.modeler.ManagedBean;
-import org.apache.tomcat.util.modeler.Registry;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
@@ -167,7 +165,6 @@ public class StandardContext
     public StandardContext() {
         pipeline.setBasic(new StandardContextValve());
         namingResources.setContainer(this);
-        broadcaster = new NotificationBroadcasterSupport();
         if (Globals.IS_SECURITY_ENABLED) {
             mySecurityManager = AccessController.doPrivileged(
                     new PrivilegedCreateSecurityManager());
@@ -5088,15 +5085,6 @@ public class StandardContext
                 ((BaseDirContext)webappResources).setDocBase(getBasePath(getDocBase()));
                 ((BaseDirContext)webappResources).allocate();
             }
-            // Register the cache in JMX
-            if(isCachingAllowed()) {
-                ObjectName resourcesName = new ObjectName(
-                    this.getDomain() + ":type=Cache,host="
-                        + getHostname() + ",path="
-                    + (("".equals(encodedPath)) ? "/" : encodedPath));
-                Registry.getRegistry(null, null).registerComponent
-                    (proxyDirContext.getCache(), resourcesName, null);
-            }
             this.resources = proxyDirContext;
         } catch(Throwable t) {
             if(log.isLoggable(Level.FINE)) {
@@ -5170,16 +5158,6 @@ public class StandardContext
                 }
                 if (webappResources instanceof BaseDirContext) {
                     ((BaseDirContext) webappResources).release();
-                }
-                // Unregister the cache in JMX
-                if (isCachingAllowed()) {
-                    ObjectName resourcesName =
-                        new ObjectName(this.getDomain()
-                                       + ":type=Cache,host="
-                                       + getHostname() + ",path="
-                                       + (("".equals(getPath()))?"/"
-                                          :getPath()));
-                    Registry.getRegistry(null, null).unregisterComponent(resourcesName);
                 }
             }
         } catch (Throwable t) {
@@ -5340,13 +5318,6 @@ public class StandardContext
         // Set JMX object name for proper pipeline registration
         preRegisterJMX();
 
-        if ((oname != null) &&
-            (Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname))) {
-            // As things depend on the JMX registration, the context
-            // must be reregistered again once properly initialized
-            Registry.getRegistry(null, null).unregisterComponent(oname);
-        }
-
         // Notify our interested LifecycleListeners
         lifecycle.fireLifecycleEvent(BEFORE_START_EVENT, null);
 
@@ -5407,26 +5378,6 @@ public class StandardContext
             }
 
             alternateResourcesStart();
-        }
-
-        // Look for a realm - that may have been configured earlier.
-        // If the realm is added after context - it'll set itself.
-        if (realm == null) {
-            ObjectName realmName=null;
-            try {
-                realmName=new ObjectName( getEngineName() + ":type=Realm,host="
-                                        + getHostname() + ",path=" + getPath());
-                if( mserver.isRegistered(realmName ) ) {
-                    mserver.invoke(realmName, "init",
-                            new Object[] {},
-                            new String[] {}
-                    );
-                }
-            } catch( Throwable t ) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("No realm for this host " + realmName);
-                }
-            }
         }
 
         if (getLoader() == null) {
@@ -5588,9 +5539,8 @@ public class StandardContext
         // Send j2ee.state.running notification
         if (getObjectName() != null) {
             Notification notification =
-                new Notification("j2ee.state.running", this.getObjectName(),
-                                 sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.running", this, sequenceNumber++);
+            sendNotification(notification);
         }
 
         // Close all JARs right away to avoid always opening a peak number
@@ -5721,9 +5671,8 @@ public class StandardContext
         // Send j2ee.state.stopping notification
         if (this.getObjectName() != null) {
             Notification notification =
-                new Notification("j2ee.state.stopping", this.getObjectName(),
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.stopping", this, sequenceNumber++);
+            sendNotification(notification);
         }
 
         // Mark this application as unavailable while we shut down
@@ -5844,9 +5793,8 @@ public class StandardContext
         // Send j2ee.state.stopped notification
         if (this.getObjectName() != null) {
             Notification notification =
-                new Notification("j2ee.state.stopped", this.getObjectName(),
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.state.stopped", this ,sequenceNumber++);
+            sendNotification(notification);
         }
 
         // Reset application context
@@ -5885,9 +5833,8 @@ public class StandardContext
         if(oname != null) {
             // Send j2ee.object.deleted notification
             Notification notification =
-                new Notification("j2ee.object.deleted", this.getObjectName(),
-                                sequenceNumber++);
-            broadcaster.sendNotification(notification);
+                new Notification("j2ee.object.deleted", this, sequenceNumber++);
+            sendNotification(notification);
         }
         super.destroy();
 
@@ -5920,7 +5867,7 @@ public class StandardContext
         sessionListeners.clear();
 
         if (log.isLoggable(Level.FINE)) {
-            log.fine("resetContext " + oname + " " + mserver);
+            log.fine("resetContext " + oname);
         }
     }
 
@@ -6488,9 +6435,8 @@ public class StandardContext
         nresources.addEnvironment(env);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextEnvironment");
         ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), env);
+            MBeanUtils.createObjectName(domain, env);
         return (oname.toString());
 
     }
@@ -6519,9 +6465,7 @@ public class StandardContext
         nresources.addResource(resource);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextResource");
-        ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), resource);
+            MBeanUtils.createObjectName(domain, resource);
         return (oname.toString());
     }
 
@@ -6551,9 +6495,8 @@ public class StandardContext
         nresources.addResourceLink(resourceLink);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextResourceLink");
         ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), resourceLink);
+            MBeanUtils.createObjectName(domain, resourceLink);
         return (oname.toString());
     }
 
@@ -6624,18 +6567,12 @@ public class StandardContext
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Checking for " + oname );
             }
-            if(! Registry.getRegistry(null, null).getMBeanServer().isRegistered(oname)) {
-                controller = oname;
-                Registry.getRegistry(null, null).registerComponent(
-                    this, oname, null);
-
-                // Send j2ee.object.created notification
-                if (this.getObjectName() != null) {
-                    Notification notification = new Notification(
-                        "j2ee.object.created", this.getObjectName(),
-                        sequenceNumber++);
-                    broadcaster.sendNotification(notification);
-                }
+            controller = oname;
+             // Send j2ee.object.created notification
+             if (this.getObjectName() != null) {
+                 Notification notification = new Notification(
+                         "j2ee.object.created", this, sequenceNumber++);
+                 sendNotification(notification);
             }
             for (Container child : findChildren()) {
                 ((StandardWrapper)child).registerJMX( this );
@@ -6648,45 +6585,18 @@ public class StandardContext
         }
     }
 
-    /**
-     * There are 2 cases:
-     *
-     *   1. The context is created and registered by internal APIs
-     *   2. The context is created by JMX, and it'll self-register.
-     *
-     * @param server
-     * @param name
-     *
-     * @return the ObjectName that was used for registration
-     *
-     * @throws Exception
-     */
-    @Override
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name)
-            throws Exception
-    {
-        if( oname != null ) {
-            //log.info( "Already registered " + oname + " " + name);
-            // Temporary - /admin uses the old names
-            return name;
+
+    public void sendNotification(Notification notification) {
+
+        if (broadcaster == null) {
+            broadcaster = ((StandardEngine)getParent().getParent()).getService().getBroadcaster();
         }
-        super.preRegister(server,name);
-        return name;
+        if (broadcaster != null) {
+            broadcaster.sendNotification(notification);
+        }
+        return;
     }
 
-    @Override
-    public void preDeregister() throws Exception {
-        if( started ) {
-            try {
-                stop();
-            } catch( Exception ex ) {
-                log.log(Level.SEVERE,
-                        sm.getString("standardContext.stoppingContext", this),
-                        ex);
-            }
-        }
-    }
 
     @Override
     public void init() throws Exception {
@@ -6694,29 +6604,8 @@ public class StandardContext
         if( this.getParent() == null ) {
             ObjectName parentName=getParentName();
 
-            if( ! mserver.isRegistered(parentName)) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("No host, creating one " + parentName);
-                }
-                StandardHost host=new StandardHost();
-                host.setName(hostName);
-                Registry.getRegistry(null, null).registerComponent(
-                    host, parentName, null);
-                mserver.invoke(parentName, "init", new Object[] {}, new String[] {} );
-            }
             ContextConfig config = new ContextConfig();
             this.addLifecycleListener(config);
-
-            if (log.isLoggable(Level.FINE)) {
-                log.fine( "AddChild " + parentName + " " + this);
-            }
-            try {
-                mserver.invoke(parentName, "addChild", new Object[] { this },
-                               new String[] {"org.apache.catalina.Container"});
-            } catch (Exception e) {
-                destroy();
-                throw e;
-            }
         }
 
         // It's possible that addChild may have started us
@@ -6733,9 +6622,8 @@ public class StandardContext
 
         // Send j2ee.state.starting notification
         if (this.getObjectName() != null) {
-            Notification notification = new Notification("j2ee.state.starting",
-                this.getObjectName(), sequenceNumber++);
-            broadcaster.sendNotification(notification);
+            Notification notification = new Notification("j2ee.state.starting", this, sequenceNumber++);
+            sendNotification(notification);
         }
 
     }

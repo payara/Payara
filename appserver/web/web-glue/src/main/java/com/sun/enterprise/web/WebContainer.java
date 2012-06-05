@@ -480,9 +480,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         if (_debug > 1)
             _embedded.setDebug(_debug);
         _embedded.setLogger(new IASLogger(_logger));
-
         engine = _embedded.createEngine();
         engine.setParentClassLoader(EmbeddedWebContainer.class.getClassLoader());
+        engine.setService(_embedded);
         _embedded.addEngine(engine);
         ((StandardEngine) engine).setDomain(_serverContext.getDefaultDomainName());
         engine.setName(_serverContext.getDefaultDomainName());
@@ -2393,6 +2393,10 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         return _embedded.getEngines()[0];
     }
 
+    public HttpService getHttpService() {
+        return serverConfig.getHttpService();
+    }
+
 
     /**
      * Registers the given ad-hoc path at the given context root.
@@ -2858,8 +2862,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                             conn.start();
                         }
                         try {
-                            conn.getMapperListener().registerHost(
-                                    vs.getJmxName());
+                            conn.getMapperListener().registerHost(vs);
                         } catch (Exception e) {
                             throw new LifecycleException(e);
                         }

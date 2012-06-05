@@ -68,8 +68,6 @@ import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.apache.naming.resources.Resource;
 import org.glassfish.web.loader.WebappClassLoader;
 
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.naming.Binding;
 import javax.naming.NameClassPair;
@@ -113,7 +111,7 @@ import java.util.logging.Logger;
  */
 
 public class WebappLoader
-    implements Lifecycle, Loader, PropertyChangeListener, MBeanRegistration  {
+    implements Lifecycle, Loader, PropertyChangeListener  {
 
     /**
      * First load of the class.
@@ -591,9 +589,6 @@ public class WebappLoader
                                            ":type=Loader,path=" +
                                            path + ",host=" +
                                            ctx.getParent().getName());
-                    // Do not register unused tomcat mbeans
-                    //Registry.getRegistry(null, null).registerComponent(this, oname,
-                    //                                         null);
                     controller = oname;
                 } catch (Exception e) {
                     log.log(Level.SEVERE, "Error registering loader", e);
@@ -611,8 +606,6 @@ public class WebappLoader
 
     public void destroy() {
         if( controller==oname ) {
-            // Do not register unused tomcat mbeans
-            //Registry.getRegistry(null, null).unregisterComponent(oname);
             oname = null;
         }
         initialized = false;
@@ -1294,21 +1287,6 @@ public class WebappLoader
 
         return true;
 
-    }
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
     }
 
     public ObjectName getController() {

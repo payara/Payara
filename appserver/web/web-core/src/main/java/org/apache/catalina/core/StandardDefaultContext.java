@@ -64,11 +64,7 @@ import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.mbeans.MBeanUtils;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.ContextAccessController;
-import org.apache.tomcat.util.modeler.ManagedBean;
-import org.apache.tomcat.util.modeler.Registry;
 
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.directory.DirContext;
@@ -88,7 +84,7 @@ import java.util.*;
  */
 
 public class StandardDefaultContext 
-    implements DefaultContext, LifecycleListener, MBeanRegistration {
+    implements DefaultContext, LifecycleListener {
 
 
     // ----------------------------------------------------------- Constructors
@@ -1445,36 +1441,6 @@ public class StandardDefaultContext
         return suffix;
     }
 
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        domain=name.getDomain();
-
-        type=name.getKeyProperty("type");
-        if( type==null ) {
-            type=name.getKeyProperty("j2eeType");
-        }
-
-        String j2eeApp=name.getKeyProperty("J2EEApplication");
-        String j2eeServer=name.getKeyProperty("J2EEServer");
-        if( j2eeApp==null ) {
-            j2eeApp="none";
-        }
-        if( j2eeServer==null ) {
-            j2eeServer="none";
-        }
-        suffix=",J2EEApplication=" + j2eeApp + ",J2EEServer=" + j2eeServer;
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
-    }
 
     /**
      * Return the MBean Names of the set of defined environment entries for
@@ -1576,9 +1542,8 @@ public class StandardDefaultContext
         nresources.addEnvironment(env);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextEnvironment");
         ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), env);
+            MBeanUtils.createObjectName(domain, env);
         return (oname.toString());
 
     }
@@ -1607,9 +1572,8 @@ public class StandardDefaultContext
         nresources.addResource(resource);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextResource");
         ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), resource);
+            MBeanUtils.createObjectName(domain, resource);
 
         return (oname.toString());
     }
@@ -1641,9 +1605,8 @@ public class StandardDefaultContext
         nresources.addResourceLink(resourceLink);
 
         // Return the corresponding MBean name
-        ManagedBean managed = Registry.getRegistry(null, null).findManagedBean("ContextResourceLink");
         ObjectName oname =
-            MBeanUtils.createObjectName(managed.getDomain(), resourceLink);
+            MBeanUtils.createObjectName(domain, resourceLink);
         return (oname.toString());
     }
 }

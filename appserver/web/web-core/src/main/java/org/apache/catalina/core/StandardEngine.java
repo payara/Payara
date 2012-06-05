@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,13 +60,9 @@ package org.apache.catalina.core;
 
 import org.apache.catalina.*;
 import org.apache.catalina.realm.JAASRealm;
-import org.apache.tomcat.util.modeler.Registry;
-import org.apache.tomcat.util.modeler.modules.MbeansSource;
 
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import java.io.File;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -135,15 +131,6 @@ public class StandardEngine
      * otherwise we loose some flexibility.
      */
     private String baseDir = null;
-
-    /** Optional mbeans config file. This will replace the "hacks" in
-     * jk and ServerListener. The mbeans file will support (transparent) 
-     * persistence - soon. It'll probably replace jk2.properties and could
-     * replace server.xml. Of course - the same beans could be loaded and 
-     * managed by an external entity - like the embedding app - which
-     *  can use a different persistence mechanism.
-     */ 
-    private String mbeansFile = null;
     
     /** Mbeans loaded by the engine.  
      */ 
@@ -287,14 +274,6 @@ public class StandardEngine
         this.service = service;
     }
 
-    public String getMbeansFile() {
-        return mbeansFile;
-    }
-
-    public void setMbeansFile(String mbeansFile) {
-        this.mbeansFile = mbeansFile;
-    }
-
     public String getBaseDir() {
         if( baseDir==null ) {
             baseDir=System.getProperty("catalina.base");
@@ -403,25 +382,8 @@ public class StandardEngine
                 }
                 oname=new ObjectName(domain + ":type=Engine");
                 controller=oname;
-                Registry.getRegistry(null, null).registerComponent(this, oname, null);
             } catch (Throwable t) {
                 log.log(Level.INFO, "Error registering ", t);
-            }
-        }
-
-        if( mbeansFile == null ) {
-            String defaultMBeansFile=getBaseDir() + "/conf/tomcat5-mbeans.xml";
-            File f=new File( defaultMBeansFile );
-            if( f.exists() ) mbeansFile=f.getAbsolutePath();
-        }
-        if( mbeansFile != null ) {
-            readEngineMbeans();
-        }
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "init", false);
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "Error in init() for " + mbeansFile, e);
             }
         }
         
@@ -459,39 +421,6 @@ public class StandardEngine
 
         // if we created it, make sure it's also destroyed
         ((StandardService)service).destroy();
-
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "destroy", false);
-            } catch (Exception e) {
-                log.log(Level.SEVERE,
-                        sm.getString(
-                            "standardEngine.unregister.mbeans.failed",
-                            mbeansFile),
-                        e);
-            }
-        }
-        // 
-        if( mbeans != null ) {
-            try {
-                for( int i=0; i<mbeans.size() ; i++ ) {
-                    Registry.getRegistry(null, null).unregisterComponent(mbeans.get(i));
-                }
-            } catch (Exception e) {
-                log.log(Level.SEVERE,
-                        sm.getString(
-                            "standardEngine.unregister.mbeans.failed",
-                            mbeansFile),
-                        e);
-            }
-        }
-        
-        // force all metadata to be reloaded.
-        // That doesn't affect existing beans. We should make it per
-        // registry - and stop using the static.
-        Registry.getRegistry(null, null).resetMetadata();
-        
-                
     }
     
     /**
@@ -517,14 +446,6 @@ public class StandardEngine
         }
         // END PWC 6296256
 
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "start", false);
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "Error in start() for " + mbeansFile, e);
-            }
-        }
-
         // Standard container startup
         super.start();
 
@@ -532,13 +453,6 @@ public class StandardEngine
     
     public void stop() throws LifecycleException {
         super.stop();
-        if( mbeans != null ) {
-            try {
-                Registry.getRegistry(null, null).invoke(mbeans, "stop", false);
-            } catch (Exception e) {
-                log.log(Level.SEVERE, "Error in stop() for " + mbeansFile, e);
-            }
-        }
     }
 
 
@@ -558,18 +472,6 @@ public class StandardEngine
     // ------------------------------------------------------ Protected Methods
 
 
-    // -------------------- JMX registration  --------------------
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception
-    {
-        super.preRegister(server,name);
-
-        this.setName( name.getDomain());
-
-        return name;
-    }
-
     // FIXME Remove -- not used 
     public ObjectName getParentName() throws MalformedObjectNameException {
         if (getService()==null) {
@@ -587,26 +489,6 @@ public class StandardEngine
         if (log.isLoggable(Level.FINE))
             log.fine("Create ObjectName " + domain + " " + parent );
         return new ObjectName( domain + ":type=Engine");
-    }
-
-    
-    private void readEngineMbeans() {
-        try {
-            MbeansSource mbeansMB=new MbeansSource();
-            File mbeansF=new File( mbeansFile );
-            mbeansMB.setSource(mbeansF);
-            
-            Registry.getRegistry(null, null).registerComponent(mbeansMB, 
-                    domain + ":type=MbeansFile", null);
-            mbeansMB.load();
-            mbeansMB.init();
-            mbeansMB.setRegistry(Registry.getRegistry(null, null));
-            mbeans=mbeansMB.getMBeans();
-            
-        } catch( Throwable t ) {
-            log.log(Level.SEVERE, "Error loading " + mbeansFile, t);
-        }
-        
     }
     
     public String getDomain() {

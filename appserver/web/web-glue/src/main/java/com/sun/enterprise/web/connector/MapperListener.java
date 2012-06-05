@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,78 +56,64 @@
  * limitations under the License.
  */
 
-package org.apache.catalina.connector;
+package com.sun.enterprise.web.connector;
 
-import org.apache.catalina.Host;
+import javax.management.*;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import com.sun.enterprise.web.WebContainer;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.logging.LogDomains;
+import org.apache.catalina.*;
+import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
-
-import javax.management.*;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.grizzly.http.util.MessageBytes;
+
 
 /**
  * Mapper listener.
  *
  * @author Remy Maucherat
  * @author Costin Manolache
+ * @author Amy Roh
  */
-public class MapperListener
-    /* SJSAS 6313044
-    implements NotificationListener
-    */
-    // START SJSAS 6313044
-    implements NotificationListener, NotificationFilter
-    // END SJSAS 6313044
- {
-    private static Logger log = Logger.getLogger(MapperListener.class.getName());
-
+public class MapperListener implements NotificationListener, NotificationFilter{
 
     // ----------------------------------------------------- Instance Variables
-    /**
-     * Associated mapper.
-     */
-    protected transient Mapper mapper = null;
 
-    /**
-     * MBean server.
-     */
-    protected transient MBeanServer mBeanServer = null;
-
-
-    /**
-     * The string manager for this package.
-     */
-    private static final StringManager sm =
-        StringManager.getManager(Constants.Package);
-
-    // It should be null - and fail if not set
-    private String domain="*";
-    private String engine="*";
-
-
-    // BEGIN S1AS 5000999
-    private String networkListenerName;
     private String defaultHost;
-    private ConcurrentHashMap<ObjectName,String[]> virtualServerListenerNames;
-    // END S1AS 5000999
 
+    private String domain="*";
+
+    private Engine engine = null;
+
+    public HttpService httpService;
+
+    protected static final Logger logger = LogDomains.getLogger(
+            MapperListener.class, LogDomains.WEB_LOGGER);
+
+    protected static final ResourceBundle rb = logger.getResourceBundle();
+
+    protected transient Mapper mapper = null;
 
     // START SJSAS 6313044
     private String myInstance;
     // END SJSAS 6313044
 
+    private String networkListenerName;
+
+    private ConcurrentHashMap<ObjectName,String[]> virtualServerListenerNames;
+
+    private WebContainer webContainer;
 
     // ----------------------------------------------------------- Constructors
 
@@ -135,9 +121,10 @@ public class MapperListener
     /**
      * Create mapper listener.
      */
-    public MapperListener(Mapper mapper) {
+    public MapperListener(Mapper mapper, WebContainer webContainer) {
         this.mapper = mapper;
         virtualServerListenerNames = new ConcurrentHashMap<ObjectName,String[]>();
+        this.webContainer = webContainer;
     }
 
 
@@ -151,14 +138,6 @@ public class MapperListener
         this.domain = domain;
     }
 
-    public String getEngine() {
-        return engine;
-    }
-
-    public void setEngine(String engine) {
-        this.engine = engine;
-    }
-
     // BEGIN S1AS 5000999
     public String getNetworkListenerName() {
         return networkListenerName;
@@ -166,10 +145,6 @@ public class MapperListener
 
     public void setNetworkListenerName(String networkListenerName) {
         this.networkListenerName = networkListenerName;
-    }
-
-    public void setInstanceName(String instanceName) {
-        myInstance = instanceName;
     }
 
     public String getDefaultHost() {
@@ -181,59 +156,56 @@ public class MapperListener
     }
     // END S1AS 5000999
 
+    public void setInstanceName(String instanceName) {
+        myInstance = instanceName;
+    }
+
     /**
      * Initialize associated mapper.
      */
     public void init() {
 
-        if (defaultHost != null) {
-            mapper.setDefaultHostName(defaultHost);
+        if (webContainer == null)  {
+            logger.log(Level.SEVERE, rb.getString("mapperListener.cannotfindWebContainer"));
+            return;
         }
 
         try {
 
-            mBeanServer = Registry.getRegistry(null, null).getMBeanServer();
-
-            // Query hosts
-            String onStr = domain + ":type=Host,*";
-            ObjectName objectName = new ObjectName(onStr);
-            Set<ObjectInstance> set = mBeanServer.queryMBeans(objectName, null);
-            Iterator<ObjectInstance> iterator = set.iterator();
-            while (iterator.hasNext()) {
-                ObjectInstance oi = iterator.next();
-                registerHost(oi.getObjectName());
+            httpService = webContainer.getHttpService();
+            engine = webContainer.getEngine();
+            if (engine == null) {
+                logger.log(Level.SEVERE, rb.getString("mapperListener.cannotfindEngine"));
+                return;
             }
 
-            // Query contexts
-            onStr = domain + ":j2eeType=WebModule,*,J2EEServer=" + myInstance;
-            objectName = new ObjectName(onStr);
-            set = mBeanServer.queryMBeans(objectName, null);
-            iterator = set.iterator();
-            while (iterator.hasNext()) {
-                ObjectInstance oi = iterator.next();
-                registerContext(oi.getObjectName());
+            if (defaultHost != null) {
+                mapper.setDefaultHostName(defaultHost);
             }
 
-            // Query wrappers
-            onStr = domain + ":j2eeType=Servlet,*,J2EEServer=" + myInstance;
-            objectName = new ObjectName(onStr);
-            set = mBeanServer.queryMBeans(objectName, null);
-            iterator = set.iterator();
-            while (iterator.hasNext()) {
-                ObjectInstance oi = iterator.next();
-                registerWrapper(oi.getObjectName());
+            for (VirtualServer vs : httpService.getVirtualServer()) {
+                Container host = engine.findChild(vs.getId());
+                if (host instanceof StandardHost) {
+                    registerHost((StandardHost)host);
+                }  else {
+
+                }
+                for (Container context: host.findChildren()) {
+                    if (context instanceof StandardContext) {
+                        registerContext((StandardContext)context);
+                        for (Container wrapper : context.findChildren()) {
+                            if (wrapper instanceof StandardWrapper) {
+                                registerWrapper((StandardWrapper)wrapper);
+                            }
+                        }
+                    } else {
+
+                    }
+                }
             }
 
-            onStr = "JMImplementation:type=MBeanServerDelegate";
-            objectName = new ObjectName(onStr);
-            /* SJSAS 6313044
-            mBeanServer.addNotificationListener(objectName, this, null, null);
-            */
-            // START SJSAS 6313044
-            mBeanServer.addNotificationListener(objectName, this, this, null);
-            // END SJSAS 6313044
         } catch (Exception e) {
-            log.log(Level.WARNING, "Error registering contexts", e);
+            logger.log(Level.WARNING, "Error registering contexts", e);
         }
 
     }
@@ -254,8 +226,8 @@ public class MapperListener
     public boolean isNotificationEnabled(Notification notification) {
 
         if (notification instanceof MBeanServerNotification) {
-            ObjectName objectName = 
-                ((MBeanServerNotification) notification).getMBeanName();
+            ObjectName objectName =
+                    ((MBeanServerNotification) notification).getMBeanName();
 
             String otherDomain = objectName.getDomain();
             if (this.domain != null && !(this.domain.equals(otherDomain))) {
@@ -268,12 +240,10 @@ public class MapperListener
                 return false;
             }
         }
-
         return true;
-    
+
     }
     // END SJSAS 6313044
-
 
     // ------------------------------------------- NotificationListener Methods
 
@@ -281,132 +251,57 @@ public class MapperListener
     public void handleNotification(Notification notification,
                                    java.lang.Object handback) {
 
-        if (notification instanceof MBeanServerNotification) {
-            ObjectName objectName = 
-                ((MBeanServerNotification) notification).getMBeanName();
-            String j2eeType = objectName.getKeyProperty("j2eeType");
-            String engineName = null;
-            if (j2eeType != null) {
-                if ((j2eeType.equals("WebModule")) || 
-                    (j2eeType.equals("Servlet"))) {
-                    if (mBeanServer.isRegistered(objectName)) {
-                        /* SJSAS 6290785
-                        try {
-                            engineName = (String)
-                                mBeanServer.getAttribute(objectName, "engineName");
-                        } catch (Exception e) {
-                            // Ignore
-                        }
-                        */
-                        // START SJSAS 6290785
-                        MBeanInfo info = null;
-                        try {
-                            info = mBeanServer.getMBeanInfo(objectName);
-                        } catch (Exception e) {
-                            // Ignore
-                        } 
-                        if (info != null) {
-                            boolean hasEngineNameAttribute = false;
-                            MBeanAttributeInfo[] attrInfo = info.getAttributes();
-                            if (attrInfo != null) {
-                                for (int i=0; i<attrInfo.length; i++) {
-                                    if ("engineName".equals(
-                                                    attrInfo[i].getName())) {
-                                        hasEngineNameAttribute = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (hasEngineNameAttribute) {
-                                try {
-                                    engineName = (String)
-                                        mBeanServer.getAttribute(objectName,
-                                                                 "engineName");
-                                } catch (Exception e) {
-                                    // Ignore  
-                                }
-                            }
-                        }
-                        // END SJSAS 6290785
-                    }
+        if (notification.getType().equals("j2ee.object.created")) {
+            ContainerBase container = ((ContainerBase)notification.getSource());
+            if (container instanceof StandardHost) {
+                try {
+                    registerHost((StandardHost)container);
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Error registering Host " + container.getObjectName(), e);
+                }
+            } else if (container instanceof StandardContext) {
+                try {
+                    registerContext((StandardContext)container);
+                } catch (Throwable t) {
+                    throw new RuntimeException(
+                            "Error registering Context " + container.getObjectName(), t);
+                }
+            } else if (container instanceof StandardWrapper) {
+                try {
+                    registerWrapper((StandardWrapper)container);
+                 } catch (Throwable t) {
+                    throw new RuntimeException(
+                            "Error registering Wrapper " + container.getObjectName(), t);
                 }
             }
-
-            // At deployment time, engineName is always = null.
-            if ( (!"*".equals(domain)) &&
-                 ( !domain.equals(objectName.getDomain()) ) &&
-                 ( (!domain.equals(engineName) ) &&
-                   (engineName != null) ) )  {
-                return;
-            }
-
-            if (log.isLoggable(Level.FINE)) {
-                log.fine( "Handle " + objectName );
-            }
-
-            if (notification.getType().equals
-                (MBeanServerNotification.REGISTRATION_NOTIFICATION)) {
-                String type=objectName.getKeyProperty("type");
-                if( "Host".equals( type )) {
+        } else if (notification.getType().equals("j2ee.object.deleted")) {
+            ContainerBase container = ((ContainerBase)notification.getSource());
+            if (container instanceof StandardHost) {
+                try {
+                    unregisterHost(container.getJmxName());
+                } catch (Exception e) {
+                    throw new RuntimeException("" +
+                            "Error unregistering Host " + container.getObjectName(), e);
+                }
+            } else if (container instanceof StandardContext) {
+                try {
+                    unregisterContext(container.getJmxName());
+                } catch (Throwable t) {
+                    throw new RuntimeException(
+                            "Error unregistering webapp " + container.getObjectName(), t);
+                }
+            } else if (container instanceof StandardWrapper) {
+                ObjectName objectName = container.getJmxName();
+                String j2eeType = objectName.getKeyProperty("j2eeType");
+                if (Boolean.parseBoolean(objectName.getKeyProperty(" ")) &&
+                        j2eeType.equals("Servlet")) {
                     try {
-                        registerHost(objectName);
-                    } catch (Exception e) {
+                        unregisterOSGiWrapper(objectName);
+                     } catch (Throwable t) {
                         throw new RuntimeException(
-                                "Error registering Host " + objectName, e);  
-                    }
-                }
-    
-                if (j2eeType != null) {
-                    if (j2eeType.equals("WebModule")) {
-                        try {
-                            registerContext(objectName);
-                        } catch (Throwable t) {
-                            throw new RuntimeException(
-                                    "Error registering Context " + objectName,
-                                    t);
-                        }
-                    } else if (j2eeType.equals("Servlet")) {
-                        try {
-                            registerWrapper(objectName);
-                        } catch (Throwable t) {
-                            throw new RuntimeException(
-                                    "Error registering Wrapper " + objectName,
-                                    t);
-                        }
-                    }
-                }
-            } else if (notification.getType().equals
-                       (MBeanServerNotification.UNREGISTRATION_NOTIFICATION)) {
-                String type=objectName.getKeyProperty("type");
-                if( "Host".equals( type )) {
-                    try {
-                        unregisterHost(objectName);
-                    } catch (Exception e) {
-                        throw new RuntimeException(
-                                "Error unregistering Host " + objectName,
-                                e);  
-                    }
-                }
- 
-                if (j2eeType != null) {
-                    if (j2eeType.equals("WebModule")) {
-                        try {
-                            unregisterContext(objectName);
-                        } catch (Throwable t) {
-                            throw new RuntimeException(
-                                    "Error unregistering webapp " + objectName,
-                                    t);
-                        }
-                    } else if (Boolean.parseBoolean(objectName.getKeyProperty("osgi")) &&
-                            j2eeType.equals("Servlet")) {
-                        try {
-                            unregisterOSGiWrapper(objectName);
-                        } catch (Throwable t) {
-                            throw new RuntimeException(
-                                    "Error unregistering osgi wrapper " + objectName,
-                                    t);
-                        }
-                    }
+                                "Error unregistering osgi wrapper " + objectName, t);
+                     }
                 }
             }
         }
@@ -419,25 +314,25 @@ public class MapperListener
     /**
      * Register host.
      */
-    public void registerHost(ObjectName objectName)
+    public void registerHost(StandardHost host)
         throws Exception {
-        String name=objectName.getKeyProperty("host");
-        if( name != null ) {
 
-            Host host = (Host) mBeanServer.invoke(objectName,
-                                                  "findMappingObject",
-                                                  null,
-                                                  null);
-            if (host == null) {
-                throw new Exception("No host registered for " + objectName);
-            }
+        if (host == null) {
+            throw new Exception("No host registered for " + host);
+        }
+
+        if (host.getJmxName() == null) {
+            return;
+        }
+
+        String name = host.getName();
 
             // BEGIN S1AS 5000999
             /*
              * Register the given Host only if one of its associated network listener
              * names matches the network listener name of this MapperListener
              */
-            String[] nlNames = ((StandardHost) host).getNetworkListenerNames();
+            String[] nlNames = host.getNetworkListenerNames();
             boolean nameMatch = false;
             if (nlNames != null) {
                 for (String nlName : nlNames) {
@@ -448,10 +343,10 @@ public class MapperListener
                 }
             }
             if (!nameMatch) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("HTTP listener with network listener name " + networkListenerName
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("HTTP listener with network listener name " + networkListenerName
                              + " ignoring registration of host with object "
-                             + "name " + objectName + ", because none of the "
+                             + "name " + name + ", because none of the "
                              + "host's associated HTTP listeners matches "
                              + "this network listener name");
                 }
@@ -459,13 +354,13 @@ public class MapperListener
             }
 
             // nameMatch = true here, so nlNames != null
-            virtualServerListenerNames.put(objectName, nlNames);
+            virtualServerListenerNames.put(host.getJmxName(), nlNames);
             // END S1AS 5000999
 
             String[] aliases = host.findAliases();
 
             mapper.addHost(name, aliases, host);
-        }
+
     }
 
 
@@ -474,6 +369,7 @@ public class MapperListener
      */
     public void unregisterHost(ObjectName objectName)
         throws Exception {
+
         String name=objectName.getKeyProperty("host");
         // BEGIN S1AS 5000999
         if (name != null) {
@@ -500,27 +396,19 @@ public class MapperListener
     /**
      * Register context.
      */
-    private void registerContext(ObjectName objectName)
+    private void registerContext(StandardContext context)
         throws Exception {
 
-        StandardContext context = (StandardContext)
-            mBeanServer.invoke(objectName, "findMappingObject", null, null);
         if (context == null) {
-            throw new Exception("No context registered for " + objectName);
+            throw new Exception("No context registered for " + context);
+        }
+
+        ObjectName objectName = context.getJmxName();
+        if (objectName == null) {
+            return;
         }
 
         String name = objectName.getKeyProperty("name");
-        
-        // If the domain is the same with ours or the engine 
-        // name attribute is the same... - then it's ours
-        String targetDomain=objectName.getDomain();
-        if( ! domain.equals( targetDomain )) {
-            targetDomain = context.getEngineName();
-            if( ! domain.equals( targetDomain )) {
-                // not ours
-                return;
-            }
-        }
 
         String hostName = null;
         String contextName = null;
@@ -539,10 +427,10 @@ public class MapperListener
         if (contextName.equals("/")) {
             contextName = "";
         }
-
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(sm.getString("mapperListener.registerContext",
-                                  contextName));
+        String msg = rb.getString("mapperListener.registerContext");
+        msg = MessageFormat.format(msg, contextName);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(msg);
         }
 
         javax.naming.Context resources = context.findStaticResources();
@@ -590,11 +478,12 @@ public class MapperListener
         if (mappingData.context instanceof StandardContext &&
                 ((StandardContext)mappingData.context).getPaused()) {
             return;
-        } 
+        }
 
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(sm.getString("mapperListener.unregisterContext",
-                                  contextName));
+        String msg = rb.getString("mapperListener.unregisterContext");
+        msg = MessageFormat.format(msg, contextName);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(msg);
         }
 
         mapper.removeContext(hostName, contextName);
@@ -605,25 +494,12 @@ public class MapperListener
     /**
      * Register wrapper.
      */
-    private void registerWrapper(ObjectName objectName)
+    private void registerWrapper(StandardWrapper wrapper)
         throws Exception {
 
-        StandardWrapper wrapper = (StandardWrapper)
-            mBeanServer.invoke(objectName, "findMappingObject", null, null);
+        ObjectName objectName = wrapper.getJmxName();
         if (wrapper == null) {
             throw new Exception("No wrapper registered for " + objectName);
-        }
-    
-        // If the domain is the same with ours or the engine 
-        // name attribute is the same... - then it's ours
-        String targetDomain=objectName.getDomain();
-        if( ! domain.equals( targetDomain )) {
-            targetDomain= wrapper.getEngineName();
-            if( ! domain.equals( targetDomain )) {
-                // not ours
-                return;
-            }
-            
         }
 
         String wrapperName = objectName.getKeyProperty("name");
@@ -647,9 +523,10 @@ public class MapperListener
             contextName = "";
         }
 
-        if (log.isLoggable(Level.FINE)) {
-            log.fine(sm.getString("mapperListener.registerWrapper", 
-                                  wrapperName, contextName));
+        String msg = rb.getString("mapperListener.registerWrapper");
+        msg = MessageFormat.format(msg, wrapperName, contextName);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(msg);
         }
 
         String[] mappings = wrapper.findMappings();

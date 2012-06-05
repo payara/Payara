@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.web.WebContainer;
 import com.sun.enterprise.web.WebModule;
+import com.sun.enterprise.web.connector.MapperListener;
 import com.sun.enterprise.web.connector.extension.GrizzlyConfig;
 import com.sun.enterprise.web.connector.grizzly.DummyConnectorLauncher;
 import com.sun.enterprise.web.pwc.connector.coyote.PwcCoyoteRequest;
@@ -53,10 +54,11 @@ import org.glassfish.web.util.IntrospectionUtils;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
-import org.apache.catalina.connector.MapperListener;
 import org.glassfish.security.common.CipherInfo;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 
+import javax.management.Notification;
+import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.text.MessageFormat;
@@ -173,7 +175,12 @@ public class PECoyoteConnector extends Connector {
     /**
      * The root folder where application are deployed
      */
-    private String rootFolder = "";    
+    private String rootFolder = "";
+
+    /**
+     * Mapper listener.
+     */
+    protected MapperListener mapperListener;
     
 
     // --------------------------------------------- FileCache support --//
@@ -234,9 +241,7 @@ public class PECoyoteConnector extends Connector {
      */
     private String trustMaxCertLength;
 
-
     private WebContainer webContainer;
-
 
     private RequestProbeProvider requestProbeProvider;
 
@@ -526,7 +531,34 @@ public class PECoyoteConnector extends Connector {
     
     @Override
     public void start() throws LifecycleException {
-        super.start();  
+        super.start();
+
+        if( this.domain != null ) {
+            if (!"admin-listener".equals(getName())) {
+                // See IT 8255
+                mapper.removeContext(getDefaultHost(), "");
+                mapper.removeHost(getDefaultHost());
+            }
+            mapperListener.setDomain(domain);
+            // BEGIN S1AS 5000999
+            mapperListener.setNetworkListenerName(this.getName());
+            mapperListener.setDefaultHost(getDefaultHost());
+            // END S1AS 5000999
+            //mapperListener.setEngine( service.getContainer().getName() );
+            mapperListener.setInstanceName(getInstanceName());
+            mapperListener.init();
+            getService().getBroadcaster().addNotificationListener(mapperListener, mapperListener, null);
+            Notification notification =
+                    new Notification("chloe", this.getObjectName(), 0);
+            getService().getBroadcaster().sendNotification(notification);
+            try {
+                ObjectName mapperOname = createObjectName(this.domain, "Mapper");
+            } catch (Exception ex) {
+                log.log(Level.SEVERE,
+                        sm.getString("coyoteConnector.protocolRegistrationFailed"),
+                        ex);
+            }
+        }
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.initConfig();
             grizzlyMonitor.registerMonitoringLevelEvents();
@@ -703,6 +735,7 @@ public class PECoyoteConnector extends Connector {
     @Override
     public void initialize() throws LifecycleException {
         super.initialize();
+        mapperListener = new MapperListener(mapper, webContainer);
         // Set the monitoring.
         grizzlyMonitor = new GrizzlyConfig(webContainer, domain, getPort());
     }
@@ -832,8 +865,7 @@ public class PECoyoteConnector extends Connector {
     public void setTrustMaxCertLength(String trustMaxCertLength) {
         this.trustMaxCertLength = trustMaxCertLength;
         setProperty("trustMaxCertLength", trustMaxCertLength);
-    }  
-
+    }
 
     /**
      * Gets the MapperListener of this connector.

@@ -52,7 +52,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.j2ee.statistics.Stats;
 
-import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 import java.text.MessageFormat;
@@ -71,12 +70,6 @@ public class GrizzlyConfig implements MonitoringLevelListener{
     private final static Logger logger
         = LogDomains.getLogger(GrizzlyConfig.class, LogDomains.WEB_LOGGER);
     private static final ResourceBundle rb = logger.getResourceBundle();
-    
-    /**
-     * The mbean server used to lookup Grizzly.
-     */
-    private MBeanServer mBeanServer;
-
 
     /**
      * Is monitoring already started.
@@ -121,13 +114,6 @@ public class GrizzlyConfig implements MonitoringLevelListener{
 
         this.services = webContainer.getServerContext().getDefaultServices();
 
-        // get an instance of the MBeanServer
-        ArrayList servers = MBeanServerFactory.findMBeanServer(null);
-        if(!servers.isEmpty())
-            mBeanServer = (MBeanServer)servers.get(0);
-        else
-            mBeanServer = MBeanServerFactory.createMBeanServer();
-        
         grizzlyConfigList.add(this);
     }
 
@@ -226,10 +212,6 @@ public class GrizzlyConfig implements MonitoringLevelListener{
         try{
             String onStr = domain + ":type=Selector,name=http" + port;
             ObjectName objectName = new ObjectName(onStr);
-            if (mBeanServer.isRegistered(objectName)) {
-                mBeanServer.invoke(objectName,methodToInvoke,objects,
-                                   signature);
-            }
         } catch ( Exception ex ){
             String msg = rb.getString("grizzlyConfig.invokeMBeanException");
             msg = MessageFormat.format(msg, methodToInvoke); 

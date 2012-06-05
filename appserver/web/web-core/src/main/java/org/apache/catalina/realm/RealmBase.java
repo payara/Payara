@@ -61,7 +61,6 @@ package org.apache.catalina.realm;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.core.ContainerBase;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
@@ -70,11 +69,7 @@ import org.apache.catalina.util.HexUtils;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 
-import javax.management.Attribute;
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -104,7 +99,7 @@ import com.sun.enterprise.util.Utility;
  */
 
 public abstract class RealmBase
-    implements Lifecycle, Realm, MBeanRegistration {
+    implements Lifecycle, Realm {
 
     private static Logger log = Logger.getLogger(RealmBase.class.getName());
     
@@ -1378,9 +1373,6 @@ public abstract class RealmBase
             }
             return;
         }
-        if( !initialized ) {
-            init();
-        }
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
 
@@ -1427,19 +1419,7 @@ public abstract class RealmBase
     }
     
     public void destroy() {
-    
-        // unregister this realm
-        if ( oname!=null ) {   
-            try {
-                Registry.getRegistry(null, null).unregisterComponent(oname);
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine( "unregistering realm " + oname );   
-                }
-            } catch( Exception ex ) {   
-                log.log(Level.SEVERE, "Can't unregister realm " + oname, ex);
-            }      
-        }
-          
+        // no op
     }
 
     // ------------------------------------------------------ Protected Methods
@@ -1648,7 +1628,6 @@ public abstract class RealmBase
     protected String path;
     protected ObjectName oname;
     protected ObjectName controller;
-    protected MBeanServer mserver;
 
     public ObjectName getController() {
         return controller;
@@ -1669,78 +1648,6 @@ public abstract class RealmBase
     public String getType() {
         return type;
     }
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        domain=name.getDomain();
-
-        type=name.getKeyProperty("type");
-        host=name.getKeyProperty("host");
-        path=name.getKeyProperty("path");
-
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
-    }
-
-    protected boolean initialized=false;
-    
-    public void init() {
-        if( initialized && container != null ) return;
-        
-        initialized=true;
-        if( container== null ) {
-            ObjectName parent=null;
-            // Register with the parent
-            try {
-                if( host == null ) {
-                    // global
-                    parent=new ObjectName(domain +":type=Engine");
-                } else if( path==null ) {
-                    parent=new ObjectName(domain +
-                            ":type=Host,host=" + host);
-                } else {
-                    parent=new ObjectName(domain +":j2eeType=WebModule,name=//" +
-                            host + path);
-                }
-                if( mserver.isRegistered(parent ))  {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.fine("Register with " + parent);
-                    }
-                    mserver.setAttribute(parent, new Attribute("realm", this));
-                }
-            } catch (Exception e) {
-                if (log.isLoggable(Level.INFO)) {
-                    log.info("Parent not available yet: " + parent);  
-                }
-            }
-        }
-        
-        if( oname==null ) {
-            // register
-            try {
-                ContainerBase cb=(ContainerBase)container;
-                oname=new ObjectName(cb.getDomain()+":type=Realm" + cb.getContainerSuffix());
-                Registry.getRegistry(null, null).registerComponent(this, oname, null );
-                if (log.isLoggable(Level.FINE)) {
-                    log.fine("Register Realm "+oname);
-                }
-            } catch (Throwable e) {
-                log.log(Level.SEVERE,  "Can't register " + oname, e);
-            }
-        }
-
-    }
-
 
     // BEGIN IASRI 4808401, 4934562
     /**

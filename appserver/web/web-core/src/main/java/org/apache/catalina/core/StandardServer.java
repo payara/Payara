@@ -63,10 +63,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.deploy.NamingResources;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
-import org.apache.tomcat.util.modeler.Registry;
 
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -90,7 +87,7 @@ import java.util.logging.Logger;
  */
 
 public final class StandardServer
-    implements Lifecycle, Server, MBeanRegistration 
+    implements Lifecycle, Server
  {
     private static Logger log = Logger.getLogger(
         StandardServer.class.getName());
@@ -826,8 +823,6 @@ public final class StandardServer
         if( oname==null ) {
             try {
                 oname=new ObjectName( "Catalina:type=Server");
-                // Do not register unused tomcat mbeans
-                //Registry.getRegistry(null, null).registerComponent(this, oname, null );
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Error registering ",e);
             }
@@ -843,7 +838,6 @@ public final class StandardServer
     private String domain;
     private String suffix;
     private ObjectName oname;
-    private MBeanServer mserver;
 
     public ObjectName getObjectName() {
         return oname;
@@ -851,23 +845,6 @@ public final class StandardServer
 
     public String getDomain() {
         return domain;
-    }
-
-    public ObjectName preRegister(MBeanServer server,
-                                  ObjectName name) throws Exception {
-        oname=name;
-        mserver=server;
-        domain=name.getDomain();
-        return name;
-    }
-
-    public void postRegister(Boolean registrationDone) {
-    }
-
-    public void preDeregister() throws Exception {
-    }
-
-    public void postDeregister() {
     }
     
 }
