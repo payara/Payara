@@ -106,7 +106,7 @@ public abstract class PingNodeRemoteCommand implements AdminCommand {
                 nodeUtils.validate(theNode);
                 version = Strings.get("ping.glassfish.version",
                         theNode.getInstallDir(),
-                        nodeUtils.getGlassFishVersionOnNode(theNode));
+                        nodeUtils.getGlassFishVersionOnNode(theNode, context));
             }
             else {
                 // Just does a basic connection check
