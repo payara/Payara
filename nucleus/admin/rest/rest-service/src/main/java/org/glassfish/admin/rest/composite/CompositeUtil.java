@@ -41,6 +41,8 @@ package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +56,9 @@ import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -61,7 +66,6 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -72,17 +76,9 @@ import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.DLOAD;
-import static org.objectweb.asm.Opcodes.DRETURN;
 import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.FLOAD;
-import static org.objectweb.asm.Opcodes.FRETURN;
 import static org.objectweb.asm.Opcodes.GETFIELD;
-import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.IRETURN;
-import static org.objectweb.asm.Opcodes.LLOAD;
-import static org.objectweb.asm.Opcodes.LRETURN;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.PUTFIELD;
 import static org.objectweb.asm.Opcodes.RETURN;
@@ -93,7 +89,7 @@ import static org.objectweb.asm.Opcodes.V1_6;
  * @author jdlee
  */
 public class CompositeUtil {
-    private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
+    protected static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
     /**
      * This method will return a generated concrete class that implements the interface requested, as well as any
@@ -107,8 +103,7 @@ public class CompositeUtil {
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
-    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass,
-                                              Class<?>[] extensions) throws Exception {
+    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass, Class<?>[] extensions) throws Exception {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
@@ -144,35 +139,10 @@ public class CompositeUtil {
         return (T) generatedClasses.get(className).newInstance();
     }
 
-    private static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
-        for (Method method : iface.getMethods()) {
-            String name = method.getName();
-            final boolean isGetter = name.startsWith("get");
-            if (isGetter || name.startsWith("set")) {
-                name = name.substring(3);
-                Map<String, Object> property = properties.get(name);
-                if (property == null) {
-                    property = new HashMap<String, Object>();
-                    properties.put(name, property);
-                }
-
-                Attribute attr = method.getAnnotation(Attribute.class);
-                if (attr != null) {
-                    property.put("defaultValue", attr.defaultValue());
-                }
-                Class<?> type = isGetter
-                                ? method.getReturnType()
-                                : method.getParameterTypes()[0];
-                property.put("type", type);
-            }
-        }
-    }
-
-    // TODO: method enum?
     /**
      * Find and execute all resource extensions for the specified base resource and HTTP method
+     * TODO: method enum?
      *
-     * @param habitat
      * @param baseClass
      * @param data
      * @param method
@@ -185,18 +155,17 @@ public class CompositeUtil {
                 extensions.add(extension);
             }
         }
-        
+
         if ("get".equalsIgnoreCase(method)) {
             handleGetExtensions(extensions, data);
         } else if ("post".equalsIgnoreCase(method)) {
-             return handlePostExtensions(extensions, data);
+            return handlePostExtensions(extensions, data);
         }
 
         return void.class;
     }
 
-    public static ParameterMap addToParameterMap(ParameterMap parameters, String basePath,
-                                   Class<?> configBean, Object source) {
+    public static ParameterMap addToParameterMap(ParameterMap parameters, String basePath, Class<?> configBean, Object source) {
         String name;
         Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultBaseServiceLocator());
         for (Method cbMethod : configBean.getMethods()) {
@@ -238,13 +207,89 @@ public class CompositeUtil {
         return ar;
     }
 
-    private static void handleGetExtensions(List<RestExtension> extensions, Object data) {
+    public static <T> T hydrateClass(Class<T> modelClass, JSONObject json)  {
+        try {
+            T model = CompositeUtil.getModel(modelClass, modelClass, new Class[]{});
+            for (Method setter : getSetters(modelClass)) {
+                String name = setter.getName();
+                String attribute = name.substring(3,4).toLowerCase() + name.substring(4);
+                Type param0 = setter.getGenericParameterTypes()[0];
+                java.lang.Object o = json.get(attribute);
+                if (JSONArray.class.isAssignableFrom(o.getClass())) {
+                    JSONArray array = (JSONArray)o;
+                    List values = new ArrayList();
+                    Type type = Object.class;
+                    if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
+                        type = ((ParameterizedType) param0).getActualTypeArguments()[0];
+                    }
+
+                    for (int i = 0; i < array.length(); i++) {
+                        Object element = array.get(i);
+                        System.out.println(element.getClass());
+                        if (JSONObject.class.isAssignableFrom(element.getClass())) {
+                            values.add(hydrateClass((Class)type, (JSONObject)element));
+                        } else {
+                            values.add(element);
+                        }
+                    }
+                    setter.invoke(model, values);
+                } else if (JSONObject.class.isAssignableFrom(o.getClass())){
+                    setter.invoke(model, hydrateClass(param0.getClass(), (JSONObject) o));
+                } else {
+
+                    setter.invoke(model, o);
+                }
+            }
+            return model;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    protected static List<Method> getSetters(Class<?> clazz) {
+        List<Method> methods = new ArrayList<Method>();
+
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().startsWith("set")) {
+                methods.add(method);
+            }
+        }
+
+        return methods;
+    }
+
+    protected static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
+        for (Method method : iface.getMethods()) {
+            String name = method.getName();
+            final boolean isGetter = name.startsWith("get");
+            if (isGetter || name.startsWith("set")) {
+                name = name.substring(3);
+                Map<String, Object> property = properties.get(name);
+                if (property == null) {
+                    property = new HashMap<String, Object>();
+                    properties.put(name, property);
+                }
+
+                Attribute attr = method.getAnnotation(Attribute.class);
+                if (attr != null) {
+                    property.put("defaultValue", attr.defaultValue());
+                }
+                Class<?> type = isGetter
+                                ? method.getReturnType()
+                                : method.getParameterTypes()[0];
+                property.put("type", type);
+            }
+        }
+    }
+
+    protected static void handleGetExtensions(List<RestExtension> extensions, Object data) {
         for (RestExtension re : extensions) {
             re.get(data);
         }
     }
 
-    private static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
+    protected static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
         ParameterMap parameters = new ParameterMap();
         for (RestExtension re : extensions) {
             parameters.mergeAll(re.post(data));
@@ -265,7 +310,7 @@ public class CompositeUtil {
                : ("L" + getInternalName(type.getName()) + ";");
     }
 
-    private static String getPropertyName(String name) {
+    protected static String getPropertyName(String name) {
         return name.substring(0,1).toLowerCase() + name.substring(1);
     }
 
@@ -318,7 +363,7 @@ public class CompositeUtil {
         method.visitEnd();
     }
 
-    /*
+    /**
      * This method generates the byte code to set the default value for a given field. Efforts are made to determine the
      * best way to create the correct value. If the field is a primitive, the one-arg, String constructor of the
      * appropriate wrapper class is called to generate the value. If the field is not a primitive, a one-arg, String

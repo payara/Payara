@@ -70,7 +70,7 @@
     <property name="ant.contrib.url"
               value="http://mirrors.ibiblio.org/pub/mirrors/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"/>
     <property name="maven.ant.tasks.url"
-              value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks/2.1.1/maven-ant-tasks-2.1.1.jar"/>
+              value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks/2.1.3/maven-ant-tasks-2.1.3.jar"/>
     <property name="glassfish.dist.url"
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
 
@@ -150,12 +150,11 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <artifact:mvn pom="pom.xml" mavenHome="${env.MAVEN_HOME}" fork="true" failonerror="false" resultproperty="test.result">
+                <artifact:mvn pom="pom.xml" mavenHome="${env.MAVEN_HOME}" fork="true" failonerror="false" resultproperty="test.result" localRepository="m2">
                     <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
-                    <arg value="-Dmaven.repo.local=m2"/>
                     <arg value="-Prest-devtest"/>
                     <arg value="test"/>
                 </artifact:mvn>

@@ -19,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
@@ -36,33 +38,24 @@ import org.glassfish.admin.rest.composite.RestModel;
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class JsonPojoProvider implements MessageBodyReader<RestModel> {
-
+public class JsonPojoProvider<T extends RestModel> implements MessageBodyReader<T> {
     @Override
-    public RestModel readFrom(Class<RestModel> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-                              MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
-        StringBuilder sb = new StringBuilder();
-        String line = in.readLine();
-        while (line != null) {
-            sb.append(line);
-            line = in.readLine();
-        }
-        RestModel model = null;
+    public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException {
         try {
-            model = CompositeUtil.getModel(type, getClass(), new Class[] {type});
-            JSONObject object = new JSONObject(sb.toString());
-            Iterator iter = object.keys();
-            while (iter.hasNext()) {
-                String key = (String) iter.next();
-                Object value = getRealObject(object.get(key));
-                setValue(model, key, value);
+            BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
+            StringBuilder sb = new StringBuilder();
+            String line = in.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = in.readLine();
             }
-            System.out.println(model);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+
+            JSONObject o = new JSONObject(sb.toString());
+            T model = CompositeUtil.hydrateClass(type, o);
+            return (T)model;
+        } catch (Exception e) {
+            throw new WebApplicationException(e);
         }
-        return model;
     }
 
     @Override
@@ -80,8 +73,7 @@ public class JsonPojoProvider implements MessageBodyReader<RestModel> {
         Method method = null;
         try {
             method = model.getClass().getMethod(setterName, value.getClass());
-        } catch (NoSuchMethodException ex) {
-        } catch (SecurityException ex) {
+        } catch (Exception ex) {
         }
         if (method == null) {
             Method[] methods = model.getClass().getMethods();
