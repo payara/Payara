@@ -150,10 +150,11 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <artifact:mvn pom="pom.xml" mavenHome="${env.MAVEN_HOME}" fork="true" failonerror="false" resultproperty="test.result" localRepository="m2">
+                <artifact:mvn pom="pom.xml" mavenHome="${env.MAVEN_HOME}" fork="true" failonerror="false" resultproperty="test.result">
                     <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
+                    <arg value="-DlocalRepository=m2"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
                     <arg value="-Prest-devtest"/>
                     <arg value="test"/>
