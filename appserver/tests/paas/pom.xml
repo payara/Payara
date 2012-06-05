@@ -76,6 +76,7 @@
         		<module>lazy-shared-service-test</module>
 			<module>external-db-service</module>
 			<module>appscoped-db-with-resources-xml</module>
+			<module>basic-bookstore-dns</module>
 	<!--        <module>mq-shared-service-test</module>-->
 
     		</modules>
@@ -209,6 +210,8 @@
                         		</reportsDirectory>
                        			<reportsDirectory>${env.PAAS_TESTS_HOME}/mq-shared-service-test/target/surefire-reports
                        			</reportsDirectory>
+					<reportsDirectory>${env.PAAS_TESTS_HOME}/basic-bookstore-dns/target/surefire-reports
+					</reportsDirectory>
                     		</reportsDirectories>
                 		</configuration>
            		   </plugin>
