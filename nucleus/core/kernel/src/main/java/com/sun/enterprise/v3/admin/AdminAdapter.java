@@ -113,7 +113,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     private static final GFBase64Decoder decoder = new GFBase64Decoder();
     private static final String BASIC = "Basic ";
 
-    private static final String SET_COOKIE2_HEADER = "Set-Cookie2";
+    private static final String SET_COOKIE_HEADER = "Set-Cookie";
 
     public static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
@@ -269,7 +269,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             String commandName = req.getRequestURI().substring(getContextRoot().length() + 1);
             //Check session routing for commands that have @ExecuteOn(RuntimeType.SINGLE_INSTANCE)
             if ( isSingleInstanceCommand(commandName)) {
-                res.addHeader(SET_COOKIE2_HEADER, getCookieHeader(req));
+                res.addHeader(SET_COOKIE_HEADER, getCookieHeader(req));
             }
             outboundPayload.writeTo(res.getOutputStream());
             res.getOutputStream().flush();
@@ -295,7 +295,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             String headerValue = nameValuePair[1];
 
             int index = headerValue.lastIndexOf('.');
-            return  headerValue.substring(index+1,headerValue.lastIndexOf("\""))
+            return  headerValue.substring(index+1)
                     .equals(server.getName())? true : false;
 
         }
