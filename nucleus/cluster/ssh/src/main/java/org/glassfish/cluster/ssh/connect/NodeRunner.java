@@ -136,6 +136,12 @@ public class NodeRunner {
 
     public int runAdminCommandOnNode(Node node, StringBuilder output,
             boolean waitForReaderThreads,
+            List<String> args) throws SSHCommandExecutionException, ProcessManagerException {
+        return runAdminCommandOnNode(node, output, waitForReaderThreads, args, null);
+    }
+    
+    public int runAdminCommandOnNode(Node node, StringBuilder output,
+            boolean waitForReaderThreads,
             List<String> args,
             AdminCommandContext context) throws
             SSHCommandExecutionException,
@@ -150,7 +156,7 @@ public class NodeRunner {
 
         final List<String> stdinLines = new ArrayList<String>();
         stdinLines.add(AsadminInput.versionSpecifier());
-        stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken(context.getSubject()));
+        stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken((context != null ? context.getSubject() : null)));
         args.add(0, "--interactive=false");            // No prompting!
 
         if (node.isLocal()) {
