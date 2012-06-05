@@ -497,9 +497,13 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     private void registerWrapper(StandardWrapper wrapper)
         throws Exception {
 
-        ObjectName objectName = wrapper.getJmxName();
         if (wrapper == null) {
-            throw new Exception("No wrapper registered for " + objectName);
+            throw new Exception("No wrapper registered for " + wrapper);
+        }
+
+        ObjectName objectName = wrapper.getJmxName();
+        if (objectName == null) {
+            return;
         }
 
         String wrapperName = objectName.getKeyProperty("name");
