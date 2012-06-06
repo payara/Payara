@@ -242,12 +242,10 @@ public class CreateJMSResource implements AdminCommand {
                     aoAttrList.set("property", propString);
                 }catch (Exception e)
                 {
-                    if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                    report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateConnectorResource",
-                            "Unable to create connector resource."));
+                    report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateAdminObjectWithRootCause",
+                            "Unable to create admin object. Reason: " + e.getMessage(), e.getMessage()));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
-                 }
                 }
                 // create admin object
                 aoAttrList.set(DEFAULT_OPERAND,  jndiName);
@@ -451,6 +449,8 @@ public class CreateJMSResource implements AdminCommand {
             if (!isSyntaxValid(providedDestinationName)) {
                 throw new Exception(localStrings.getLocalString(
                       "admin.mbeans.rmb.destination_name_invalid",
+                      "Destination Resource " + jndiName + 
+                      " has an invalid destination name " + providedDestinationName,
                       jndiName, providedDestinationName));
             }
 	} else {
