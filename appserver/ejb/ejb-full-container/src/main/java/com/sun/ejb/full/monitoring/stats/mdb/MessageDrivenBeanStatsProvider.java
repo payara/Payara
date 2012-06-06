@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.monitoring.stats.mdb;
+package com.sun.ejb.full.monitoring.stats.mdb;
 
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import org.glassfish.external.probe.provider.annotations.*;

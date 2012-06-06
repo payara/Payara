@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers.mdb;
+package com.sun.ejb.full.containers.mdb;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,7 +82,7 @@ import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.ejb.monitoring.stats.mdb.MessageDrivenBeanStatsProvider;
+import com.sun.ejb.full.monitoring.stats.mdb.MessageDrivenBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
@@ -523,8 +523,7 @@ public final class MessageBeanContainer extends BaseContainer implements
                     invocationManager.preInvoke(inv);
 
                     beanContext.setInEjbRemove(true);
-                    interceptorManager.intercept(CallbackType.PRE_DESTROY,
-                            beanContext);
+                    intercept(CallbackType.PRE_DESTROY, beanContext);
 
                     cleanupInstance(beanContext);
                     ejbProbeNotifier.ejbBeanDestroyedEvent(getContainerId(),
@@ -730,7 +729,7 @@ public final class MessageBeanContainer extends BaseContainer implements
             context.setContextCalled();
 
             // Call ejbCreate OR @PostConstruct on the bean.
-            interceptorManager.intercept(CallbackType.POST_CONSTRUCT, context);
+            intercept(CallbackType.POST_CONSTRUCT, context);
 
             ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
                                 containerInfo.appName, containerInfo.modName,

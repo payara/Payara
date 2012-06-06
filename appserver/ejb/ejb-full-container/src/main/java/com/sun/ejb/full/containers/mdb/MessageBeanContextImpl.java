@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers.mdb;
+package com.sun.ejb.full.containers.mdb;
 
 import javax.ejb.*;
 
