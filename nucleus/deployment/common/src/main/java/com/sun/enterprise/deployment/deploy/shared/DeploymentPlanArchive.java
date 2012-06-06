@@ -68,7 +68,7 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
     JarFile jarFile = null;
     
     // original archive uri
-    URI uri;
+    URI uri = null;
     
     // cached list of elements
     Vector elements=null;
@@ -241,7 +241,9 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
         DeploymentPlanArchive dpArchive = new DeploymentPlanArchive();
         dpArchive.jarFile = new JarFile(new File(uri));
         try {
-            dpArchive.uri = new URI("file", uri.getSchemeSpecificPart() + File.separator + name, null);
+            if (uri != null) {
+                dpArchive.uri = new URI("file", uri.getSchemeSpecificPart() + File.separator + name, null);
+            }
         } catch (URISyntaxException e) {
             //
         }

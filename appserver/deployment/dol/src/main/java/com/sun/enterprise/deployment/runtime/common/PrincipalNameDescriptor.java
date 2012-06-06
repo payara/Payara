@@ -56,7 +56,7 @@ public class PrincipalNameDescriptor extends Descriptor {
                 "org.glassfish.security.common.PrincipalImpl";
     private String principalName = null;
     private String className = null;
-    private ClassLoader cLoader = null;
+    private transient ClassLoader cLoader = null;
 
     public PrincipalNameDescriptor() {}
 

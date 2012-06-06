@@ -149,7 +149,7 @@ public class Application extends BundleDescriptor
     private boolean isDirty;
 
     // data structure to map roles to users and groups
-    private SecurityRoleMapper roleMapper;
+    private transient SecurityRoleMapper roleMapper;
 
     // IASRI 4648645 - application registration name
     /**
@@ -169,7 +169,7 @@ public class Application extends BundleDescriptor
     private String realm;
     
     @Inject
-    private SecurityRoleMapperFactory securityRoleMapperFactory;
+    private transient SecurityRoleMapperFactory securityRoleMapperFactory;
 
     /**
      * A flag to store the resolved keepstate value for the current application.
@@ -180,7 +180,7 @@ public class Application extends BundleDescriptor
 
     // Physical entity manager factory corresponding to the unit name of 
     // each application-level persistence unit.  Only available at runtime.
-    private Map<String, EntityManagerFactory> entityManagerFactories =
+    private transient Map<String, EntityManagerFactory> entityManagerFactories =
             new HashMap<String, EntityManagerFactory>();
 
     private Set<String> entityManagerFactoryUnitNames =

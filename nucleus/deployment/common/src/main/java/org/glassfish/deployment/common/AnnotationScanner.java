@@ -57,9 +57,6 @@ import com.sun.logging.LogDomains;
 
 public class AnnotationScanner implements ClassVisitor {
 
-    protected String className;
-    protected String signature;
-
     final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     public void visit(int version,
@@ -68,8 +65,6 @@ public class AnnotationScanner implements ClassVisitor {
            String signature,
            String superName,
            String[] interfaces) {
-
-        this.className = name;
     }
 
     public void visitSource(String s, String s1) {}
