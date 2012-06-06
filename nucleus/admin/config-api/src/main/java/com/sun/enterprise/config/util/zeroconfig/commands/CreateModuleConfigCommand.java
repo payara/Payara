@@ -60,14 +60,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.config.*;
-
 import javax.inject.Inject;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.*;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -170,7 +164,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
             }
         } else if (serviceName != null) {
             String className = ZeroConfigUtils.convertConfigElementNameToClassNAme(serviceName);
-            Class configBeanType = getClassFor(className, serviceName, report);
+            Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -202,30 +196,30 @@ public final class CreateModuleConfigCommand implements AdminCommand {
     }
 
     private String getDefaultConfigFor(Class configBeanType, ActionReport report, String serviceName) throws Exception {
-        if (getDefaultSnippetUrl(configBeanType) == null) {
+        if (ZeroConfigUtils.getDefaultSnippetUrl(configBeanType) == null) {
             report.setMessage(localStrings.getLocalString("create.module.config.config.embedded.in.class", DEFAULT_FORMAT, serviceName));
-            return serializeConfigBeanByType(configBeanType);
+            return ZeroConfigUtils.serializeConfigBeanByType(configBeanType, habitat);
         } else {
-            InputStream st = getDefaultSnippetUrl(configBeanType).openStream();
+            InputStream st = ZeroConfigUtils.getDefaultSnippetUrl(configBeanType).openStream();
             return ZeroConfigUtils.streamToString(st, "utf-8");
         }
     }
 
     private boolean createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
-        boolean defaultConfigCreated=false;
+        boolean defaultConfigCreated = false;
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
             if (c.checkIfConfigExists(configBeanType)) {
                 report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
             c.getExtensionByType(configBeanType);
-            defaultConfigCreated=true;
+            defaultConfigCreated = true;
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfConfigExists(configBeanType)) {
                 report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
             domain.getExtensionByType(configBeanType);
-            defaultConfigCreated=true;
+            defaultConfigCreated = true;
         }
         return defaultConfigCreated;
     }
@@ -240,43 +234,5 @@ public final class CreateModuleConfigCommand implements AdminCommand {
         //reburies scanning and finding all snippets and then checking which
         // ones are not present in the domain.xml and then returning them in one go.
         return "";
-    }
-
-    private <P extends ConfigBeanProxy> URL getDefaultSnippetUrl(Class<P> configBean) {
-        String xmlSnippetFileLocation = "META-INF/" + configBean.getSimpleName() + ".xml";
-        return configBean.getClassLoader().getResource(xmlSnippetFileLocation);
-    }
-
-    private Class getClassFor(String className, String serviceName, ActionReport report) {
-        ConfigInjector injector = habitat.getComponent(ConfigInjector.class, serviceName);
-        if (injector != null) {
-            String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
-            try {
-                return injector.getClass().getClassLoader().loadClass(clzName);
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private String serializeConfigBeanByType(Class configBeanType) {
-        ConfigBeanProxy configBeanProxy = (ConfigBeanProxy) habitat.getComponent(configBeanType);
-        return serializeConfigBean(configBeanProxy);
-    }
-
-    private String serializeConfigBean(ConfigBeanProxy configBean) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
-            IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
-            Dom configBeanDom =  Dom.unwrap(configBean);
-            configBeanDom.writeTo(configBeanDom.model.getTagName(), indentingXMLStreamWriter);
-            indentingXMLStreamWriter.close();
-        } catch (XMLStreamException e) {
-            return null;
-        }
-        return bos.toString();
     }
 }

@@ -40,17 +40,22 @@
 
 package com.sun.enterprise.config.util.zeroconfig;
 
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigInjector;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -125,4 +130,48 @@ public final class ZeroConfigUtils {
         }
         return className.toString();
     }
+
+    public static <P extends ConfigBeanProxy> URL getDefaultSnippetUrl(Class<P> configBean) {
+            String xmlSnippetFileLocation = "META-INF/" + configBean.getSimpleName() + ".xml";
+            return configBean.getClassLoader().getResource(xmlSnippetFileLocation);
+        }
+
+    public static Class getClassFor(String serviceName, Habitat habitat) {
+        String className = convertConfigElementNameToClassNAme(serviceName);
+            ConfigInjector injector = habitat.getComponent(ConfigInjector.class, serviceName);
+            if (injector != null) {
+                String clzName = injector.getClass().getName().substring(0, injector.getClass().getName().length() - 8);
+                try {
+                    return injector.getClass().getClassLoader().loadClass(clzName);
+                } catch (ClassNotFoundException e) {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+    public static String serializeConfigBeanByType(Class configBeanType, Habitat habitat) {
+            ConfigBeanProxy configBeanProxy = getConfigBeanInstanceFor(configBeanType,habitat);
+            return serializeConfigBean(configBeanProxy);
+        }
+
+    public static ConfigBeanProxy getConfigBeanInstanceFor(Class configBeanType, Habitat habitat){
+        return (ConfigBeanProxy) habitat.getComponent(configBeanType);
+
+    }
+
+    public static String serializeConfigBean(ConfigBeanProxy configBean) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
+            try {
+                XMLStreamWriter writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
+                IndentingXMLStreamWriter indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
+                Dom configBeanDom =  Dom.unwrap(configBean);
+                configBeanDom.writeTo(configBeanDom.model.getTagName(), indentingXMLStreamWriter);
+                indentingXMLStreamWriter.close();
+            } catch (XMLStreamException e) {
+                return null;
+            }
+            return bos.toString();
+        }
 }
