@@ -40,15 +40,14 @@
 
 package com.sun.enterprise.naming;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.Hashtable;
-import java.util.logging.Level;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import com.sun.enterprise.naming.impl.SerialInitContextFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
+import org.jvnet.hk2.component.PreDestroy;
+
 import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -56,12 +55,13 @@ import javax.naming.NoInitialContextException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
-
-import com.sun.enterprise.naming.impl.SerialInitContextFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.jvnet.hk2.annotations.Service;
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Hashtable;
+import java.util.logging.Level;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
 
@@ -80,7 +80,7 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
  */
 @Service
 @StartupRunLevel
-public class GlassFishNamingBuilder implements InitialContextFactoryBuilder
+public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, PostConstruct, PreDestroy
 {
     @LogMessageInfo(message = "Failed to load {0} using CommonClassLoader")
     public static final String FAILED_TO_LOAD_CLASS = "AS-NAMING-00001";
@@ -156,7 +156,6 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder
         }
     }
 
-    @PostConstruct
     public void postConstruct()
     {
         try
@@ -195,7 +194,6 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder
         }
     }
 
-    @PreDestroy
     public void preDestroy()
     {
         SecurityManager sm = System.getSecurityManager();
