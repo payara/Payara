@@ -63,6 +63,7 @@ import java.lang.IllegalArgumentException;
 /**
  * @author Kedar
  * @version 1.0
+ * @deprecated Use ProcessManager instead
  */
 public class ProcessExecutor {
     public static final long kDefaultTimeoutMillis = 600000;
