@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -104,11 +104,7 @@ public abstract class AbstractSessionContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getEJBTimerService();
-        if (timerService == null) {
-            throw new EJBException("EJB Timer service not available");
-        }
-
+        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getValidEJBTimerService();
         return new EJBTimerServiceWrapper(timerService, this);
     }
 

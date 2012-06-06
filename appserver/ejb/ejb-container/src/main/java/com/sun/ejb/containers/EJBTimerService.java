@@ -1207,7 +1207,7 @@ public class EJBTimerService {
             }
 
         } catch(Exception e) {
-            logger.log(Level.FINE, "callEJBTimeout threw exception " +
+            logger.log(Level.INFO, "callEJBTimeout threw exception " +
                        "for timer id " + timerId , e);
             expungeTimer(timerId, true);
         } finally {

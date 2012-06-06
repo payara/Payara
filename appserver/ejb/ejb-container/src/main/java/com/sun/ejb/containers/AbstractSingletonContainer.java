@@ -468,8 +468,7 @@ public abstract class AbstractSingletonContainer
 
             context.setInstanceKey(singletonInstanceKey);
 
-            interceptorManager.intercept(
-                    CallbackType.POST_CONSTRUCT, context);
+            intercept(CallbackType.POST_CONSTRUCT, context);
 
 
         } catch ( Throwable th ) {
@@ -682,8 +681,7 @@ public abstract class AbstractSingletonContainer
                     ejbInv.invocationInfo = preDestroyInvInfo;
                     preInvokeTx(ejbInv);
 
-                    interceptorManager.intercept(
-                            CallbackType.PRE_DESTROY, singletonCtx);
+                    intercept(CallbackType.PRE_DESTROY, singletonCtx);
 
                 } catch ( Throwable t ) {
                     if( ejbInv != null ) {

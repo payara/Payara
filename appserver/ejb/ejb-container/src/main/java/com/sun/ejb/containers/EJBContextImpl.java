@@ -223,15 +223,6 @@ public abstract class EJBContextImpl
         return jcdiInjectionContext;
     }
 
-
-    /**
-     * Returns true if this context has NOT progressed past its initial
-     * state.  The point at which this happens is container-specific.
-     */
-    boolean isUnitialized() {
-        return (state == EJBContextImpl.BeanState.CREATED);
-    }
-
     public long getLastTimeUsed() {
         return lastTimeUsed;
     }

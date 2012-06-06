@@ -1678,7 +1678,7 @@ public final class StatefulSessionContainer
         }
     }
 
-    void postInvokeTx(EjbInvocation inv) throws Exception {
+    protected void postInvokeTx(EjbInvocation inv) throws Exception {
 
         // Intercept postInvokeTx call to perform any @Remove logic
         // before tx commits.  super.postInvokeTx() must *always*
@@ -2900,7 +2900,7 @@ public final class StatefulSessionContainer
             enlistExtendedEntityManagers(ctx);
         }
 
-        interceptorManager.intercept(callbackType, ctx);
+        intercept(callbackType, ctx);
 
         return inTx;
     }

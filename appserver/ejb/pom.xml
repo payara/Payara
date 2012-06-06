@@ -59,6 +59,7 @@
         <module>ejb-internal-api</module>
         <module>javax.ejb</module>
         <module>ejb-container</module>
+        <module>ejb-full-container</module>
         <module>ejb-timer-databases</module>
         <module>ejb-timer-service-app</module>
         <module>ejb-connector-l10n</module>

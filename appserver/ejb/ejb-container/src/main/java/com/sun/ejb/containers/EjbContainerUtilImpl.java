@@ -54,6 +54,7 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
+import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -62,7 +63,6 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.ActionReport;
-import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -70,15 +70,16 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 
-import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.Habitat;
-import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
+import javax.ejb.EJBException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -99,6 +100,7 @@ import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
@@ -182,11 +184,11 @@ public class EjbContainerUtilImpl
     Domain domain;
 
     @Inject
-    Provider<CMPDeployer> cmpDeployerProvider;
+    Provider<Deployment> deploymentProvider;
 
     @Inject
-    Provider<Deployment> deploymentProvider;
-    
+    private Provider<CMPDeployer> cmpDeployerProvider;
+
     private  static EjbContainerUtil _me;
 
     public String getHAPersistenceType() {
@@ -275,6 +277,15 @@ public class EjbContainerUtilImpl
 
     public  EJBTimerService getEJBTimerService() {
         return getEJBTimerService(null);
+    }
+
+    public EJBTimerService getValidEJBTimerService() {
+        getEJBTimerService();
+        if (_ejbTimerService == null) {
+            throw new EJBException("EJB Timer service not available");
+        }
+
+        return _ejbTimerService;
     }
 
     public  boolean isEJBTimerServiceLoaded() {

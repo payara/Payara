@@ -47,7 +47,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.sun.ejb.Container;
-import com.sun.ejb.EntityContainerProvider;
+import com.sun.ejb.ContainerProvider;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainer;
@@ -57,10 +57,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import org.jvnet.hk2.annotations.Service;
 
 @Service
-public final class EntityContainerProviderImpl implements EntityContainerProvider {
-
-    @Inject
-    private Provider<EntityContainerProvider> entityContainerProvider;
+public final class EntityContainerProviderImpl implements ContainerProvider {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private EjbContainer ejbContainerDesc;
@@ -68,43 +65,42 @@ public final class EntityContainerProviderImpl implements EntityContainerProvide
     private static final Logger _logger = 
     	LogDomains.getLogger(EntityContainerProviderImpl.class, LogDomains.EJB_LOGGER);
     
-    public Container getEntityContainer(EjbDescriptor ejbDescriptor,
+    public Container getContainer(EjbDescriptor ejbDescriptor,
 				     ClassLoader loader) throws Exception {
         Container container = null;
 
         // instantiate container class
-        if (!(ejbDescriptor instanceof EjbEntityDescriptor)) {
-            throw new RuntimeException("Wrong descriptor type: expected EjbEntityDescriptor, got " +
-                  ejbDescriptor.getClass().getName());
-        } else if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
-                .isIsReadOnlyBean()) { 
+        if (ejbDescriptor instanceof EjbEntityDescriptor) {
+            if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
+                    .isIsReadOnlyBean()) { 
 
-            EjbEntityDescriptor robDesc = (EjbEntityDescriptor) ejbDescriptor;                    
-            container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
-        } else {
-            String commitOption = null;
-            IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
-                    getIASEjbExtraDescriptors();
-            if (iased != null) {
-                commitOption = iased.getCommitOption();    	
-            }
-            if (commitOption == null) {
-                commitOption = ejbContainerDesc.getCommitOption();  
-            }
-            if (commitOption.equals("A")) {
-                _logger.log(Level.WARNING, 
+                EjbEntityDescriptor robDesc = (EjbEntityDescriptor) ejbDescriptor;                    
+                container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
+            } else {
+                String commitOption = null;
+                IASEjbExtraDescriptors iased = ((EjbEntityDescriptor)ejbDescriptor).
+                        getIASEjbExtraDescriptors();
+                if (iased != null) {
+                    commitOption = iased.getCommitOption();    	
+                }
+                if (commitOption == null) {
+                    commitOption = ejbContainerDesc.getCommitOption();  
+                }
+                if (commitOption.equals("A")) {
+                    _logger.log(Level.WARNING, 
                             "entitybean.container.commit_option_A_not_supported",
                             new Object []{ejbDescriptor.getName()}
                             );
-                container = new EntityContainer(ejbDescriptor, loader);
-            } else if (commitOption.equals("C")) {
-                _logger.log(Level.FINE, "Using commit option C for: " 
+                    container = new EntityContainer(ejbDescriptor, loader);
+                } else if (commitOption.equals("C")) {
+                    _logger.log(Level.FINE, "Using commit option C for: " 
                             + ejbDescriptor.getName());
-                container = new CommitCEntityContainer(ejbDescriptor, loader);
-            } else {
-                _logger.log(Level.FINE,"Using commit option B for: " + 
+                    container = new CommitCEntityContainer(ejbDescriptor, loader);
+                } else {
+                    _logger.log(Level.FINE,"Using commit option B for: " + 
                             ejbDescriptor.getName());
-                container = new EntityContainer(ejbDescriptor, loader);
+                    container = new EntityContainer(ejbDescriptor, loader);
+                }
             }
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -225,7 +225,7 @@ public abstract class EjbMonitoringStatsProvider {
         return removeStat.getStatistic();
     }
 
-    void log(String mname, String provider) {
+    protected void log(String mname, String provider) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("===> In " + provider + " for: [" 
                     + mname + "] " + appName + "::" + moduleName + "::" + beanName);

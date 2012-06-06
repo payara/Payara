@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,55 +38,14 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb;
 
-import java.lang.reflect.Method;
-import com.sun.appserv.connectors.internal.api.ResourceHandle;
-import org.glassfish.ejb.api.MessageBeanListener;
-import com.sun.ejb.containers.MessageBeanContainer.MessageDeliveryType;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.jvnet.hk2.annotations.Contract;
 
+@Contract
+public interface ContainerProvider {
 
-/**
- *
- *
- * @author Kenneth Saks
- */
-public class MessageBeanListenerImpl implements MessageBeanListener {
-
-    private MessageBeanContainer container_;
-    private ResourceHandle resourceHandle_;
-
-    MessageBeanListenerImpl(MessageBeanContainer container, 
-                            ResourceHandle handle) {
-        container_ = container;
-
-        // can be null
-        resourceHandle_ = handle;
-    }
-
-    public void setResourceHandle(ResourceHandle handle) {
-        resourceHandle_ = handle;
-    }
-
-    public ResourceHandle getResourceHandle() {
-        return resourceHandle_;
-    }
-
-    public void beforeMessageDelivery(Method method, boolean txImported) {
-        container_.onEnteringContainer();   //Notify Callflow Agent
-        container_.beforeMessageDelivery(method, MessageDeliveryType.Message, txImported, resourceHandle_);
-    }
-    
-    public Object deliverMessage(Object[] params) throws Throwable {
-        return container_.deliverMessage(params);
-    }
-
-    public void afterMessageDelivery() {
-        try {
-            container_.afterMessageDelivery(resourceHandle_);
-        } finally {
-            container_.onLeavingContainer();    //Notify Callflow Agent
-        }
-    }
+    Container getContainer(EjbDescriptor descriptor, ClassLoader loader) throws Exception;
 
 }

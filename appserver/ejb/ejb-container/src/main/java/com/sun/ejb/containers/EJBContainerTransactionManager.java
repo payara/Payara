@@ -53,6 +53,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+import javax.transaction.UserTransaction;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.EjbInvocation;
@@ -65,6 +66,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 
 /**
  * Container support for handling transactions
@@ -75,6 +77,11 @@ public class EJBContainerTransactionManager {
 
     private static final Logger _logger =
             EjbContainerUtilImpl.getInstance().getLogger();
+
+    private static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(EJBContainerTransactionManager.class);
+
+    private static final String USER_TX = "java:comp/UserTransaction";
 
     private EjbContainerUtil ejbContainerUtilImpl = EjbContainerUtilImpl.getInstance();
 
@@ -419,7 +426,7 @@ public class EJBContainerTransactionManager {
     /**
      * Handle transaction requirements, if any, after invoking bean method
      */
-    void postInvokeTx(EjbInvocation inv) throws Exception {
+    protected void postInvokeTx(EjbInvocation inv) throws Exception {
          
         InvocationInfo invInfo = inv.invocationInfo;
         Throwable exception = inv.exception;
@@ -539,7 +546,29 @@ public class EJBContainerTransactionManager {
         // XXX If any of the TM commit/rollback/suspend calls throws an
         // exception, should the transaction be rolled back if not already so ?
      }
-     
+
+    final UserTransaction getUserTransaction() {
+        // Only session beans with bean-managed transactions
+        // or message-driven beans with bean-managed transactions
+        // can programmatically demarcate transactions.
+        if ( (container.isSession || container.isMessageDriven) && container.isBeanManagedTran ) {
+            try {
+                UserTransaction utx = (UserTransaction)
+                        container.namingManager.getInitialContext().lookup(USER_TX);
+                return utx;
+            } catch ( Exception ex ) {
+                _logger.log(Level.FINE, "ejb.user_transaction_exception", ex);
+                throw new EJBException(_logger.getResourceBundle().
+                        getString("ejb.user_transaction_exception"), ex);
+            }
+        }
+        else {
+            throw new IllegalStateException(localStrings.getLocalString(
+                "ejb.ut_only_for_bmt",
+                "Only session beans with bean-managed transactions can obtain UserTransaction"));
+        }
+    }
+
     private EJBException destroyBeanAndRollback(EJBContextImpl context, String type) throws Exception {
         try {
             container.forceDestroyBean(context);

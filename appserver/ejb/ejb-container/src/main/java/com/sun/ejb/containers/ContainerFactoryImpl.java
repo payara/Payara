@@ -48,7 +48,7 @@ import javax.inject.Provider;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
-import com.sun.ejb.EntityContainerProvider;
+import com.sun.ejb.ContainerProvider;
 import com.sun.ejb.containers.builder.StatefulContainerBuilder;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.security.SecurityContext;
@@ -68,9 +68,6 @@ public final class ContainerFactoryImpl implements ContainerFactory {
 
     @Inject
     private Habitat services;
-
-    @Inject
-    private Provider<EntityContainerProvider> entityContainerProvider;
 
     private EjbContainer ejbContainerDesc;
 
@@ -111,17 +108,20 @@ public final class ContainerFactoryImpl implements ContainerFactory {
                         container = new BMCSingletonContainer(ejbDescriptor, loader);
                     }
                 }
-            } else if ( ejbDescriptor instanceof EjbMessageBeanDescriptor) {
-                container = new MessageBeanContainer(ejbDescriptor, loader);
             } else {
-                EntityContainerProvider ecp = entityContainerProvider.get();
-                if (ecp == null) {
-                    throw new RuntimeException("Enity EJB Module is not available");
-                } else {
-                    container = (BaseContainer) ecp.getEntityContainer(ejbDescriptor, loader);
-                }
-            }
 
+              for (ContainerProvider provider : services.getAllByContract(ContainerProvider.class)) {
+                  container = (BaseContainer)provider.getContainer(ejbDescriptor, loader);
+                  if (container != null) {
+                      break;
+                  }
+              }
+
+              if (container == null) {
+                    throw new RuntimeException(ejbDescriptor.getEjbTypeForDisplay() 
+                            + " Container module is not available");
+              }
+            }
        
             container.setSecurityManager(sm);
             

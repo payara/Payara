@@ -131,6 +131,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.InterceptorDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
@@ -216,8 +217,6 @@ public abstract class BaseContainer
       false, false, false, false, 
       true,  true };            
     
-    private static final String USER_TX = "java:comp/UserTransaction";
-
     private static final byte HOME_KEY = (byte)0xff;
     private static final byte[] homeInstanceKey = {HOME_KEY};
 
@@ -229,7 +228,7 @@ public abstract class BaseContainer
     protected Method ejbPassivateMethod = null;
     protected Method ejbActivateMethod = null;
     protected Method ejbRemoveMethod = null;
-    protected Method ejbTimeoutMethod = null;
+    private Method ejbTimeoutMethod = null;
 
     protected Class webServiceEndpointIntf = null;
    
@@ -976,26 +975,8 @@ public abstract class BaseContainer
         return metadata;
     }
     
-    final UserTransaction getUserTransaction() {
-        // Only session beans with bean-managed transactions
-        // or message-driven beans with bean-managed transactions
-        // can programmatically demarcate transactions.
-        if ( (isSession || isMessageDriven) && isBeanManagedTran ) {
-            try {
-                UserTransaction utx = (UserTransaction)
-                namingManager.getInitialContext().lookup(USER_TX);
-                return utx;
-            } catch ( Exception ex ) {
-                _logger.log(Level.FINE, "ejb.user_transaction_exception", ex);
-                throw new EJBException(_logger.getResourceBundle().
-                        getString("ejb.user_transaction_exception"), ex);
-            }
-        }
-        else {
-            throw new IllegalStateException(localStrings.getLocalString(
-                "ejb.ut_only_for_bmt",
-                "Only session beans with bean-managed transactions can obtain UserTransaction"));
-        }
+    public final UserTransaction getUserTransaction() {
+        return containerTransactionManager.getUserTransaction();
     }
     
     public boolean isHAEnabled() {
@@ -1956,6 +1937,12 @@ public abstract class BaseContainer
         }
     }
     
+    protected boolean intercept(CallbackType eventType, EJBContextImpl ctx)
+            throws Throwable {
+
+        return interceptorManager.intercept(eventType, ctx);
+    }
+    
     protected void enlistExtendedEntityManagers(ComponentContext ctx) {
         // Do nothing in general case
     }
@@ -2441,7 +2428,11 @@ public abstract class BaseContainer
             }
         }
     }
-    
+
+    protected boolean isEjbTimeoutMethod(Method m) {
+        return schedules.containsKey(m) || m.equals(ejbTimeoutMethod);
+    }
+
     // internal API, implemented in subclasses
     protected abstract EJBObjectImpl createEJBObjectImpl()
         throws CreateException, RemoteException;
@@ -3936,6 +3927,11 @@ public abstract class BaseContainer
     }
 
     // default implementation
+    public boolean scanForEjbCreateMethod() {
+        return false;
+    }
+
+    // default implementation
     public void postCreate(EjbInvocation inv, Object primaryKey)
         throws CreateException
     {
@@ -4008,7 +4004,7 @@ public abstract class BaseContainer
     /**
      *
      */
-    boolean callEJBTimeout(RuntimeTimerState timerState,
+    protected boolean callEJBTimeout(RuntimeTimerState timerState,
                            EJBTimerService timerService) throws Exception {
      
         boolean redeliver = false;
@@ -4069,8 +4065,7 @@ public abstract class BaseContainer
 
             // Only call postEjbTimeout if there are no errors so far.
             if( !redeliver ) {
-                boolean success =                 
-                    timerService.postEjbTimeout(timerState.getTimerId());
+                boolean success = postEjbTimeout(timerState, timerService);
                 redeliver = !success;
             }
             
@@ -4090,12 +4085,16 @@ public abstract class BaseContainer
         return redeliver;
     }
 
-    Method getTimeoutMethod(RuntimeTimerState timerState) {
+    protected Method getTimeoutMethod(RuntimeTimerState timerState) {
         Method m = scheduleIds.get(timerState.getTimerId());
         return (m != null) ? m : ejbTimeoutMethod;
     }
 
-    void prepareEjbTimeoutParams(EjbInvocation inv, RuntimeTimerState timerState,
+    protected boolean postEjbTimeout(RuntimeTimerState timerState, EJBTimerService timerService) {
+        return timerService.postEjbTimeout(timerState.getTimerId());
+    }
+
+    protected void prepareEjbTimeoutParams(EjbInvocation inv, RuntimeTimerState timerState,
                            EJBTimerService timerService) {
         // Create a TimerWrapper for AroundTimeout and as a method argument.
         javax.ejb.Timer timer  = new TimerWrapper(timerState.getTimerId(),
@@ -4109,15 +4108,15 @@ public abstract class BaseContainer
             inv.methodParams = null;
         }
     }
-     
-    final void onEnteringContainer() {
+
+    public final void onEnteringContainer() {
         ejbProbeNotifier.ejbContainerEnteringEvent(getContainerId(),
                 containerInfo.appName, containerInfo.modName, 
                 containerInfo.ejbName);
         //callFlowAgent.startTime(ContainerTypeOrApplicationType.EJB_CONTAINER);
     }
 
-    final void onLeavingContainer() {
+    public final void onLeavingContainer() {
         ejbProbeNotifier.ejbContainerLeavingEvent(getContainerId(),
                 containerInfo.appName, containerInfo.modName, 
                 containerInfo.ejbName);
@@ -4520,7 +4519,7 @@ public abstract class BaseContainer
      * NOTE: postInvokeTx is called even if the EJB was not invoked
      * because of an exception thrown from preInvokeTx.
      */
-    void postInvokeTx(EjbInvocation inv)
+    protected void postInvokeTx(EjbInvocation inv)
         throws Exception
     {
         
@@ -4693,9 +4692,7 @@ public abstract class BaseContainer
      * InvocationTargetException.
      * 
      */
-    Object intercept(EjbInvocation inv)
-        throws Throwable
-    {
+    protected Object intercept(EjbInvocation inv) throws Throwable {
         Object result = null;
         if (inv.mustInvokeAsynchronously()) {
             EjbAsyncInvocationManager asyncManager =

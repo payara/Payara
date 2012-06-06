@@ -58,8 +58,6 @@ import javax.interceptor.InvocationContext;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.containers.EJBContextImpl;
-import com.sun.ejb.containers.MessageBeanContainer;
-import com.sun.ejb.containers.StatelessSessionContainer;
 import com.sun.enterprise.container.common.spi.util.InterceptorInfo;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.InterceptorDescriptor;
@@ -552,9 +550,7 @@ public class InterceptorManager {
         //  the app doesn't have a @PostConstruct or it 
         //  doesn't implement the EntrerpriseBean interface
         //  In this case we scan for ejbCreate() for MDBs and SLSBs
-        boolean lookForEjbCreateMethod =
-            (container instanceof StatelessSessionContainer)
-            || (container instanceof MessageBeanContainer);
+        boolean lookForEjbCreateMethod = container.scanForEjbCreateMethod();
         
         if (lookForEjbCreateMethod) {
             loadOnlyEjbCreateMethod(callbacks, numPostConstructFrameworkCallbacks);

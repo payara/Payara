@@ -197,6 +197,11 @@ public class StatelessSessionContainer
         return !inv.invocationInfo.isBusinessMethod;
     }
 
+    @Override
+    public boolean scanForEjbCreateMethod() {
+        return true;
+    }
+
     protected EjbMonitoringStatsProvider getMonitoringStatsProvider(
             String appName, String modName, String ejbName) {
         return new StatelessSessionBeanStatsProvider(this, getContainerId(), appName, modName, ejbName);
@@ -527,8 +532,7 @@ public class StatelessSessionContainer
             context.setInstanceKey(statelessInstanceKey); 
 
             //Call ejbCreate() or @PostConstruct method
-            interceptorManager.intercept(
-                    CallbackType.POST_CONSTRUCT, context);
+            intercept(CallbackType.POST_CONSTRUCT, context);
 
             // Set the state to POOLED after ejbCreate so that 
             // EJBContext methods not allowed will throw exceptions
@@ -746,8 +750,7 @@ public class StatelessSessionContainer
                     invocationManager.preInvoke(ejbInv);
                     sessionCtx.setInEjbRemove(true);        
    
-                    interceptorManager.intercept(
-                            CallbackType.PRE_DESTROY, sessionCtx);
+                    intercept(CallbackType.PRE_DESTROY, sessionCtx);
 
                 } catch ( Throwable t ) {
                      _logger.log(Level.FINE, "ejbRemove exception", t);

@@ -98,6 +98,8 @@ public interface EjbContainerUtil {
 
     public  EJBTimerService getEJBTimerService();
 
+    public  EJBTimerService getValidEJBTimerService();
+
     public  EJBTimerService getEJBTimerService(String target);
 
     public  EJBTimerService getEJBTimerService(String target, boolean force);

@@ -412,7 +412,8 @@ public final class MessageBeanContainer extends BaseContainer implements
      * Override callEJBTimeout from BaseContainer since delivery to message
      * driven beans is a bit different from session/entity.
      */
-    boolean callEJBTimeout(RuntimeTimerState timerState,
+    @Override
+    protected boolean callEJBTimeout(RuntimeTimerState timerState,
             EJBTimerService timerService) throws Exception {
 
         boolean redeliver = false;

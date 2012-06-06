@@ -61,7 +61,7 @@ import com.sun.enterprise.deployment.Application;
  *
  * @author Kenneth Saks
  */
-class RuntimeTimerState {
+public class RuntimeTimerState {
 
     private static final Logger logger =
             EjbContainerUtilImpl.getInstance().getLogger();

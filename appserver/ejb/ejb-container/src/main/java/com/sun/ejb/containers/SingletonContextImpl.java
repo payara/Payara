@@ -73,11 +73,7 @@ public final class SingletonContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getEJBTimerService();
-        if( timerService == null ) {
-            throw new EJBException("EJB Timer service not available");
-        }
-
+        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getValidEJBTimerService();
         return new EJBTimerServiceWrapper(timerService, this);
         
     }
