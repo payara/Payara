@@ -151,6 +151,15 @@ public final class MessageBeanContainer extends BaseContainer implements
             throws Exception {
         super(ContainerType.MESSAGE_DRIVEN, desc, loader);
 
+        // Instantiate the ORB and Remote naming manager
+        // to allow client lookups of JMS queues/topics/connectionfactories
+        // TODO - implement the sniffer for DAS/cluster instance - listening on the naming port that will
+        // instantiate the orb/remote naming service on demand upon initial access.
+        // Once that's available, this call can be removed.
+        initializeProtocolManager();
+
+        isMessageDriven = true;
+
         appEJBName_ = desc.getApplication().getRegistrationName() + ":"
                 + desc.getName();
 
@@ -168,7 +177,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 
             for (int i = 0; i < msgListenerMethods.length; i++) {
                 Method next = msgListenerMethods[i];
-                super.registerTxAttrForMethod(next, MethodDescriptor.EJB_BEAN);
+                addInvocationInfo(next, MethodDescriptor.EJB_BEAN, null);
             }
             
             poolMgr = ejbContainerUtilImpl.getServices().forContract(TransactedPoolManager.class).get();
@@ -252,11 +261,21 @@ public final class MessageBeanContainer extends BaseContainer implements
         return true;
     }
 
-    protected void initializeHome()
-        throws Exception {
+    @Override 
+    protected void initializeHome() throws Exception {
         //For MDBs this is no op
     }
+
+    @Override 
+    protected void addLocalRemoteInvocationInfo() throws Exception {
+        // Nothing to do for MDBs
+    }
     
+    @Override 
+    protected final boolean isCreateHomeFinder(Method method) {
+        return false;
+    }
+
     private void createMessageBeanPool(EjbMessageBeanDescriptor descriptor) {
 
         beanPoolDesc_ = descriptor.getIASEjbExtraDescriptors().getBeanPool();

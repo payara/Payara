@@ -56,6 +56,8 @@ import java.util.logging.Logger;
 import javax.ejb.CreateException;
 import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.EntityBean;
@@ -1639,8 +1641,43 @@ public class EntityContainer
         beforeCompletion((EJBContextImpl)inv.context);
     }
     
-    
-    
+    @Override
+    protected void adjustInvocationInfo(InvocationInfo invInfo, Method method, int txAttr,
+                                                boolean flushEnabled,
+                                                String methodIntf,
+                                                Class originalIntf)
+            throws EJBException {
+
+        invInfo.isHomeFinder = isHomeFinder(method);
+    }
+
+    // Check if a method is a finder / home method.
+    // Note: this method object is of the EJB's remote/home/local interfaces,
+    // not the EJB class.
+    private final boolean isHomeFinder(Method method) {
+        Class methodClass = method.getDeclaringClass();
+        if ( isRemote ) {
+            if ( (hasRemoteHomeView &&
+                  methodClass.isAssignableFrom(homeIntf))
+                 && (methodClass != EJBHome.class)
+                 && (!method.getName().startsWith("create")) ) {
+                return true;
+            }
+        }
+        if ( isLocal ) {
+            // No need to check LocalBusiness view b/c home/finder methods
+            // only apply to entity beans.
+            if ( (hasLocalHomeView &&
+                  methodClass.isAssignableFrom(localHomeIntf))
+                 && (methodClass != EJBLocalHome.class)
+                 && (!method.getName().startsWith("create")) ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // CacheListener interface
     public void trimEvent(Object primaryKey, Object context) {
         synchronized (asyncTaskSemaphore) {

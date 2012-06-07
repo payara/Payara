@@ -53,6 +53,9 @@ import javax.rmi.PortableRemoteObject;
 
 public final class EJBMetaDataImpl implements javax.ejb.EJBMetaData, Serializable
 {
+    // for backward compatibility
+    private static final long serialVersionUID = 5777657175353026918L;
+
     private Class keyClass;
     private Class homeClass;
     private Class remoteClass;

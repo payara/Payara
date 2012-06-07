@@ -53,7 +53,7 @@
 
     <artifactId>ejb-full-container</artifactId>
     <packaging>hk2-jar</packaging>
-    <name>Entity Bean container</name>
+    <name>Full EJB Container add-ons</name>
 
     <developers>
         <developer>
