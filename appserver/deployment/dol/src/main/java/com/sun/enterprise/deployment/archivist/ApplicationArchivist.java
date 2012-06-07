@@ -140,53 +140,33 @@ public class ApplicationArchivist extends Archivist<Application> {
                 DOLUtils.getDefaultLogger().info("Write " + aModule.getArchiveUri() + " with " + subArchivist);
             }
             
-            if (aModule.getAlternateDescriptor()!=null) {
-                // no need to rewrite the original bundle since
-                // the deployment descriptors are saved at the application level
-                // so I don't put it in the list of files to be skipped and it will
-                // be copied as a library.
-                
-                // but I need to save the deployment descriptor for this bundle
-                OutputStream os = out.putNextEntry(aModule.getAlternateDescriptor());
-                subArchivist.writeStandardDeploymentDescriptors(os);
-                out.closeEntry();
-		
-		// now write runtime descriptors 
-                if (isHandlingRuntimeInfo()) {
-                    os = out.putNextEntry("sun-" + aModule.getAlternateDescriptor());
-                    subArchivist.writeRuntimeDeploymentDescriptors(os);
-                    out.closeEntry();
-                }
-                
-            } else {
-                // Create a new jar file inside the application .ear
-                WritableArchive internalJar = out.createSubArchive(aModule.getArchiveUri());
-                
-                // we need to copy the old archive to a temp file so
-                // the save method can copy its original contents from
-                InputStream is = in.getEntry(aModule.getArchiveUri());
-                File tmpFile=null;
-                try {
-                    if (in instanceof WritableArchive) {
-                        subArchivist.setArchiveUri(internalJar.getURI().getSchemeSpecificPart());
-                    } else {
-                        tmpFile = getTempFile(path);
-                        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile));
-                        ArchivistUtils.copy(is, bos);
+            // Create a new jar file inside the application .ear
+            WritableArchive internalJar = out.createSubArchive(aModule.getArchiveUri());
+              
+            // we need to copy the old archive to a temp file so
+            // the save method can copy its original contents from
+            InputStream is = in.getEntry(aModule.getArchiveUri());
+            File tmpFile=null;
+            try {
+                if (in instanceof WritableArchive) {
+                    subArchivist.setArchiveUri(internalJar.getURI().getSchemeSpecificPart());
+                } else {
+                    tmpFile = getTempFile(path);
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile));
+                    ArchivistUtils.copy(is, bos);
 
-                        // configure archivist
-                        subArchivist.setArchiveUri(tmpFile.getAbsolutePath());
-                    }
-                    subArchivist.writeContents(internalJar);
-                    out.closeEntry(internalJar);
-                } finally {
-                    if (tmpFile!=null)
-                        tmpFile.delete();
+                    // configure archivist
+                    subArchivist.setArchiveUri(tmpFile.getAbsolutePath());
                 }
-                
-                // no need to copy the bundle from the original jar file
-                filesToSkip.add(aModule.getArchiveUri());
+                subArchivist.writeContents(internalJar);
+                out.closeEntry(internalJar);
+            } finally {
+                if (tmpFile!=null)
+                    tmpFile.delete();
             }
+                
+            // no need to copy the bundle from the original jar file
+            filesToSkip.add(aModule.getArchiveUri());
         }
         
         // now write the old contents and new descriptors

@@ -98,16 +98,6 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
         this.descriptor = null;
     }  
     
-    /** 
-     * @return the location of the web services related deployment 
-     * descriptor file inside this archive or null if this archive
-     * does not support webservices implementation.
-     */
-    @Override
-    public String getWebServicesDeploymentDescriptorPath() {
-        return null;
-    }    
-    
     /**
      * @return the DeploymentDescriptorFile responsible for handling
      * standard deployment descriptor

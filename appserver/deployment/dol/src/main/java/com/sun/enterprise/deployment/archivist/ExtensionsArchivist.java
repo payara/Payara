@@ -43,15 +43,18 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.xml.sax.SAXParseException;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -202,6 +205,58 @@ public abstract class ExtensionsArchivist  {
         DOLUtils.readRuntimeDeploymentDescriptor(getSortedConfigurationDDFiles(descriptor, archive), archive, descriptor, main,true);
 
         return descriptor;
+    }
+
+    /**
+     * writes the deployment descriptors (standard and runtime)
+     * to a JarFile using the right deployment descriptor path
+     *
+     * @param in the input archive
+     * @param out the abstract archive file to write to
+     */
+    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+
+        // Standard DDs
+        writeStandardDeploymentDescriptors(descriptor, out);
+
+        // Runtime DDs
+        writeRuntimeDeploymentDescriptors(descriptor, in, out);
+    }
+
+    /**
+     * writes the standard deployment descriptors to an abstract archive
+     *
+     * @param out archive to write to
+     */
+    public void writeStandardDeploymentDescriptors(BundleDescriptor descriptor, WritableArchive out) throws IOException {
+
+        OutputStream os = out.putNextEntry(getStandardDDFile(descriptor).getDeploymentDescriptorPath());
+        getStandardDDFile(descriptor).write(descriptor, os);
+        out.closeEntry();
+    }
+
+    /**
+     * writes the runtime deployment descriptors to an abstract archive
+     *
+     * @param in the input archive
+     * @param out output archive
+     */
+    public void writeRuntimeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+
+        // when source archive contains runtime deployment descriptor
+        // files, write those out
+        // otherwise write all possible runtime deployment descriptor
+        // files out
+        List<DeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(descriptor, in);
+        if (confDDFilesToWrite.isEmpty()) {
+            confDDFilesToWrite = getConfigurationDDFiles(descriptor);
+        }
+        for (DeploymentDescriptorFile ddFile : confDDFilesToWrite) {
+            OutputStream os = out.putNextEntry(
+                ddFile.getDeploymentDescriptorPath());
+            ddFile.write(descriptor, os);
+            out.closeEntry();
+        }
     }
 
     private List<DeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {

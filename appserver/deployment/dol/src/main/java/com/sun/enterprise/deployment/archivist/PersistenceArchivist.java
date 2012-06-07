@@ -43,10 +43,12 @@ package com.sun.enterprise.deployment.archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.PersistenceDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.xml.sax.SAXParseException;
 
@@ -224,4 +226,16 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
         }
     }
 
+   /**
+     * writes the deployment descriptors (standard and runtime)
+     * to a JarFile using the right deployment descriptor path
+     *
+     * @param in the input archive
+     * @param out the abstract archive file to write to
+     */
+    @Override
+    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+        // we do not write out any persistence deployment descriptors 
+        // for now
+    }
 }

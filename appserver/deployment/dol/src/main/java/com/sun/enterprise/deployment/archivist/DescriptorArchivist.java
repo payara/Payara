@@ -81,68 +81,18 @@ public class DescriptorArchivist {
             write((BundleDescriptor)aModule.getDescriptor(), moduleArchivist, in, out);
         } else {
             // this is a real application.
-            
             // let's start by writing out all submodules deployment descriptors
             for (ModuleDescriptor aModule : application.getModules()) {
                 Archivist moduleArchivist = archivistFactory.getArchivist(aModule.getModuleType());
-                if (aModule.getAlternateDescriptor()!=null) {
-                    // the application is using alternate deployment descriptors
-
-                    // write or copy standard deployment descriptor
-                    String ddPath = aModule.getAlternateDescriptor();
-                    DeploymentDescriptorFile ddFile = 
-                        moduleArchivist.getStandardDDFile();            
-                     
-                    BundleDescriptor bundle = 
-                            (BundleDescriptor)aModule.getDescriptor();
-                    if (!bundle.isFullFlag()) {
-                        if (ddFile != null) {
-                            OutputStream os = out.putNextEntry(ddPath);
-                            ddFile.write(bundle, os);
-                            out.closeEntry();
-                        }
-                    } else {
-                        if (aModule.getModuleType().equals(DOLUtils.warType())) {
-                            BundleDescriptor webBundle = 
-                                (BundleDescriptor)aModule.getDescriptor();
-                            if (webBundle.hasWebServices()) {
-                                if (ddFile != null) {
-                                    OutputStream os = out.putNextEntry(ddPath);
-                                    ddFile.write(webBundle, os);
-                                    out.closeEntry();
-                                }
-                            } else { 
-                                moduleArchivist.copyAnEntry(in, out, ddPath);
-                            }
-                        } else {
-                            moduleArchivist.copyAnEntry(in, out, ddPath);
-                        }
-                    }
-
-                    String runtimeDDPath = "glasfish-" + ddPath;
-                    DeploymentDescriptorFile confDDFile = moduleArchivist.getConfigurationDDFile(in);
-                    if (confDDFile!=null) {
-                        OutputStream os = out.putNextEntry(runtimeDDPath);
-                        confDDFile.write(aModule.getDescriptor(), os);
-                        out.closeEntry();
-                    }
-                } else {
-                    WritableArchive moduleArchive = out.createSubArchive(aModule.getArchiveUri());
-                    ReadableArchive moduleArchive2 = in.getSubArchive(aModule.getArchiveUri());
-                    write((BundleDescriptor)aModule.getDescriptor(),  moduleArchivist, moduleArchive2, moduleArchive);
-                }
+                WritableArchive moduleArchive = out.createSubArchive(aModule.getArchiveUri());
+                ReadableArchive moduleArchive2 = in.getSubArchive(aModule.getArchiveUri());
+                write((BundleDescriptor)aModule.getDescriptor(),  moduleArchivist, moduleArchive2, moduleArchive);
             }
             
             // now let's write the application descriptor
             ApplicationArchivist archivist = archivistProvider.get();
-
             archivist.setDescriptor(application);
-            archivist.writeRuntimeDeploymentDescriptors(out); 
-            if (application.isLoadedFromApplicationXml()) {   
-                archivist.copyStandardDeploymentDescriptors(in, out); 
-            } else {
-                archivist.writeStandardDeploymentDescriptors(out);
-            }
+            archivist.writeDeploymentDescriptors(in, out); 
         }
     }
     
@@ -156,28 +106,6 @@ public class DescriptorArchivist {
         throws IOException
     {
         archivist.setDescriptor(bundle);
-        archivist.writeDeploymentDescriptors(out);
-        if (bundle.getModuleType().equals(DOLUtils.warType())) {
-            Collection<EjbBundleDescriptor> ejbExtensions = 
-                bundle.getExtensionsDescriptors(EjbBundleDescriptor.class);
-            for (EjbBundleDescriptor ejbBundle : ejbExtensions) {
-                Archivist ejbArchivist = 
-                    archivistFactory.getArchivist(DOLUtils.ejbType());
-                write(ejbBundle, ejbArchivist, in, out);
-            }
-        }
-
-        // copy mapping files if it's not ended with .xml
-        // all xml files will be copied later
-        if (bundle.hasWebServices()) {
-            WebServicesDescriptor webServices = bundle.getWebServices();
-            for (WebService webService : webServices.getWebServices()) {
-                if (webService.hasMappingFile() && 
-                    !webService.getMappingFileUri().endsWith(".xml")) {
-                    archivist.copyAnEntry(in, out, 
-                    webService.getMappingFileUri());
-                }
-            }
-        }
+        archivist.writeDeploymentDescriptors(in, out);
     }
 }

@@ -137,16 +137,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
     }
 
     /**
-     * @return the location of the web services related deployment
-     * descriptor file inside this archive or null if this archive
-     * does not support webservices implementation.
-     */
-    @Override
-    public String getWebServicesDeploymentDescriptorPath() {
-        return DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
-    }
-
-    /**
      * @return the DeploymentDescriptorFile responsible for handling
      * standard deployment descriptor
      */

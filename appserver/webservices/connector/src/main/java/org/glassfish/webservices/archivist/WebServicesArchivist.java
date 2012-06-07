@@ -45,6 +45,8 @@ import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -100,5 +102,19 @@ public class WebServicesArchivist extends ExtensionsArchivist {
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
         return new WebServicesDescriptor();
+    }
+
+    /**
+     * writes the deployment descriptors (standard and runtime)
+     * to a JarFile using the right deployment descriptor path
+     *
+     * @param in the input archive
+     * @param out the abstract archive file to write to
+     */
+    @Override
+    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+        if (descriptor.hasWebServices()) {
+            super.writeDeploymentDescriptors(descriptor, in, out);
+        }
     }
 }

@@ -446,9 +446,9 @@ public abstract class AppClientDeployerHelper {
         return sb.toString();
     }
 
-    private void writeUpdatedDescriptors(final OutputJarArchive facadeArchive, final ApplicationClientDescriptor acd) throws IOException {
+    private void writeUpdatedDescriptors(final ReadableArchive source, final OutputJarArchive facadeArchive, final ApplicationClientDescriptor acd) throws IOException {
         archivist.setDescriptor(acd);
-        archivist.writeDeploymentDescriptors(facadeArchive);
+        archivist.writeDeploymentDescriptors(source, facadeArchive);
     }
 
     protected void prepareJARs() throws IOException, URISyntaxException {
@@ -508,7 +508,7 @@ public abstract class AppClientDeployerHelper {
         /*
          * Write the updated descriptors to the facade.
          */
-        writeUpdatedDescriptors(facadeArchive, appClientDesc);
+        writeUpdatedDescriptors(source, facadeArchive, appClientDesc);
 
         /*
          * Because of how persistence units are discovered and added to the

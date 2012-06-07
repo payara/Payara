@@ -51,7 +51,6 @@ import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_D
 import static com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY;
 import com.sun.enterprise.deployment.util.*;
-import com.sun.enterprise.deployment.io.runtime.WLSWebServicesDeploymentDescriptorFile;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
@@ -286,8 +285,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
             T descriptor = readRestDeploymentDescriptors((T)app.getStandaloneBundleDescriptor(), archive, archive, app);
             if (descriptor != null) {
                 postOpen(descriptor, archive);
+                descriptor.setApplication(app);
             }
-            descriptor.setApplication(app);
         }
         return app;
     }
@@ -824,7 +823,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         }
 
         // now the deployment descriptors
-        writeDeploymentDescriptors(out);
+        writeDeploymentDescriptors(in, out);
 
         // manifest file
         if (manifest != null) {
@@ -838,15 +837,19 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * writes the deployment descriptors (standard and runtime)
      * to a JarFile using the right deployment descriptor path
      *
-     * @out the abstract archive file to write to
+     * @param in the input archive
+     * @param out the abstract archive file to write to
      */
-    public void writeDeploymentDescriptors(WritableArchive out) throws IOException {
+    public void writeDeploymentDescriptors(ReadableArchive in, WritableArchive out) throws IOException {
 
         // Standard DDs
         writeStandardDeploymentDescriptors(out);
 
-        // the rest...
-        writeExtraDeploymentDescriptors(out);
+        // Runtime DDs
+        writeRuntimeDeploymentDescriptors(in, out);
+
+        // Extension DDs
+        writeExtensionDeploymentDescriptors(in, out);
     }
 
     /**
@@ -857,80 +860,57 @@ public abstract class Archivist<T extends BundleDescriptor> {
     public void writeStandardDeploymentDescriptors(WritableArchive out) throws IOException {
 
         OutputStream os = out.putNextEntry(getDeploymentDescriptorPath());
-        writeStandardDeploymentDescriptors(os);
+        getStandardDDFile().write(getDescriptor(), os);
         out.closeEntry();
 
         Descriptor desc = getDescriptor();
-
-        // only bundle descriptor can have web services
-        writeWebServicesDescriptors((BundleDescriptor) desc, out);
     }
 
     /**
      * writes the runtime deployment descriptors to an abstract archive
      *
+     * @param in the input archive
      * @param out output archive
      */
-    public void writeRuntimeDeploymentDescriptors(WritableArchive out) throws IOException {
+    public void writeRuntimeDeploymentDescriptors(ReadableArchive in, WritableArchive out) throws IOException {
 
         T desc = getDescriptor();
 
-        // Runtime DDs
-        if (isHandlingRuntimeInfo()) {
-            List<DeploymentDescriptorFile> confDDFilesToWrite = getConfigurationDDFiles(); 
-            for (DeploymentDescriptorFile ddFile : confDDFilesToWrite) {
-                OutputStream os = out.putNextEntry(
-                    ddFile.getDeploymentDescriptorPath());
-                ddFile.write(desc, os);
-                out.closeEntry();
-            }
-            writeRuntimeWebServicesDescriptors(desc, out);
+        // when source archive contains runtime deployment descriptor 
+        // files, write those out
+        // otherwise write all possible runtime deployment descriptor 
+        // files out (revisit this to see what is the desired behavior 
+        // here, write out all, or write out the highest precedence one, 
+        // or not write out)
+        List<DeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in); 
+        if (confDDFilesToWrite.isEmpty()) {
+            confDDFilesToWrite = getConfigurationDDFiles();
+        }
+        for (DeploymentDescriptorFile ddFile : confDDFilesToWrite) {
+            OutputStream os = out.putNextEntry(
+                ddFile.getDeploymentDescriptorPath());
+            ddFile.write(desc, os);
+            out.closeEntry();
         }
     }
 
     /**
-     * write all extra deployment descriptors (like cmp related and runtime dds)
-     *
-     * @out the abstract archive file to write to
-     */
-    protected void writeExtraDeploymentDescriptors(WritableArchive out) throws IOException {
-        writeRuntimeDeploymentDescriptors(out);
-    }
-
-    /**
-     * writes the standard deployment descriptor to an output stream
-     *
-     * @param os stream to write out the descriptors
-     */
-    public void writeStandardDeploymentDescriptors(OutputStream os) throws IOException {
-        getStandardDDFile().write(getDescriptor(), os);
-    }
-
-    /**
-     * writes de configuration deployment descriptor to a new XML file
-     *
-     * @param os stream to write the configuration deployment descriptors
-     */
-    public void writeRuntimeDeploymentDescriptors(OutputStream os) throws IOException {
-        if (confDD != null) {
-            confDD.write(getDescriptor(), os);
-        }
-    }
-
-    /**
-     * Write web services related descriptors
-     * @param desc the module descriptor
+     * Write extension descriptors
+     * @param in the input archive
      * @param out the output archive
      */
-    protected void writeWebServicesDescriptors(BundleDescriptor desc, WritableArchive out)
-            throws IOException {
-        if (desc.hasWebServices()) {
-            //TODO FIX ME
-            /*DeploymentDescriptorFile webServicesDD = getWebServicesDDFile(desc);
-            OutputStream os = out.putNextEntry(webServicesDD.getDeploymentDescriptorPath());
-            webServicesDD.write(desc, os);
-            out.closeEntry();
-            */
+    public void writeExtensionDeploymentDescriptors(ReadableArchive in, WritableArchive out) throws IOException {
+        // we need to re-initialize extension archivists, but we don't have 
+        // applicable sniffers information here, so we will get all extension 
+        // archivists with matched type. This is ok as it's just for writing
+        // out deployment descriptors which will not be invoked in normal 
+        // code path
+        Collection<ExtensionsArchivist> extArchivists = habitat.getAllByContract(ExtensionsArchivist.class);
+
+        for (ExtensionsArchivist extension : extArchivists) {
+            if (extension.supportsModuleType(getModuleType())) {
+                extension.writeDeploymentDescriptors(getDescriptor(), in, out);
+            }
         }
     }
 
@@ -942,36 +922,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     /**
-     * Write runtime web services related descriptors
-     * @param desc the module descriptor
-     * @param out the output archive
-     */
-    private void writeRuntimeWebServicesDescriptors(BundleDescriptor desc, WritableArchive out)
-            throws IOException {
-        if (desc.hasWebServices()) {
-            DeploymentDescriptorFile webServicesDD = new WLSWebServicesDeploymentDescriptorFile(desc.getWebServices());
-            OutputStream os = out.putNextEntry(webServicesDD.getDeploymentDescriptorPath());
-            webServicesDD.write(desc.getWebServices(), os);
-            out.closeEntry();
-        }
-    }
-
-
-    /**
      * @return the location of the DeploymentDescriptor file for a
      *         particular type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
         return getStandardDDFile().getDeploymentDescriptorPath();
-    }
-
-    /**
-     * @return the location of the web services related deployment
-     *         descriptor file inside this archive or null if this archive
-     *         does not support webservices implementation.
-     */
-    public String getWebServicesDeploymentDescriptorPath() {
-        return null;
     }
 
     /**
@@ -1051,7 +1006,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public DeploymentDescriptorFile getConfigurationDDFile(ReadableArchive archive) throws IOException {
+    private DeploymentDescriptorFile getConfigurationDDFile(ReadableArchive archive) throws IOException {
         if (confDD == null) {
             getSortedConfigurationDDFiles(archive);
             if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {
@@ -1065,16 +1020,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @return a default BundleDescriptor for this archivist
      */
     public abstract T getDefaultBundleDescriptor();
-
-
-    /**
-     * @param desc the bundle descriptor
-     * @return the DeploymentDescriptorFile responsible for
-     *         handling the web services deployment descriptors
-     */
-    public DeploymentDescriptorFile getWebServicesDDFile(RootDeploymentDescriptor desc) {
-        return null;//todo fix later
-    }
 
     /**
      * @return The archive extension handled by a specific archivist
@@ -1674,17 +1619,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
                                                   WritableArchive out) throws IOException {
         String entryName = getDeploymentDescriptorPath();
         copyAnEntry(in, out, entryName);
-
-        BundleDescriptor desc = getDescriptor();
-
-        // only bundle descriptor can have web services
-        if (desc.hasWebServices()) {
-            //TODO fix me
-            /*DeploymentDescriptorFile webServicesDD =
-                    getWebServicesDDFile((BundleDescriptor) desc2);
-            String anEntry = webServicesDD.getDeploymentDescriptorPath();
-            copyAnEntry(in, out, anEntry);*/
-        }
     }
 
     // copy wsdl and mapping files etc 

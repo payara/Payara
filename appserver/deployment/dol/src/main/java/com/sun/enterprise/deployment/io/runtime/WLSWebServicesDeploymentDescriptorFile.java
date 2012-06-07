@@ -50,6 +50,8 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 
 import java.util.Vector;
+import java.io.OutputStream;
+import java.io.IOException;
 
 /**
  * This class is responsible for handling the WebLogic webservices deployment descriptor.
@@ -89,4 +91,19 @@ public class WLSWebServicesDeploymentDescriptorFile extends DeploymentDescriptor
         return null;
     }
 
+    /**
+     * writes the descriptor to an output stream
+     *
+     * @param descriptor the descriptor
+     * @param os the output stream
+     */
+    @Override
+    public void write(Descriptor descriptor, OutputStream os) throws IOException {
+        if (descriptor instanceof BundleDescriptor) {
+            BundleDescriptor bundleDesc = (BundleDescriptor)descriptor;
+            if (bundleDesc.hasWebServices()) {
+                super.write(bundleDesc.getWebServices(), os);
+            }
+        }
+    }
 }

@@ -170,8 +170,10 @@ public class WLWebServiceNode extends DisplayableComponentNode {
                 descriptor.getName());
         appendTextChild(topNode, WLWebServicesTagNames.WEBSERVICE_TYPE,
                 descriptor.getType());
-        appendTextChild(topNode, WLWebServicesTagNames.WSDL_PUBLISH_FILE,
+        if (descriptor.getClientPublishUrl() != null) {
+            appendTextChild(topNode, WLWebServicesTagNames.WSDL_PUBLISH_FILE,
                 descriptor.getClientPublishUrl().toString());
+        }
 
         WLWebServiceEndpointNode endpointNode = new WLWebServiceEndpointNode();
         for (WebServiceEndpoint next : descriptor.getEndpoints()) {

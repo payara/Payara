@@ -65,7 +65,7 @@ import java.util.List;
  * @version 
  */
 @Service
-public class WebServicesDescriptorNode extends AbstractBundleNode {    
+public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescriptor> {    
     public final static XMLElement ROOT_ELEMENT =
         new XMLElement(WebServicesTagNames.WEB_SERVICES);
     public final static String SCHEMA_ID = "javaee_web_services_1_3.xsd";
@@ -178,7 +178,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
-    public Object getDescriptor() {
+    public BundleDescriptor getDescriptor() {
         return bundleDescriptor;
     }     
 
@@ -189,12 +189,11 @@ public class WebServicesDescriptorNode extends AbstractBundleNode {
      * @param descriptor to write
      * @return the DOM tree top node
      */    
-    public Node writeDescriptor(Node parent, Descriptor descriptor) {
+    public Node writeDescriptor(Node parent, BundleDescriptor descriptor) {
         Node topNode = parent;
         if (parent instanceof Document) {
-            BundleDescriptor bundleDesc = (BundleDescriptor) descriptor;
-            WebServicesDescriptor webServicesDesc = bundleDesc.getWebServices();
-            topNode = super.writeDescriptor(parent, webServicesDesc);
+            topNode = super.writeDescriptor(parent, descriptor);
+            WebServicesDescriptor webServicesDesc = descriptor.getWebServices();
             WebServiceNode wsNode = new WebServiceNode();
             for(WebService next : webServicesDesc.getWebServices()) {
                 wsNode.writeDescriptor(topNode, WebServicesTagNames.WEB_SERVICE,

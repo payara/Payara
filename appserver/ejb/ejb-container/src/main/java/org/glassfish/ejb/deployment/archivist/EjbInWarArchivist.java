@@ -45,13 +45,18 @@ import javax.inject.Provider;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.io.IOException;
 
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
@@ -122,6 +127,23 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
     @Override
     public RootDeploymentDescriptor getDefaultDescriptor() {
         return new EjbBundleDescriptorImpl();
+    }
+
+    /**
+     * writes the deployment descriptors (standard and runtime)
+     * to a JarFile using the right deployment descriptor path
+     *
+     * @param in the input archive
+     * @param out the abstract archive file to write to
+     */
+    @Override
+    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+        Collection<EjbBundleDescriptorImpl> ejbExtensions =
+            descriptor.getExtensionsDescriptors(EjbBundleDescriptorImpl.class);
+
+        for (EjbBundleDescriptorImpl ejbBundle : ejbExtensions) {
+            super.writeDeploymentDescriptors(ejbBundle, in, out);
+        }
     }
 }
 
