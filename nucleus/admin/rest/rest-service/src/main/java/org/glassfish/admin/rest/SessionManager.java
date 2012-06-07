@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.rest;
 
+import javax.security.auth.Subject;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -72,35 +73,41 @@ public class SessionManager {
     }
 
     //TODO createSession is public. this package should not be exported
-    public String createSession(Request req) {
+    public String createSession(Request req, final Subject subject) {
         String sessionId;
         do {
             sessionId = new BigInteger(130, randomGenerator).toString(16);
         } while(isSessionExist(sessionId));
 
-        saveSession(sessionId, req);
+        saveSession(sessionId, req, subject);
         return sessionId;
     }
 
-    public boolean authenticate(String sessionId, Request req) {
+    public Subject authenticate(String sessionId, Request req) {
+        return authenticate(sessionId, req.getRemoteAddr());
+    }
+    
+    public Subject authenticate(final String sessionId, final String remoteAddress) {
+        Subject result = null;
         boolean authenticated = false;
         purgeInactiveSessions();
 
         if(sessionId != null) {
             SessionData sessionData = activeSessions.get(sessionId);
             if(sessionData != null) {
-                authenticated = sessionData.authenticate(req);
+                authenticated = sessionData.authenticate(remoteAddress);
                 if(authenticated) {
                     // update last access time
                     sessionData.updateLastAccessTime();
+                    result = sessionData.subject();
                 } else {
                     activeSessions.remove(sessionId);
                 }
             }
         }
-        return authenticated;
+        return result;
     }
-
+    
     /**
      * Deletes Session corresponding to given <code> sessionId </code>
      * @param sessionId
@@ -115,9 +122,9 @@ public class SessionManager {
         return sessionDeleted;
     }
 
-    private void saveSession(String sessionId, Request req) {
+    private void saveSession(String sessionId, Request req, final Subject subject) {
         purgeInactiveSessions();
-        activeSessions.put(sessionId, new SessionData(sessionId, req) );
+        activeSessions.put(sessionId, new SessionData(sessionId, req, subject) );
     }
 
     private void purgeInactiveSessions() {
@@ -139,9 +146,11 @@ public class SessionManager {
         private long lastAccessedTime = System.currentTimeMillis();
         private final static String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
         private final boolean disableRemoteAddressValidation = Boolean.getBoolean(DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME);
+        private final Subject subject;
 
-        public SessionData(String sessionId, Request req) {
+        public SessionData(String sessionId, Request req, final Subject subject) {
             this.clientAddress = req.getRemoteAddr();
+            this.subject = subject;
         }
 
         /**
@@ -167,8 +176,16 @@ public class SessionManager {
          * @return true if session is still active and the request is from same remote address as the one session was
          * initiated from
          */
-        public boolean authenticate(Request req) {
-            return isSessionActive() && (clientAddress.equals(req.getRemoteAddr()) || disableRemoteAddressValidation );
+        public boolean authenticate(final String remoteAddress) {
+            return isSessionActive() && (clientAddress.equals(remoteAddress) || disableRemoteAddressValidation );
+        }
+        
+        /**
+         * Returns the Subject associated with the session.
+         * @return the Subject
+         */
+        public Subject subject() {
+            return subject;
         }
     }
 

@@ -43,17 +43,19 @@ import com.sun.enterprise.admin.util.AdminLoginModule.AdminIndicatorCallback;
 import com.sun.enterprise.admin.util.AdminLoginModule.AdminPasswordCallback;
 import com.sun.enterprise.admin.util.AdminLoginModule.PrincipalCallback;
 import com.sun.enterprise.admin.util.AdminLoginModule.RemoteHostCallback;
-import com.sun.enterprise.admin.util.AdminLoginModule.RestTokenCallback;
 import com.sun.enterprise.admin.util.AdminLoginModule.TokenCallback;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.universal.GFBase64Decoder;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.security.auth.callback.*;
+import org.glassfish.common.util.admin.AdminAuthCallback;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.Request;
@@ -96,6 +98,7 @@ public class AdminCallbackHandler implements CallbackHandler {
     private final AuthTokenManager authTokenManager;
     private final String defaultAdminUsername;
     private final LocalPassword localPassword;
+    private final Callback[] dynamicCallbacks;
     
     public AdminCallbackHandler(
             final Request request,
@@ -103,11 +106,13 @@ public class AdminCallbackHandler implements CallbackHandler {
             final AuthTokenManager authTokenManager,
             final String alternateHostName,
             final String defaultAdminUsername,
-            final LocalPassword localPassword) throws IOException {
+            final LocalPassword localPassword,
+            final Collection<Callback> dynamicCallbacks) throws IOException {
         this.request = request;
         this.expectedAdminIndicator = expectedAdminIndicator;
         this.defaultAdminUsername = defaultAdminUsername;
         this.localPassword = localPassword;
+        this.dynamicCallbacks = dynamicCallbacks.toArray(new Callback[dynamicCallbacks.size()]);
         clientPrincipal = request.getUserPrincipal();
         originHost = alternateHostName != null ? alternateHostName : request.getRemoteHost();
         restToken = restToken();
@@ -115,6 +120,10 @@ public class AdminCallbackHandler implements CallbackHandler {
         specialAdminIndicator = specialAdminIndicator();
         this.authTokenManager = authTokenManager;
         token = token();
+    }
+    
+    public Callback[] dynamicCallbacks() {
+        return dynamicCallbacks;
     }
     
     private static Map<String,String> headers(final Request req) {
@@ -217,8 +226,8 @@ public class AdminCallbackHandler implements CallbackHandler {
                 ((AdminIndicatorCallback) cb).set(specialAdminIndicator, expectedAdminIndicator, originHost);
             } else if (cb instanceof RemoteHostCallback) {
                 ((RemoteHostCallback) cb).set(originHost);
-            } else if (cb instanceof RestTokenCallback) {
-                ((RestTokenCallback) cb).set(restToken);
+            } else if (cb instanceof AdminAuthCallback) {
+                ((AdminAuthCallback) cb).set(restToken);
             }
         }
     }

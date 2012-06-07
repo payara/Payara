@@ -58,8 +58,10 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.security.auth.callback.Callback;
 
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.common.util.admin.AdminAuthCallback;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.*;
@@ -125,7 +127,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     @Inject
     private AuthTokenManager authTokenManager;
-
+    
     private SecureAdmin secureAdmin;
 
     @Inject
@@ -143,7 +145,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     /** maps server alias to the Principal for the cert with that alias from the truststore */
     private Map<String,Principal> serverPrincipals = new HashMap<String,Principal>();
-
+    
     @Override
     public synchronized void postConstruct() {
         secureAdmin = domain.getSecureAdmin();
@@ -168,9 +170,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             }
 
         }
-        
     }
-
+    
 
     /** Ensures that authentication and authorization works as specified in class documentation.
      *
@@ -298,13 +299,28 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     }
     
+    private Collection<Callback> prepareRequestBasedCallbacks(final Request req) {
+        final Collection<Callback> result = new ArrayList<Callback>();
+        for (Callback cb : habitat.getAllByContract(AdminAuthCallback.class)) {
+            result.add(cb);
+            if (cb instanceof AdminAuthCallback.RequestBasedCallback) {
+                final AdminAuthCallback.RequestBasedCallback tbcb = (AdminAuthCallback.RequestBasedCallback) cb;
+                tbcb.setRequest(req);
+                
+            }
+        }
+        return result;
+    }
+    
     private Subject authenticate(final Request req, final String alternateHostname) throws IOException, LoginException {
         final AdminCallbackHandler cbh = new AdminCallbackHandler(req, 
                     secureAdmin.getSpecialAdminIndicator(),
                     authTokenManager,
                     alternateHostname,
                     getDefaultAdminUser(),
-                    localPassword);
+                    localPassword,
+                    prepareRequestBasedCallbacks(req)
+        );
         Subject s = null;
         // TODO - remove the following classloader workaround
 //        /*

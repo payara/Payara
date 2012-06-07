@@ -43,6 +43,7 @@ import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.logging.LogDomains;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,8 +53,8 @@ import javax.security.auth.callback.*;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.common.util.admin.AdminAuthCallback;
 import org.glassfish.internal.api.LocalPassword;
-import org.glassfish.security.common.Group;
 
 /**
  * Handles the non-username/password ways an admin user can authenticate.
@@ -86,28 +87,39 @@ public class AdminLoginModule implements LoginModule {
     private final TokenCallback tokenCallback = new TokenCallback();
     private final RemoteHostCallback remoteHostCallback = new RemoteHostCallback();
     private final PrincipalCallback principalCallback = new PrincipalCallback();
-    private final RestTokenCallback restTokenCallback = new RestTokenCallback();
     
-    private final Callback[] callbacks = new Callback[] {
+    private final Callback[] staticCallbacks = new Callback[] {
             usernameCallback,
             passwordCallback,
             adminIndicatorCallback,
             tokenCallback,
             remoteHostCallback,
-            principalCallback,
-            restTokenCallback
+            principalCallback
         };
     
+    private Callback[] callbacks;
     
+    private Callback[] dynamicCallbacks = null;
+    
+   
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         this.subject = subject;
         this.callbackHandler = callbackHandler;
+        if (callbackHandler instanceof AdminCallbackHandler) {
+            initDynamicCallbacks();
+        }
         this.sharedState = sharedState;
         this.options = options;
         authRealm = (String) options.get("auth-realm");
     }
 
+    private void initDynamicCallbacks() {
+        dynamicCallbacks = ((AdminCallbackHandler) callbackHandler).dynamicCallbacks();
+        callbacks = Arrays.copyOf(staticCallbacks, staticCallbacks.length + dynamicCallbacks.length);
+        System.arraycopy(dynamicCallbacks, 0, callbacks, staticCallbacks.length, dynamicCallbacks.length);
+    }
+    
     @Override
     public boolean login() throws LoginException {
         /*
@@ -135,10 +147,25 @@ public class AdminLoginModule implements LoginModule {
          * Make sure this login module has some way of authenticating this user.  
          * Otherwise we don't need it to be invoked during commit or logout.
          */
-        final boolean result = localPassword() | token() | clientCert() | restToken() ;
+        final boolean result = localPassword() | token() | clientCert() | anyDynamicCallback() ;
         return result;
     }
 
+    private boolean anyDynamicCallback() {
+        boolean result = false;
+        for (Callback cb : dynamicCallbacks) {
+            if (cb instanceof AdminAuthCallback.RequestBasedCallback) {
+                final AdminAuthCallback.RequestBasedCallback tbcb = (AdminAuthCallback.RequestBasedCallback) cb;
+                final Subject s = tbcb.getSubject();
+                if (s != null) {
+                    result = true;
+                    updateFromSubject(s);
+                }
+            }
+        }
+        return result;
+    }
+    
     private boolean localPassword() {
         final boolean result = passwordCallback.isLocalPassword();
         if (result) {
@@ -167,10 +194,14 @@ public class AdminLoginModule implements LoginModule {
          * was created.  We add those to the lists we'll add if this module's
          * commit is invoked.
          */
+        updateFromSubject(s);
+        return true;
+    }
+    
+    private void updateFromSubject(final Subject s) {
         principalsToAdd.addAll(s.getPrincipals());
         privateCredentialsToAdd.addAll(s.getPrivateCredentials());
         publicCredentialsToAdd.addAll(s.getPublicCredentials());
-        return true;
     }
     
     private boolean clientCert() {
@@ -180,14 +211,6 @@ public class AdminLoginModule implements LoginModule {
         }
         principalsToAdd.add(p);
         return true;
-    }
-    
-    private boolean restToken() {
-        final boolean result = restTokenCallback.get() != null;
-        if (result) {
-            // TODO - look up subject from rest token, add its pricipals and creds to this new subject
-        }
-        return result;
     }
     
     private void verifyAdminIndicator() throws LoginException {
@@ -288,7 +311,6 @@ public class AdminLoginModule implements LoginModule {
     }
     
     static class RemoteHostCallback extends StringCallback{}
-    static class RestTokenCallback extends StringCallback{}
     
     static class AdminPasswordCallback extends PasswordCallback {
         

@@ -91,7 +91,7 @@ public class SessionsResource {
 
     @Context
     protected BaseServiceLocator habitat;
-
+    
     /**
      * Get a new session with GlassFish Rest service
      * If a request lands here when authentication has been turned on => it has been authenticated.
@@ -105,14 +105,17 @@ public class SessionsResource {
         RestActionReporter ar = new RestActionReporter();
         Request grizzlyRequest = request.get();
 
-        // If the call flow reached here, the request has been authenticated by logic in RestAdapater.
-        // We authenticate here once again with supplied remoteHostName to see if the authentication needs to happen
-        // as coming from it. This is to support admin gui to authenticate as if coming from remoteHostName that
-        // original request to it originated from.
+        // If the call flow reached here, the request has been authenticated by logic in RestAdapater
+        // probably with an admin username and password.  The remoteHostName value
+        // in the data object is the actual remote host of the end-user who is
+        // using the console (or, conceivably, some other client).  We need to
+        // authenticate here once again with that supplied remoteHostName to 
+        // make sure we enforce remote access rules correctly.
         String hostName = data.get("remoteHostName");
         AdminAccessController.Access access = AdminAccessController.Access.NONE;
+        Subject subject = null;
         try {
-            final Subject subject = ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName);
+            subject = ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName);
             access = (hostName == null) ? AdminAccessController.Access.FULL :  
                     ResourceUtil.chooseAccess(habitat, subject, hostName);
         } catch (Exception e) {
@@ -127,7 +130,7 @@ public class SessionsResource {
             if (username != null) {
                 ar.getExtraProperties().put("username", username);
             }
-            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest));
+            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest, subject));
 
         } else if (access == AdminAccessController.Access.FORBIDDEN) {
             responseBuilder.status(FORBIDDEN);
