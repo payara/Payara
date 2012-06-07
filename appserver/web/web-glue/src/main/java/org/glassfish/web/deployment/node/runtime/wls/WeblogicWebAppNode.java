@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.wls;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
@@ -81,7 +81,7 @@ import com.sun.enterprise.deployment.node.ws.WLServiceRefNode;
  * This node is responsible for handling all WebLogic runtime information for 
  * web bundle.
  */
-public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor> {
+public class WeblogicWebAppNode extends RuntimeBundleNode<WebBundleDescriptor> {
 
     public final static String SCHEMA_ID = "weblogic-web-app.xsd";
 
@@ -94,12 +94,12 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
     }
 
     /** Creates new WLWebBundleRuntimeNode */
-    public WLWebBundleRuntimeNode(WebBundleDescriptor descriptor) {
+    public WeblogicWebAppNode(WebBundleDescriptor descriptor) {
         super(descriptor);
     }
     
     /** Creates new WebBundleRuntimeNode */
-    public WLWebBundleRuntimeNode() {
+    public WeblogicWebAppNode() {
         super(null);    
     }
 
@@ -117,14 +117,6 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
                 EjbReferenceDescriptionNode.class);
         registerElementHandler(new XMLElement(WLWebServicesTagNames.SERVICE_REFERENCE_DESCRIPTION),
                 WLServiceRefNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.SESSION_DESCRIPTOR),
-                WLSessionDescriptorNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.JSP_DESCRIPTOR),
-                WLJspDescriptorNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.CONTAINER_DESCRIPTOR),
-                WLContainerDescriptorNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.SERVLET_DESCRIPTOR),
-                WLServletDescriptorNode.class);
     }
     
     /**
@@ -302,26 +294,8 @@ public class WLWebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescripto
             }
         } 
 
-        // session-descriptor
-        WLSessionDescriptorNode sessionDescriptorNode = new WLSessionDescriptorNode();
-        sessionDescriptorNode.writeDescriptor(root, bundleDescriptor);
-
-        // jsp-descriptor
-        WLJspDescriptorNode jspDescriptorNode = new WLJspDescriptorNode();
-        jspDescriptorNode.writeDescriptor(root, bundleDescriptor);
-
-        // container-descriptor
-        WLContainerDescriptorNode containerDescriptorNode = new WLContainerDescriptorNode();
-        containerDescriptorNode.writeDescriptor(root, bundleDescriptor);
-
         // context-root?
         appendTextChild(root, RuntimeTagNames.CONTEXT_ROOT, bundleDescriptor.getContextRoot());
-
-        // servlet-descriptor*
-        for (WebComponentDescriptor webCompDesc : bundleDescriptor.getServletDescriptors()) {
-            WLServletDescriptorNode servletDescriptorNode = new WLServletDescriptorNode();
-            servletDescriptorNode.writeDescriptor(root, webCompDesc);
-        }
 
         return root;
     }

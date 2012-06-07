@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 import com.sun.enterprise.deployment.runtime.web.Cache;
 import com.sun.enterprise.deployment.runtime.web.CacheHelper;
@@ -55,7 +56,7 @@ import org.w3c.dom.Node;
 *
 * @author Jerome Dochez
 */
-public class CacheNode extends WebRuntimeNode<Cache> {
+public class CacheNode extends RuntimeDescriptorNode<Cache> {
     
     public CacheNode() {
 	
@@ -78,10 +79,7 @@ public class CacheNode extends WebRuntimeNode<Cache> {
      */
     @Override
     protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
-	RuntimeDescriptor descriptor = (RuntimeDescriptor) getRuntimeDescriptor();
-	if (descriptor==null) {
-	    throw new RuntimeException("Trying to set values on a null descriptor");
-	} 	
+	RuntimeDescriptor descriptor = getDescriptor();
 	if (attributeName.getQName().equals(RuntimeTagNames.MAX_ENTRIES)) {
 	    descriptor.setAttributeValue(Cache.MAX_ENTRIES, value);
 	    return true;    

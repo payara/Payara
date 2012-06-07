@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.web.LocaleCharsetInfo;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
@@ -52,7 +53,7 @@ import org.xml.sax.Attributes;
 *
 * @author Jerome Dochez
 */
-public class LocaleCharsetInfoNode extends WebRuntimeNode<LocaleCharsetInfo> {
+public class LocaleCharsetInfoNode extends RuntimeDescriptorNode<LocaleCharsetInfo> {
     
     /**
      * Initialize the child handlers

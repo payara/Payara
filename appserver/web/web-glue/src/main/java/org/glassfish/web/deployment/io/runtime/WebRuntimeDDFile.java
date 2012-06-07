@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.WebBundleRuntimeNode;
+import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
 
 /**
  * This class is responsible for handling the XML configuration information

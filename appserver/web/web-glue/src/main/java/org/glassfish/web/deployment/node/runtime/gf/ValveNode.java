@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.web.Valve;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
@@ -49,7 +50,7 @@ import org.w3c.dom.Node;
 /**
  * Node representing a valve tag.
  */
-public class ValveNode extends WebRuntimeNode<Valve> {
+public class ValveNode extends RuntimeDescriptorNode<Valve> {
 
     public ValveNode() {
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
@@ -66,10 +67,7 @@ public class ValveNode extends WebRuntimeNode<Valve> {
     protected boolean setAttributeValue(XMLElement elementName,
                                         XMLElement attributeName,
                                         String value) {
-        Valve descriptor = (Valve) getRuntimeDescriptor();
-        if (descriptor == null) {
-            throw new RuntimeException("Trying to set values on a null descriptor");
-        }
+        Valve descriptor = getDescriptor();
         if (attributeName.getQName().equals(RuntimeTagNames.NAME)) {
             descriptor.setAttributeValue(Valve.NAME, value);
             return true;

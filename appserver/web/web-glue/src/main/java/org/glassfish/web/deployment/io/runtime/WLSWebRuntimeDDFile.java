@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
-import org.glassfish.web.deployment.node.runtime.WLWebBundleRuntimeNode;
+import org.glassfish.web.deployment.node.runtime.wls.WeblogicWebAppNode;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -75,7 +75,7 @@ public class WLSWebRuntimeDDFile extends
             WebBundleDescriptor bundleDesc = (WebBundleDescriptor)descriptor;
             RootXMLNode node = bundleDesc.getRootNode(getDeploymentDescriptorPath());
             if (node == null) {
-                node = new WLWebBundleRuntimeNode(bundleDesc);
+                node = new WeblogicWebAppNode(bundleDesc);
                 bundleDesc.addRootNode(getDeploymentDescriptorPath(), node);
             }
             return node;

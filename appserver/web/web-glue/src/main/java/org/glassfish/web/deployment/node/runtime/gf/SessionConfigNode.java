@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.web.SessionConfig;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
@@ -51,7 +52,7 @@ import org.w3c.dom.Node;
 * @author Jerome Dochez
 */
 
-public class SessionConfigNode extends WebRuntimeNode<SessionConfig> {
+public class SessionConfigNode extends RuntimeDescriptorNode<SessionConfig> {
     
     /**
      * Initialize the child handlers

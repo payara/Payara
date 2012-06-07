@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.web.CacheMapping;
 import com.sun.enterprise.deployment.runtime.web.ConstraintField;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -55,7 +56,7 @@ import java.util.Map;
 *
 * @author Jerome Dochez
 */
-public class CacheMappingNode extends WebRuntimeNode<CacheMapping> {
+public class CacheMappingNode extends RuntimeDescriptorNode<CacheMapping> {
     
     public CacheMappingNode() {
 	
@@ -82,10 +83,7 @@ public class CacheMappingNode extends WebRuntimeNode<CacheMapping> {
     }
 
     public void startElement(XMLElement element, Attributes attributes) {
-        CacheMapping descriptor = (CacheMapping) getRuntimeDescriptor();
-	if (descriptor==null) {
-	    throw new RuntimeException("Trying to set values on a null descriptor");
-	} 	
+        CacheMapping descriptor = getDescriptor();
 	if (element.getQName().equals(RuntimeTagNames.TIMEOUT)) {
             for (int i=0; i<attributes.getLength();i++) {
                 if (RuntimeTagNames.NAME.equals(attributes.getQName(i))) {

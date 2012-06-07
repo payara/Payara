@@ -38,9 +38,10 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.web.ConstraintField;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
@@ -54,7 +55,7 @@ import java.util.Map;
 *
 * @author Jerome Dochez
 */
-public class ConstraintFieldNode extends WebRuntimeNode<ConstraintField> {
+public class ConstraintFieldNode extends RuntimeDescriptorNode<ConstraintField> {
         
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
@@ -74,8 +75,7 @@ public class ConstraintFieldNode extends WebRuntimeNode<ConstraintField> {
     @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if (element.getQName().equals(RuntimeTagNames.CONSTRAINT_FIELD)) {
-            ConstraintField descriptor = 
-                (ConstraintField) getRuntimeDescriptor();
+            ConstraintField descriptor = getDescriptor();
             for (int i=0; i<attributes.getLength();i++) {
                 if (RuntimeTagNames.NAME.equals(attributes.getQName(i))) {
                     descriptor.setAttributeValue(ConstraintField.NAME,
@@ -103,8 +103,7 @@ public class ConstraintFieldNode extends WebRuntimeNode<ConstraintField> {
         // need to make sure both will work
         } else if (element.getQName().equals(RuntimeTagNames.VALUE) || 
             element.getQName().equals(RuntimeTagNames.CONSTRAINT_FIELD_VALUE)) {
-            ConstraintField descriptor = 
-                (ConstraintField) getRuntimeDescriptor();
+            ConstraintField descriptor = getDescriptor();
             int index = descriptor.sizeValue();
             for (int i=0; i<attributes.getLength();i++) {
                 if (RuntimeTagNames.MATCH_EXPR.equals(

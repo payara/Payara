@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,27 +38,62 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.DTDRegistry;
+
+import java.util.Map;
+
 
 /**
- * This node is the superclass for all web related runtime nodes
- *
- * @author  Jerome Dochez
- * @version 
+ * This node is responsible for handling all runtime information for 
+ * web bundle.
  */
-public class WebRuntimeNode<T> extends RuntimeDescriptorNode<T> {
+public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
+
+    /** Creates new GFWebBundleRuntimeNode */
+    public GFWebBundleRuntimeNode(WebBundleDescriptor descriptor) {
+        super(descriptor);
+    }
+    
+    /** Creates new GFWebBundleRuntimeNode */
+    public GFWebBundleRuntimeNode() {
+        super(null);    
+    }
+    
+    /**
+     * @return the XML tag associated with this XMLNode
+     */
+    protected XMLElement getXMLRootTag() {
+        return new XMLElement(RuntimeTagNames.GF_WEB_RUNTIME_TAG);
+    }    
+    
+    /** 
+     * @return the DOCTYPE that should be written to the XML file
+     */
+    public String getDocType() {
+        return DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
+    }
+    
+    /**
+     * @return the SystemID of the XML file
+     */
+    public String getSystemID() {
+        return DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID;
+    }
 
    /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public RuntimeDescriptor getRuntimeDescriptor() {
-	if (getDescriptor() instanceof RuntimeDescriptor) {
-	    return (RuntimeDescriptor) getDescriptor();
-	} else {
-	    return null;
-	}
-    }
+    * register this node as a root node capable of loading entire DD files
+    * 
+    * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
+    * @return the doctype tag name
+    */
+   public static String registerBundle(Map<String, String> publicIDToDTD) {
+       publicIDToDTD.put(DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID, DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID);
+       
+       return RuntimeTagNames.GF_WEB_RUNTIME_TAG;       
+   }    
 }

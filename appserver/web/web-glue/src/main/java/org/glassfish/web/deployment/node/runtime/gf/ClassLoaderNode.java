@@ -38,32 +38,25 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.runtime.web.IdempotentUrlPattern;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
+import com.sun.enterprise.deployment.runtime.web.ClassLoader;
+import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-
-
 /**
-* node to handle idempotent-url-pattern node
+* node for class-loader tag
 */
-public class IdempotentUrlPatternNode extends WebRuntimeNode<IdempotentUrlPattern> {
-
-    IdempotentUrlPattern descriptor = null;
-
-    /**
-    * @return the descriptor instance to associate with this XMLNode
-    */
-    @Override
-    public IdempotentUrlPattern getDescriptor() {
-        if (descriptor == null) {
-            descriptor = new IdempotentUrlPattern();
-        }
-        return descriptor;
+public class ClassLoaderNode extends RuntimeDescriptorNode<ClassLoader> {
+    
+    public ClassLoaderNode() {
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
+            WebPropertyNode.class, "addWebProperty"); 	
     }
 
     /**
@@ -75,45 +68,52 @@ public class IdempotentUrlPatternNode extends WebRuntimeNode<IdempotentUrlPatter
      * @return true if the attribute was processed
      */
     @Override
-    protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
-        if (attributeName.getQName().equals(RuntimeTagNames.URL_PATTERN)) {
-            descriptor.setAttributeValue(IdempotentUrlPattern.URL_PATTERN, 
+    protected boolean setAttributeValue(XMLElement elementName, 
+        XMLElement attributeName, String value) {
+	RuntimeDescriptor descriptor = getDescriptor();
+	if (attributeName.getQName().equals(RuntimeTagNames.EXTRA_CLASS_PATH)) {
+	    descriptor.setAttributeValue(ClassLoader.EXTRA_CLASS_PATH, value);
+	    return true;    
+	} else if (attributeName.getQName().equals(RuntimeTagNames.DELEGATE)) {
+	    descriptor.setAttributeValue(ClassLoader.DELEGATE, value);
+	    return true;    
+	} else if (attributeName.getQName().equals(
+            RuntimeTagNames.DYNAMIC_RELOAD_INTERVAL)) {
+	    descriptor.setAttributeValue(ClassLoader.DYNAMIC_RELOAD_INTERVAL, 
                 value);
-            return true;
-        } else if (attributeName.getQName().equals(
-            RuntimeTagNames.NUM_OF_RETRIES)) {
-            descriptor.setAttributeValue(IdempotentUrlPattern.NUM_OF_RETRIES,
-                value);
-            return true;
-        }
-        return false;
+	    return true;    
+	}
+	return false;
     }
     
     /**
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param nodeName node name for the descriptor
-     * @param pattern the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
     @Override
     public Node writeDescriptor(Node parent, String nodeName, 
-       IdempotentUrlPattern pattern) {
-       Element patternNode = 
-            (Element)super.writeDescriptor(parent, nodeName, pattern);
-        
-        // url-pattern
-        if (pattern.getAttributeValue(pattern.URL_PATTERN) != null) {
-            setAttribute(patternNode, RuntimeTagNames.URL_PATTERN, pattern.getAttributeValue(pattern.URL_PATTERN));
-        }   
+        ClassLoader descriptor) {       
 
-        // num-of-retries
-        if (pattern.getAttributeValue(pattern.NUM_OF_RETRIES) != null) {
-            setAttribute(patternNode, RuntimeTagNames.NUM_OF_RETRIES, pattern.getAttributeValue(pattern.NUM_OF_RETRIES));
+	Element classLoader = (Element) super.writeDescriptor(parent, 
+            nodeName, descriptor);
+	
+        // property*
+        WebProperty[] properties = descriptor.getWebProperty();
+        if (properties != null && properties.length > 0) {
+            WebPropertyNode wpn = new WebPropertyNode();
+            wpn.writeDescriptor(classLoader, RuntimeTagNames.PROPERTY, 
+                properties);
         }
 
-        return patternNode;
+	// extra-class-path, delegate, dynamic-reload-interval
+	setAttribute(classLoader, RuntimeTagNames.EXTRA_CLASS_PATH, (String) descriptor.getAttributeValue(ClassLoader.EXTRA_CLASS_PATH));
+	setAttribute(classLoader, RuntimeTagNames.DELEGATE, (String) descriptor.getAttributeValue(ClassLoader.DELEGATE));
+	setAttribute(classLoader, RuntimeTagNames.DYNAMIC_RELOAD_INTERVAL, (String) descriptor.getAttributeValue(ClassLoader.DYNAMIC_RELOAD_INTERVAL));
+	
+	return classLoader;
     }
 }
-

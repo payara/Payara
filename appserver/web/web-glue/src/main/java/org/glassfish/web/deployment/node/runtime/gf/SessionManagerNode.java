@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,31 +38,34 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
+import com.sun.enterprise.deployment.runtime.web.SessionManager;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * This node is responsible for handling weblogic.xml servlet-descriptor.
- *
- * @author  Shing Wai Chan
- */
-public class WLServletDescriptorNode extends RuntimeDescriptorNode<WebComponentDescriptor> {
-    private WebComponentDescriptor descriptor;
+* superclass node for WebProperty container 
+*
+* @author Jerome Dochez
+*/
+public class SessionManagerNode extends RuntimeDescriptorNode<SessionManager> {
 
-    @Override
-    public WebComponentDescriptor getDescriptor() {
-        return descriptor;
+    /**
+     * Initialize the child handlers
+     */
+    public SessionManagerNode() {
+	
+        registerElementHandler(new XMLElement(RuntimeTagNames.MANAGER_PROPERTIES), 
+                               WebPropertyContainerNode.class, "setManagerProperties");	
+        registerElementHandler(new XMLElement(RuntimeTagNames.STORE_PROPERTIES), 
+                               WebPropertyContainerNode.class, "setStoreProperties");				       
     }
-
+    
     /**
      * receives notification of the value for a particular tag
      * 
@@ -71,30 +74,43 @@ public class WLServletDescriptorNode extends RuntimeDescriptorNode<WebComponentD
      */
     @Override
     public void setElementValue(XMLElement element, String value) {
-        String name = element.getQName();
-        if (name.equals(RuntimeTagNames.SERVLET_NAME)) {
-            Object parentDesc = ((WLWebBundleRuntimeNode)getParentNode()).getDescriptor();
-            descriptor = ((WebBundleDescriptor)parentDesc).getWebComponentByCanonicalName(value);
-        } else if (name.equals(RuntimeTagNames.RUN_AS_PRINCIPAL_NAME)) {
-            if (descriptor != null && descriptor.getRunAsIdentity() != null) {
-                descriptor.getRunAsIdentity().setPrincipal(value);
-            }
-        } else {
-            super.setElementValue(element, value);
-        }
-    }
+	RuntimeDescriptor descriptor = getDescriptor();
+	if (element.getQName().equals(RuntimeTagNames.PERSISTENCE_TYPE)) {
+	    descriptor.setAttributeValue(SessionManager.PERSISTENCE_TYPE, value);
+	}
+    }   
 
+    /**
+     * write the descriptor class to a DOM tree and return it
+     *
+     * @param parent node for the DOM tree
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
+     * @return the DOM tree top node
+     */
     @Override
-    public Node writeDescriptor(Node parent, WebComponentDescriptor descriptor) {        
-        if (descriptor != null && descriptor.getRunAsIdentity() != null) {
-            Node servletNode =  appendChild(parent, RuntimeTagNames.SERVLET_DESCRIPTOR);
-            appendTextChild(servletNode, RuntimeTagNames.SERVLET_NAME, descriptor.getCanonicalName());
-
-            appendTextChild(servletNode, RuntimeTagNames.RUN_AS_PRINCIPAL_NAME, 
-                            descriptor.getRunAsIdentity().getPrincipal());
-
-            return servletNode;
-        }
-        return null;
+    public Node writeDescriptor(Node parent, String nodeName, SessionManager descriptor) {
+	
+	Element sessionMgr = (Element) super.writeDescriptor(parent, nodeName, descriptor);
+	
+	// manager-properties?
+	if (descriptor.getManagerProperties()!=null) {
+	    WebPropertyNode wpn = new WebPropertyNode();
+	    Node mgrProps = appendChild(sessionMgr, RuntimeTagNames.MANAGER_PROPERTIES);
+	    wpn.writeDescriptor(mgrProps, RuntimeTagNames.PROPERTY, descriptor.getManagerProperties().getWebProperty());
+	}
+	
+	// store-properties?
+	if (descriptor.getStoreProperties()!=null) {
+	    WebPropertyNode wpn = new WebPropertyNode();
+	    Node storeProps = appendChild(sessionMgr, RuntimeTagNames.STORE_PROPERTIES);
+	    wpn.writeDescriptor(storeProps, RuntimeTagNames.PROPERTY, descriptor.getStoreProperties().getWebProperty());
+	}
+	
+	// persistence-type?
+	setAttribute(sessionMgr, RuntimeTagNames.PERSISTENCE_TYPE, (String) descriptor.getAttributeValue(SessionManager.PERSISTENCE_TYPE));
+	
+	return sessionMgr;
     }
+	
 }

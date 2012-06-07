@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.XMLElement;

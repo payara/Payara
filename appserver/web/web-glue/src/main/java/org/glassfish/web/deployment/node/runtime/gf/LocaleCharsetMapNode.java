@@ -38,84 +38,63 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
+import com.sun.enterprise.deployment.runtime.web.LocaleCharsetMap;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-
 /**
 * node for web property tag
 *
 * @author Jerome Dochez
 */
-public class WebPropertyNode extends WebRuntimeNode<WebProperty> {
-
+public class LocaleCharsetMapNode extends RuntimeDescriptorNode<LocaleCharsetMap> {
+    
     /**
-     * parsed an attribute of an element
-     *
-     * @param elementName the element name
-     * @param attributeName the attribute name
-     * @param value the attribute value
-     * @return true if the attribute was processed
+     * receives notification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
      */
     @Override
-    protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
-        RuntimeDescriptor descriptor = 
-            (RuntimeDescriptor) getRuntimeDescriptor();
-        if (descriptor==null) {
-            throw new RuntimeException(
-            "Trying to set values on a null descriptor");
-        }
-        if (attributeName.getQName().equals(RuntimeTagNames.NAME)) {
-            descriptor.setAttributeValue(WebProperty.NAME, value);
-            return true;
-        } else if (attributeName.getQName().equals(RuntimeTagNames.VALUE)) {
-            descriptor.setAttributeValue(WebProperty.VALUE, value);
-            return true;
-        }
-        return false;
-    }
+    public void setElementValue(XMLElement element, String value) {
+	RuntimeDescriptor descriptor = getDescriptor();
+	if (element.getQName().equals(RuntimeTagNames.LOCALE)) {
+	    descriptor.setAttributeValue(LocaleCharsetMap.LOCALE, value);
+	} else 
+	if (element.getQName().equals(RuntimeTagNames.AGENT)) {
+	    descriptor.setAttributeValue(LocaleCharsetMap.AGENT, value);
+	}
+	if (element.getQName().equals(RuntimeTagNames.CHARSET)) {
+	    descriptor.setAttributeValue(LocaleCharsetMap.CHARSET, value);
+	} 
+    }    
     
     /**
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
      * @param nodeName node name for the descriptor
-     * @param property the descriptor to write
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
      */
     @Override
-    public Node writeDescriptor(Node parent, String nodeName, 
-        WebProperty property) {
-        Element propertyElement = 
-            (Element) super.writeDescriptor(parent, nodeName, property);
-
-        // description?
-        appendTextChild(propertyElement, RuntimeTagNames.DESCRIPTION, property.getDescription());
-
-	setAttribute(propertyElement, RuntimeTagNames.NAME, (String) property.getAttributeValue(WebProperty.NAME));
-	setAttribute(propertyElement, RuntimeTagNames.VALUE, (String) property.getAttributeValue(WebProperty.VALUE));
-        return propertyElement;
-    }
-    
-    /**
-     * write the descriptor class to a DOM tree and return it
-     *
-     * @param parent node for the DOM tree
-     * @param node name for the descriptor
-     * @param the array of descriptors to write
-     */    
-    public void writeDescriptor(Node parent, String nodeName, WebProperty[] properties) {
-	if (properties==null) 
-	    return;
-	for (int i=0;i<properties.length;i++) {
-	    writeDescriptor(parent, nodeName, properties[i]);
-	}
+    public Node writeDescriptor(Node parent, String nodeName, LocaleCharsetMap descriptor) {
+	
+	Element locale = (Element) super.writeDescriptor(parent, nodeName, descriptor);
+	
+	// description?
+	appendTextChild(locale, RuntimeTagNames.DESCRIPTION, descriptor.getDescription());
+	
+	// locale, agent, charset attributes
+	setAttribute(locale, RuntimeTagNames.LOCALE, (String) descriptor.getAttributeValue(LocaleCharsetMap.LOCALE));
+	setAttribute(locale, RuntimeTagNames.AGENT, (String) descriptor.getAttributeValue(LocaleCharsetMap.AGENT));
+	setAttribute(locale, RuntimeTagNames.CHARSET, (String) descriptor.getAttributeValue(LocaleCharsetMap.CHARSET));
+	
+	return locale;
     }
 }
-

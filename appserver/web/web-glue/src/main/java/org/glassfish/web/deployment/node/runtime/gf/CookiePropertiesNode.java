@@ -38,24 +38,14 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
-
-import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 /**
-* superclass node for WebProperty container 
-*
-* @author Jerome Dochez
-*/
-public class WebPropertyContainerNode extends WebRuntimeNode {
-
-    /**
-     * Initialize the child handlers
-     */
-    public WebPropertyContainerNode() {
-	
-        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
-                               WebPropertyNode.class, "addWebProperty");		       
-    }
+ * This node is the superclass for all web related runtime nodes
+ *
+ * @author  Jerome Dochez
+ * @version 
+ */
+public class CookiePropertiesNode extends WebPropertyContainerNode {
+    // tag class
 }

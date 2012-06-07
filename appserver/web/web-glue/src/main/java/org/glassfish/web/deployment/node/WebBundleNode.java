@@ -44,9 +44,9 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebTagNames;
-import org.glassfish.web.deployment.node.runtime.GFWebBundleRuntimeNode;
-import org.glassfish.web.deployment.node.runtime.WLWebBundleRuntimeNode;
-import org.glassfish.web.deployment.node.runtime.WebBundleRuntimeNode;
+import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
+import org.glassfish.web.deployment.node.runtime.wls.WeblogicWebAppNode;
+import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
@@ -109,7 +109,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
          * The WL descriptors use schemas, not DTDs, so 
          * we don't need to add them to the DTD mapping.
          */
-        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WLS_WEB_RUNTIME_TAG, WLWebBundleRuntimeNode.class);
+        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WLS_WEB_RUNTIME_TAG, WeblogicWebAppNode.class);
         
         return result;
     }

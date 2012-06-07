@@ -38,50 +38,52 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime;
+package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SessionManager;
+import com.sun.enterprise.deployment.runtime.web.CacheHelper;
+import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
-* superclass node for WebProperty container 
+* node for cache-helper tag
 *
 * @author Jerome Dochez
 */
-public class SessionManagerNode extends WebRuntimeNode<SessionManager> {
+public class CacheHelperNode extends RuntimeDescriptorNode<CacheHelper> {
+    
+    public CacheHelperNode() {
+	
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
+                               WebPropertyNode.class, "addWebProperty"); 			       
+    }
 
     /**
-     * Initialize the child handlers
-     */
-    public SessionManagerNode() {
-	
-        registerElementHandler(new XMLElement(RuntimeTagNames.MANAGER_PROPERTIES), 
-                               WebPropertyContainerNode.class, "setManagerProperties");	
-        registerElementHandler(new XMLElement(RuntimeTagNames.STORE_PROPERTIES), 
-                               WebPropertyContainerNode.class, "setStoreProperties");				       
-    }
-    
-    /**
-     * receives notification of the value for a particular tag
-     * 
-     * @param element the xml element
-     * @param value it's associated value
+     * parsed an attribute of an element
+     *
+     * @param elementName the element name
+     * @param attributeName the attribute name
+     * @param value the attribute value
+     * @return true if the attribute was processed
      */
     @Override
-    public void setElementValue(XMLElement element, String value) {
-	RuntimeDescriptor descriptor = getRuntimeDescriptor();
-	if (descriptor==null) {
-	    throw new RuntimeException("Trying to set values on a null descriptor");
-	}
-	if (element.getQName().equals(RuntimeTagNames.PERSISTENCE_TYPE)) {
-	    descriptor.setAttributeValue(SessionManager.PERSISTENCE_TYPE, value);
-	}
-    }   
-
+    protected boolean setAttributeValue(XMLElement elementName, XMLElement attributeName, String value) {
+	RuntimeDescriptor descriptor = getDescriptor();
+	if (attributeName.getQName().equals(RuntimeTagNames.NAME)) {
+	    descriptor.setAttributeValue(CacheHelper.NAME, value);
+	    return true;
+	} else
+	if (attributeName.getQName().equals(RuntimeTagNames.CLASS_NAME)) {
+	    descriptor.setAttributeValue(CacheHelper.CLASS_NAME, value);
+	    return true;
+	}  
+	return false;
+    }
+    
     /**
      * write the descriptor class to a DOM tree and return it
      *
@@ -91,28 +93,21 @@ public class SessionManagerNode extends WebRuntimeNode<SessionManager> {
      * @return the DOM tree top node
      */
     @Override
-    public Node writeDescriptor(Node parent, String nodeName, SessionManager descriptor) {
+    public Node writeDescriptor(Node parent, String nodeName, CacheHelper descriptor) {    
+
+	Element cacheHelper = (Element) super.writeDescriptor(parent, nodeName, descriptor);
 	
-	Element sessionMgr = (Element) super.writeDescriptor(parent, nodeName, descriptor);
-	
-	// manager-properties?
-	if (descriptor.getManagerProperties()!=null) {
+	// property*
+	WebProperty[] properties = descriptor.getWebProperty();
+	if (properties.length>0) {
 	    WebPropertyNode wpn = new WebPropertyNode();
-	    Node mgrProps = appendChild(sessionMgr, RuntimeTagNames.MANAGER_PROPERTIES);
-	    wpn.writeDescriptor(mgrProps, RuntimeTagNames.PROPERTY, descriptor.getManagerProperties().getWebProperty());
+	    wpn.writeDescriptor(cacheHelper, RuntimeTagNames.PROPERTY, properties);
 	}
 	
-	// store-properties?
-	if (descriptor.getStoreProperties()!=null) {
-	    WebPropertyNode wpn = new WebPropertyNode();
-	    Node storeProps = appendChild(sessionMgr, RuntimeTagNames.STORE_PROPERTIES);
-	    wpn.writeDescriptor(storeProps, RuntimeTagNames.PROPERTY, descriptor.getStoreProperties().getWebProperty());
-	}
+	// name, class-name attribute
+	setAttribute(cacheHelper, RuntimeTagNames.NAME, (String) descriptor.getAttributeValue(CacheHelper.NAME));
+	setAttribute(cacheHelper, RuntimeTagNames.CLASS_NAME, (String) descriptor.getAttributeValue(CacheHelper.CLASS_NAME));
 	
-	// persistence-type?
-	setAttribute(sessionMgr, RuntimeTagNames.PERSISTENCE_TYPE, (String) descriptor.getAttributeValue(SessionManager.PERSISTENCE_TYPE));
-	
-	return sessionMgr;
+	return cacheHelper;
     }
-	
 }
