@@ -120,9 +120,15 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
         String installRoot = startupContext.getArguments().getProperty(INSTALL_ROOT_PROP_NAME);
         if (installRoot == null) {
             // During unit testing, we find an empty StartupContext.
+            // Let's first see if the installRoot system property is set 
+            // in the client VM, if not
             // To be consistent with earlier code (i.e., code that relied on StartupContext.getRootDirectory()),
             // I am setting user.dir as installRoot.
-            installRoot = System.getProperty("user.dir");
+            if (System.getProperty(INSTALL_ROOT_PROP_NAME) != null) {
+                installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
+            } else {
+                installRoot = System.getProperty("user.dir");
+            }
         }
         asenv = new ASenvPropertyReader(new File(installRoot));
 
