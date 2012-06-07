@@ -652,12 +652,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         sniffers = getSniffers(handler, sniffers, context);
 
         DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        
-        if (!snifferManager.containsPrimarySniffer(sniffers)) {
-            report.failure(logger,localStrings.getLocalString("deploy.unknownmoduletpe","Module type not recognized for module {0}", context.getSourceDir()));
-            return null;
-        }
-
         snifferManager.validateSniffers(sniffers, context);
 
         Map<Deployer, EngineInfo> containerInfosByDeployers = new LinkedHashMap<Deployer, EngineInfo>();

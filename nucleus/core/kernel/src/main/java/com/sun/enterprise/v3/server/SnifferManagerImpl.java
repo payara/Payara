@@ -47,7 +47,6 @@ import org.jvnet.hk2.component.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.CompositeSniffer;
-import org.glassfish.api.container.SecondarySniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.internal.deployment.SnifferManager;
@@ -261,18 +260,5 @@ public class SnifferManagerImpl implements SnifferManager {
                 }
             }
         }
-    }
-
-    public boolean containsPrimarySniffer(
-        Collection<? extends Sniffer> sniffers) {
-        if (sniffers == null || sniffers.isEmpty()) {
-            return false;
-        }
-        for (Sniffer sniffer : sniffers) {
-            if (! (sniffer instanceof SecondarySniffer)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
