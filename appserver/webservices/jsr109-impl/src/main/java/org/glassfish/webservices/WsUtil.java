@@ -728,9 +728,9 @@ public class WsUtil {
 
         String declaredType = ws.getType();
         if(declaredType != null) {
-            if(declaredType.equals("JAX-WS")) {
+            if(declaredType.equals("JAXWS")) {
                 jaxwsEndPtFound = true;
-            } else if(declaredType.equals("JAX-RPC")) {
+            } else if(declaredType.equals("JAXRPC")) {
                 jaxrpcEndPtFound = false;
             } else {
                 logger.log(Level.SEVERE, rb.getString("webservice.type.error"),new Object[] {ws.getDescription(), declaredType});
