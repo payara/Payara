@@ -329,6 +329,6 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
      * @return the schema URL
      */
     protected String getSchemaURL() {
-        return TagNames.J2EE_NAMESPACE + "/" + getSystemID();
+        return TagNames.JAVAEE_NAMESPACE + "/" + getSystemID();
     }
 }

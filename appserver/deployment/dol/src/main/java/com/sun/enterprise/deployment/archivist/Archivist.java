@@ -1352,9 +1352,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
                 String anEntry = (String) entries.nextElement();
                 if (ignoreList == null || !ignoreList.contains(anEntry)) {
                     InputStream is = in.getEntry(anEntry);
-                    OutputStream os = out.putNextEntry(anEntry);
-                    ArchivistUtils.copyWithoutClose(is, os);
-                    is.close();
+                    if (is != null) {
+                      OutputStream os = out.putNextEntry(anEntry);
+                      ArchivistUtils.copyWithoutClose(is, os);
+                      is.close();
+                    }
                     out.closeEntry();
                 }
             }

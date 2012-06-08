@@ -229,16 +229,10 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      */
     protected void addBundleNodeAttributes(Element bundleNode, RootDeploymentDescriptor descriptor) {
         String schemaLocation;
-        // the latest connector schema still use j2ee namespace
-        if (descriptor instanceof ConnectorDescriptor) {
-            bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", TagNames.J2EE_NAMESPACE);    
-            schemaLocation = TagNames.J2EE_NAMESPACE + " " + 
-                getSchemaURL();
-        } else {
-            bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", TagNames.JAVAEE_NAMESPACE);    
-            schemaLocation = TagNames.JAVAEE_NAMESPACE + " " + 
-                getSchemaURL();
-        }
+
+        bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", TagNames.JAVAEE_NAMESPACE);    
+        schemaLocation = TagNames.JAVAEE_NAMESPACE + " " + 
+          getSchemaURL();
         bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", W3C_XML_SCHEMA_INSTANCE);    
 
         // add all custom global namespaces

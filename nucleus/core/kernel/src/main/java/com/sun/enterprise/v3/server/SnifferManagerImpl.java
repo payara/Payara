@@ -221,6 +221,7 @@ public class SnifferManagerImpl implements SnifferManager {
             Class<? extends Annotation>[] annotations = sniffer.getAnnotationTypes();
             if (annotations==null) continue;
             for (Class<? extends Annotation> annotationType : annotations)  {
+              if (types != null) {
                 Type type = types.getBy(annotationType.getName());
                 if (type instanceof AnnotationType) {
                     Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
@@ -237,6 +238,7 @@ public class SnifferManagerImpl implements SnifferManager {
                         }
                     }
                 }
+              }
             }
         }
         return result;
