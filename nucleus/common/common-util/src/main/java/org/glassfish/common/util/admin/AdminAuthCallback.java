@@ -52,9 +52,6 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface AdminAuthCallback extends Callback {
-    public void set(String value);
-    public String get();
-    
     /**
      * Prescribes behavior of callbacks that use request-time data in making
      * their decisions.
@@ -64,8 +61,15 @@ public interface AdminAuthCallback extends Callback {
      * keep inter-module dependencies simpler an implementation will probably
      * check the type of the data and then cast it if appropriate.
      */
-    public interface RequestBasedCallback extends AdminAuthCallback {
-        public Subject getSubject();
+    public interface RequestAccepter extends AdminAuthCallback {
         public void setRequest(Object data);
+    }
+    
+    public interface Validator extends AdminAuthCallback {
+        public boolean isValid();
+    }
+    
+    public interface Authenticator extends AdminAuthCallback {
+        public Subject getSubject();
     }
 }

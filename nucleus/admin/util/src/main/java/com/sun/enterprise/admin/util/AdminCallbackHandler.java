@@ -39,27 +39,22 @@
  */
 package com.sun.enterprise.admin.util;
 
-import com.sun.enterprise.admin.util.AdminLoginModule.AdminIndicatorCallback;
-import com.sun.enterprise.admin.util.AdminLoginModule.AdminPasswordCallback;
-import com.sun.enterprise.admin.util.AdminLoginModule.PrincipalCallback;
-import com.sun.enterprise.admin.util.AdminLoginModule.RemoteHostCallback;
-import com.sun.enterprise.admin.util.AdminLoginModule.TokenCallback;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.universal.GFBase64Decoder;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.security.auth.callback.*;
-import org.glassfish.common.util.admin.AdminAuthCallback;
-import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.common.util.admin.AdminAuthenticator.AuthenticatorType;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.LocalPassword;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Handles callbacks for admin authentication other than user-provided
@@ -79,6 +74,12 @@ public class AdminCallbackHandler implements CallbackHandler {
     public static final String COOKIE_REST_TOKEN = "gfresttoken";
     public static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
     
+    
+    private static final Level PROGRESS_LEVEL = Level.FINE;
+    private static final String LINE_SEP = System.getProperty("line.separator");
+    
+    private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
+    
     private final Request request;
     
     private Map<String,String> headers = null;
@@ -91,39 +92,33 @@ public class AdminCallbackHandler implements CallbackHandler {
     
     private final PasswordAuthentication passwordAuthentication;
     
-    private final String expectedAdminIndicator;
     private final String specialAdminIndicator;
     private final String token;
-    private final String restToken;
-    private final AuthTokenManager authTokenManager;
     private final String defaultAdminUsername;
     private final LocalPassword localPassword;
-    private final Callback[] dynamicCallbacks;
+    private final BaseServiceLocator serviceLocator;
     
     public AdminCallbackHandler(
+            final BaseServiceLocator serviceLocator,
             final Request request,
-            final String expectedAdminIndicator,
-            final AuthTokenManager authTokenManager,
             final String alternateHostName,
             final String defaultAdminUsername,
-            final LocalPassword localPassword,
-            final Collection<Callback> dynamicCallbacks) throws IOException {
+            final LocalPassword localPassword) throws IOException {
+        this.serviceLocator = serviceLocator;
         this.request = request;
-        this.expectedAdminIndicator = expectedAdminIndicator;
         this.defaultAdminUsername = defaultAdminUsername;
         this.localPassword = localPassword;
-        this.dynamicCallbacks = dynamicCallbacks.toArray(new Callback[dynamicCallbacks.size()]);
         clientPrincipal = request.getUserPrincipal();
         originHost = alternateHostName != null ? alternateHostName : request.getRemoteHost();
-        restToken = restToken();
         passwordAuthentication = basicAuth();
         specialAdminIndicator = specialAdminIndicator();
-        this.authTokenManager = authTokenManager;
         token = token();
+        
+        
     }
     
-    public Callback[] dynamicCallbacks() {
-        return dynamicCallbacks;
+    BaseServiceLocator getServiceLocator() {
+        return serviceLocator;
     }
     
     private static Map<String,String> headers(final Request req) {
@@ -161,6 +156,7 @@ public class AdminCallbackHandler implements CallbackHandler {
     private PasswordAuthentication basicAuth() throws IOException {
         final String authHeader = header("Authorization");
         if (authHeader == null) {
+            logger.log(PROGRESS_LEVEL, "No Authorization header found; preparing default with username {0} and empty password", defaultAdminUsername);
             return new PasswordAuthentication(defaultAdminUsername, new char[0]);
         }
         
@@ -168,13 +164,16 @@ public class AdminCallbackHandler implements CallbackHandler {
         String dec = new String(decoder.decodeBuffer(enc));
         int i = dec.indexOf(':');
         if (i < 0) {
+            logger.log(PROGRESS_LEVEL, "Authorization header contained no : to separate the username from the password; proceeding with an empty username and empty password");
             return new PasswordAuthentication("", new char[0]);
         }
         final char[] password = dec.substring(i + 1).toCharArray();
         String username = dec.substring(0, i);
         if (username.isEmpty() && ! localPassword.isLocalPassword(new String(password))) {
+            logger.log(PROGRESS_LEVEL, "Authorization header contained no username and the password is not the local password, so continue with the default username {0}", defaultAdminUsername);
             username  = defaultAdminUsername;
         }
+        logger.log(PROGRESS_LEVEL, "basicAuth processing returning PasswordAuthentication with username {0}", username);
         return new PasswordAuthentication(username, password);    
         
     }
@@ -215,19 +214,22 @@ public class AdminCallbackHandler implements CallbackHandler {
                 ((NameCallback) cb).setName(passwordAuthentication.getUserName());
             } else if (cb instanceof PasswordCallback) {
                 ((PasswordCallback) cb).setPassword(passwordAuthentication.getPassword());
-                if (cb instanceof AdminPasswordCallback) {
-                    ((AdminPasswordCallback) cb).setLocalPassword(localPassword);
+            } else if (cb instanceof TextInputCallback) {
+                final TextInputCallback ticb = (TextInputCallback) cb;
+                final String prompt = ticb.getPrompt();
+                if (AuthenticatorType.ADMIN_INDICATOR.name().equals(prompt)) {
+                    ticb.setText(specialAdminIndicator());
+                } else if (AuthenticatorType.ADMIN_TOKEN.name().equals(prompt)) {
+                    ticb.setText(token());
+                } else if (AuthenticatorType.REMOTE_HOST.name().equals(prompt)) {
+                    ticb.setText(remoteHost());
+                } else if (AuthenticatorType.REST_TOKEN.name().equals(prompt)) {
+                    ticb.setText(restToken());
+                } else if (AuthenticatorType.REMOTE_ADDR.name().equals(prompt)) {
+                    ticb.setText(remoteAddr());
                 }
-            } else if (cb instanceof PrincipalCallback) {
-                ((PrincipalCallback) cb).setPrincipal(clientPrincipal);
-            } else if (cb instanceof TokenCallback) {
-                ((TokenCallback) cb).set(token, authTokenManager);
-            } else if (cb instanceof AdminIndicatorCallback) {
-                ((AdminIndicatorCallback) cb).set(specialAdminIndicator, expectedAdminIndicator, originHost);
-            } else if (cb instanceof RemoteHostCallback) {
-                ((RemoteHostCallback) cb).set(originHost);
-            } else if (cb instanceof AdminAuthCallback) {
-                ((AdminAuthCallback) cb).set(restToken);
+            } else if (cb instanceof AdminLoginModule.PrincipalCallback) {
+                ((AdminLoginModule.PrincipalCallback) cb).setPrincipal(clientPrincipal);
             }
         }
     }
@@ -248,11 +250,12 @@ public class AdminCallbackHandler implements CallbackHandler {
         return originHost;
     }
     
-    String restTkn() {
-        return restToken;
-    }
-    
     String adminIndicator() {
         return specialAdminIndicator;
     }
+    
+    String remoteAddr() {
+        return request.getRemoteAddr();
+    }
+    
 }

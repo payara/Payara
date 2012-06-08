@@ -37,76 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.adapter;
+package org.glassfish.common.util.admin;
 
-import javax.inject.Inject;
+import java.util.List;
 import javax.security.auth.Subject;
-import org.glassfish.admin.rest.SessionManager;
-import org.glassfish.common.util.admin.AdminAuthCallback;
-import org.glassfish.grizzly.http.Cookie;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.login.LoginException;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Authentication callback which processes ReST tokens.
- * <p>
- * Because it uses injection be sure to create instances of this using
- * hk2.
- * 
+ *
  * @author tjquinn
  */
-@Service
-@PerLookup
-public class RestTokenCallback implements AdminAuthCallback.RequestBasedCallback {
-    private static final String COOKIE_REST_TOKEN = "gfresttoken";
-    private static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
+@Contract
+public interface AdminAuthenticator {
     
-    private String restToken = null;;
-    private String remoteAddr = null;
+    public static final String REST_TOKEN_NAME = "REST_TOKEN";
+    public static final String REMOTE_ADDR_NAME = "REMOTE_ADDR";
     
-    @Inject
-    private SessionManager sessionManager;
-    
-    @Override
-    public void set(final String restToken) {
-        this.restToken = restToken;
+    static enum AuthenticatorType {
+            PRINCIPAL,
+            REST_TOKEN,
+            ADMIN_TOKEN,
+            REMOTE_HOST,
+            REMOTE_ADDR,
+            ADMIN_INDICATOR,
+            USERNAME_PASSWORD;
     }
-    
-    @Override
-    public String get() {
-        return restToken;
-    }
-    
-    @Override
-    public void setRequest(final Object data) {
-        if (! (data instanceof Request)) {
-            return;
-        }
-        final Request req = (Request) data;
-        this.remoteAddr = req.getRemoteAddr();
-        this.restToken = restToken(req);
-    }
-    
-    @Override
-    public Subject getSubject() {
-        return sessionManager.authenticate(restToken, remoteAddr);
-    }
-    
-    private String restToken(final Request request) {
-        final Cookie[] cookies = request.getCookies();
-        String result = null;
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (COOKIE_REST_TOKEN.equals(cookie.getName())) {
-                    result = cookie.getValue();
-                }
-            }
-        }
-        
-        if (result == null) {
-            result = request.getHeader(HEADER_X_AUTH_TOKEN);
-        }
-        return result;
-    }
+    List<Callback> callbacks();
+    boolean identify(Subject subject) throws LoginException;
+    AuthenticatorType type();
 }

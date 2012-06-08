@@ -155,7 +155,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile Server server;
     
-    @Inject @Optional
+    @Inject 
     AdminAccessController authenticator;
    
     final Class<? extends Privacy> privacyClass;

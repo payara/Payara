@@ -42,34 +42,19 @@ package org.glassfish.admin.rest.resources;
 
 
 
+import java.util.HashMap;
 import javax.security.auth.Subject;
-import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.SessionManager;
+import javax.ws.rs.*;
+import static javax.ws.rs.core.Response.Status.*;
+import javax.ws.rs.core.*;
+import org.glassfish.admin.rest.RestConfig;
 import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-
-import javax.security.auth.login.LoginException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
-import java.io.IOException;
-import java.util.HashMap;
-
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 
 /**
  * Represents sessions with GlassFish Rest service
@@ -78,7 +63,7 @@ import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 @Path("/sessions")
 public class SessionsResource {
     @Context
-    SessionManager sessionManager;
+    RestSessionManager sessionManager;
 
     @Context
     protected HttpHeaders requestHeaders;
@@ -92,6 +77,8 @@ public class SessionsResource {
     @Context
     protected BaseServiceLocator habitat;
     
+    private Integer sessionTimeoutInMins = null;
+    
     /**
      * Get a new session with GlassFish Rest service
      * If a request lands here when authentication has been turned on => it has been authenticated.
@@ -101,6 +88,8 @@ public class SessionsResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})
     public Response create(HashMap<String, String> data) {
+        final RestConfig restConfig = ResourceUtil.getRestConfig(habitat);
+        
         Response.ResponseBuilder responseBuilder = Response.status(UNAUTHORIZED);
         RestActionReporter ar = new RestActionReporter();
         Request grizzlyRequest = request.get();
@@ -130,13 +119,21 @@ public class SessionsResource {
             if (username != null) {
                 ar.getExtraProperties().put("username", username);
             }
-            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest, subject));
+            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest.getRemoteAddr(), subject, chooseTimeout(restConfig)));
 
         } else if (access == AdminAccessController.Access.FORBIDDEN) {
             responseBuilder.status(FORBIDDEN);
         }
 
         return responseBuilder.entity(new ActionReportResult(ar)).build();
+    }
+    
+    private int chooseTimeout(final RestConfig restConfig) {
+        int inactiveSessionLifeTime = 30 /*mins*/;
+        if (restConfig != null) {
+            inactiveSessionLifeTime = Integer.parseInt(restConfig.getSessionTokenTimeout());
+        }
+        return inactiveSessionLifeTime;
     }
 
     @Path("{sessionId}/")

@@ -43,13 +43,13 @@ package org.glassfish.admin.rest.resources;
 
 
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.api.ActionReport;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.glassfish.common.util.admin.RestSessionManager;
 
 /**
  * Represents a session with GlassFish Rest service
@@ -61,9 +61,9 @@ public class SessionResource {
     private HttpHeaders requestHeaders;
     private UriInfo uriInfo;
 
-    SessionManager sessionManager;
+    RestSessionManager sessionManager;
 
-    public SessionResource(SessionManager sessionManager, String sessionId, HttpHeaders requestHeaders, UriInfo uriInfo) {
+    public SessionResource(RestSessionManager sessionManager, String sessionId, HttpHeaders requestHeaders, UriInfo uriInfo) {
         this.sessionManager = sessionManager;
         this.sessionId = sessionId;
         this.requestHeaders = requestHeaders;

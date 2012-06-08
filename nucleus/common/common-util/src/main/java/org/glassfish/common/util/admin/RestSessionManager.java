@@ -38,22 +38,18 @@
  * holder.
  */
 
-package org.glassfish.admin.rest;
+package org.glassfish.common.util.admin;
 
-import javax.security.auth.Subject;
-import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.glassfish.grizzly.http.server.Request;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Singleton;
-
-import javax.inject.Inject;
 
 /**
  * Manages Rest Sessions.
@@ -61,32 +57,26 @@ import javax.inject.Inject;
  */
 @Service
 @Scoped(Singleton.class)
-public class SessionManager {
+public class RestSessionManager {
     @Inject
-    private BaseServiceLocator habitat;
-    private RestConfig restConfig = null;
     private final SecureRandom randomGenerator = new SecureRandom();
     private Map<String, SessionData> activeSessions = new ConcurrentHashMap<String, SessionData>(); //To guard against parallel mutation corrupting the map
 
     // package/private to help minimize the chances of someone instantiating this directly
-    SessionManager() {
+    RestSessionManager() {
     }
 
     //TODO createSession is public. this package should not be exported
-    public String createSession(Request req, final Subject subject) {
+    public String createSession(String remoteAddr, final Subject subject, final int sessionTimeoutInMins) {
         String sessionId;
         do {
             sessionId = new BigInteger(130, randomGenerator).toString(16);
         } while(isSessionExist(sessionId));
 
-        saveSession(sessionId, req, subject);
+        saveSession(sessionId, remoteAddr, subject, sessionTimeoutInMins);
         return sessionId;
     }
 
-    public Subject authenticate(String sessionId, Request req) {
-        return authenticate(sessionId, req.getRemoteAddr());
-    }
-    
     public Subject authenticate(final String sessionId, final String remoteAddress) {
         Subject result = null;
         boolean authenticated = false;
@@ -122,9 +112,9 @@ public class SessionManager {
         return sessionDeleted;
     }
 
-    private void saveSession(String sessionId, Request req, final Subject subject) {
+    private void saveSession(String sessionId, String remoteAddr, final Subject subject, final int sessionTimeoutInMins) {
         purgeInactiveSessions();
-        activeSessions.put(sessionId, new SessionData(sessionId, req, subject) );
+        activeSessions.put(sessionId, new SessionData(sessionId, remoteAddr, subject, sessionTimeoutInMins) );
     }
 
     private void purgeInactiveSessions() {
@@ -144,24 +134,21 @@ public class SessionManager {
         /** IP address of client as obtained from Grizzly request */
         private String clientAddress;
         private long lastAccessedTime = System.currentTimeMillis();
+        private final long inactiveSessionLifeTime;
         private final static String DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME = "org.glassfish.admin.rest.disable.remote.address.validation";
         private final boolean disableRemoteAddressValidation = Boolean.getBoolean(DISABLE_REMOTE_ADDRESS_VALIDATION_PROPERTY_NAME);
         private final Subject subject;
 
-        public SessionData(String sessionId, Request req, final Subject subject) {
-            this.clientAddress = req.getRemoteAddr();
+        public SessionData(String sessionId, String remoteAddr, final Subject subject, final int sessionTimeoutInMins) {
+            this.clientAddress = remoteAddr;
             this.subject = subject;
+            inactiveSessionLifeTime = sessionTimeoutInMins * 60000L; // minutes * 60 seconds * 1000 millis
         }
 
         /**
          * @return true if the session has not timed out. false otherwise
          */
         public boolean isSessionActive() {
-            long inactiveSessionLifeTime = 30 /*mins*/ * 60 /*secs/min*/ * 1000 /*milis/seconds*/;
-            RestConfig restConfig = ResourceUtil.getRestConfig(habitat);
-            if (restConfig != null) {
-                inactiveSessionLifeTime = Integer.parseInt(restConfig.getSessionTokenTimeout()) * 60000L; // minutes * 60 seconds * 1000 millis
-            }
             return lastAccessedTime + inactiveSessionLifeTime > System.currentTimeMillis();
         }
 
@@ -188,6 +175,4 @@ public class SessionManager {
             return subject;
         }
     }
-
-
 }

@@ -74,7 +74,6 @@ import org.glassfish.admin.rest.RestConfig;
 import org.glassfish.admin.rest.RestConfigChangeListener;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.SessionManager;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
@@ -86,6 +85,7 @@ import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
+import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -125,7 +125,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     private ServerEnvironment serverEnvironment;
 
     @Inject
-    private SessionManager sessionManager;
+    private RestSessionManager sessionManager;
     
     @Inject
     private AdminAccessController adminAuthenticator;
@@ -268,7 +268,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         return new ArrayList<SingletonTypeInjectableProvider>() {{
             add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
             add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
-            add(new SingletonTypeInjectableProvider<Context, SessionManager>(SessionManager.class, habitat.getComponent(SessionManager.class)) {});
+            add(new SingletonTypeInjectableProvider<Context, RestSessionManager>(RestSessionManager.class, habitat.getComponent(RestSessionManager.class)) {});
         }};
     }
     
@@ -313,7 +313,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
         rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, BaseServiceLocator>(BaseServiceLocator.class, habitat) {});
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, SessionManager>(SessionManager.class, habitat.getComponent(SessionManager.class)) {});
+        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, RestSessionManager>(RestSessionManager.class, habitat.getComponent(RestSessionManager.class)) {});
 
 
         //Use common classloader. Jersey artifacts are not visible through
