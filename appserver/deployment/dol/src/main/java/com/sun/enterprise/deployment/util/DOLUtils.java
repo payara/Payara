@@ -97,6 +97,8 @@ public class DOLUtils {
     
     private static Logger logger=null;
     
+    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
+    private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     /** no need to creates new DOLUtils */
     private DOLUtils() {
@@ -273,15 +275,39 @@ public class DOLUtils {
             }
         }
         List<DeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<DeploymentDescriptorFile>(); 
-        if (wlsConfDD != null) { 
-            sortedConfDDFiles.add(wlsConfDD);
+
+        // sort the deployment descriptor files by precedence order 
+        // when they are present in the same archive
+
+        if (Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD))) {
+            // if this property set, it means we need to make GF deployment
+            // descriptors higher precedence 
+            if (gfConfDD != null) {
+                sortedConfDDFiles.add(gfConfDD);
+            }
+            if (wlsConfDD != null) { 
+                sortedConfDDFiles.add(wlsConfDD);
+            }
+        } else if (Boolean.valueOf(System.getProperty(IGNORE_WLSDD))) {
+            // if this property set, it means we need to ignore 
+            // WLS deployment descriptors 
+            if (gfConfDD != null) {
+                sortedConfDDFiles.add(gfConfDD);
+            }
+        } else  {
+            // the default will be WLS DD has higher precedence
+            if (wlsConfDD != null) { 
+                sortedConfDDFiles.add(wlsConfDD);
+            }
+            if (gfConfDD != null) {
+                sortedConfDDFiles.add(gfConfDD);
+            }
         }
-        if (gfConfDD != null) {
-            sortedConfDDFiles.add(gfConfDD);
-        }
+
         if (sunConfDD != null) {
             sortedConfDDFiles.add(sunConfDD);
         }
+
         return sortedConfDDFiles;
     }
 
