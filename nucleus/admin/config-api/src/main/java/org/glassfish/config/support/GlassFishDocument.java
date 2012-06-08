@@ -78,28 +78,25 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         habitat.addIndex(executorInhab, ExecutorService.class.getName(), "transactions-executor");
         habitat.addIndex(new ExistingSingletonInhabitant<DomDocument>(this), DomDocument.class.getName(), null);
 
+        final DomDocument doc = this;
+        
         habitat.getComponent(Transactions.class).addTransactionsListener(new TransactionListener() {
             public void transactionCommited(List<PropertyChangeEvent> changes) {
-            	// make sure domain.xml is changed  
-                PropertyChangeEvent event = changes.get(0);
-                ConfigBeanProxy source = (ConfigBeanProxy) event.getSource();
-                ConfigBean configBean = (ConfigBean) Dom.unwrap(source);
-                DomDocument doc = (DomDocument) configBean.document;
-                if (doc.getRoot().getProxyType().equals(Domain.class)) {
-                    for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
-                        try {
-                           Dom domainRoot = doc.getRoot();
-                           domainRoot.attribute("version", Version.getBuildVersion());
-                           pers.save(doc);
-                        } catch (IOException e) {
-                            logger.log(Level.SEVERE, "GlassFishDocument.IOException",
-                                    new String[] { e.getMessage() });
-                            logger.log(Level.FINE, e.getMessage(), e);
-                        } catch (XMLStreamException e) {
-                            logger.log(Level.SEVERE, "GlassFishDocument.XMLException",
-                                    new String[] { e.getMessage() });
-                            logger.log(Level.SEVERE, e.getMessage(), e);
+                for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
+                    try {
+                        if (doc.getRoot().getProxyType().equals(Domain.class)) {
+                            Dom domainRoot = doc.getRoot();
+                            domainRoot.attribute("version", Version.getBuildVersion());
                         }
+                        pers.save(doc);
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "GlassFishDocument.IOException",
+                                new String[] { e.getMessage() });
+                        logger.log(Level.FINE, e.getMessage(), e);
+                    } catch (XMLStreamException e) {
+                        logger.log(Level.SEVERE, "GlassFishDocument.XMLException",
+                                new String[] { e.getMessage() });
+                        logger.log(Level.SEVERE, e.getMessage(), e);
                     }
                 }
             }
