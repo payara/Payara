@@ -90,20 +90,6 @@ public interface EjbContainerUtil {
 
     public  Logger getLogger();
 
-    public  void setEJBTimerService(EJBTimerService es);
-
-    public  void unsetEJBTimerService();
-
-    public  boolean isEJBTimerServiceLoaded();
-
-    public  EJBTimerService getEJBTimerService();
-
-    public  EJBTimerService getValidEJBTimerService();
-
-    public  EJBTimerService getEJBTimerService(String target);
-
-    public  EJBTimerService getEJBTimerService(String target, boolean force);
-
     public  EjbTimerService getEjbTimerService(String target);
 
     public  void registerContainer(BaseContainer container);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,47 +38,13 @@
  * holder.
  */
 
-package org.glassfish.ejb.startup;
+package com.sun.ejb;
 
-import com.sun.ejb.containers.EjbContainerUtil;
-import org.glassfish.api.container.Container;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
+import org.jvnet.hk2.annotations.Contract;
 
+@Contract
+public interface PersistentTimerService {
 
-/**
- * Ejb container service
- *
- * @author Mahesh Kannan
- */
-@Service(name="org.glassfish.ejb.startup.EjbContainerStarter")
-public class EjbContainerStarter
-    implements Container, PostConstruct, PreDestroy {
+    void initPersistentTimerService(String target);
 
-    /**
-     * Initializes EjbContainerUtilImpl instance with this injection so that
-     * its instance is available to subsequent request, e.g., with
-     * EjbContainerUtilImpl.getInstance().
-     */
-    @Inject
-    EjbContainerUtil ejbContainerUtilImpl;
-
-    public void postConstruct() {
-    }    
-    
-    public void preDestroy() {
-        if (ejbContainerUtilImpl instanceof PreDestroy) {
-            ((PreDestroy)ejbContainerUtilImpl).preDestroy();
-        }
-    }
-
-    public String getName() {
-        return "EjbContainer";
-    }
-
-    public Class<? extends org.glassfish.api.deployment.Deployer> getDeployer() {
-        return EjbDeployer.class;
-    }
 }

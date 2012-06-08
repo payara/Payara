@@ -192,7 +192,7 @@ public final class SessionContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getValidEJBTimerService();
+        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
         return new EJBTimerServiceWrapper(timerService, this);
     }
 

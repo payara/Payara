@@ -173,7 +173,7 @@ public final class MessageBeanContextImpl
             throw new java.lang.IllegalStateException("Operation not allowed");
         }
 
-        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getValidEJBTimerService();
+        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
         return new EJBTimerServiceWrapper(timerService, this);
     }
 

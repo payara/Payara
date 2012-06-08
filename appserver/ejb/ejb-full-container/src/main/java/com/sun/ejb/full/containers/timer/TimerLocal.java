@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb.full.containers.timer;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -48,6 +48,9 @@ import java.util.Set;
 import javax.ejb.CreateException;
 import javax.ejb.TimerConfig;
 import javax.ejb.Local;
+
+import com.sun.ejb.containers.EJBTimerSchedule;
+import com.sun.ejb.containers.TimerPrimaryKey;
 
 /**
  * Local view of the persistent representation of an EJB timer.

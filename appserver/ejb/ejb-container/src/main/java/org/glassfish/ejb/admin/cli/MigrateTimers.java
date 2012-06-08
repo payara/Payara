@@ -209,8 +209,8 @@ public class MigrateTimers implements AdminCommand {
         }
 
         int result = 0;
-        if (ejbContainerUtil.isEJBTimerServiceLoaded()) {
-            EJBTimerService ejbTimerService = ejbContainerUtil.getEJBTimerService();
+        if (EJBTimerService.isEJBTimerServiceLoaded()) {
+            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
             if (ejbTimerService != null) {
                 result = ejbTimerService.migrateTimers( serverId );
             }

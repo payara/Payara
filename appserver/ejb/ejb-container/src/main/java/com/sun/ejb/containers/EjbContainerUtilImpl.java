@@ -126,14 +126,6 @@ public class EjbContainerUtilImpl
     @Inject
     JavaEEIOUtils javaEEIOUtils;
 
-    // Flag that allows to load EJBTimerService on the 1st access and
-    // distinguish between not available and not loaded
-    private  volatile boolean _ejbTimerServiceVerified = false;
-
-    private static Object lock = new Object();
-
-    private  volatile EJBTimerService _ejbTimerService;
-
     private  Map<Long, BaseContainer> id2Container
             = new ConcurrentHashMap<Long, BaseContainer>();
 
@@ -233,6 +225,8 @@ public class EjbContainerUtilImpl
             defaultThreadPoolExecutor.shutdown();
             defaultThreadPoolExecutor = null;
         }
+        EJBTimerService.onShutdown();
+        EJBTimerService.unsetEJBTimerService();
     }
 
     public GlassFishORBHelper getORBHelper() {
@@ -264,65 +258,6 @@ public class EjbContainerUtilImpl
 
     public  Logger getLogger() {
         return _logger;
-    }
-
-    public  void setEJBTimerService(EJBTimerService es) {
-        _ejbTimerService = es;
-    }
-
-    public  void unsetEJBTimerService() {
-        _ejbTimerServiceVerified = false;
-        _ejbTimerService = null;
-    }
-
-    public  EJBTimerService getEJBTimerService() {
-        return getEJBTimerService(null);
-    }
-
-    public EJBTimerService getValidEJBTimerService() {
-        getEJBTimerService();
-        if (_ejbTimerService == null) {
-            throw new EJBException("EJB Timer service not available");
-        }
-
-        return _ejbTimerService;
-    }
-
-    public  boolean isEJBTimerServiceLoaded() {
-        return _ejbTimerServiceVerified;
-    }
-
-    public  EJBTimerService getEJBTimerService(String target) {
-        return getEJBTimerService(target, true);
-    }
-
-    public  EJBTimerService getEJBTimerService(String target, boolean force) {
-        if (!_ejbTimerServiceVerified) {
-            if (isEJBLite()) {
-                if (_ejbTimerService == null) {
-                    try {
-                        _ejbTimerService = new EJBTimerService();
-                    } catch (Exception e) {
-                        _logger.log (Level.WARNING, "Cannot start EJBTimerService: ", e);
-                    }
-                }
-            } else {
-                synchronized (lock) {
-                    _ejbTimerService = PersistenceEJBTimerService.initEJBTimerService(target);
-                    _ejbTimerServiceVerified = true;
-                }
-
-                // Do postprocessing if everything is OK
-                if (_ejbTimerService != null) {
-                    _ejbTimerService.resetEJBTimers(target);
-                } else if  (!force) {
-                    // If it was a request with force == false, and we failed to load the service,
-                    // do not mark it as verified
-                    _ejbTimerServiceVerified = false;
-                }
-            }
-        }
-        return _ejbTimerService;
     }
 
     public  void registerContainer(BaseContainer container) {

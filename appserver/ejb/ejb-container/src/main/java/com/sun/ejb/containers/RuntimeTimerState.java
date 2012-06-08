@@ -114,7 +114,7 @@ public class RuntimeTimerState {
     private int numExpirations_;
     private int numFailedDeliveries_;
     
-    RuntimeTimerState(TimerPrimaryKey timerId,
+    public RuntimeTimerState(TimerPrimaryKey timerId,
                       Date initialExpiration, long intervalDuration, 
                       BaseContainer container, 
                       Object timedObjectPkey,
@@ -166,7 +166,7 @@ public class RuntimeTimerState {
         }
     }
 
-    TimerPrimaryKey getTimerId() {
+    public TimerPrimaryKey getTimerId() {
         return timerId_;
     }
 
@@ -284,7 +284,7 @@ public class RuntimeTimerState {
      * Number of failed deliveries since timer last transitioned to 
      * the SCHEDULED state.
      */
-    int getNumFailedDeliveries() {
+    public int getNumFailedDeliveries() {
         return numFailedDeliveries_;
     }
     
@@ -351,14 +351,14 @@ public class RuntimeTimerState {
         expired_ = true;
     }
 
-    boolean isExpired() {
+    public boolean isExpired() {
         return expired_;
     }
 
     /**
      * @return true if interval timer and false otherwise
      */
-    boolean isPeriodic() {
+    public boolean isPeriodic() {
         // XXX ??? It'd be strange if the schedule-based timer is
         // not periodic. Otherwise need to check if schedule
         // already expired.
@@ -368,7 +368,7 @@ public class RuntimeTimerState {
     /**
      * @return true if this is a persistent timer
      */
-    boolean isPersistent() {
+    public boolean isPersistent() {
         return persistent_;
     }
 

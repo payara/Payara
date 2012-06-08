@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.containers;
+package com.sun.ejb.full.containers.timer;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -56,8 +56,14 @@ import javax.persistence.Transient;
 import java.io.Serializable;
 import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.ejb.EJBUtils;
+import com.sun.ejb.Container;
+import com.sun.ejb.containers.EJBTimerService;
+import com.sun.ejb.containers.EJBTimerSchedule;
+import com.sun.logging.LogDomains;
 
 /**
  * TimerState represents the state of a persistent EJB Timer.  
@@ -164,10 +170,6 @@ import com.sun.ejb.EJBUtils;
 @IdClass(com.sun.ejb.containers.TimerPrimaryKey.class)
 public class TimerState implements Serializable {
 
-    // Timer states
-    public static final int ACTIVE    = 0;
-    public static final int CANCELLED = 1;
-
     //
     // Persistence fields and access methods
     //
@@ -212,103 +214,103 @@ public class TimerState implements Serializable {
     private Blob blob;
 
     // primary key
-    public String getTimerId() {
+    String getTimerId() {
         return timerId;
     }
 
-    public void setTimerId(String timerId) {
+    void setTimerId(String timerId) {
         this.timerId = timerId;
     }
 
-    public String getOwnerId() {
+    String getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(String ownerId) {
+    void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
 
-    public long getCreationTimeRaw() {
+    long getCreationTimeRaw() {
         return creationTimeRaw;
     }
 
-    public void setCreationTimeRaw(long creationTime) {
+    void setCreationTimeRaw(long creationTime) {
         creationTimeRaw = creationTime;
     }
 
-    public long getInitialExpirationRaw() {
+    long getInitialExpirationRaw() {
         return initialExpirationRaw;
     }
 
-    public void setInitialExpirationRaw(long initialExpiration) {
+    void setInitialExpirationRaw(long initialExpiration) {
         initialExpirationRaw = initialExpiration;
     }
 
-    public long getLastExpirationRaw() {
+    long getLastExpirationRaw() {
         return lastExpirationRaw;
     }
 
-    public void setLastExpirationRaw(long lastExpiration) {
+    void setLastExpirationRaw(long lastExpiration) {
         lastExpirationRaw = lastExpiration;
     }
 
-    public long getIntervalDuration() {
+    long getIntervalDuration() {
         return intervalDuration;
     }
 
-    public void setIntervalDuration(long intervalDuration) {
+    void setIntervalDuration(long intervalDuration) {
         this.intervalDuration = intervalDuration;
     }
 
-    public int getState() {
+    int getState() {
         return state;
     }
 
-    public void setState(int state) {
+    void setState(int state) {
         this.state = state;
     }
 
-    public long getContainerId() {
+    long getContainerId() {
         return containerId;
     }
 
-    public void setContainerId(long containerId) {
+    void setContainerId(long containerId) {
         this.containerId = containerId;
     }
 
-    public long getApplicationId() {
+    long getApplicationId() {
         return applicationId;
     }
 
-    public void setApplicationId(long applicationId) {
+    void setApplicationId(long applicationId) {
         this.applicationId = applicationId;
     }
 
-    public String getSchedule() {
+    String getSchedule() {
         return schedule;
     }
 
-    public void setSchedule(String schedule) {
+    void setSchedule(String schedule) {
         this.schedule = schedule;
     }
 
-    public Blob getBlob() {
+    Blob getBlob() {
         return blob;
     }
 
-    public void setBlob(Blob blob) {
+    void setBlob(Blob blob) {
         this.blob = blob;
     }
 
-    public int getPkHashCode() {
+    int getPkHashCode() {
         return pkHashCode;
     }
 
-    public void setPkHashCode(int pkHash) {
+    void setPkHashCode(int pkHash) {
         pkHashCode = pkHash;
     }
 
-    public EJBTimerSchedule getTimerSchedule() {
+    EJBTimerSchedule getTimerSchedule() {
         return timerSchedule_;
     }
 
@@ -328,12 +330,13 @@ public class TimerState implements Serializable {
     private transient Date creationTime_;
     private transient Date initialExpiration_;
     private transient Date lastExpiration_;
+
     private transient EJBTimerSchedule timerSchedule_;
     
-    public TimerState () {
+    TimerState () {
     }
 
-    public TimerState (String timerId, long containerId, long applicationId,
+    TimerState (String timerId, long containerId, long applicationId,
              String ownerId, Object timedObjectPrimaryKey, 
              Date initialExpiration, long intervalDuration, 
              EJBTimerSchedule schedule, Serializable info) throws IOException {
@@ -364,31 +367,12 @@ public class TimerState implements Serializable {
         blobLoaded_ = true;
 
         blob = new Blob(timedObjectPrimaryKey, info);
-        state = ACTIVE;
-
+        state = EJBTimerService.STATE_ACTIVE;
     }
 
-    public String stateToString() {
-        return stateToString(state);
-    }
-
-    public static String stateToString(int state) {
-        String stateStr = "UNKNOWN_TIMER_STATE";
-
-        switch(state) {
-            case ACTIVE : 
-                stateStr = "TIMER_ACTIVE"; 
-                break;
-            case CANCELLED : 
-                stateStr = "TIMER_CANCELLED";
-                break;
-            default : 
-                stateStr = "UNKNOWN_TIMER_STATE";
-                break;
-        }
-
-        return stateStr;
-    }
+    String stateToString() {
+        return EJBTimerService.timerStateToString(state);
+    }   
 
     private void loadBlob(ClassLoader cl) {
         try {
@@ -403,7 +387,7 @@ public class TimerState implements Serializable {
     }
 
     @PostLoad
-    public void load() {
+    void load() {
 
         lastExpiration_ = (lastExpirationRaw > 0) ? 
             new Date(lastExpirationRaw) : null;
@@ -424,51 +408,49 @@ public class TimerState implements Serializable {
         blobLoaded_ = false;
     }
 
-    public boolean repeats() {
+    boolean repeats() {
         return (intervalDuration > 0);
     }
 
-    // XXX back pointer into TimerBean - static method call
-    public Serializable getInfo() {
+    Serializable getInfo() {
         if( !blobLoaded_ ) {
-            loadBlob(TimerBean.getContainer(getContainerId()).getClassLoader());
+            loadBlob(EJBTimerService.getEJBTimerService().getTimerClassLoader(getContainerId()));
         }
         return info_;
     }
 
-    // XXX back pointer into TimerBean - static method call
-    public Object getTimedObjectPrimaryKey() {
+    Object getTimedObjectPrimaryKey() {
         if( !blobLoaded_ ) {
-            loadBlob(TimerBean.getContainer(getContainerId()).getClassLoader());
+            loadBlob(EJBTimerService.getEJBTimerService().getTimerClassLoader(getContainerId()));
         }
         return timedObjectPrimaryKey_;
     }   
 
-    public Date getCreationTime() {
+    Date getCreationTime() {
         return creationTime_;
     }
 
-    public Date getInitialExpiration() {
+    Date getInitialExpiration() {
         return initialExpiration_;
     }
 
-    public Date getLastExpiration() {
+    Date getLastExpiration() {
         return lastExpiration_;
     }
 
-    public void setLastExpiration(Date lastExpiration) {
+    void setLastExpiration(Date lastExpiration) {
         // can be null
         lastExpiration_ = lastExpiration;
         lastExpirationRaw = (lastExpiration != null) ?
             lastExpiration.getTime() : 0;
     }
 
-    public boolean isActive() {
-        return (state == ACTIVE);
+    boolean isActive() {
+        return (state == EJBTimerService.STATE_ACTIVE);
     }
 
-    public boolean isCancelled() {
-        return (state == CANCELLED);
+    boolean isCancelled() {
+        return (state == EJBTimerService.STATE_CANCELLED);
     }
 
     /**
@@ -483,7 +465,7 @@ public class TimerState implements Serializable {
      * classes.
      *
      */
-    public static class Blob implements Serializable {
+    static class Blob implements Serializable {
 
         private byte[] primaryKeyBytes_ = null;
         private byte[] infoBytes_ = null;
@@ -491,10 +473,12 @@ public class TimerState implements Serializable {
         // Allow deserialization even if the class has changed
         private static final long serialVersionUID = 5022674828003386360L;
 
-        public Blob() {
+        private static final Logger logger = LogDomains.getLogger(TimerState.class, LogDomains.EJB_LOGGER);
+
+        Blob() {
         }
 
-        public Blob(Object primaryKey, Serializable info)
+        Blob(Object primaryKey, Serializable info)
             throws IOException {
             if( primaryKey != null ) {
                 primaryKeyBytes_ = EJBUtils.serializeObject(primaryKey);
@@ -510,29 +494,25 @@ public class TimerState implements Serializable {
             infoBytes_ = infoBytes;
         }
         
-        public Object getTimedObjectPrimaryKey(ClassLoader cl) 
+        Object getTimedObjectPrimaryKey(ClassLoader cl) 
             throws Exception {
             Object pKey = null;
             if( primaryKeyBytes_ != null) {
                 pKey = EJBUtils.deserializeObject(primaryKeyBytes_, cl);
-/**
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + pKey);
                 }
-*/
             }
             return pKey;
         }
 
-        public Serializable getInfo(ClassLoader cl) throws Exception {
+        Serializable getInfo(ClassLoader cl) throws Exception {
             Serializable info = null;
             if( infoBytes_ != null) {
                 info = (Serializable)EJBUtils.deserializeObject(infoBytes_, cl);
-/**
                 if( logger.isLoggable(Level.FINER) ) {
                     logger.log(Level.FINER, "Deserialized blob : " + info);
                 }
-*/
             }
             return info;
         }

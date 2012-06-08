@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <persistence-unit name="__EJB__Timer__App">
           <jta-data-source>jdbc/__TimerPool</jta-data-source>
           <mapping-file>__ejb_timer_mappings.xml</mapping-file>
-          <class>com.sun.ejb.containers.TimerState</class>
+          <class>com.sun.ejb.full.containers.timer.TimerState</class>
           <exclude-unlisted-classes/>
           <properties>
             <property name="eclipselink.cache.shared.default" value="false"/>

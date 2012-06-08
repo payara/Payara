@@ -748,7 +748,7 @@ public abstract class BaseContainer
                 if( !isStatefulSession ) {
                     // EJBTimerService should be accessed only if needed 
                     // not to cause it to be loaded if it's not used.
-                    EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
+                    EJBTimerService timerService = EJBTimerService.getEJBTimerService();
                     if( timerService != null ) {
                         timerService.timedObjectCount();
                     }
@@ -947,7 +947,7 @@ public abstract class BaseContainer
         return ejbDescriptor.getUniqueId();
     }
     
-    final long getApplicationId() {
+    public final long getApplicationId() {
         return ejbDescriptor.getApplication().getUniqueId();
     }
     
@@ -2122,7 +2122,7 @@ public abstract class BaseContainer
      * Call back from the timer migration process to add 
      * automatic timers to the map of scheduleIds
      */
-    protected void addSchedule(TimerPrimaryKey timerId, EJBTimerSchedule ts) {
+    void addSchedule(TimerPrimaryKey timerId, EJBTimerSchedule ts) {
         for (Map.Entry<Method, List<ScheduledTimerDescriptor>> entry : schedules.entrySet()) {
             Method m = entry.getKey();
             if (m.getName().equals(ts.getTimerMethodName()) &&
@@ -2393,7 +2393,7 @@ public abstract class BaseContainer
         if( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
+            EJBTimerService timerService = EJBTimerService.getEJBTimerService();
             if( timerService != null ) {
                 timerService.cancelTimersByKey(getContainerId(), key);
             }
@@ -2404,7 +2404,7 @@ public abstract class BaseContainer
         if( isTimedObject() ) {
             // EJBTimerService should be accessed only if needed 
             // not to cause it to be loaded if it's not used.
-            EJBTimerService ejbTimerService = ejbContainerUtilImpl.getEJBTimerService();
+            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
             if( ejbTimerService != null ) {
                 ejbTimerService.destroyTimers(getContainerId());
             }
@@ -2413,7 +2413,7 @@ public abstract class BaseContainer
     
     private void stopTimers() {
         if( isTimedObject() ) {
-            EJBTimerService ejbTimerService = ejbContainerUtilImpl.getEJBTimerService();
+            EJBTimerService ejbTimerService = EJBTimerService.getEJBTimerService();
             if( ejbTimerService != null ) {
                 ejbTimerService.stopTimers(getContainerId());
             }
@@ -3933,7 +3933,7 @@ public abstract class BaseContainer
         if( isTimedObject_ ) {
             // EJBTimerService should be accessed only if needed 
             // not to cause it to be loaded if it's not used.
-            EJBTimerService timerService = ejbContainerUtilImpl.getEJBTimerService();
+            EJBTimerService timerService = EJBTimerService.getEJBTimerService();
             if (timerService != null) {
                 boolean deploy0 = deploy;  //avoid modifying param
                 if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {

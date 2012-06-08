@@ -352,7 +352,7 @@ public class EjbDeployer
                             target = targets.get(0);
                         }
                     }
-                    EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getEJBTimerService(target, false);
+                    EJBTimerService timerService = EJBTimerService.getEJBTimerService(target, false);
                     if (_logger.isLoggable(Level.FINE)) {
                         _logger.log( Level.FINE, "EjbDeployer APP ID of a Timeout App? " + uniqueAppId);
                         _logger.log( Level.FINE, "EjbDeployer TimerService: " + timerService);
@@ -546,7 +546,7 @@ public class EjbDeployer
     private void createAutomaticPersistentTimersForEJB(EjbDescriptor ejbDescriptor, String target) {
         try {
             //Start EJB Timer Service if it wasn't started yet. On DAS the first start will create the timer table.
-            EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getEJBTimerService(target);
+            EJBTimerService timerService = EJBTimerService.getEJBTimerService(target);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log( Level.FINE, "EjbDeployer BEAN ID? " + ejbDescriptor.getUniqueId());
                 _logger.log( Level.FINE, "EjbDeployer TimerService: " + timerService);

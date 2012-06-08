@@ -49,7 +49,6 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.BaseContainer;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBObjectImpl;
 import com.sun.ejb.containers.EJBLocalObjectImpl;
 import com.sun.ejb.containers.EJBTimerService;
@@ -188,7 +187,7 @@ public class EntityContextImpl
             throw new IllegalStateException("Operation not allowed");
         }
      
-        EJBTimerService timerService = EjbContainerUtilImpl.getInstance().getValidEJBTimerService();
+        EJBTimerService timerService = EJBTimerService.getValidEJBTimerService();
         return new EJBTimerServiceWrapper(timerService, (EntityContext) this);
     }
     

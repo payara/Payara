@@ -42,7 +42,7 @@ package com.sun.ejb;
 
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBTimerServiceWrapper;
-import com.sun.ejb.containers.EjbContainerUtil;
+import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -73,14 +73,7 @@ public class EjbNamingReferenceManagerImpl
     InvocationManager invMgr;
 
     @Inject
-    Provider<EjbContainerUtil> ejbContainerUtilProvider;
-
-    @Inject
     Provider<GlassFishORBHelper> glassFishORBHelperProvider;
-
-    // Be careful with EjbContainerUtil usage.  It should only be used from code running within a
-    // server environment.
-    private volatile EjbContainerUtil ejbContainerUtil;
 
     @Override
     public Object resolveEjbReference(EjbReferenceDescriptor ejbRefDesc, Context context)
@@ -236,20 +229,12 @@ public class EjbNamingReferenceManagerImpl
         Object returnObject = ejbInv.context;
 
         if( contextType.equals("javax.ejb.TimerService") ) {
-            if (ejbContainerUtil == null) {
-                ejbContainerUtil = ejbContainerUtilProvider.get();
-            }
-
-            if (ejbContainerUtil == null ) {
-                throw new IllegalStateException("EJB Timer Service not " +
-                                                "available. And EjbContainerUtil is null");
-            }
-            if (ejbContainerUtil.getEJBTimerService() == null ) {
+            if (EJBTimerService.getEJBTimerService() == null ) {
                 throw new IllegalStateException("EJB Timer Service not " +
                                                 "available");
             }
             returnObject = new EJBTimerServiceWrapper
-                (ejbContainerUtil.getEJBTimerService(), (EJBContextImpl) ejbInv.context);
+                (EJBTimerService.getEJBTimerService(), (EJBContextImpl) ejbInv.context);
         }
 
 
