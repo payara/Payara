@@ -338,48 +338,4 @@ public interface RuntimeTagNames extends TagNames {
     public static final String RESOURCE_DESCRIPTION = "resource-description";
     public static final String RESOURCE_ENV_DESCRIPTION = "resource-env-description";
     public static final String EJB_REFERENCE_DESCRIPTION = "ejb-reference-description";
-    // session-descriptor
-    public static final String SESSION_DESCRIPTOR = "session-descriptor";
-    public static final String TIMEOUT_SECS = "timeout-secs";
-    public static final String INVALIDATION_INTERVAL_SECS = "invalidation-interval-secs";
-    public static final String MAX_IN_MEMORY_SESSIONS = "max-in-memory-sessions";
-    public static final String COOKIE_NAME = "cookie-name";
-    public static final String COOKIE_PATH = "cookie-path";
-    public static final String COOKIE_DOMAIN = "cookie-domain";
-    public static final String COOKIE_COMMENT = "cookie-comment";
-    public static final String COOKIE_SECURE = "cookie-secure";
-    public static final String COOKIE_MAX_AGE_SECS = "cookie-max-age-secs";
-    public static final String COOKIE_HTTP_ONLY = "cookie-http-only";
-    public static final String COOKIES_ENABLED = "cookies-enabled";
-    public static final String URL_REWRITING_ENABLED = "url-rewriting-enabled";
-    public static final String PERSISTENT_STORE_DIR = "persistent-store-dir";
-    public static final String SAVE_SESSIONS_ENABLED = "save-sessions-enabled";
-    // jsp-descriptor
-    public static final String JSP_DESCRIPTOR = "jsp-descriptor";
-    public static final String KEEPGENERATED = "keepgenerated";
-    public static final String PACKAGE_PREFIX = "package-prefix";
-    public static final String SUPER_CLASS = "super-class";
-    public static final String PAGE_CHECK_SECONDS = "page-check-seconds";
-    public static final String PRECOMPILE = "precompile";
-    public static final String PRECOMPILE_CONTINUE = "precompile-continue";
-    public static final String VERBOSE = "verbose";
-    public static final String WORKING_DIR = "working-dir";
-    public static final String PRINT_NULLS = "print-nulls";
-    public static final String BACKWARD_COMPATIBLE = "backward-compatible";
-    public static final String ENCODING = "encoding";
-    public static final String EXACT_MAPPING = "exact-mapping";
-    public static final String DEFAULT_FILE_NAME = "default-file-name";
-    public static final String RTEXPRVALUE_JSP_PARAM_NAME = "rtexprvalue-jsp-param-name";
-    public static final String DEBUG = "debug";
-    public static final String COMPRESS_HTML_TEMPLATE = "compress-html-template";
-    public static final String OPTIMIZE_JAVA_EXPRESSION = "optimize-java-expression";
-    public static final String RESOURCE_PROVIDER_CLASS = "resource-provider-class";
-    // container-descriptor
-    public static final String CONTAINER_DESCRIPTOR = "container-descriptor";
-    public static final String PREFER_WEB_INF_CLASSES = "prefer-web-inf-classes";
-    public static final String INDEX_DIRECTORY_ENALBED = "index-directory-enabled";
-    public static final String INDEX_DIRECTORY_SORT_BY = "index-directory-sort-by";
-    // servlet-descriptor
-    public static final String SERVLET_DESCRIPTOR = "servlet-descriptor";
-    public static final String RUN_AS_PRINCIPAL_NAME = "run-as-principal-name";
 }
