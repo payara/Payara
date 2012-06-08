@@ -67,6 +67,7 @@
                         org.glassfish.web.deployment.archivist; \
                         org.glassfish.web.deployment.io; \
                         org.glassfish.web.deployment.io.runtime; \
+                        org.glassfish.web.deployment.node.runtime.wls; \
                         
                         version=${project.osgi.version}
 
