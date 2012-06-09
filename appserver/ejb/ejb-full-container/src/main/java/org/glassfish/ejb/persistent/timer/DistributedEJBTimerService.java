@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.timer;
+package org.glassfish.ejb.persistent.timer;
 
 import com.sun.ejb.PersistentTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
@@ -92,7 +92,7 @@ public class DistributedEJBTimerService
     }
 
     public void initPersistentTimerService(String target) {
-        PersistenceEJBTimerService.initEJBTimerService(target);
+        PersistentEJBTimerService.initEJBTimerService(target);
     }
 
     @Override

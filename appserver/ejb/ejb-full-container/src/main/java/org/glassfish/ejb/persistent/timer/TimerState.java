@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.timer;
+package org.glassfish.ejb.persistent.timer;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;

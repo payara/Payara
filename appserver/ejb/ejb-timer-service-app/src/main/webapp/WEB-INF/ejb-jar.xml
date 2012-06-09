@@ -45,8 +45,8 @@
   <enterprise-beans>
     <session>
       <ejb-name>TimerBean</ejb-name>
-      <local>com.sun.ejb.full.containers.timer.TimerLocal</local>
-      <ejb-class>com.sun.ejb.full.containers.timer.TimerBean</ejb-class>
+      <local>org.glassfish.ejb.persistent.timer.TimerLocal</local>
+      <ejb-class>org.glassfish.ejb.persistent.timer.TimerBean</ejb-class>
       <session-type>Stateless</session-type>
       <transaction-type>Container</transaction-type>
     </session>

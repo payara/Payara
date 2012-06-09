@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.mdb;
+package org.glassfish.ejb.mdb;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,7 +82,7 @@ import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.ejb.full.monitoring.stats.mdb.MessageDrivenBeanStatsProvider;
+import org.glassfish.ejb.mdb.monitoring.stats.MessageDrivenBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;

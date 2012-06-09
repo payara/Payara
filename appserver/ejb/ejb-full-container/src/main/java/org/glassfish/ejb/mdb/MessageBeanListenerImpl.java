@@ -38,12 +38,12 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.mdb;
+package org.glassfish.ejb.mdb;
 
 import java.lang.reflect.Method;
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
 import org.glassfish.ejb.api.MessageBeanListener;
-import com.sun.ejb.full.containers.mdb.MessageBeanContainer.MessageDeliveryType;
+import org.glassfish.ejb.mdb.MessageBeanContainer.MessageDeliveryType;
 
 
 /**

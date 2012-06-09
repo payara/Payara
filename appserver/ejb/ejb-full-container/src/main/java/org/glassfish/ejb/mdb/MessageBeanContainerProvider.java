@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,47 +38,21 @@
  * holder.
  */
 
-package com.sun.ejb.full.monitoring.stats.mdb;
+package org.glassfish.ejb.mdb;
 
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import org.glassfish.external.probe.provider.annotations.*;
-import org.glassfish.external.statistics.*;
-import org.glassfish.external.statistics.impl.*;
-import org.glassfish.gmbal.*;
+import org.jvnet.hk2.annotations.Service;
+import com.sun.ejb.Container;
+import com.sun.ejb.ContainerProvider;
+import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 
-/**
- * Probe listener for the Message-Driven Beans part of the EJB monitoring events. 
- *
- * @author Marina Vatkina
- */
-@AMXMetadata(type="message-driven-bean-mon", group="monitoring", isSingleton=false)
-@ManagedObject
-public class MessageDrivenBeanStatsProvider extends EjbMonitoringStatsProvider {
-
-    private CountStatisticImpl messageCount = new CountStatisticImpl("MessageCount",
-            "count", "Number of messages received for a message-driven bean");
-
-    public MessageDrivenBeanStatsProvider(long beanId, String appName, String moduleName,
-            String beanName) {
-        super(beanId, appName, moduleName, beanName);
-    }
-
-    @ManagedAttribute(id="messagecount")
-    @Description( "Number of messages received for a message-driven bean")
-    public CountStatistic getCreateCount() {
-        return messageCount.getStatistic();
-    }
-
-    @ProbeListener("glassfish:ejb:bean:messageDeliveredEvent")
-    public void messageDeliveredEvent(
-            @ProbeParam("beanId") long beanId,
-            @ProbeParam("appName") String appName,
-            @ProbeParam("modName") String modName,
-            @ProbeParam("ejbName") String ejbName) {
-        if (this.beanId == beanId) {
-            log ("messageDeliveredEvent", "MessageDrivenBeanStatsProvider");
-            messageCount.increment();
+@Service
+public final class MessageBeanContainerProvider implements ContainerProvider {
+    public Container getContainer(EjbDescriptor ejbDescriptor, ClassLoader loader) throws Exception {
+        if (ejbDescriptor instanceof EjbMessageBeanDescriptor) {
+            return new MessageBeanContainer(ejbDescriptor, loader);
         }
-    }
 
+        return null;
+    }
 }

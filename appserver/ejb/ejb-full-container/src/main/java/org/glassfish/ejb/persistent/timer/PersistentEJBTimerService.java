@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.timer;
+package org.glassfish.ejb.persistent.timer;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -97,12 +97,12 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Marina Vatkina
  */
-public class PersistenceEJBTimerService extends EJBTimerService {
+public class PersistentEJBTimerService extends EJBTimerService {
 
     private TimerLocal timerLocal_;
 
     private static final Logger logger =
-        LogDomains.getLogger(PersistenceEJBTimerService.class, LogDomains.EJB_LOGGER);
+        LogDomains.getLogger(PersistentEJBTimerService.class, LogDomains.EJB_LOGGER);
 
     // This boolean value would be set in PE to be a default value of false.
     // In case of EE the default value would be true. When set to true the 
@@ -129,7 +129,7 @@ public class PersistenceEJBTimerService extends EJBTimerService {
     // Possible values "redeliver" and "stop"
     private String operationOnConnectionFailure = null;
 
-    private PersistenceEJBTimerService(String ejbName, boolean removeOldTimers) throws Exception {
+    private PersistentEJBTimerService(String ejbName, boolean removeOldTimers) throws Exception {
         super();
 
         timerLocal_ = (TimerLocal) ejbContainerUtil.getGlassfishNamingManager().
@@ -1362,7 +1362,7 @@ public class PersistenceEJBTimerService extends EJBTimerService {
 
         if (available) {
             try {
-                ts = new PersistenceEJBTimerService("java:global/" +
+                ts = new PersistentEJBTimerService("java:global/" +
                         TIMER_SERVICE_APP_NAME + "/" + TIMER_SERVICE_BEAN_NAME, 
                         removeOldTimers);
 

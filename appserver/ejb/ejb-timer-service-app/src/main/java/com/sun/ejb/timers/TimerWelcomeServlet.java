@@ -53,7 +53,7 @@ import javax.servlet.*;
 import javax.ejb.*;
 import javax.servlet.http.*;
 
-import com.sun.ejb.full.containers.timer.TimerLocal;
+import org.glassfish.ejb.persistent.timer.TimerLocal;
 import com.sun.ejb.containers.EJBTimerService;
 
 /**

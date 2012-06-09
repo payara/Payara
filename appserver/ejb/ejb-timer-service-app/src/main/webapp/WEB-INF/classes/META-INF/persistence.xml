@@ -44,7 +44,7 @@
     <persistence-unit name="__EJB__Timer__App">
           <jta-data-source>jdbc/__TimerPool</jta-data-source>
           <mapping-file>__ejb_timer_mappings.xml</mapping-file>
-          <class>com.sun.ejb.full.containers.timer.TimerState</class>
+          <class>org.glassfish.ejb.persistent.timer.TimerState</class>
           <exclude-unlisted-classes/>
           <properties>
             <property name="eclipselink.cache.shared.default" value="false"/>

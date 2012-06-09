@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.ejb.full.containers.timer;
+package org.glassfish.ejb.persistent.timer;
 
 import java.io.Serializable;
 import java.io.IOException;
