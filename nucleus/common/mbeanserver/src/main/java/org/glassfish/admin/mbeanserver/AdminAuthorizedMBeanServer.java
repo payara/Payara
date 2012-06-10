@@ -40,14 +40,9 @@
 package org.glassfish.admin.mbeanserver;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.rmi.server.RemoteServer;
-import java.security.AccessControlContext;
 import java.security.AccessControlException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -56,22 +51,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.*;
 import javax.management.remote.MBeanServerForwarder;
-import javax.security.auth.Subject;
 import org.glassfish.internal.api.AdminAccessController;
-
-import com.sun.enterprise.util.i18n.StringManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Allows per-access security checks on MBean attribute set/get and other
  * invoked operations.
  * <p>
  * This class wraps the normal GlassFish MBeanServer with a security checker.
- * If a current Subject exists then the request arrived via an external JMX
- * request.  The Subject will have a Principal that indicates whether read-only
- * or read-write access should be permitted.  This class uses that information
- * to decide, depending on exactly what the request wants to do, whether to allow
+ * If control reaches this class then the incoming connection has already
+ * authenticated successfully.  This class decides, depending on exactly what 
+ * the request wants to do and what MBean is involved, whether to allow
  * the current request or not.  If so, it delegates to the real MBeanServer; if
  * not it throws an exception.
+ * <p>
+ * Currently we allow all access to non-AMX MBeans.  This permits, for example,
+ * the normal operations to view JVM performance characteristics.  If the
+ * attempted access concerns an AMX MBean and we're running in the DAS then
+ * we allow it - it's OK to adjust configuration via JMX to the DAS.  But if
+ * this is a non-DAS instance we make sure the operation on the AMX MBean is 
+ * read-only before  allowing it.
  * 
  * @author tjquinn
  */
@@ -79,49 +78,84 @@ public class AdminAuthorizedMBeanServer {
     
     private final static Logger mLogger = JMXStartupService.JMX_LOGGER;
     
-    private final static String JMX_NOACCESS="jmx.noaccess";
-
+    @LogMessageInfo(message = "Attempted access to method {0} on object {1} rejected; user was granted {2} but the operation reports its impact as \"{3}\"", level="FINE")
+    private final static String JMX_NOACCESS="AS_JMX_00008";
+    
     private static final Set<String> RESTRICTED_METHOD_NAMES = new HashSet<String>(Arrays.asList(
             "setAttribute",
             "setAttributes"
         ));
     
+    
     private static class Handler implements InvocationHandler {
         
         private final MBeanServer mBeanServer;
         private final boolean isInstance;
+        private final BootAMX bootAMX;
         
-        private Handler(final MBeanServer mbs, final boolean isInstance) {
+        private Handler(final MBeanServer mbs, final boolean isInstance, final BootAMX bootAMX) {
             this.mBeanServer = mbs;
             this.isInstance = isInstance;
+            this.bootAMX = bootAMX;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            final String methodName = method.getName();
-            
+            final String connectionId = JMXRMIConnectionContext.getConnectionId();
             if (isAllowed(method, args)) {
-                            return method.invoke(mBeanServer, args);
+                return method.invoke(mBeanServer, args);
             } else {
-                String objectNameString = "??";
-                if ((args[0] != null) && (args[0] instanceof ObjectName)) {
-                    objectNameString  = ((ObjectName) args[0]).toString();
-                }
-                StringManager sm = StringManager.getManager(AdminAuthorizedMBeanServer.class);
-                final String msg = sm.getString(JMX_NOACCESS, methodName, 
-                        objectNameString, AdminAccessController.Access.READONLY);
+                final String format = mLogger.getResourceBundle().getString(JMX_NOACCESS);
+                final String objNameString = objectNameString(args);
+                final String operationImpact = impactToString(operationImpact(args));
+                final String msg = MessageFormat.format(format, operationName(args),
+                        objNameString, AdminAccessController.Access.READONLY, operationImpact);
+                mLogger.log(Level.FINE, 
+                        "Disallowing access to {0} operation {1} because the impact is declared as {2}", 
+                        new Object[]{
+                            objNameString, 
+                            operationName(args), 
+                            operationImpact}
+                        );
                 throw new AccessControlException(msg);
             }
-            
+        }
+        
+        private String operationName(final Object[] args) {
+            return ((objectNameString(args) == null) || (args.length < 2) || (args[1] == null) ? "null" : (String) args[1]);
+        }
+        
+        private String objectNameString(Object[] args) {
+            return (args == null || args.length == 0 || ( ! (args[0] instanceof ObjectName))) ? null : ((ObjectName) args[0]).toString();
         }
         
         private boolean isAllowed(
                 final Method method,
                 final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
-
-            return (! isInstance)
-                || ( isReadonlyRequest(method, args) )
-                ;
+            /*
+             * Allow access if this is the DAS (not an instance) or if the
+             * request does not affect an AMX MBean or if the request is
+             * read-only.
+             */
+            return ( ! isInstance) 
+                    || isAMX(args)
+                    || isReadonlyRequest(method, args);
+        }
+        
+        private boolean isAMX(final Object[] args) {
+            return (args == null) 
+                    || (args[0] == null)
+                    || ( ! (args[0] instanceof ObjectName))
+                    || ( ! isAMX((ObjectName) args[0]));
+        }
+        
+        private boolean isAMX(final ObjectName objectName) {
+            final String amxDomain = amxDomain();
+            return (objectName == null || amxDomain == null) ? false : amxDomain.equals(objectName.getDomain());
+        }
+        
+        private String amxDomain() {
+            return bootAMX.bootAMX().getDomain();
         }
 
         private boolean isReadonlyRequest(final Method method, final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
@@ -129,50 +163,35 @@ public class AdminAuthorizedMBeanServer {
                 return false;
             }
             
-            if (method.getName().equals("invoke")) {
-                final ObjectName objectName = (ObjectName) args[0];
-                final String operationName = (String) args[1];
-                final String[] signature = (String[]) args[3];
-                final MBeanInfo info = mBeanServer.getMBeanInfo(objectName);
-                if (info != null) {
-                
-                    /*
-                    * Find the matching operation.  
-                    */
-                    for (MBeanOperationInfo opInfo : info.getOperations()) {
-                        if (opInfo.getName().equals(operationName) && isSignatureEqual(opInfo.getSignature(), signature)) {
-                            if (opInfo.getImpact() != MBeanOperationInfo.INFO) {
-                                mLogger.log(Level.FINE, 
-                                        "Disallowing access to {0} operation {1} because the impact is declared as {2}", 
-                                        new Object[]{
-                                            objectName.toString(), 
-                                            operationName, 
-                                            impactToString(opInfo.getImpact())}
-                                        );
-                            }
-                            /*
-                             * This is a read-only request iff the operation 
-                             * describes itself as an INFO operation.
-                             */
-                            return (opInfo.getImpact() == MBeanOperationInfo.INFO);
-                        }
+            return ( ! method.getName().equals("invoke"))
+                    || (operationImpact(args) == MBeanOperationInfo.INFO);
+        }
+        
+        private int operationImpact(final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
+            final ObjectName objectName = (ObjectName) args[0];
+            final String operationName = (String) args[1];
+            final String[] signature = (String[]) args[3];
+            final MBeanInfo info = mBeanServer.getMBeanInfo(objectName);
+            if (info != null) {
+
+                /*
+                * Find the matching operation.  
+                */
+                for (MBeanOperationInfo opInfo : info.getOperations()) {
+                    if (opInfo.getName().equals(operationName) && isSignatureEqual(opInfo.getSignature(), signature)) {
+                        return opInfo.getImpact();
                     }
-                    /*
-                    * No matching operation.
-                    */
-                    throw new NoSuchMethodException(method.getName());
                 }
-                
+                /*
+                * No matching operation.
+                */
+                throw new NoSuchMethodException(operationName);
             }
-            /*
-             * Any other method we'll interpret as read-only for the purposes
-             * of off-node access.
-             */
-            return true;
+            return MBeanOperationInfo.UNKNOWN;
         }
         
         private static String impactToString(final int impact) {
-            String result = null;
+            String result;
             switch (impact) {
                 case MBeanOperationInfo.ACTION: result = "action"; break;
                 case MBeanOperationInfo.ACTION_INFO : result = "action_info"; break;
@@ -219,8 +238,9 @@ public class AdminAuthorizedMBeanServer {
      * @param mbs the real MBeanServer to which to delegate
      * @return the security-checking wrapper around the MBeanServer
      */
-    public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance) {
-        final Handler handler = new Handler(mbs, isInstance);
+    public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance,
+            final BootAMX bootAMX) {
+        final Handler handler = new Handler(mbs, isInstance, bootAMX);
         
         return (MBeanServerForwarder) Proxy.newProxyInstance(
                 MBeanServerForwarder.class.getClassLoader(),

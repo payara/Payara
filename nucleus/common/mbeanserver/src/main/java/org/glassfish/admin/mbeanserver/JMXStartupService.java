@@ -171,7 +171,7 @@ public final class JMXStartupService implements PostConstruct {
         final boolean autoStart = false;
 
         mConnectorsStarterThread = new JMXConnectorsStarterThread(
-                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance()), configuredConnectors, mBootAMX, !autoStart);
+                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance(), mBootAMX), configuredConnectors, mBootAMX, !autoStart);
         mConnectorsStarterThread.start();
 
         // start AMX *first* (if auto start) so that it's ready
