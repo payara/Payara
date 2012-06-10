@@ -101,7 +101,6 @@ public class AdminAuthorizedMBeanServer {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            final String connectionId = JMXRMIConnectionContext.getConnectionId();
             if (isAllowed(method, args)) {
                 return method.invoke(mBeanServer, args);
             } else {
