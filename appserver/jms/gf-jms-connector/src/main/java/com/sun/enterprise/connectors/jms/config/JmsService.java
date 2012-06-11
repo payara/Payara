@@ -55,6 +55,7 @@ import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -260,6 +261,7 @@ public interface JmsService extends ConfigExtension, Injectable, PropertyBag {
      */
     @Attribute (defaultValue="3")
     @Min(value=-1)
+    @Max(value=Integer.MAX_VALUE)
     String getAddresslistIterations();
 
     /**
