@@ -48,5 +48,4 @@ Import-Package: \
     com.sun.enterprise.config.serverbeans.customvalidators; \
     org.glassfish.config.support.datatypes; \
     com.sun.enterprise.config.util; \
-    com.sun.enterprise.config.util.zeroconfig; \
     org.glassfish.config.support; version=${project.osgi.version}

@@ -44,14 +44,9 @@ import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.serverbeans.ConfigSnippetLoader;
 import org.glassfish.config.support.GlassFishDocument;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigParser;
-import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.*;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.concurrent.Executors;
@@ -88,6 +83,44 @@ public abstract class SnippetLoader<C extends ConfigLoader, T extends ConfigBean
      */
     public abstract <U extends T> U createConfigBeanForType(Class<U> configBeanType)
             throws TransactionFailure;
+
+    /**
+     * Find a suitable getter method in the given ConfigLoader. The getter should return an object assignable to <U>
+     *
+     * @param configLoader    The class we want to find the getter in
+     * @param configBeanClass the type we want to find the getter for
+     * @param <U>             The type we want the getter to return assignable object
+     * @return A Method object for a getter method in the configLoader that returns <U>
+     */
+    protected <U extends T> Method getMatchingGetterMethod(C configLoader, Class<U> configBeanClass) {
+        Method[] methods = configLoader.getClass().getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getReturnType().getSimpleName().equals(configBeanClass.getSimpleName())) {
+                return methods[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find a suitable setter method in the given ConfigLoader. The setter should accept an object assignable from <U>
+     *
+     * @param configLoader The class we want to find the setter in
+     * @param fqdn         fully qualified type name, e.g: com.sun.enterprise.connectors.jms.config.JmsService
+     * @param <U>          The type we want the setter to accept it's type
+     * @return A Method object for <U> setter method.
+     */
+    protected <U extends T> Method getMatchingSetterMethod(C configLoader, String fqdn) {
+        String className = fqdn.substring(fqdn.lastIndexOf(".") + 1, fqdn.length());
+        String setterName = "set" + className;
+        Method[] methods = configLoader.getClass().getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getName().equalsIgnoreCase(setterName)) {
+                return methods[i];
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns a config bean of type <U> with default setting read from one of the default configuration sources which

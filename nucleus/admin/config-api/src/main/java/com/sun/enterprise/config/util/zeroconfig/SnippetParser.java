@@ -41,20 +41,20 @@ package com.sun.enterprise.config.util.zeroconfig;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.module.bootstrap.BootException;
+import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.*;
 
 import javax.xml.stream.XMLStreamReader;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -110,4 +110,24 @@ public class SnippetParser<C extends ConfigLoader> {
         return configBean;
     }
 
+
+    /**
+     * Finds and return the setter method matching the class named fqcn in the configLoader
+     *
+     * @param configLoader The ConfigLoader we want to inspect for presence of a setter method accepting class of type fqcn.
+     * @param fqcn         the fully qualified class name to find its setter in the configLoader
+     * @return the matching Method object or null if not present.
+     */
+
+    protected Method getMatchingSetterMethod(Config configLoader, String fqcn) {
+        String className = fqcn.substring(fqcn.lastIndexOf(".") + 1, fqcn.length());
+        String setterName = "set" + className;
+        Method[] methods = configLoader.getClass().getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            if (methods[i].getName().equalsIgnoreCase(setterName)) {
+                return methods[i];
+            }
+        }
+        return null;
+    }
 }
