@@ -85,7 +85,7 @@ public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> 
                 }
             }, configLoader);
         }
-        Method m = getMatchingGetterMethod(configLoader, configExtensionType);
+        Method m = ZeroConfigUtils.getMatchingGetterMethod(configLoader.getClass(), configExtensionType);
         if (m != null) {
             try {
                 return (U) m.invoke( configLoader);

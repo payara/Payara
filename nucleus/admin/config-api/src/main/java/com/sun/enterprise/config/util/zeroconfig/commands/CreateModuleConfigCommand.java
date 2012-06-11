@@ -163,7 +163,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
                 return;
             }
         } else if (serviceName != null) {
-            String className = ZeroConfigUtils.convertConfigElementNameToClassNAme(serviceName);
+            String className = ZeroConfigUtils.convertConfigElementNameToClassName(serviceName);
             Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
