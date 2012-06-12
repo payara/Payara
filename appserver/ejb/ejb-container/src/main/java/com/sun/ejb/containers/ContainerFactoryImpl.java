@@ -43,19 +43,15 @@ package com.sun.ejb.containers;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.ContainerProvider;
 import com.sun.ejb.containers.builder.StatefulContainerBuilder;
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
@@ -69,12 +65,6 @@ public final class ContainerFactoryImpl implements ContainerFactory {
     @Inject
     private Habitat services;
 
-    private EjbContainer ejbContainerDesc;
-
-       @Inject
-       @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-       private Config serverConfig;
-    
     private static final Logger _logger = 
     	LogDomains.getLogger(ContainerFactoryImpl.class, LogDomains.EJB_LOGGER);
     
@@ -85,10 +75,6 @@ public final class ContainerFactoryImpl implements ContainerFactory {
 	     throws Exception 
     {
         BaseContainer container = null;
-        if (ejbContainerDesc == null) {
-                ejbContainerDesc = serverConfig.getExtensionByType(EjbContainer.class);
-            }
-
         try {
             // instantiate container class
             if (ejbDescriptor instanceof EjbSessionDescriptor) {
