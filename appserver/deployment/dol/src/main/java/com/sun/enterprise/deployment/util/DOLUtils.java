@@ -97,7 +97,13 @@ public class DOLUtils {
     
     private static Logger logger=null;
     
+    // The system property to control the precedence between GF DD
+    // and WLS DD when they are both present. When this property is 
+    // set to true, GF DD will have higher precedence over WLS DD.
     private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
+
+    // The system property to control whether we should just ignore 
+    // WLS DD. When this property is set to true, WLS DD will be ignored.
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     /** no need to creates new DOLUtils */
@@ -254,6 +260,17 @@ public class DOLUtils {
             }
         }
         return result;
+    }
+
+    // returns true if GF DD should have higher precedence over 
+    // WLS DD when both present in the same archive
+    public static boolean isGFDDOverWLSDD() {
+        return Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD));
+    }
+
+    // returns true if we should ignore WLS DD in the archive
+    public static boolean isIgnoreWLSDD() {
+        return Boolean.valueOf(System.getProperty(IGNORE_WLSDD)); 
     }
 
     // process the list of the configuration files, and return the sorted
