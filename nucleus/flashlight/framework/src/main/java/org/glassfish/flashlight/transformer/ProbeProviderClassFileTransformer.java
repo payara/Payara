@@ -45,6 +45,9 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ATHROW;
 
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
@@ -60,13 +63,20 @@ import org.glassfish.flashlight.impl.client.AgentAttacher;
  * @author Mahesh Kannan
  * @author Byron Nevins
  */
+/*
+ * TODO TODO TODO
+ * Byron Nevins June 2012 -- Why is this class public? It should NOT be! It is
+ * called by one and only one class. org.glassfish.flashlight.impl.client.FlashlightProbeClientMediator.java
+ * This class should probably move to that package and be given default visibility instead of public.
+ * TODO TODO TODO
+ */
 public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
     public ProbeProviderClassFileTransformer(Class providerClass) {
         this.providerClass = providerClass;
     }
 
     /**
-     * This code can get confusing.  I didn't want to get this method confused with
+     * WBN: This code can get confusing.  I didn't want to get this method confused with
      * ProbeRegistry.registerProbe() so I gave it a slightly different name...
      * @param probe
      */
@@ -189,6 +199,24 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
         public void visitCode() {
             super.visitCode();
 
+            if(INSERT_CODE_BEFORE) {
+                insertCode();
+            }
+        }
+        @Override
+        public void visitInsn(int opcode) {
+            // we are visiting existing code -- which MUST have at least a return -- even if empty!
+            if (INSERT_CODE_AFTER && isReturnCode(opcode)) {
+                insertCode();
+            }
+            mv.visitInsn(opcode);
+        }
+
+        private static boolean isReturnCode(int opcode) {
+            return (opcode >= IRETURN && opcode <= RETURN) || opcode == ATHROW;
+        }
+
+        private void insertCode() {
             GeneratorAdapter gen = new GeneratorAdapter(mv, access, name, desc);
             //Add the body
             gen.push(probe.getId());
@@ -218,6 +246,14 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
     private static final Logger logger = Logger.getLogger(ProbeProviderClassFileTransformer.class.getName());
     private static boolean emittedAttachUnavailableMessageAlready = false;
     private static final String AGENT_CLASSNAME = "org.glassfish.flashlight.agent.ProbeAgentMain";
+
+    // June 2012 TEMPORARY  TODO
+    // Get rid of this hack and replace by adding a variable to the Probe object itself
+    // hint:  grep on "createProbe(" to see how to get a new annotation into the Probe runtime object
+    // I can't do this today, June 11, because the gmbal team is on vacation this week.  I don't want
+    // to lose the effort spent figuring out before and after
+    private static boolean INSERT_CODE_AFTER = Boolean.parseBoolean(Utility.getEnvOrProp("AS_AFTER"));
+    private static boolean INSERT_CODE_BEFORE = !INSERT_CODE_AFTER;
 
     static {
         Instrumentation nonFinalInstrumentation = null;
