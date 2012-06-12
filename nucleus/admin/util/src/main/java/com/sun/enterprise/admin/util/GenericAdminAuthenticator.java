@@ -110,7 +110,7 @@ import org.jvnet.hk2.component.PostConstruct;
 public class GenericAdminAuthenticator implements AdminAccessController, JMXAuthenticator, PostConstruct {
     
     @LoggerInfo(subsystem="ADMSEC", description="Admin security ")
-    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.admin.security";
+    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
 
     @LogMessagesResourceBundle
     private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
@@ -259,9 +259,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         * access is allowed only if secure admin has been enabled.
         */
 //        if (serverEnv.isDas()) {
-            if ( NetUtils.isThisHostLocal(originHost) 
+            if ( ifAuthorizedLogWhy("request is local", NetUtils.isThisHostLocal(originHost))
                 ||
-                SecureAdmin.Util.isEnabled(secureAdmin) ) {
+                  ifAuthorizedLogWhy("secure admin is enabled", SecureAdmin.Util.isEnabled(secureAdmin))
+                ||
+                  ifAuthorizedLogWhy("request contained admin token", ! s.getPrincipals(AdminTokenPrincipal.class).isEmpty())
+                || 
+                  ifAuthorizedLogWhy("request sent with an admin principal", isAuthenticatedUsingCert(adminPrincipals, s.getPrincipals()))) {
                 grantedAccess = AdminAccessController.Access.FULL;
             } else {
                 ADMSEC_LOGGER.log(Level.FINE, "Forbidding the admin request to the DAS; the request is remote and secure admin is not enabled");
@@ -283,6 +287,13 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 //        }
         ADMSEC_LOGGER.log(Level.FINE, "Admin access chosen: {0}", grantedAccess.toString());
         return grantedAccess;
+    }
+    
+    private boolean ifAuthorizedLogWhy(final String reason, final boolean isAuthorizedForThisReason) {
+        if (isAuthorizedForThisReason && ADMSEC_LOGGER.isLoggable(Level.FINER)) {
+            ADMSEC_LOGGER.log(Level.FINER, "Authorizing admin request: {0}", reason);
+        }
+        return isAuthorizedForThisReason;
     }
     
     private boolean isInAdminGroup(final String user, final String realm) {
@@ -320,20 +331,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         Subject s = null;
         try {
             s = authService.login(cbh, null);
-            /*
-             * Local commands which send a token also currently send a username
-             * and password.  It's possible that the username and password worked
-             * and the authentication service did not even use the LoginModule
-             * that knows about tokens, in which case the Subject returned from 
-             * the login invocation would be that for the provided username and
-             * password, not for the token.  So here we explicitly retrieve the
-             * Subject from the token manager if there is a token and if it
-             * leads to a valid Subject.
-             */
-            final Subject tokenSubject = consumeTokenIfPresent(req);
-            if (tokenSubject != null) {
-                s = tokenSubject;
-            }
+            consumeTokenIfPresent(req);
+            
         } catch (LoginException lex) {
             final String cmd = req.getContextPath();
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
@@ -428,10 +427,10 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 return true;
             }
         }
-        return isAauthenticatedUsingCert(adminPrincipalDNs, s.getPrincipals());
+        return isAuthenticatedUsingCert(adminPrincipalDNs, s.getPrincipals());
     }
     
-    private static boolean isAauthenticatedUsingCert(
+    private static boolean isAuthenticatedUsingCert(
             final Collection<String> adminPrincipalDNs,
             final Collection<Principal> principals) {
         for (Principal p : principals) {

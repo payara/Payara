@@ -389,6 +389,14 @@ public class AdminLoginModule implements LoginModule {
                     */
                     logger.log(PROGRESS_LEVEL, "Recognized valid limited-use token");
                     updateFromSubject(subject, s);
+                    /*
+                     * Add an additional principal indicating that we trust this
+                     * subject to make remote requests.  Otherwise we would
+                     * reject attempts to use a token from off-node, and that's
+                     * partly the whole point of tokens.
+                     */
+                    subject.getPrincipals().add(new AdminTokenPrincipal(token));
+                    
                 }
             }
             return s != null;
