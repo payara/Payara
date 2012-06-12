@@ -85,7 +85,7 @@ import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
  */
 @Service(name = "MonitoringReporter")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS, Runt imeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 public class MonitoringReporter extends V2DottedNameSupport {
 
     public enum OutputType {
