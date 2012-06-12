@@ -143,7 +143,7 @@ public class CommandRunnerImpl implements CommandRunner {
     
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(CommandRunnerImpl.class);
-    private static Validator beanValidator = null;
+    private static volatile Validator beanValidator = null;
 
     /**
      * Returns an initialized ActionReport instance for the passed type or
@@ -421,29 +421,36 @@ public class CommandRunnerImpl implements CommandRunner {
         return report.getActionExitCode();
     }
 
-        private void checkAgainstBeanConstraints(AdminCommand component, String cname) {
-        if (beanValidator == null) {
-            ClassLoader cl = System.getSecurityManager() == null ?
-                    Thread.currentThread().getContextClassLoader():
-                    AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-                        @Override
-                        public ClassLoader run() {
-                            return Thread.currentThread().getContextClassLoader();
-                        }
-                    });
-            try {
-                Thread.currentThread().setContextClassLoader(null);
-                ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-                ValidatorContext validatorContext = validatorFactory.usingContext();
-                validatorContext.messageInterpolator(new MessageInterpolatorImpl());                
-                beanValidator = validatorContext.getValidator();
-            } finally {
-                Thread.currentThread().setContextClassLoader(cl);
-            }
+    private static synchronized void initBeanValidator() {
+        if (beanValidator != null) {
+            return;
         }
+        ClassLoader cl = System.getSecurityManager() == null ?
+                Thread.currentThread().getContextClassLoader():
+                AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                    @Override
+                    public ClassLoader run() {
+                        return Thread.currentThread().getContextClassLoader();
+                    }
+                });
+        try {
+            Thread.currentThread().setContextClassLoader(null);
+            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+            ValidatorContext validatorContext = validatorFactory.usingContext();
+            validatorContext.messageInterpolator(new MessageInterpolatorImpl());                
+            beanValidator = validatorContext.getValidator();
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }       
+    }
+    
+    private void checkAgainstBeanConstraints(AdminCommand component, String cname) {
+        initBeanValidator();
                 
         Set<ConstraintViolation<AdminCommand>> constraintViolations = beanValidator.validate(component);
-        if (constraintViolations == null || constraintViolations.isEmpty()) return;
+        if (constraintViolations == null || constraintViolations.isEmpty()) {
+            return;
+        }
         StringBuilder msg = new StringBuilder(adminStrings.getLocalString("commandrunner.unacceptableBV",
                 "Parameters for command {0} violate the following constraints: ", 
                 cname));
@@ -451,7 +458,9 @@ public class CommandRunnerImpl implements CommandRunner {
         String violationMsg = adminStrings.getLocalString("commandrunner.unacceptableBV.reason",
                 "on parameter [ {1} ] violation reason [ {0} ]");
         for (ConstraintViolation cv : constraintViolations) {
-            if (addc) msg.append(", ");
+            if (addc) {
+                msg.append(", ");
+            }
             msg.append(MessageFormat.format(violationMsg, cv.getMessage(), cv.getPropertyPath()));
             addc = true;
         }
@@ -1546,9 +1555,6 @@ public class CommandRunnerImpl implements CommandRunner {
         @Override
         public void execute(AdminCommand command) {
             CommandRunnerImpl.this.doCommand(this, command, subject);
-
-            // bnevins
-            ActionReport r = report;
         }
     }
 
@@ -1674,7 +1680,7 @@ public class CommandRunnerImpl implements CommandRunner {
     
     /** Works as a key in ETag cache map
      */
-    private class NameCommandClassPair {
+    private static class NameCommandClassPair {
         private String name;
         private Class<? extends AdminCommand> clazz;
         private int hash; //immutable, we can cache it
@@ -1682,8 +1688,9 @@ public class CommandRunnerImpl implements CommandRunner {
         public NameCommandClassPair(String name, Class<? extends AdminCommand> clazz) {
             this.name = name;
             this.clazz = clazz;
-            hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
-            hash = 79 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
+            hash = 3;
+            hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 67 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
         }
 
         @Override
@@ -1707,8 +1714,7 @@ public class CommandRunnerImpl implements CommandRunner {
         @Override
         public int hashCode() {
             return hash;
-        }
-        
+        }     
     }
 
     /**

@@ -96,7 +96,7 @@ public class GetHabitatInfo implements AdminCommand {
     
     @JavaClassName
     @Param(primary = true, optional = true)
-    String contract = null;
+    String contract;
     
     @Pattern(regexp="true|false")
     @Param(optional = true)
