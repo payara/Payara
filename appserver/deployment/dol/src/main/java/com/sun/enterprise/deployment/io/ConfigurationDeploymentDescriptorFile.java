@@ -1,14 +1,14 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * https://glassfish.dev.java.net/publin/CDDL+GPL_1_1.html
  * or packager/legal/LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.deployment.io;
 
+import java.util.Map;
+
 /**
  * This class is responsible for handling the XML configuration information
  * for the J2EE Reference Implementation runtime descriptors.
@@ -47,4 +49,15 @@ package com.sun.enterprise.deployment.io;
  * @author Jerome Dochez
  */
 public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDescriptorFile {
+
+    /**
+     * Register the root node for this runtime deployment descriptor file
+     * in the root nodes map, and also in the dtd map which will be used for 
+     * dtd validation.
+     *
+     * @param rootNodesMap the map for storing all the root nodes
+     * @param publicIDToDTDMap the map for storing public id to dtd mapping
+     */
+    public void registerBundle(final Map<String, Class> rootNodesMap,
+            final Map<String, String> publicIDToDTDMap) {}
 }
