@@ -186,26 +186,24 @@ public class PackageAppClient {
         final File thisJarFile = findCurrentJarFile();
         File installDir = findInstallDir(thisJarFile);
         File modulesDir = new File(installDir.toURI().resolve("glassfish/modules/"));
-        File outputFile = chooseOutputFile(installDir, args);
-        if (outputFile.exists()) {
-            if ( ! outputFile.delete()) {
-                throw new RuntimeException(strings.get("errDel", outputFile.getAbsolutePath()));
-            }
-            System.out.println(strings.get("replacingFile", outputFile.getAbsolutePath()));
-        } else {
-            System.out.println(strings.get("creatingFile", outputFile.getAbsolutePath()));
-        }
-
+        /*
+         * Write the new JAR to a temp file in the install directory.  Then
+         * we can simply rename the file to the correct name.  (Rename does not
+         * work on Windows systems across volumes.)
+         */
+        final File tempFile = File.createTempFile("appc", ".tmp", installDir);
+        final File outputFile = chooseOutputFile(installDir, args);
+        
         final File[] configFiles = chooseConfigFiles(installDir, args);
         String[] classPathElements = getJarClassPath(thisJarFile).split(" ");
 
         JarOutputStream os = new JarOutputStream(new BufferedOutputStream(
-                new FileOutputStream(outputFile)));
+                new FileOutputStream(tempFile)));
 
         /*
          * Add this JAR file to the output.
          */
-        addFile(os, installDir.toURI(), thisJarFile.toURI(), outputFile, "");
+        addFile(os, installDir.toURI(), thisJarFile.toURI(), tempFile, "");
 
         /*
          * JARs listed in the Class-Path are all relative to the modules
@@ -215,7 +213,7 @@ public class PackageAppClient {
         for (String classPathElement : classPathElements) {
             final File classPathJAR = new File(modulesDir, classPathElement);
             addFile(os, installDir.toURI(),
-                    modulesDir.toURI().resolve(classPathJAR.toURI()), outputFile,
+                    modulesDir.toURI().resolve(classPathJAR.toURI()), tempFile,
                     "");
         }
 
@@ -225,18 +223,18 @@ public class PackageAppClient {
          */
         for (String dirToCopy : DIRS_TO_COPY) {
             addDir(os, installDir.toURI(),
-                    installDir.toURI().resolve(dirToCopy), outputFile,
+                    installDir.toURI().resolve(dirToCopy), tempFile,
                     "");
         }
 
         for (String endorsedDirToCopy : ENDORSED_DIRS_TO_COPY) {
             addEndorsedFiles(os, installDir.toURI(),
-                    installDir.toURI().resolve(endorsedDirToCopy), outputFile);
+                    installDir.toURI().resolve(endorsedDirToCopy), tempFile);
         }
 
         for (String singleFileToCopy : SINGLE_FILES_TO_COPY) {
             addFile(os, installDir.toURI(),
-                    installDir.toURI().resolve(singleFileToCopy), outputFile,
+                    installDir.toURI().resolve(singleFileToCopy), tempFile,
                     "");
         }
 
@@ -244,10 +242,28 @@ public class PackageAppClient {
          * The glassfish-acc.xml file and sun-acc.xml files.
          */
         for (File configFile : configFiles) {
-            addFile(os, installDir.toURI(), configFile.toURI(), outputFile, "");
+            addFile(os, installDir.toURI(), configFile.toURI(), tempFile, "");
         }
 
         os.close();
+        placeFile(tempFile, outputFile);
+    }
+    
+    private void placeFile(final File tempFile, final File outputFile) {
+        if (outputFile.exists()) {
+            if ( ! outputFile.delete()) {
+                throw new RuntimeException(strings.get("errDel", outputFile.getAbsolutePath()));
+            }
+            System.out.println(strings.get("replacingFile", outputFile.getAbsolutePath()));
+        } else {
+            System.out.println(strings.get("creatingFile", outputFile.getAbsolutePath()));
+        }
+        if (isVerbose) {
+            System.out.println(strings.get("moving", tempFile.getAbsolutePath(), outputFile.getAbsolutePath()));
+        }
+        if ( ! tempFile.renameTo(outputFile)) {
+            throw new RuntimeException(strings.get("errRenaming", tempFile.getAbsolutePath(), outputFile.getAbsolutePath()));
+        }
     }
 
     /**
@@ -452,7 +468,7 @@ public class PackageAppClient {
             final String defaultRelativeURI,
             final File installDir,
             final String[] args) {
-        File result = null;
+        File result;
         /*
          * Look for the option in the arguments.
          */
