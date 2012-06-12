@@ -48,4 +48,6 @@
                         org.glassfish.security.services.common; \
                         org.glassfish.security.services.commands; \
                         org.glassfish.security.services.impl; \
+                        org.glassfish.security.services.impl.authorization; \
+                        org.glassfish.security.services.provider.authorization; \
                         org.glassfish.security.services.config; version=${project.osgi.version}

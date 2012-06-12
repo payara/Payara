@@ -37,14 +37,70 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.spi;
 
-/**
- * Base interface used by all security providers
- */
-public interface SecurityProvider {
+package org.glassfish.security.services.provider.authorization;
+
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.glassfish.security.services.config.LoginModuleConfig;
+import org.glassfish.security.services.config.SecurityProvider;
+
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+
+@Configured
+public interface AuthorizationProviderConfig extends SecurityProvider, PropertyBag {
+
+    
     /**
-     * Initialize the security provider instance with the specific security provider configuration.
+     * Configuration parameter indicating if the provider support policy deploy or not
+     * @return true support policy deploy
      */
-    public void initialize(org.glassfish.security.services.config.SecurityProvider providerConfig);
+    @Attribute(defaultValue = "true")
+    boolean getSupportPolicyDeploy();
+    void setSupportPolicyDeploy(boolean value) throws PropertyVetoException;
+
+    /**
+     * configuration parameter to indicate th version of the provider
+     * @return version of the provider
+     */
+    @Attribute(required=true)
+    String getVersion();
+    void setVersion(String value) throws PropertyVetoException;
+    
+    
+    /**
+     * Gets the properties of the LoginModule.
+     */
+    @Element
+    List<Property> getProperty();
+    
+    /**
+     * Gets the options of the LoginModule for use with JAAS Configuration.
+     */
+    @DuckTyped
+    Map<String,?> getProviderOptions();
+
+    class Duck {
+        /**
+         * Gets the options of the LoginModule for use with JAAS Configuration.
+         */
+        public static Map<String,?> getProviderOptions(AuthorizationProviderConfig config) {
+            Map<String,String> providerOptions = new HashMap<String,String>();
+            for (Property prop : config.getProperty()) {
+                providerOptions.put(prop.getName(), prop.getValue());
+            }
+            return providerOptions;
+        }
+    }
+
+
 }

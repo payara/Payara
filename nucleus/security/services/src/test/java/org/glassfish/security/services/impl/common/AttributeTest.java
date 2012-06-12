@@ -37,14 +37,69 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.spi;
 
-/**
- * Base interface used by all security providers
- */
-public interface SecurityProvider {
-    /**
-     * Initialize the security provider instance with the specific security provider configuration.
-     */
-    public void initialize(org.glassfish.security.services.config.SecurityProvider providerConfig);
+package org.glassfish.security.services.impl.common;
+
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import org.glassfish.security.services.api.common.Attribute;
+
+
+public class AttributeTest {
+
+    
+    @Test
+    public void testAttribute() {
+        
+        String attName = "test";
+        Attribute att = new AttributeImpl(attName);
+        att.addValue("value1");
+        att.addValue("value2");
+
+        Set<String> vs = att.getValues();
+        Assert.assertEquals(2, att.getValueCount());
+        Assert.assertTrue(vs.contains("value1"));
+        Assert.assertTrue(vs.contains("value2"));
+    }
+
+    @Test
+    public void testAttributeNullValue() {
+        
+        String attName = "testnull";
+        Attribute att = new AttributeImpl(attName);
+        att.addValue(null);
+
+        Set<String> vs = att.getValues();
+        Assert.assertTrue(vs.isEmpty());
+    }
+    
+    
+    @Test
+    public void testAttributeNullValue1() {
+        
+        String attName = "testnull1";
+        Attribute att = new AttributeImpl(attName);
+        att.addValue(null);
+        att.addValue("value1");
+
+        Set<String> vs = att.getValues();
+        Assert.assertEquals(1, att.getValueCount());
+        Assert.assertTrue(vs.contains("value1"));        
+    }
+
+    @Test
+    public void testAttributeEmptyValue() {
+        
+        String attName = "testEmpty";
+        Attribute att = new AttributeImpl(attName);
+        att.addValue("");
+
+        Set<String> vs = att.getValues();
+        Assert.assertTrue(vs.isEmpty());
+    }
+
+
 }

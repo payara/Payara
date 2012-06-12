@@ -37,14 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.spi;
 
-/**
- * Base interface used by all security providers
- */
-public interface SecurityProvider {
-    /**
-     * Initialize the security provider instance with the specific security provider configuration.
-     */
-    public void initialize(org.glassfish.security.services.config.SecurityProvider providerConfig);
+package org.glassfish.security.services.api.authorization;
+
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import org.junit.runner.RunWith;
+
+import org.jvnet.hk2.junit.Hk2Runner;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.glassfish.security.services.spi.AuthorizationProvider;
+
+import org.glassfish.security.services.impl.authorization.AzSubjectImpl;
+import org.glassfish.security.services.impl.authorization.AzResourceImpl;
+import org.glassfish.security.services.impl.authorization.AzActionImpl;
+import org.glassfish.security.services.impl.authorization.AzEnvironmentImpl;
+
+@RunWith(Hk2Runner.class)
+public class SimpleAtzProviderTest {
+    
+    @Inject @Named("Simple Authorization Provider")
+    private AuthorizationProvider simpleAtzPrv = null;
+    
+    
+    @Test
+    public void testService() {
+        
+        Assert.assertNotNull(simpleAtzPrv);
+        
+        AzResult rt = simpleAtzPrv.getAuthorizationDecision(
+                new AzSubjectImpl(),
+                new AzResourceImpl(), 
+                new AzActionImpl(),
+                new AzEnvironmentImpl()
+              );
+        
+        AzResult.Decision ds = rt.getDecision();
+        
+        Assert.assertEquals(ds, AzResult.Decision.PERMIT);
+
+    }
+
+    
 }

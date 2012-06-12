@@ -44,6 +44,7 @@ import java.net.URI;
 import java.security.Permission;
 import javax.security.auth.Subject;
 
+import org.glassfish.security.services.api.SecurityService;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -53,7 +54,7 @@ import org.jvnet.hk2.annotations.Contract;
  */
 
 @Contract
-public interface AuthorizationService {
+public interface AuthorizationService extends SecurityService {
 	
 	/**
 	 * Determine whether the given Subject has been granted the specified Permission

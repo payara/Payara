@@ -41,7 +41,16 @@ package org.glassfish.security.services.impl.authorization;
 
 import java.net.URI;
 import java.security.Permission;
+import java.util.Set;
+import java.security.Principal;
+import java.security.ProtectionDomain;
+import java.security.Policy;
+import java.security.CodeSource;
+import java.security.CodeSigner;
+import javax.security.auth.Subject;
 
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzEnvironment;
@@ -49,50 +58,168 @@ import org.glassfish.security.services.api.authorization.AzObligations;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
-import org.glassfish.security.services.impl.AuthenticationServiceFactory;
+import org.glassfish.security.services.impl.ServiceFactory;
 
-import javax.security.auth.Subject;
 
+//import org.jvnet.hk2.annotations.Inject;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.IterableProvider;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+
+import org.glassfish.security.services.config.SecurityProvider;
+import org.glassfish.security.services.provider.authorization.AuthorizationProviderConfig;
+import org.glassfish.security.services.spi.AuthorizationProvider;
+
 
 @Service
 @Singleton
-public class AuthorizationServiceImpl implements AuthorizationService {
+public class AuthorizationServiceImpl implements AuthorizationService, PostConstruct {
 
+    @Inject
+    private Domain domain;
+
+    //TODO: do context switch
+    @Inject
+    ServerContext serverContext;
+
+    private BaseServiceLocator serviceLocator = null;
+    
+    private org.glassfish.security.services.config.AuthorizationService atzSvCfg;
+    
+    private SecurityProvider atzPrvConfig;
+    
+    private AuthorizationProvider atzProvider;
+    
+    private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
+    
+    @Override
+    public void initialize(org.glassfish.security.services.config.SecurityService serviceConfiguration) {
+                
+        //get service level config
+        atzSvCfg = (org.glassfish.security.services.config.AuthorizationService)serviceConfiguration;
+
+        if (atzSvCfg == null) 
+            throw new RuntimeException("The Authorization service is not configured in the domain configuration file");
+        
+        //get provider level config
+        //consider only one provider for now
+        atzPrvConfig = atzSvCfg.getAtzSecurityProviders().get(0);
+
+        if (atzPrvConfig == null)
+            throw new RuntimeException("No provider  configured for the Authorization service in the domain configuration file");
+        
+        serviceLocator = Globals.getDefaultBaseServiceLocator();
+
+        //get the provider
+        atzProvider = serviceLocator.getComponent(AuthorizationProvider.class, atzPrvConfig.getName());
+        
+        //init the provider  -- use the first config under the provider config???
+        atzProvider.initialize(atzPrvConfig);
+    }
+    
+    @Override
 	public boolean isPermissionGranted(Subject subject, Permission permission) {
-		return true;
+        
+        Set<Principal> principalset = subject.getPrincipals();
+        Principal[] principalAr = (principalset.size() == 0) ? null : principalset.toArray(new Principal[principalset.size()]);
+        ProtectionDomain pd = new ProtectionDomain(NULL_CODESOURCE, null, null, principalAr); 
+        Policy policy = Policy.getPolicy();
+        boolean result = policy.implies(pd, permission);
+        
+        return result;
 	}
 
+    @Override
 	public boolean isAuthorized(Subject subject, URI resource) {
-		return true;
+		return isAuthorized(subject, resource, "*");
 	}
 
+    @Override
 	public boolean isAuthorized(Subject subject, URI resource, String action) {
-		return true;
+	    AzResult azResult = 
+	        getAuthorizationDecision(makeAzSubject(subject), makeAzResource(resource), makeAzAction(action));
+		
+	    boolean result = false;
+	    	    
+	    if ( (AzResult.Decision.PERMIT.equals(azResult.getDecision())) &&
+	         (AzResult.Status.OK.equals(azResult.getStatus())) ) 
+	        result = true;
+	    
+	    return result;
 	}
 
+    @Override
 	public AzResult getAuthorizationDecision(AzSubject subject,
 			AzResource resource, AzAction action) {
-		return null;
+        //TODO: setup current AzEnvironment instance. Should a null or empty instance to represent current environment?
+		return atzProvider.getAuthorizationDecision(subject, resource, action, new AzEnvironmentImpl());
 	}
 
+    @Override
 	public AzSubject makeAzSubject(Subject subject) {
-		return null;
+
+	    if (subject == null)
+	        return null;
+	    
+	    AzSubject azs = new AzSubjectImpl();
+
+	    Set<Principal> principals = subject.getPrincipals();
+
+	    String AttName = Principal.class.getSimpleName();
+	    for (Principal p : principals) {
+	        String pname = p.getName();
+	        azs.addAttribute(AttName, pname, false);
+	    }
+	    
+		return azs;
 	}
 
+    @Override
 	public AzResource makeAzResource(URI resource) {
-		return null;
+	    
+	    if (resource == null)
+	        return null;
+	    
+	    String attName = URI.class.getSimpleName();
+	    
+	    AzResource azr = new AzResourceImpl();
+	    azr.addAttribute(attName, resource.toString(), false);
+	    
+		return azr;
 	}
 
+    @Override
 	public AzAction makeAzAction(String action) {
-		return null;
+	    if (action == null)
+	        return null;
+	    
+	    AzAction aza = new AzActionImpl();
+	    
+	    aza.addAttribute("ACTION", action, false);
+		return aza;
 	}
 
+    @Override
 	public PolicyDeploymentContext findOrCreateDeploymentContext(
 			String appContext) {
-		return null;
+		return atzProvider.findOrCreateDeployContext(appContext);
 	}
-	
+
+   @Override
+    public void postConstruct() {
+            
+        org.glassfish.security.services.config.AuthorizationService atzConfiguration =
+           ServiceFactory.getSecurityServiceConfiguration(
+                   domain, org.glassfish.security.services.config.AuthorizationService.class);
+       
+        initialize(atzConfiguration);
+    }
+
 
 }

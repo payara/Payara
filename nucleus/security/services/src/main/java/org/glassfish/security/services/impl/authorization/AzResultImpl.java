@@ -50,7 +50,7 @@ public final class AzResultImpl implements AzResult {
 	
 	private AzResultImpl() {}
 	
-	protected AzResultImpl(Decision d, Status s, AzObligations o) {
+	public AzResultImpl(Decision d, Status s, AzObligations o) {
 		decision = d;
 		status = s;
 		obligations = o;
