@@ -119,8 +119,8 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
 
     @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbMessageBeanDescriptor ejbDesc) {
-        Node ejbNode = super.writeDescriptor(parent, nodeName, descriptor);
-        writeDisplayableComponentInfo(ejbNode, descriptor);
+        Node ejbNode = super.writeDescriptor(parent, nodeName, ejbDesc);
+        writeDisplayableComponentInfo(ejbNode, ejbDesc);
         writeCommonHeaderEjbDescriptor(ejbNode, ejbDesc);
         appendTextChild(ejbNode, EjbTagNames.EJB_CLASS, ejbDesc.getEjbClassName());             
         appendTextChild(ejbNode, EjbTagNames.MESSAGING_TYPE, ejbDesc.getMessageListenerType());

@@ -136,8 +136,8 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
 
     @Override
     public Node writeDescriptor(Node parent, String nodeName, EjbEntityDescriptor ejbDesc) {
-        Node ejbNode = super.writeDescriptor(parent, nodeName, descriptor);
-        writeDisplayableComponentInfo(ejbNode, descriptor);
+        Node ejbNode = super.writeDescriptor(parent, nodeName, ejbDesc);
+        writeDisplayableComponentInfo(ejbNode, ejbDesc);
         writeCommonHeaderEjbDescriptor(ejbNode, ejbDesc);
         appendTextChild(ejbNode, EjbTagNames.PERSISTENCE_TYPE, ejbDesc.getPersistenceType());                   
         appendTextChild(ejbNode, EjbTagNames.PRIMARY_KEY_CLASS, ejbDesc.getPrimaryKeyClassName());                  

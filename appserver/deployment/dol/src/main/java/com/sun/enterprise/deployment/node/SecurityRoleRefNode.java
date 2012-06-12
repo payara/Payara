@@ -81,7 +81,7 @@ public class SecurityRoleRefNode extends DeploymentDescriptorNode<RoleReference>
     public Node writeDescriptor(Node parent, String nodeName, RoleReference roleRef) {
         Node subNode = super.writeDescriptor(parent, nodeName, roleRef);
 
-        writeLocalizedDescriptions(subNode, descriptor);        
+        writeLocalizedDescriptions(subNode, roleRef);        
 
         appendTextChild(subNode, TagNames.ROLE_NAME, roleRef.getName());                   
         appendTextChild(subNode, TagNames.ROLE_LINK, roleRef.getValue());                  
