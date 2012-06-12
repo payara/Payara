@@ -85,7 +85,7 @@ import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
  */
 @Service(name = "MonitoringReporter")
 @Scoped(PerLookup.class)
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS, Runt imeType.INSTANCE})
 public class MonitoringReporter extends V2DottedNameSupport {
 
     public enum OutputType {
@@ -293,7 +293,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
      * So "runLocally" will be called on the instance.  this method will ONLY
      * run on DAS (guaranteed!)
      */
-    private void runRemotely() {
+     private void runRemotely() {
         if (!isDas())
             return;
 
@@ -459,7 +459,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
             return true;
         }
 
-        // targetName is either 1 or more instances or garbage!
+        // targetName is either 1 instance or a cluster or garbage!
         targets = targetService.getInstances(targetName);
 
         if (targets.isEmpty()) {
@@ -467,6 +467,9 @@ public class MonitoringReporter extends V2DottedNameSupport {
             return false;
         }
 
+        if(targetService.isCluster(targetName) && targets.size() > 1)
+            targetIsMultiInstanceCluster = true;
+        
         return true;
     }
 
@@ -677,6 +680,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private OutputType outputType;
     private final static String DOTTED_NAME = ".dotted-name";
     private final StringBuilder cliOutput = new StringBuilder();
+    private boolean targetIsMultiInstanceCluster = false;
 
     private static class NameValue {
         String name;
