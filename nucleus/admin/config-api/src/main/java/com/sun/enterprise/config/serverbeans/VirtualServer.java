@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -356,7 +356,8 @@ public interface VirtualServer extends ConfigBeanProxy, Injectable, PropertyBag 
             final String[] strings = listeners == null ? new String[0] : listeners.split(",");
             final NetworkConfig config = server.getParent().getParent(Config.class).getNetworkConfig();
             List<NetworkListener> list = new ArrayList<NetworkListener>();
-            for (String name : strings) {
+            for (String s : strings) {
+                final String name = s.trim();
                 final NetworkListener networkListener = config.getNetworkListener(name);
                 if (networkListener != null) {
                     list.add(networkListener);

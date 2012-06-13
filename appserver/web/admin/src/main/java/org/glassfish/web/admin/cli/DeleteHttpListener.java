@@ -173,7 +173,8 @@ public class DeleteHttpListener implements AdminCommand {
                 Pattern p = Pattern.compile(",");
                 String[] names = p.split(lss);
                 List<String> nl = new ArrayList<String>();
-                for (String name : names) {
+                for (String rawName : names) {
+                    final String name = rawName.trim();
                     if (!listenerId.equals(name)) {
                         nl.add(name);
                     }
