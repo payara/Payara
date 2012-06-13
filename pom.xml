@@ -177,7 +177,7 @@
         <glassfishbuild.version>3.2.3</glassfishbuild.version>
         <websocket.version>0.2</websocket.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
-        <logging-annotation-processor.version>1.0</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.1</logging-annotation-processor.version>
     </properties>
 
     <modules>
