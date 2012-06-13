@@ -78,6 +78,7 @@ import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.grizzly.utils.Futures;
 
 import org.jvnet.hk2.annotations.RunLevel;
 import org.jvnet.hk2.annotations.Scoped;
@@ -371,6 +372,8 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     public synchronized Future<Result<Thread>> createNetworkProxy(NetworkListener listener) {
 
         if (!Boolean.valueOf(listener.getEnabled())) {
+            addChangeListener(listener); // in case the listener will be enabled
+
             logger.log(Level.INFO, "Network listener {0} on port {1} disabled per domain.xml",
                     new Object[]{listener.getName(), listener.getPort()});
             return null;
@@ -415,9 +418,8 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             // add the new proxy to our list of proxies.
             proxies.add(proxy);
         } catch (Throwable e) {
-            final FutureImpl<Result<Thread>> errorFuture =
-                    UnsafeFutureImpl.create();
-            errorFuture.result(new Result<Thread>(e));
+            final Future<Result<Thread>> errorFuture =
+                    Futures.createReadyFuture(new Result<Thread>(e));
             future = errorFuture;
         } finally {
             if (future == null) {
