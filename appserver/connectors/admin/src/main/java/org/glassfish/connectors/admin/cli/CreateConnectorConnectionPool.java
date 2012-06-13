@@ -220,8 +220,8 @@ public class CreateConnectorConnectionPool implements AdminCommand {
             if (rs.getMessage() != null) {
                 report.setMessage(rs.getMessage());
             } else {
-                 report.setMessage(localStrings.getLocalString("create.connector.connection.pool.fail",
-                    "Connector connection pool {0} creation failed", poolname, ""));
+                report.setMessage(localStrings.getLocalString("create.connector.connection.pool.fail",
+                    "Connector connection pool {0} creation failed.", poolname));
             }
             if (rs.getException() != null)
                 report.setFailureCause(rs.getException());
