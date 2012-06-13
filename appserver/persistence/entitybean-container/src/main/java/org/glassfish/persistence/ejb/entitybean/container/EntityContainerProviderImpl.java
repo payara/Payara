@@ -54,17 +54,25 @@ import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import com.sun.enterprise.config.serverbeans.Config;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
 
 @Service
-public final class EntityContainerProviderImpl implements ContainerProvider {
+public final class EntityContainerProviderImpl implements PostConstruct, ContainerProvider {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+
     private EjbContainer ejbContainerDesc;
     
     private static final Logger _logger = 
     	LogDomains.getLogger(EntityContainerProviderImpl.class, LogDomains.EJB_LOGGER);
     
+    public void postConstruct() {
+        ejbContainerDesc = serverConfig.getExtensionByType(EjbContainer.class);
+    }
+
     public Container getContainer(EjbDescriptor ejbDescriptor,
 				     ClassLoader loader) throws Exception {
         Container container = null;

@@ -62,6 +62,7 @@ import com.sun.ejb.containers.util.cache.NRUSessionCache;
 import com.sun.ejb.containers.util.cache.UnBoundedSessionCache;
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
+import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -80,6 +81,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.component.PostConstruct;
 
 /**
  * A builder for StatefulSessionContainer. Takes care of
@@ -98,7 +100,7 @@ import org.jvnet.hk2.component.PerLookup;
 @Service
 @Scoped(PerLookup.class)
 public class StatefulContainerBuilder
-        extends BaseContainerBuilder {
+        extends BaseContainerBuilder implements PostConstruct {
     private static final Level TRACE_LEVEL = Level.FINE;
 
     private StatefulSessionContainer sfsbContainer;
@@ -121,6 +123,8 @@ public class StatefulContainerBuilder
     private EjbContainerAvailability ejbAvailability;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+
     EjbContainer ejbContainerConfig;
 
     @Inject @Optional
@@ -138,6 +142,10 @@ public class StatefulContainerBuilder
 
     public StatefulContainerBuilder() {
         super();
+    }
+
+    public void postConstruct() {
+        ejbContainerConfig = serverConfig.getExtensionByType(EjbContainer.class);
     }
 
     public BaseContainer createContainer(

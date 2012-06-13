@@ -52,7 +52,9 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import com.sun.enterprise.config.serverbeans.Config;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PostConstruct;
 
 /**
  * A util class to read the bean cache related entries from
@@ -61,7 +63,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Mahesh Kannan
  */
 @Service
-public class CacheProperties {
+public class CacheProperties implements PostConstruct {
 
     protected static final Logger _logger =
             LogDomains.getLogger(CacheProperties.class, LogDomains.EJB_LOGGER);
@@ -74,9 +76,15 @@ public class CacheProperties {
     private String victimSelectionPolicy;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    private Config serverConfig;
+
     EjbContainer ejbContainer;
 
     public CacheProperties() {
+    }
+
+    public void postConstruct() {
+        ejbContainer = serverConfig.getExtensionByType(EjbContainer.class);
     }
 
     public void init(EjbDescriptor desc) {
