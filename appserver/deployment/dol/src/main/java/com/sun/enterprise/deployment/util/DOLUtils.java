@@ -75,6 +75,8 @@ import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -82,6 +84,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.Inhabitant;
 import org.xml.sax.SAXParseException;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.ContractLocator;
@@ -277,11 +280,11 @@ public class DOLUtils {
     // configuration file with precedence from high to low
     // this list does not take consideration of what runtime files are 
     // present in the current archive
-    private static List<DeploymentDescriptorFile> sortConfigurationDDFiles(List<DeploymentDescriptorFile> ddFiles) {
-        DeploymentDescriptorFile wlsConfDD = null;
-        DeploymentDescriptorFile gfConfDD = null;
-        DeploymentDescriptorFile sunConfDD = null;
-        for (DeploymentDescriptorFile ddFile : ddFiles) {
+    private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles) {
+        ConfigurationDeploymentDescriptorFile wlsConfDD = null;
+        ConfigurationDeploymentDescriptorFile gfConfDD = null;
+        ConfigurationDeploymentDescriptorFile sunConfDD = null;
+        for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
             String ddPath = ddFile.getDeploymentDescriptorPath();
             if (ddPath.indexOf(DescriptorConstants.WLS) != -1) {
                 wlsConfDD = ddFile;
@@ -291,7 +294,7 @@ public class DOLUtils {
                 sunConfDD = ddFile;
             }
         }
-        List<DeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<DeploymentDescriptorFile>(); 
+        List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>(); 
 
         // sort the deployment descriptor files by precedence order 
         // when they are present in the same archive
@@ -332,9 +335,9 @@ public class DOLUtils {
     // configuration file with precedence from high to low
     // this list takes consideration of what runtime files are 
     // present in the current archive
-    public static List<DeploymentDescriptorFile> processConfigurationDDFiles(List<DeploymentDescriptorFile> ddFiles, ReadableArchive archive) throws IOException {
-        List<DeploymentDescriptorFile> processedConfDDFiles = new ArrayList<DeploymentDescriptorFile>();
-        for (DeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles)) {
+    public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive) throws IOException {
+        List<ConfigurationDeploymentDescriptorFile> processedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles)) {
             if (archive.exists(ddFile.getDeploymentDescriptorPath())) {
                 processedConfDDFiles.add(ddFile);
             }
@@ -354,11 +357,11 @@ public class DOLUtils {
      * @param archivist the main archivist
      * @param warnIfMultipleDDs whether to log warnings if both the GlassFish and the legacy Sun descriptors are present
      */
-    public static void readRuntimeDeploymentDescriptor(List<DeploymentDescriptorFile> confDDFiles, ReadableArchive archive, RootDeploymentDescriptor descriptor, Archivist main, final boolean warnIfMultipleDDs) throws IOException, SAXParseException {
+    public static void readRuntimeDeploymentDescriptor(List<ConfigurationDeploymentDescriptorFile> confDDFiles, ReadableArchive archive, RootDeploymentDescriptor descriptor, Archivist main, final boolean warnIfMultipleDDs) throws IOException, SAXParseException {
         if (confDDFiles == null || confDDFiles.isEmpty()) {
             return;
         }
-        DeploymentDescriptorFile confDD = confDDFiles.get(0);
+        ConfigurationDeploymentDescriptorFile confDD = confDDFiles.get(0);
         InputStream is = null;
         try {
             is = archive.getEntry(confDD.getDeploymentDescriptorPath());
@@ -482,4 +485,15 @@ public class DOLUtils {
         return allIncompatTypes;
     }
 
+    public static List<ConfigurationDeploymentDescriptorFile> getConfigurationDeploymentDescriptorFiles(BaseServiceLocator habitat, String archiveType) {
+        List<ConfigurationDeploymentDescriptorFile> confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
+        for (Inhabitant<?> inhabitant : ((Habitat)habitat).getInhabitants(ConfigurationDeploymentDescriptorFileFor.class)) {
+            String indexedType = inhabitant.metadata().get(ConfigurationDeploymentDescriptorFileFor.class.getName()).get(0);
+            if(indexedType.equals(archiveType)) {
+                ConfigurationDeploymentDescriptorFile confDD = (ConfigurationDeploymentDescriptorFile) inhabitant.get();
+                confDDFiles.add(confDD);
+            }
+        }
+        return confDDFiles;
+    }
 }

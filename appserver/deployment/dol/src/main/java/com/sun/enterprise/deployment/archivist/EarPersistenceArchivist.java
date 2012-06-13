@@ -55,7 +55,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @Service
-@ExtensionsArchivistFor("ear-jpa")
+@ExtensionsArchivistFor("jpa")
 public class EarPersistenceArchivist extends PersistenceArchivist {
 
     @Override

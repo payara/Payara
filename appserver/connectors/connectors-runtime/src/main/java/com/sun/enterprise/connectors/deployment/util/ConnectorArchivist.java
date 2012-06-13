@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.deployment.io.ConnectorDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.ConnectorRuntimeDDFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -109,9 +110,9 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
             confDDFiles.add(new ConnectorRuntimeDDFile());
         }
         return confDDFiles;

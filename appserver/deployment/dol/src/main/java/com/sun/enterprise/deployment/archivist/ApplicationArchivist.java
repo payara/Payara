@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.EarType;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.io.ApplicationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.ApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFApplicationRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.WLSApplicationRuntimeDDFile;
@@ -774,12 +775,9 @@ public class ApplicationArchivist extends Archivist<Application> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
-            confDDFiles.add(new WLSApplicationRuntimeDDFile());
-            confDDFiles.add(new GFApplicationRuntimeDDFile());
-            confDDFiles.add(new ApplicationRuntimeDDFile());
+            confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE);
         }
         return confDDFiles;
     }

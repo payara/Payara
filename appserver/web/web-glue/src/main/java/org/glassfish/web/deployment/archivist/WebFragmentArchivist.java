@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -114,7 +115,7 @@ class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         return Collections.emptyList();
     }
 

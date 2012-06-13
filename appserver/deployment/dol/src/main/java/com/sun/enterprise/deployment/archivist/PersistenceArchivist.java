@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.PersistenceDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -78,7 +79,7 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         return Collections.emptyList();
     }
 

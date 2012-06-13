@@ -100,7 +100,7 @@ public class ArchivistFactory implements ContractProvider {
         for (String containerType : containerTypes) {
             for (Inhabitant<?> inhabitant : ((Habitat)habitat).getInhabitants(ExtensionsArchivistFor.class)) {
                 String indexedType = inhabitant.metadata().get(ExtensionsArchivistFor.class.getName()).get(0);
-                if(indexedType.endsWith(containerType)) {
+                if(indexedType.equals(containerType)) {
                     ExtensionsArchivist ea = (ExtensionsArchivist) inhabitant.get();
                     if (ea.supportsModuleType(moduleType)) {
                         archivists.add(ea);

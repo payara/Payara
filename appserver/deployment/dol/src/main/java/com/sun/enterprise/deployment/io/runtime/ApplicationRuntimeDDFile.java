@@ -43,9 +43,15 @@ package com.sun.enterprise.deployment.io.runtime;
 import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.Descriptor;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRuntimeNode;
+import com.sun.enterprise.deployment.EarType;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
+import java.util.Map;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -53,6 +59,9 @@ import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRunt
  *
  * @author Jerome Dochez
  */
+@ConfigurationDeploymentDescriptorFileFor(EarType.ARCHIVE_TYPE)
+@Scoped(PerLookup.class)
+@Service
 public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
    
     /**
@@ -75,5 +84,18 @@ public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorF
             return new ApplicationRuntimeNode((Application) descriptor);
         }
         return null;
+    }
+
+    /**
+     * Register the root node for this runtime deployment descriptor file
+     * in the root nodes map, and also in the dtd map which will be used for
+     * dtd validation.
+     *
+     * @param rootNodesMap the map for storing all the root nodes
+     * @param publicIDToDTDMap the map for storing public id to dtd mapping
+     */
+    public void registerBundle(final Map<String, Class> rootNodesMap,
+            final Map<String, String> publicIDToDTDMap) {
+        rootNodesMap.put(ApplicationRuntimeNode.registerBundle(publicIDToDTDMap), ApplicationRuntimeNode.class);
     }
 }

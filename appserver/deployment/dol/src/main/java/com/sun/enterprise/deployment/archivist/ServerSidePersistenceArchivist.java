@@ -52,7 +52,7 @@ import javax.inject.Inject;
  * Archivist that reads persitence.xml for ejb jars and appclient while running on server side
  */
 @Service
-@ExtensionsArchivistFor("ejb-jpa")
+@ExtensionsArchivistFor("jpa")
 public class ServerSidePersistenceArchivist extends PersistenceArchivist {
     @Inject
     private ProcessEnvironment env;

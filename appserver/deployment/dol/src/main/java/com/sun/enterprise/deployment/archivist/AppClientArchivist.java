@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.io.AppClientDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.runtime.AppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.io.runtime.GFAppClientRuntimeDDFile;
 import com.sun.enterprise.deployment.util.AppClientValidator;
@@ -144,9 +145,9 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
             confDDFiles.add(new GFAppClientRuntimeDDFile());
             confDDFiles.add(new AppClientRuntimeDDFile());
         }

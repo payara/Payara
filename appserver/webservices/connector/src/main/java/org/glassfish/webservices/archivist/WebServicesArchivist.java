@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
@@ -76,9 +77,9 @@ public class WebServicesArchivist extends ExtensionsArchivist {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
             confDDFiles.add(new WLSWebServicesDeploymentDescriptorFile(descriptor));
         }
         return confDDFiles;

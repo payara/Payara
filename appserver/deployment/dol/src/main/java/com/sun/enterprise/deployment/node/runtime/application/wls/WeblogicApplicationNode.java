@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-
+import java.util.Map;
 
 /**
  * This node is responsible for handling all WebLogic runtime information for 
@@ -91,6 +91,18 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
         super.init();
         registerElementHandler(new XMLElement(
                 RuntimeTagNames.APPLICATION_PARAM), ApplicationParamNode.class);
+    }
+
+   /**
+    * register this node as a root node capable of loading entire DD files
+    *
+    * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+    * @return the doctype tag name
+    */
+    public static String registerBundle(Map publicIDToDTD) {
+        // TODO: fill in all the previously supported DTD versions
+        // for backward compatibility
+        return RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG;
     }
 
     /**

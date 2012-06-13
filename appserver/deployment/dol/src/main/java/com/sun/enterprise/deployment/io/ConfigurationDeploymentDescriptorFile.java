@@ -42,12 +42,15 @@ package com.sun.enterprise.deployment.io;
 
 import java.util.Map;
 
+import org.jvnet.hk2.annotations.Contract;
+
 /**
  * This class is responsible for handling the XML configuration information
  * for the J2EE Reference Implementation runtime descriptors.
  *
  * @author Jerome Dochez
  */
+@Contract
 public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDescriptorFile {
 
     /**

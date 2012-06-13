@@ -53,6 +53,7 @@ import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.*;
 import com.sun.logging.LogDomains;
@@ -152,9 +153,9 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public List<DeploymentDescriptorFile> getConfigurationDDFiles() {
+    public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<DeploymentDescriptorFile>();
+            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
             confDDFiles.add(new WLSWebRuntimeDDFile());
             confDDFiles.add(new GFWebRuntimeDDFile());
             confDDFiles.add(new WebRuntimeDDFile());

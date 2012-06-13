@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
@@ -76,14 +77,14 @@ public abstract class ExtensionsArchivist  {
     protected final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     // configuration DD files associated with this archivist
-    protected List<DeploymentDescriptorFile> confDDFiles;
+    protected List<ConfigurationDeploymentDescriptorFile> confDDFiles;
 
     // the sorted configuration DD files with precedence from
     // high to low
-    private List<DeploymentDescriptorFile> sortedConfDDFiles;
+    private List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles;
 
     // configuration DD file that will be used
-    private DeploymentDescriptorFile confDD;
+    private ConfigurationDeploymentDescriptorFile confDD;
 
     /**
      * @return the DeploymentDescriptorFile responsible for handling
@@ -95,13 +96,13 @@ public abstract class ExtensionsArchivist  {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public abstract List<DeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor);
+    public abstract List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor);
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public DeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+    public ConfigurationDeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
         if (confDD == null) {
             getSortedConfigurationDDFiles(descriptor, archive);
             if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {
@@ -194,7 +195,7 @@ public abstract class ExtensionsArchivist  {
      public Object readRuntimeDeploymentDescriptor(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
             throws IOException, SAXParseException {
 
-        DeploymentDescriptorFile ddFile = getConfigurationDDFile(descriptor, archive);
+        ConfigurationDeploymentDescriptorFile ddFile = getConfigurationDDFile(descriptor, archive);
 
         // if this extension archivist has no runtime DD, just return the 
         // original descriptor
@@ -247,11 +248,11 @@ public abstract class ExtensionsArchivist  {
         // files, write those out
         // otherwise write all possible runtime deployment descriptor
         // files out
-        List<DeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(descriptor, in);
+        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(descriptor, in);
         if (confDDFilesToWrite.isEmpty()) {
             confDDFilesToWrite = getConfigurationDDFiles(descriptor);
         }
-        for (DeploymentDescriptorFile ddFile : confDDFilesToWrite) {
+        for (ConfigurationDeploymentDescriptorFile ddFile : confDDFilesToWrite) {
             OutputStream os = out.putNextEntry(
                 ddFile.getDeploymentDescriptorPath());
             ddFile.write(descriptor, os);
@@ -259,7 +260,7 @@ public abstract class ExtensionsArchivist  {
         }
     }
 
-    private List<DeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+    private List<ConfigurationDeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
         if (sortedConfDDFiles == null) {
             sortedConfDDFiles = DOLUtils.processConfigurationDDFiles(getConfigurationDDFiles(descriptor), archive);
         }

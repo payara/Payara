@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.annotation.factory.AnnotatedElementHandlerF
 import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_DD_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
@@ -106,14 +107,14 @@ public abstract class Archivist<T extends BundleDescriptor> {
     protected Manifest manifest;
     
     // configuration DD files associated with this archivist
-    protected List<DeploymentDescriptorFile> confDDFiles;
+    protected List<ConfigurationDeploymentDescriptorFile> confDDFiles;
 
     // the sorted configuration DD files with precedence from 
     // high to low
-    private List<DeploymentDescriptorFile> sortedConfDDFiles;
+    private List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles;
 
     // configuration DD file that will be used
-    private DeploymentDescriptorFile confDD;
+    private ConfigurationDeploymentDescriptorFile confDD;
 
     // resources...
     private static final LocalStringManagerImpl localStrings =
@@ -882,11 +883,11 @@ public abstract class Archivist<T extends BundleDescriptor> {
         // files out (revisit this to see what is the desired behavior 
         // here, write out all, or write out the highest precedence one, 
         // or not write out)
-        List<DeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in); 
+        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in); 
         if (confDDFilesToWrite.isEmpty()) {
             confDDFilesToWrite = getConfigurationDDFiles();
         }
-        for (DeploymentDescriptorFile ddFile : confDDFilesToWrite) {
+        for (ConfigurationDeploymentDescriptorFile ddFile : confDDFilesToWrite) {
             OutputStream os = out.putNextEntry(
                 ddFile.getDeploymentDescriptorPath());
             ddFile.write(desc, os);
@@ -914,7 +915,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         }
     }
 
-    private List<DeploymentDescriptorFile> getSortedConfigurationDDFiles(ReadableArchive archive) throws IOException {
+    private List<ConfigurationDeploymentDescriptorFile> getSortedConfigurationDDFiles(ReadableArchive archive) throws IOException {
         if (sortedConfDDFiles == null) {
             sortedConfDDFiles = DOLUtils.processConfigurationDDFiles(getConfigurationDDFiles(), archive);
         }
@@ -1000,13 +1001,13 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public abstract List<DeploymentDescriptorFile> getConfigurationDDFiles();
+    public abstract List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles();
 
     /**
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    private DeploymentDescriptorFile getConfigurationDDFile(ReadableArchive archive) throws IOException {
+    private ConfigurationDeploymentDescriptorFile getConfigurationDDFile(ReadableArchive archive) throws IOException {
         if (confDD == null) {
             getSortedConfigurationDDFiles(archive);
             if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {

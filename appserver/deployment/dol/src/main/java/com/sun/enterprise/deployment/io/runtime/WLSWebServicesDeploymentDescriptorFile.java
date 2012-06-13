@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.io.runtime;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.ws.WLDescriptorConstants;
 import com.sun.enterprise.deployment.node.ws.WLWebServicesDescriptorNode;
@@ -60,7 +60,7 @@ import java.io.IOException;
  *
  * @author Rama Pulavarthi
  */
-public class WLSWebServicesDeploymentDescriptorFile extends DeploymentDescriptorFile {
+public class WLSWebServicesDeploymentDescriptorFile extends ConfigurationDeploymentDescriptorFile {
     private String descriptorPath;
 
     public WLSWebServicesDeploymentDescriptorFile(RootDeploymentDescriptor desc) {

@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @Service
-@ExtensionsArchivistFor("war-jpa")
+@ExtensionsArchivistFor("jpa")
 public class WarPersistenceArchivist extends PersistenceArchivist {
 
     @Override

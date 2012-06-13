@@ -52,15 +52,14 @@ import java.util.logging.Level;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.node.runtime.application.gf.ApplicationRuntimeNode;
-import com.sun.enterprise.deployment.node.runtime.application.gf.GFApplicationRuntimeNode;
+import com.sun.enterprise.deployment.EarType;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ApplicationTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.Node;
@@ -96,9 +95,6 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     // The XML tag associated with this Node
     public final static XMLElement tag = new XMLElement(ApplicationTagNames.APPLICATION);
 
-    private final static BaseServiceLocator habitat = Globals.getDefaultHabitat();
-
-    
     private final static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
         systemIDs.add(SCHEMA_ID);
@@ -125,8 +121,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     @Override
     public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
         final Map<String,Class> result = new HashMap<String,Class>();
-        result.put(ApplicationRuntimeNode.registerBundle(publicIDToDTD), ApplicationRuntimeNode.class);
-        result.put(GFApplicationRuntimeNode.registerBundle(publicIDToDTD), GFApplicationRuntimeNode.class);
+        for (ConfigurationDeploymentDescriptorFile confDD : DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE)) {
+            confDD.registerBundle(result, publicIDToDTD);
+        }
         return result;
     }
 
