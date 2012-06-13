@@ -40,12 +40,21 @@
 
 package org.glassfish.web.deployment.io.runtime;
 
+import java.util.Map;
+
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
+import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
+
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.PerLookup;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -53,12 +62,16 @@ import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
  *
  * @author Jerome Dochez
  */
-public class WebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
+@ConfigurationDeploymentDescriptorFileFor(WarType.ARCHIVE_TYPE)
+@Service
+@Scoped(PerLookup.class)
+public class WebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
    
     /**
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
+    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.S1AS_WEB_JAR_ENTRY;        
     }
@@ -67,13 +80,22 @@ public class WebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
      * @return a RootXMLNode responsible for handling the deployment
      * descriptors associated with this J2EE module
      *
-     * @param the descriptor for which we need the node
+     * @param descriptor the descriptor for which we need the node
      */
+    @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
         if (descriptor instanceof WebBundleDescriptor) {
             return new WebBundleRuntimeNode((WebBundleDescriptor) descriptor);
         }
         return null;
+    }
+
+    @Override
+    public void registerBundle(final Map<String, Class> rootNodesMap,
+            final Map<String, String> publicIDToDTDMap) {
+
+        rootNodesMap.put(WebBundleRuntimeNode.registerBundle(publicIDToDTDMap),
+                WebBundleRuntimeNode.class);
     }
 }

@@ -68,7 +68,8 @@ public class WebDeploymentDescriptorFile extends DeploymentDescriptorFile<WebBun
      * @param descriptor descriptor for which we need the node
      */
     public RootXMLNode<WebBundleDescriptor> getRootXMLNode(WebBundleDescriptor descriptor) {
-        return new WebBundleNode();        
+        return new WebBundleNode();
     }
+
     
 }

@@ -41,13 +41,12 @@
 package org.glassfish.web.deployment.node;
 
 import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.node.*;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebTagNames;
-import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
-import org.glassfish.web.deployment.node.runtime.wls.WeblogicWebAppNode;
-import org.glassfish.web.deployment.node.runtime.gf.WebBundleRuntimeNode;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.web.WarType;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -58,7 +57,6 @@ import java.util.*;
  * @author  Jerome Dochez
  * @version 
  */
-@Service
 public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
 
     public final static XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
@@ -78,6 +76,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
     public final static String SCHEMA_ID_25 = "web-app_2_5.xsd";
     public final static String SCHEMA_ID = "web-app_3_0.xsd";
     private final static List<String> systemIDs = initSystemIDs();
+
 
     private static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<String>();
@@ -102,15 +101,13 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
     @Override
     public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
         final Map<String,Class> result = new HashMap<String,Class>();
-        result.put(WebBundleRuntimeNode.registerBundle(publicIDToDTD), WebBundleRuntimeNode.class);
-        result.put(GFWebBundleRuntimeNode.registerBundle(publicIDToDTD), GFWebBundleRuntimeNode.class);
-        
-        /*
-         * The WL descriptors use schemas, not DTDs, so 
-         * we don't need to add them to the DTD mapping.
-         */
-        result.put(com.sun.enterprise.deployment.xml.RuntimeTagNames.WLS_WEB_RUNTIME_TAG, WeblogicWebAppNode.class);
-        
+        for (ConfigurationDeploymentDescriptorFile wddFile :
+                DOLUtils.getConfigurationDeploymentDescriptorFiles(
+                        habitat, WarType.ARCHIVE_TYPE)) {
+
+            wddFile.registerBundle(result, publicIDToDTD);
+        }
+
         return result;
     }
 
