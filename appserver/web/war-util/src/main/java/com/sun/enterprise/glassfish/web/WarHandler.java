@@ -81,7 +81,7 @@ import static javax.xml.stream.XMLStreamConstants.*;
 /**
  * Implementation of the ArchiveHandler for war files.
  *
- * @author Jerome Dochez, Sanjeeb Sahoo
+ * @author Jerome Dochez, Sanjeeb Sahoo, Shing Wai Chan
  */
 @Service(name= WarDetector.ARCHIVE_TYPE)
 public class WarHandler extends AbstractArchiveHandler {
@@ -93,6 +93,10 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
     private static final Logger logger = LogDomains.getLogger(WarHandler.class, LogDomains.WEB_LOGGER);
     private static final ResourceBundle rb = logger.getResourceBundle();
+    
+    //the following two system properties need to be in sync with DOLUtils
+    private static final boolean gfDDOverWLSDD = Boolean.valueOf(System.getProperty("gfdd.over.wlsdd"));
+    private static final boolean ignoreWLSDD = Boolean.valueOf(System.getProperty("ignore.wlsdd"));
 
     @Inject @Named(WarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
@@ -155,14 +159,21 @@ public class WarHandler extends AbstractArchiveHandler {
             }
 
             WebXmlParser webXmlParser = null;
-            if ((new File(base, WEBLOGIC_XML)).exists()) {
+            boolean hasWSLDD = (new File(base, WEBLOGIC_XML)).exists();
+            if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
                 webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
             } else if ((new File(base, GLASSFISH_WEB_XML)).exists()) {
                 webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
             } else if ((new File(base, SUN_WEB_XML)).exists()) {
                 webXmlParser = new SunWebXmlParser(base.getAbsolutePath());
-            } else {
+            } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
                 webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
+            } else { // default
+                if (gfDDOverWLSDD || ignoreWLSDD) {
+                    webXmlParser = new GlassFishWebXmlParser(base.getAbsolutePath());
+                } else {
+                    webXmlParser = new WeblogicXmlParser(base.getAbsolutePath());
+                }
             }
 
             configureLoaderAttributes(cloader, webXmlParser, base);
@@ -299,7 +310,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
         if (value == null) {
             Boolean domainCRS = null;
-            File defaultContextXml = new File(serverEnvironment.getInstanceRoot(), "config/context.xml");
+            File defaultContextXml = new File(serverEnvironment.getInstanceRoot(), DEFAULT_CONTEXT_XML);
             if (defaultContextXml.exists()) {
                 ContextXmlParser parser = new ContextXmlParser(defaultContextXml);
                 domainCRS = parser.getClearReferencesStatic();
