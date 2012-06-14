@@ -41,28 +41,32 @@
 package org.glassfish.admin.rest.utils;
 
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.security.ssl.SSLUtils;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
+
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Target;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+
 import org.jvnet.hk2.component.BaseServiceLocator;
+
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.glassfish.jersey.client.ClientProperties;
+
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.security.ssl.SSLUtils;
 
 /**
  * @author Mitesh Meswani
@@ -79,12 +83,12 @@ public abstract class ProxyImpl implements Proxy {
             if (forwardInstance != null) {
                 UriBuilder forwardUriBuilder = constructForwardURLPath(sourceUriInfo);
                 URI forwardURI = forwardUriBuilder.scheme("https").host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
-                WebResource.Builder resourceBuilder = client.resource(forwardURI).accept(MediaType.APPLICATION_JSON);
+                Target resourceBuilder = client.target(forwardURI);
                 addAuthenticationInfo(client, resourceBuilder, forwardInstance, habitat);
-                ClientResponse response = resourceBuilder.get(ClientResponse.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
-                ClientResponse.Status status = ClientResponse.Status.fromStatusCode(response.getStatus());
+                Response response = resourceBuilder.request(MediaType.APPLICATION_JSON).get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
+                Response.Status status = Response.Status.fromStatusCode(response.getStatus());
                 if (status.getFamily() == javax.ws.rs.core.Response.Status.Family.SUCCESSFUL) {
-                    String jsonDoc = response.getEntity(String.class);
+                    String jsonDoc = response.readEntity(String.class);
                     Map responseMap = MarshallingUtils.buildMapFromDocument(jsonDoc);
                     Map resultExtraProperties = (Map) responseMap.get("extraProperties");
                     if (resultExtraProperties != null) {
@@ -130,12 +134,11 @@ public abstract class ProxyImpl implements Proxy {
     /**
      * Use SSL to authenticate
      */
-    private void addAuthenticationInfo(Client client, WebResource.Builder resourceBuilder, Server server, BaseServiceLocator habitat) {
+    private void addAuthenticationInfo(Client client, Target resourceBuilder, Server server, BaseServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
-        HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(server.getAdminHost()),
-                habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant
-        client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+        client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(server.getAdminHost()));
+        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
     }
 
     /**

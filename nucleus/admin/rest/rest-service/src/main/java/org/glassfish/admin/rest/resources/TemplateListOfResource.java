@@ -43,8 +43,6 @@ import java.lang.reflect.Method;
 import org.glassfish.config.support.Create;
 import java.net.HttpURLConnection;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.jersey.api.core.ResourceContext;
-import com.sun.jersey.multipart.FormDataMultiPart;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.utils.Util;
@@ -54,7 +52,7 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -66,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.glassfish.hk2.inject.Injector;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
 import static org.glassfish.admin.rest.utils.Util.decode;
 import static org.glassfish.admin.rest.utils.Util.getName;
@@ -81,9 +81,9 @@ public abstract class TemplateListOfResource {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected ResourceContext resourceContext;
+    protected Injector injector;
     @Context
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
     protected List<Dom> entity;
     protected Dom parent;
     protected String tagName;
@@ -103,6 +103,9 @@ public abstract class TemplateListOfResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
     public Response createResource(HashMap<String, String> data) {
+        if (data == null) {
+            data = new HashMap<String, String>();
+        }
         try {
             if (data.containsKey("error")) {
                 String errorMessage = localStrings.getLocalString("rest.request.parsing.error",
@@ -355,7 +358,7 @@ public abstract class TemplateListOfResource {
                 postMethodMetaData.setIsFileUploadOperation(true);
             }
             map.put("POST", postMethodMetaData);
-        } 
+        }
 
         return map;
     }

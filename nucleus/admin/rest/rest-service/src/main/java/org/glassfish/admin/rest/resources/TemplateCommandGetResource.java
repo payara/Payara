@@ -41,7 +41,6 @@
 package org.glassfish.admin.rest.resources;
 
 
-import com.sun.jersey.spi.container.ContainerRequest;
 import org.glassfish.api.admin.ParameterMap;
 
 import javax.ws.rs.GET;
@@ -71,7 +70,7 @@ public class TemplateCommandGetResource extends TemplateExecCommand {
     public Response processGet() {
             ParameterMap data = new ParameterMap();
             processCommandParams(data);
-            addQueryString(((ContainerRequest) requestHeaders).getQueryParameters(), data);
+            addQueryString(uriInfo.getQueryParameters(), data);
             purgeEmptyEntries(data);
             adjustParameters(data);
 

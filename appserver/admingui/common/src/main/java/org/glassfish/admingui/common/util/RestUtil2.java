@@ -4,19 +4,22 @@
  */
 package org.glassfish.admingui.common.util;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MediaType;
+
+import javax.faces.context.FacesContext;
+
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import javax.faces.context.FacesContext;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Target;
+import javax.ws.rs.core.Response;
 
 /**
  * This class is intended to replace, eventually, RestUtil. Whether or not that happens depends in large part on how the
@@ -40,14 +43,15 @@ public class RestUtil2 {
         Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
         String endpoint = fixEndpoint((String) handlerCtx.getInputValue("endpoint"));
 
-        ClientResponse resp = RestUtil.getJerseyClient().resource(endpoint)
+        Response resp = RestUtil.getJerseyClient().target(endpoint)
+                .request(RestUtil.RESPONSE_TYPE)
                 .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
-                .accept(RestUtil.RESPONSE_TYPE).get(ClientResponse.class);
+                .get(Response.class);
         if (!isSuccess(resp.getStatus())) {
-            throw new RuntimeException(resp.getEntity(String.class));
+            throw new RuntimeException(resp.readEntity(String.class));
         }
 
-        List list = resp.getEntity(List.class);
+        List list = resp.readEntity(List.class);
         handlerCtx.setOutputValue("result", list);
     }
 
@@ -61,9 +65,14 @@ public class RestUtil2 {
         Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
         String endpoint = fixEndpoint((String) handlerCtx.getInputValue("endpoint"));
 
-        ClientResponse resp = makeRequest(endpoint, attrs).get(ClientResponse.class);
+        Response resp = RestUtil.getJerseyClient().target(endpoint)
+                .queryParams(RestUtil.buildMultivalueMap(attrs))
+                .request(RestUtil.RESPONSE_TYPE)
+                .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
+                .get(Response.class);
+//        Response resp = makeRequest(endpoint, attrs).get(Response.class);
 
-        Map map = resp.getEntity(Map.class);
+        Map map = resp.readEntity(Map.class);
         handlerCtx.setOutputValue("result", map);
     }
 
@@ -77,7 +86,13 @@ public class RestUtil2 {
         Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
         String endpoint = fixEndpoint((String) handlerCtx.getInputValue("endpoint"));
 
-        ClientResponse resp = makeRequest(endpoint, null).post(ClientResponse.class, attrs);
+//        Response resp = makeRequest(endpoint, null).post(Response.class, attrs);
+
+        Response resp = RestUtil.getJerseyClient().target(endpoint)
+                .request(RestUtil.RESPONSE_TYPE)
+                .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
+                .post(Entity.entity(attrs, MediaType.APPLICATION_JSON_TYPE), Response.class);
+
         if (!isSuccess(resp.getStatus())) {
             GuiUtil.getLogger().log(
                     Level.SEVERE,
@@ -95,17 +110,17 @@ public class RestUtil2 {
         }
         return endpoint;
     }
-    
-    private static Builder makeRequest(String endpoint, Map<String, Object> queryParams) {
-        WebResource resource = RestUtil.getJerseyClient().resource(endpoint);
-        if (queryParams != null) {
-            resource =  resource.queryParams(RestUtil.buildMultivalueMap(queryParams));
-        }
-        return resource
-                .type(MediaType.APPLICATION_JSON)
-                .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
-                .accept(RestUtil.RESPONSE_TYPE);
-    }
+
+//    private static Builder makeRequest(String endpoint, Map<String, Object> queryParams) {
+//        Target resource = RestUtil.getJerseyClient().target(endpoint);
+//        if (queryParams != null) {
+//            resource =  resource.queryParams(RestUtil.buildMultivalueMap(queryParams));
+//        }
+//        return resource
+//                .type(MediaType.APPLICATION_JSON)
+//                .cookie(new Cookie(RestUtil.REST_TOKEN_COOKIE, RestUtil.getRestToken()))
+//                .accept(RestUtil.RESPONSE_TYPE);
+//    }
 
     protected static boolean isSuccess(int status) {
         return (status >= 200) && (status <= 299);

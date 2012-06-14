@@ -40,9 +40,10 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -57,7 +58,7 @@ public class ConfigTest extends RestTestBase {
     @Test
     public void testConfigCopy() {
         String configName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedMapImpl();
+        MultivaluedMap formData = new MultivaluedHashMap();
         formData.add("id", "default-config");
         formData.add("id", configName);
         createAndVerifyConfig(configName, formData);
@@ -67,16 +68,16 @@ public class ConfigTest extends RestTestBase {
     @Test
     public void duplicateCopyShouldFail() {
         String configName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedMapImpl();
+        MultivaluedMap formData = new MultivaluedHashMap();
         formData.add("id", "default-config");
         formData.add("id", "server-config");
 
-        ClientResponse response = post(BASE_CONFIGS_URL + "/copy-config", formData);
+        Response response = post(BASE_CONFIGS_URL + "/copy-config", formData);
         assertFalse(isSuccess(response));
     }
 
     public void createAndVerifyConfig(String configName, MultivaluedMap configData) {
-        ClientResponse response = post(BASE_CONFIGS_URL + "/copy-config", configData);
+        Response response = post(BASE_CONFIGS_URL + "/copy-config", configData);
         checkStatusForSuccess(response);
 
         response = get(BASE_CONFIGS_URL + "/config/" + configName);
@@ -84,7 +85,7 @@ public class ConfigTest extends RestTestBase {
     }
 
     public void deleteAndVerifyConfig(String configName) {
-        ClientResponse response = post(BASE_CONFIGS_URL + "/config/" + configName + "/delete-config");
+        Response response = post(BASE_CONFIGS_URL + "/config/" + configName + "/delete-config");
         checkStatusForSuccess(response);
 
         response = get(BASE_CONFIGS_URL + "/config/" + configName);

@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.jersey.api.json.JSONConfiguration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,6 +48,8 @@ import org.glassfish.admin.rest.resources.admin.AdminResource;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.restconnector.Constants;
+import org.glassfish.jersey.internal.inject.AbstractModule;
+import org.glassfish.jersey.media.json.JsonJacksonModule;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -58,14 +59,14 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name=Constants.REST_ADMIN_ADAPTER)
 public class RestAsadminAdapter extends RestAdapter {
     public static final String CONTEXT = Constants.REST_ADMIN_CONTEXT_ROOT;
-    
+
     @Override
     protected Set<Class<?>> getResourceClasses() {
         final Set<Class<?>> r = new HashSet<Class<?>>();
         r.add(AdminResource.class);
         r.add(ParameterMapFormReader.class);
         r.add(ActionReportResultJsonProvider.class);
-        
+
         return r;
     }
 
@@ -73,7 +74,7 @@ public class RestAsadminAdapter extends RestAdapter {
     protected String getContextRoot() {
         return CONTEXT;
     }
-    
+
     @Override
     public Map<String, MediaType> getMimeMappings() {
         return new HashMap<String, MediaType>() {{
@@ -83,10 +84,15 @@ public class RestAsadminAdapter extends RestAdapter {
     }
 
     @Override
+    protected AbstractModule getJsonModule() {
+        return new JsonJacksonModule();
+    }
+
+    @Override
     public Map<String, Boolean> getFeatures() {
         Map<String, Boolean> features = super.getFeatures();
-        features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        
+        //features.put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+
         return features;
     }
 }

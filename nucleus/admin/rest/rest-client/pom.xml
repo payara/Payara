@@ -56,17 +56,18 @@
     <description>Rest Interface for GlassFish Management and Monitoring</description>
 
     <dependencies>
+        <!--TODO - JERSEY2-->
+        <!--<dependency>-->
+            <!--<groupId>com.sun.jersey.contribs</groupId>-->
+            <!--<artifactId>jersey-multipart</artifactId>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-multipart</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
+            <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-json</artifactId>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.xml.bind</groupId>

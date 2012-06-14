@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.resources.custom;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -55,6 +54,7 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.config.Dom;
+import org.glassfish.hk2.inject.Injector;
 
 /**
  *
@@ -66,7 +66,7 @@ public class FindHttpProtocolResource {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected ResourceContext resourceContext;
+    protected Injector injector;
     protected Dom entity;
 
     public void setEntity(Dom p) {

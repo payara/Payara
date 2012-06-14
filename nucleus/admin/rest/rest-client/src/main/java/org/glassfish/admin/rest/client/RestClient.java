@@ -40,9 +40,11 @@
 
 package org.glassfish.admin.rest.client;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.ext.ClientFactory;
 
 /**
  *
@@ -66,10 +68,11 @@ public class RestClient {
         this.host = host;
         this.port = port;
         this.useSsl = useSsl;
-        client = Client.create();
-        client.addFilter(new CsrfProtectionFilter());
-        if (user != null) {
-            client.addFilter(new HTTPBasicAuthFilter(user, password));
+        client = ClientFactory.newClient();
+
+        client.configuration().register(new CsrfProtectionFilter());
+        if(user != null) {
+            client.configuration().register(new HttpBasicAuthFilter(user, password));
         }
     }
 

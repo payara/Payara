@@ -41,7 +41,6 @@
 package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.jersey.api.core.ResourceContext;
 
 import java.util.*;
 import javax.validation.ValidationException;
@@ -66,6 +65,7 @@ import org.glassfish.admin.rest.results.GetResultList;
 import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.inject.Injector;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
@@ -82,7 +82,7 @@ public class PropertiesBagResource {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected ResourceContext resourceContext;
+    protected Injector injector;
     @Context
     protected BaseServiceLocator habitat;
     
@@ -99,7 +99,7 @@ public class PropertiesBagResource {
     }
     @Path("{Name}/")
     public PropertyResource getProperty(@PathParam("Name") String id) {
-        PropertyResource resource = resourceContext.getResource(PropertyResource.class);
+        PropertyResource resource = injector.inject(PropertyResource.class);
         resource.setBeanByKey(getEntity(), id, tagName);
         return resource;
     }

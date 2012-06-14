@@ -40,12 +40,13 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.junit.After;
 import static org.junit.Assert.assertFalse;
@@ -81,7 +82,7 @@ public class JvmOptionsTest extends RestTestBase {
         }
 
         testConfigName = "config-" + generateRandomString();
-        MultivaluedMap formData = new MultivaluedMapImpl() {{
+        MultivaluedMap formData = new MultivaluedHashMap() {{
             add("id", "default-config");
             add("id", testConfigName);
         }};
@@ -99,9 +100,9 @@ public class JvmOptionsTest extends RestTestBase {
 
     @Test
     public void getJvmOptions() {
-        ClientResponse response = get(URL_SERVER_JVM_OPTIONS);
+        Response response = get(URL_SERVER_JVM_OPTIONS);
         assertTrue(isSuccess(response));
-        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         List<String> jvmOptions = (List<String>)((Map)responseMap.get("extraProperties")).get("leafList");
         assertTrue(jvmOptions.size() > 0);
     }
@@ -115,7 +116,7 @@ public class JvmOptionsTest extends RestTestBase {
 
 
 //        Map<String, String> payload = buildJvmOptionsPayload(newOptions);
-        ClientResponse response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -137,7 +138,7 @@ public class JvmOptionsTest extends RestTestBase {
             put(option2Name, "");
         }};
 
-        ClientResponse response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -164,7 +165,7 @@ public class JvmOptionsTest extends RestTestBase {
         }};
 
         // Test new config to make sure option is there
-        ClientResponse response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -192,7 +193,7 @@ public class JvmOptionsTest extends RestTestBase {
 
         deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, false);
 
-        ClientResponse response = post(URL_TEST_CONFIG + "/java-config/create-profiler", attrs);
+        Response response = post(URL_TEST_CONFIG + "/java-config/create-profiler", attrs);
         assertTrue(isSuccess(response));
 
         response = put(URL_TEST_CONFIG + "/java-config/profiler/jvm-options", newOptions);
@@ -213,9 +214,10 @@ public class JvmOptionsTest extends RestTestBase {
             put(optionName, optionValue);
         }};
 
-        ClientResponse response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
+//        assertTrue(isSuccess(response));
         List<String> jvmOptions = getJvmOptions(response);
         assertTrue(jvmOptions.contains(optionName+"="+optionValue));
 
@@ -227,14 +229,14 @@ public class JvmOptionsTest extends RestTestBase {
     }
 
     protected void deleteProfiler(final String url, final String target, final boolean failOnError) {
-        ClientResponse response = delete (url, new HashMap() {{ put ("target", target); }});
+        Response response = delete (url, new HashMap() {{ put ("target", target); }});
         if (failOnError) {
             assertTrue(isSuccess(response));
         }
     }
 
-    protected List<String> getJvmOptions(ClientResponse response) {
-        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+    protected List<String> getJvmOptions(Response response) {
+        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         List<String> jvmOptions = (List<String>)((Map)responseMap.get("extraProperties")).get("leafList");
 
         return jvmOptions;

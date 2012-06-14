@@ -52,7 +52,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rest-service-parent</artifactId>
     <packaging>pom</packaging>
-    <name>admin-rest</name>
+    <name>GlassFish Admin REST Parent</name>
     <description>Parent module for GlassFish REST interface</description>
 
     <developers>

@@ -68,11 +68,11 @@ public class GetResultListHtmlProvider extends BaseProvider<GetResultList> {
 
     @Override
     public String getContent(GetResultList proxy) {
-        String result = getHtmlHeader(uriInfo.getBaseUri().toASCIIString());
-        final String typeKey = upperCaseFirstLetter((decode(getName(uriInfo.getPath(), '/'))));
+        String result = getHtmlHeader(uriInfo.get().getBaseUri().toASCIIString());
+        final String typeKey = upperCaseFirstLetter((decode(getName(uriInfo.get().getPath(), '/'))));
         result = result + "<h1>" + typeKey + "</h1>";
 
-        String postCommand = getHtmlRespresentationsForCommand(proxy.getMetaData().getMethodMetaData("POST"), "POST", "Create", uriInfo);
+        String postCommand = getHtmlRespresentationsForCommand(proxy.getMetaData().getMethodMetaData("POST"), "POST", "Create", uriInfo.get());
         result = getHtmlForComponent(postCommand, "Create " + typeKey, result);
 
         String childResourceLinks = getResourcesLinks(proxy.getDomList());
@@ -105,7 +105,7 @@ public class GetResultListHtmlProvider extends BaseProvider<GetResultList> {
         for (String[] commandResourcePath : commandResourcesPaths) {
             try {
                 result.append("<a href=\"")
-                        .append(getElementLink(uriInfo, commandResourcePath[0]))
+                        .append(getElementLink(uriInfo.get(), commandResourcePath[0]))
                         .append("\">")
                         .append(commandResourcePath[0])
                         .append("</a><br/>");

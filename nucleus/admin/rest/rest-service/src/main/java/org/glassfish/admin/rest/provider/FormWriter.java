@@ -54,6 +54,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
+import org.glassfish.hk2.Factory;
 /**
  *
  * @author mh124079
@@ -63,7 +64,7 @@ import java.util.Set;
 @Provider
 public class FormWriter implements MessageBodyWriter<Dom> {
     @Context
-    protected UriInfo uriInfo;
+    protected Factory<UriInfo> uriInfo;
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -98,9 +99,9 @@ public class FormWriter implements MessageBodyWriter<Dom> {
                 "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>\n").
                 append("<html><head><title>Data</title></head>\n").
                 append("<body><p>Change ").append(data.toString()).append(":</p>\n" ).
-                append("<form name='pair' action='").append(uriInfo.getAbsolutePath()).append("' method='POST'>\n").
+                append("<form name='pair' action='").append(uriInfo.get().getAbsolutePath()).append("' method='POST'>\n").
                 append("<table>\n");
-        
+
         Set<String> ss = data.model.getAttributeNames();
 
             for (String name : ss) {

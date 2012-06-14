@@ -43,7 +43,6 @@ package org.glassfish.admin.rest;
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -52,6 +51,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
+
 import static org.junit.Assert.*;
 
 /**
@@ -72,6 +74,8 @@ public class ApplicationTest extends RestTestBase {
             assertEquals(appName, deployedApp.get("name"));
 
             assertEquals("/" + appName, deployedApp.get("contextRoot"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             undeployApp(appName);
         }
@@ -86,7 +90,7 @@ public class ApplicationTest extends RestTestBase {
             params.put("name", "CloudBeesDS");
             params.put("poolName", "DerbyPool");
 
-            ClientResponse response = post (JdbcTest.BASE_JDBC_RESOURCE_URL, params);
+            Response response = post (JdbcTest.BASE_JDBC_RESOURCE_URL, params);
             assertTrue(isSuccess(response));
 
             Map<String, String> deployedApp = deployApp(downloadFile(new URL(URL_CODI_SAMPLE)), appName, appName);
@@ -111,8 +115,8 @@ public class ApplicationTest extends RestTestBase {
 
         try {
             String appUrl = "http://localhost:" + instancePort + "/" + appName;
-            ClientResponse response = get(appUrl);
-            assertEquals ("Test", response.getEntity(String.class).trim());
+            Response response = get(appUrl);
+            assertEquals ("Test", response.readEntity(String.class).trim());
 
             response = post(URL_APPLICATION_DEPLOY + "/" + appName + "/disable");
             checkStatusForSuccess(response);
@@ -124,7 +128,7 @@ public class ApplicationTest extends RestTestBase {
             checkStatusForSuccess(response);
 
             response = get(appUrl);
-            assertEquals ("Test", response.getEntity(String.class).trim());
+            assertEquals ("Test", response.readEntity(String.class).trim());
         } finally {
             undeployApp(appName);
         }
@@ -136,14 +140,14 @@ public class ApplicationTest extends RestTestBase {
 
         try {
             deployApp(getFile("stateless-simple.ear"), appName, appName);
-            ClientResponse response = get(URL_APPLICATION_DEPLOY +"/" + appName + "/list-sub-components?id=" + appName);
+            Response response = get(URL_APPLICATION_DEPLOY +"/" + appName + "/list-sub-components?id=" + appName);
             checkStatusForSuccess(response);
-            String subComponents = response.getEntity(String.class);
+            String subComponents = response.readEntity(String.class);
             assertTrue(subComponents.contains("stateless-simple.war"));
 
             response = get(URL_APPLICATION_DEPLOY +"/" + appName + "/list-sub-components?id=stateless-simple.war&appname=" + appName);
             checkStatusForSuccess(response);
-            subComponents = response.getEntity(String.class);
+            subComponents = response.readEntity(String.class);
             assertTrue(subComponents.contains("GreeterServlet"));
         } finally {
             undeployApp(appName);
@@ -166,7 +170,7 @@ public class ApplicationTest extends RestTestBase {
         }};
 
         try {
-            ClientResponse response = post(URL_CREATE_INSTANCE, newInstance);
+            Response response = post(URL_CREATE_INSTANCE, newInstance);
             checkStatusForSuccess(response);
 
             deployApp(getFile("test.war"), appName, appName);
@@ -180,7 +184,7 @@ public class ApplicationTest extends RestTestBase {
             response = delete(appRefUrl + "/" + appName, new HashMap<String, String>() {{ put("target", instanceName); }});
             checkStatusForSuccess(response);
         } finally {
-            ClientResponse response = delete("/domain/servers/server/" + instanceName + "/delete-instance");
+            Response response = delete("/domain/servers/server/" + instanceName + "/delete-instance");
             checkStatusForSuccess(response);
             response = get("/domain/servers/server/" + instanceName);
             assertFalse(isSuccess(response));
@@ -200,9 +204,9 @@ public class ApplicationTest extends RestTestBase {
                 put("modulename", "stateless-simple.war");
             }};
 
-            ClientResponse response = get("/domain/applications/application/" +appName + "/get-context-root", contextRootPayload);
+            Response response = get("/domain/applications/application/" +appName + "/get-context-root", contextRootPayload);
             checkStatusForSuccess(response);
-            assertTrue(response.getEntity(String.class).contains("helloworld"));
+            assertTrue(response.readEntity(String.class).contains("helloworld"));
         } finally {
             undeployApp(appName);
         }
@@ -213,7 +217,7 @@ public class ApplicationTest extends RestTestBase {
         final String appName = "testApp" + generateRandomString();
         final String serverName = "in" + generateRandomNumber();
         try {
-            ClientResponse response = post ("/domain/create-instance", new HashMap<String, String>() {{
+            Response response = post ("/domain/create-instance", new HashMap<String, String>() {{
                 put("id", serverName);
                 put("node", "localhost-domain1");
             }});
@@ -231,7 +235,7 @@ public class ApplicationTest extends RestTestBase {
             response = delete ("/domain/applications/application/"+appName, new HashMap<String, String>() {{
                 put("target", "domain");
             }});
-            assertTrue(response.getEntity(String.class).contains("WARNING: Instance " + serverName + " seems to be offline"));
+            assertTrue(response.readEntity(String.class).contains("WARNING: Instance " + serverName + " seems to be offline"));
         } finally {
             delete ("/domain/applications/application/" + appName, new HashMap<String, String>() {{
                 put("target", "domain");
@@ -276,22 +280,22 @@ public class ApplicationTest extends RestTestBase {
             put("name", name);
         }};
 
-        ClientResponse response = postWithUpload(URL_APPLICATION_DEPLOY, app);
+        Response response = postWithUpload(URL_APPLICATION_DEPLOY, app);
         checkStatusForSuccess(response);
 
         return getEntityValues(get(URL_APPLICATION_DEPLOY + "/" + app.get("name")));
     }
 
     public void addAppRef(final String applicationName, final String targetName){
-        ClientResponse cr = post("/domain/servers/server/" + targetName + "/application-ref", new HashMap<String,String>() {{
+        Response cr = post("/domain/servers/server/" + targetName + "/application-ref", new HashMap<String,String>() {{
             put("id", applicationName);
             put("target", targetName);
         }});
         checkStatusForSuccess(cr);
     }
 
-    public ClientResponse undeployApp(String appName) {
-        ClientResponse response = delete(URL_APPLICATION_DEPLOY + "/" + appName);
+    public Response undeployApp(String appName) {
+        Response response = delete(URL_APPLICATION_DEPLOY + "/" + appName);
         checkStatusForSuccess(response);
 
         return response;

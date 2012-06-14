@@ -41,17 +41,6 @@
 -exportcontents: \
                         org.glassfish.admin.rest.client, org.glassfish.admin.rest.client.utils
 DynamicImport-Package: \
-                        com.sun.jersey.api.container, \
-                        com.sun.jersey.api.core, \
-                        com.sun.jersey.spi.inject, \
-                        com.sun.jersey.api.container.filter, \
-                        com.sun.jersey.api.client, \
-                        com.sun.jersey.core.header, \
-                        com.sun.jersey.multipart, \
-                        com.sun.jersey.spi, \
-                        com.sun.jersey.spi.container, \
-                        com.sun.jersey.core.impl.provider.header, \
-                        com.sun.jersey.client.urlconnection, \
                         com.sun.ws.rs.ext, \
                         javax.ws.rs, \
                         javax.ws.rs.core, \

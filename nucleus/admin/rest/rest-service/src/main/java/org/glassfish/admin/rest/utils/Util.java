@@ -40,13 +40,14 @@
 package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.jersey.api.client.Client;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.glassfish.admin.rest.provider.ProviderUtil;
+
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -55,6 +56,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.ext.ClientFactory;
+
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.Param;
@@ -278,7 +281,7 @@ public class Util {
 
     public static synchronized Client getJerseyClient() {
         if (client == null) {
-            client = Client.create();
+            client = ClientFactory.newClient();
         }
 
         return client;

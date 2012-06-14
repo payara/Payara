@@ -38,26 +38,8 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.glassfish.admingui.common.util;
 
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.ssl.SSLUtils;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -73,24 +55,42 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Target;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ClientFactory;
+
 import javax.faces.context.FacesContext;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.jvnet.hk2.component.BaseServiceLocator;
+
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.api.ActionReport.ExitCode;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.media.json.JsonJacksonFeature;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.ssl.SSLUtils;
+import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 /**
  *
  * @author anilam
@@ -106,14 +106,10 @@ public class RestUtil {
 
    public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
-             ClientConfig clientConfig = new DefaultClientConfig();
-             clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-
-            JERSEY_CLIENT = Client.create(clientConfig);
-            JERSEY_CLIENT.addFilter(new CsrfProtectionFilter());
-
+            JERSEY_CLIENT = ClientFactory.newClient();
+            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).enable(new JsonJacksonFeature());
         }
-        
+
         return JERSEY_CLIENT;
     }
 
@@ -184,11 +180,11 @@ public class RestUtil {
         if (logger.isLoggable(Level.FINEST)) {
             Map maskedAttr = maskOffPassword(attrs);
             logger.log(Level.FINEST,
-                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO", 
-                        new Object[]{
-                            endpoint, 
-                            (useData && "post".equals(method))? data: attrs, method
-                        }));
+                    GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
+                            new Object[]{
+                                    endpoint,
+                                    (useData && "post".equals(method))? data: attrs, method
+                            }));
         }
 
         // Execute the request...
@@ -351,7 +347,8 @@ public class RestUtil {
             return getEntityAttrs(endpoint, "entity");
         } finally {
             if (response != null) {
-                response.close();
+// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
+//                response.close();
             }
         }
     }
@@ -388,7 +385,7 @@ public class RestUtil {
     }
 
     public static Map<String, Object> parseResponse(RestResponse response, HandlerContext handlerCtx, String endpoint,
-            Object attrs, boolean quiet, boolean throwException) {
+                                                    Object attrs, boolean quiet, boolean throwException) {
         // Parse the response
         String message = "";
         ExitCode exitCode = ExitCode.FAILURE;
@@ -421,9 +418,9 @@ public class RestUtil {
                     }else{
                         Object msgs = responseMap.get("message");
                         if (msgs == null) {
-				//According to security guideline, we shouldn't expose the endpoint to user for the error.
-				//message =  "REST Request '"  + endpoint + "' failed with response code '" + status + "'.";
-				message = "";
+                            //According to security guideline, we shouldn't expose the endpoint to user for the error.
+                            //message =  "REST Request '"  + endpoint + "' failed with response code '" + status + "'.";
+                            message = "";
                         } else if (msgs instanceof List) {
                             StringBuilder builder = new StringBuilder("");
                             for (Object obj : ((List<Object>) msgs)) {
@@ -516,8 +513,8 @@ public class RestUtil {
      * @return
      */
     public static String appendEncodedSegment(String base, String segment) {
-        String encodedUrl = getJerseyClient().resource(base).getUriBuilder().segment(segment).build().toASCIIString();
-            //segment(elementName)
+        String encodedUrl = getJerseyClient().target(base).getUriBuilder().segment(segment).build().toASCIIString();
+        //segment(elementName)
 
         return encodedUrl;
     }
@@ -525,11 +522,11 @@ public class RestUtil {
     //*******************************************************************************************************************
     //*******************************************************************************************************************
     protected static MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
-        MultivaluedMap formData = new MultivaluedMapImpl();
+        MultivaluedMap formData = new MultivaluedHashMap();
         if (payload == null || payload.isEmpty()) {
             return formData;
         }
-        
+
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             final Object value = entry.getValue();
             final String key = entry.getKey();
@@ -779,7 +776,8 @@ public class RestUtil {
             return false;
         } finally {
             if (response != null) {
-                response.close();
+// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
+//                response.close();
             }
         }
         return false;
@@ -799,22 +797,23 @@ public class RestUtil {
         return token;
     }
 
-    public static ClientResponse getRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs) {
+    public static Response getRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        WebResource webResource = JERSEY_CLIENT.resource(endpoint).queryParams(buildMultivalueMap(attrs));
-        ClientResponse cr = webResource
-                .cookie(new Cookie(REST_TOKEN_COOKIE, token))
-                .get(ClientResponse.class);
-        
+        Target target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        Response cr = target
+                .request().cookie(new Cookie(REST_TOKEN_COOKIE, token))
+                .get(Response.class);
+
         return cr;
     }
 
     public static void getRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        WebResource webResource = JERSEY_CLIENT.resource(endpoint).queryParams(buildMultivalueMap(attrs));
-        ClientResponse cr = webResource
+        Target target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        Response cr = target
+                .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, token))
-                .accept(RESPONSE_TYPE).get(ClientResponse.class);
+                .get(Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         parseResponse(rr, null, endpoint, attrs, quiet, throwException);
 
@@ -832,68 +831,73 @@ public class RestUtil {
         if (address.startsWith("/")) {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
-        WebResource webResource = getJerseyClient().resource(address).queryParams(buildMultivalueMap(payload));
-        ClientResponse resp = webResource
+        Target target = getJerseyClient().target(address).queryParams(buildMultivalueMap(payload));
+        Response resp = target
+                .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .accept(RESPONSE_TYPE).get(ClientResponse.class);
+                .get(Response.class);
         return RestResponse.getRestResponse(resp);
     }
 
     public static RestResponse post(String address, Object payload, String contentType) {
-        WebResource webResource = getJerseyClient().resource(address);
+        Target target = getJerseyClient().target(address);
         if (contentType == null) {
             contentType = MediaType.APPLICATION_JSON;
         }
         if (payload instanceof Map) {
             payload = buildMultivalueMap((Map<String, Object>)payload);
         }
-        ClientResponse cr = webResource.header("Content-Type", contentType)
+        Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
-                .accept(RESPONSE_TYPE).post(ClientResponse.class, payload);
+                .post(Entity.entity(payload, contentType), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
 
     public static RestResponse post(String address, Map<String, Object> payload) {
-        WebResource webResource = getJerseyClient().resource(address);
+        Target target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
-        ClientResponse cr = webResource
-                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+        Response cr = target
 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
-                .accept(RESPONSE_TYPE).post(ClientResponse.class, formData);
+                .request(RESPONSE_TYPE)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
 
     public static RestResponse put(String address, Map<String, Object> payload) {
-        WebResource webResource = getJerseyClient().resource(address);
+        Target target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
-        ClientResponse cr = webResource
-                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+        Response cr = target
 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
-                .accept(RESPONSE_TYPE).put(ClientResponse.class, formData);
+                .request(RESPONSE_TYPE)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
+                .put(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         return rr;
     }
 
     public static RestResponse delete(String address, Map<String, Object> payload) {
-        WebResource webResource = getJerseyClient().resource(address);
-        ClientResponse cr = webResource.queryParams(buildMultivalueMap(payload))
+        Target target = getJerseyClient().target(address);
+        Response cr = target.queryParams(buildMultivalueMap(payload))
+                .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .accept(RESPONSE_TYPE).delete(ClientResponse.class);
+                .delete(Response.class);
         return RestResponse.getRestResponse(cr);
     }
 
     public static RestResponse options(String address, String responseType) {
-        WebResource webResource = getJerseyClient().resource(address);
-        ClientResponse cr = webResource
+        Target target = getJerseyClient().target(address);
+        Response cr = target
+                .request(responseType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
-                .accept(responseType).options(ClientResponse.class);
+                .options(Response.class);
         return RestResponse.getRestResponse(cr);
     }
 
-    public static void checkStatusForSuccess(ClientResponse cr) {
+    public static void checkStatusForSuccess(Response cr) {
         int status = cr.getStatus();
         if ((status < 200) || (status > 299)) {
             throw new RuntimeException(cr.toString());
@@ -909,10 +913,10 @@ public class RestUtil {
         try{
             BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
-            HTTPSProperties httpsProperties = new HTTPSProperties(new BasicHostnameVerifier(),
-                habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null ));
-            client.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
-            client.addFilter(new CsrfProtectionFilter());
+            client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier());
+            client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null));
+            client.configuration().register(CsrfProtectionFilter.class);
+
         }catch(Exception ex){
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
@@ -923,11 +927,12 @@ public class RestUtil {
 
     public static void postRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        WebResource webResource = JERSEY_CLIENT.resource(endpoint);
+        Target target = JERSEY_CLIENT.target(endpoint);
         MultivaluedMap formData = buildMultivalueMap(attrs);
-        ClientResponse cr = webResource
-               .cookie(new Cookie(REST_TOKEN_COOKIE, token))
-                .accept(RESPONSE_TYPE).post(ClientResponse.class, formData);
+        Response cr = target
+                .request(RESPONSE_TYPE)
+                .cookie(new Cookie(REST_TOKEN_COOKIE, token))
+                .post(Entity.entity(formData, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
         RestResponse rr = RestResponse.getRestResponse(cr);
         parseResponse(rr, null, endpoint, attrs, quiet, throwException);
     }
@@ -950,16 +955,16 @@ public class RestUtil {
      * We need to mask its value during logging.
      */
     private static final List<String> pswdAttrList =
-        Arrays.asList(
-            "sshpassword",            /* create-node-ssh , setup-ssh , update-node, update-node-ssh */
-            "windowspassword",        /* create-node-dcom, validate-dcom, update-node-dcom,  */
-            "dbpassword",             /* jms-availability-service */
-            "jmsdbpassword",          /* configure-jms-cluster */
-            "password",                 /* change-admin-password */
-            "newpassword" ,             /* change-admin-password */
-            "jmsdbpassword",             /* configure-jms-cluster */
-            "mappedpassword",            /* create-connector-security-map, update-connector-security-map */
-            "userpassword",             /* create-file-user , update-file-user */
-            "aliaspassword"        /* create-password-alias , update-password-alias */
-        );
+            Arrays.asList(
+                    "sshpassword",            /* create-node-ssh , setup-ssh , update-node, update-node-ssh */
+                    "windowspassword",        /* create-node-dcom, validate-dcom, update-node-dcom,  */
+                    "dbpassword",             /* jms-availability-service */
+                    "jmsdbpassword",          /* configure-jms-cluster */
+                    "password",                 /* change-admin-password */
+                    "newpassword" ,             /* change-admin-password */
+                    "jmsdbpassword",             /* configure-jms-cluster */
+                    "mappedpassword",            /* create-connector-security-map, update-connector-security-map */
+                    "userpassword",             /* create-file-user , update-file-user */
+                    "aliaspassword"        /* create-password-alias , update-password-alias */
+            );
 }

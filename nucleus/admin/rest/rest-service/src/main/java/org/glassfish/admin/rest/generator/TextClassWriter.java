@@ -183,7 +183,7 @@ public class TextClassWriter implements ClassWriter {
             writer.write("@Path(\"" + resourcePath + "/\")\n");
             writer.write("public " + commandResourceClassName + " get"
                     + commandResourceClassName + "() {\n");
-            writer.write(commandResourceClassName + " resource = resourceContext.getResource(" + commandResourceClassName + ".class);\n");
+            writer.write(commandResourceClassName + " resource = injector.inject(" + commandResourceClassName + ".class);\n");
             writer.write("return resource;\n");
             writer.write("}\n\n");
         } catch (IOException e) {
@@ -197,7 +197,7 @@ public class TextClassWriter implements ClassWriter {
             writer.write("\n");
             writer.write("\t@Path(\"" + mappingPath + "/\")\n");
             writer.write("\tpublic " + resourceClassName + " get" + resourceClassName + "() {\n");
-            writer.write("\t\t" + resourceClassName + " resource = resourceContext.getResource(" + resourceClassName + ".class);\n");
+            writer.write("\t\t" + resourceClassName + " resource = injector.inject(" + resourceClassName + ".class);\n");
             writer.write("\t\tresource.setEntity(getEntity());\n");
             writer.write("\t\treturn resource;\n");
             writer.write("\t}\n\n");
@@ -266,7 +266,7 @@ public class TextClassWriter implements ClassWriter {
             writer.write("\t@Path(\"" + path + "/\")\n");
             writer.write("\tpublic " + childResourceClassName + " get" + childResourceClassName + "() {\n");
 
-            writer.write("\t\t" + childResourceClassName + " resource = resourceContext.getResource(" + childResourceClassName + ".class);\n");
+            writer.write("\t\t" + childResourceClassName + " resource = injector.inject(" + childResourceClassName + ".class);\n");
             writer.write("\t\tresource.setParentAndTagName(getEntity() , \"" + path + "\");\n");
             writer.write("\t\treturn resource;\n");
             writer.write("\t}\n");
@@ -281,7 +281,7 @@ public class TextClassWriter implements ClassWriter {
             writer.write("\n");
             writer.write("\t@Path(\"{" + keyAttributeName + "}/\")\n");
             writer.write("\tpublic " + childResourceClassName + " get" + childResourceClassName + "(@PathParam(\"" + keyAttributeName + "\") String id) {\n");
-            writer.write("\t\t" + childResourceClassName + " resource = resourceContext.getResource(" + childResourceClassName + ".class);\n");
+            writer.write("\t\t" + childResourceClassName + " resource = injector.inject(" + childResourceClassName + ".class);\n");
             writer.write("\t\tresource.setBeanByKey(entity, id, tagName);\n");
             writer.write("\t\treturn resource;\n");
             writer.write("\t}\n\n");

@@ -62,10 +62,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.utils.Util;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * @author ludo
@@ -78,7 +75,7 @@ public class TemplateExecCommand {
     protected UriInfo uriInfo;
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
 
     protected String resourceName;
     protected String commandName;

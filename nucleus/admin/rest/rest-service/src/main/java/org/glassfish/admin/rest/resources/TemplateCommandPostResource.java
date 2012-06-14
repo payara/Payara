@@ -39,8 +39,6 @@
  */
 package org.glassfish.admin.rest.resources;
 
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -61,6 +59,8 @@ import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
 /**
  *
@@ -79,6 +79,9 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public Response processPost(ParameterMap data) {
+        if (data == null) {
+            data = new ParameterMap();
+        }
         if (data.containsKey("error")) {
             String errorMessage = localStrings.getLocalString("rest.request.parsing.error", "Unable to parse the input entity. Please check the syntax.");
             throw new WebApplicationException(ResourceUtil.getResponse(400, /*parsing error*/ errorMessage, requestHeaders, uriInfo));

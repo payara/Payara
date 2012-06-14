@@ -42,10 +42,6 @@ package org.glassfish.admin.rest.resources.custom;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
-import com.sun.jersey.api.core.ResourceContext;
-import com.sun.jersey.spi.container.ContainerRequest;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +74,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.inject.Injector;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -98,7 +95,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     protected static final String TAG_SYSTEM_PROPERTY = "system-property";
 
     @Context
-    protected ResourceContext resourceContext;
+    protected Injector injector;
 
     protected Dom entity;
 //    protected Dom parent;
@@ -123,7 +120,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
         ParameterMap data = new ParameterMap();
         processCommandParams(data);
-        addQueryString(((ContainerRequest) requestHeaders).getQueryParameters(), data);
+        addQueryString(uriInfo.getQueryParameters(), data);
         adjustParameters(data);
         Map<String, Map<String, String>> properties = new TreeMap<String, Map<String, String>>();
 

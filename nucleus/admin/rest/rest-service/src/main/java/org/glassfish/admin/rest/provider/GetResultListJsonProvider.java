@@ -104,7 +104,7 @@ public class GetResultListJsonProvider extends BaseProvider<GetResultList> {
         //TODO commandResourcePath is two dimensional array. It seems the second e.x. see DomainResource#getCommandResourcesPaths().
         //The second dimension POST/GET etc. does not seem to be used. Discussed with Ludo. Need to be removed in a separate checkin.
         for (String[] commandResourcePath : commandResourcesPaths) {
-            array.put(getElementLink(uriInfo, commandResourcePath[0]));
+            array.put(getElementLink(uriInfo.get(), commandResourcePath[0]));
         }
         return array;
     }

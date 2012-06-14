@@ -103,6 +103,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Resource utilities class. Used by resource templates,
@@ -116,8 +117,8 @@ public class ResourceUtil {
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
-    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make 
-    // sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a 
+    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make
+    // sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a
     // promotion of HK2 for this.
     static final Pattern TOKENIZER;
 
@@ -223,7 +224,7 @@ public class ResourceUtil {
      * @param habitat the habitat
      * @return ActionReport object with command execute status details.
      */
-    public static RestActionReporter runCommand(String commandName, Map<String, String> parameters, 
+    public static RestActionReporter runCommand(String commandName, Map<String, String> parameters,
             BaseServiceLocator habitat, String resultType) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
@@ -234,10 +235,9 @@ public class ResourceUtil {
     }
 
     public static RestActionReporter runCommand(String commandName, ParameterMap parameters, BaseServiceLocator habitat, String resultType) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
+        CommandRunner cr = Globals.getDefaultBaseServiceLocator().getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
 //        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
-
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
 
         commandInvocation
@@ -508,7 +508,7 @@ public class ResourceUtil {
             habitat.getComponent(AdminCommand.class, commandName);
             return true;
         } catch (Exception e) {
-            
+
         }
         return false;
     }
@@ -1107,22 +1107,22 @@ public class ResourceUtil {
             // The workaround will not be required in trunk when the corresponding Grizzly issue is fixed.
             // Please see http://java.net/jira/browse/GLASSFISH-16665 for details
             // The workaround duplicates code from AdminAdapter.
-    
+
             subject = authenticator.loginAsAdmin(req, remoteHost);
         }
         return subject;
     }
-    
+
     /**
      * Returns the access to be granted to the specified subject.
      * @param habitat
      * @param subject
      * @param remoteHost
-     * @return 
+     * @return
      */
     public static AdminAccessController.Access chooseAccess(final BaseServiceLocator habitat, final Subject subject, final String remoteHost) {
         final AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
         final AdminAccessController.Access access = authenticator.chooseAccess(subject, remoteHost);
         return access;
+        }
     }
-}

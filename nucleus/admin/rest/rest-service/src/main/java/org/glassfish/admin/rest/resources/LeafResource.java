@@ -66,9 +66,10 @@ import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.jersey.api.core.ResourceContext;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.hk2.Factory;
+import org.glassfish.hk2.inject.Injector;
 import org.jvnet.hk2.config.Dom;
 
 import static org.glassfish.admin.rest.utils.Util.decode;
@@ -79,13 +80,13 @@ import static org.glassfish.admin.rest.utils.Util.decode;
  */
 public abstract class LeafResource {
     @Context
-    protected HttpHeaders requestHeaders;
+    protected Factory<HttpHeaders> requestHeaders;
 
     @Context
-    protected UriInfo uriInfo;
+    protected Factory<UriInfo> uriInfo;
 
     @Context
-    protected ResourceContext resourceContext;
+    protected Injector injector;
 
     @Context
     protected BaseServiceLocator habitat;
@@ -155,7 +156,7 @@ public abstract class LeafResource {
     @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult delete(HashMap<String, String> data) {
-        ResourceUtil.addQueryString(uriInfo.getQueryParameters(), data);
+        ResourceUtil.addQueryString(uriInfo.get().getQueryParameters(), data);
 
         return null;//TODOTODO
 
@@ -174,7 +175,7 @@ public abstract class LeafResource {
         ar.setActionDescription(typeKey);
         ar.getExtraProperties().put("entityLeaf", getEntity());
 
-        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo));
+        OptionsResult optionsResult = new OptionsResult(Util.getResourceName(uriInfo.get()));
         Map<String, MethodMetaData> mmd = getMethodMetaData();
         optionsResult.putMethodMetaData("GET", mmd.get("GET"));
         optionsResult.putMethodMetaData("POST", mmd.get("POST"));
@@ -196,7 +197,7 @@ public abstract class LeafResource {
 
 
     protected String getName() {
-        return Util.getResourceName(uriInfo);
+        return Util.getResourceName(uriInfo.get());
     }
 
 

@@ -137,7 +137,7 @@ public class GuiUtil {
         return msg;
     }
 
-    
+
     public static void initSessionAttributes(){
 
         Logger logger = GuiUtil.getLogger();
@@ -233,7 +233,7 @@ public class GuiUtil {
         } catch (Exception ex) {
             logger.log(Level.FINE, ex.getMessage());
         }
-        
+
     }
 
     private static File getTimeStampFile() {
@@ -276,7 +276,7 @@ public class GuiUtil {
         return sessionMap.get(key);
     }
 
-    
+
     /**
      * <p> This method encodes the given String with the specified type.
      * <p> If type is not specified then it defaults to UTF-8.
@@ -365,7 +365,7 @@ public class GuiUtil {
     }
 
     /*
-     * returns the strings from org.glassfish.admingui.core.Strings 
+     * returns the strings from org.glassfish.admingui.core.Strings
      * if no such key exists, return the key itself.
      */
 
@@ -406,23 +406,23 @@ public class GuiUtil {
         return locale;
     }
 
-    /* This method sets up the attributes of the <sun:alert> message box so that a 
+    /* This method sets up the attributes of the <sun:alert> message box so that a
      * saved sucessfully message will be displayed during refresh.
      */
     public static void prepareSuccessful(HandlerContext handlerCtx) {
         prepareAlert("success", GuiUtil.getMessage("msg.saveSuccessful"), null);
     }
 
-    /* This method sets up the attributes of the <sun:alert> message box. It is similar 
+    /* This method sets up the attributes of the <sun:alert> message box. It is similar
      * to handleException without calling renderResponse()
      */
     public static void prepareException(HandlerContext handlerCtx, Throwable ex) {
         Throwable rootException = getRootCause(ex);
         prepareAlert("error", GuiUtil.getMessage("msg.Error"), rootException.getMessage());
         GuiUtil.getLogger().info(GuiUtil.getCommonMessage("LOG_EXCEPTION_OCCURED") + ex.getLocalizedMessage());
-        if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+//        if (GuiUtil.getLogger().isLoggable(Level.FINE)){
             ex.printStackTrace();
-        }
+//        }
     }
 
     /* This method sets up the attributes of the <sun:alert> message box so that any
@@ -444,7 +444,7 @@ public class GuiUtil {
         if (detail != null && detail.length() > 1000) {
             detail = detail.substring(0, 1000) + " .... " + GuiUtil.getMessage("msg.seeServerLog");
         }
-        
+
             attrMap.put("alertDetail", isEmpty(detail) ? "" : URLEncoder.encode(detail, "UTF-8"));
             attrMap.put("alertSummary", isEmpty(summary) ? "" : URLEncoder.encode(summary, "UTF-8"));
         } catch (Exception ex) {
@@ -480,7 +480,7 @@ public class GuiUtil {
         }
         return arrList;
     }
-    
+
     /*
     FIXME: 7-31-08 -- FIX by importing woodstock api's.
     public static Option[] getSunOptions(Collection<String> c) {
@@ -500,9 +500,9 @@ public class GuiUtil {
      * each other by the specified set of separator characters and returns
      * a list of strings.
      *
-     * Splits the string <code>line</code> into individual string elements 
-     * separated by the field separators specified in <code>sep</code>, 
-     * and returns these individual strings as a list of strings. The 
+     * Splits the string <code>line</code> into individual string elements
+     * separated by the field separators specified in <code>sep</code>,
+     * and returns these individual strings as a list of strings. The
      * individual string elements are trimmed of leading and trailing
      * whitespace. Only non-empty strings are returned in the list.
      *
@@ -702,10 +702,10 @@ public class GuiUtil {
 
 
     /* get the value from a map, traversing a comma separated set of keys
-     * 
+     *
      * @param map    map to travers
      * $param mapKeys   comma separated set of keys
-     * 
+     *
      * return value corresponding to the last key in mapKeys
      */
     public static Object getMapValue(Map map, String mapKeys) {

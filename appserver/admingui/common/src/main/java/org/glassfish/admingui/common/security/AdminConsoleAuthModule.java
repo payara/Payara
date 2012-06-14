@@ -39,17 +39,23 @@
  */
 package org.glassfish.admingui.common.security;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Target;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ClientFactory;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -60,21 +66,21 @@ import javax.security.auth.message.MessagePolicy;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
 import javax.security.auth.message.module.ServerAuthModule;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.servlet.http.HttpSession;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.glassfish.admingui.common.util.RestResponse;
 import org.jvnet.hk2.component.BaseServiceLocator;
+
+import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.admingui.common.util.RestResponse;
+import org.glassfish.admingui.common.util.RestUtil;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
-import java.util.logging.Logger;
-import org.glassfish.admingui.common.util.GuiUtil;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.admingui.common.util.RestUtil;
 
 /**
  *  <p>	This class is responsible for providing the Authentication support
@@ -170,6 +176,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     /**
      *
      */
+    @Override
     public Class[] getSupportedMessageTypes() {
         return SUPPORTED_MESSAGE_TYPES;
     }
@@ -177,6 +184,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     /**
      *	<p> This is where the validation happens...</p>
      */
+    @Override
     public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject, Subject serviceSubject) throws AuthException {
         // Make sure we need to check...
         HttpServletRequest request =
@@ -246,14 +254,14 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         // Make REST Request
 
-        Client client2 = Client.create();
+        Client client2 = ClientFactory.newClient();
         RestUtil.initialize(client2);
-        WebResource webResource = client2.resource(restURL);
-        webResource.addFilter(new HTTPBasicAuthFilter(username, password));
-        MultivaluedMap payLoad = new MultivaluedMapImpl();
+        Target target = client2.target(restURL);
+        target.configuration().register(new HttpBasicAuthFilter(username, password));
+        MultivaluedMap payLoad = new MultivaluedHashMap();
         payLoad.putSingle("remoteHostName", request.getRemoteHost());
 
-        ClientResponse resp = webResource.accept(RESPONSE_TYPE).post(ClientResponse.class, payLoad);
+        Response resp = target.request(RESPONSE_TYPE).post(Entity.entity(payLoad, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
         RestResponse restResp = RestResponse.getRestResponse(resp);
 
         // Check to see if successful..
@@ -344,6 +352,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     /**
      *
      */
+    @Override
     public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
         return AuthStatus.SUCCESS;
     }
@@ -351,6 +360,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     /**
      *
      */
+    @Override
     public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
         // FIXME: Cleanup...
     }

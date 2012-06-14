@@ -40,7 +40,8 @@
 package org.glassfish.admin.rest.client;
 
 import org.glassfish.admin.rest.client.utils.Util;
-import com.sun.jersey.api.client.ClientResponse;
+
+import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +57,8 @@ public class RestResponse {
     private List children;
     private Map<String, String> properties;
     
-    public RestResponse(ClientResponse response) {
-        Map<String, Object> responseMap = Util.processJsonMap(response.getEntity(String.class));
+    public RestResponse(Response response) {
+        Map<String, Object> responseMap = Util.processJsonMap(response.readEntity(String.class));
         
         status = response.getStatus();
         message = (String)responseMap.get("message");

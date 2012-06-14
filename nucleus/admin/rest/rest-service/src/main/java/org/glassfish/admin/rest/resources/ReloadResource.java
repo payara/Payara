@@ -40,12 +40,12 @@
 
 package org.glassfish.admin.rest.resources;
 
-import com.sun.jersey.api.core.ResourceConfig;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  *

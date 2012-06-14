@@ -40,22 +40,10 @@
 
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
-import com.sun.jersey.api.container.ContainerFactory;
-import com.sun.jersey.api.container.filter.CsrfProtectionFilter;
-import com.sun.jersey.api.container.filter.LoggingFilter;
-import com.sun.jersey.api.core.DefaultResourceConfig;
-import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.jersey.spi.inject.SingletonTypeInjectableProvider;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -63,16 +51,22 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import javax.security.auth.login.LoginException;
+
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.component.PostConstruct;
+
 import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.RestConfig;
 import org.glassfish.admin.rest.RestConfigChangeListener;
-import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.provider.ActionReportResultHtmlProvider;
 import org.glassfish.admin.rest.provider.ActionReportResultJsonProvider;
@@ -80,27 +74,39 @@ import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.common.util.admin.RestSessionManager;
+import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.jersey.internal.inject.AbstractModule;
+import org.glassfish.jersey.media.json.JsonJaxbModule;
+import org.glassfish.jersey.media.multipart.MultiPartModule;
+import org.glassfish.jersey.server.ContainerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.server.filter.UriConnegFilter;
+
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import com.sun.logging.LogDomains;
 
 /**
  * Adapter for REST interface
  * @author Rajeshwar Patil, Ludovic Champenois
  */
 public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdapter, PostConstruct {
+    protected static final String COOKIE_REST_TOKEN = "gfresttoken";
     protected static final String COOKIE_GF_REST_UID = "gfrestuid";
     protected static final String HEADER_ACCEPT = "Accept";
     protected static final String HEADER_USER_AGENT = "User-Agent";
@@ -126,10 +132,10 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Inject
     private RestSessionManager sessionManager;
-    
+
     @Inject
     private AdminAccessController adminAuthenticator;
-    
+
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile HttpHandler adapter = null;
     private boolean isRegistered = false;
@@ -137,6 +143,10 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     protected RestAdapter() {
         setAllowEncodedSlash(true);
+    }
+
+    protected AbstractModule getJsonModule() {
+        return new JsonJaxbModule();
     }
 
     @Override
@@ -162,8 +172,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             if (latch.await(20L, TimeUnit.SECONDS)) {
                 if(serverEnvironment.isInstance()) {
                     if(!Method.GET.equals(req.getMethod())) {
-                        reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN, 
-                                localStrings.getLocalString("rest.resource.only.GET.on.instance", 
+                        reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN,
+                                localStrings.getLocalString("rest.resource.only.GET.on.instance",
                                 "Only GET requests are allowed on an instance that is not DAS."));
                         return;
                     }
@@ -185,13 +195,13 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     int status;
                     if(access == AdminAccessController.Access.NONE) {
                         status = HttpURLConnection.HTTP_UNAUTHORIZED;
-                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword", 
+                        msg = localStrings.getLocalString("rest.adapter.auth.userpassword",
                                 "Invalid user name or password");
                         res.setHeader(HEADER_AUTHENTICATE, "BASIC");
                     } else {
                         assert access == AdminAccessController.Access.FORBIDDEN;
                         status = HttpURLConnection.HTTP_FORBIDDEN;
-                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden", 
+                        msg = localStrings.getLocalString("rest.adapter.auth.forbidden",
                                 "Remote access not allowed. If you desire remote access, please turn on secure admin");
                     }
                     reportError(req, res, status, msg);
@@ -219,7 +229,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             logger.log(Level.INFO, msg, e);
         }
     }
-    
+
     private String getAcceptedMimeType(Request req) {
         String type = null;
         String requestURI = req.getRequestURI();
@@ -254,7 +264,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
         return type;
     }
-    
+
     public Map<String, MediaType> getMimeMappings() {
         return new HashMap<String, MediaType>() {{
             put("xml", MediaType.APPLICATION_XML_TYPE);
@@ -263,58 +273,63 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             put("js", new MediaType("text", "javascript"));
         }};
     }
-    
-    public List<SingletonTypeInjectableProvider> getSingletons() {
-        return new ArrayList<SingletonTypeInjectableProvider>() {{
-            add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
-            add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
-            add(new SingletonTypeInjectableProvider<Context, RestSessionManager>(RestSessionManager.class, habitat.getComponent(RestSessionManager.class)) {});
-        }};
-    }
-    
+
+
     public Map<String, Boolean> getFeatures() {
         return new HashMap<String, Boolean>() {{
-           put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
+       //    put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
         }};
     }
 
     /**
      * dynamically load the class that contains all references to Jersey APIs
      * so that Jersey is not loaded when the RestAdapter is loaded at boot time
-     * gain a few 100millis at GlassFish startyp time
+     * gain a few 100 millis at GlassFish startup time
      */
-    public HttpHandler exposeContext(final Set<Class<?>> classes, final ServerContext sc, final Habitat habitat) throws EndpointRegistrationException {
-        final ResourceConfig rc = new DefaultResourceConfig(classes);
-        final Map<String, Boolean> features = rc.getFeatures();
-        final Reloader r = new Reloader();
+    public HttpHandler exposeContext(Set<Class<?>> classes, final ServerContext sc, final Habitat habitat) throws EndpointRegistrationException {
+
         HttpHandler httpHandler = null;
+        final Reloader r = new Reloader();
 
-        rc.getMediaTypeMappings().putAll(getMimeMappings());
-        rc.getSingletons().addAll(getSingletons());
-        features.putAll(getFeatures());
-        
-        rc.getContainerRequestFilters().add(CsrfProtectionFilter.class);
+        ResourceConfig rc = new ResourceConfig(classes);
 
-        RestConfig restConf = ResourceUtil.getRestConfig(habitat);
-        if (restConf != null) {
-            if (restConf.getLogOutput().equalsIgnoreCase("true")) { //enable output logging
-                rc.getContainerResponseFilters().add(LoggingFilter.class);
+        //rc.services = habitat.getDefault();
+
+        UriConnegFilter.enableFor(rc, getMimeMappings(), null);
+
+        rc.addClasses(CsrfProtectionFilter.class);
+
+
+//        TODO - JERSEY2
+//        RestConfig restConf = ResourceUtil.getRestConfig(habitat);
+//        if (restConf != null) {
+//            if (restConf.getLogOutput().equalsIgnoreCase("true")) { //enable output logging
+//                rc.getContainerResponseFilters().add(LoggingFilter.class);
+//            }
+//            if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
+//                rc.getContainerRequestFilters().add(LoggingFilter.class);
+//            }
+//            if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
+//                rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
+//            }
+//        }
+//        else {
+//                 rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
+//        }
+//
+        rc.addSingletons(r);
+        rc.addClasses(ReloadResource.class);
+
+        rc.addModules(getJsonModule(), new MultiPartModule(), new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(Reloader.class).toInstance(r);
+                bind(ServerContext.class).toInstance(sc);
+                bind(Habitat.class).toInstance(habitat);
+                bind(RestSessionManager.class).toInstance(habitat.getComponent(RestSessionManager.class));
+
             }
-            if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
-                rc.getContainerRequestFilters().add(LoggingFilter.class);
-            }
-            features.put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.parseBoolean(restConf.getWadlGeneration()));
-        }
-
-        rc.getClasses().add(ReloadResource.class);
-
-        rc.getProperties().put(ResourceConfig.PROPERTY_CONTAINER_NOTIFIER, r);
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, Reloader>(Reloader.class, r) {});
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, ServerContext>(ServerContext.class, sc) {});
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, Habitat>(Habitat.class, habitat) {});
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, BaseServiceLocator>(BaseServiceLocator.class, habitat) {});
-        rc.getSingletons().add(new SingletonTypeInjectableProvider<Context, RestSessionManager>(RestSessionManager.class, habitat.getComponent(RestSessionManager.class)) {});
-
+        });
 
         //Use common classloader. Jersey artifacts are not visible through
         //module classloader

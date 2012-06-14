@@ -40,12 +40,14 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -70,7 +72,7 @@ public class PropertiesBagTest extends RestTestBase {
 
     @Test
     public void propertyRetrieval() {
-        ClientResponse response = get(URL_DOMAIN_PROPERTIES);
+        Response response = get(URL_DOMAIN_PROPERTIES);
         checkStatusForSuccess(response);
         List<Map<String, String>> properties = getProperties(response);
         assertTrue(isPropertyFound(properties, PROP_DOMAIN_NAME));
@@ -226,7 +228,7 @@ public class PropertiesBagTest extends RestTestBase {
 
         final String URL = "/domain/resources/resource-adapter-config";
         delete(URL+"/jmsra");
-        ClientResponse response = post(URL, attrs);
+        Response response = post(URL, attrs);
         assertTrue(isSuccess(response));
 
         // Change one property value (AddressListIterations) and update the object
@@ -264,7 +266,7 @@ public class PropertiesBagTest extends RestTestBase {
     }
 
     protected void createAndDeleteProperties(String endpoint) {
-        ClientResponse response = get(endpoint);
+        Response response = get(endpoint);
         checkStatusForSuccess(response);
         assertNotNull(getProperties(response));
 
@@ -295,10 +297,9 @@ public class PropertiesBagTest extends RestTestBase {
 
     protected void createProperties(String endpoint, List<Map<String, String>> properties) {
         final String payload = buildPayload(properties);
-        ClientResponse response = client.resource(getAddress(endpoint))
-            .header("Content-Type", REQUEST_FORMAT)
-            .accept(RESPONSE_TYPE)
-            .post(ClientResponse.class, payload);
+        Response response = client.target(getAddress(endpoint))
+            .request(RESPONSE_TYPE)
+            .post(Entity.entity(payload, REQUEST_FORMAT), Response.class);
         checkStatusForSuccess(response);
         response = get(endpoint);
         checkStatusForSuccess(response);
@@ -317,10 +318,9 @@ public class PropertiesBagTest extends RestTestBase {
             put("name", PROP_DOMAIN_NAME);
             put("value", "domain1");
         }};
-        ClientResponse response = client.resource(getAddress(URL_DOMAIN_PROPERTIES))
-                .header("Content-Type", REQUEST_FORMAT)
-                .accept(RESPONSE_TYPE)
-                .put(ClientResponse.class, buildPayload(new ArrayList<Map<String, String>>() {{ add(domainProps); }}));
+        Response response = client.target(getAddress(URL_DOMAIN_PROPERTIES))
+                .request(RESPONSE_TYPE)
+                .put(Entity.entity(buildPayload(new ArrayList<Map<String, String>>() {{ add(domainProps); }}), REQUEST_FORMAT), Response.class);
         checkStatusForSuccess(response);
         response = get(URL_DOMAIN_PROPERTIES);
         checkStatusForSuccess(response);

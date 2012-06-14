@@ -40,9 +40,9 @@
 
 package org.glassfish.admingui.common.util;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.w3c.dom.*;
 
+import javax.ws.rs.core.Response;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -70,7 +70,7 @@ public abstract class RestResponse {
 
     public abstract String getResponseBody();
 
-    public static RestResponse getRestResponse(ClientResponse response) {
+    public static RestResponse getRestResponse(Response response) {
         return new JerseyRestResponse(response);
     }
 
@@ -114,23 +114,23 @@ public abstract class RestResponse {
      */
     public abstract Map<String, Object> getResponse();
 
-    public abstract void close();    
-    
+    public abstract void close();
+
 }
 
 
 class JerseyRestResponse extends RestResponse {
-    protected ClientResponse response;
+    protected Response response;
     private String body = null;
 
-    public JerseyRestResponse(ClientResponse response) {
+    public JerseyRestResponse(Response response) {
         this.response = response;
     }
 
     @Override
     public String getResponseBody() {
         if (body == null) {
-            body = response.getEntity(String.class);
+            body = response.readEntity(String.class);
         }
         return body;
     }
@@ -155,7 +155,7 @@ class JerseyRestResponse extends RestResponse {
 // FIXME: Do not put responseBody into the Map... too big, not needed
         result.put("responseBody", getResponseBody());
 
-        String contentType = response.getHeaders().getFirst("Content-type");
+        String contentType = response.getHeaders().getHeader("Content-type");
         if (contentType != null) {
             String responseBody = getResponseBody();
             contentType = contentType.toLowerCase(GuiUtil.guiLocale);
@@ -473,10 +473,11 @@ class JerseyRestResponse extends RestResponse {
         }
         return list;
     }
-    
+
     @Override
     public void close() {
-        response.close();
+// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
+//        response.close();
     }
 
 }

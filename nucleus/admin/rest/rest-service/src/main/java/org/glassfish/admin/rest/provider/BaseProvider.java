@@ -41,7 +41,6 @@ package org.glassfish.admin.rest.provider;
 
 import org.glassfish.admin.rest.Constants;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.admin.rest.RestConfig;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +61,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import org.glassfish.hk2.Factory;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
 
@@ -75,10 +75,10 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     public static final String JSONP_CALLBACK = "jsoncallback";
 
     @Context
-    protected UriInfo uriInfo;
+    protected Factory<UriInfo> uriInfo;
 
     @Context
-    protected HttpHeaders requestHeaders;
+    protected Factory<HttpHeaders> requestHeaders;
 
     @Context
     protected BaseServiceLocator habitat;
@@ -94,10 +94,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] antns, MediaType mt) {
-        if (desiredType.equals(genericType)) {
-            return mt.isCompatible(supportedMediaType);
-        }
-        return false;
+        return (desiredType == type) && mt.isCompatible(supportedMediaType);
     }
 
     @Override
@@ -121,12 +118,12 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         else {
             return Integer.parseInt(rg.getIndentLevel());
         }
-        
+
     }
-    
+
      /*
      * returns true if the HTML viewer displays the hidden CLI command links
-     */   
+     */
     protected boolean canShowHiddenCommands() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
@@ -135,12 +132,12 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         }
         return false;
     }
-    
+
     /*
      * returns true if the HTML viewer displays the deprecated elements or attributes
      * of a config bean
      */
-        
+
     protected boolean canShowDeprecatedItems() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
@@ -158,11 +155,11 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         if ((rg != null) && (rg.getDebug().equalsIgnoreCase("true"))) {
             return true;
         }
-    
+
         if (requestHeaders == null) {
             return true;
         }
-        List header = requestHeaders.getRequestHeader(HEADER_DEBUG);
+        List header = requestHeaders.get().getRequestHeader(HEADER_DEBUG);
         return (header != null) && ("true".equals(header.get(0)));
     }
 
@@ -174,7 +171,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
             return null;
         }
 
-        MultivaluedMap<String, String> l = uriInfo.getQueryParameters();
+        MultivaluedMap<String, String> l = uriInfo.get().getQueryParameters();
 
         if (l == null) {
             return null;
@@ -185,7 +182,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     protected String getXmlCommandLinks(String[][] commandResourcesPaths, String indent) {
         StringBuilder result = new StringBuilder();
         for (String[] commandResourcePath : commandResourcesPaths) {
-            result.append("\n").append(indent).append(getStartXmlElement(KEY_COMMAND)).append(getElementLink(uriInfo, commandResourcePath[0])).append(getEndXmlElement(KEY_COMMAND));
+            result.append("\n").append(indent).append(getStartXmlElement(KEY_COMMAND)).append(getElementLink(uriInfo.get(), commandResourcePath[0])).append(getEndXmlElement(KEY_COMMAND));
         }
         return result.toString();
     }
@@ -204,11 +201,11 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
                 if (lcm != null) {
                     Collections.sort(lcm, new ConfigModelComparator());
                     for (ConfigModel cmodel : lcm) {
-                        links.put(cmodel.getTagName(), ProviderUtil.getElementLink(uriInfo, cmodel.getTagName()));
+                        links.put(cmodel.getTagName(), ProviderUtil.getElementLink(uriInfo.get(), cmodel.getTagName()));
                     }
                 }
             } else {
-                links.put(elementName, ProviderUtil.getElementLink(uriInfo, elementName));
+                links.put(elementName, ProviderUtil.getElementLink(uriInfo.get(), elementName));
             }
         }
 
@@ -220,7 +217,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         Collections.sort(proxyList, new DomConfigurator());
         for (Dom proxy : proxyList) { //for each element
             try {
-                links.put(proxy.getKey(), getElementLink(uriInfo, proxy.getKey()));
+                links.put(proxy.getKey(), getElementLink(uriInfo.get(), proxy.getKey()));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

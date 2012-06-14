@@ -39,12 +39,6 @@
  */
 package org.glassfish.admin.rest.client;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.file.FileDataBodyPart;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,8 +47,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Target;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.client.utils.Util;
 
@@ -98,15 +98,14 @@ public abstract class RestClientBase {
     }
 
     public boolean save() {
-        ClientResponse response = client.resource(getRestUrl())
-                .accept(RESPONSE_TYPE)
-                .type(MediaType.MULTIPART_FORM_DATA_TYPE)
-                .post(ClientResponse.class, buildMultivalueMap(entityValues));
+        Response response = client.target(getRestUrl())
+                .request(RESPONSE_TYPE)
+                .post(buildMultivalueMapEntity(entityValues, MediaType.MULTIPART_FORM_DATA_TYPE), Response.class);
         boolean success = isSuccess(response);
 
         if (!success) {
             status = response.getStatus();
-            message = response.getEntity(String.class);
+            message = response.readEntity(String.class);
         } else {
             isNew = false;
         }
@@ -115,14 +114,14 @@ public abstract class RestClientBase {
     }
 
     public boolean delete() {
-        ClientResponse response = client.resource(getRestUrl())
-                .accept(RESPONSE_TYPE)
-                .delete(ClientResponse.class);
+        Response response = client.target(getRestUrl())
+                .request(RESPONSE_TYPE)
+                .delete(Response.class);
         boolean success = isSuccess(response);
 
         if (!success) {
             status = response.getStatus();
-            message = response.getEntity(String.class);
+            message = response.readEntity(String.class);
         }
 
         return success;
@@ -137,48 +136,53 @@ public abstract class RestClientBase {
     }
     
     public RestResponse execute(Method method, String endPoint, Map<String, Object> payload, boolean needsMultiPart) {
-        final WebResource request = client.resource(getRestUrl() + endPoint);
-        ClientResponse clientResponse;
+        final Target target = client.target(getRestUrl() + endPoint);
+        Response clientResponse;
         switch (method) {
             case POST: {
-                if (needsMultiPart) {
-                    clientResponse = request.accept(RESPONSE_TYPE)
-                            .type(MediaType.MULTIPART_FORM_DATA_TYPE)
-                            .post(ClientResponse.class, buildFormDataMultipart(payload));
-                } else {
-                    clientResponse = request.accept(RESPONSE_TYPE)
-                            .post(ClientResponse.class, buildMultivalueMap(payload));
+//                 TODO - JERSEY2
+//                if (needsMultiPart) {
+//                    clientResponse = target
+//                            .request(RESPONSE_TYPE)
+//                            .post(buildFormDataMultipart(payload, MediaType.MULTIPART_FORM_DATA_TYPE), Response.class);
+//                } else
+                {
+                    clientResponse = target.request(RESPONSE_TYPE)
+                            .post(buildMultivalueMapEntity(payload, null), Response.class);
 
                 }
                 break;
             }
             case PUT: {
-                if (needsMultiPart) {
-                    clientResponse = request.accept(RESPONSE_TYPE)
-                            .type(MediaType.MULTIPART_FORM_DATA_TYPE)
-                            .put(ClientResponse.class, buildFormDataMultipart(payload));
-                } else {
-                    clientResponse = request.accept(RESPONSE_TYPE)
-                            .put(ClientResponse.class, buildMultivalueMap(payload));
+//                TODO - JERSEY2
+//                if (needsMultiPart) {
+//                    clientResponse = target
+//                            .request(RESPONSE_TYPE)
+//                            .put(buildFormDataMultipart(payload, MediaType.MULTIPART_FORM_DATA_TYPE), Response.class);
+//                } else
+                {
+                    clientResponse = target
+                            .request(RESPONSE_TYPE)
+                            .put(buildMultivalueMapEntity(payload, null), Response.class);
 
                 }
                 break;
             }
             case DELETE: {
-//                addQueryParams(payload, request);
-                clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).delete(ClientResponse.class);
+//                addQueryParams(payload, target);
+                clientResponse = target.queryParams(buildMultivalueMap(payload)).request(RESPONSE_TYPE).delete(Response.class);
                 break;
             }
             default: {
-//                addQueryParams(payload, request);
-                clientResponse = request.queryParams(buildMultivalueMap(payload)).accept(RESPONSE_TYPE).get(ClientResponse.class);
+//                addQueryParams(payload, target);
+                clientResponse = target.queryParams(buildMultivalueMap(payload)).request(RESPONSE_TYPE).get(Response.class);
             }
         }
 
         return new RestResponse(clientResponse);
     }
 
-    protected boolean isSuccess(ClientResponse response) {
+    protected boolean isSuccess(Response response) {
         int responseStatus = response.getStatus();
         return ((responseStatus == 200) || (responseStatus == 201));
     }
@@ -193,8 +197,8 @@ public abstract class RestClientBase {
 
     protected synchronized void initialize() {
         if (!initialized) {
-            ClientResponse clientResponse = client.resource(getRestUrl()).accept(RESPONSE_TYPE).get(ClientResponse.class);
-            Map<String, Object> responseMap = Util.processJsonMap(clientResponse.getEntity(String.class));
+            Response clientResponse = client.target(getRestUrl()).request(RESPONSE_TYPE).get(Response.class);
+            Map<String, Object> responseMap = Util.processJsonMap(clientResponse.readEntity(String.class));
             status = clientResponse.getStatus();
 
             getEntityValues(responseMap);
@@ -288,50 +292,55 @@ public abstract class RestClientBase {
     }
     */
 
-    protected FormDataMultiPart buildFormDataMultipart(Map<String, Object> payload) {
-        FormDataMultiPart formData = new FormDataMultiPart();
-        Logger logger = Logger.getLogger(RestClientBase.class.getName());
-        for (final Map.Entry<String, Object> entry : payload.entrySet()) {
-            final Object value = entry.getValue();
-            final String key = entry.getKey();
-            if (value instanceof Collection) {
-                for (Object obj : ((Collection) value)) {
-                    try {
-                        formData.field(key, obj, MediaType.TEXT_PLAIN_TYPE);
-                    } catch (ClassCastException ex) {
-                        if (logger.isLoggable(Level.FINEST)) {
-                            logger.log(Level.FINEST, "Unable to add key (\"{0}\") w/ value (\"{1}\").", 
-                                new Object[]{key, obj});
-                        }
+//    TODO - JERSEY2
+//    protected Entity<FormDataMultiPart> buildFormDataMultipart(Map<String, Object> payload, MediaType type) {
+//        FormDataMultiPart formData = new FormDataMultiPart();
+//        Logger logger = Logger.getLogger(RestClientBase.class.getName());
+//        for (final Map.Entry<String, Object> entry : payload.entrySet()) {
+//            final Object value = entry.getValue();
+//            final String key = entry.getKey();
+//            if (value instanceof Collection) {
+//                for (Object obj : ((Collection) value)) {
+//                    try {
+//                        formData.field(key, obj, MediaType.TEXT_PLAIN_TYPE);
+//                    } catch (ClassCastException ex) {
+//                        if (logger.isLoggable(Level.FINEST)) {
+//                            logger.log(Level.FINEST, "Unable to add key (\"{0}\") w/ value (\"{1}\").",
+//                                new Object[]{key, obj});
+//                        }
+//
+//                        // Allow it to continue b/c this property most likely
+//                        // should have been excluded for this request
+//                    }
+//                }
+//            } else {
+//                //formData.putSingle(key, (value != null) ? value.toString() : value);
+//                try {
+//                    if (value instanceof File) {
+//                        formData.getBodyParts().add((new FileDataBodyPart(key, (File)value)));
+//                    } else {
+//                        formData.field(key, value, MediaType.TEXT_PLAIN_TYPE);
+//                    }
+//                } catch (ClassCastException ex) {
+//                    if (logger.isLoggable(Level.FINEST)) {
+//                        logger.log(Level.FINEST,
+//                                "Unable to add key (\"{0}\") w/ value (\"{1}\")." ,
+//                                new Object[]{key, value});
+//                    }
+//                    // Allow it to continue b/c this property most likely
+//                    // should have been excluded for this request
+//                }
+//            }
+//        }
+//        return Entity.entity(formData, type);
+//    }
 
-                        // Allow it to continue b/c this property most likely
-                        // should have been excluded for this request
-                    }
-                }
-            } else {
-                //formData.putSingle(key, (value != null) ? value.toString() : value);
-                try {
-                    if (value instanceof File) {
-                        formData.getBodyParts().add((new FileDataBodyPart(key, (File)value)));
-                    } else {
-                        formData.field(key, value, MediaType.TEXT_PLAIN_TYPE);
-                    }
-                } catch (ClassCastException ex) {
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.log(Level.FINEST,
-                                "Unable to add key (\"{0}\") w/ value (\"{1}\")." ,
-                                new Object[]{key, value});
-                    }
-                    // Allow it to continue b/c this property most likely
-                    // should have been excluded for this request
-                }
-            }
-        }
-        return formData;
+    private Entity<MultivaluedMap> buildMultivalueMapEntity(Map<String, Object> payload, MediaType type) {
+        return Entity.entity(buildMultivalueMap(payload), type);
     }
 
     private MultivaluedMap buildMultivalueMap(Map<String, Object> payload) {
-        MultivaluedMap formData = new MultivaluedMapImpl();
+        MultivaluedMap formData = new MultivaluedHashMap();
         for (final Map.Entry<String, Object> entry : payload.entrySet()) {
             Object value = entry.getValue();
             if (JSONObject.NULL.equals(value)) {
@@ -341,6 +350,7 @@ public abstract class RestClientBase {
             }
             formData.add(entry.getKey(), value);
         }
+
         return formData;
     }
 

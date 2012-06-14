@@ -151,10 +151,11 @@ public class RestApiHandlers {
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
-        } finally {
-            if (response != null) {
-                response.close();
-        }
+// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
+//        } finally {
+//            if (response != null) {
+//                response.close();
+//        }
         }
         handlerCtx.setOutputValue("exists", result);
     }
@@ -318,7 +319,7 @@ public class RestApiHandlers {
                     @HandlerInput(name = "target", type = String.class, required = true)
             })
     public static void deleteConfigCascade(HandlerContext handlerCtx) {
-            
+
             List<Map> selectedRows = (List<Map>) handlerCtx.getInputValue("selectedRows");
             String id = (String) handlerCtx.getInputValue("id");
             String prefix = (String) handlerCtx.getInputValue("endpoint");
@@ -385,7 +386,7 @@ public class RestApiHandlers {
         }
     }
 
-    
+
     @Handler(id = "gf.buildResourceUrl",
         input = {
             @HandlerInput(name = "base", type = String.class, required = true),
@@ -396,7 +397,7 @@ public class RestApiHandlers {
         }
     )
     public static void encodeUrl(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("url", 
+        handlerCtx.setOutputValue("url",
             appendEncodedSegment((String)handlerCtx.getInputValue("base"), (String)handlerCtx.getInputValue("resourceName")));
     }
 }

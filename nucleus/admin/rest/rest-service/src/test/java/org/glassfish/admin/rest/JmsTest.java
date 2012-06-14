@@ -39,10 +39,10 @@
  */
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.junit.Test;
 import org.junit.Ignore;
 
+import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -84,7 +84,7 @@ public class JmsTest extends RestTestBase {
         };
 
         // Create connection pool
-        ClientResponse response = post(URL_CONNECTOR_CONNECTION_POOL, ccp_attrs);
+        Response response = post(URL_CONNECTOR_CONNECTION_POOL, ccp_attrs);
         checkStatusForSuccess(response);
 
         // Check connection pool creation
@@ -147,7 +147,7 @@ public class JmsTest extends RestTestBase {
             }
         };
 
-        ClientResponse response = post(URL_ADMIN_OBJECT_RESOURCE, attrs);
+        Response response = post(URL_ADMIN_OBJECT_RESOURCE, attrs);
         checkStatusForSuccess(response);
 
         Map<String, String> entity = getEntityValues(get(URL_ADMIN_OBJECT_RESOURCE + "/" + encodedJndiName));
@@ -178,7 +178,7 @@ public class JmsTest extends RestTestBase {
             }
         };
 
-        ClientResponse response = get(URL_SEVER_JMS_DEST + "/__get-jmsdest", newDest);
+        Response response = get(URL_SEVER_JMS_DEST + "/__get-jmsdest", newDest);
         checkStatusForSuccess(response);
 
         response = post(URL_SEVER_JMS_DEST + "/__update-jmsdest", destProps);
@@ -210,7 +210,7 @@ public class JmsTest extends RestTestBase {
                 }
             };
 
-            ClientResponse response = get(endpoint + "/__get-jmsdest", newDest);
+            Response response = get(endpoint + "/__get-jmsdest", newDest);
             checkStatusForSuccess(response);
 
             response = get(URL_SEVER_JMS_DEST + "/__get-jmsdest", newDest);
@@ -225,7 +225,7 @@ public class JmsTest extends RestTestBase {
 
     @Test
     public void testJmsPing() {
-        String results = get(URL_SEVER_JMS_DEST + "/jms-ping").getEntity(String.class);
+        String results = get(URL_SEVER_JMS_DEST + "/jms-ping").readEntity(String.class);
         assertTrue(results.contains("JMS-ping command executed successfully"));
     }
 
@@ -238,7 +238,7 @@ public class JmsTest extends RestTestBase {
             }
         };
 
-        ClientResponse response = post(URL_SEVER_JMS_DEST + "/flush-jmsdest", payload);
+        Response response = post(URL_SEVER_JMS_DEST + "/flush-jmsdest", payload);
         checkStatusForSuccess(response);
     }
 
@@ -256,7 +256,7 @@ public class JmsTest extends RestTestBase {
         };
 
         // Test create
-        ClientResponse response = post(URL_JMS_HOST, newHost);
+        Response response = post(URL_JMS_HOST, newHost);
         checkStatusForSuccess(response);
 
         // Test edit
@@ -283,7 +283,7 @@ public class JmsTest extends RestTestBase {
         };
 
         // Test Create
-        ClientResponse response = post(endpoint + "/create-jmsdest", newDest);
+        Response response = post(endpoint + "/create-jmsdest", newDest);
         // This command returns 200 instead of 201, for some reason.  Odd.
         checkStatusForSuccess(response);
     }
@@ -297,7 +297,7 @@ public class JmsTest extends RestTestBase {
         };
 
         // Test deletion
-        ClientResponse response = delete(endpoint + "/delete-jmsdest", newDest); // You POST to commands
+        Response response = delete(endpoint + "/delete-jmsdest", newDest); // You POST to commands
         checkStatusForSuccess(response);
 
         response = get(endpoint + "__get-jmsdest", newDest);

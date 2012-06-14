@@ -143,7 +143,7 @@
             <artifactId>javax.faces</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
+            <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
             <scope>provided</scope>
         </dependency>

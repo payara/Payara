@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -76,7 +77,7 @@ public class ClusterTest extends RestTestBase {
             }
         };
 
-        ClientResponse response = post(URL_CLUSTER, newCluster);
+        Response response = post(URL_CLUSTER, newCluster);
         assertTrue(isSuccess(response));
 
         response = get(URL_CLUSTER + "/" + clusterName + "/list-lifecycle-modules");
@@ -104,22 +105,22 @@ public class ClusterTest extends RestTestBase {
             }
         };
 
-        ClientResponse response = post(URL_CLUSTER, newCluster);
+        Response response = post(URL_CLUSTER, newCluster);
         assertTrue(isSuccess(response));
     }
 
     public void startCluster(String clusterName) {
-        ClientResponse response = post(URL_CLUSTER + "/" + clusterName + "/start-cluster");
+        Response response = post(URL_CLUSTER + "/" + clusterName + "/start-cluster");
         assertTrue(isSuccess(response));
     }
 
     public void stopCluster(String clusterName) {
-        ClientResponse response = post(URL_CLUSTER + "/" + clusterName + "/stop-cluster");
+        Response response = post(URL_CLUSTER + "/" + clusterName + "/stop-cluster");
         assertTrue(isSuccess(response));
     }
 
     public void createClusterInstance(final String clusterName, final String instanceName) {
-        ClientResponse response = post("/domain/create-instance", new HashMap<String, String>() {
+        Response response = post("/domain/create-instance", new HashMap<String, String>() {
             {
                 put("cluster", clusterName);
                 put("id", instanceName);
@@ -130,8 +131,8 @@ public class ClusterTest extends RestTestBase {
     }
 
     public void deleteCluster(String clusterName) {
-        ClientResponse response = get(URL_CLUSTER + "/" + clusterName + "/list-instances");
-        Map body = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+        Response response = get(URL_CLUSTER + "/" + clusterName + "/list-instances");
+        Map body = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         Map extraProperties = (Map) body.get("extraProperties");
         if (extraProperties != null) {
             List<Map<String, String>> instanceList = (List<Map<String, String>>) extraProperties.get("instanceList");

@@ -37,31 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.jersey.spi.container.ContainerListener;
-import com.sun.jersey.spi.container.ContainerNotifier;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
+public class Reloader implements ContainerLifecycleListener {
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Reloader implements ContainerNotifier{
-
-    private List<ContainerListener> list = new ArrayList<ContainerListener>();
-
-    @Override
-    public void addListener(ContainerListener containerListener) {
-        list.add(containerListener);
-    }
-
+    Container container;
 
     public void reload() {
-        for(ContainerListener cl : list) {
-            cl.onReload();
-        }
+        container.reload(container.getConfiguration());
     }
 
+    @Override
+    public void onStartup(Container container) {
+        this.container = container;
+    }
 
+    @Override
+    public void onReload(Container container) {
+        // ignore
+    }
+
+    @Override
+    public void onShutdown(Container container) {
+        // ignore
+    }
 }

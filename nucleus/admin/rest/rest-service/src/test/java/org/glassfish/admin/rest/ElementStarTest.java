@@ -42,10 +42,11 @@ package org.glassfish.admin.rest;
 import java.util.Map;
 import java.net.URISyntaxException;
 import org.junit.After;
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.*;
 
@@ -64,7 +65,7 @@ public class ElementStarTest extends RestTestBase {
         instanceName1 = "instance_" + generateRandomString();
         instanceName2 = "instance_" + generateRandomString();
 
-        ClientResponse response = post(URL_CREATE_INSTANCE, new HashMap<String, String>() {{ put("id", instanceName1); put("node", "localhost-domain1"); }});
+        Response response = post(URL_CREATE_INSTANCE, new HashMap<String, String>() {{ put("id", instanceName1); put("node", "localhost-domain1"); }});
         assertTrue(isSuccess(response));
         response = post(URL_CREATE_INSTANCE, new HashMap<String, String>() {{ put("id", instanceName2); put("node", "localhost-domain1"); }});
         assertTrue(isSuccess(response));
@@ -72,7 +73,7 @@ public class ElementStarTest extends RestTestBase {
 
     @After
     public void after() {
-        ClientResponse response = delete("/domain/servers/server/" + instanceName1);
+        Response response = delete("/domain/servers/server/" + instanceName1);
         assertTrue(isSuccess(response));
         response = delete("/domain/servers/server/" + instanceName2);
         assertTrue(isSuccess(response));
@@ -89,7 +90,7 @@ public class ElementStarTest extends RestTestBase {
         at.addAppRef(app1, instanceName1);
         at.addAppRef(app2, instanceName1);
 
-        ClientResponse response = get("/domain/servers/server/"+instanceName1+"/application-ref");
+        Response response = get("/domain/servers/server/"+instanceName1+"/application-ref");
         Map<String, String> children = this.getChildResources(response);
         assertEquals(2, children.size());
     }
@@ -97,7 +98,7 @@ public class ElementStarTest extends RestTestBase {
     @Test
     public void testResources() {
         // The DAS should already have two resource-refs (jdbc/__TimerPool and jdbc/__default)
-        ClientResponse response = get ("/domain/servers/server/server/resource-ref");
+        Response response = get ("/domain/servers/server/server/resource-ref");
         Map<String, String> children = this.getChildResources(response);
         assertTrue(children.size() >= 2);
     }
@@ -105,7 +106,7 @@ public class ElementStarTest extends RestTestBase {
     @Test
     public void testLoadBalancerConfigs() {
         final String lbName = "lbconfig-" + generateRandomString();
-        ClientResponse response = post ("/domain/lb-configs/lb-config/",
+        Response response = post ("/domain/lb-configs/lb-config/",
                 new HashMap<String, String>() {{
                     put("id", lbName);
                     put("target", instanceName1);

@@ -39,9 +39,9 @@
  */
 package org.glassfish.admin.rest.utils;
 
-import com.sun.jersey.api.client.Client;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URL;

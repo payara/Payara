@@ -42,12 +42,14 @@ package org.glassfish.admin.rest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
+
 import static org.junit.Assert.*;
 
 /**
@@ -70,7 +72,7 @@ public class JdbcTest extends RestTestBase {
         Map<String, String> params = new HashMap<String, String>();
         params.put("name", poolName);
         params.put("datasourceClassname","org.apache.derby.jdbc.ClientDataSource");
-        ClientResponse response = post(BASE_JDBC_CONNECTION_POOL_URL, params);
+        Response response = post(BASE_JDBC_CONNECTION_POOL_URL, params);
         assertTrue(isSuccess(response));
 
         Map<String, String> entity = getEntityValues(get(BASE_JDBC_CONNECTION_POOL_URL + "/"+poolName));
@@ -97,7 +99,7 @@ public class JdbcTest extends RestTestBase {
         params.put("name", poolName);
         params.put("poolName", "DerbyPool");
 
-        ClientResponse response = post (BASE_JDBC_RESOURCE_URL, params);
+        Response response = post (BASE_JDBC_RESOURCE_URL, params);
         assertTrue(isSuccess(response));
 
         Map<String, String> entity = getEntityValues(get(BASE_JDBC_CONNECTION_POOL_URL + "/" + encodedPoolName));
@@ -118,7 +120,7 @@ public class JdbcTest extends RestTestBase {
            put("poolName", "DerbyPool");
         }};
 
-        ClientResponse response = post (BASE_JDBC_RESOURCE_URL, params);
+        Response response = post (BASE_JDBC_RESOURCE_URL, params);
         assertFalse(isSuccess(response));
     }
 
@@ -130,7 +132,7 @@ public class JdbcTest extends RestTestBase {
            put("datasourceClassname", "org.apache.derby.jdbc.ClientDataSource");
         }};
 
-        ClientResponse response = post (BASE_JDBC_CONNECTION_POOL_URL, params);
+        Response response = post (BASE_JDBC_CONNECTION_POOL_URL, params);
         assertFalse(isSuccess(response));
     }
 }

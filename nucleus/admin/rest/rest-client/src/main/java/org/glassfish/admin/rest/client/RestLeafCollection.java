@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.client;
 
-import com.sun.jersey.api.client.Client;
+import javax.ws.rs.client.Client;
 
 /**
  *

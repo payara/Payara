@@ -40,10 +40,11 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -61,7 +62,7 @@ public class ExternalResourceTest extends RestTestBase {
             put("factoryClass", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
             put("restype", "java.lang.Double");
         }};
-        ClientResponse response = post (URL_EXTERNAL_RESOURCE, newResource);
+        Response response = post (URL_EXTERNAL_RESOURCE, newResource);
         checkStatusForSuccess(response);
 
         response = get(URL_EXTERNAL_RESOURCE + "/" + resourceName);

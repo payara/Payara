@@ -40,12 +40,13 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.Map;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -57,29 +58,29 @@ public class MetadataTest extends RestTestBase {
     
     @Test
     public void configParameterTest() {
-        ClientResponse response = options(URL_CONFIG);
+        Response response = options(URL_CONFIG);
         assertTrue(isSuccess(response));
         // Really dumb test.  Should be good enough for now
 
-        Map extraProperties = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+        Map extraProperties = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         assertNotNull(extraProperties);
 
         // Another dumb test to make sure that "name" shows up on the HTML page
-        response = client.resource(getAddress(URL_CONFIG)).get(ClientResponse.class);
-        assertTrue(response.getEntity(String.class).contains("extraProperties"));
+        response = client.target(getAddress(URL_CONFIG)).request().get(Response.class);
+        assertTrue(response.readEntity(String.class).contains("extraProperties"));
     }
     
     @Test
     public void UpTimeMetadaDataTest() {
-        ClientResponse response = options(URL_UPTIMECOMMAND);
+        Response response = options(URL_UPTIMECOMMAND);
         assertTrue(isSuccess(response));
 
-        Map extraProperties = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+        Map extraProperties = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         assertNotNull(extraProperties);
 
         // Another dumb test to make sure that "extraProperties" shows up on the HTML page
-        response = client.resource(getAddress(URL_UPTIMECOMMAND)).get(ClientResponse.class);
-        String resp = response.getEntity(String.class);
+        response = client.target(getAddress(URL_UPTIMECOMMAND)).request().get(Response.class);
+        String resp = response.readEntity(String.class);
         assertTrue(resp.contains("extraProperties"));
         // test to see if we get the milliseconds parameter description which is an
         //optional param metadata for the uptime command

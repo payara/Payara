@@ -46,15 +46,12 @@ conf = imp.load_source("pkg_conf", "../pkg_conf.py")
 
 pkg = {
     "name"          : "jersey",
-    "version"       : "1.11,0-1.10",
-    "attributes"    : { "pkg.summary" : "Jersey Core, RESTful Web services for GlassFish",
+    "version"       : "2.0,0-0.1",
+    "attributes"    : { "pkg.summary" : "Jersey 2 Core, RESTful Web services for GlassFish",
                         "pkg.description" : 
 "Jersey core runtime libraries including some 3rd party dependencies. \
- Documentation and examples of Jersey were moved to a separate package, Jersey Examples And Documentation. \
- If you are about to upgrade Jersey, you might want to install that new package as well, otherwise Jersey examples and javadocs will get deleted. \
- Also please note, that from 1.0.3 version on, Jersey docs and examples get installed into <as_home>/glassfish/jersey directory instead of just <as_home>/jersey. \
  Jersey is the open source (under dual CDDL+GPL license)\
- JAX-RS (JSR 311) Reference Implementation for building RESTful Web services. \
+ JAX-RS (JSR 339) Reference Implementation for building RESTful Web services. \
  But, it is also more than the Reference Implementation. \
  Jersey provides additional APIs and extension points (SPIs) \
  so that developers may extend Jersey to suite their needs.",

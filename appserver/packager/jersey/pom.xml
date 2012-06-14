@@ -78,7 +78,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-				<outputDirectory>${project.build.directory}/tmp/</outputDirectory>
+			    <outputDirectory>${project.build.directory}/tmp/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
@@ -95,8 +95,8 @@
 
     <dependencies>
        <dependency>	  
-	    <groupId>com.sun.jersey.glassfish.v32</groupId>
-	    <artifactId>jersey-gfv3-core</artifactId>
+	    <groupId>org.glassfish.jersey.bundles.glassfish.v4_0</groupId>
+	    <artifactId>jersey-gfv4_0-core</artifactId>
             <version>${jersey.version}</version>
             <type>zip</type>
             <classifier>project</classifier>

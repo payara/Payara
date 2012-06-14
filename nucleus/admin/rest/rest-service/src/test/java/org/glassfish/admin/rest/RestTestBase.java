@@ -40,13 +40,6 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.CsrfProtectionFilter;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.multipart.FormDataMultiPart;
-import com.sun.jersey.multipart.file.FileDataBodyPart;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -61,16 +54,34 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.glassfish.jersey.client.JerseyClientFactory;
+import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.media.json.JsonJaxbFeature;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartClientModule;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.w3c.dom.Document;
+
 import org.junit.AfterClass;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.w3c.dom.Document;
+
+
+import static org.junit.Assert.fail;
 
 public class RestTestBase {
     protected static String baseUrl;
@@ -78,13 +89,13 @@ public class RestTestBase {
     protected static final String AUTH_USER_NAME = "dummyuser";
     protected static final String AUTH_PASSWORD = "dummypass";
     protected static final String CONTEXT_ROOT_MANAGEMENT = "management";
-    private static final HTTPBasicAuthFilter basicAuthFilter = new HTTPBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
+    private static final HttpBasicAuthFilter basicAuthFilter = new HttpBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
 
     protected Client client;
     protected static String adminHost;
     protected static String adminPort;
     protected static String instancePort;
-    
+
     private static String currentTestClass = "";
 
     @BeforeClass
@@ -93,9 +104,10 @@ public class RestTestBase {
         instancePort = getParameter("instance.port", "8080");
         adminHost  = getParameter("instance.host", "localhost");
         baseUrl =  "http://" + adminHost + ':'  + adminPort + '/';
-        
+
         final RestTestBase rtb = new RestTestBase();
-        rtb.client = Client.create();
+        rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
+        rtb.client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
         rtb.get("/domain/rotate-log");
     }
 
@@ -105,11 +117,12 @@ public class RestTestBase {
 
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
-                rtb.client = Client.create();
-                ClientResponse cr = rtb.client.resource(rtb.getAddress("/domain/view-log")).get(ClientResponse.class);
+                rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
+                rtb.client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
+                Response cr = rtb.client.target(rtb.getAddress("/domain/view-log")).request().get(Response.class);
 
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("target/surefire-reports/" + currentTestClass + "-server.log")));
-                out.write(cr.getEntity(String.class));
+                out.write(cr.readEntity(String.class));
                 out.close();
             }
         } catch (Exception ex) {
@@ -127,10 +140,7 @@ public class RestTestBase {
 
     @Before
     public void setup() {
-        if (client == null) {
-            client = Client.create();
-            client.addFilter(new CsrfProtectionFilter());
-        }
+        getClient();
         currentTestClass = this.getClass().getName();
     }
 
@@ -142,12 +152,20 @@ public class RestTestBase {
         return baseUrl + getContextRoot() + address;
     }
 
+    protected void getClient() {
+        if (client == null) {
+            client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
+            client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
+        }
+    }
+
     protected void resetClient() {
-        client.removeFilter(basicAuthFilter);
+        client = null;
+        getClient();
     }
 
     protected void authenticate() {
-        client.addFilter(basicAuthFilter);
+        client.configuration().register(basicAuthFilter);
     }
 
     protected <T> T getTestClass(Class<T> clazz) {
@@ -176,12 +194,12 @@ public class RestTestBase {
         return Math.abs(r.nextInt(max - 1)) + 1;
     }
 
-    protected boolean isSuccess(ClientResponse response) {
+    protected boolean isSuccess(Response response) {
         int status = response.getStatus();
         return ((status == 200) || (status == 201));
     }
 
-    protected void checkStatusForSuccess(ClientResponse cr) {
+    protected void checkStatusForSuccess(Response cr) {
         int status = cr.getStatus();
         if ((status < 200) || (status > 299)) {
             String message = getErrorMessage(cr);
@@ -190,42 +208,42 @@ public class RestTestBase {
         }
     }
 
-    protected void checkStatusForFailure(ClientResponse cr) {
+    protected void checkStatusForFailure(Response cr) {
         int status = cr.getStatus();
         if ((status < 200) && (status > 299)) {
             fail("Expected a status less than 200 or greater than 299 (inclusive).  Found " + status);
         }
     }
 
-    protected ClientResponse get(String address) {
+    protected Response get(String address) {
         return get(address, new HashMap<String, String>());
     }
 
-    protected ClientResponse get(String address, Map<String, String> payload) {
-        return client.resource(getAddress(address)).queryParams(buildMultivaluedMap(payload)).accept(RESPONSE_TYPE).get(ClientResponse.class);
+    protected Response get(String address, Map<String, String> payload) {
+        return client.target(getAddress(address)).queryParams(buildMultivaluedMap(payload)).request(RESPONSE_TYPE).get(Response.class);
     }
 
-    protected ClientResponse options(String address) {
-        return client.resource(getAddress(address)).accept(RESPONSE_TYPE).options(ClientResponse.class);
+    protected Response options(String address) {
+        return client.target(getAddress(address)).request(RESPONSE_TYPE).options(Response.class);
     }
 
-    protected ClientResponse post(String address, Map<String, String> payload) {
-        return client.resource(getAddress(address)).accept(RESPONSE_TYPE).post(ClientResponse.class, buildMultivaluedMap(payload));
+    protected Response post(String address, Map<String, String> payload) {
+        return client.target(getAddress(address)).request(RESPONSE_TYPE).post(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
-    protected ClientResponse post(String address) {
-        return client.resource(getAddress(address)).accept(RESPONSE_TYPE).post(ClientResponse.class);
+    protected Response post(String address) {
+        return client.target(getAddress(address)).request(RESPONSE_TYPE).post(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
-    protected ClientResponse put(String address, Map<String, String> payload) {
-        return client.resource(getAddress(address)).accept(RESPONSE_TYPE).put(ClientResponse.class, buildMultivaluedMap(payload));
+    protected Response put(String address, Map<String, String> payload) {
+        return client.target(getAddress(address)).request(RESPONSE_TYPE).put(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
-    protected ClientResponse put(String address) {
-        return client.resource(getAddress(address)).accept(RESPONSE_TYPE).put(ClientResponse.class);
+    protected Response put(String address) {
+        return client.target(getAddress(address)).request(RESPONSE_TYPE).put(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
-    protected ClientResponse postWithUpload(String address, Map<String, Object> payload) {
+    protected Response postWithUpload(String address, Map<String, Object> payload) {
         FormDataMultiPart form = new FormDataMultiPart();
         for (Map.Entry<String, Object> entry : payload.entrySet()) {
             if ((entry.getValue() instanceof File)) {
@@ -234,18 +252,20 @@ public class RestTestBase {
                 form.field(entry.getKey(), entry.getValue(), MediaType.TEXT_PLAIN_TYPE);
             }
         }
-        return client.resource(getAddress(address)).type(MediaType.MULTIPART_FORM_DATA).accept(RESPONSE_TYPE).post(ClientResponse.class, form);
+        return client.target(getAddress(address))
+                .request(RESPONSE_TYPE)
+                .post(Entity.entity(form, MediaType.MULTIPART_FORM_DATA), Response.class);
     }
 
-    protected ClientResponse delete(String address) {
+    protected Response delete(String address) {
         return delete(address, new HashMap<String, String>());
     }
 
-    protected ClientResponse delete(String address, Map<String, String> payload) {
-        return client.resource(getAddress(address))
+    protected Response delete(String address, Map<String, String> payload) {
+        return client.target(getAddress(address))
                 .queryParams(buildMultivaluedMap(payload))
-                .accept(RESPONSE_TYPE)
-                .delete(ClientResponse.class);
+                .request(RESPONSE_TYPE)
+                .delete(Response.class);
     }
 
     /**
@@ -254,10 +274,10 @@ public class RestTestBase {
      * @param response
      * @return
      */
-    protected Map<String, String> getEntityValues(ClientResponse response) {
+    protected Map<String, String> getEntityValues(Response response) {
         Map<String, String> map = new HashMap<String, String>();
 
-        String xml = response.getEntity(String.class);
+        String xml = response.readEntity(String.class);
         Map responseMap = MarshallingUtils.buildMapFromDocument(xml);
         Object obj = responseMap.get("extraProperties");
         if (obj != null) {
@@ -267,8 +287,8 @@ public class RestTestBase {
         }
     }
 
-    protected List<String> getCommandResults(ClientResponse response) {
-        String document = response.getEntity(String.class);
+    protected List<String> getCommandResults(Response response) {
+        String document = response.readEntity(String.class);
         List<String> results = new ArrayList<String>();
         Map map = MarshallingUtils.buildMapFromDocument(document);
         String message = (String)map.get("message");
@@ -290,8 +310,8 @@ public class RestTestBase {
         return results;
     }
 
-    protected Map<String, String> getChildResources(ClientResponse response) {
-        Map responseMap = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+    protected Map<String, String> getChildResources(Response response) {
+        Map responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         Map<String, Map> extraProperties = (Map<String, Map>)responseMap.get("extraProperties");
         if (extraProperties != null) {
             return (Map<String, String>) extraProperties.get("childResources");
@@ -311,8 +331,8 @@ public class RestTestBase {
         }
     }
 
-    public List<Map<String, String>> getProperties(ClientResponse response) {
-        Map responseMap = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+    public List<Map<String, String>> getProperties(Response response) {
+        Map responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         Map extraProperties = (Map)responseMap.get("extraProperties");
         if (extraProperties != null) {
             return (List)extraProperties.get("properties");
@@ -324,7 +344,7 @@ public class RestTestBase {
         if (payload instanceof MultivaluedMap) {
             return (MultivaluedMap)payload;
         }
-        MultivaluedMap formData = new MultivaluedMapImpl();
+        MultivaluedMap formData = new MultivaluedHashMap();
         if (payload != null) {
             for (final Map.Entry<String, String> entry : payload.entrySet()) {
                 formData.add(entry.getKey(), entry.getValue());
@@ -333,9 +353,9 @@ public class RestTestBase {
         return formData;
     }
 
-    protected String getErrorMessage(ClientResponse cr) {
+    protected String getErrorMessage(Response cr) {
         String message = null;
-        Map map = MarshallingUtils.buildMapFromDocument(cr.getEntity(String.class));
+        Map map = MarshallingUtils.buildMapFromDocument(cr.readEntity(String.class));
         if (map != null) {
             message = (String)map.get("message");
         }

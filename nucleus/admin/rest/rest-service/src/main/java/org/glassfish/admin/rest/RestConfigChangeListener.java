@@ -42,13 +42,10 @@ package org.glassfish.admin.rest;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.beans.PropertyChangeEvent;
 
-
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.jersey.api.container.filter.LoggingFilter;
-import com.sun.jersey.api.core.ResourceConfig;
 import org.glassfish.admin.rest.adapter.Reloader;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -89,23 +86,24 @@ public class RestConfigChangeListener implements ConfigListener {
             ClassLoader apiClassLoader = sc.getCommonClassLoader();
             Thread.currentThread().setContextClassLoader(apiClassLoader);
 
-            rc.getContainerResponseFilters().clear();
-            rc.getContainerRequestFilters().clear();
-            rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.FALSE);
+            // TODO - JERSEY2
+//            rc.getContainerResponseFilters().clear();
+//            rc.getContainerRequestFilters().clear();
+//            rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.FALSE);
 
-            RestConfig restConf = ResourceUtil.getRestConfig(habitat);
-            if (restConf != null) {
-                if (restConf.getLogOutput().equalsIgnoreCase("true")) { //enable output logging
-                    rc.getContainerResponseFilters().add(LoggingFilter.class);
-                }
-                if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
-                    rc.getContainerRequestFilters().add(LoggingFilter.class);
-                }
-                if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
-
-                    rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
-                }
-            }
+//            RestConfig restConf = ResourceUtil.getRestConfig(habitat);
+//            if (restConf != null) {
+//                if (restConf.getLogOutput().equalsIgnoreCase("true")) { //enable output logging
+//                    rc.getContainerResponseFilters().add(LoggingFilter.class);
+//                }
+//                if (restConf.getLogInput().equalsIgnoreCase("true")) { //enable input logging
+//                    rc.getContainerRequestFilters().add(LoggingFilter.class);
+//                }
+//                if (restConf.getWadlGeneration().equalsIgnoreCase("false")) { //disable WADL
+//
+//                    rc.getFeatures().put(ResourceConfig.FEATURE_DISABLE_WADL, Boolean.TRUE);
+//                }
+//            }
 
             r.reload();
         } finally {

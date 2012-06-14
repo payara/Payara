@@ -118,9 +118,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, baseClassName, "resourceContext", "Lcom/sun/jersey/api/core/ResourceContext;");
+        mv.visitFieldInsn(GETFIELD, baseClassName, "injector", "Lorg/glassfish/hk2/inject/Injector;");
         mv.visitLdcInsn(Type.getType("L" + completeName + ";"));
-        mv.visitMethodInsn(INVOKEINTERFACE, "com/sun/jersey/api/core/ResourceContext", "getResource", "(Ljava/lang/Class;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/glassfish/hk2/inject/Injector", "inject", "(Ljava/lang/Class;)Ljava/lang/Object;");
         mv.visitTypeInsn(CHECKCAST, completeName);
         mv.visitVarInsn(ASTORE, 1);
         mv.visitVarInsn(ALOAD, 1);
@@ -192,9 +192,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, generatedPath + className, "resourceContext", "Lcom/sun/jersey/api/core/ResourceContext;");
+        mv.visitFieldInsn(GETFIELD, generatedPath + className, "injector", "Lorg/glassfish/hk2/inject/Injector;");
         mv.visitLdcInsn(Type.getType("L" + generatedPath + commandResourceClassName + ";"));
-        mv.visitMethodInsn(INVOKEINTERFACE, "com/sun/jersey/api/core/ResourceContext", "getResource", "(Ljava/lang/Class;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/glassfish/hk2/inject/Injector", "inject", "(Ljava/lang/Class;)Ljava/lang/Object;");
         mv.visitTypeInsn(CHECKCAST, generatedPath + commandResourceClassName);
         mv.visitVarInsn(ASTORE, 1);
         mv.visitVarInsn(ALOAD, 1);
@@ -343,9 +343,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, generatedPath + className, "resourceContext", "Lcom/sun/jersey/api/core/ResourceContext;");
+        mv.visitFieldInsn(GETFIELD, generatedPath + className, "injector", "Lorg/glassfish/hk2/inject/Injector;");
         mv.visitLdcInsn(Type.getType("L" + childClass + ";"));
-        mv.visitMethodInsn(INVOKEINTERFACE, "com/sun/jersey/api/core/ResourceContext", "getResource", "(Ljava/lang/Class;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/glassfish/hk2/inject/Injector", "inject", "(Ljava/lang/Class;)Ljava/lang/Object;");
         mv.visitTypeInsn(CHECKCAST, childClass);
         mv.visitVarInsn(ASTORE, 1);
         mv.visitVarInsn(ALOAD, 1);
@@ -374,9 +374,9 @@ public class ASMClassWriter implements ClassWriter, Opcodes {
 
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitFieldInsn(GETFIELD, generatedPath +"List" + childResourceClassName , "resourceContext", "Lcom/sun/jersey/api/core/ResourceContext;");
+        mv.visitFieldInsn(GETFIELD, generatedPath +"List" + childResourceClassName , "injector", "Lorg/glassfish/hk2/inject/Injector;");
         mv.visitLdcInsn(Type.getType("L" + generatedPath + childResourceClassName + ";"));
-        mv.visitMethodInsn(INVOKEINTERFACE, "com/sun/jersey/api/core/ResourceContext", "getResource", "(Ljava/lang/Class;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/glassfish/hk2/inject/Injector", "inject", "(Ljava/lang/Class;)Ljava/lang/Object;");
         mv.visitTypeInsn(CHECKCAST, generatedPath + childResourceClassName );
         mv.visitVarInsn(ASTORE, 2);
         mv.visitVarInsn(ALOAD, 2);

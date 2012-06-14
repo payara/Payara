@@ -39,10 +39,6 @@
  */
 package org.glassfish.admin.rest.resources;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.jersey.api.core.ResourceContext;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -56,7 +52,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.validation.ValidationException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -65,30 +61,40 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.ValidationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.provider.MethodMetaData;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.results.OptionsResult;
-import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.utils.Util;
-import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.RestRedirect;
-import org.glassfish.config.support.Delete;
-import org.jvnet.hk2.component.BaseServiceLocator;
+
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.TransactionFailure;
+
+import org.glassfish.admin.rest.RestService;
+import org.glassfish.admin.rest.provider.MethodMetaData;
+import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.results.OptionsResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.config.support.Delete;
+import org.glassfish.hk2.inject.Injector;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.jvnet.hk2.component.Habitat;
+
+
+import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -101,11 +107,11 @@ public class TemplateRestResource {
     @Context
     protected HttpHeaders requestHeaders;
     @Context
+    protected Injector injector;
+    @Context
     protected UriInfo uriInfo;
     @Context
-    protected ResourceContext resourceContext;
-    @Context
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
     protected Dom entity;  //may be null when not created yet...
     protected Dom parent;
     protected String tagName;
@@ -140,6 +146,9 @@ public class TemplateRestResource {
     @POST
     //create or update
     public Response createEntity(HashMap<String, String> data) {
+        if (data == null) {
+            data = new HashMap<String, String>();
+        }
         try {
             //data.remove("submit");
             removeAttributesToBeSkipped(data);
@@ -196,6 +205,9 @@ public class TemplateRestResource {
 
     @DELETE
     public Response delete(HashMap<String, String> data) {
+        if (data == null) {
+            data = new HashMap<String, String>();
+        }
         if (entity == null) {//wrong resource
             String errorMessage = localStrings.getLocalString("rest.resource.erromessage.noentity",
                     "Resource not found.");

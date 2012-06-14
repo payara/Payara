@@ -40,9 +40,10 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -63,121 +64,121 @@ public class ProvidersTest extends RestTestBase {
 
     @Test
     public void testActionReportResultHtmlProvider() {
-        ClientResponse response = get(URL_ACTION_REPORT_RESULT + ".html");
+        Response response = get(URL_ACTION_REPORT_RESULT + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testActionReportResultXmlProvider() {
-        ClientResponse response = get(URL_ACTION_REPORT_RESULT + ".xml");
+        Response response = get(URL_ACTION_REPORT_RESULT + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testActionReportResultJsonProvider() {
-        ClientResponse response = get(URL_ACTION_REPORT_RESULT + ".json");
+        Response response = get(URL_ACTION_REPORT_RESULT + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testCommandResourceGetResultHtmlProvider() {
-        ClientResponse response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".html");
+        Response response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testCommandResourceGetResultXmlProvider() {
-        ClientResponse response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".xml");
+        Response response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testCommandResourceGetResultJsonProvider() {
-        ClientResponse response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".json");
+        Response response = get(URL_COMMAND_RESOURCE_GET_RESULT + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultHtmlProvider() {
-        ClientResponse response = get(URL_GET_RESULT + ".html");
+        Response response = get(URL_GET_RESULT + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultXmlProvider() {
-        ClientResponse response = get(URL_GET_RESULT + ".xml");
+        Response response = get(URL_GET_RESULT + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultJsonProvider() {
-        ClientResponse response = get(URL_GET_RESULT + ".json");
+        Response response = get(URL_GET_RESULT + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultListHtmlProvider() {
-        ClientResponse response = get(URL_GET_RESULT_LIST + ".html");
+        Response response = get(URL_GET_RESULT_LIST + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultListXmlProvider() {
-        ClientResponse response = get(URL_GET_RESULT_LIST + ".xml");
+        Response response = get(URL_GET_RESULT_LIST + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testGetResultListJsonProvider() {
-        ClientResponse response = get(URL_GET_RESULT_LIST + ".json");
+        Response response = get(URL_GET_RESULT_LIST + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testOptionsResultXmlProvider() {
-        ClientResponse response = options(URL_OPTIONS_RESULT + ".xml");
+        Response response = options(URL_OPTIONS_RESULT + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testOptionsResultJsonProvider() {
-        ClientResponse response = options(URL_OPTIONS_RESULT + ".json");
+        Response response = options(URL_OPTIONS_RESULT + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testStringListResultHtmlProvider() {
-        ClientResponse response = get(URL_STRING_LIST_RESULT + ".html");
+        Response response = get(URL_STRING_LIST_RESULT + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testStringListResultXmlProvider() {
-        ClientResponse response = get(URL_STRING_LIST_RESULT + ".xml");
+        Response response = get(URL_STRING_LIST_RESULT + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testStringListResultJsonProvider() {
-        ClientResponse response = get(URL_STRING_LIST_RESULT + ".json");
+        Response response = get(URL_STRING_LIST_RESULT + ".json");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testTreeNodeHtmlProvider() {
-        ClientResponse response = get(URL_TREE_NODE + ".html");
+        Response response = get(URL_TREE_NODE + ".html");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testTreeNodeXmlProvider() {
-        ClientResponse response = get(URL_TREE_NODE + ".xml");
+        Response response = get(URL_TREE_NODE + ".xml");
         assertTrue(isSuccess(response));
     }
 
     @Test
     public void testTreeNodeJsonProvider() {
-        ClientResponse response = get(URL_TREE_NODE + ".json");
+        Response response = get(URL_TREE_NODE + ".json");
         assertTrue(isSuccess(response));
     }
 }

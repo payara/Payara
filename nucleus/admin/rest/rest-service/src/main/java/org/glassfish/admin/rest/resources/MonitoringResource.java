@@ -42,7 +42,7 @@ package org.glassfish.admin.rest.resources;
 
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.ProxyImpl;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
@@ -89,8 +89,8 @@ public class MonitoringResource {
     protected UriInfo uriInfo;
 
     @Context
-    protected BaseServiceLocator habitat;
-    
+    protected Habitat habitat;
+
     @GET
     @Path("domain{path:.*}")
     @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})

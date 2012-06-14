@@ -41,11 +41,13 @@
 package org.glassfish.admin.rest;
 
 import java.util.List;
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
+
 import static org.junit.Assert.*;
 
 public class AuthRealmTest extends RestTestBase {
@@ -60,12 +62,12 @@ public class AuthRealmTest extends RestTestBase {
     // Disable this test for now...
 //    @Test
     public void testListGroupNames() {
-        ClientResponse response = get(URL_LIST_GROUP_NAMES, new HashMap<String, String>() {{
+        Response response = get(URL_LIST_GROUP_NAMES, new HashMap<String, String>() {{
             put("userName", "admin");
             put("realmName", "admin-realm");
         }});
         checkStatusForSuccess(response);
-        final String entity = response.getEntity(String.class);
+        final String entity = response.readEntity(String.class);
         Map responseMap = MarshallingUtils.buildMapFromDocument(entity);
         Map extraProperties = (Map)responseMap.get("extraProperties");
         List<String> groups = (List<String>)extraProperties.get("groups");
@@ -87,7 +89,7 @@ public class AuthRealmTest extends RestTestBase {
            put ("AS_ADMIN_USERPASSWORD", "password");
         }};
 
-        ClientResponse response = post(URL_CREATE_USER, newUser);
+        Response response = post(URL_CREATE_USER, newUser);
         assertTrue(isSuccess(response));
 
         List<String> values = getCommandResults(get(URL_LIST_FILE_USERS));

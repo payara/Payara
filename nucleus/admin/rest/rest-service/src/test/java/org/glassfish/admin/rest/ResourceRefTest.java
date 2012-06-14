@@ -40,10 +40,12 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
+
+import javax.ws.rs.core.Response;
+
 import static org.junit.Assert.*;
 
 /**
@@ -74,7 +76,7 @@ public class ResourceRefTest extends RestTestBase {
         }};
 
         try {
-            ClientResponse response = post(URL_CREATE_INSTANCE, newInstance);
+            Response response = post(URL_CREATE_INSTANCE, newInstance);
             assertTrue(isSuccess(response));
 
             response = post(URL_JDBC_RESOURCE, jdbcResource);
@@ -83,7 +85,7 @@ public class ResourceRefTest extends RestTestBase {
             response = post(URL_RESOURCE_REF, resourceRef);
             assertTrue(isSuccess(response));
         } finally {
-            ClientResponse response = delete("/domain/servers/server/" + instanceName + "/resource-ref/" + jdbcResourceName, new HashMap<String, String>() {{ 
+            Response response = delete("/domain/servers/server/" + instanceName + "/resource-ref/" + jdbcResourceName, new HashMap<String, String>() {{
                 put("target", instanceName); 
             }});
             assertTrue(isSuccess(response));

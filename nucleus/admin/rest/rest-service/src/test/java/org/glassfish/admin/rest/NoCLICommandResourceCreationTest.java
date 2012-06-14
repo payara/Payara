@@ -40,10 +40,12 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -63,10 +65,9 @@ public class NoCLICommandResourceCreationTest extends RestTestBase {
         Map<String, String> param = new HashMap<String, String>();
         param.put("name", propertyKey);
         param.put("value",propertyValue);
-        ClientResponse response = client.resource(getAddress(URL_SERVER_PROPERTY))
-                .header("Content-Type", MediaType.APPLICATION_XML)
-                .accept(RESPONSE_TYPE)
-                .post(ClientResponse.class, MarshallingUtils.getXmlForProperties(param));
+        Response response = client.target(getAddress(URL_SERVER_PROPERTY))
+                .request(RESPONSE_TYPE)
+                .post(Entity.entity(MarshallingUtils.getXmlForProperties(param), MediaType.APPLICATION_XML), Response.class);
         assertTrue(isSuccess(response));
 
         //Verify the property got created
@@ -80,10 +81,9 @@ public class NoCLICommandResourceCreationTest extends RestTestBase {
         // Verify property update
         propertyValue = generateRandomString();
         param.put("value", propertyValue);
-        response = client.resource(getAddress(URL_SERVER_PROPERTY))
-                .header("Content-Type", MediaType.APPLICATION_XML)
-                .accept(RESPONSE_TYPE)
-                .put(ClientResponse.class, MarshallingUtils.getXmlForProperties(param));
+        response = client.target(getAddress(URL_SERVER_PROPERTY))
+                .request(RESPONSE_TYPE)
+                .put(Entity.entity(MarshallingUtils.getXmlForProperties(param), MediaType.APPLICATION_XML), Response.class);
         assertTrue(isSuccess(response));
         response = get (propertyURL);
         assertTrue(isSuccess(response));

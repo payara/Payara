@@ -62,14 +62,14 @@
                 <configuration>
                     <tasks>
                         <if test="${do.compression}">
-			    <property name="compression" value="true" />
-			</if>
+                            <property name="compression" value="true" />
+                        </if>
                         <ant dir="." antfile="build.xml" target="create.package"/>
                     </tasks>
-                </configuration>               
-             </plugin>
-           <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -78,7 +78,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-			    <outputDirectory>${project.build.directory}/tmp/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/tmp/</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <excludeTransitive>true</excludeTransitive>
@@ -86,21 +86,21 @@
                             <includeScope>runtime</includeScope>
                             <stripVersion>true</stripVersion>
                         </configuration>
-                   </execution>
-               </executions>
-           </plugin>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
 
     <dependencies>
-       <dependency>	  
-	    <groupId>com.sun.jersey.glassfish.v32</groupId>
-	    <artifactId>jersey-gfv3-core</artifactId>
+        <dependency>
+            <groupId>org.glassfish.jersey.bundles</groupId>
+            <artifactId>jax-rs-ri</artifactId>
             <version>${jersey.version}</version>
             <type>zip</type>
-            <classifier>project</classifier>
-       </dependency>
+            <!--<classifier>project</classifier>-->
+        </dependency>
     </dependencies>
 
 </project>

@@ -42,10 +42,11 @@ package org.glassfish.admin.rest;
 
 
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.Response;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -68,11 +69,11 @@ public class TokenAuthenticationTest extends RestTestBase {
         String token = getSessionToken();
 
         // Verify we can use the session token.
-        ClientResponse response = client.resource(getAddress("/domain")).cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(ClientResponse.class);
+        Response response = client.target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
         assertTrue(isSuccess(response));
 
         //Delete the token
-        response = client.resource(getAddress(URL_DOMAIN_SESSIONS) + "/" + token).cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(ClientResponse.class);
+        response = client.target(getAddress(URL_DOMAIN_SESSIONS) + "/" + token).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(Response.class);
         delete(URL_DOMAIN_SESSIONS);
         assertTrue(isSuccess(response));
     }
@@ -81,7 +82,8 @@ public class TokenAuthenticationTest extends RestTestBase {
     public void testAuthRequired() {
         Map<String, String> newUser = new HashMap<String, String>() {{
             put("id", AUTH_USER_NAME);
-            put("groups", TEST_GROUP);
+            put("groups", "asadmin");
+            put("authrealmname", "admin-realm");
             put("AS_ADMIN_USERPASSWORD", AUTH_PASSWORD);
         }};
         String token = null;
@@ -91,7 +93,7 @@ public class TokenAuthenticationTest extends RestTestBase {
             deleteUserAuthTestUser(token);
 
             // Verify that we can get unauthenticated access to the server
-            ClientResponse response = get("/domain");
+            Response response = get("/domain");
             assertTrue(isSuccess(response));
 
             // Create the new user
@@ -108,12 +110,14 @@ public class TokenAuthenticationTest extends RestTestBase {
             resetClient();
 
             // Build this request manually so we can pass the cookie
-            response = client.resource(getAddress("/domain")).cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(ClientResponse.class);
+            response = client.target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
             assertTrue(isSuccess(response));
+            resetClient();
 
             // Request again w/o the cookie.  This should fail.
-            response = get("/domain");
+            response = client.target(getAddress("/domain")).request().get(Response.class);
             assertFalse(isSuccess(response));
+            authenticate();
         } finally {
             // Clean up after ourselves
             deleteUserAuthTestUser(token);
@@ -121,9 +125,9 @@ public class TokenAuthenticationTest extends RestTestBase {
     }
 
     protected String getSessionToken() {
-        ClientResponse response = post(URL_DOMAIN_SESSIONS);
+        Response response = post(URL_DOMAIN_SESSIONS);
         assertTrue(isSuccess(response));
-        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.getEntity(String.class));
+        Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
         Map<String, Object> extraProperties = (Map<String, Object>)responseMap.get("extraProperties");
         return (String)extraProperties.get("token");
     }
@@ -131,12 +135,12 @@ public class TokenAuthenticationTest extends RestTestBase {
     private void deleteUserAuthTestUser(String token) {
         if (token != null) {
             final String address = getAddress(URL_DELETE_USER);
-            ClientResponse response = client.resource(address).queryParam("id", AUTH_USER_NAME)
-                    .cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(ClientResponse.class);            
+            Response response = client.target(address).queryParam("id", AUTH_USER_NAME).request()
+                    .cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(Response.class);
             assertTrue(isSuccess(response));
             resetClient();
         } else {
-            ClientResponse response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
+            Response response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});
             if (response.getStatus() == 401) {
                 authenticate();
                 response = delete(URL_DELETE_USER, new HashMap<String, String>() {{ put("id", AUTH_USER_NAME); }});

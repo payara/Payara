@@ -40,10 +40,9 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.junit.Test;
 
-
+import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,7 +86,7 @@ public class MonitoringTest extends RestTestBase {
                 put("Jersey", "HIGH");
             }
         };
-        ClientResponse response = post(url, payLoad);
+        Response response = post(url, payLoad);
         checkStatusForSuccess(response);
     }
 
@@ -122,7 +121,7 @@ public class MonitoringTest extends RestTestBase {
                 put("datasourceClassname", "foo.bar");
             }
         };
-        ClientResponse response = post(url, payLoad);
+        Response response = post(url, payLoad);
         checkStatusForSuccess(response);
 
 
@@ -145,7 +144,7 @@ public class MonitoringTest extends RestTestBase {
      */
     @Test
     public void testInvalidResource() {
-        ClientResponse response = get("/domain/server/foo");
+        Response response = get("/domain/server/foo");
         assertTrue("Did not receive ", response.getStatus() == javax.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() ) ;
     }
 
