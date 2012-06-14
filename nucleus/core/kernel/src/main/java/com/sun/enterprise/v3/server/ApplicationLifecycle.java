@@ -342,6 +342,11 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
 
+            getDeployableTypes(context);
+            if (tracing!=null) {
+                tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
+            }
+
             ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
@@ -350,11 +355,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             context.createDeploymentClassLoader(clh, handler);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_CREATED);
-            }
-
-            getDeployableTypes(context);
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
             }
 
             final ClassLoader cloader = context.getClassLoader();
