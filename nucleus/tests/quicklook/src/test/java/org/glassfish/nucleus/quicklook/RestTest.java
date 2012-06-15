@@ -45,7 +45,7 @@ import java.net.URL;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 
-@Test(enabled=false)
+@Test
 public class RestTest {
     public void testManagementEndpoint() {
         try {
