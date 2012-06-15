@@ -76,6 +76,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.Artifacts;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -596,7 +597,7 @@ public abstract class AppClientDeployerHelper {
         OutputStream os = facadeArchive.putNextEntry(classResourcePath);
         InputStream is = openByteCodeStream(classResourcePath);
 
-        copyStream(is, os);
+        DeploymentUtils.copyStream(is, os);
         try {
             is.close();
             facadeArchive.closeEntry();
@@ -614,7 +615,7 @@ public abstract class AppClientDeployerHelper {
         InputStream persistenceXMLStream = sourceClient.getEntry(PERSISTENCE_XML_PATH);
         if (persistenceXMLStream != null) {
             OutputStream os = facadeArchive.putNextEntry(PERSISTENCE_XML_PATH);
-            copyStream(persistenceXMLStream, os);
+            DeploymentUtils.copyStream(persistenceXMLStream, os);
             try {
                 persistenceXMLStream.close();
                 facadeArchive.closeEntry();
@@ -635,16 +636,6 @@ public abstract class AppClientDeployerHelper {
     protected abstract Set<Artifacts.FullAndPartURIs> clientLevelDownloads() throws IOException;
 
     public abstract Set<Artifacts.FullAndPartURIs> earLevelDownloads() throws IOException;
-
-    protected abstract void addGroupFacadeToEARDownloads();
-    
-    static void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[4096];
-        int len;
-        while ((len = in.read(buf)) >= 0) {
-            out.write(buf, 0, len);
-        }
-    }
 
     Proxy proxy() {
         return new Proxy(this);

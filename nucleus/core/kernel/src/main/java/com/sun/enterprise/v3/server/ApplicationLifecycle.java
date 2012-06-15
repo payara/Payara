@@ -424,6 +424,14 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     ModuleInfo moduleInfo = null;
                     try {
                           moduleInfo = prepareModule(sortedEngineInfos, appName, context, tracker);
+                          // Now that the prepare phase is done, any artifacts 
+                          // should be available.  Go ahead and create the
+                          // downloadable client JAR.  We want to do this now, or
+                          // at least before the load and start phases, because
+                          // (for example) the app client deployer start phase
+                          // needs to find all generated files when it runs.
+                          final ClientJarWriter cjw = new ClientJarWriter(context);
+                          cjw.run();
                     } catch(Throwable prepareException) {
                         prepareException.printStackTrace();
                         report.failure(logger, "Exception while preparing the app", null);

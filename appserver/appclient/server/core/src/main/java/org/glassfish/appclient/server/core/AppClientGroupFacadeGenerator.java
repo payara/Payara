@@ -42,21 +42,13 @@ package org.glassfish.appclient.server.core;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -66,12 +58,11 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.appclient.server.connector.CarType;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -97,8 +88,6 @@ public class AppClientGroupFacadeGenerator {
     private static final String GF_CLIENT_MODULE_NAME = "org.glassfish.main.appclient.gf-client-module";
 
     private static final String GROUP_FACADE_ALREADY_GENERATED = "groupFacadeAlreadyGenerated";
-
-    static final String GROUP_FACADE_DOWNLOAD_KEY = "earFacadeDownload";
 
     private DeploymentContext dc;
     private AppClientDeployerHelper helper;
@@ -169,11 +158,9 @@ public class AppClientGroupFacadeGenerator {
              * client is actually x/y/z.jar its expanded directory will be just
              * one level lower than the EAR's directory.
              */
-            generateAndRecordEARFacade(
+            generateAndRecordEARFacadeContents(
                     dc,
-                    dc.getScratchDir("xml").getParentFile(),
-                    generatedEARFacadeName(application.getAppName()),
-                        appClientGroupListSB.toString());
+                    appClientGroupListSB.toString());
             recordGroupFacadeGeneration();
         } catch (Exception e) {
             throw new DeploymentException(e);
@@ -201,25 +188,26 @@ public class AppClientGroupFacadeGenerator {
         return appClientFacadePath;
     }
 
-    public static String generatedEARFacadeName(final String earName) {
-        return generatedEARFacadePrefix(earName) + ".jar";
-    }
-
-    public static String generatedEARFacadePrefix(final String earName) {
-        return earName + "Client";
-    }
-
-    private void generateAndRecordEARFacade(
+    /**
+     * Generates content for the top-level generated client JAR from the 
+     * app clients in this app.
+     * <p>
+     * Higher-level logic will actually create the client JAR, because the need
+     * for a client JAR can be triggered by other deployers (EJB for generated
+     * stubs and web services), not only app clients.
+     * @param dc
+     * @param appScratchDir
+     * @param facadeFileName
+     * @param appClientGroupList
+     * @throws IOException 
+     */
+    private void generateAndRecordEARFacadeContents(
             final DeploymentContext dc,
-            final File appScratchDir,
-            final String facadeFileName,
             final String appClientGroupList) throws IOException {
 
-        File generatedJar = new File(appScratchDir, facadeFileName);
-        OutputJarArchive facadeArchive = new OutputJarArchive();
-        facadeArchive.create(generatedJar.toURI());
+        final ClientArtifactsManager clientArtifactsManager = ClientArtifactsManager.get(dc);
 
-        Manifest manifest = facadeArchive.getManifest();
+        final Manifest manifest = new Manifest();
         Attributes mainAttrs = manifest.getMainAttributes();
 
         mainAttrs.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -227,46 +215,41 @@ public class AppClientGroupFacadeGenerator {
         mainAttrs.put(GLASSFISH_APPCLIENT_GROUP, appClientGroupList);
 
 
-        //Now manifest is ready to be written into the facade jar
-        final OutputStream manifestOutputStream = facadeArchive.putNextEntry(JarFile.MANIFEST_NAME);
+        //Now manifest is ready to be written.
+        final File manifestFile = File.createTempFile("groupMF", ".MF");
+        final OutputStream manifestOutputStream = new BufferedOutputStream(new FileOutputStream(manifestFile)); //facadeArchive.putNextEntry(JarFile.MANIFEST_NAME);
         manifest.write(manifestOutputStream);
-        facadeArchive.closeEntry();
+        manifestOutputStream.close();
+        clientArtifactsManager.add(manifestFile, JarFile.MANIFEST_NAME, true /* isTemp */);
+        
 
-        writeMainClass(facadeArchive);
+        writeMainClass(clientArtifactsManager);
 
         /*
-         * Other deployers' artifacts - such as generated stubs - go into the
-         * group facade.  Each of the client's individual facade JARs then refers
+         * Higher-level code will copy the files generated here plus other deployers' 
+         * artifacts - such as generated stubs - into the generated client JAR
+         * which the app client deployer views as the group facade.
+         * Each client's individual facade JARs then refer
          * to the group facade in their Class-Path so they can see the stubs.
          * This also allows Java SE clients to add the group facade JAR to
          * the runtime class path and see the stubs.  (This allows users who
          * did this in v2 to use the same technique.)
          */
-        copyArtifactsFromOtherDeployers(facadeArchive, dc);
-
-        facadeArchive.close();
-
-        Set<Artifacts.FullAndPartURIs> downloads =
-                    new HashSet<Artifacts.FullAndPartURIs>();
-        Artifacts.FullAndPartURIs download =
-                new Artifacts.FullAndPartURIs(
-                    generatedJar.toURI(), facadeFileName);
-        downloads.add(download);
-        helper.earLevelDownloads().add(download);
-//        downloadableArtifacts.addArtifacts(helper.groupFacadeUserURI(dc).toASCIIString(), downloads);
-        dc.addTransientAppMetaData(GROUP_FACADE_DOWNLOAD_KEY, download);
+        
     }
 
-    private void writeMainClass(final WritableArchive facadeArchive) throws IOException {
+    private void writeMainClass(final ClientArtifactsManager clientArtifactsManager) throws IOException {
         final String mainClassResourceName =
                 GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS_NAME.replace('.', '/') +
                 ".class";
-        OutputStream os = facadeArchive.putNextEntry(mainClassResourceName);
+        final File mainClassFile = File.createTempFile("main", ".class");
+        final OutputStream os = new BufferedOutputStream(new FileOutputStream(mainClassFile));
 
         try {
             InputStream is = openByteCodeStream(mainClassResourceName);
-            AppClientDeployerHelper.copyStream(is, os);
+            DeploymentUtils.copyStream(is, os);
             is.close();
+            clientArtifactsManager.add(mainClassFile, mainClassResourceName, true);
         } catch (Exception e) {
             throw new DeploymentException(e);
         }
@@ -280,23 +263,4 @@ public class AppClientGroupFacadeGenerator {
         InputStream is = url.openStream();
         return is;
     }
-
-    private void copyArtifactsFromOtherDeployers(
-            final WritableArchive facadeArchive,
-            final DeploymentContext dc) throws IOException {
-        final ClientArtifactsManager artifacts = ClientArtifactsManager.get(dc);
-        for (Artifacts.FullAndPartURIs artifact : artifacts.artifacts()) {
-            OutputStream os = facadeArchive.putNextEntry(artifact.getPart().toASCIIString());
-            InputStream is = null;
-            try {
-                is = new BufferedInputStream(new FileInputStream(new File(artifact.getFull())));
-                AppClientDeployerHelper.copyStream(is, os);
-            } catch (IOException ignore) {
-            } finally {
-                is.close();
-                facadeArchive.closeEntry();
-            }
-        }
-    }
-
 }

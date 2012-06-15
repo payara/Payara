@@ -54,12 +54,13 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.net.URI;
@@ -642,4 +643,11 @@ public class DeploymentUtils {
         return sb.toString();
     }
 
+    public static void copyStream(InputStream in, OutputStream out) throws IOException {
+        byte[] buf = new byte[4096];
+        int len;
+        while ((len = in.read(buf)) >= 0) {
+            out.write(buf, 0, len);
+}
+    }
 }

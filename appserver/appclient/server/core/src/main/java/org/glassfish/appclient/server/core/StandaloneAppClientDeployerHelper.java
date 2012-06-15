@@ -289,11 +289,6 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
     }
 
     @Override
-    protected void addGroupFacadeToEARDownloads() {
-        // no-op
-    }
-
-    @Override
     public URI URIWithinAppDir(DeploymentContext dc, URI absoluteURI) {
         return dc.getSource().getURI().relativize(absoluteURI);
     }

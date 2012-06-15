@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,14 +66,20 @@ import org.glassfish.api.deployment.DeploymentContext;
  * A Deployer that needs to request for files to be downloaded to the client
  * as part of the payload in the http command response should instead use
  * DownloadableArtifactsManager.
- *
+ * <p>
+ * The various {@code add} methods permit adding content in a variety of ways.
+ * Ultimately we need to know two things: where is the physical file on the server
+ * the content of which needs to be included in the client JAR, and what is the
+ * relative path within the client JAR where the content should reside.  Look
+ * carefully at the doc for each {@code add} method when choosing which to use.
+ * <p>
  * An instance of this class can be stored in the deployment
  * context's transient app metadata so the various deployers can add to the
  * same collection and so the app client deployer can find it and
  * act on its contents.
  * <p>
- * Because other modules should add their artifacts before the app client
- * deployer processes them, the <code>add</code> methods do not permit
+ * Because other modules should add their artifacts before the the artifacts
+ * have been consumed and placed into the client JAR file, the <code>add</code> methods do not permit
  * further additions once the {@link #artifacts} method has been invoked.
  *
  * @author tjuinn
@@ -91,7 +97,7 @@ public class ClientArtifactsManager {
             new HashMap<URI,Artifacts.FullAndPartURIs>();
 
     /**
-     * Retreives the client artifacts store from the provided deployment 
+     * Retrieves the client artifacts store from the provided deployment 
      * context, creating one and storing it back into the DC if none is 
      * there yet.
      * 
@@ -114,51 +120,29 @@ public class ClientArtifactsManager {
 
     /**
      * Adds a new artifact to the collection of artifacts to be included in the
-     * client facade JAR file so they can be delivered to the client during a
+     * client JAR file so they can be delivered to the client during a
      * download.
      *
      * @param baseURI absolute URI of the base directory within which the
      * artifact lies
-     * @param artifactURI absolute or relative URI for the artifact itself
+     * @param artifactURI absolute or relative URI where the artifact file resides
      * @throws IllegalStateException if invokes after the accumulated artifacts have been consumed
      */
     public void add(final URI baseURI, final URI artifactURI) {
         final URIPair uris = new URIPair(baseURI, artifactURI);
-        if (isArtifactSetConsumed) {
-            throw new IllegalStateException(
-                    formattedString("enterprise.deployment.backend.appClientArtifactOutOfOrder",
-                        uris.absoluteURI.toASCIIString())
-                    );
-        } else {
-            Artifacts.FullAndPartURIs existingArtifact =
-                    artifacts.get(uris.relativeURI);
-            if (existingArtifact != null) {
-                throw new IllegalArgumentException(
-                        formattedString("enterprise.deployment.backend.appClientArtifactCollision",
-                            uris.relativeURI.toASCIIString(),
-                            uris.absoluteURI.toASCIIString(),
-                            existingArtifact.getFull().toASCIIString())
-                        );
-            }
-            final File f = new File(uris.absoluteURI);
-            if ( ! f.exists() || ! f.canRead()) {
-                throw new IllegalArgumentException(
-                        formattedString("enterprise.deployment.backend.appClientArtifactMissing",
-                            uris.relativeURI.toASCIIString(),
-                            uris.absoluteURI.toASCIIString())
-                        );
-            }
-            final Artifacts.FullAndPartURIs newArtifact =
+        final Artifacts.FullAndPartURIs newArtifact =
                     new Artifacts.FullAndPartURIs(
                     uris.absoluteURI, uris.relativeURI);
-            artifacts.put(uris.relativeURI, newArtifact);
-        }
+        add(newArtifact);
     }
 
     /**
      * Adds a new artifact to the collection of artifacts to be added to the
      * client facade JAR file so they can be delivered to the client during a
      * download.
+     * <p>
+     * The relative path within the client JAR will be computed using the position
+     * of the artifact file relative to the base file.
      *
      * @param baseFile File for the base directory within which the artifact lies
      * @param artifactFile File for the artifact itself
@@ -168,6 +152,59 @@ public class ClientArtifactsManager {
         add(baseFile.toURI(), artifactFile.toURI());
     }
 
+    /**
+     * Adds a new artifact to the collection of artifacts to be added to the 
+     * client JAR file so they can be delivered to the client during a
+     * download.
+     * <p>
+     * This method helps when the contents of a temporary file are to be included
+     * in the client JAR, in which case the temp file might not reside in a
+     * useful place relative to a base directory.  The caller can just specify
+     * the relative path directly.
+     * 
+     * @param artifactFile file to be included in the client JAR
+     * @param relativePath relative path within the JAR where the file's contents should appear
+     * @param isTemporary whether the artifact file is a temporary file or not
+     */
+    public void add(final File artifactFile, final String relativePath, final boolean isTemporary) {
+        final Artifacts.FullAndPartURIs artifact = new Artifacts.FullAndPartURIs(artifactFile.toURI(), relativePath, isTemporary);
+        add(artifact);
+    }
+    
+    /**
+     * Adds a new artifact to the collection of artifacts to be added to the
+     * client JAR file so they can be delivered to the client during a download.
+     * @param artifact 
+     */
+    public void add(Artifacts.FullAndPartURIs artifact) {
+        if (isArtifactSetConsumed) {
+            throw new IllegalStateException(
+                    formattedString("enterprise.deployment.backend.appClientArtifactOutOfOrder",
+                        artifact.getFull().toASCIIString())
+                    );
+        } else {
+            Artifacts.FullAndPartURIs existingArtifact =
+                    artifacts.get(artifact.getPart());
+            if (existingArtifact != null) {
+                throw new IllegalArgumentException(
+                        formattedString("enterprise.deployment.backend.appClientArtifactCollision",
+                            artifact.getPart().toASCIIString(),
+                            artifact.getFull().toASCIIString(),
+                            existingArtifact.getFull().toASCIIString())
+                        );
+            }
+            final File f = new File(artifact.getFull());
+            if ( ! f.exists() || ! f.canRead()) {
+                throw new IllegalArgumentException(
+                        formattedString("enterprise.deployment.backend.appClientArtifactMissing",
+                            artifact.getPart().toASCIIString(),
+                            artifact.getFull().toASCIIString())
+                        );
+            }
+            
+            artifacts.put(artifact.getPart(), artifact);
+        }
+    }
     /**
      * Adds all artifacts in Collection to those to be added to the client
      * facade JAR.
@@ -207,10 +244,22 @@ public class ClientArtifactsManager {
         return MessageFormat.format(format, args);
     }
 
+    /**
+     * Represents a pair of URIs for an artifact, one being the URI where
+     * the file already exists and one for the relative URI where the content
+     * should appear in the generated client JAR file.
+     */
     private static class URIPair {
         private final URI relativeURI;
         private final URI absoluteURI;
 
+        /**
+         * Creates a new URIPair, computing the relative URI for the pair using
+         * the artifact URI; if it's relative, just copy it and if it's absolute
+         * then relativize it to the base URI to compute the relative URI.
+         * @param baseURI
+         * @param artifactURI 
+         */
         private URIPair(final URI baseURI, final URI artifactURI) {
             if (artifactURI.isAbsolute()) {
                 absoluteURI = artifactURI;

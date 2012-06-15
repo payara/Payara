@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -63,6 +64,10 @@ import org.glassfish.api.deployment.DeploymentContext;
  * the application properties of an Application object so they can be persisted
  * into domain.xml.  The property names are
  * (keyPrefix)Artifact.(partURI) and the value is the corresponding fullURI.
+ * <p>
+ * Artifacts can also be optionally marked as temporary.  The intent is that
+ * such artifacts will be deleted after they are placed into the response
+ * payload for download.
  *
  * @author Tim Quinn
  */
@@ -160,11 +165,12 @@ public class Artifacts {
      * Adds an artifact.
      * @param full the full URI to the file to be tracked
      * @param part the (typically) relative URI to be associated with the part
+     * @param isTemporary whether the artifact can be deleted once it is added to an output stream (typically for download)
      * (a frequent use of Artifacts is for working with Payloads which are
      * composed of parts - hence the "part" term)
      */
-    public synchronized void addArtifact(URI full, URI part) {
-        FullAndPartURIs fullAndPart = new FullAndPartURIs(full, part);
+    public synchronized void addArtifact(URI full, URI part, boolean isTemporary) {
+        FullAndPartURIs fullAndPart = new FullAndPartURIs(full, part, isTemporary);
         artifacts.add(fullAndPart);
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Added {1} artifact: {0}",
@@ -180,6 +186,19 @@ public class Artifacts {
      */
     public synchronized void addArtifact(URI full, String part) {
         addArtifact(full, URI.create(part));
+    }
+    
+    public synchronized void addArtifact(final URI full, final String part, final boolean isTemporary) {
+        addArtifact(full, URI.create(part), isTemporary);
+    }
+    
+    /**
+     * Adds an artifact.
+     * @param full
+     * @param part 
+     */
+    public synchronized void addArtifact(final URI full, final URI part) {
+        addArtifact(full, part, false);
     }
 
     /**
@@ -245,17 +264,26 @@ public class Artifacts {
      * a Payload).
      */
     public static class FullAndPartURIs {
-        private URI full;
-        private URI part;
+        private final URI full;
+        private final URI part;
+        private final boolean isTemporary;
 
         public FullAndPartURIs(URI full, URI part) {
-            this.full = full;
-            this.part = part;
+            this(full, part, false);
         }
 
         public FullAndPartURIs(URI full, String part) {
+            this(full, part, false);
+        }
+        
+        public FullAndPartURIs(URI full, String part, boolean isTemporary) {
+            this(full, URI.create(part), isTemporary);
+        }
+        
+        public FullAndPartURIs(URI full, URI part, boolean isTemporary) {
             this.full = full;
-            this.part = URI.create(part);
+            this.part = part;
+            this.isTemporary = isTemporary;
         }
 
         public URI getFull() {
@@ -264,6 +292,10 @@ public class Artifacts {
 
         public URI getPart() {
             return part;
+        }
+        
+        public boolean isTemporary() {
+            return isTemporary;
         }
 
         @Override
@@ -289,12 +321,13 @@ public class Artifacts {
             int hash = 3;
             hash = 29 * hash + (this.full != null ? this.full.hashCode() : 0);
             hash = 29 * hash + (this.part != null ? this.part.hashCode() : 0);
+            hash = 29 * hash + (isTemporary ? 0 : 1);
             return hash;
         }
 
         @Override
         public String toString() {
-            return "full URI=" + full + "; part URI=" + part;
+            return "full URI=" + full + "; part URI=" + part + "; isTemporary=" + isTemporary;
         }
     }
 }

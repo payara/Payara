@@ -526,13 +526,6 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
 
     @Override
-    protected void addGroupFacadeToEARDownloads() {
-        final Artifacts.FullAndPartURIs earFacadeDownload =
-                dc().getTransientAppMetaData("earFacadeDownload", Artifacts.FullAndPartURIs.class);
-        earLevelDownloads.add(earFacadeDownload);
-    }
-
-    @Override
     public URI facadeUserURI(DeploymentContext dc){
         try {
             return URI.create(VersioningUtils.getUntaggedName(appName(dc)) + "Client/" + relativeFacadeURI(dc));
