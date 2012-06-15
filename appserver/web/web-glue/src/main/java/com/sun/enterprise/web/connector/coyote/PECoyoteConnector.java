@@ -551,13 +551,6 @@ public class PECoyoteConnector extends Connector {
             Notification notification =
                     new Notification("chloe", this.getObjectName(), 0);
             getService().getBroadcaster().sendNotification(notification);
-            try {
-                ObjectName mapperOname = createObjectName(this.domain, "Mapper");
-            } catch (Exception ex) {
-                log.log(Level.SEVERE,
-                        sm.getString("coyoteConnector.protocolRegistrationFailed"),
-                        ex);
-            }
         }
         if ( grizzlyMonitor != null ) {
             grizzlyMonitor.initConfig();

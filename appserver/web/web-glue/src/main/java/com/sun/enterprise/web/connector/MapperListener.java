@@ -94,9 +94,9 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
     private String domain="*";
 
-    private Engine engine = null;
+    private transient Engine engine = null;
 
-    public HttpService httpService;
+    public transient HttpService httpService;
 
     protected static final Logger logger = LogDomains.getLogger(
             MapperListener.class, LogDomains.WEB_LOGGER);
@@ -113,7 +113,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
 
     private ConcurrentHashMap<ObjectName,String[]> virtualServerListenerNames;
 
-    private WebContainer webContainer;
+    private transient WebContainer webContainer;
 
     // ----------------------------------------------------------- Constructors
 
@@ -293,9 +293,8 @@ public class MapperListener implements NotificationListener, NotificationFilter{
                 }
             } else if (container instanceof StandardWrapper) {
                 ObjectName objectName = container.getJmxName();
-                String j2eeType = objectName.getKeyProperty("j2eeType");
                 if (Boolean.parseBoolean(objectName.getKeyProperty("osgi")) &&
-                        j2eeType.equals("Servlet")) {
+                        objectName.getKeyProperty("j2eeType").equals("Servlet")) {
                     try {
                         unregisterOSGiWrapper(objectName);
                      } catch (Throwable t) {
@@ -316,10 +315,6 @@ public class MapperListener implements NotificationListener, NotificationFilter{
      */
     public void registerHost(StandardHost host)
         throws Exception {
-
-        if (host == null) {
-            throw new Exception("No host registered for " + host);
-        }
 
         if (host.getJmxName() == null) {
             return;
@@ -398,10 +393,6 @@ public class MapperListener implements NotificationListener, NotificationFilter{
      */
     private void registerContext(StandardContext context)
         throws Exception {
-
-        if (context == null) {
-            throw new Exception("No context registered for " + context);
-        }
 
         ObjectName objectName = context.getJmxName();
         if (objectName == null) {
@@ -496,10 +487,6 @@ public class MapperListener implements NotificationListener, NotificationFilter{
      */
     private void registerWrapper(StandardWrapper wrapper)
         throws Exception {
-
-        if (wrapper == null) {
-            throw new Exception("No wrapper registered for " + wrapper);
-        }
 
         ObjectName objectName = wrapper.getJmxName();
         if (objectName == null) {
