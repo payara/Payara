@@ -59,6 +59,7 @@ import java.net.MalformedURLException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.logging.Level;
+import java.net.URL;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -106,6 +107,10 @@ public class CarHandler extends AbstractArchiveHandler {
         });
         try {
             cloader.addURL(context.getSource().getURI().toURL());
+            // add libraries referenced from manifest
+            for (URL url : getManifestLibraries(context)) {
+                cloader.addURL(url);
+            }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
