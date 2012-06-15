@@ -294,7 +294,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
             } else if (container instanceof StandardWrapper) {
                 ObjectName objectName = container.getJmxName();
                 String j2eeType = objectName.getKeyProperty("j2eeType");
-                if (Boolean.parseBoolean(objectName.getKeyProperty(" ")) &&
+                if (Boolean.parseBoolean(objectName.getKeyProperty("osgi")) &&
                         j2eeType.equals("Servlet")) {
                     try {
                         unregisterOSGiWrapper(objectName);
