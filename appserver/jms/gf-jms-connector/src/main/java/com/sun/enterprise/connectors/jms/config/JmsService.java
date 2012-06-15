@@ -40,18 +40,17 @@
 
 package com.sun.enterprise.connectors.jms.config;
 
+import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.admin.config.Container;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
+import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.Injectable;
-
-import java.beans.PropertyVetoException;
-import java.util.List;
-
-import org.glassfish.api.admin.config.PropertyDesc;
-import org.glassfish.api.admin.config.PropertiesDesc;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
@@ -59,6 +58,11 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The jms-service element specifies information about the bundled/built-in 
@@ -71,7 +75,7 @@ import javax.validation.constraints.Pattern;
 }) */
 
 @Configured
-public interface JmsService extends ConfigExtension, Injectable, PropertyBag {
+public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Container {
 
     /**
      * Gets the value of the initTimeoutInSeconds property.
@@ -367,4 +371,21 @@ public interface JmsService extends ConfigExtension, Injectable, PropertyBag {
     )
     @Element
     List<Property> getProperty();
+
+    @DuckTyped
+    public ConfigBeanDefaultValue[] getDefaultValues();
+
+    class Duck {
+        public static List<ConfigBeanDefaultValue> getDefaultValues() {
+            List<ConfigBeanDefaultValue> defaultValues = new ArrayList<ConfigBeanDefaultValue>(1);
+            try {
+                InputStream is = ZeroConfigUtils.getConfigurationFileUrl(JmsService.class).openStream();
+                defaultValues.add(new ConfigBeanDefaultValue("domain/configs/server-config",JmsService.class ,is));
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            return defaultValues;
+        }
+
+    }
 }

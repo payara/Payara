@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -58,6 +59,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.config.ConfigBean;
@@ -189,16 +191,38 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             prefix = "";
             // pattern is already set properly
             lookAtSubNodes = false;
-        }
-        else if(!pattern.startsWith(parentNodes[0].relativeName)) {
+        } else if (!pattern.startsWith(parentNodes[0].relativeName)) {
             prefix = pattern.substring(0, pattern.indexOf(parentNodes[0].relativeName));
             pattern = parentNodes[0].relativeName;
-        }
-        else {
+        } else {
             prefix = "";
             pattern = parentNodes[0].relativeName;
         }
         String targetName = prefix + pattern;
+        //TODO temporary fix till we get zero config to support all target levels
+        if (!(targetName.startsWith("resources") || targetName.startsWith("domain") ||
+                targetName.startsWith("applications") || targetName.startsWith("system-applications")
+                || targetName.startsWith("nodes") || targetName.startsWith("clusters")
+        )) {
+            String serviceName;
+            String targetConfig;
+
+            if (targetName.startsWith("configs")) {
+                targetName = targetName.substring("configs.config.".length(), targetName.length());
+            }
+            StringTokenizer tokenizer = new StringTokenizer(targetName, ".", false);
+            targetConfig = tokenizer.nextToken();
+            if (tokenizer.hasMoreTokens()) {
+                serviceName = tokenizer.nextToken();
+                Class clz = ZeroConfigUtils.getClassFor(serviceName, (Habitat) habitat);
+                if (clz != null && !ZeroConfigUtils.isConfigElementPresent(serviceName, (Habitat) habitat, targetConfig)) {
+                    if (clz != null) {
+                        ZeroConfigUtils.addBeanToDomainXml(serviceName, targetConfig, (Habitat) habitat);
+                    }
+                }
+            }
+        }
+
 
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;
@@ -294,10 +318,10 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 String finalDottedName = node.getValue() + "." + name;
                 if (matches(finalDottedName, pattern)) {
                     if (attrName.equals(name) ||
-                            attrName.replace('_', '-').equals(name.replace('_', '-')))  {
+                            attrName.replace('_', '-').equals(name.replace('_', '-'))) {
                         if (isDeprecatedAttr(targetNode, name)) {
-                           warning(context, localStrings.getLocalString("admin.set.deprecated",
-                                   "Warning: The attribute {0} is deprecated.", finalDottedName));
+                            warning(context, localStrings.getLocalString("admin.set.deprecated",
+                                    "Warning: The attribute {0} is deprecated.", finalDottedName));
                         }
 
                         if (!isProperty) {
@@ -344,13 +368,13 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 String finalDottedName = node.getValue() + "." + name;
                 if (matches(finalDottedName, pattern)) {
                     if (attrName.equals(name) ||
-                            attrName.replace('_', '-').equals(name.replace('_', '-')))  {
+                            attrName.replace('_', '-').equals(name.replace('_', '-'))) {
                         if (isDeprecatedAttr(targetNode, name)) {
-                           warning(context, localStrings.getLocalString("admin.set.elementdeprecated",
-                                   "Warning: The element {0} is deprecated.", finalDottedName));
+                            warning(context, localStrings.getLocalString("admin.set.elementdeprecated",
+                                    "Warning: The element {0} is deprecated.", finalDottedName));
                         }
                         try {
-                            setLeafElement((ConfigBean)targetNode, name, value);
+                            setLeafElement((ConfigBean) targetNode, name, value);
                         } catch (TransactionFailure ex) {
                             fail(context, localStrings.getLocalString("admin.set.badelement", "Cannot change the element: {0}",
                                     ex.getMessage()), ex);
@@ -386,11 +410,11 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         return true;
     }
 
-    public static void setLeafElement (
-                final ConfigBean node,
-                final String elementName,
-                final String values)
-        throws TransactionFailure {
+    public static void setLeafElement(
+            final ConfigBean node,
+            final String elementName,
+            final String values)
+            throws TransactionFailure {
 
         ConfigBeanProxy readableView = node.getProxy(node.getProxyType());
         ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
@@ -409,7 +433,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             @Override
             public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
 
-                WriteableView writeableParent = (WriteableView)Proxy.getInvocationHandler(param);
+                WriteableView writeableParent = (WriteableView) Proxy.getInvocationHandler(param);
 
                 StringTokenizer st = new StringTokenizer(values, ",");
                 List<String> valList = new ArrayList<String>();
@@ -490,8 +514,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 // This is a domain-level attribute, replicate to all instances
                 replicationInstances = targetService.getAllInstances();
             }
-        }
-        else {
+        } else {
             tName = targetName;
         }
         if (replicationInstances == null) {

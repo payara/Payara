@@ -112,7 +112,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             return;
         }
 
-        final String className = ZeroConfigUtils.convertConfigElementNameToClassNAme(serviceName);
+        final String className = ZeroConfigUtils.convertConfigElementNameToClassName(serviceName);
         Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("delete.module.config.not.such.a.service.found",

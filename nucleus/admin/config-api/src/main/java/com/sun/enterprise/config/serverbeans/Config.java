@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,38 +40,48 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.lang.reflect.Proxy;
-import java.util.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
-
-import java.util.logging.Logger;
-import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
-
-
-import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.admin.config.Container;
+import org.glassfish.api.admin.config.Named;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.Port;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.glassfish.api.admin.config.*;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Injectable;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.DuckTyped;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 import javax.validation.Payload;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.Habitat;
+import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 /**
  * The configuration defines the configuration of a server instance that can be
@@ -409,7 +419,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     <P extends ConfigBeanProxy> boolean checkIfConfigExists(Class<P> configBeanType);
 
     class Duck {
-
         private final static Logger LOG = Logger.getLogger(Duck.class.getName());
 
         public static String setLoggingProperty(Config c, String property, String value) {
@@ -466,7 +475,9 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                     // ignore, not the right type.
                 }
             }
-                ConfigSnippetLoader loader = new ConfigSnippetLoader(c,type);
+            ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
+            Habitat h = cb.getHabitat();
+            ConfigSnippetLoader loader = new ConfigSnippetLoader(c,type);
                 return loader.createConfigBeanForType(type);
         }
 
@@ -545,4 +556,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      */
     @Element("*")
     List<Container> getContainers();
+    @Element("*")
+    List<ConfigExtension> getConfigExtensions();
 }

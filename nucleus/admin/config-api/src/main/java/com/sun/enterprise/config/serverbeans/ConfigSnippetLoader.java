@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,25 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.util.zeroconfig.SnippetLoader;
 import com.sun.enterprise.config.util.zeroconfig.SnippetParser;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,13 +71,11 @@ public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> 
     private final static Logger LOG = Logger.getLogger(ConfigSnippetLoader.class.getName());
 
     public ConfigSnippetLoader(Config configLoader, Class<? extends ConfigExtension> configExtensionType) {
-        super(configLoader, configExtensionType);
-    }
-
+            super(configLoader, configExtensionType);
+        }
     @Override
     public <U extends ConfigExtension> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
-
-        if (isConfigSnippetPresent(configExtensionType)) {
+        if(ZeroConfigUtils.hasCustomConfig(configExtensionType)){
             addConfigBeanFor(configExtensionType, configLoader);
         } else {
             final Class<U> parentElem = configExtensionType;
@@ -85,35 +89,30 @@ public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> 
                 }
             }, configLoader);
         }
-        Method m = getMatchingGetterMethod(configLoader, configExtensionType);
+        Method m = ZeroConfigUtils.getMatchingGetterMethod(configLoader.getClass(), configExtensionType);
         if (m != null) {
             try {
                 return (U) m.invoke( configLoader);
             }
-            //TODO fine grained exception handling
-            //TODO use of logging framework and localization
             catch (Exception ex) {
-                LOG.log(Level.SEVERE, "Exception when getting the configuration from domain.xml", ex);
-                return null;
+                throw new RuntimeException(ex);
             }
         } else {
             return configLoader.getExtensionByType(configExtensionType);
         }
     }
-    public <U extends ConfigExtension> U addConfigBeanFor(Class<U> configExtensionType, Config config) {
+    public <U extends ConfigExtension> void addConfigBeanFor(Class<U> configExtensionType, Config config) {
         ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(config)).getMasterView();
         Habitat habitat = cb.getHabitat();
-        URL fileUrl = ZeroConfigUtils.<U>getConfigurationFileUrl(configExtensionType);
-        SnippetParser snippetParser = new SnippetParser(config);
+        List<ConfigBeanDefaultValue> configBeanDefaultValueList= ZeroConfigUtils.getDefaultConfigurations(configExtensionType);
+        SnippetParser snippetParser = new SnippetParser();
         try {
-            return (U) snippetParser.parseContainerConfig(habitat, fileUrl, configExtensionType);
+            //TODO change to use parsConfigBean instead of    parseContainerConfig
+            snippetParser.parsConfigBean(habitat,configBeanDefaultValueList);
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to add  configuration for class" +
                     configExtensionType);
         }
-        return null;
     }
-
-
 }
 

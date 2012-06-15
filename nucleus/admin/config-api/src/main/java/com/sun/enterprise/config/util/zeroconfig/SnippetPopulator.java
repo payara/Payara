@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,17 @@
 
 package com.sun.enterprise.config.util.zeroconfig;
 
-import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.module.bootstrap.Populator;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 
-import java.net.URL;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
  * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
@@ -53,23 +58,24 @@ import java.net.URL;
  * @author Masoud Kalali
  */
 public class SnippetPopulator implements Populator {
-    private URL snippetUrl;
     private DomDocument doc;
-    Config loader;
+    private ConfigLoader loader;
+    private String xmlContent;
 
-    public SnippetPopulator(URL snippetUrl, DomDocument doc, Config loader) {
-        this.snippetUrl = snippetUrl;
-        this.doc = doc;
-        this.loader = loader;
-    }
+    public SnippetPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
+            this.xmlContent =xmlContent;
+            this.doc = doc;
+            this.loader = loader;
+        }
+
     public void run(org.jvnet.hk2.config.ConfigParser parser) {
-        if (snippetUrl != null) {
             try {
-                parser.parse(snippetUrl, doc, Dom.unwrap(loader));
-            } catch (Exception e) {
-                e.printStackTrace();
+                InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
+                XMLStreamReader reader  = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
+                parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
+            } catch (XMLStreamException e) {
+                throw new RuntimeException("Cannot parse the default xml configuration",e);
             }
 
-        }
     }
 }

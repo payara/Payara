@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,23 +39,24 @@
  */
 package com.sun.enterprise.config.util.zeroconfig;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.module.bootstrap.BootException;
-import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.config.Container;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.ConfigParser;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.xml.stream.XMLStreamReader;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,66 +69,40 @@ import java.util.logging.Logger;
 public class SnippetParser<C extends ConfigLoader> {
     Logger logger = Logger.getLogger(LogDomains.CONFIG_LOGGER);
 
-    private final Config config;
-
-    public SnippetParser(Config config) {
-        this.config = config;
-    }
-
     /**
-     * @param habitat    The Habitat object to add the config to
-     * @param snippetUrl The URL object pointing to the configuration snippet
-     * @param configType The ConfigBeanProxy type matching the configuration present in the snippetUrl
-     * @param <T>        the ConfigBeanProxy type we are looking for
-     * @return A fully loaded ConfigExtension built using the configuration present in the snippetUrl
-     * @throws IOException if it fails to read the snippetUrl.
-     */
-    public <T extends Container> T parseContainerConfig(Habitat habitat, final URL snippetUrl, final Class<T> configType) throws IOException {
+         * @param habitat    The Habitat object to add the config to
+         * @param <T>        the ConfigBeanProxy type we are looking for
+         * @throws IOException if it fails to read the snippetUrl.
+         */
+        public <T extends ConfigBeanProxy> void parsConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) throws IOException {
 
-        org.jvnet.hk2.config.ConfigParser configParser = new org.jvnet.hk2.config.ConfigParser(habitat);
-        // I don't use the GlassFish document here as I don't need persistence
-        final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
-            public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
-                // by default, people get the translated view.
-                return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);
-            }
-        };
-        SnippetPopulator populator = new SnippetPopulator(snippetUrl, doc, config);
-        populator.run(configParser);
-        // add the new container configuration to the server config
-        final T configBean = doc.getRoot().createProxy(configType);
-        try {
-            ConfigSupport.apply(new SingleConfigCode<Config>() {
-                public Object run(Config config) throws PropertyVetoException, TransactionFailure {
-                    config.getContainers().add(configBean);
-                    return config;
+            ConfigParser configParser = new ConfigParser(habitat);
+            // I don't use the GlassFish document here as I don't need persistence
+            final DomDocument doc = new DomDocument<GlassFishConfigBean>(habitat) {
+                public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
+                    // by default, people get the translated view.
+                    return new GlassFishConfigBean(habitat, this, dom, configModel, xmlStreamReader);
                 }
-            }, config);
-        } catch (TransactionFailure e) {
-            logger.log(Level.SEVERE, "Cannot add new configuration to the Config element", e);
-        }
+            };
 
-        return configBean;
-    }
+            for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
+                Domain domain = habitat.getComponent(Domain.class);
+                SnippetPopulator populator = new SnippetPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
+                populator.run(configParser);
 
+                final ConfigBeanProxy configBean = doc.getRoot().createProxy(configBeanDefaultValue.getConfigBeanClass());
+                try {
+                    final ConfigBeanProxy parent =ZeroConfigUtils.getOwningObject(configBeanDefaultValue.getLocation(),habitat);
+                    ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+                        public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
+                                ZeroConfigUtils.setConfigBean(configBean,configBeanDefaultValue, habitat, param);
+                            return param;
+                        }
+                    }, parent);
+                } catch (TransactionFailure e) {
+                    logger.log(Level.SEVERE, "Cannot add new configuration to the Config element", e);
+                }
 
-    /**
-     * Finds and return the setter method matching the class named fqcn in the configLoader
-     *
-     * @param configLoader The ConfigLoader we want to inspect for presence of a setter method accepting class of type fqcn.
-     * @param fqcn         the fully qualified class name to find its setter in the configLoader
-     * @return the matching Method object or null if not present.
-     */
-
-    protected Method getMatchingSetterMethod(Config configLoader, String fqcn) {
-        String className = fqcn.substring(fqcn.lastIndexOf(".") + 1, fqcn.length());
-        String setterName = "set" + className;
-        Method[] methods = configLoader.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().equalsIgnoreCase(setterName)) {
-                return methods[i];
             }
         }
-        return null;
-    }
 }

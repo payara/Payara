@@ -38,15 +38,48 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package com.sun.enterprise.config.util.zeroconfig;
 
 /**
- * This is a marker interface to mark the interfaces which are involved in managing parts of the domain.xml.
- * For example Each one of the Domain, Config and Application interfaces manages one part of the domain.xml.
- *
  * @author Masoud Kalali
  */
-public interface ConfigLoader {
+
+import org.jvnet.hk2.config.ConfigBeanProxy;
+
+import java.io.InputStream;
+
+/**
+ * Carries the default configuration values for a ConfigBeanProxy
+ */
+public class ConfigBeanDefaultValue {
+
+    private String location;
+    private String xmlConfiguration;
+    private Class configBeanClass;
 
 
+    public String getLocation() {
+        return location;
+    }
+
+
+    public String getXmlConfiguration() {
+        return xmlConfiguration;
+    }
+
+    public <U extends ConfigBeanProxy> Class<U> getConfigBeanClass() {
+        return configBeanClass;
+    }
+
+    public <U extends ConfigBeanProxy>ConfigBeanDefaultValue(String location,Class<U> configBeanClass, String xmlConfiguration) {
+        this.location = location;
+        this.xmlConfiguration = xmlConfiguration;
+        this.configBeanClass= configBeanClass;
+    }
+
+    public <U extends ConfigBeanProxy>ConfigBeanDefaultValue(String location, Class<U> configBeanClass,InputStream xmlSnippetFileInputStream) {
+        this.location = location;
+        this.configBeanClass = configBeanClass;
+        this.xmlConfiguration = ZeroConfigUtils.streamToString(xmlSnippetFileInputStream, "utf-8");
+    }
 }
