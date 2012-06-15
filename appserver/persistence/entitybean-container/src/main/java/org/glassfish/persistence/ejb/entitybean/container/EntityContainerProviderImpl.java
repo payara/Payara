@@ -82,7 +82,6 @@ public final class EntityContainerProviderImpl implements PostConstruct, Contain
             if (((EjbEntityDescriptor)ejbDescriptor).getIASEjbExtraDescriptors()
                     .isIsReadOnlyBean()) { 
 
-                EjbEntityDescriptor robDesc = (EjbEntityDescriptor) ejbDescriptor;                    
                 container = new ReadOnlyBeanContainer (ejbDescriptor, loader);
             } else {
                 String commitOption = null;
