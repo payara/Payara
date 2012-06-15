@@ -126,7 +126,6 @@ public final class ZeroConfigUtils {
         //TODO which the generic type does not match the EjbContainer
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
-            LOG.info("Examining: " + m.getName());
             if (m.getName().startsWith("get")) {
                 Type t = m.getGenericReturnType();
                 if (t instanceof ParameterizedType) {
