@@ -59,8 +59,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(ElementType.TYPE)
 public @interface ConfigurationDeploymentDescriptorFileFor {
     /**
-     * see {@link org.glassfish.api.deployment.archive.ArchiveType} and its
-     * implementation classes for valid string values.
+     * the value of the annotation should represent the area 
+     * this configuration deployment descriptor file is for
      */
     @Index String value();
 }
