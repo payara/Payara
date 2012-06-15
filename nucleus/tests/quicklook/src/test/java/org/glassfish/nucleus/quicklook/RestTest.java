@@ -42,12 +42,10 @@ package org.glassfish.nucleus.quicklook;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.junit.Ignore;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 
-@Ignore
-@Test
+@Test(enabled=false)
 public class RestTest {
     public void testManagementEndpoint() {
         try {
