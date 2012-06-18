@@ -145,6 +145,8 @@ public class WebBundleDescriptor extends BundleDescriptor
 
     private List<String> orderedLibs = new ArrayList<String>();
 
+    private boolean showArchivedRealPathEnabled = true;
+
     // conflict resolution checking
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
@@ -1907,6 +1909,14 @@ public class WebBundleDescriptor extends BundleDescriptor
 
     public void setAbsoluteOrderingDescriptor(AbsoluteOrderingDescriptor absOrdering) {
         this.absOrdering = absOrdering;
+    }
+
+    public boolean isShowArchivedRealPathEnabled() {
+        return showArchivedRealPathEnabled;
+    }
+
+    public void setShowArchivedRealPathEnabled(boolean enabled) {
+        showArchivedRealPathEnabled = enabled;
     }
 
     /**
