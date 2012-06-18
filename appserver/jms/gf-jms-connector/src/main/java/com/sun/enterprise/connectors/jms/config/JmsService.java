@@ -382,7 +382,7 @@ public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Co
                 InputStream is = ZeroConfigUtils.getConfigurationFileUrl(JmsService.class).openStream();
                 defaultValues.add(new ConfigBeanDefaultValue("domain/configs/server-config",JmsService.class ,is));
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new RuntimeException("Cannot read the default configuration from external files.",e);
             }
             return defaultValues;
         }

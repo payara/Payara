@@ -55,12 +55,10 @@ import java.util.logging.Logger;
 public abstract class SnippetLoader<C extends ConfigLoader, T extends ConfigBeanProxy> {
     private final static Logger LOG = Logger.getLogger(ConfigSnippetLoader.class.getName());
 
-    protected C configLoader;
-    protected Class<? extends T> configBeanType;
+    protected final C configLoader;
 
-    public <U extends T> SnippetLoader(C configLoader, Class<U> configBeanProxyType) {
+    protected <U extends T> SnippetLoader(C configLoader) {
         this.configLoader = configLoader;
-        this.configBeanType = configBeanProxyType;
     }
 
     /**

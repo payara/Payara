@@ -55,11 +55,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -70,12 +67,13 @@ import java.util.logging.Logger;
 public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> {
     private final static Logger LOG = Logger.getLogger(ConfigSnippetLoader.class.getName());
 
-    public ConfigSnippetLoader(Config configLoader, Class<? extends ConfigExtension> configExtensionType) {
-            super(configLoader, configExtensionType);
-        }
+    public ConfigSnippetLoader(Config configLoader) {
+        super(configLoader);
+    }
+
     @Override
     public <U extends ConfigExtension> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
-        if(ZeroConfigUtils.hasCustomConfig(configExtensionType)){
+        if (ZeroConfigUtils.hasCustomConfig(configExtensionType)) {
             addConfigBeanFor(configExtensionType, configLoader);
         } else {
             final Class<U> parentElem = configExtensionType;
@@ -89,30 +87,24 @@ public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> 
                 }
             }, configLoader);
         }
-        Method m = ZeroConfigUtils.getMatchingGetterMethod(configLoader.getClass(), configExtensionType);
-        if (m != null) {
+
+        for (ConfigExtension extension : configLoader.getConfigExtensions()) {
             try {
-                return (U) m.invoke( configLoader);
+                ConfigExtension configExtension = configExtensionType.cast(extension);
+                return (U) configExtension;
+            } catch (Exception e) {
+                // ignore, not the right type.
             }
-            catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        } else {
-            return configLoader.getExtensionByType(configExtensionType);
         }
+        return null;
     }
-    public <U extends ConfigExtension> void addConfigBeanFor(Class<U> configExtensionType, Config config) {
+
+    <U extends ConfigExtension> void addConfigBeanFor(Class<U> configExtensionType, Config config) {
         ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(config)).getMasterView();
         Habitat habitat = cb.getHabitat();
-        List<ConfigBeanDefaultValue> configBeanDefaultValueList= ZeroConfigUtils.getDefaultConfigurations(configExtensionType);
+        List<ConfigBeanDefaultValue> configBeanDefaultValueList = ZeroConfigUtils.getDefaultConfigurations(configExtensionType);
         SnippetParser snippetParser = new SnippetParser();
-        try {
-            //TODO change to use parsConfigBean instead of    parseContainerConfig
-            snippetParser.parsConfigBean(habitat,configBeanDefaultValueList);
-        } catch (IOException e) {
-            LOG.log(Level.INFO, "Unable to add  configuration for class" +
-                    configExtensionType);
-        }
+        snippetParser.parsConfigBean(habitat, configBeanDefaultValueList);
     }
 }
 

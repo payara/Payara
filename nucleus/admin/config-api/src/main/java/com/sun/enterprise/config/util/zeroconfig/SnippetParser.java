@@ -67,14 +67,14 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 public class SnippetParser<C extends ConfigLoader> {
-    Logger logger = Logger.getLogger(LogDomains.CONFIG_LOGGER);
+    private static final Logger logger = Logger.getLogger(LogDomains.CONFIG_LOGGER);
 
     /**
          * @param habitat    The Habitat object to add the config to
          * @param <T>        the ConfigBeanProxy type we are looking for
          * @throws IOException if it fails to read the snippetUrl.
          */
-        public <T extends ConfigBeanProxy> void parsConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) throws IOException {
+        public <T extends ConfigBeanProxy> void parsConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) {
 
             ConfigParser configParser = new ConfigParser(habitat);
             // I don't use the GlassFish document here as I don't need persistence
@@ -89,13 +89,13 @@ public class SnippetParser<C extends ConfigLoader> {
                 Domain domain = habitat.getComponent(Domain.class);
                 SnippetPopulator populator = new SnippetPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
                 populator.run(configParser);
-
-                final ConfigBeanProxy configBean = doc.getRoot().createProxy(configBeanDefaultValue.getConfigBeanClass());
                 try {
                     final ConfigBeanProxy parent =ZeroConfigUtils.getOwningObject(configBeanDefaultValue.getLocation(),habitat);
                     ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                         public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                                ZeroConfigUtils.setConfigBean(configBean,configBeanDefaultValue, habitat, param);
+                                ZeroConfigUtils.setConfigBean(
+                                        doc.getRoot().createProxy(configBeanDefaultValue.getConfigBeanClass())
+                                        ,configBeanDefaultValue, habitat, param);
                             return param;
                         }
                     }, parent);

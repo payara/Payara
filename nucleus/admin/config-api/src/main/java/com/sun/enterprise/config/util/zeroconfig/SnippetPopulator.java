@@ -51,6 +51,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
@@ -58,9 +60,11 @@ import java.io.InputStream;
  * @author Masoud Kalali
  */
 public class SnippetPopulator implements Populator {
-    private DomDocument doc;
-    private ConfigLoader loader;
-    private String xmlContent;
+
+    private final static Logger LOG = Logger.getLogger(SnippetPopulator.class.getName());
+    private final DomDocument doc;
+    private final ConfigLoader loader;
+    private final String xmlContent;
 
     public SnippetPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
             this.xmlContent =xmlContent;
@@ -74,7 +78,7 @@ public class SnippetPopulator implements Populator {
                 XMLStreamReader reader  = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
                 parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
             } catch (XMLStreamException e) {
-                throw new RuntimeException("Cannot parse the default xml configuration",e);
+                LOG.log(Level.INFO,"Cannot parse default configuration", e);
             }
 
     }

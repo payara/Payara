@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigInjector;
 import org.jvnet.hk2.config.Dom;
@@ -85,10 +86,12 @@ public final class ZeroConfigUtils {
      * @return A url to the file or null of not exists
      */
     public static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass) {
-        URL fileUrl;
         String defaultConfigurationFileName = configBeanClass.getSimpleName() + ".xml";
-        fileUrl = configBeanClass.getClassLoader().getResource("META-INF/" + defaultConfigurationFileName);
-        return fileUrl;
+        return getConfigurationFileUrl(configBeanClass, defaultConfigurationFileName);
+    }
+
+    private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String fileName) {
+        return configBeanClass.getClassLoader().getResource("META-INF/" + fileName);
     }
 
     /**
@@ -104,7 +107,7 @@ public final class ZeroConfigUtils {
             try {
                 defaults = (List<ConfigBeanDefaultValue>) m.invoke(null);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                LOG.log(Level.INFO, "cannot get default configuration for: " + configBeanClass.getName(), e);
             }
         }
         return defaults;
@@ -118,12 +121,10 @@ public final class ZeroConfigUtils {
      * Find a getter method that returns a collection of the type we want to put set.
      *
      * @param owner     The class we want to search to find a method that returns a Collection typed with toSetType
-     * @param toSetType The type we want to find a matching collection fo
+     * @param typeToSet The type we want to find a matching collection fo
      * @return The Method that
      */
-    private static Method findSuitableCollectionGetter(Class owner, Class toSetType) {
-        //TODO need more investigation, e.g cases like setting EjbContainer while the getter is getContainers
-        //TODO which the generic type does not match the EjbContainer
+    private static Method findSuitableCollectionGetter(Class owner, Class typeToSet) {
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
             if (m.getName().startsWith("get")) {
@@ -131,10 +132,10 @@ public final class ZeroConfigUtils {
                 if (t instanceof ParameterizedType) {
                     ParameterizedType pt = (ParameterizedType) t;
                     Type actualGenericParameter = pt.getActualTypeArguments()[0];
-                    if (pt.getActualTypeArguments().length != 1) {
+                    if (pt.getActualTypeArguments().length == 1) {
                         if (Collection.class.isAssignableFrom(m.getReturnType())) {
                             if (actualGenericParameter instanceof Class) {
-                                if (toSetType.isAssignableFrom((Class) actualGenericParameter)) {
+                                if (typeToSet.isAssignableFrom((Class) actualGenericParameter)) {
                                     return m;
                                 }
                             }
@@ -143,12 +144,12 @@ public final class ZeroConfigUtils {
                 }
             }
         }
-        return findDeeperSuitableCollectionGetter(owner, toSetType);
+        return findDeeperSuitableCollectionGetter(owner, typeToSet);
     }
 
-    private static Method findDeeperSuitableCollectionGetter(Class owner, Class toSetType) {
+    private static Method findDeeperSuitableCollectionGetter(Class owner, Class typeToSet) {
 
-        Class[] ifs = toSetType.getInterfaces();
+        Class[] ifs = typeToSet.getInterfaces();
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
             if (m.getName().startsWith("get")) {
@@ -192,7 +193,7 @@ public final class ZeroConfigUtils {
         String level = "domain";
         if (location.equalsIgnoreCase("domain/configs")) return getClassFor("domain", habitat);
         //It is a named config so we shall just return the config class
-        if (tokenizer.countTokens() == 2 && location.startsWith("domain/configs/")) {
+        if ((tokenizer.countTokens() == 2) && location.startsWith("domain/configs/")) {
             return Config.class;
         }
         while (tokenizer.hasMoreElements()) {
@@ -225,17 +226,52 @@ public final class ZeroConfigUtils {
         String configName = tokenizer.nextToken();
         ConfigBeanProxy parent = habitat.getComponent(Domain.class).getConfigNamed(configName);
 
+        String childElement;
+        String parentElement="Config";
         while (tokenizer.hasMoreTokens()) {
             try {
-                parent = getOwner(parent, tokenizer.nextToken(), habitat);
+                childElement = tokenizer.nextToken();
+                parent = getOwner(parent, parentElement,childElement, habitat);
+                parentElement=childElement;
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
             }
         }
         return parent;
     }
 
-    private static <T extends ConfigBeanProxy> T getOwner(T parent, String childElement, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
+    private static <T extends ConfigBeanProxy> T getOwner(T parent, String parentElement, String childElement,
+                                                          Habitat habitat) throws InvocationTargetException, IllegalAccessException {
+        if (childElement.endsWith("]")) {
+            String componentName;
+            String elementName;
+            elementName = childElement.substring(childElement.lastIndexOf("/") + 1, childElement.indexOf("["));
+            componentName = childElement.substring(childElement.lastIndexOf("[") + 1, childElement.indexOf("]"));
+            Class childClass = getClassFor(elementName, habitat);
+            Class parentClass=getClassFor(parentElement,habitat);
+            Method m = ZeroConfigUtils.findSuitableCollectionGetter(parentClass, childClass);
+            if (m != null) {
+                try {
+                    Collection col = (Collection) m.invoke(parent);
+                    for (Object item : col) {
+                        Method[] methods = ((Class) ( ((ParameterizedType) m.getGenericReturnType())).getActualTypeArguments()[0]).getDeclaredMethods();
+                        for (Method method : methods) {
+                            Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
+                            if ((attributeAnnotation != null) && attributeAnnotation.key()) {
+                                String name;
+                                name = (String) method.invoke(item);
+                                if (name.equalsIgnoreCase(componentName)) {
+                                    return (T) item;
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, "The provided path is not valid: " + childElement, e);
+                }
+            }
+            return null;
+        } else {
         Class clz = getClassFor(childElement, habitat);
         Method m = getMatchingGetterMethod(parent.getClass(), clz);
         if (m != null) {
@@ -247,8 +283,12 @@ public final class ZeroConfigUtils {
             } catch (NoSuchMethodException e) {
                 LOG.log(Level.INFO, "Cannot find getExtensionByType", e);
             }
-            return (T) m.invoke(parent, clz);
+            if (m != null) {
+                return (T) m.invoke(parent, clz);
+            }
+            return null;
         }
+    }
     }
 
     public static <T extends ConfigBeanProxy> void setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, Habitat habitat, ConfigBeanProxy parent) {
@@ -261,7 +301,7 @@ public final class ZeroConfigUtils {
                 m.invoke(parent, finalConfigBean);
 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
             return;
         }
@@ -271,7 +311,7 @@ public final class ZeroConfigUtils {
             try {
                 ((Collection) m.invoke(parent)).add(finalConfigBean);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
         }
     }
@@ -310,6 +350,7 @@ public final class ZeroConfigUtils {
     }
 
     public static Class getClassFor(String serviceName, Habitat habitat) {
+        serviceName = getServiceNameIfNamedComponent(serviceName);
         ConfigInjector injector = habitat.getComponent(ConfigInjector.class, serviceName);
 
         if (injector != null) {
@@ -321,6 +362,13 @@ public final class ZeroConfigUtils {
             }
         }
         return null;
+    }
+
+    private static String getServiceNameIfNamedComponent(String serviceName) {
+        if (serviceName.endsWith("]")) {
+            serviceName = serviceName.substring(0, serviceName.indexOf("["));
+        }
+        return serviceName;
     }
 
     public static String serializeConfigBeanByType(Class configBeanType, Habitat habitat) {
@@ -355,7 +403,7 @@ public final class ZeroConfigUtils {
      * @param methodReturnType the type we want to find the getter for
      * @return A Method object for a getter method in the classToQuery  which returns the    methodReturnType
      */
-    public static Method getMatchingGetterMethod(Class classToQuery, Class methodReturnType) {
+    private static Method getMatchingGetterMethod(Class classToQuery, Class methodReturnType) {
         Method[] methods = classToQuery.getMethods();
         for (Method method : methods) {
             if (method.getReturnType().getSimpleName().equals(methodReturnType.getSimpleName())) {

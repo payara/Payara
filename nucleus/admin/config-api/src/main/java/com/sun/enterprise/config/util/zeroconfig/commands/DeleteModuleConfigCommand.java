@@ -42,7 +42,6 @@ package com.sun.enterprise.config.util.zeroconfig.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -92,6 +91,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     private Domain domain;
 
     @Inject
+    private
     Habitat habitat;
 
     @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_CONFIG, name = "target")
@@ -147,6 +147,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                     String actual = e.getMessage();
                     String msg = localStrings.getLocalString("delete.module.config.failed.to.delete.config",
                             DEFAULT_FORMAT, serviceName, actual);
+                    report.setMessage(msg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setFailureCause(e);
                 }
@@ -154,11 +155,11 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                 report.setMessage(localStrings.getLocalString("delete.module.config.no.configuration",
                         "No customized configuration exist for this service nor the default configuration has been added to the domain.xml."));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
             }
 
-        } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            //TODO implement the deletion from the domain configuration
         }
+            //TODO implement the deletion from the domain configuration
+            // which is checked by configBeanType.isAssignableFrom(DomainExtension.class
+
     }
 }

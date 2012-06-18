@@ -463,8 +463,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             return map;
         }
 
-        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws ClassNotFoundException, TransactionFailure {
-            T configExtension = null;
+        public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws TransactionFailure {
+            T configExtension;
             //This require extra checking, Does all ConfigBeans referenced in this class are implementing Container?
             for (Container extension : c.getContainers()) {
                 try {
@@ -475,9 +475,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                     // ignore, not the right type.
                 }
             }
-            ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
-            Habitat h = cb.getHabitat();
-            ConfigSnippetLoader loader = new ConfigSnippetLoader(c,type);
+            ConfigSnippetLoader loader = new ConfigSnippetLoader(c);
                 return loader.createConfigBeanForType(type);
         }
 
@@ -514,7 +512,6 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                 habitat.addIndex(new ExistingSingletonInhabitant<Container>(extension),
                         ConfigSupport.getImpl(extension).getProxyType().getName(),
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
-                SecurityService s;
             }
         }
 
