@@ -412,5 +412,22 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
+      
+      <!--
+        The next two mail-related dependencies allow mail session look-up
+        and use from clients.
+      -->
+      <dependency>
+          <scope>runtime</scope>
+          <groupId>org.glassfish.main.resources</groupId>
+          <artifactId>javamail-connector</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <scope>runtime</scope>
+          <groupId>org.glassfish.main.resources</groupId>
+          <artifactId>javamail-runtime</artifactId>
+          <version>${project.version}</version>
+      </dependency>
    </dependencies>
 </project>
