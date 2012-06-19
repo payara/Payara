@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,6 @@ import static java.lang.annotation.RetentionPolicy.*;
  * <li> The method must take no arguments.
  * </ul>
  *
- * <p> This method executes with no transaction context.
  * <p>
  *  A stateful session bean class may use either the
  *  <code>SessionSynchronization</code> interface or the session
