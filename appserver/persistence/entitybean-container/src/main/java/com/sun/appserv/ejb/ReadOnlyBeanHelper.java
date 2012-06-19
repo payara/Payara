@@ -48,7 +48,7 @@ import javax.rmi.PortableRemoteObject;
 import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBLocalHome;
 import org.glassfish.persistence.ejb.entitybean.container.spi.ReadOnlyEJBHome;
 
-import org.glassfish.internal.api.Globals;
+import org.glassfish.persistence.ejb.entitybean.container.ReadOnlyBeanNotifierImpl;
 
 import java.util.logging.*;
 
@@ -70,8 +70,7 @@ public class ReadOnlyBeanHelper {
             Object obj = ctx.lookup(ejbName);
             ReadOnlyEJBHome home = (ReadOnlyEJBHome) 
                     PortableRemoteObject.narrow(obj, ReadOnlyEJBHome.class);
-            ReadOnlyBeanNotifier roNotifier = Globals.getDefaultHabitat().
-                    getComponent(ReadOnlyBeanNotifier.class);
+            ReadOnlyBeanNotifier roNotifier = new ReadOnlyBeanNotifierImpl();
             roNotifier.setHome(home);
             return roNotifier;
         } catch (Exception ex) {
