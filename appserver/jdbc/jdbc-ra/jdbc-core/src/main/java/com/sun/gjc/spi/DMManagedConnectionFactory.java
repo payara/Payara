@@ -127,7 +127,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactory {
         Set<Map.Entry<String,Vector>> entries =
                 (Set<Map.Entry<String, Vector>>) properties.entrySet();
         for(Map.Entry<String, Vector> entry : entries) {
-            String value = new String();
+            String value = "";
             String key = (String) entry.getKey();
             Vector values = (Vector) entry.getValue();
             if(!values.isEmpty() && values.size() == 1) {
