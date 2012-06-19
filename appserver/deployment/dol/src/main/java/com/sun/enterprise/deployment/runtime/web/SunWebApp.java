@@ -40,9 +40,6 @@
 
 package com.sun.enterprise.deployment.runtime.web;
 
-import com.sun.enterprise.deployment.runtime.common.EjbRef;
-import com.sun.enterprise.deployment.runtime.common.ResourceEnvRef;
-import com.sun.enterprise.deployment.runtime.common.ResourceRef;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 
@@ -55,9 +52,6 @@ public class SunWebApp extends WebPropertyContainer
     static public final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
     static public final String SERVLET = "Servlet";	// NOI18N
     static public final String SESSION_CONFIG = "SessionConfig";	// NOI18N
-    static public final String RESOURCE_ENV_REF = "ResourceEnvRef";	// NOI18N
-    static public final String RESOURCE_REF = "ResourceRef";	// NOI18N
-    static public final String EJB_REF = "EjbRef";	// NOI18N
     static public final String CACHE = "Cache";	// NOI18N
     static public final String CLASS_LOADER = "ClassLoader";	// NOI18N
     static public final String JSP_CONFIG = "JspConfig";	// NOI18N
@@ -268,143 +262,7 @@ public class SunWebApp extends WebPropertyContainer
     {
 	return (SessionConfig)this.getValue(SESSION_CONFIG);
     }
-    
-    // This attribute is an array, possibly empty
-    public void setResourceEnvRef(int index, ResourceEnvRef value)
-    {
-	this.setValue(RESOURCE_ENV_REF, index, value);
-    }
-    
-    //
-    public ResourceEnvRef getResourceEnvRef(int index)
-    {
-	return (ResourceEnvRef)this.getValue(RESOURCE_ENV_REF, index);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setResourceEnvRef(ResourceEnvRef[] value)
-    {
-	this.setValue(RESOURCE_ENV_REF, value);
-    }
-    
-    //
-    public ResourceEnvRef[] getResourceEnvRef()
-    {
-	return (ResourceEnvRef[])this.getValues(RESOURCE_ENV_REF);
-    }
-    
-    // Return the number of properties
-    public int sizeResourceEnvRef()
-    {
-	return this.size(RESOURCE_ENV_REF);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addResourceEnvRef(ResourceEnvRef value)
-    {
-	return this.addValue(RESOURCE_ENV_REF, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeResourceEnvRef(ResourceEnvRef value)
-    {
-	return this.removeValue(RESOURCE_ENV_REF, value);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setResourceRef(int index, ResourceRef value)
-    {
-	this.setValue(RESOURCE_REF, index, value);
-    }
-    
-    //
-    public ResourceRef getResourceRef(int index)
-    {
-	return (ResourceRef)this.getValue(RESOURCE_REF, index);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setResourceRef(ResourceRef[] value)
-    {
-	this.setValue(RESOURCE_REF, value);
-    }
-    
-    //
-    public ResourceRef[] getResourceRef()
-    {
-	return (ResourceRef[])this.getValues(RESOURCE_REF);
-    }
-    
-    // Return the number of properties
-    public int sizeResourceRef()
-    {
-	return this.size(RESOURCE_REF);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addResourceRef(ResourceRef value)
-    {
-	return this.addValue(RESOURCE_REF, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeResourceRef(ResourceRef value)
-    {
-	return this.removeValue(RESOURCE_REF, value);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setEjbRef(int index, EjbRef value)
-    {
-	this.setValue(EJB_REF, index, value);
-    }
-    
-    //
-    public EjbRef getEjbRef(int index)
-    {
-	return (EjbRef)this.getValue(EJB_REF, index);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setEjbRef(EjbRef[] value)
-    {
-	this.setValue(EJB_REF, value);
-    }
-    
-    //
-    public EjbRef[] getEjbRef()
-    {
-        // this is crazy
-	return (EjbRef[])this.getValues(EJB_REF);
-    }
-    
-    // Return the number of properties
-    public int sizeEjbRef()
-    {
-	return this.size(EJB_REF);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addEjbRef(EjbRef value)
-    {
-	return this.addValue(EJB_REF, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeEjbRef(EjbRef value)
-    {
-	return this.removeValue(EJB_REF, value);
-    }
-    
+
     // This attribute is optional
     public void setCache(Cache value)
     {

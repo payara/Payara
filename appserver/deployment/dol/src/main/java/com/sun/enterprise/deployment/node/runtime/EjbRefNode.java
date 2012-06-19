@@ -61,14 +61,14 @@ import java.util.logging.Level;
  * @author Jerome Dochez
  * @version 
  */
-public class EjbRefNode extends DeploymentDescriptorNode {
+public class EjbRefNode extends DeploymentDescriptorNode<EjbReference> {
 
     EjbReference descriptor=null;
     
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
-    public Object getDescriptor() {
+   public EjbReference getDescriptor() {
         return descriptor;
     }            
     

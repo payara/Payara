@@ -43,9 +43,9 @@ package org.glassfish.web.deployment.node.runtime.gf;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.*;
-import com.sun.enterprise.deployment.node.runtime.common.EjbRefNode;
-import com.sun.enterprise.deployment.node.runtime.common.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.runtime.common.ResourceRefNode;
+import com.sun.enterprise.deployment.node.runtime.EjbRefNode;
+import com.sun.enterprise.deployment.node.runtime.ResourceEnvRefNode;
+import com.sun.enterprise.deployment.node.runtime.ResourceRefNode;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
 import com.sun.enterprise.deployment.runtime.common.*;
 import com.sun.enterprise.deployment.runtime.web.*;
@@ -213,41 +213,6 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
      * @param newDescriptor the new descriptor
      */
     public void addDescriptor(Object newDescriptor) {
-	if (newDescriptor instanceof EjbRef) {
-	    EjbRef ejbRef = (EjbRef) newDescriptor;
-	    descriptor.getSunDescriptor().addEjbRef(ejbRef);
-            try {
-	        EjbReference ref = descriptor.getEjbReference(ejbRef.getEjbRefName());
-	        ref.setJndiName(ejbRef.getJndiName());
-            } catch (IllegalArgumentException iae) {
-                DOLUtils.getDefaultLogger().warning(iae.getMessage());
-            }
-	} else
-	if (newDescriptor instanceof ResourceRef) {
-	    ResourceRef resourceRef = (ResourceRef) newDescriptor;
-	    descriptor.getSunDescriptor().addResourceRef(resourceRef);
-            try {
-	        ResourceReferenceDescriptor rrd = descriptor.getResourceReferenceByName(resourceRef.getResRefName());
-	        rrd.setJndiName(resourceRef.getJndiName());
-    	        DefaultResourcePrincipal drp = resourceRef.getDefaultResourcePrincipal();
-    	        if (drp!=null) {
-		    ResourcePrincipal rp = new ResourcePrincipal(drp.getName(), drp.getPassword());
-    		    rrd.setResourcePrincipal(rp);
-	        }
-            } catch (IllegalArgumentException iae) {
-                DOLUtils.getDefaultLogger().warning(iae.getMessage());
-            }
-	} else 
-	if (newDescriptor instanceof ResourceEnvRef) {
-	    ResourceEnvRef resourceEnvRef = (ResourceEnvRef) newDescriptor;
-	    descriptor.getSunDescriptor().addResourceEnvRef(resourceEnvRef);
-            try {
-	        ResourceEnvReferenceDescriptor  rrd = descriptor.getResourceEnvReferenceByName(resourceEnvRef.getResourceEnvRefName());
-	        rrd.setJndiName(resourceEnvRef.getJndiName());
-            } catch (IllegalArgumentException iae) {
-                DOLUtils.getDefaultLogger().warning(iae.getMessage());
-            }
-	} else 
 	if (newDescriptor instanceof WebComponentDescriptor) {
 	    WebComponentDescriptor servlet = (WebComponentDescriptor) newDescriptor;
             // for backward compatibility with s1as schema2beans generated desc
@@ -424,29 +389,29 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor>
 	}
         
 	// ejb-ref*
-	EjbRef[] ejbRefs = sunWebApp.getEjbRef();
-	if (ejbRefs!=null && ejbRefs.length>0) {
+	Set<EjbReference> ejbRefs = bundleDescriptor.getEjbReferenceDescriptors();
+	if (ejbRefs!=null && ejbRefs.size()>0) {
 	    EjbRefNode node = new EjbRefNode();
-	    for (int i=0;i<ejbRefs.length;i++) {
-		node.writeDescriptor(web, RuntimeTagNames.EJB_REF, ejbRefs[i]);
+	    for (EjbReference ejbRef : ejbRefs) {
+		node.writeDescriptor(web, RuntimeTagNames.EJB_REF, ejbRef);
 	    }
 	}        
 	
 	// resource-ref*
-	ResourceRef[] resourceRefs = sunWebApp.getResourceRef();
-	if (resourceRefs!=null && resourceRefs.length>0) {
+	Set<ResourceReferenceDescriptor> resourceRefs = bundleDescriptor.getResourceReferenceDescriptors();
+	if (resourceRefs!=null && resourceRefs.size()>0) {
 	    ResourceRefNode node = new ResourceRefNode();
-	    for (int i=0;i<resourceRefs.length;i++) {
-		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_REF, resourceRefs[i]);
+	    for (ResourceReferenceDescriptor resourceRef : resourceRefs) {
+		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_REF, resourceRef);
 	    }
 	}
         
 	// resource-env-ref*
-	ResourceEnvRef[] resourceEnvRefs = sunWebApp.getResourceEnvRef();
-	if (resourceEnvRefs!=null && resourceEnvRefs.length>0) {
+	Set<ResourceEnvReferenceDescriptor> resourceEnvRefs = bundleDescriptor.getResourceEnvReferenceDescriptors();
+	if (resourceEnvRefs!=null && resourceEnvRefs.size()>0) {
 	    ResourceEnvRefNode node = new ResourceEnvRefNode();
-	    for (int i=0;i<resourceEnvRefs.length;i++) {
-		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_ENV_REF, resourceEnvRefs[i]);
+	    for (ResourceEnvReferenceDescriptor resourceEnvRef : resourceEnvRefs) {
+		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_ENV_REF, resourceEnvRef);
 	    }
 	}	
         

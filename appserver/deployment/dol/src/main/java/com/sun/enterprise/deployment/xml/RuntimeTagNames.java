@@ -159,11 +159,8 @@ public interface RuntimeTagNames extends TagNames {
     
     // common
     public static final String EJB_REF = "ejb-ref";
-    public static final String EJB_REF_NAME = "ejb-ref-name";
     public static final String RESOURCE_REF = "resource-ref";
-    public static final String RES_REF_NAME = "res-ref-name";
     public static final String RESOURCE_ENV_REF = "resource-env-ref";
-    public static final String RESOURCE_ENV_REF_NAME = "resource-env-ref-name";
     
     // S1AS specific
     public static final String PASS_BY_REFERENCE = "pass-by-reference";

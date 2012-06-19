@@ -40,13 +40,14 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import java.util.Set;
 
 import com.sun.enterprise.tools.verifier.tests.web.WebTest;
 import com.sun.enterprise.tools.verifier.tests.web.WebCheck;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.Result;
-import com.sun.enterprise.deployment.runtime.common.EjbRef;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.types.EjbReference;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -60,10 +61,10 @@ public class ASWebEjbRef extends WebTest implements WebCheck {
         ComponentNameConstructor compName = getVerifierContext().getComponentNameConstructor();
         boolean oneFailed = false;
         String refName;
-        EjbRef[] ejbRefs = (descriptor.getSunDescriptor()).getEjbRef();
-        if (ejbRefs!=null && ejbRefs.length > 0) {
-            for (int rep=0; rep<ejbRefs.length; rep++ ) {
-                refName = ejbRefs[rep].getEjbRefName();
+        Set<EjbReference> ejbRefs = descriptor.getEjbReferenceDescriptors();
+        if (ejbRefs!=null && ejbRefs.size() > 0) {
+            for (EjbReference ejbRef : ejbRefs) {
+                refName = ejbRef.getName();
                 if (validEjbRefName(refName,descriptor)) {
                     addGoodDetails(result, compName);
                     result.passed(smh.getLocalString

@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import java.util.Set;
+
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import com.sun.enterprise.deployment.runtime.common.*;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -62,12 +63,12 @@ public class ASResourceEnvRef extends WebTest implements WebCheck {
         boolean oneFailed = false;
         boolean notApp = false;
         try{
-            ResourceEnvRef[] envRefs= (descriptor.getSunDescriptor()).getResourceEnvRef();
+            Set<ResourceEnvReferenceDescriptor> envRefs= descriptor.getResourceEnvReferenceDescriptors();
         
-            if (envRefs != null && envRefs.length > 0) {
+            if (envRefs != null && envRefs.size() > 0) {
 
-                for (int rep=0; rep<envRefs.length; rep++ ) {
-		        resName = envRefs[rep].getResourceEnvRefName();
+                for (ResourceEnvReferenceDescriptor envRef : envRefs) {
+		        resName = envRef.getName();
 
                 if (validResEnvRefName(resName,descriptor)) {
                     addGoodDetails(result, compName);

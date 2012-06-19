@@ -40,45 +40,83 @@
 
 package com.sun.enterprise.deployment.node.runtime.common.wls;
 
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.common.EjbRef;
+import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.types.EjbReferenceContainer;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * This node handles ejb-reference-description in weblogic DD.
  *
  * @author  Shing Wai Chan
  */
-public class EjbReferenceDescriptionNode extends RuntimeDescriptorNode {
-    
+public class EjbReferenceDescriptionNode extends RuntimeDescriptorNode<EjbReference> {
+    private EjbReference descriptor = null;
+
+    @Override
+    public EjbReference getDescriptor() {
+        return descriptor;
+    }
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
+     */
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
-        table.put(RuntimeTagNames.EJB_REF_NAME, "setEjbRefName");
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
     }
-    
+
+    /**
+     * receives notiification of the value for a particular tag
+     *
+     * @param element the xml element
+     * @param value it's associated value
+     */
+    @Override
+    public void setElementValue(XMLElement element, String value) {
+        if (RuntimeTagNames.EJB_REFERENCE_NAME.equals(element.getQName())) {
+            Object parentDesc = getParentNode().getDescriptor();
+            if (parentDesc instanceof EjbReferenceContainer) {
+                try {
+                    descriptor = ((EjbReferenceContainer)parentDesc).getEjbReference(value);
+                    DOLUtils.getDefaultLogger().finer("Applying ref runtime to " + descriptor);
+                } catch (IllegalArgumentException iae) {
+                    DOLUtils.getDefaultLogger().warning(iae.getMessage());
+                }
+            }
+            if (descriptor == null) {
+                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
+                        new Object[]{"ejb-ref" , value });
+            }
+        } else {
+            super.setElementValue(element, value);
+        }
+    }
+
     /**
      * write the descriptor class to a DOM tree and return it
      *
      * @param parent node for the DOM tree
-     * @param node name 
-     * @param the descriptor to write
+     * @param nodeName node name
+     * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, EjbRef descriptor) {  
+     */
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, EjbReference descriptor) {
         Node ejbRef = appendChild(parent, nodeName);
-        appendTextChild(ejbRef, RuntimeTagNames.EJB_REF_NAME, descriptor.getEjbRefName());
+        appendTextChild(ejbRef, RuntimeTagNames.EJB_REFERENCE_NAME, descriptor.getName());
         appendTextChild(ejbRef, RuntimeTagNames.JNDI_NAME, descriptor.getJndiName());
         return ejbRef;
-    }    
+    }
 }

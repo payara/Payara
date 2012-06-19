@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import java.util.Set;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
@@ -61,15 +62,15 @@ public class ASResourceRefName extends WebTest implements WebCheck {
         Result result = getInitializedResult();
         ComponentNameConstructor compName = getVerifierContext().getComponentNameConstructor();
 //Start Bugid:4703107
-        DefaultResourcePrincipal defPrincipal;
+        ResourcePrincipal resPrincipal;
 //End Bugid:4703107
         boolean oneFailed = false;
         boolean notApp = false;
         try{
-            ResourceRef[] resRefs = (descriptor.getSunDescriptor()).getResourceRef();
-            if (resRefs != null && resRefs.length > 0) {
-                for (int rep=0; rep<resRefs.length; rep++ ) {
-                    resrefName = resRefs[rep].getResRefName();
+            Set<ResourceReferenceDescriptor> resRefs = descriptor.getResourceReferenceDescriptors();
+            if (resRefs != null && resRefs.size() > 0) {
+                for (ResourceReferenceDescriptor resRef : resRefs) {
+                    resrefName = resRef.getName();
                     if (validResRefName(resrefName,descriptor)) {
                         addGoodDetails(result, compName);
                         result.passed(smh.getLocalString
@@ -87,11 +88,11 @@ public class ASResourceRefName extends WebTest implements WebCheck {
                                         new Object[] {resrefName}));
                     }
                     //Start Bugid:4703107
-                    defPrincipal = resRefs[rep].getDefaultResourcePrincipal();
-                    if(defPrincipal != null){
+                    resPrincipal = resRef.getResourcePrincipal();
+                    if(resPrincipal != null){
                         boolean defResourcePrincipalValid = true;
-                        String defaultname = defPrincipal.getName();
-                        String defaultpassword = defPrincipal.getPassword();
+                        String defaultname = resPrincipal.getName();
+                        String defaultpassword = resPrincipal.getPassword();
                         if((defaultname == null)||(defaultname.length() == 0)){
                             oneFailed=true;
                             defResourcePrincipalValid = false;

@@ -40,10 +40,13 @@
 
 package com.sun.enterprise.deployment.node.runtime.common.wls;
 
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.common.ResourceRef;
+import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.deployment.xml.TagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -53,9 +56,18 @@ import java.util.Map;
  *
  * @author  Shing Wai Chan
  */
-public class ResourceDescriptionNode extends RuntimeDescriptorNode {
+public class ResourceDescriptionNode extends RuntimeDescriptorNode<ResourceReferenceDescriptor> {
+    private ResourceReferenceDescriptor descriptor;
     
     public ResourceDescriptionNode() {
+    }
+
+    @Override
+    public ResourceReferenceDescriptor getDescriptor() {
+        if (descriptor == null) {
+            descriptor = new ResourceReferenceDescriptor();
+        }
+        return descriptor;
     }
 
     /**
@@ -63,12 +75,28 @@ public class ResourceDescriptionNode extends RuntimeDescriptorNode {
      * method name on the descriptor class for setting the element value. 
      *  
      * @return the map with the element name as a key, the setter method as a value
-     */    
+     */
+    @Override
     protected Map getDispatchTable() {    
         Map table = super.getDispatchTable();
-        table.put(RuntimeTagNames.RES_REF_NAME, "setResRefName");
         table.put(RuntimeTagNames.JNDI_NAME, "setJndiName");
         return table;
+    }
+    
+    @Override
+    public void setElementValue(XMLElement element, String value) {
+        if (TagNames.RESOURCE_REFERENCE_NAME.equals(element.getQName())) {
+            Object parentDesc = getParentNode().getDescriptor();
+            if (parentDesc instanceof ResourceReferenceContainer) {
+                try {
+                    descriptor = ((ResourceReferenceContainer)parentDesc).getResourceReferenceByName(value);
+                } catch(IllegalArgumentException iae) {
+                    DOLUtils.getDefaultLogger().warning(iae.getMessage());
+                }
+            }
+        } else {
+            super.setElementValue(element, value);
+        }
     }
     
     /**
@@ -78,10 +106,11 @@ public class ResourceDescriptionNode extends RuntimeDescriptorNode {
      * @param nodeName node name
      * @param descriptor the descriptor to write
      * @return the DOM tree top node
-     */    
-    public Node writeDescriptor(Node parent, String nodeName, ResourceRef descriptor) {  
+     */
+    @Override
+    public Node writeDescriptor(Node parent, String nodeName, ResourceReferenceDescriptor descriptor) {
         Node refNode = appendChild(parent, nodeName);
-        appendTextChild(refNode, RuntimeTagNames.RES_REF_NAME, descriptor.getResRefName());
+        appendTextChild(refNode, TagNames.RESOURCE_REFERENCE_NAME, descriptor.getName());
         appendTextChild(refNode, RuntimeTagNames.JNDI_NAME, descriptor.getJndiName());
         return refNode;
     }    

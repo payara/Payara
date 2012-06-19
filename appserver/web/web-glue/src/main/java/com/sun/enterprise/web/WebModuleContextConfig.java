@@ -45,8 +45,6 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.common.DefaultResourcePrincipal;
-import com.sun.enterprise.deployment.runtime.common.ResourceRef;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
@@ -189,25 +187,23 @@ public class WebModuleContextConfig extends ContextConfig {
 
         ContextResource[] resources = context.findResources();
         ResourceReferenceDescriptor resourceReference;
-        SunWebApp iasBean = webBundleDescriptor.getSunDescriptor();
-        ResourceRef[] rr = iasBean.getResourceRef();
-        DefaultResourcePrincipal drp;
+        Set<ResourceReferenceDescriptor> rrs =
+                webBundleDescriptor.getResourceReferenceDescriptors();
         ResourcePrincipal rp;
-
 
         for (int i=0; i<resources.length; i++) {
             resourceReference = new ResourceReferenceDescriptor(
                     resources[i].getName(), resources[i].getDescription(),
                     resources[i].getType());
             resourceReference.setJndiName(resources[i].getName());
-            if (rr!=null) {
-                for (int j=0; j<rr.length; j++) {
-                    if (resources[i].getName().equals(rr[j].getResRefName())) {
-                        resourceReference.setJndiName(rr[i].getJndiName());
-                        drp = rr[i].getDefaultResourcePrincipal();
-                        if (drp!=null) {
-                            rp = new ResourcePrincipal(drp.getName(), drp.getPassword());
-                            resourceReference.setResourcePrincipal(rp);
+            if (rrs!=null) {
+                for (ResourceReferenceDescriptor rr : rrs) {
+                    if (resources[i].getName().equals(rr.getName())) {
+                        resourceReference.setJndiName(rr.getJndiName());
+                        rp = rr.getResourcePrincipal();
+                        if (rp!=null) {
+                            resourceReference.setResourcePrincipal(
+                                    new ResourcePrincipal(rp.getName(), rp.getPassword()));
                         }
                     }
                 }

@@ -45,11 +45,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.runtime.common.DefaultResourcePrincipal;
-import com.sun.enterprise.deployment.runtime.common.EjbRef;
-import com.sun.enterprise.deployment.runtime.common.ResourceEnvRef;
-import com.sun.enterprise.deployment.runtime.common.ResourceRef;
 import com.sun.enterprise.deployment.runtime.connector.MapElement;
 import com.sun.enterprise.deployment.runtime.connector.Principal;
 import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
@@ -108,16 +108,16 @@ public class RuntimeDescriptorFactory {
 	register(new XMLElement(RuntimeTagNames.STORE_PROPERTIES), StoreProperties.class);	
 	register(new XMLElement(RuntimeTagNames.SESSION_PROPERTIES), SessionProperties.class);
 	register(new XMLElement(RuntimeTagNames.DEFAULT_HELPER), DefaultHelper.class);
-	register(new XMLElement(RuntimeTagNames.EJB_REF), EjbRef.class);
-        register(new XMLElement(RuntimeTagNames.RESOURCE_REF), ResourceRef.class);
-        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_REF), ResourceEnvRef.class);        
+	register(new XMLElement(RuntimeTagNames.EJB_REF), EjbReference.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_REF), ResourceReferenceDescriptor.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_REF), ResourceEnvReferenceDescriptor.class);
         register(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), DefaultResourcePrincipal.class);
         register(new XMLElement(RuntimeTagNames.CONSTRAINT_FIELD), ConstraintField.class);
 
         // weblogic DD
-        register(new XMLElement(RuntimeTagNames.RESOURCE_DESCRIPTION), ResourceRef.class);
-        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_DESCRIPTION), ResourceEnvRef.class);
-        register(new XMLElement(RuntimeTagNames.EJB_REFERENCE_DESCRIPTION), EjbRef.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_DESCRIPTION), ResourceReferenceDescriptor.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_DESCRIPTION), ResourceEnvReferenceDescriptor.class);
+        register(new XMLElement(RuntimeTagNames.EJB_REFERENCE_DESCRIPTION), EjbReference.class);
 
 	// connector related
 	register(new XMLElement(RuntimeTagNames.PRINCIPAL), Principal.class);
