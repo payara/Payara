@@ -56,6 +56,7 @@ public class ConfigBeanDefaultValue {
     private String location;
     private String xmlConfiguration;
     private Class configBeanClass;
+    private boolean replaceCurrentIfExists;
 
 
     public String getLocation() {
@@ -71,15 +72,36 @@ public class ConfigBeanDefaultValue {
         return configBeanClass;
     }
 
-    public <U extends ConfigBeanProxy>ConfigBeanDefaultValue(String location,Class<U> configBeanClass, String xmlConfiguration) {
-        this.location = location;
-        this.xmlConfiguration = xmlConfiguration;
-        this.configBeanClass= configBeanClass;
+    public boolean isReplaceCurrentIfExists() {
+        return replaceCurrentIfExists;
     }
 
-    public <U extends ConfigBeanProxy>ConfigBeanDefaultValue(String location, Class<U> configBeanClass,InputStream xmlSnippetFileInputStream) {
+    /**
+     * @param location         the location of the config bean which this configuration is intended to create
+     * @param configBeanClass  what is the type of the config bean this configuration is intended for
+     * @param xmlConfiguration the XML snippet that represent the mentioned configuration. The XML snippet should be a valid config bean configuration
+     * @param replaceCurrentIfExists    should this config bean replace an already existing one or not. Note that, this parameter will be processed only if the configuration is intended for a named configuration element. The other condition for the replace to happen is that this configuration get the chance to be processed which means it should be part of an array of config beans intended for a service that has no configuration present in the domain.xml
+     * @param <U>              Type of the config bean which is an extension of ConfigBeanProxy
+     */
+    public <U extends ConfigBeanProxy> ConfigBeanDefaultValue(String location, Class<U> configBeanClass, String xmlConfiguration, boolean replaceCurrentIfExists) {
+        this.location = location;
+        this.xmlConfiguration = xmlConfiguration;
+        this.configBeanClass = configBeanClass;
+        this.replaceCurrentIfExists = replaceCurrentIfExists;
+    }
+
+
+    /**
+     * @param location                  the location of the config bean which this configuration is intended to create
+     * @param configBeanClass           what is the type of the config bean this configuration is intended for
+     * @param xmlSnippetFileInputStream An InputStream for the actual configuration which might be a file or anything other InputStream to read the configuration from.
+     * @param replaceCurrentIfExists             should this config bean replace an already existing one or not. Note that, this parameter will be processed only if the configuration is intended for a named configuration element. The other condition for the replace to happen is that this configuration get the chance to be processed which means it should be part of an array of config beans intended for a service that has no configuration present in the domain.xml
+     * @param <U>                       Type of the config bean which is an extension of ConfigBeanProxy
+     */
+    public <U extends ConfigBeanProxy> ConfigBeanDefaultValue(String location, Class<U> configBeanClass, InputStream xmlSnippetFileInputStream, boolean replaceCurrentIfExists) {
         this.location = location;
         this.configBeanClass = configBeanClass;
         this.xmlConfiguration = ZeroConfigUtils.streamToString(xmlSnippetFileInputStream, "utf-8");
+        this.replaceCurrentIfExists = replaceCurrentIfExists;
     }
 }

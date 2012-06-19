@@ -53,7 +53,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.api.admin.config.Container;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.TargetType;
@@ -129,17 +128,17 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                         @Override
                         public Object run(Config param) throws PropertyVetoException,
                                 TransactionFailure {
-                            List<Container> containers;
-                            containers = param.getContainers();
-                            for (Container cont : containers) {
-                                String containerClassName = GlassFishConfigBean.unwrap(cont).getProxyType().getSimpleName();
-                                if (containerClassName.equals(className)) {
-                                    containers.remove(cont);
+                            List<ConfigExtension> configExtensions;
+                            configExtensions = param.getConfigExtensions();
+                            for (ConfigExtension ext : configExtensions) {
+                                String configExtensionClass = GlassFishConfigBean.unwrap(ext).getProxyType().getSimpleName();
+                                if (configExtensionClass.equals(className)) {
+                                    configExtensions.remove(ext);
                                     break;
                                 }
                             }
 
-                            return containers;
+                            return configExtensions;
                         }
                     }, config);
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -158,8 +157,8 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             }
 
         }
-            //TODO implement the deletion from the domain configuration
-            // which is checked by configBeanType.isAssignableFrom(DomainExtension.class
+        //TODO implement the deletion from the domain configuration
+        // which is checked by configBeanType.isAssignableFrom(DomainExtension.class
 
     }
 }

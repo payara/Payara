@@ -466,7 +466,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
         public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws TransactionFailure {
             T configExtension;
             //This require extra checking, Does all ConfigBeans referenced in this class are implementing Container?
-            for (Container extension : c.getContainers()) {
+            for (ConfigExtension extension : c.getConfigExtensions()) {
                 try {
                     configExtension = type.cast(extension);
                     //Dom.unwrap(configExtension).addDefaultChildren();

@@ -61,7 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This is a class to create the Container config beans from the snippet xml files
+ * This is a class to create the ConfigBeanProxy from the xml an xml snippet
  *
  * @author Bhakti Mehta
  * @author Masoud Kalali

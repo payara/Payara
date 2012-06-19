@@ -90,7 +90,7 @@ public final class ZeroConfigUtils {
         return getConfigurationFileUrl(configBeanClass, defaultConfigurationFileName);
     }
 
-    private static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String fileName) {
+    public static <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String fileName) {
         return configBeanClass.getClassLoader().getResource("META-INF/" + fileName);
     }
 
@@ -227,12 +227,12 @@ public final class ZeroConfigUtils {
         ConfigBeanProxy parent = habitat.getComponent(Domain.class).getConfigNamed(configName);
 
         String childElement;
-        String parentElement="Config";
+        String parentElement = "Config";
         while (tokenizer.hasMoreTokens()) {
             try {
                 childElement = tokenizer.nextToken();
-                parent = getOwner(parent, parentElement,childElement, habitat);
-                parentElement=childElement;
+                parent = getOwner(parent, parentElement, childElement, habitat);
+                parentElement = childElement;
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
             }
@@ -240,55 +240,43 @@ public final class ZeroConfigUtils {
         return parent;
     }
 
-    private static <T extends ConfigBeanProxy> T getOwner(T parent, String parentElement, String childElement,
-                                                          Habitat habitat) throws InvocationTargetException, IllegalAccessException {
+    private static ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement,
+                                            Habitat habitat) throws InvocationTargetException, IllegalAccessException {
         if (childElement.endsWith("]")) {
             String componentName;
             String elementName;
             elementName = childElement.substring(childElement.lastIndexOf("/") + 1, childElement.indexOf("["));
             componentName = childElement.substring(childElement.lastIndexOf("[") + 1, childElement.indexOf("]"));
             Class childClass = getClassFor(elementName, habitat);
-            Class parentClass=getClassFor(parentElement,habitat);
+            Class parentClass = getClassFor(parentElement, habitat);
             Method m = ZeroConfigUtils.findSuitableCollectionGetter(parentClass, childClass);
             if (m != null) {
                 try {
                     Collection col = (Collection) m.invoke(parent);
-                    for (Object item : col) {
-                        Method[] methods = ((Class) ( ((ParameterizedType) m.getGenericReturnType())).getActualTypeArguments()[0]).getDeclaredMethods();
-                        for (Method method : methods) {
-                            Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
-                            if ((attributeAnnotation != null) && attributeAnnotation.key()) {
-                                String name;
-                                name = (String) method.invoke(item);
-                                if (name.equalsIgnoreCase(componentName)) {
-                                    return (T) item;
-                                }
-                            }
-                        }
-                    }
+                    return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
                     LOG.log(Level.INFO, "The provided path is not valid: " + childElement, e);
                 }
             }
             return null;
         } else {
-        Class clz = getClassFor(childElement, habitat);
-        Method m = getMatchingGetterMethod(parent.getClass(), clz);
-        if (m != null) {
-            return (T) m.invoke(parent);
-        } else {
-
-            try {
-                m = parent.getClass().getMethod("getExtensionByType", java.lang.Class.class);
-            } catch (NoSuchMethodException e) {
-                LOG.log(Level.INFO, "Cannot find getExtensionByType", e);
-            }
+            Class clz = getClassFor(childElement, habitat);
+            Method m = getMatchingGetterMethod(parent.getClass(), clz);
             if (m != null) {
-                return (T) m.invoke(parent, clz);
+                return (ConfigBeanProxy) m.invoke(parent);
+            } else {
+
+                try {
+                    m = parent.getClass().getMethod("getExtensionByType", java.lang.Class.class);
+                } catch (NoSuchMethodException e) {
+                    LOG.log(Level.INFO, "Cannot find getExtensionByType", e);
+                }
+                if (m != null) {
+                    return (ConfigBeanProxy) m.invoke(parent, clz);
+                }
+                return null;
             }
-            return null;
         }
-    }
     }
 
     public static <T extends ConfigBeanProxy> void setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, Habitat habitat, ConfigBeanProxy parent) {
@@ -299,7 +287,6 @@ public final class ZeroConfigUtils {
         if (m != null) {
             try {
                 m.invoke(parent, finalConfigBean);
-
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
@@ -309,11 +296,40 @@ public final class ZeroConfigUtils {
         m = ZeroConfigUtils.findSuitableCollectionGetter(clz, configBeanDefaultValue.getConfigBeanClass());
         if (m != null) {
             try {
+                Collection col = (Collection) m.invoke(parent);
+                if (configBeanDefaultValue.isReplaceCurrentIfExists()) {
+                    String name = getNameForConfigBean(finalConfigBean, configBeanDefaultValue.getConfigBeanClass());
+                    ConfigBeanProxy itemToRemove = getNamedConfigBeanFromCollection(col, name, configBeanDefaultValue.getConfigBeanClass());
+                    col.remove(itemToRemove);
+                }
                 ((Collection) m.invoke(parent)).add(finalConfigBean);
+
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
         }
+    }
+
+    private static <T extends ConfigBeanProxy> T getNamedConfigBeanFromCollection(Collection<T> col, String nameToLookFor, Class typeOfObjects) throws InvocationTargetException, IllegalAccessException {
+        for (Object item : col) {
+            String name = getNameForConfigBean(item, typeOfObjects);
+            if (name.equalsIgnoreCase(nameToLookFor)) {
+                return (T) item;
+            }
+        }
+        return null;
+    }
+
+    private static String getNameForConfigBean(Object configBean, Class ConfigBeanType) throws InvocationTargetException, IllegalAccessException {
+        Method[] methods = ConfigBeanType.getDeclaredMethods();
+        for (Method method : methods) {
+            Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
+            if ((attributeAnnotation != null) && attributeAnnotation.key()) {
+                String name;
+                return (String) method.invoke(configBean);
+            }
+        }
+        return null;
     }
 
     /**
