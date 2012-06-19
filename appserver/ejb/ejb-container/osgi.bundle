@@ -57,8 +57,6 @@
 
 # See issue #10545 to know why we have explicitly added org.glassfish.apf.context
 # in Import-Package
-# Note that the CORBA and javax classes are needed so that dynamic RMI-IIOP
-# can create a stub for ReadOnlyEJBHome.
 Import-Package: \
                         javax.xml.soap;resolution:=optional, \
                         javax.xml.ws;resolution:=optional, \
