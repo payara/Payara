@@ -501,7 +501,9 @@ public class WebModule extends PwcWebModule implements Context {
             directoryDeployed = 
                     Boolean.valueOf(dc.getAppProps().getProperty(ServerTags.DIRECTORY_DEPLOYED));
         }
-        showArchivedRealPathEnabled = getWebBundleDescriptor().isShowArchivedRealPathEnabled();
+        if (webBundleDescriptor != null) {
+            showArchivedRealPathEnabled = webBundleDescriptor.isShowArchivedRealPathEnabled();
+        }
 
         // Start and register Tomcat mbeans
         super.start();
