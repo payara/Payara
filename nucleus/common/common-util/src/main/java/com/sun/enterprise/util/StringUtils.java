@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.sql.SQLException;
+import java.text.StringCharacterIterator;
 
 public class StringUtils {
     public static final String NEWLINE = System.getProperty("line.separator");
@@ -621,5 +622,45 @@ public class StringUtils {
 
     private static boolean isSingleQuoted(String s) {
         return s.startsWith("'") && s.endsWith("'") && s.length() > 1;
+    }
+    
+    /** Escape characters to use result in html.
+     * <table border='1' cellpadding='3' cellspacing='0'>
+     * <tr><th> Chars </th><th>Escape sequence</th></tr>
+     * <tr><td> < </td><td> &lt; </td></tr>
+     * <tr><td> > </td><td> &gt; </td></tr>
+     * <tr><td> & </td><td> &amp; </td></tr>
+     * <tr><td> " </td><td> &quot;</td></tr>
+     * <tr><td> \t </td><td> &#009;</td></tr>
+     * </table>
+     */
+    public static String escapeForHtml(String str) {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder result = new StringBuilder(str.length() + 16);
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            switch (ch) {
+                case '<':
+                    result.append("&lt;");
+                    break;
+                case '>':
+                    result.append("&gt;");
+                    break;
+                case '&':
+                    result.append("&amp;");
+                    break;
+                case '\"':
+                    result.append("&quot;");
+                    break;
+                case '\t':
+                    result.append("&#009;");
+                    break;
+                default:
+                    result.append(ch);
+            }
+        }
+        return result.toString();
     }
 }

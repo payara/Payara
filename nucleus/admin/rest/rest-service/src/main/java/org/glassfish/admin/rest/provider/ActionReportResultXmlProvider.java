@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,17 +41,10 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.utils.xml.XmlArray;
-import org.glassfish.admin.rest.utils.xml.XmlMap;
-import org.glassfish.admin.rest.utils.xml.XmlObject;
-import org.glassfish.api.ActionReport.MessagePart;
-
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
-import java.util.*;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.admin.rest.results.ActionReportResult;
 
 /**
  * @author Ludovic Champenois
@@ -59,6 +52,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 @Provider
 @Produces(MediaType.APPLICATION_XML)
 public class ActionReportResultXmlProvider extends BaseProvider<ActionReportResult> {
+    
     public ActionReportResultXmlProvider() {
         super(ActionReportResult.class, MediaType.APPLICATION_XML_TYPE);
     }
@@ -66,121 +60,8 @@ public class ActionReportResultXmlProvider extends BaseProvider<ActionReportResu
     @Override
     public String getContent(ActionReportResult proxy) {
         ActionReporter ar = (ActionReporter)proxy.getActionReport();
-        XmlObject result = processReport(ar);
-        return result.toString(getFormattingIndentLevel());
-    }
-
-    protected XmlObject processReport(ActionReporter ar) {
-        XmlMap result = new XmlMap("map");
-        result.put("message", (ar instanceof RestActionReporter) ? ((RestActionReporter)ar).getCombinedMessage() : ar.getMessage());
-        result.put("command", ar.getActionDescription());
-        result.put("exit_code", ar.getActionExitCode().toString());
-
-        Properties properties = ar.getTopMessagePart().getProps();
-        if ((properties != null) && (!properties.isEmpty())) {
-            result.put("properties", new XmlMap("properties", properties));
-        }
-
-        Properties extraProperties = ar.getExtraProperties();
-        if ((extraProperties != null) && (!extraProperties.isEmpty())) {
-            result.put("extraProperties", getExtraProperties(result, extraProperties));
-        }
-
-        List<MessagePart> children = ar.getTopMessagePart().getChildren();
-        if ((children != null) && (!children.isEmpty())) {
-            result.put("children", processChildren(children));
-        }
-
-        List<ActionReporter> subReports = ar.getSubActionsReport();
-       if ((subReports != null) && (!subReports.isEmpty())) {
-            result.put("subReports", processSubReports(subReports));
-        }
-
-        return result;
-    }
-
-    protected XmlArray processChildren(List<MessagePart> parts) {
-        XmlArray array = new XmlArray("children");
-
-        for (MessagePart part : parts) {
-            XmlMap object = new XmlMap("part");
-            object.put("message", part.getMessage());
-            object.put("properties", new XmlMap("properties", part.getProps()));
-            List<MessagePart> children = part.getChildren();
-            if (children.size() > 0) {
-                object.put("children", processChildren(part.getChildren()));
-            }
-            array.put(object);
-        }
-
-        return array;
-    }
-
-    protected XmlArray processSubReports(List<ActionReporter> subReports) {
-        XmlArray array = new XmlArray("subReports");
-
-        for (ActionReporter subReport : subReports) {
-            array.put(processReport(subReport));
-        }
-
-        return array;
-    }
-
-    protected XmlMap getExtraProperties(XmlObject object, Properties props) {
-        XmlMap extraProperties = new XmlMap("extraProperties");
-        for (Map.Entry<Object, Object> entry : props.entrySet()) {
-            String key = entry.getKey().toString();
-            Object value = getXmlObject(entry.getValue());
-            if (value != null) {
-                extraProperties.put(key, value);
-            }
-        }
-
-        return extraProperties;
-    }
-
-    protected Object getXmlObject(Object object) {
-        Object result = null;
-        if (object == null) {
-            result = "";
-        } else if (object instanceof Collection) {
-            result = processCollection((Collection)object);
-        } else if (object instanceof Map) {
-            result = processMap((Map)object);
-        } else if (object instanceof Number) {
-            result = new XmlObject("number", (Number)object);
-        } else if (object instanceof String) {
-            result = object;
-        } else {
-            result = new XmlObject(object.getClass().getSimpleName(), object);
-        }
-
-        return result;
-    }
-
-    protected XmlArray processCollection(Collection c) {
-        XmlArray result = new XmlArray("list");
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            Object item = i.next();
-            Object obj = getXmlObject(item);
-            if (!(obj instanceof XmlObject)) {
-                obj = new XmlObject(obj.getClass().getSimpleName(), obj);
-            }
-            result.put((XmlObject)obj);
-        }
-
-        return result;
-    }
-
-    protected XmlMap processMap(Map map) {
-        XmlMap result = new XmlMap("map");
-
-        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
-            result.put(entry.getKey().toString(), getXmlObject(entry.getValue()));
-        }
-
-        return result;
+        ActionReportXmlProvider provider = new ActionReportXmlProvider();
+        return provider.getContent(ar);
     }
 
 }

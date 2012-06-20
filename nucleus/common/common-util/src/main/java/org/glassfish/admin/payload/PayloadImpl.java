@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,14 +41,7 @@
 package org.glassfish.admin.payload;
 
 import com.sun.logging.LogDomains;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -335,7 +328,7 @@ public class PayloadImpl implements Payload {
             return (isComplex()) ? getComplexContentType() : getSinglePartContentType();
         }
 
-        ArrayList<Payload.Part> getParts() {
+        protected ArrayList<Payload.Part> getParts() {
             return parts;
         }
 
@@ -345,7 +338,7 @@ public class PayloadImpl implements Payload {
          * @param os the OutputStream to which the Parts should be written
          * @throws java.io.IOException
          */
-        abstract void writePartsTo(final OutputStream os) throws IOException;
+        protected abstract void writePartsTo(final OutputStream os) throws IOException;
 
         /**
          * Writes the Payload to the specified output stream.

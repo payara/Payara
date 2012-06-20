@@ -85,16 +85,26 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     protected Class desiredType;
 
-    protected MediaType supportedMediaType;
+    protected MediaType[] supportedMediaTypes;
 
-    public BaseProvider(Class desiredType, MediaType mediaType) {
+    public BaseProvider(Class desiredType, MediaType ... mediaType) {
         this.desiredType = desiredType;
-        this.supportedMediaType = mediaType;
+        if (mediaType == null) {
+            mediaType = new MediaType[0];
+        }
+        this.supportedMediaTypes = mediaType;
     }
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] antns, MediaType mt) {
-        return (desiredType == type) && mt.isCompatible(supportedMediaType);
+        if (desiredType.equals(genericType)) {
+            for (MediaType supportedMediaType : supportedMediaTypes) {
+                if (mt.isCompatible(supportedMediaType)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

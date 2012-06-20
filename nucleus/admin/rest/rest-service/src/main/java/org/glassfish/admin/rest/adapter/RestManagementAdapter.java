@@ -51,7 +51,6 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.Dom;
 
-import org.codehaus.jackson.map.SerializationConfig;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.generator.ASMResourcesGenerator;
 import org.glassfish.admin.rest.generator.ResourcesGenerator;

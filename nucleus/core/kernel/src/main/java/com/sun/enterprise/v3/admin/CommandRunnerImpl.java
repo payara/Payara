@@ -86,6 +86,7 @@ import com.sun.hk2.component.InjectionResolver;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.common.XMLContentActionReporter;
 import com.sun.logging.LogDomains;
 import java.lang.annotation.Annotation;
@@ -634,6 +635,117 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         usageText.append(operand);
         return usageText.toString();
+    }
+    
+    @Override
+    public BufferedReader getHelp(CommandModel model) {
+        BufferedReader manPage = getManPage(model.getCommandName(), model);
+        if (manPage != null) {
+            return manPage;
+        } else {
+            StringBuilder hlp = new StringBuilder(256);
+            StringBuilder part = new StringBuilder(64);
+            hlp.append("NAME").append(ManifestUtils.EOL);
+            part.append(model.getCommandName());
+            String description = model.getLocalizedDescription();
+            if (ok(description)) {
+                part.append(" - ").append(model.getLocalizedDescription());
+            }
+            hlp.append(formatGeneratedManPagePart(part.toString(), 5, 65)).append(ManifestUtils.EOL);
+            //Usage
+            hlp.append(ManifestUtils.EOL).append("SYNOPSIS").append(ManifestUtils.EOL);
+            hlp.append(formatGeneratedManPagePart(getUsageText(null, model), 5, 65));
+            //Options
+            hlp.append(ManifestUtils.EOL).append(ManifestUtils.EOL);
+            hlp.append("OPTIONS").append(ManifestUtils.EOL);
+            CommandModel.ParamModel operand = null;
+            for (CommandModel.ParamModel paramModel : model.getParameters()) {
+                Param param = paramModel.getParam();
+                if (param == null || paramModel.getName().startsWith("_") || 
+                        param.password() || param.obsolete()) {
+                    continue;
+                }
+                if (param.primary()) {
+                    operand = paramModel;
+                    continue;
+                }
+                hlp.append("     --").append(paramModel.getName().toLowerCase(Locale.ENGLISH));
+                hlp.append(ManifestUtils.EOL);
+                if (ok(param.shortName())) {
+                    hlp.append("      -").append(param.shortName().toLowerCase(Locale.ENGLISH));
+                    hlp.append(ManifestUtils.EOL);
+                }
+                String descr = paramModel.getLocalizedDescription();
+                if (ok(descr)) {
+                    hlp.append(formatGeneratedManPagePart(descr, 9, 65));
+                }
+                hlp.append(ManifestUtils.EOL);
+            }
+            //Operand
+            if (operand != null) {
+                hlp.append("OPERANDS").append(ManifestUtils.EOL);
+                hlp.append("     ").append(operand.getName().toLowerCase(Locale.ENGLISH));
+                hlp.append(ManifestUtils.EOL);
+                String descr = operand.getLocalizedDescription();
+                if (ok(descr)) {
+                    hlp.append(formatGeneratedManPagePart(descr, 9, 65));
+                }
+            }
+            return new BufferedReader(new StringReader(hlp.toString()));
+        }
+    }
+    
+    private String formatGeneratedManPagePart(String part, int prefix, int lineLength) {
+        if (part == null) {
+            return null;
+        }
+        if (prefix < 0) {
+            prefix = 0;
+        }
+        //Prepare prefix
+        StringBuilder sb = new StringBuilder(prefix);
+        for (int i = 0; i < prefix; i++) {
+            sb.append(' ');
+        }
+        String prfx = sb.toString();
+        StringBuilder result = new StringBuilder(part.length() + prefix + 16);
+        boolean newLine = true;
+        boolean lastWasCR = false;
+        int counter = 0;
+        for (int i = 0; i < part.length(); i++) {
+            boolean addPrefix = newLine;
+            char ch = part.charAt(i);
+            switch (ch) {
+                case '\n':
+                    if (!lastWasCR) {
+                        newLine = true;
+                    } else {
+                        lastWasCR = false;
+                    }
+                    counter = 0;
+                    break;
+                case '\r':
+                    newLine = true;
+                    lastWasCR = true;
+                    counter = 0;
+                    break;
+                default:
+                    newLine = false;
+                    lastWasCR = false;
+                    counter++;
+            }
+            if (addPrefix && !newLine) {
+                result.append(prfx);
+                counter += prefix;
+            }
+            result.append(ch);
+            if (lineLength > 0 && counter >= lineLength && !newLine) {
+                newLine = true;
+                result.append(ManifestUtils.EOL);
+                counter = 0;
+            }
+        }
+        return result.toString();
     }
 
     public void getHelp(AdminCommand command, ActionReport report) {

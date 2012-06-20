@@ -40,10 +40,10 @@
 
 package org.glassfish.api.admin;
 
+import java.io.BufferedReader;
+import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Contract;
-
-import java.util.logging.Logger;
 import javax.security.auth.Subject;
 
 /**
@@ -83,6 +83,14 @@ public interface CommandRunner {
      * is not found
      */
     public CommandModel getModel(String scope, String name, Logger logger);
+    
+    /** 
+     * Returns manpage for the command.
+     * 
+     * @param model of command
+     * @return Formated manpage
+     */
+    public BufferedReader getHelp(CommandModel model);
     
     /** Checks if given command model eTag is equal to current command model eTag
      * 

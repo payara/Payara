@@ -43,6 +43,7 @@
                         org.glassfish.admin.rest.model, \
 						org.glassfish.admin.rest.utils, \
 						org.glassfish.admin.rest.composite, \
+						org.glassfish.admin.rest.shareable, \
 						org.glassfish.admin.rest.utils.xml
 DynamicImport-Package: \
                         org.glassfish.flashlight, \
