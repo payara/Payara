@@ -595,9 +595,10 @@ public class AppServerStartup implements ModuleStartup {
                         // wait for an eventual status, otherwise ignore
                         if (future.get(timeout, unit).isFailure()) {
                             final Throwable t = future.get().exception();
-                            logger.log(Level.SEVERE,localStrings.getLocalString("startupfatalstartup",
-                                    "Shutting down v3 due to startup exception : ",t.getMessage()));
-                            logger.log(level, future.get().exception().getMessage(), t);
+                            logger.log(Level.SEVERE,
+                                    localStrings.getLocalString("startupfatalstartup",
+                                            "Shutting down server due to startup exception : "),
+                                    t);
                             events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
                             forceShutdown();
                             return;
