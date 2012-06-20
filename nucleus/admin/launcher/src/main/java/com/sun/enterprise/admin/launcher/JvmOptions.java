@@ -138,8 +138,7 @@ class JvmOptions {
                 ss.add("-D" + name);
             }
         }
-        postProcessOrdering(ss);
-        return ss;
+        return postProcessOrdering(ss);
     }
 
     Map<String, String> getCombinedMap() {
@@ -193,24 +192,41 @@ class JvmOptions {
         xxProps.remove(":LogFile");
     }
 
-    private void postProcessOrdering(List<String> ss) {
+
+    private List<String> postProcessOrdering(List<String> unsorted) {
         /*
          * (1) JVM has one known order dependency. If these 3 are here, then
          * unlock MUST appear first in the list -XX:+UnlockDiagnosticVMOptions
          * -XX:+LogVMOutput -XX:LogFile=D:/as/domains/domain1/logs/jvm.log
          *
+         * June 2012 http://java.net/jira/browse/GLASSFISH-18777 JFR needs
+         * UnlockCommercialFeatures -- it is also order-dependent. New algorithm
+         * -- put -XX:+Unlock* first
+         *
          * (2) TODO Get the name of the instance early. We no longer send in the
          * instanceRoot as an arg so -- ????
          */
 
-        String arg = "-XX:+UnlockDiagnosticVMOptions";
-        int index = ss.indexOf(arg);
+        // go through the list hunting for the magic string.  If such a string is
+        // found then move it to the top.  In June 2012 I changed this to a less
+        // efficient but much more robust and simple algorithm...
 
-        // if < 0, it isn't here.  if == 0 then it's already in the right position
-        if (index > 0) {
-            ss.remove(index);
-            ss.add(0, arg);
-        }
+        List<String> sorted = new ArrayList<String>(unsorted.size());
+
+        for (String s : unsorted)
+            if (hasMagic(s))
+                sorted.add(s);
+
+        for (String s : unsorted)
+            if (!hasMagic(s))
+                sorted.add(s);
+
+        return sorted;
+    }
+
+    private boolean hasMagic(String s) {
+        final String magic = "-XX:+Unlock";
+        return s != null && s.startsWith(magic);
     }
 
     /**
