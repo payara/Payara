@@ -367,6 +367,32 @@ public class SSHLauncher {
                                             InterruptedException
     {
         command = SFTPClient.normalizePath(command);
+        return runCommandAsIs(command, os, stdinLines);
+    }
+    
+    /**
+     * Executes a command on the remote system via ssh without normalizing 
+     * the command line
+     * 
+     * @param command the command to execute
+     * @param os stream to receive the output from the command
+     * @param stdinLines optional data to be sent to the process's System.in 
+     *        stream; null if no input should be sent
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     **/
+    public int runCommandAsIs(List<String> command, OutputStream os,
+            List<String> stdinLines) throws IOException,
+                                            InterruptedException
+    {
+        return runCommandAsIs(commandListToQuotedString(command), os, stdinLines);
+    }
+    
+    private int runCommandAsIs(String command, OutputStream os,
+            List<String> stdinLines) throws IOException,
+                                            InterruptedException
+    {
         if (logger.isLoggable(Level.FINER)) {
             logger.finer("Running command " + command + " on host: " + this.host);
         }
