@@ -276,7 +276,14 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
                 String interfaceToMatch = ejbRef.isEJB30ClientView() ?
                     ejbRef.getEjbInterface() : ejbRef.getEjbHomeInterface();
-
+                if ( interfaceToMatch == null ) {
+                  String msg = localStrings.getLocalString(
+                          "enterprise.deployment.util.no_remoteinterface",
+                          "Cannot resolve reference {0} because it does not declare a remote interface or " +
+                                  "remote home interface of target bean",
+                          new Object[]{ejbRef});
+                  throw new IllegalArgumentException(msg);
+                }
                 EjbIntfInfo intfInfo = ejbIntfInfoMap.get(interfaceToMatch);
 
                 // make sure exactly one match
