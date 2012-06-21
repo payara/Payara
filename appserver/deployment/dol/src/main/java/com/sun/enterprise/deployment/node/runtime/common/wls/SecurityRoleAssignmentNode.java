@@ -40,10 +40,13 @@
 
 package com.sun.enterprise.deployment.node.runtime.common.wls;
 
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+
+import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Node;
 
 import java.util.List;
@@ -110,4 +113,35 @@ public class SecurityRoleAssignmentNode extends RuntimeDescriptorNode {
         }
         return roleMapping;
     }
+
+    /**
+     * write all occurrences of the descriptor corresponding to the current
+     * node from the parent descriptor to an JAXP DOM node and return it
+     *
+     * This API will be invoked by the parent node when the parent node
+     * writes out a mix of statically and dynamically registered sub nodes.
+     *
+     * This method should be overriden by the sub classes if it
+     * needs to be called by the parent node.
+     *
+     * @param parent node in the DOM tree
+     * @param nodeName the name of the node
+     * @param parentDesc parent descriptor of the descriptor to be written
+     * @return the JAXP DOM node
+     */
+    @Override
+    public Node writeDescriptors(Node parent, String nodeName, Descriptor parentDesc) {
+        if (parentDesc instanceof WebBundleDescriptor) {
+            WebBundleDescriptor webBundleDescriptor = (WebBundleDescriptor)parentDesc;
+            // security-role-assignment*
+            SecurityRoleAssignment[]securityRoleAssignments =
+                webBundleDescriptor.getSunDescriptor().getWLSecurityRoleAssignment();
+            for (SecurityRoleAssignment securityRoleAssignment : 
+                    securityRoleAssignments) {
+                writeDescriptor(parent, nodeName, securityRoleAssignment);
+            }
+        }
+        return parent;
+    }
+
 }

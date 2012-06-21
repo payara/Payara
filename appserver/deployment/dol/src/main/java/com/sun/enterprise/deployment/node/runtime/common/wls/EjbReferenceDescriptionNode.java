@@ -46,9 +46,11 @@ import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.EjbReferenceContainer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Node;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -119,4 +121,33 @@ public class EjbReferenceDescriptionNode extends RuntimeDescriptorNode<EjbRefere
         appendTextChild(ejbRef, RuntimeTagNames.JNDI_NAME, descriptor.getJndiName());
         return ejbRef;
     }
+
+    /**
+     * write all occurrences of the descriptor corresponding to the current
+     * node from the parent descriptor to an JAXP DOM node and return it
+     *
+     * This API will be invoked by the parent node when the parent node
+     * writes out a mix of statically and dynamically registered sub nodes.
+     *
+     * This method should be overriden by the sub classes if it
+     * needs to be called by the parent node.
+     *
+     * @param parent node in the DOM tree
+     * @param nodeName the name of the node
+     * @param parentDesc parent descriptor of the descriptor to be written
+     * @return the JAXP DOM node
+     */
+    @Override
+    public Node writeDescriptors(Node parent, String nodeName, Descriptor parentDesc) {
+        if (parentDesc instanceof EjbReferenceContainer) {
+            EjbReferenceContainer ejbReferenceContainer = (EjbReferenceContainer)parentDesc;
+            // ejb-reference-description*
+            Set<EjbReference> ejbReferences =
+                ejbReferenceContainer.getEjbReferenceDescriptors();
+            for (EjbReference ejbReference : ejbReferences) {
+                writeDescriptor(parent, nodeName, ejbReference);
+            }
+        }
+        return parent;
+    }      
 }
