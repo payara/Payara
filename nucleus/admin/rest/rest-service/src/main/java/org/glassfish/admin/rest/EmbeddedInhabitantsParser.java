@@ -42,7 +42,7 @@ package org.glassfish.admin.rest;
 
 import com.sun.hk2.component.InhabitantsParser;
 import com.sun.hk2.component.InhabitantsParserDecorator;
-import org.glassfish.admin.restconnector.ProxyRestAdminAdapter;
+import org.glassfish.admin.restconnector.ProxyRestCommandAdapter;
 import org.glassfish.admin.restconnector.ProxyRestManagementAdapter;
 import org.glassfish.admin.restconnector.ProxyRestMonitoringAdapter;
 import org.kohsuke.MetaInfServices;
@@ -55,14 +55,16 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices
 public class EmbeddedInhabitantsParser implements InhabitantsParserDecorator {
+    @Override
     public String getName() {
         return "Embedded";
     }
 
+    @Override
     public void decorate(InhabitantsParser inhabitantsParser) {
         inhabitantsParser.drop(RestService.class);
         inhabitantsParser.drop(ProxyRestManagementAdapter.class);
         inhabitantsParser.drop(ProxyRestMonitoringAdapter.class);
-        inhabitantsParser.drop(ProxyRestAdminAdapter.class);
+        inhabitantsParser.drop(ProxyRestCommandAdapter.class);
     }
 }
