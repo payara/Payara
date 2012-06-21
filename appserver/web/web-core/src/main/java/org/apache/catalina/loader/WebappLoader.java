@@ -967,7 +967,7 @@ public class WebappLoader
      * Configure the repositories for our class loader, based on the
      * associated Context.
      */
-    private void setRepositories() {
+    private void setRepositories() throws IOException {
 
         if (!(container instanceof Context))
             return;
@@ -1020,8 +1020,15 @@ public class WebappLoader
             } else {
 
                 classRepository = new File(workDir, classesPath);
-                classRepository.mkdirs();
-                copyDir(classes, classRepository);
+                if (!classRepository.mkdirs() &&
+                        !classRepository.isDirectory()) {
+                    throw new IOException(
+                            sm.getString("webappLoader.mkdirFailure"));
+                }
+                if (!copyDir(classes, classRepository)) {
+                    throw new IOException(
+                            sm.getString("webappLoader.copyFailure"));
+                }
 
             }
 
@@ -1060,7 +1067,11 @@ public class WebappLoader
             } else {
                 copyJars = true;
                 destDir = new File(workDir, libPath);
-                destDir.mkdirs();
+                if (!destDir.exists() && !destDir.mkdirs()) {
+                    log.log(Level.SEVERE,
+                            sm.getString("webappLoader.createWorkDirFailed",
+                                    destDir.getAbsolutePath()));
+                }
             }
 
             if (!copyJars) {
@@ -1240,8 +1251,10 @@ public class WebappLoader
                     if (!copy((InputStream) object, os))
                         return false;
                 } else if (object instanceof DirContext) {
-                    currentFile.mkdir();
-                    copyDir((DirContext) object, currentFile);
+                    if (!currentFile.isDirectory() && !currentFile.mkdir())
+                        return false;
+                    if (!copyDir((DirContext) object, currentFile))
+                        return false;
                 }
             }
 
