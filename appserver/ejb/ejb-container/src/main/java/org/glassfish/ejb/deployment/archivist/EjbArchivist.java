@@ -77,11 +77,6 @@ import org.jvnet.hk2.component.PerLookup;
 @ArchivistFor(EjbType.ARCHIVE_TYPE)
 public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
 
-    /**
-     * The DeploymentDescriptorFile handlers we are delegating for XML i/o
-     */
-    private EjbDeploymentDescriptorFile standardDD;
-    
     @Inject
     private EjbType ejbType;
 

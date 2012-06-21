@@ -72,7 +72,10 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
     protected final Logger logger = st_logger;
 
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
-        return new PersistenceDeploymentDescriptorFile();
+        if (standardDD == null) {
+             standardDD = new PersistenceDeploymentDescriptorFile();
+        }
+        return standardDD;
     }
 
     /**
@@ -235,7 +238,7 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
      * @param out the abstract archive file to write to
      */
     @Override
-    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+    public void writeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
         // we do not write out any persistence deployment descriptors 
         // for now
     }

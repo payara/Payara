@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -93,6 +94,8 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
     // for i18N
     private static LocalStringManagerImpl localStrings=
 	    new LocalStringManagerImpl(DeploymentDescriptorFile.class);        
+
+    private ArchiveType archiveType;
     
     /** Creates a new instance of DeploymentDescriptorFile */
     public DeploymentDescriptorFile() {
@@ -511,4 +514,17 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
         this.errorReportingString = s;
     }
     
+    /**
+     * @return the archive type associated with this deployment descriptor file
+     */
+    public ArchiveType getArchiveType() {
+        return archiveType;
+    }
+
+    /**
+     * @param the archive type to set on this deployment descriptor file
+     */
+    public void setArchiveType(ArchiveType type) {
+        archiveType = type;
+    }
 }

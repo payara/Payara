@@ -70,11 +70,6 @@ import java.util.Collections;
  */
 class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
 
-    /** 
-     * The DeploymentDescriptorFile handlers we are delegating for XML i/o
-     */
-    private DeploymentDescriptorFile<WebFragmentDescriptor> standardDD = null;
-
     WebFragmentArchivist (WebArchivist webArchivist, BaseServiceLocator habitat) {
         this.habitat = habitat;
         initializeContext(webArchivist);

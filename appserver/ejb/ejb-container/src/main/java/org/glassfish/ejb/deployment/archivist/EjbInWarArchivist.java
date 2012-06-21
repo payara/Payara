@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.io.IOException;
 
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
+import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -80,8 +81,6 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Inject
     Provider<EjbInWarScanner> scanner;
-
-    private EjbInWarDeploymentDescriptorFile standardDD;
 
     /**
      * @return the DeploymentDescriptorFile responsible for handling
@@ -138,12 +137,12 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
      * @param out the abstract archive file to write to
      */
     @Override
-    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+    public void writeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
         Collection<EjbBundleDescriptorImpl> ejbExtensions =
             descriptor.getExtensionsDescriptors(EjbBundleDescriptorImpl.class);
 
         for (EjbBundleDescriptorImpl ejbBundle : ejbExtensions) {
-            super.writeDeploymentDescriptors(ejbBundle, in, out);
+            super.writeDeploymentDescriptors(main, ejbBundle, in, out);
         }
     }
 }

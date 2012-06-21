@@ -280,11 +280,12 @@ public class DOLUtils {
     // configuration file with precedence from high to low
     // this list does not take consideration of what runtime files are 
     // present in the current archive
-    private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles) {
+    private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType) {
         ConfigurationDeploymentDescriptorFile wlsConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
         ConfigurationDeploymentDescriptorFile sunConfDD = null;
         for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
+            ddFile.setArchiveType(archiveType);
             String ddPath = ddFile.getDeploymentDescriptorPath();
             if (ddPath.indexOf(DescriptorConstants.WLS) != -1) {
                 wlsConfDD = ddFile;
@@ -335,9 +336,9 @@ public class DOLUtils {
     // configuration file with precedence from high to low
     // this list takes consideration of what runtime files are 
     // present in the current archive
-    public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive) throws IOException {
+    public static List<ConfigurationDeploymentDescriptorFile> processConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ReadableArchive archive, ArchiveType archiveType) throws IOException {
         List<ConfigurationDeploymentDescriptorFile> processedConfDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
-        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles)) {
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(ddFiles, archiveType)) {
             if (archive.exists(ddFile.getDeploymentDescriptorPath())) {
                 processedConfDDFiles.add(ddFile);
             }
@@ -485,11 +486,11 @@ public class DOLUtils {
         return allIncompatTypes;
     }
 
-    public static List<ConfigurationDeploymentDescriptorFile> getConfigurationDeploymentDescriptorFiles(BaseServiceLocator habitat, String archiveType) {
+    public static List<ConfigurationDeploymentDescriptorFile> getConfigurationDeploymentDescriptorFiles(BaseServiceLocator habitat, String containerType) {
         List<ConfigurationDeploymentDescriptorFile> confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
         for (Inhabitant<?> inhabitant : ((Habitat)habitat).getInhabitants(ConfigurationDeploymentDescriptorFileFor.class)) {
             String indexedType = inhabitant.metadata().get(ConfigurationDeploymentDescriptorFileFor.class.getName()).get(0);
-            if(indexedType.equals(archiveType)) {
+            if(indexedType.equals(containerType)) {
                 ConfigurationDeploymentDescriptorFile confDD = (ConfigurationDeploymentDescriptorFile) inhabitant.get();
                 confDDFiles.add(confDD);
             }

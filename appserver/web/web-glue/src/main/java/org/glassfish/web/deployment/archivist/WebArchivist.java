@@ -99,12 +99,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
     @Inject
     private ServerEnvironment env;
 
-
-    /**
-     * The DeploymentDescriptorFile handlers we are delegating for XML i/o
-     */
-    private DeploymentDescriptorFile<WebBundleDescriptor> standardDD = null;
-
     private WebBundleDescriptor defaultWebXmlBundleDescriptor = null;
 
     /**

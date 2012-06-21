@@ -70,7 +70,10 @@ import org.xml.sax.SAXParseException;
 public class WebServicesArchivist extends ExtensionsArchivist {
 
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
-        return new WebServicesDeploymentDescriptorFile(descriptor);
+        if (standardDD == null) {
+            standardDD = new WebServicesDeploymentDescriptorFile(descriptor);
+        } 
+        return standardDD;
     }
 
     /**
@@ -113,9 +116,9 @@ public class WebServicesArchivist extends ExtensionsArchivist {
      * @param out the abstract archive file to write to
      */
     @Override
-    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+    public void writeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
         if (descriptor.hasWebServices()) {
-            super.writeDeploymentDescriptors(descriptor, in, out);
+            super.writeDeploymentDescriptors(main, descriptor, in, out);
         }
     }
 }

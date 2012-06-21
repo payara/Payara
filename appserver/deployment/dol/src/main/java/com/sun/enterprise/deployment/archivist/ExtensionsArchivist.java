@@ -76,6 +76,9 @@ public abstract class ExtensionsArchivist  {
 
     protected final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
+    // standard DD file associated with this archivist
+    protected DeploymentDescriptorFile standardDD;
+
     // configuration DD files associated with this archivist
     protected List<ConfigurationDeploymentDescriptorFile> confDDFiles;
 
@@ -102,9 +105,9 @@ public abstract class ExtensionsArchivist  {
      * @return if exists the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    public ConfigurationDeploymentDescriptorFile getConfigurationDDFile(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+    public ConfigurationDeploymentDescriptorFile getConfigurationDDFile(Archivist main, RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
         if (confDD == null) {
-            getSortedConfigurationDDFiles(descriptor, archive);
+            getSortedConfigurationDDFiles(descriptor, archive, main.getModuleType());
             if (sortedConfDDFiles != null && !sortedConfDDFiles.isEmpty()) {
                confDD = sortedConfDDFiles.get(0);
             }
@@ -156,25 +159,25 @@ public abstract class ExtensionsArchivist  {
             throws IOException, SAXParseException {
 
 
-        DeploymentDescriptorFile confDD = getStandardDDFile(descriptor);
+         getStandardDDFile(descriptor).setArchiveType(main.getModuleType());
          if (archive.getURI() != null) {
-             confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
+             standardDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
          }
          InputStream is = null;
          try {
-             is = archive.getEntry(confDD.getDeploymentDescriptorPath());
+             is = archive.getEntry(standardDD.getDeploymentDescriptorPath());
              if (is == null) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, "Deployment descriptor: " +
-                                    confDD.getDeploymentDescriptorPath(),
+                                    standardDD.getDeploymentDescriptorPath(),
                                     " does not exist in archive: " + 
                                     archive.getURI().getSchemeSpecificPart());
                 }
 
              } else {
-                 confDD.setXMLValidation(main.getXMLValidation());
-                 confDD.setXMLValidationLevel(main.getXMLValidationLevel());
-                 return confDD.read(descriptor, is);
+                 standardDD.setXMLValidation(main.getXMLValidation());
+                 standardDD.setXMLValidationLevel(main.getXMLValidationLevel());
+                 return standardDD.read(descriptor, is);
              }
          } finally {
              if (is != null) {
@@ -195,7 +198,7 @@ public abstract class ExtensionsArchivist  {
      public Object readRuntimeDeploymentDescriptor(Archivist main, ReadableArchive archive, RootDeploymentDescriptor descriptor)
             throws IOException, SAXParseException {
 
-        ConfigurationDeploymentDescriptorFile ddFile = getConfigurationDDFile(descriptor, archive);
+        ConfigurationDeploymentDescriptorFile ddFile = getConfigurationDDFile(main, descriptor, archive);
 
         // if this extension archivist has no runtime DD, just return the 
         // original descriptor
@@ -203,7 +206,7 @@ public abstract class ExtensionsArchivist  {
             return descriptor;
         }
 
-        DOLUtils.readRuntimeDeploymentDescriptor(getSortedConfigurationDDFiles(descriptor, archive), archive, descriptor, main,true);
+        DOLUtils.readRuntimeDeploymentDescriptor(getSortedConfigurationDDFiles(descriptor, archive, main.getModuleType()), archive, descriptor, main,true);
 
         return descriptor;
     }
@@ -215,13 +218,13 @@ public abstract class ExtensionsArchivist  {
      * @param in the input archive
      * @param out the abstract archive file to write to
      */
-    public void writeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+    public void writeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
 
         // Standard DDs
-        writeStandardDeploymentDescriptors(descriptor, out);
+        writeStandardDeploymentDescriptors(main, descriptor, out);
 
         // Runtime DDs
-        writeRuntimeDeploymentDescriptors(descriptor, in, out);
+        writeRuntimeDeploymentDescriptors(main, descriptor, in, out);
     }
 
     /**
@@ -229,10 +232,11 @@ public abstract class ExtensionsArchivist  {
      *
      * @param out archive to write to
      */
-    public void writeStandardDeploymentDescriptors(BundleDescriptor descriptor, WritableArchive out) throws IOException {
+    public void writeStandardDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, WritableArchive out) throws IOException {
 
-        OutputStream os = out.putNextEntry(getStandardDDFile(descriptor).getDeploymentDescriptorPath());
-        getStandardDDFile(descriptor).write(descriptor, os);
+        getStandardDDFile(descriptor).setArchiveType(main.getModuleType());
+        OutputStream os = out.putNextEntry(standardDD.getDeploymentDescriptorPath());
+        standardDD.write(descriptor, os);
         out.closeEntry();
     }
 
@@ -242,17 +246,18 @@ public abstract class ExtensionsArchivist  {
      * @param in the input archive
      * @param out output archive
      */
-    public void writeRuntimeDeploymentDescriptors(BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
+    public void writeRuntimeDeploymentDescriptors(Archivist main, BundleDescriptor descriptor, ReadableArchive in, WritableArchive out) throws IOException {
 
         // when source archive contains runtime deployment descriptor
         // files, write those out
         // otherwise write all possible runtime deployment descriptor
         // files out
-        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(descriptor, in);
+        List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(descriptor, in, main.getModuleType());
         if (confDDFilesToWrite.isEmpty()) {
             confDDFilesToWrite = getConfigurationDDFiles(descriptor);
         }
         for (ConfigurationDeploymentDescriptorFile ddFile : confDDFilesToWrite) {
+            ddFile.setArchiveType(main.getModuleType());
             OutputStream os = out.putNextEntry(
                 ddFile.getDeploymentDescriptorPath());
             ddFile.write(descriptor, os);
@@ -260,9 +265,9 @@ public abstract class ExtensionsArchivist  {
         }
     }
 
-    private List<ConfigurationDeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive) throws IOException {
+    private List<ConfigurationDeploymentDescriptorFile> getSortedConfigurationDDFiles(RootDeploymentDescriptor descriptor, ReadableArchive archive, ArchiveType archiveType) throws IOException {
         if (sortedConfDDFiles == null) {
-            sortedConfDDFiles = DOLUtils.processConfigurationDDFiles(getConfigurationDDFiles(descriptor), archive);
+            sortedConfDDFiles = DOLUtils.processConfigurationDDFiles(getConfigurationDDFiles(descriptor), archive, archiveType);
         }
         return sortedConfDDFiles;
     }

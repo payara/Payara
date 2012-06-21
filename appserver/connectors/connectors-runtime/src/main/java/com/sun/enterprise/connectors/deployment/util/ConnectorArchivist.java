@@ -80,11 +80,6 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
     @Inject
     private RarType rarType;
 
-    /** 
-     * The DeploymentDescriptorFile handlers we are delegating for XML i/o
-     */
-    DeploymentDescriptorFile standardDD = new ConnectorDeploymentDescriptorFile(); 
-
     /**
      * @return the  module type handled by this archivist 
      * as defined in the application DTD
@@ -103,6 +98,9 @@ public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
      */
     @Override
     public DeploymentDescriptorFile getStandardDDFile() {
+        if (standardDD == null) {
+            standardDD = new ConnectorDeploymentDescriptorFile(); 
+        }
         return standardDD;
     }
     

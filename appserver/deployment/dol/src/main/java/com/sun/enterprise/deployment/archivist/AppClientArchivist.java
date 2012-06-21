@@ -92,8 +92,6 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
     
     private String mainClassNameToRun = null;
 
-    DeploymentDescriptorFile standardDD = new AppClientDeploymentDescriptorFile();
-
     /**
      * Creates new ApplicationClientArchvisit
      */
@@ -138,7 +136,11 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
      */
     @Override
     public DeploymentDescriptorFile<ApplicationClientDescriptor> getStandardDDFile() {
-        return standardDD;
+         if (standardDD == null) {
+             standardDD = new AppClientDeploymentDescriptorFile();
+         }
+
+         return standardDD;
     }
 
     /**

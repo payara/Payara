@@ -86,11 +86,6 @@ public class ApplicationArchivist extends Archivist<Application> {
     @Inject
     Provider<ArchivistFactory> archivistFactory;
 
-    /**
-     * The DeploymentDescriptorFile handlers we are delegating for XML i/o
-     */
-    DeploymentDescriptorFile standardDD = new ApplicationDeploymentDescriptorFile();   
-    
     /** resources... */
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ApplicationArchivist.class);        
@@ -767,6 +762,9 @@ public class ApplicationArchivist extends Archivist<Application> {
      */
     @Override
     public DeploymentDescriptorFile getStandardDDFile() {
+        if (standardDD == null) {
+            standardDD = new ApplicationDeploymentDescriptorFile();   
+        }
         return standardDD;
     }   
     
