@@ -41,7 +41,9 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
@@ -65,6 +67,11 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
     
     public ActionReportJsonProvider() {
         super(ActionReporter.class, MediaType.APPLICATION_JSON_TYPE);
+    }
+    
+    @Override
+    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
+        return desiredType.isAssignableFrom(type);
     }
 
     @Override

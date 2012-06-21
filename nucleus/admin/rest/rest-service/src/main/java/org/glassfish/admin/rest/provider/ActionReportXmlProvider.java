@@ -41,6 +41,8 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.*;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -67,6 +69,11 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
     public String getContent(ActionReporter ar) {
         XmlObject result = processReport(ar);
         return result.toString(getFormattingIndentLevel());
+    }
+    
+    @Override
+    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
+        return desiredType.isAssignableFrom(type);
     }
 
     protected XmlObject processReport(ActionReporter ar) {

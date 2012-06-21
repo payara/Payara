@@ -82,6 +82,11 @@ public class CommandModelStaxProvider extends BaseProvider<CommandModel> {
               MediaType.TEXT_XML_TYPE, MediaType.APPLICATION_JSON_TYPE);
     }
     
+    @Override
+    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
+        return desiredType.isAssignableFrom(type);
+    }
+    
     private static XMLStreamWriter getXmlWriter(OutputStream os, boolean indent) throws XMLStreamException {
         XMLStreamWriter wr = XML_FACTORY.createXMLStreamWriter(os, Constants.ENCODING);
         if (indent) {

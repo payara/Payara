@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.util.StringUtils;
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Properties;
 import javax.ws.rs.Produces;
@@ -60,6 +61,11 @@ public class CommandModelHtmlProvider extends BaseProvider<CommandModel> {
     
     public CommandModelHtmlProvider() {
         super(CommandModel.class, MediaType.TEXT_HTML_TYPE);
+    }
+    
+    @Override
+    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
+        return desiredType.isAssignableFrom(type);
     }
 
     @Override

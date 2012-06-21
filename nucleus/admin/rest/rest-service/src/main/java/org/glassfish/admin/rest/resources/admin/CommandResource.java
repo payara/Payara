@@ -45,6 +45,8 @@ import com.sun.logging.LogDomains;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -77,38 +79,52 @@ public class CommandResource {
     @GET
     @Produces({MediaType.TEXT_PLAIN})
     public String emptyCallTxt() {
+        logger.finest("emptyCallTxt()");
         return "command resource - Loaded";
     }
     
     @GET
     @Produces({MediaType.TEXT_HTML})
     public String emptyCallHtml() {
+        logger.finest("emptyCallHtml()");
         return "<html><body><h1>command resource</h1>Loaded</body></html>";
     }
     
     @GET
-    @Path("/{command}/")
+    @Path("/{command:.*}/")
     @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN, MediaType.TEXT_XML, 
                MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, 
                "application/x-javascript"})
     public CommandModel getCommandModel(@PathParam("command") String commandName) {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "getCommandModel({0})", commandName);
+        }
         CommandRunner cr = getCommandRunner();
         return cr.getModel(commandName, logger);
     }
     
     @OPTIONS
-    @Path("/{command}/")
+    @Path("/{command:.*}/")
     @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN, MediaType.TEXT_XML, 
                MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, 
                "application/x-javascript"})
     public CommandModel optionsCommandModel(@PathParam("command") String commandName) {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "optionsCommandModel({0})", commandName);
+        }
         return getCommandModel(commandName);
     }
     
     @GET
-    @Path("/{command}/manpage")
+    @Path("/{command:.*}/manpage")
     @Produces({MediaType.TEXT_HTML})
     public String getManPageHtml(@PathParam("command") String commandName) throws IOException {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "getManPageHtml({0})", commandName);
+        }
         BufferedReader help = getManPageReader(commandName);
         if (help == null) {
             return null;
@@ -124,9 +140,13 @@ public class CommandResource {
     }
     
     @GET
-    @Path("/{command}/manpage")
+    @Path("/{command:.*}/manpage")
     @Produces({MediaType.TEXT_PLAIN})
     public String getManPageTxt(@PathParam("command") String commandName, @QueryParam("eol") String eol) throws IOException {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "getManPageTxt({0}, {1})", new String[]{commandName, eol});
+        }
         BufferedReader help = getManPageReader(commandName);
         if (help == null) {
             return null;
@@ -142,29 +162,46 @@ public class CommandResource {
         return result.toString();
     }
     
-//    @POST
-//    @Path("/{command}/")
-//    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-//    public Response execCommandSimpInSimpOut(@PathParam("command") String commandName, ParameterMap data) {
-//        return executeCommand(commandName, null, data, false);
-//    }
+    @POST
+    @Path("/{command:.*}/")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response execCommandSimpInSimpOut(@PathParam("command") String commandName, ParameterMap data) {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "execCommandSimpInSimpOut({0})", commandName);
+            if (data != null) {
+                for (String key : data.keySet()) {
+                    List<String> values = data.get(key);
+                    for (String value : values) {
+                        logger.log(Level.FINEST, "  -- PARAM: {0} = {1}", new Object[]{key, value});
+                    }
+                }
+            }
+        }
+        return executeCommand(commandName, null, data, false);
+    }
 //    
 //    @POST
 //    @Path("/{command}/")
 //    @Consumes(MediaType.MULTIPART_FORM_DATA)
 //    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 //    public Response execCommandMultInSimpOut(@PathParam("command") String commandName, FormDataMultiPart mp) {
+//        commandName = normalizeCommandName(commandName);
 //        ParameterMap data = new ParameterMap();
 //        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
 //        return executeCommand(commandName, inbound, data, false);
 //    }
     
     @POST
-    @Path("/{command}/")
-    @Consumes("*/*")
-    //@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response execCommandEmptyInSimpOut(@PathParam("command") String commandName, String some) {
+    @Path("/{command:.*}/")
+    //@Consumes("*/*")
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response execCommandEmptyInSimpOut(@PathParam("command") String commandName) {
+        commandName = normalizeCommandName(commandName);
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "execCommandEmptyInSimpOut({0})", commandName);
+        }
         ParameterMap data = new ParameterMap();
         return executeCommand(commandName, null, data, false);
     }
@@ -174,6 +211,7 @@ public class CommandResource {
 //    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 //    @Produces("multipart/mixed")
 //    public Response execCommandSimpInMultOut(@PathParam("command") String commandName, ParameterMap data) {
+//        commandName = normalizeCommandName(commandName);
 //        return executeCommand(commandName, null, data, true);
 //    }
 //    
@@ -182,6 +220,7 @@ public class CommandResource {
 //    @Consumes(MediaType.MULTIPART_FORM_DATA)
 //    @Produces("multipart/mixed")
 //    public Response execCommandMultInMultOut(@PathParam("command") String commandName, FormDataMultiPart mp) {
+//        commandName = normalizeCommandName(commandName);
 //        ParameterMap data = new ParameterMap();
 //        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
 //        return executeCommand(commandName, inbound, data, true);
@@ -191,16 +230,38 @@ public class CommandResource {
 //    @Path("/{command}/")
 //    @Produces("multipart/mixed")
 //    public Response execCommandEmptyInMultOut(@PathParam("command") String commandName) {
+//        commandName = normalizeCommandName(commandName);
 //        ParameterMap data = new ParameterMap();
 //        return executeCommand(commandName, null, data, true);
 //    }
     
+    private String normalizeCommandName(String str) {
+        if (str == null) {
+            return null;
+        }
+        if (str.endsWith("/")) {
+            return str.substring(0, str.length() - 1);
+        } else {
+            return str;
+        }
+    }
     
     private Response executeCommand(String commandName, Payload.Inbound inbound, ParameterMap params, boolean supportsMultiparResult) {
+        //Scope support
+        String scope = null;
+        int ind = commandName.indexOf('/');
+        if (ind > 0) {
+            scope = commandName.substring(0, ind);
+            commandName = commandName.substring(ind + 1);
+        }
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "executeCommand(): scope = {0}, name = {1}", new Object[]{scope, commandName});
+        }
+        //Execute it
         CommandRunner cr = getHabitat().getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         final RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(false);
-        final CommandRunner.CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
+        final CommandRunner.CommandInvocation commandInvocation = cr.getCommandInvocation(scope, commandName, ar);
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }

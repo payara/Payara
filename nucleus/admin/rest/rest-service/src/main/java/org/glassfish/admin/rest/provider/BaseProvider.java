@@ -97,7 +97,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] antns, MediaType mt) {
-        if (desiredType.equals(genericType)) {
+        if (isGivenTypeWritable(type, genericType)) {
             for (MediaType supportedMediaType : supportedMediaTypes) {
                 if (mt.isCompatible(supportedMediaType)) {
                     return true;
@@ -105,6 +105,13 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
             }
         }
         return false;
+    }
+    
+    /** Overwrite this if you need different test of type compatibility.
+     * Used from isWritable method.
+     */ 
+    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
+        return desiredType == type;
     }
 
     @Override
