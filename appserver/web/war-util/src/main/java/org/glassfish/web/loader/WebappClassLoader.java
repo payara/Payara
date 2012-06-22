@@ -1045,7 +1045,7 @@ public class WebappClassLoader
         // Return the class we have located
         if (logger.isLoggable(Level.FINER))
             logger.finer("      Returning class " + clazz);
-        if (logger.isLoggable(Level.FINER) && clazz!=null) {
+        if (logger.isLoggable(Level.FINER)) {
             ClassLoader cl;
             if (securityManager != null) {
                 cl = AccessController.doPrivileged(
