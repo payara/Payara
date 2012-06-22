@@ -183,6 +183,15 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
+        </dependency>    
+        
+	<!-- EntityBeans Container package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-entitybeans-container</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
         </dependency>     
 
         <!--corba package -->

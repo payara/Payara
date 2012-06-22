@@ -149,6 +149,7 @@
         <module>glassfish-osgi-gui-l10n</module>
         <module>glassfish-registration-l10n</module>
 	<module>glassfish-jmx</module>
+	<module>glassfish-entitybeans-container</module>
     </modules>
 
     <build>
