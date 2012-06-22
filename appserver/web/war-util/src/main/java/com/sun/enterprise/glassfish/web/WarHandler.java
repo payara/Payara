@@ -209,7 +209,7 @@ public class WarHandler extends AbstractArchiveHandler {
         boolean delegate = webXmlParser.isDelegate();
         cloader.setDelegate(delegate);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("WebModule[" + webXmlParser.getBase() +
+            logger.fine("WebModule[" + base +
                         "]: Setting delegate to " + delegate);
         }
 
@@ -223,7 +223,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 for (String path : pathElements) {
                     path = path.replace("\\:", ":");
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("WarHandler[" + webXmlParser.getBase() +
+                        logger.fine("WarHandler[" + base +
                                     "]: Adding " + path +
                                     " to the classpath");
                     }
@@ -434,7 +434,6 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected abstract class WebXmlParser extends BaseXmlParser {
-        protected String baseStr = null;
 
         protected boolean delegate = true;
 
@@ -449,10 +448,6 @@ public class WarHandler extends AbstractArchiveHandler {
         }
 
         protected abstract String getXmlFileName();
-
-        String getBase() {
-            return baseStr;
-        }
 
         boolean isDelegate() {
             return delegate;
