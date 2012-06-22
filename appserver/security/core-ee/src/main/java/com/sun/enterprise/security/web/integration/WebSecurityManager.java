@@ -222,7 +222,7 @@ public class WebSecurityManager  {
                             }
                         }
                     }
-                    SecurityRoleAssignment[] sras = sunDes.getWLSecurityRoleAssignment();
+                    SecurityRoleAssignment[] sras = sunDes.getSecurityRoleAssignments();
                     if(sras != null){
                         for (SecurityRoleAssignment sra : sras) {
                             List<String> principals = sra.getPrincipalNames();

@@ -118,37 +118,37 @@ public class SunWebApp extends WebPropertyContainer
     }
 
     // This attribute is an array, possibly empty
-    public void setWLSecurityRoleAssignment(int index, SecurityRoleAssignment value)
+    public void setSecurityRoleAssignment(int index, SecurityRoleAssignment value)
     {
 	this.setValue(SECURITY_ROLE_ASSIGNMENT, index, value);
     }
 
     //
-    public SecurityRoleAssignment getWLSecurityRoleAssignment(int index)
+    public SecurityRoleAssignment getSecurityRoleAssignment(int index)
     {
 	return (SecurityRoleAssignment)this.getValue(SECURITY_ROLE_ASSIGNMENT, index);
     }
 
     // This attribute is an array, possibly empty
-    public void setWLSecurityRoleAssignment(SecurityRoleAssignment[] value)
+    public void setSecurityRoleAssignments(SecurityRoleAssignment[] value)
     {
 	this.setValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
 
     //
-    public SecurityRoleAssignment[] getWLSecurityRoleAssignment()
+    public SecurityRoleAssignment[] getSecurityRoleAssignments()
     {
 	return (SecurityRoleAssignment[])this.getValues(SECURITY_ROLE_ASSIGNMENT);
     }
 
     // Return the number of properties
-    public int sizeWLSecurityRoleAssignment()
+    public int sizeSecurityRoleAssignment()
     {
 	return this.size(SECURITY_ROLE_ASSIGNMENT);
     }
 
     // Add a new element returning its index in the list
-    public int addWLSecurityRoleAssignment(SecurityRoleAssignment value)
+    public int addSecurityRoleAssignment(SecurityRoleAssignment value)
     {
 	return this.addValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
@@ -157,7 +157,7 @@ public class SunWebApp extends WebPropertyContainer
     // Remove an element using its reference
     // Returns the index the element had in the list
     //
-    public int removeWLSecurityRoleAssignment(SecurityRoleAssignment value)
+    public int removeSecurityRoleAssignment(SecurityRoleAssignment value)
     {
 	return this.removeValue(SECURITY_ROLE_ASSIGNMENT, value);
     }
