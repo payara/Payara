@@ -437,7 +437,9 @@ public class StandardManager
                 // ignore
             }
             // Delete the persistent storage file
-            file.delete();
+            if (!file.delete() && log.isLoggable(Level.FINE)) {
+                log.fine("Cannot delete file: " + file);
+            }
         }
     }
 
