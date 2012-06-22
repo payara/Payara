@@ -6268,7 +6268,7 @@ public class StandardContext
             } catch (IOException e) {
             }
         }
-        if (!dir.exists() && !dir.mkdirs()) {
+        if (!dir.mkdirs() && !dir.isDirectory()) {
             log.log(Level.SEVERE,
                     sm.getString("standardContext.createWorkDirFailed",
                                  dir.getAbsolutePath()));
