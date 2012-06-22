@@ -208,8 +208,6 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
         try {
             final File outDir = dc.getScratchDir(env.kCompileJspDirName);
             final File inDir  = dc.getSourceDir();
-            com.sun.enterprise.deployment.runtime.web.ClassLoader clBean =
-                    wbd.getSunDescriptor().getClassLoader();
 
             StringBuilder classpath = new StringBuilder(
                 super.getCommonClassPath());

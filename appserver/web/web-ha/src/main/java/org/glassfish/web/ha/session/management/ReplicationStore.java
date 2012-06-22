@@ -409,8 +409,6 @@ public class ReplicationStore extends HAStoreBase {
 
 
     private BackingStore<String, ? extends Storeable> getStoreableBackingStore() {
-        ReplicationManagerBase<? extends Storeable> mgr
-                = (ReplicationManagerBase<? extends Storeable>) this.getManager();
         return getStoreableReplicationManager().getBackingStore();
     }
 
