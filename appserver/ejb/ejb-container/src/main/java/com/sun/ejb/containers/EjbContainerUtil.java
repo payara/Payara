@@ -76,6 +76,10 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 @Contract
 public interface EjbContainerUtil {
 
+	// FIXME temporary constant for EJB Container's name - should get
+	// removed once Deployment teams changes to add ContainerType are complete
+	String EJB_CONTAINER_NAME = "ejb";
+
     public static final String DEFAULT_THREAD_POOL_NAME = "__ejb-thread-pool";
 
     // Used by the TimerService upgrade

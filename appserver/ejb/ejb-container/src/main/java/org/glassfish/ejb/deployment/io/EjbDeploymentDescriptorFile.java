@@ -43,7 +43,10 @@ package org.glassfish.ejb.deployment.io;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
+import com.sun.enterprise.deployment.util.DOLUtils;
+
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.node.EjbBundleNode;
 
 /**
@@ -54,16 +57,13 @@ import org.glassfish.ejb.deployment.node.EjbBundleNode;
 
 public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
     
-    /** Creates a new instance of EjbDeploymentDescriptorFile */
-    public EjbDeploymentDescriptorFile() {
-    }
-    
     /**
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
     public String getDeploymentDescriptorPath() {
-        return DescriptorConstants.EJB_JAR_ENTRY;
+        return DOLUtils.warType().equals(getArchiveType()) ?
+        		DescriptorConstants.EJB_IN_WAR_ENTRY : DescriptorConstants.EJB_JAR_ENTRY;
     }
     
     /**
@@ -72,7 +72,7 @@ public class EjbDeploymentDescriptorFile extends DeploymentDescriptorFile {
      *
      * @param descriptor the descriptor for which we need the node
      */
-    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
+    public RootXMLNode<EjbBundleDescriptorImpl> getRootXMLNode(Descriptor descriptor) {
         return new EjbBundleNode();
     }
 }

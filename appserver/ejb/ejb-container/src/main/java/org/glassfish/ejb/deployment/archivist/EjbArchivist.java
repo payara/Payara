@@ -41,27 +41,26 @@
 package org.glassfish.ejb.deployment.archivist;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 
+import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.AnnotationDetector;
+import com.sun.enterprise.deployment.util.DOLUtils;
+
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.ejb.EjbType;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
-import org.glassfish.ejb.deployment.io.EjbRuntimeDDFile;
-import org.glassfish.ejb.deployment.io.GFEjbRuntimeDDFile;
 import org.glassfish.ejb.deployment.util.EjbBundleValidator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -96,9 +95,9 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
     public void setDescriptor(Application descriptor) {
         // this is acceptable if the application actually represents
         // a standalone module
-        Set ejbBundles = descriptor.getBundleDescriptors(EjbBundleDescriptorImpl.class);
+        Set<EjbBundleDescriptorImpl> ejbBundles = descriptor.getBundleDescriptors(EjbBundleDescriptorImpl.class);
         if (ejbBundles.size()>0) {
-            this.descriptor = (EjbBundleDescriptorImpl) ejbBundles.iterator().next();
+            this.descriptor = ejbBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())
                 return;
             else
@@ -124,9 +123,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
      */
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
-            confDDFiles.add(new GFEjbRuntimeDDFile());
-            confDDFiles.add(new EjbRuntimeDDFile());
+            confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EjbContainerUtil.EJB_CONTAINER_NAME);
         }
         return confDDFiles;
     }

@@ -44,10 +44,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
 
+import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ExtensionsArchivist;
@@ -62,12 +62,10 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
-import org.glassfish.ejb.deployment.io.EjbInWarDeploymentDescriptorFile;
-import org.glassfish.ejb.deployment.io.EjbInWarRuntimeDDFile;
-import org.glassfish.ejb.deployment.io.GFEjbInWarRuntimeDDFile;
-import org.glassfish.ejb.deployment.io.WLSEjbInWarRuntimeDDFile;
+import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PerLookup;
 
 /**
@@ -80,6 +78,9 @@ import org.jvnet.hk2.component.PerLookup;
 public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Inject
+    BaseServiceLocator serviceLocator;
+    
+    @Inject
     Provider<EjbInWarScanner> scanner;
 
     /**
@@ -89,7 +90,7 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
     @Override
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
         if (standardDD == null) {
-            standardDD = new EjbInWarDeploymentDescriptorFile();
+            standardDD = new EjbDeploymentDescriptorFile();
         }
         return standardDD;
     }
@@ -100,10 +101,8 @@ public class EjbInWarArchivist extends ExtensionsArchivist {
      */
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
-            confDDFiles.add(new WLSEjbInWarRuntimeDDFile());
-            confDDFiles.add(new GFEjbInWarRuntimeDDFile());
-            confDDFiles.add(new EjbInWarRuntimeDDFile());
+            confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(serviceLocator,
+            		EjbContainerUtil.EJB_CONTAINER_NAME);
         }
         return confDDFiles;
     }
