@@ -165,42 +165,6 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         return extraProperties;
     }
 
-    protected Object getJsonObject(Object object) throws JSONException {
-        Object result = null;
-        if (object instanceof Collection) {
-            result = processCollection((Collection)object);
-        } else if (object instanceof Map) {
-            result = processMap((Map)object);
-        } else if (object == null) {
-            result = JSONObject.NULL;
-        } else {
-            result = object;
-        }
-
-        return result;
-    }
-
-    protected JSONArray processCollection(Collection c) throws JSONException {
-        JSONArray result = new JSONArray();
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            Object item = getJsonObject(i.next());
-            result.put(item);
-        }
-
-        return result;
-    }
-
-    protected JSONObject processMap(Map map) throws JSONException {
-        JSONObject result = new JSONObject();
-
-        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
-            result.put(entry.getKey().toString(), getJsonObject(entry.getValue()));
-        }
-
-        return result;
-    }
-
     protected <T> T getFieldValue(final ActionReporter ar, final String name, final T type) {
         return AccessController.doPrivileged(new PrivilegedAction<T>() {
             @Override

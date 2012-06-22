@@ -39,14 +39,18 @@
  */
 package org.glassfish.admin.rest.provider;
 
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.composite.RestModel;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.admin.rest.RestConfig;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.DomConfigurator;
 import org.glassfish.admin.rest.utils.ConfigModelComparator;
@@ -127,6 +131,61 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     public abstract String getContent(T proxy);
 
+    protected Object getJsonObject(Object object) throws JSONException {
+        Object result = null;
+        if (object instanceof Collection) {
+            result = processCollection((Collection)object);
+        } else if (object instanceof Map) {
+            result = processMap((Map)object);
+        } else if (object == null) {
+            result = JSONObject.NULL;
+        } else if (RestModel.class.isAssignableFrom(object.getClass())) {
+            result = getJsonForRestModel((RestModel)object);
+        } else {
+            result = object;
+        }
+
+        return result;
+    }
+
+    protected JSONObject getJsonForRestModel(RestModel model) {
+        JSONObject result = new JSONObject();
+        for (Method m : model.getClass().getDeclaredMethods()) {
+            if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
+                String propName = m.getName().substring(3);
+                propName = propName.substring(0,1).toLowerCase() + propName.substring(1);
+                try {
+                    result.put(propName, getJsonObject(m.invoke(model)));
+                } catch (Exception e) {
+
+                }
+            }
+        }
+
+        return result;
+    }
+
+    protected JSONArray processCollection(Collection c) throws JSONException {
+        JSONArray result = new JSONArray();
+        Iterator i = c.iterator();
+        while (i.hasNext()) {
+            Object item = getJsonObject(i.next());
+            result.put(item);
+        }
+
+        return result;
+    }
+
+    protected JSONObject processMap(Map map) throws JSONException {
+        JSONObject result = new JSONObject();
+
+        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
+            result.put(entry.getKey().toString(), getJsonObject(entry.getValue()));
+        }
+
+        return result;
+    }
+
     protected int getFormattingIndentLevel() {
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
         if (rg == null){
@@ -138,9 +197,9 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     }
 
-     /*
-     * returns true if the HTML viewer displays the hidden CLI command links
-     */
+     /**
+      * returns true if the HTML viewer displays the hidden CLI command links
+      */
     protected boolean canShowHiddenCommands() {
 
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
@@ -150,7 +209,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         return false;
     }
 
-    /*
+    /**
      * returns true if the HTML viewer displays the deprecated elements or attributes
      * of a config bean
      */
@@ -163,7 +222,8 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         }
         return false;
     }
-    /* check for the __debug request header
+    /**
+     * check for the __debug request header
      *
      */
     protected boolean isDebug() {
@@ -180,7 +240,8 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         return (header != null) && ("true".equals(header.get(0)));
     }
 
-    /* if a query param of name "jsoncallback" is there, returns its value
+    /**
+     * if a query param of name "jsoncallback" is there, returns its value
      * or returns null otherwise.
      */
     protected String getCallBackJSONP() {

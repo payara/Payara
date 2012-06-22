@@ -89,7 +89,7 @@ import static org.objectweb.asm.Opcodes.V1_6;
  * @author jdlee
  */
 public class CompositeUtil {
-    protected static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
+    private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
 
     /**
      * This method will return a generated concrete class that implements the interface requested, as well as any
@@ -113,7 +113,9 @@ public class CompositeUtil {
 //            };
             Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
 
-            Set<Class<?>> interfaces = new HashSet<Class<?>>(Arrays.asList(extensions));
+            Set<Class<?>> interfaces = (extensions != null) ? 
+                                       new HashSet<Class<?>>(Arrays.asList(extensions)) :
+                                       new HashSet<Class<?>>();
             interfaces.add(modelIface);
 
             for (Class<?> iface : interfaces) {
@@ -247,7 +249,7 @@ public class CompositeUtil {
 
     }
 
-    protected static List<Method> getSetters(Class<?> clazz) {
+    private static List<Method> getSetters(Class<?> clazz) {
         List<Method> methods = new ArrayList<Method>();
 
         for (Method method : clazz.getMethods()) {
@@ -259,7 +261,7 @@ public class CompositeUtil {
         return methods;
     }
 
-    protected static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
+    private static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
         for (Method method : iface.getMethods()) {
             String name = method.getName();
             final boolean isGetter = name.startsWith("get");
@@ -283,13 +285,13 @@ public class CompositeUtil {
         }
     }
 
-    protected static void handleGetExtensions(List<RestExtension> extensions, Object data) {
+    private static void handleGetExtensions(List<RestExtension> extensions, Object data) {
         for (RestExtension re : extensions) {
             re.get(data);
         }
     }
 
-    protected static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
+    private static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
         ParameterMap parameters = new ParameterMap();
         for (RestExtension re : extensions) {
             parameters.mergeAll(re.post(data));
@@ -304,20 +306,20 @@ public class CompositeUtil {
      * @param type The desired class
      * @return
      */
-    protected static String getInternalTypeString(Class<?> type) {
+    private static String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
                ? Primitive.getPrimitive(type.getName()).getInternalType()
                : ("L" + getInternalName(type.getName()) + ";");
     }
 
-    protected static String getPropertyName(String name) {
+    private static String getPropertyName(String name) {
         return name.substring(0,1).toLowerCase() + name.substring(1);
     }
 
     /**
      * This method starts the class definition, adding the JAX-B annotations to allow for marshalling via JAX-RS
      */
-    protected static void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
+    private static void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
         String[] ifaceNames = new String[ifaces.size()+1];
         int i = 1;
         ifaceNames[0] = getInternalName(RestModel.class.getName());
@@ -343,7 +345,7 @@ public class CompositeUtil {
      * This method creates the default constructor for the class. Default values are set for any @Attribute defined with
      * a defaultValue.
      */
-    protected static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
+    private static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
         // Create the ctor
         MethodVisitor method = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         method.visitCode();
@@ -372,7 +374,7 @@ public class CompositeUtil {
      *
      * TODO: it may make sense to treat primitives here as non-String types.
      */
-    protected static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
+    private static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
         final String type = getInternalTypeString(fieldClass);
         Object value = defaultValue;
         fieldName = getPropertyName(fieldName);
@@ -425,7 +427,7 @@ public class CompositeUtil {
     /**
      * Add the field to the class, adding the @XmlAttribute annotation for marshalling purposes.
      */
-    protected static void createField(ClassWriter cw, String name, Class<?> type) {
+    private static void createField(ClassWriter cw, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
         FieldVisitor field = cw.visitField(ACC_PRIVATE, getPropertyName(name), internalType, null, null);
         field.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
@@ -435,7 +437,7 @@ public class CompositeUtil {
     /**
      * Create getters and setters for the given field
      */
-    protected static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
+    private static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
         className = getInternalName(className);
 
@@ -466,12 +468,12 @@ public class CompositeUtil {
     /**
      * Convert the dotted class name to the "internal" (bytecode) representation
      */
-    protected static String getInternalName(String className) {
+    private static String getInternalName(String className) {
         return className.replace(".", "/");
     }
 
     // TODO: This is duplicated from the generator class.
-    protected static Class<?> defineClass(Class similarClass, String className, byte[] classBytes) throws Exception {
+    private static Class<?> defineClass(Class similarClass, String className, byte[] classBytes) throws Exception {
         byte[] byteContent = classBytes;
         ProtectionDomain pd = similarClass.getProtectionDomain();
 
@@ -514,5 +516,17 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    public static boolean compare(RestModel one, Object o) {
+        if ((one == null) || (o == null)) {
+            throw new IllegalArgumentException("Null parameter passed"); // i18n
+        }
+        if (!RestModel.class.isAssignableFrom(o.getClass())) {
+            throw new IllegalArgumentException(o.getClass().getName());
+        }
+        RestModel two = (RestModel)o;
+
+        return false;  //To change body of created methods use File | Settings | File Templates.
     }
 }

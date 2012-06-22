@@ -150,9 +150,9 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
         if (object == null) {
             result = "";
         } else if (object instanceof Collection) {
-            result = processCollection((Collection)object);
+            result = getXml((Collection)object);
         } else if (object instanceof Map) {
-            result = processMap((Map)object);
+            result = getXml((Map)object);
         } else if (object instanceof Number) {
             result = new XmlObject("number", (Number)object);
         } else if (object instanceof String) {
@@ -164,7 +164,7 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
         return result;
     }
 
-    protected XmlArray processCollection(Collection c) {
+    protected XmlArray getXml(Collection c) {
         XmlArray result = new XmlArray("list");
         Iterator i = c.iterator();
         while (i.hasNext()) {
@@ -179,7 +179,7 @@ public class ActionReportXmlProvider extends BaseProvider<ActionReporter> {
         return result;
     }
 
-    protected XmlMap processMap(Map map) {
+    protected XmlMap getXml(Map map) {
         XmlMap result = new XmlMap("map");
 
         for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {

@@ -293,14 +293,14 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
 
     protected String processProperties(Properties props) {
         StringBuilder result = new StringBuilder("<h3>Properties</h3>");
-        result.append(processMap(props));
+        result.append(getHtml(props));
 
         return result.append("</table>").toString();
     }
 
     protected String getExtraProperties(Properties props) {
         StringBuilder result = new StringBuilder("<h3>Extra Properties</h3>");
-        result.append(processMap(props));
+        result.append(getHtml(props));
 
         return result.toString();
     }
@@ -314,7 +314,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                     .append("<td>")
                     .append(part.getMessage())
                     .append("</td></tr><td>Properties</td><td>")
-                    .append(processMap(part.getProps()))
+                    .append(getHtml(part.getProps()))
                     .append("</td></tr>");
             List<ActionReport.MessagePart> children = part.getChildren();
             if (children.size() > 0) {
@@ -344,11 +344,11 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
             return "";
         } else if (object instanceof Collection) {
             if (!((Collection)object).isEmpty()) {
-                result = processCollection((Collection) object);
+                result = getHtml((Collection) object);
             }
         } else if (object instanceof Map) {
             if (!((Map)object).isEmpty()) {
-                result = processMap((Map) object);
+                result = getHtml((Map) object);
             }
         } else {
             result = object.toString();
@@ -357,7 +357,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         return result;
     }
 
-    protected String processCollection(Collection c) {
+    protected String getHtml(Collection c) {
         StringBuilder result = new StringBuilder("<ul>");
         Iterator i = c.iterator();
         while (i.hasNext()) {
@@ -369,7 +369,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
         return result.append("</li></ul>").toString();
     }
 
-    protected String processMap(Map map) {
+    protected String getHtml(Map map) {
         StringBuilder result = new StringBuilder();
         if (!map.isEmpty()) {
             result.append("<table border=\"1\" style=\"border-collapse: collapse\"><tr><th>key</th><th>value</th></tr>");
