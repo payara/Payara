@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -135,12 +135,6 @@ public abstract class BaseDirContext implements DirContext {
      * The string manager for this package.
      */
     protected static final StringManager sm = StringManager.getManager(Constants.Package);
-
-
-    /**
-     * Name parser for this context.
-     */
-    protected final NameParser nameParser = new NameParserImpl();
 
 
     /**
@@ -317,9 +311,10 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if object did not supply all 
-     * mandatory attributes
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if object
+     * did not supply all mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public void bind(Name name, Object obj)
@@ -333,9 +328,10 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if object did not supply all 
-     * mandatory attributes
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if object
+     * did not supply all mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public void bind(String name, Object obj)
@@ -355,8 +351,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
-     * @exception InvalidAttributesException if object did not supply all 
-     * mandatory attributes
+     * @exception javax.naming.directory.InvalidAttributesException if object
+     * did not supply all mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public void rebind(Name name, Object obj)
@@ -370,8 +366,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
-     * @exception InvalidAttributesException if object did not supply all 
-     * mandatory attributes
+     * @exception javax.naming.directory.InvalidAttributesException if object
+     * did not supply all mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public void rebind(String name, Object obj)
@@ -390,8 +386,8 @@ public abstract class BaseDirContext implements DirContext {
      * NameNotFoundException if any of the intermediate contexts do not exist. 
      * 
      * @param name the name to bind; may not be empty
-     * @exception NameNotFoundException if an intermediate context does not 
-     * exist
+     * @exception javax.naming.NameNotFoundException if an intermediate
+     * context does not exist
      * @exception NamingException if a naming exception is encountered
      */
     public void unbind(Name name)
@@ -404,8 +400,8 @@ public abstract class BaseDirContext implements DirContext {
      * Unbinds the named object.
      * 
      * @param name the name to bind; may not be empty
-     * @exception NameNotFoundException if an intermediate context does not 
-     * exist
+     * @exception javax.naming.NameNotFoundException if an intermediate
+     * context does not exist
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void unbind(String name)
@@ -420,7 +416,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param oldName the name of the existing binding; may not be empty
      * @param newName the name of the new binding; may not be empty
-     * @exception NameAlreadyBoundException if newName is already bound
+     * @exception javax.naming.NameAlreadyBoundException if newName is already
+     * bound
      * @exception NamingException if a naming exception is encountered
      */
     public void rename(Name oldName, Name newName)
@@ -435,7 +432,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param oldName the name of the existing binding; may not be empty
      * @param newName the name of the new binding; may not be empty
-     * @exception NameAlreadyBoundException if newName is already bound
+     * @exception javax.naming.NameAlreadyBoundException if newName is already
+     * bound
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void rename(String oldName, String newName)
@@ -526,10 +524,10 @@ public abstract class BaseDirContext implements DirContext {
      * the foreign context's "native" naming system.
      * 
      * @param name the name of the context to be destroyed; may not be empty
-     * @exception NameNotFoundException if an intermediate context does not 
-     * exist
-     * @exception NotContextException if the name is bound but does not name 
-     * a context, or does not name a context of the appropriate type
+     * @exception javax.naming.NameNotFoundException if an intermediate context
+     * does not exist
+     * @exception javax.naming.NotContextException if the name is bound but does
+     * not name a context, or does not name a context of the appropriate type
      */
     public void destroySubcontext(Name name)
         throws NamingException {
@@ -541,10 +539,10 @@ public abstract class BaseDirContext implements DirContext {
      * Destroys the named context and removes it from the namespace.
      * 
      * @param name the name of the context to be destroyed; may not be empty
-     * @exception NameNotFoundException if an intermediate context does not 
-     * exist
-     * @exception NotContextException if the name is bound but does not name 
-     * a context, or does not name a context of the appropriate type
+     * @exception javax.naming.NameNotFoundException if an intermediate context
+     * does not exist
+     * @exception javax.naming.NotContextException if the name is bound but does
+     * not name a context, or does not name a context of the appropriate type
      */
     public abstract void destroySubcontext(String name)
         throws NamingException;
@@ -558,9 +556,10 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name of the context to create; may not be empty
      * @return the newly created context
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if creation of the subcontext 
-     * requires specification of mandatory attributes
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if creation
+     * of the subcontext requires specification of mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public Context createSubcontext(Name name)
@@ -574,9 +573,10 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name of the context to create; may not be empty
      * @return the newly created context
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if creation of the subcontext 
-     * requires specification of mandatory attributes
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if creation
+     * of the subcontext requires specification of mandatory attributes
      * @exception NamingException if a naming exception is encountered
      */
     public Context createSubcontext(String name)
@@ -757,8 +757,8 @@ public abstract class BaseDirContext implements DirContext {
      * OperationNotSupportedException is thrown.
      * 
      * @return this context's name in its own namespace; never null
-     * @exception OperationNotSupportedException if the naming system does 
-     * not have the notion of a full name
+     * @exception javax.naming.OperationNotSupportedException if the naming
+     * system does not have the notion of a full name
      * @exception NamingException if a naming exception is encountered
      */
     public abstract String getNameInNamespace()
@@ -837,8 +837,8 @@ public abstract class BaseDirContext implements DirContext {
      * REPLACE_ATTRIBUTE, REMOVE_ATTRIBUTE
      * @param attrs the attributes to be used for the modification; may not 
      * be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public void modifyAttributes(Name name, int mod_op, Attributes attrs)
@@ -855,8 +855,8 @@ public abstract class BaseDirContext implements DirContext {
      * REPLACE_ATTRIBUTE, REMOVE_ATTRIBUTE
      * @param attrs the attributes to be used for the modification; may not 
      * be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void modifyAttributes
@@ -874,8 +874,8 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name of the object whose attributes will be updated
      * @param mods an ordered sequence of modifications to be performed; may 
      * not be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public void modifyAttributes(Name name, ModificationItem[] mods)
@@ -891,8 +891,8 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name of the object whose attributes will be updated
      * @param mods an ordered sequence of modifications to be performed; may 
      * not be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void modifyAttributes(String name, ModificationItem[] mods)
@@ -909,9 +909,10 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public void bind(Name name, Object obj, Attributes attrs)
@@ -926,9 +927,10 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
-     * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.NameAlreadyBoundException if name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void bind(String name, Object obj, Attributes attrs)
@@ -949,8 +951,8 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public void rebind(Name name, Object obj, Attributes attrs)
@@ -966,8 +968,8 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public abstract void rebind(String name, Object obj, Attributes attrs)
@@ -986,9 +988,10 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name of the context to create; may not be empty
      * @param attrs the attributes to associate with the newly created context
      * @return the newly created context
-     * @exception NameAlreadyBoundException if the name is already bound
-     * @exception InvalidAttributesException if attrs does not contain all 
-     * the mandatory attributes required for creation
+     * @exception javax.naming.NameAlreadyBoundException if the name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if attrs
+     * does not contain all the mandatory attributes required for creation
      * @exception NamingException if a naming exception is encountered
      */
     public DirContext createSubcontext(Name name, Attributes attrs)
@@ -1003,9 +1006,10 @@ public abstract class BaseDirContext implements DirContext {
      * @param name the name of the context to create; may not be empty
      * @param attrs the attributes to associate with the newly created context
      * @return the newly created context
-     * @exception NameAlreadyBoundException if the name is already bound
-     * @exception InvalidAttributesException if attrs does not contain all 
-     * the mandatory attributes required for creation
+     * @exception javax.naming.NameAlreadyBoundException if the name is already
+     * bound
+     * @exception javax.naming.directory.InvalidAttributesException if attrs
+     * does not contain all the mandatory attributes required for creation
      * @exception NamingException if a naming exception is encountered
      */
     public abstract DirContext createSubcontext(String name, Attributes attrs)
@@ -1022,7 +1026,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name of the object whose schema is to be retrieved
      * @return the schema associated with the context; never null
-     * @exception OperationNotSupportedException if schema not supported
+     * @exception javax.naming.OperationNotSupportedException if schema not
+     * supported
      * @exception NamingException if a naming exception is encountered
      */
     public DirContext getSchema(Name name)
@@ -1036,7 +1041,8 @@ public abstract class BaseDirContext implements DirContext {
      * 
      * @param name the name of the object whose schema is to be retrieved
      * @return the schema associated with the context; never null
-     * @exception OperationNotSupportedException if schema not supported
+     * @exception javax.naming.OperationNotSupportedException if schema not
+     * supported
      * @exception NamingException if a naming exception is encountered
      */
     public abstract DirContext getSchema(String name)
@@ -1051,7 +1057,8 @@ public abstract class BaseDirContext implements DirContext {
      * be retrieved
      * @return the DirContext containing the named object's class 
      * definitions; never null
-     * @exception OperationNotSupportedException if schema not supported
+     * @exception javax.naming.OperationNotSupportedException if schema not
+     * supported
      * @exception NamingException if a naming exception is encountered
      */
     public DirContext getSchemaClassDefinition(Name name)
@@ -1068,7 +1075,8 @@ public abstract class BaseDirContext implements DirContext {
      * be retrieved
      * @return the DirContext containing the named object's class 
      * definitions; never null
-     * @exception OperationNotSupportedException if schema not supported
+     * @exception javax.naming.OperationNotSupportedException if schema not
+     * supported
      * @exception NamingException if a naming exception is encountered
      */
     public abstract DirContext getSchemaClassDefinition(String name)
@@ -1173,10 +1181,10 @@ public abstract class BaseDirContext implements DirContext {
      * (new SearchControls())).
      * @return an enumeration of SearchResults of the objects that satisfy 
      * the filter; never null
-     * @exception InvalidSearchFilterException if the search filter specified 
-     * is not supported or understood by the underlying directory
-     * @exception InvalidSearchControlsException if the search controls 
-     * contain invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if the
+     * search filter specified is not supported or understood by the underlying directory
+     * @exception javax.naming.directory.InvalidSearchControlsException if the
+     * search controls contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
     public NamingEnumeration<SearchResult> search
@@ -1199,10 +1207,10 @@ public abstract class BaseDirContext implements DirContext {
      * (new SearchControls())).
      * @return an enumeration of SearchResults of the objects that satisfy 
      * the filter; never null
-     * @exception InvalidSearchFilterException if the search filter 
-     * specified is not supported or understood by the underlying directory
-     * @exception InvalidSearchControlsException if the search controls 
-     * contain invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if the
+     * search filter specified is not supported or understood by the underlying directory
+     * @exception javax.naming.directory.InvalidSearchControlsException if the
+     * search controls contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
     public abstract NamingEnumeration<SearchResult> search(String name, String filter, 
@@ -1228,10 +1236,10 @@ public abstract class BaseDirContext implements DirContext {
      * filter; never null
      * @exception ArrayIndexOutOfBoundsException if filterExpr contains {i} 
      * expressions where i is outside the bounds of the array filterArgs
-     * @exception InvalidSearchControlsException if cons contains invalid 
-     * settings
-     * @exception InvalidSearchFilterException if filterExpr with filterArgs 
-     * represents an invalid search filter
+     * @exception javax.naming.directory.InvalidSearchControlsException if cons
+     * contains invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if
+     * filterExpr with filterArgs represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
     public NamingEnumeration<SearchResult> search(Name name, String filterExpr, 
@@ -1259,10 +1267,10 @@ public abstract class BaseDirContext implements DirContext {
      * filter; never null
      * @exception ArrayIndexOutOfBoundsException if filterExpr contains {i} 
      * expressions where i is outside the bounds of the array filterArgs
-     * @exception InvalidSearchControlsException if cons contains invalid 
-     * settings
-     * @exception InvalidSearchFilterException if filterExpr with filterArgs 
-     * represents an invalid search filter
+     * @exception javax.naming.directory.InvalidSearchControlsException if cons
+     * contains invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if
+     * filterExpr with filterArgs represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
     public abstract NamingEnumeration<SearchResult> search

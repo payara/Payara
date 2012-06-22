@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -72,25 +71,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.OutputStream;
 import java.io.IOException;
 
 import javax.naming.Binding;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.CompositeName;
+import javax.naming.NameNotFoundException;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.naming.StringManager;
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
@@ -318,7 +313,7 @@ public class FileDirContext extends BaseDirContext {
      * NameNotFoundException if any of the intermediate contexts do not exist. 
      * 
      * @param name the name to bind; may not be empty
-     * @exception NameNotFoundException if an intermediate context does not 
+     * @exception NameNotFoundException if an intermediate context does not
      * exist
      * @exception NamingException if a naming exception is encountered
      */
@@ -328,7 +323,7 @@ public class FileDirContext extends BaseDirContext {
         File file = file(name);
 
         if (file == null)
-            throw new NamingException
+            throw new NameNotFoundException
                 (sm.getString("resources.notFound", name));
 
         // START S1AS8PE 4965170
@@ -437,7 +432,7 @@ public class FileDirContext extends BaseDirContext {
      * <p>
      * This method is idempotent. It succeeds even if the terminal atomic 
      * name is not bound in the target context, but throws 
-     * NameNotFoundException if any of the intermediate contexts do not exist. 
+     * NameNotFoundException if any of the intermediate contexts do not exist.
      * 
      * In a federated naming system, a context from one naming system may be 
      * bound to a name in another. One can subsequently look up and perform 
@@ -452,8 +447,8 @@ public class FileDirContext extends BaseDirContext {
      * @param name the name of the context to be destroyed; may not be empty
      * @exception NameNotFoundException if an intermediate context does not 
      * exist
-     * @exception NotContextException if the name is bound but does not name 
-     * a context, or does not name a context of the appropriate type
+     * @exception javax.naming.NotContextException if the name is bound but does
+     * not name a context, or does not name a context of the appropriate type
      */
     public void destroySubcontext(String name)
         throws NamingException {
@@ -541,8 +536,8 @@ public class FileDirContext extends BaseDirContext {
      * REPLACE_ATTRIBUTE, REMOVE_ATTRIBUTE
      * @param attrs the attributes to be used for the modification; may not 
      * be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public void modifyAttributes(String name, int mod_op, Attributes attrs)
@@ -561,8 +556,8 @@ public class FileDirContext extends BaseDirContext {
      * @param name the name of the object whose attributes will be updated
      * @param mods an ordered sequence of modifications to be performed; may 
      * not be null
-     * @exception AttributeModificationException if the modification cannot be
-     * completed successfully
+     * @exception javax.naming.directory.AttributeModificationException if the
+     * modification cannot be completed successfully
      * @exception NamingException if a naming exception is encountered
      */
     public void modifyAttributes(String name, ModificationItem[] mods)
@@ -582,8 +577,8 @@ public class FileDirContext extends BaseDirContext {
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
      * @exception NameAlreadyBoundException if name is already bound
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public void bind(String name, Object obj, Attributes attrs)
@@ -615,8 +610,8 @@ public class FileDirContext extends BaseDirContext {
      * @param name the name to bind; may not be empty
      * @param obj the object to bind; possibly null
      * @param attrs the attributes to associate with the binding
-     * @exception InvalidAttributesException if some "mandatory" attributes 
-     * of the binding are not supplied
+     * @exception javax.naming.directory.InvalidAttributesException if some
+     * "mandatory" attributes of the binding are not supplied
      * @exception NamingException if a naming exception is encountered
      */
     public void rebind(String name, Object obj, Attributes attrs)
@@ -695,8 +690,8 @@ public class FileDirContext extends BaseDirContext {
      * @param attrs the attributes to associate with the newly created context
      * @return the newly created context
      * @exception NameAlreadyBoundException if the name is already bound
-     * @exception InvalidAttributesException if attrs does not contain all 
-     * the mandatory attributes required for creation
+     * @exception javax.naming.directory.InvalidAttributesException if attrs
+     * does not contain all the mandatory attributes required for creation
      * @exception NamingException if a naming exception is encountered
      */
     public DirContext createSubcontext(String name, Attributes attrs)
@@ -808,10 +803,11 @@ public class FileDirContext extends BaseDirContext {
      * (new SearchControls())).
      * @return an enumeration of SearchResults of the objects that satisfy 
      * the filter; never null
-     * @exception InvalidSearchFilterException if the search filter specified 
-     * is not supported or understood by the underlying directory
-     * @exception InvalidSearchControlsException if the search controls 
-     * contain invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if the
+     * search filter specified is not supported or understood by the underlying
+     * directory
+     * @exception javax.naming.directory.InvalidSearchControlsException if the
+     * search controls contain invalid settings
      * @exception NamingException if a naming exception is encountered
      */
     public NamingEnumeration<SearchResult> search(String name, String filter, 
@@ -839,10 +835,10 @@ public class FileDirContext extends BaseDirContext {
      * filter; never null
      * @exception ArrayIndexOutOfBoundsException if filterExpr contains {i} 
      * expressions where i is outside the bounds of the array filterArgs
-     * @exception InvalidSearchControlsException if cons contains invalid 
-     * settings
-     * @exception InvalidSearchFilterException if filterExpr with filterArgs 
-     * represents an invalid search filter
+     * @exception javax.naming.directory.InvalidSearchControlsException if cons
+     * contains invalid settings
+     * @exception javax.naming.directory.InvalidSearchFilterException if
+     * filterExpr with filterArgs represents an invalid search filter
      * @exception NamingException if a naming exception is encountered
      */
     public NamingEnumeration<SearchResult> search(String name, String filterExpr, 
@@ -1060,13 +1056,7 @@ public class FileDirContext extends BaseDirContext {
          */
         protected File file;
         
-        
-        /**
-         * File length.
-         */
-        protected long length = -1L;
-        
-        
+
         // --------------------------------------------------- Resource Methods
         
         
