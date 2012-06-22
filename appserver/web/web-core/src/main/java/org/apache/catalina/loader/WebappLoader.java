@@ -1067,7 +1067,7 @@ public class WebappLoader
             } else {
                 copyJars = true;
                 destDir = new File(workDir, libPath);
-                if (!destDir.exists() && !destDir.mkdirs()) {
+                if (!destDir.mkdirs() && !destDir.isDirectory()) {
                     log.log(Level.SEVERE,
                             sm.getString("webappLoader.createWorkDirFailed",
                                     destDir.getAbsolutePath()));
