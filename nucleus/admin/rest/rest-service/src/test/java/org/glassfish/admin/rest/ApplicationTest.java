@@ -55,6 +55,7 @@ import org.junit.Test;
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -213,6 +214,7 @@ public class ApplicationTest extends RestTestBase {
     }
 
     @Test
+    @Ignore
     public void testUndeploySubActionWarnings() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
         final String serverName = "in" + generateRandomNumber();
