@@ -39,14 +39,15 @@
  */
 package org.glassfish.admin.rest.provider;
 
-import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.RestModel;
-
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.RestModel;
 
 /**
  * @author jdlee
@@ -61,6 +62,17 @@ public class RestModelProvider extends BaseProvider<RestModel> {
 
     @Override
     public String getContent(RestModel proxy) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        StringBuilder sb = new StringBuilder();
+        final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
+        boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
+        try {
+            JSONObject object = (JSONObject)getJsonObject(proxy);
+            sb.append(object.toString(getFormattingIndentLevel()));
+        } catch (JSONException ex) {
+            Logger.getLogger(RestModelProvider.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        }
+
+        return (wrapObject ? " { item : " : "") + sb.toString() + (wrapObject ? "}" : "");
     }
 }

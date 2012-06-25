@@ -115,7 +115,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
      * Used from isWritable method.
      */ 
     protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
-        return desiredType == type;
+        return desiredType.isAssignableFrom(type);
     }
 
     @Override
