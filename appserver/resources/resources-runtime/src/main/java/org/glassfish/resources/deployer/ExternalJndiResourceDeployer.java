@@ -74,15 +74,15 @@ import java.util.logging.Logger;
 
 /**
  * Handles external-jndi resource events in the server instance.
- *
+ * <p/>
  * The external-jndi resource events from the admin instance are propagated
  * to this object.
- *
+ * <p/>
  * The methods can potentially be called concurrently, therefore implementation
  * need to be synchronized.
  *
- * @author  Nazrul Islam
- * @since   JDK1.4
+ * @author Nazrul Islam
+ * @since JDK1.4
  */
 @Service
 @ResourceDeployerInfo(ExternalJndiResource.class)
@@ -96,11 +96,15 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     private BindableResourcesHelper bindableResourcesHelper;
 
 
-    /** StringManager for this deployer */
+    /**
+     * StringManager for this deployer
+     */
     private static final StringManager localStrings =
-        StringManager.getManager(ExternalJndiResourceDeployer.class);
-    /** logger for this deployer */
-    private static Logger _logger=LogDomains.getLogger(ExternalJndiResourceDeployer.class, LogDomains.RSR_LOGGER);
+            StringManager.getManager(ExternalJndiResourceDeployer.class);
+    /**
+     * logger for this deployer
+     */
+    private static Logger _logger = LogDomains.getLogger(ExternalJndiResourceDeployer.class, LogDomains.RSR_LOGGER);
 
     /**
      * {@inheritDoc}
@@ -111,11 +115,11 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
         ResourceInfo resourceInfo = new ResourceInfo(jndiRes.getJndiName(), applicationName, moduleName);
         createExternalJndiResource(jndiRes, resourceInfo);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-	public synchronized void deployResource(Object resource) throws Exception {
+    public synchronized void deployResource(Object resource) throws Exception {
 
         ExternalJndiResource jndiRes =
                 (ExternalJndiResource) resource;
@@ -125,27 +129,20 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
 
     private void createExternalJndiResource(ExternalJndiResource jndiRes,
                                             ResourceInfo resourceInfo) {
-        if (bindableResourcesHelper.isNonConnectorBindableResourceEnabled(jndiRes, resourceInfo)){
-            // converts the config data to j2ee resource
-            JavaEEResource j2eeRes = toExternalJndiJavaEEResource(jndiRes, resourceInfo);
+        // converts the config data to j2ee resource
+        JavaEEResource j2eeRes = toExternalJndiJavaEEResource(jndiRes, resourceInfo);
 
-            // installs the resource
-            installExternalJndiResource((org.glassfish.resources.beans.ExternalJndiResource) j2eeRes, resourceInfo);
-
-        } else {
-            _logger.log(Level.INFO, "core.resource_disabled",
-                new Object[] {jndiRes.getJndiName(),
-                              ResourceConstants.EXT_JNDI_RES_TYPE});
-        }
+        // installs the resource
+        installExternalJndiResource((org.glassfish.resources.beans.ExternalJndiResource) j2eeRes, resourceInfo);
 
     }
 
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ExternalJndiResource jndiRes =
-            (ExternalJndiResource) resource;
+                (ExternalJndiResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(jndiRes.getJndiName(), applicationName, moduleName);
         deleteResource(jndiRes, resourceInfo);
     }
@@ -153,32 +150,28 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-	public synchronized void undeployResource(Object resource)
+    public synchronized void undeployResource(Object resource)
             throws Exception {
 
         ExternalJndiResource jndiRes =
-            (ExternalJndiResource) resource;
+                (ExternalJndiResource) resource;
         ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(jndiRes);
         deleteResource(jndiRes, resourceInfo);
     }
 
     private void deleteResource(ExternalJndiResource jndiResource,
                                 ResourceInfo resourceInfo) {
-        if (bindableResourcesHelper.isNonConnectorBindableResourceEnabled(jndiResource, resourceInfo)){
-            // converts the config data to j2ee resource
-            JavaEEResource j2eeResource = toExternalJndiJavaEEResource(jndiResource, resourceInfo);
-            // un-installs the resource
-            uninstallExternalJndiResource(j2eeResource, resourceInfo);
-        }else{
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[] {jndiResource.getJndiName(),
-                    ResourceConstants.RES_TYPE_EXTERNAL_JNDI});
-        }
+        // converts the config data to j2ee resource
+        JavaEEResource j2eeResource = toExternalJndiJavaEEResource(jndiResource, resourceInfo);
+        // un-installs the resource
+        uninstallExternalJndiResource(j2eeResource, resourceInfo);
+
     }
 
     /**
      * {@inheritDoc}
      */
-	public synchronized void redeployResource(Object resource)
+    public synchronized void redeployResource(Object resource)
             throws Exception {
 
         undeployResource(resource);
@@ -188,7 +181,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public boolean handles(Object resource){
+    public boolean handles(Object resource) {
         return resource instanceof ExternalJndiResource;
     }
 
@@ -210,14 +203,14 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-	public synchronized void enableResource(Object resource) throws Exception {
+    public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
 
     /**
      * {@inheritDoc}
      */
-	public synchronized void disableResource(Object resource) throws Exception {
+    public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
 
@@ -257,7 +250,7 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
             // for the target JNDI factory
             Hashtable env = new Hashtable();
             for (Iterator props = extJndiRes.getProperties().iterator();
-                 props.hasNext();) {
+                 props.hasNext(); ) {
 
                 ResourceProperty prop = (ResourceProperty) props.next();
                 env.put(prop.getName(), prop.getValue());
@@ -341,15 +334,13 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * Returns a new instance of j2ee external jndi resource from the given
      * config bean.
-     *
+     * <p/>
      * This method gets called from the external resource
      * deployer to convert external-jndi-resource config bean into
      * external-jndi  j2ee resource.
      *
-     * @param    rbean    external-jndi-resource config bean
-     *
-     * @return   a new instance of j2ee external jndi resource
-     *
+     * @param rbean external-jndi-resource config bean
+     * @return a new instance of j2ee external jndi resource
      */
     public static org.glassfish.resources.api.JavaEEResource toExternalJndiJavaEEResource(
             ExternalJndiResource rbean, ResourceInfo resourceInfo) {
@@ -359,23 +350,23 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
         //jr.setDescription( rbean.getDescription() ); // FIXME: getting error
 
         // sets the enable flag
-        jr.setEnabled( Boolean.valueOf(rbean.getEnabled()) );
+        jr.setEnabled(Boolean.valueOf(rbean.getEnabled()));
 
         // sets the jndi look up name
-        jr.setJndiLookupName( rbean.getJndiLookupName() );
+        jr.setJndiLookupName(rbean.getJndiLookupName());
 
         // sets the resource type
-        jr.setResType( rbean.getResType() );
+        jr.setResType(rbean.getResType());
 
         // sets the factory class name
-        jr.setFactoryClass( rbean.getFactoryClass() );
+        jr.setFactoryClass(rbean.getFactoryClass());
 
         // sets the properties
         List<Property> properties = rbean.getProperty();
-        if (properties!= null) {
-            for(Property property : properties){
+        if (properties != null) {
+            for (Property property : properties) {
                 ResourceProperty rp =
-                    new ResourcePropertyImpl(property.getName(), property.getValue());
+                        new ResourcePropertyImpl(property.getName(), property.getValue());
                 jr.addProperty(rp);
             }
         }
@@ -385,9 +376,9 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
-        if(handles(resource)){
-            if(!postApplicationDeployment){
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
+        if (handles(resource)) {
+            if (!postApplicationDeployment) {
                 return true;
             }
         }
@@ -398,8 +389,8 @@ public class ExternalJndiResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
-                                  Resources allResources)
-    throws ResourceConflictException {
+                                          Resources allResources)
+            throws ResourceConflictException {
         //do nothing.
     }
 }

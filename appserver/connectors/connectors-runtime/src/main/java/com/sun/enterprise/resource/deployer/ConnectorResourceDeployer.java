@@ -40,27 +40,24 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.connectors.ConnectorRuntime;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
+import com.sun.logging.LogDomains;
+import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceDeployer;
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+
+import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Srikanth P
@@ -85,7 +82,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
         PoolInfo poolInfo = new PoolInfo(domainResource.getPoolName(), applicationName, moduleName);
         createConnectorResource(domainResource, resourceInfo, poolInfo);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -101,31 +98,27 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
 
     private void createConnectorResource(ConnectorResource connectorResource, ResourceInfo resourceInfo,
                                          PoolInfo poolInfo) throws ConnectorRuntimeException {
-        if (ResourcesUtil.createInstance().isEnabled(connectorResource, resourceInfo)){
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Calling backend to add connector resource",
-                        resourceInfo);
-            }
-            runtime.createConnectorResource(resourceInfo, poolInfo, null);
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Added connector resource in backend",
-                        resourceInfo);
-            }
-        } else {
-            _logger.log(Level.INFO, "core.resource_disabled",
-                    new Object[]{connectorResource.getJndiName(), ConnectorConstants.RES_TYPE_CR});
-
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Calling backend to add connector resource",
+                    resourceInfo);
         }
+        runtime.createConnectorResource(resourceInfo, poolInfo, null);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Added connector resource in backend",
+                    resourceInfo);
+        }
+
     }
 
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ConnectorResource domainResource = (ConnectorResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(domainResource.getJndiName(), applicationName, moduleName);
         deleteConnectorResource(domainResource, resourceInfo);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -139,17 +132,12 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     private void deleteConnectorResource(ConnectorResource connectorResource, ResourceInfo resourceInfo)
             throws Exception {
 
-        if (ResourcesUtil.createInstance().isEnabled(connectorResource, resourceInfo)) {
-            runtime.deleteConnectorResource(resourceInfo);
+        runtime.deleteConnectorResource(resourceInfo);
 
-            //Since 8.1 PE/SE/EE - if no more resource-ref to the pool
-            //of this resource in this server instance, remove pool from connector
-            //runtime
-            checkAndDeletePool(connectorResource);
-        } else {
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[]{connectorResource.getJndiName(),
-                    ConnectorConstants.RES_TYPE_CR});
-        }
+        //Since 8.1 PE/SE/EE - if no more resource-ref to the pool
+        //of this resource in this server instance, remove pool from connector
+        //runtime
+        checkAndDeletePool(connectorResource);
     }
 
     /**
@@ -164,7 +152,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
      * {@inheritDoc}
      */
     public synchronized void disableResource(Object resource)
-                  throws Exception {
+            throws Exception {
         undeployResource(resource);
     }
 
@@ -178,7 +166,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * {@inheritDoc}
      */
-    public boolean handles(Object resource){
+    public boolean handles(Object resource) {
         return resource instanceof ConnectorResource;
     }
 
@@ -199,6 +187,7 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
     /**
      * Checks if no more resource-refs to resources exists for the
      * connector connection pool and then deletes the pool
+     *
      * @param cr ConnectorResource
      * @throws Exception (ConfigException / undeploy exception)
      * @since 8.1 pe/se/ee
@@ -211,19 +200,19 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
             PoolInfo poolInfo = ConnectorsUtil.getPoolInfo(ccp);
 
             boolean poolReferred =
-                ResourcesUtil.createInstance().isPoolReferredInServerInstance(poolInfo);
+                    ResourcesUtil.createInstance().isPoolReferredInServerInstance(poolInfo);
             if (!poolReferred) {
-                if(_logger.isLoggable(Level.FINE)) {
+                if (_logger.isLoggable(Level.FINE)) {
                     _logger.fine("Deleting pool [" + poolName + "] as there are no more " +
-                        "resource-refs to the pool in this server instance");
+                            "resource-refs to the pool in this server instance");
                 }
                 //Delete/Undeploy Pool
                 runtime.getResourceDeployer(ccp).undeployResource(ccp);
             }
         } catch (Exception ce) {
             _logger.warning(ce.getMessage());
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.fine("Exception while deleting pool [ "+poolName+" ] : " + ce );
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("Exception while deleting pool [ " + poolName + " ] : " + ce);
             }
             throw ce;
         }

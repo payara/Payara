@@ -41,31 +41,29 @@
 package org.glassfish.resources.javamail.deployer;
 
 
-import java.util.Collection;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.List;
-
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.deployment.MailConfiguration;
 import com.sun.enterprise.repository.ResourceProperty;
-
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.resources.javamail.naming.MailNamingObjectFactory;
-import org.glassfish.resources.naming.*;
-import org.glassfish.resources.util.*;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.resources.naming.SerializableObjectRefAddr;
+import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.naming.NamingException;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handles mail resource events in the server instance.
@@ -114,7 +112,6 @@ public class MailResourceDeployer extends GlobalResourceDeployer
             _logger.log(Level.INFO, "core.resourcedeploy_error");
         } else {
             ResourceInfo resourceInfo = new ResourceInfo(mailRes.getJndiName(), applicationName, moduleName);
-            if (isEnabled(mailRes, resourceInfo)){
             //registers the jsr77 object for the mail resource deployed
             /* TODO Not needed any more ?
             /*ManagementObjectManager mgr =
@@ -122,20 +119,16 @@ public class MailResourceDeployer extends GlobalResourceDeployer
             mgr.registerJavaMailResource(mailRes.getJndiName());*/
 
             installResource(mailRes, resourceInfo);
-            } else {
-                _logger.log(Level.INFO, "core.resource_disabled",
-                        new Object[] {mailRes.getJndiName(),
-                        ResourceConstants.RES_TYPE_MAIL});
-            }
+
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public synchronized void deployResource(Object resource) throws Exception {
         MailResource mailResource =
-                (MailResource)resource;
+                (MailResource) resource;
         ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(mailResource);
         deployResource(resource, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
     }
@@ -160,7 +153,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         MailResource mailRes =
                 (MailResource) resource;
         // converts the config data to j2ee resource
@@ -182,23 +175,19 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
     private void deleteResource(MailResource mailRes, ResourceInfo resourceInfo)
             throws NamingException {
-        if (isEnabled(mailRes, resourceInfo)){
-            //JavaEEResource javaEEResource = toMailJavaEEResource(mailRes, resourceInfo);
-            // removes the resource from jndi naming
-            namingService.unpublishObject(resourceInfo, mailRes.getJndiName());
+        //JavaEEResource javaEEResource = toMailJavaEEResource(mailRes, resourceInfo);
+        // removes the resource from jndi naming
+        namingService.unpublishObject(resourceInfo, mailRes.getJndiName());
 
-            /* TODO Not needed any more ?
-                ManagementObjectManager mgr =
-                        getAppServerSwitchObject().getManagementObjectManager();
-                mgr.unregisterJavaMailResource(mailRes.getJndiName());
-            */
-        }else{
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[] {mailRes.getJndiName(),
-                    ResourceConstants.RES_TYPE_MAIL});
-        }
+        /* TODO Not needed any more ?
+            ManagementObjectManager mgr =
+                    getAppServerSwitchObject().getManagementObjectManager();
+            mgr.unregisterJavaMailResource(mailRes.getJndiName());
+        */
+
     }
 
-    private boolean isEnabled(MailResource mailResource, ResourceInfo resourceInfo){
+    private boolean isEnabled(MailResource mailResource, ResourceInfo resourceInfo) {
         return Boolean.valueOf(mailResource.getEnabled()) && isRefEnabled(resourceInfo);
     }
 
@@ -235,7 +224,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
-    public boolean handles(Object resource){
+    public boolean handles(Object resource) {
         return resource instanceof MailResource;
     }
 
@@ -280,7 +269,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
             MailConfiguration config = new MailConfiguration(mailResource);
 
             javax.naming.Reference ref = new javax.naming.Reference(javax.mail.Session.class.getName(),
-                    MailNamingObjectFactory.class.getName(),null);
+                    MailNamingObjectFactory.class.getName(), null);
             SerializableObjectRefAddr serializableRefAddr = new SerializableObjectRefAddr("jndiName", config);
             ref.add(serializableRefAddr);
 
@@ -294,17 +283,15 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
     /**
      * Returns a new instance of j2ee mail resource from the given config bean.
-     *
+     * <p/>
      * This method gets called from the mail resource deployer to convert mail
      * config bean into mail j2ee resource.
      *
-     * @param    mailResourceConfig    mail-resource config bean
-     *
-     * @return   a new instance of j2ee mail resource
-     *
+     * @param mailResourceConfig mail-resource config bean
+     * @return a new instance of j2ee mail resource
      */
     public static org.glassfish.resources.api.JavaEEResource toMailJavaEEResource(
-        MailResource mailResourceConfig, ResourceInfo resourceInfo) {
+            MailResource mailResourceConfig, ResourceInfo resourceInfo) {
 
         org.glassfish.resources.javamail.beans.MailResource mailResource =
                 new org.glassfish.resources.javamail.beans.MailResource(resourceInfo);
@@ -324,7 +311,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
         List<Property> properties = mailResourceConfig.getProperty();
         if (properties != null) {
 
-            for(Property property : properties){
+            for (Property property : properties) {
                 ResourceProperty rp = new org.glassfish.resources.api.ResourcePropertyImpl(property.getName(), property.getValue());
                 mailResource.addProperty(rp);
             }
@@ -335,9 +322,9 @@ public class MailResourceDeployer extends GlobalResourceDeployer
     /**
      * {@inheritDoc}
      */
-    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
-        if(handles(resource)){
-            if(!postApplicationDeployment){
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
+        if (handles(resource)) {
+            if (!postApplicationDeployment) {
                 return true;
             }
         }
@@ -348,8 +335,8 @@ public class MailResourceDeployer extends GlobalResourceDeployer
      * {@inheritDoc}
      */
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
-                                  Resources allResources)
-    throws ResourceConflictException {
+                                          Resources allResources)
+            throws ResourceConflictException {
         //do nothing.
     }
 }

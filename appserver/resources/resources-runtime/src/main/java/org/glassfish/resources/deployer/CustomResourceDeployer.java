@@ -40,50 +40,48 @@
 
 package org.glassfish.resources.deployer;
 
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.repository.ResourceProperty;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.config.CustomResource;
-
-import java.util.Collection;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.Iterator;
-import java.util.List;
-
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.repository.ResourceProperty;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.glassfish.resources.util.ResourceUtil;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.config.types.Property;
 
+import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-
-import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handles custom resource events in the server instance.
- *
+ * <p/>
  * The custom resource events from the admin instance are propagated
  * to this object.
- *
+ * <p/>
  * The methods can potentially be called concurrently, therefore implementation
  * need to be synchronized.
- *
- * <P>
+ * <p/>
+ * <p/>
  * Note: Since a notification is not sent to the user of the custom
- *       resources upon undeploy, it is possible that there would be
- *       stale objects not being garbage collected. Future versions
- *       should take care of this problem.
+ * resources upon undeploy, it is possible that there would be
+ * stale objects not being garbage collected. Future versions
+ * should take care of this problem.
  *
- * @author  Nazrul Islam
- * @since   JDK1.4
+ * @author Nazrul Islam
+ * @since JDK1.4
  */
 @Service
 @ResourceDeployerInfo(CustomResource.class)
@@ -94,14 +92,18 @@ public class CustomResourceDeployer implements ResourceDeployer {
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;
 
-    /** Stringmanager for this deployer */
+    /**
+     * Stringmanager for this deployer
+     */
     private static final StringManager localStrings =
-        StringManager.getManager(CustomResourceDeployer.class);
+            StringManager.getManager(CustomResourceDeployer.class);
 
     @Inject
     private org.glassfish.resources.naming.ResourceNamingService cns;
-    /** logger for this deployer */
-    private static Logger _logger=LogDomains.getLogger(CustomResourceDeployer.class, LogDomains.RSR_LOGGER);
+    /**
+     * logger for this deployer
+     */
+    private static Logger _logger = LogDomains.getLogger(CustomResourceDeployer.class, LogDomains.RSR_LOGGER);
 
     /**
      * {@inheritDoc}
@@ -109,79 +111,70 @@ public class CustomResourceDeployer implements ResourceDeployer {
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
         CustomResource customResource =
-                (CustomResource)resource;
+                (CustomResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(customResource.getJndiName(), applicationName, moduleName);
         deployResource(resource, resourceInfo);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-	public synchronized void deployResource(Object resource) throws Exception {
+    public synchronized void deployResource(Object resource) throws Exception {
         CustomResource customResource =
-                (CustomResource)resource;
+                (CustomResource) resource;
         ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(customResource);
         deployResource(customResource, resourceInfo);
     }
 
-    private void deployResource(Object resource, ResourceInfo resourceInfo){
+    private void deployResource(Object resource, ResourceInfo resourceInfo) {
 
         CustomResource customRes =
-            (CustomResource) resource;
+                (CustomResource) resource;
 
-        if (bindableResourcesHelper.isNonConnectorBindableResourceEnabled(customRes, resourceInfo)){
-            // converts the config data to j2ee resource
-            JavaEEResource j2eeResource = toCustomJavaEEResource(customRes, resourceInfo);
+        // converts the config data to j2ee resource
+        JavaEEResource j2eeResource = toCustomJavaEEResource(customRes, resourceInfo);
 
-            // installs the resource
-            installCustomResource((org.glassfish.resources.beans.CustomResource) j2eeResource, resourceInfo);
+        // installs the resource
+        installCustomResource((org.glassfish.resources.beans.CustomResource) j2eeResource, resourceInfo);
 
-        } else {
-            _logger.log(Level.INFO, "core.resource_disabled",
-                new Object[] {customRes.getJndiName(),
-                              ResourceConstants.RES_TYPE_CUSTOM});
-        }
 
     }
 
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         CustomResource customResource =
-            (CustomResource) resource;
+                (CustomResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(customResource.getJndiName(), applicationName, moduleName);
         deleteResource(customResource, resourceInfo);
     }
+
     /**
      * {@inheritDoc}
      */
-	public synchronized void undeployResource(Object resource)
+    public synchronized void undeployResource(Object resource)
             throws Exception {
 
         CustomResource customResource =
-            (CustomResource) resource;
+                (CustomResource) resource;
         ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(customResource);
         deleteResource(customResource, resourceInfo);
     }
 
     private void deleteResource(CustomResource customResource,
                                 ResourceInfo resourceInfo) throws NamingException {
-        if (bindableResourcesHelper.isNonConnectorBindableResourceEnabled(customResource, resourceInfo)){
-            // converts the config data to j2ee resource
-            //JavaEEResource j2eeResource = toCustomJavaEEResource(customRes, resourceInfo);
-            // removes the resource from jndi naming
-            cns.unpublishObject(resourceInfo, resourceInfo.getName());
-        }else{
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[] {customResource.getJndiName(),
-                    ResourceConstants.RES_TYPE_CUSTOM});
-        }
+        // converts the config data to j2ee resource
+        //JavaEEResource j2eeResource = toCustomJavaEEResource(customRes, resourceInfo);
+        // removes the resource from jndi naming
+        cns.unpublishObject(resourceInfo, resourceInfo.getName());
+
     }
 
     /**
      * {@inheritDoc}
      */
-    public boolean handles(Object resource){
+    public boolean handles(Object resource) {
         return resource instanceof CustomResource;
     }
 
@@ -202,7 +195,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-	public synchronized void redeployResource(Object resource)
+    public synchronized void redeployResource(Object resource)
             throws Exception {
 
         undeployResource(resource);
@@ -212,14 +205,14 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-	public synchronized void enableResource(Object resource) throws Exception {
+    public synchronized void enableResource(Object resource) throws Exception {
         deployResource(resource);
     }
 
     /**
      * {@inheritDoc}
      */
-	public synchronized void disableResource(Object resource) throws Exception {
+    public synchronized void disableResource(Object resource) throws Exception {
         undeployResource(resource);
     }
 
@@ -235,7 +228,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
 
         try {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"installCustomResource by jndi-name : "+ resourceInfo);
+                _logger.log(Level.FINE, "installCustomResource by jndi-name : " + resourceInfo);
             }
 
             // bind a Reference to the object factory
@@ -243,7 +236,7 @@ public class CustomResourceDeployer implements ResourceDeployer {
 
             // add resource properties as StringRefAddrs
             for (Iterator props = customRes.getProperties().iterator();
-                 props.hasNext();) {
+                 props.hasNext(); ) {
 
                 ResourceProperty prop = (ResourceProperty) props.next();
 
@@ -262,13 +255,12 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * Returns a new instance of j2ee custom resource from the given
      * config bean.
-     *
+     * <p/>
      * This method gets called from the custom resource deployer
      * to convert custom-resource config bean into custom j2ee resource.
      *
-     * @param    rbean   custom-resource config bean
-     *
-     * @return   new instance of j2ee custom resource
+     * @param rbean custom-resource config bean
+     * @return new instance of j2ee custom resource
      */
     public static JavaEEResource toCustomJavaEEResource(
             CustomResource rbean, ResourceInfo resourceInfo) {
@@ -280,20 +272,20 @@ public class CustomResourceDeployer implements ResourceDeployer {
         //jr.setDescription(rbean.getDescription()); // FIXME: getting error
 
         // sets the enable flag
-        jr.setEnabled( Boolean.valueOf(rbean.getEnabled()) );
+        jr.setEnabled(Boolean.valueOf(rbean.getEnabled()));
 
         // sets the resource type
-        jr.setResType( rbean.getResType() );
+        jr.setResType(rbean.getResType());
 
         // sets the factory class name
-        jr.setFactoryClass( rbean.getFactoryClass() );
+        jr.setFactoryClass(rbean.getFactoryClass());
 
         // sets the properties
         List<Property> properties = rbean.getProperty();
-        if (properties!= null) {
-            for(Property property : properties) {
+        if (properties != null) {
+            for (Property property : properties) {
                 ResourceProperty rp =
-                    new ResourcePropertyImpl(property.getName(), property.getValue());
+                        new ResourcePropertyImpl(property.getName(), property.getValue());
                 jr.addProperty(rp);
             }
         }
@@ -303,9 +295,9 @@ public class CustomResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
-        if(handles(resource)){
-            if(!postApplicationDeployment){
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
+        if (handles(resource)) {
+            if (!postApplicationDeployment) {
                 return true;
             }
         }
@@ -316,8 +308,8 @@ public class CustomResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
-                                  Resources allResources)
-    throws ResourceConflictException {
+                                          Resources allResources)
+            throws ResourceConflictException {
         //do nothing.
     }
 }

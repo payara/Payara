@@ -40,29 +40,26 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.logging.LogDomains;
 import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.JdbcResource;
 import org.glassfish.resources.api.*;
-import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.logging.LogDomains;
+import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Singleton;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
 
 
 /**
@@ -94,33 +91,28 @@ public class JdbcResourceDeployer implements ResourceDeployer {
      */
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)
             throws Exception {
+
         //deployResource is not synchronized as there is only one caller
         //ResourceProxy which is synchronized
 
-        JdbcResource jdbcRes =
-                (JdbcResource) resource;
-
+        JdbcResource jdbcRes = (JdbcResource) resource;
         String jndiName = jdbcRes.getJndiName();
         String poolName = jdbcRes.getPoolName();
         PoolInfo poolInfo = new PoolInfo(poolName, applicationName, moduleName);
         ResourceInfo resourceInfo = new ResourceInfo(jndiName, applicationName, moduleName);
 
-        if (ResourcesUtil.createInstance().isEnabled(jdbcRes, resourceInfo)){
-            runtime.createConnectorResource(resourceInfo, poolInfo, null);
-            //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to create one
-            if(ConnectorsUtil.getValidSuffix(jndiName) == null){
-                ResourceInfo pmResourceInfo = new ResourceInfo(ConnectorsUtil.getPMJndiName(jndiName),
-                        resourceInfo.getApplicationName(), resourceInfo.getModuleName());
-                runtime.createConnectorResource( pmResourceInfo, poolInfo, null);
-            }
-            if(_logger.isLoggable(Level.FINEST)) {
-                _logger.finest("deployed resource " + jndiName);
-            }
-        } else {
-            _logger.log(Level.INFO, "core.resource_disabled",
-                    new Object[]{jdbcRes.getJndiName(), ConnectorConstants.RES_TYPE_JDBC});
+        runtime.createConnectorResource(resourceInfo, poolInfo, null);
+        //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to create one
+        if (ConnectorsUtil.getValidSuffix(jndiName) == null) {
+            ResourceInfo pmResourceInfo = new ResourceInfo(ConnectorsUtil.getPMJndiName(jndiName),
+                    resourceInfo.getApplicationName(), resourceInfo.getModuleName());
+            runtime.createConnectorResource(pmResourceInfo, poolInfo, null);
+        }
+        if (_logger.isLoggable(Level.FINEST)) {
+            _logger.finest("deployed resource " + jndiName);
         }
     }
+
     /**
      * {@inheritDoc}
      */
@@ -133,9 +125,9 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
-        if(handles(resource)){
-            if(!postApplicationDeployment){
+    public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource) {
+        if (handles(resource)) {
+            if (!postApplicationDeployment) {
                 return true;
             }
         }
@@ -145,7 +137,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         JdbcResource jdbcRes = (JdbcResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(jdbcRes.getJndiName(), applicationName, moduleName);
         deleteResource(jdbcRes, resourceInfo);
@@ -163,27 +155,22 @@ public class JdbcResourceDeployer implements ResourceDeployer {
 
     private void deleteResource(JdbcResource jdbcResource, ResourceInfo resourceInfo) throws Exception {
 
-        if (ResourcesUtil.createInstance().isEnabled(jdbcResource, resourceInfo)) {
-
-            runtime.deleteConnectorResource(resourceInfo);
-            ConnectorRegistry.getInstance().removeResourceFactories(resourceInfo);
-            //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to delete one
-            if (ConnectorsUtil.getValidSuffix(resourceInfo.getName()) == null) {
-                String pmJndiName = ConnectorsUtil.getPMJndiName(resourceInfo.getName());
-                ResourceInfo pmResourceInfo = new ResourceInfo(pmJndiName, resourceInfo.getApplicationName(),
-                        resourceInfo.getModuleName());
-                runtime.deleteConnectorResource(pmResourceInfo);
-                ConnectorRegistry.getInstance().removeResourceFactories(pmResourceInfo);
-            }
-
-            //Since 8.1 PE/SE/EE - if no more resource-ref to the pool
-            //of this resource in this server instance, remove pool from connector
-            //runtime
-            checkAndDeletePool(jdbcResource);
-        } else {
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[]{jdbcResource.getJndiName(),
-                    ConnectorConstants.RES_TYPE_JDBC});
+        runtime.deleteConnectorResource(resourceInfo);
+        ConnectorRegistry.getInstance().removeResourceFactories(resourceInfo);
+        //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to delete one
+        if (ConnectorsUtil.getValidSuffix(resourceInfo.getName()) == null) {
+            String pmJndiName = ConnectorsUtil.getPMJndiName(resourceInfo.getName());
+            ResourceInfo pmResourceInfo = new ResourceInfo(pmJndiName, resourceInfo.getApplicationName(),
+                    resourceInfo.getModuleName());
+            runtime.deleteConnectorResource(pmResourceInfo);
+            ConnectorRegistry.getInstance().removeResourceFactories(pmResourceInfo);
         }
+
+        //Since 8.1 PE/SE/EE - if no more resource-ref to the pool
+        //of this resource in this server instance, remove pool from connector
+        //runtime
+        checkAndDeletePool(jdbcResource);
+
     }
 
     /**
@@ -199,7 +186,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
-    public boolean handles(Object resource){
+    public boolean handles(Object resource) {
         return resource instanceof JdbcResource;
     }
 
@@ -235,6 +222,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     /**
      * Checks if no more resource-refs to resources exists for the
      * JDBC connection pool and then deletes the pool
+     *
      * @param cr Jdbc Resource Config bean
      * @throws Exception if unable to access configuration/undeploy resource.
      * @since 8.1 pe/se/ee
@@ -245,14 +233,14 @@ public class JdbcResourceDeployer implements ResourceDeployer {
         PoolInfo poolInfo = new PoolInfo(poolName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
         Resources resources = (Resources) cr.getParent();
         //Its possible that the JdbcResource here is a DataSourceDefinition. Ignore optimization.
-        if(resources != null){
+        if (resources != null) {
             try {
                 boolean poolReferred =
-                    ResourcesUtil.createInstance().isJdbcPoolReferredInServerInstance(poolInfo);
+                        ResourcesUtil.createInstance().isJdbcPoolReferredInServerInstance(poolInfo);
                 if (!poolReferred) {
-                    if(_logger.isLoggable(Level.FINE)) {
+                    if (_logger.isLoggable(Level.FINE)) {
                         _logger.fine("Deleting JDBC pool [" + poolName + " ] as there are no more " +
-                            "resource-refs to the pool in this server instance");
+                                "resource-refs to the pool in this server instance");
                     }
 
                     JdbcConnectionPool jcp = (JdbcConnectionPool)
@@ -262,8 +250,8 @@ public class JdbcResourceDeployer implements ResourceDeployer {
                 }
             } catch (Exception ce) {
                 _logger.warning(ce.getMessage());
-                if(_logger.isLoggable(Level.FINE)) {
-                    _logger.fine("Exception while deleting pool [ "+poolName+" ] : " + ce );
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("Exception while deleting pool [ " + poolName + " ] : " + ce);
                 }
                 throw ce;
             }
@@ -274,8 +262,8 @@ public class JdbcResourceDeployer implements ResourceDeployer {
      * {@inheritDoc}
      */
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource,
-                                  Resources allResources)
-    throws ResourceConflictException {
+                                          Resources allResources)
+            throws ResourceConflictException {
         //do nothing.
     }
 }

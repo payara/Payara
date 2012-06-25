@@ -40,25 +40,24 @@
 
 package com.sun.enterprise.resource.deployer;
 
-import com.sun.appserv.connectors.internal.api.*;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import org.glassfish.connectors.config.AdminObjectResource;
+import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.logging.LogDomains;
-
-import java.util.Properties;
-import java.util.List;
-import java.util.logging.*;
-
-import javax.inject.Inject;
-
+import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
+import org.jvnet.hk2.config.types.Property;
+
+import javax.inject.Inject;
+import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Srikanth P
@@ -114,29 +113,25 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
                         }
                 */
 
-        if (ResourcesUtil.createInstance().isEnabled(aor, resourceInfo)){
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Calling backend to add adminObject", resourceInfo);
-            }
-            runtime.addAdminObject(null, aor.getResAdapter(), resourceInfo,
-                    aor.getResType(), aor.getClassName(),  transformProps(aor.getProperty()));
-            if(_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE,"Added adminObject in backend", resourceInfo);
-            }
-        } else {
-            _logger.log(Level.INFO, "core.resource_disabled",
-                    new Object[]{aor.getJndiName(), ConnectorConstants.RES_TYPE_AOR});
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Calling backend to add adminObject", resourceInfo);
+        }
+        runtime.addAdminObject(null, aor.getResAdapter(), resourceInfo,
+                aor.getResType(), aor.getClassName(), transformProps(aor.getProperty()));
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Added adminObject in backend", resourceInfo);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception{
+    public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         final AdminObjectResource aor = (AdminObjectResource) resource;
         ResourceInfo resourceInfo = new ResourceInfo(aor.getJndiName(), applicationName, moduleName);
         deleteAdminObjectResource(aor, resourceInfo);
     }
+
     /**
      * {@inheritDoc}
      */
@@ -150,25 +145,20 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
     private void deleteAdminObjectResource(AdminObjectResource adminObject, ResourceInfo resourceInfo)
             throws ConnectorRuntimeException {
 
-        if (ResourcesUtil.createInstance().isEnabled(adminObject, resourceInfo)) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Calling backend to delete adminObject", resourceInfo);
-            }
-            runtime.deleteAdminObject(resourceInfo);
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Deleted adminObject in backend", resourceInfo);
-            }
-
-            //unregister the managed object
-            /* TODO Not needed any more ?
-                final ManagementObjectManager mgr =
-                        getAppServerSwitchObject().getManagementObjectManager();
-                mgr.unregisterAdminObjectResource(aor.getJndiName(), aor.getResType());
-            */
-        } else {
-            _logger.log(Level.FINEST, "core.resource_disabled", new Object[]{adminObject.getJndiName(),
-                    ConnectorConstants.RES_TYPE_AOR});
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Calling backend to delete adminObject", resourceInfo);
         }
+        runtime.deleteAdminObject(resourceInfo);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Deleted adminObject in backend", resourceInfo);
+        }
+
+        //unregister the managed object
+        /* TODO Not needed any more ?
+            final ManagementObjectManager mgr =
+                    getAppServerSwitchObject().getManagementObjectManager();
+            mgr.unregisterAdminObjectResource(aor.getJndiName(), aor.getResType());
+        */
     }
 
     /**
@@ -189,7 +179,7 @@ public class AdminObjectResourceDeployer extends AbstractConnectorResourceDeploy
      * @inheritDoc
      */
     public Class[] getProxyClassesForDynamicReconfiguration() {
-        return new Class[0];  
+        return new Class[0];
     }
 
     /**
