@@ -272,7 +272,7 @@ public class CommandSecurityChecker {
     
     private String resourceNameFromConfigBean(Class<? extends ConfigBeanProxy> c) {
         ConfigBeanProxy b = locator.getComponent(c);
-        return resourceNameFromConfigBean(b);
+        return (b != null ? resourceNameFromConfigBean(b) : "?");
     }
     
     private void addAccessChecksFromReSTEndpoints(final AdminCommand command, 
