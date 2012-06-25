@@ -122,14 +122,14 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
         }
 
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            if (config.checkIfConfigExists(configBeanType)) {
+            if (config.checkIfConfigExtensionExists(configBeanType)) {
                 try {
                     ConfigSupport.apply(new SingleConfigCode<Config>() {
                         @Override
                         public Object run(Config param) throws PropertyVetoException,
                                 TransactionFailure {
                             List<ConfigExtension> configExtensions;
-                            configExtensions = param.getConfigExtensions();
+                            configExtensions = param.getExtensions();
                             for (ConfigExtension ext : configExtensions) {
                                 String configExtensionClass = GlassFishConfigBean.unwrap(ext).getProxyType().getSimpleName();
                                 if (configExtensionClass.equals(className)) {

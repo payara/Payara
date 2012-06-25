@@ -43,7 +43,6 @@ package com.sun.enterprise.config.serverbeans;
 import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.util.zeroconfig.SnippetLoader;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
-import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -57,37 +56,37 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-public class ConfigSnippetLoader extends SnippetLoader<Config, ConfigExtension> {
+public class DomainSnippetLoader extends SnippetLoader<Domain, DomainExtension> {
+    private final static Logger LOG = Logger.getLogger(DomainSnippetLoader.class.getName());
 
-    private final static Logger LOG = Logger.getLogger(ConfigSnippetLoader.class.getName());
-
-    public ConfigSnippetLoader(Config configLoader) {
+    public DomainSnippetLoader(Domain configLoader) {
         super(configLoader);
     }
 
     @Override
-    public <U extends ConfigExtension> U createConfigBeanForType(Class<U> configExtensionType) throws TransactionFailure {
-        if (ZeroConfigUtils.hasCustomConfig(configExtensionType)) {
-            addConfigBeanFor(configExtensionType, configLoader);
+    public <U extends DomainExtension> U createConfigBeanForType(Class<U> domainExtensionType) throws TransactionFailure {
+        if (ZeroConfigUtils.hasCustomConfig(domainExtensionType)) {
+            addConfigBeanFor(domainExtensionType, configLoader);
         } else {
-            if(configExtensionType.getAnnotation(HasNoDefaultConfiguration.class)!=null){
+            if(domainExtensionType.getAnnotation(HasNoDefaultConfiguration.class)!=null){
                 return null;
             }
-            final Class<U> parentElem = configExtensionType;
-            ConfigSupport.apply(new SingleConfigCode<Config>() {
+            final Class<U> parentElem = domainExtensionType;
+            ConfigSupport.apply(new SingleConfigCode<Domain>() {
                 @Override
-                public Object run(Config parent) throws PropertyVetoException, TransactionFailure {
+                public Object run(Domain parent) throws PropertyVetoException, TransactionFailure {
                     U child = parent.createChild(parentElem);
                     Dom.unwrap(child).addDefaultChildren();
                     parent.getExtensions().add(child);
                     return child;
                 }
             }, configLoader);
+
         }
 
-        for (ConfigExtension extension : configLoader.getExtensions()) {
+        for (DomainExtension extension : configLoader.getExtensions()) {
             try {
-                ConfigExtension configExtension = configExtensionType.cast(extension);
+                DomainExtension configExtension = domainExtensionType.cast(extension);
                 return (U) configExtension;
             } catch (Exception e) {
                 // ignore, not the right type.

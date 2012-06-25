@@ -416,7 +416,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return true if configuration for the type exists in the target area of domain.xml and false if not.
      */
     @DuckTyped
-    <P extends ConfigBeanProxy> boolean checkIfConfigExists(Class<P> configBeanType);
+    <P extends ConfigExtension> boolean checkIfConfigExtensionExists(Class<P> configBeanType);
 
     class Duck {
         private final static Logger LOG = Logger.getLogger(Duck.class.getName());
@@ -466,7 +466,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
         public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws TransactionFailure {
             T configExtension;
             //This require extra checking, Does all ConfigBeans referenced in this class are implementing Container?
-            for (ConfigExtension extension : c.getConfigExtensions()) {
+            for (ConfigExtension extension : c.getExtensions()) {
                 try {
                     configExtension = type.cast(extension);
                     //Dom.unwrap(configExtension).addDefaultChildren();
@@ -515,8 +515,8 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             }
         }
 
-        public static <P extends ConfigBeanProxy> boolean checkIfConfigExists(Config c, Class<P> configBeanType) {
-            for (Container extension : c.getContainers()) {
+        public static <P extends ConfigExtension> boolean checkIfConfigExtensionExists(Config c, Class<P> configBeanType) {
+            for (ConfigExtension extension : c.getExtensions()) {
                 try {
                     configBeanType.cast(extension);
                     return true;
@@ -554,5 +554,5 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
     @Element("*")
     List<Container> getContainers();
     @Element("*")
-    List<ConfigExtension> getConfigExtensions();
+    List<ConfigExtension> getExtensions();
 }

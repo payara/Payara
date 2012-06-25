@@ -41,9 +41,14 @@ package com.sun.enterprise.config.util.zeroconfig;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.serverbeans.ConfigSnippetLoader;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import java.lang.reflect.Proxy;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -73,4 +78,13 @@ public abstract class SnippetLoader<C extends ConfigLoader, T extends ConfigBean
      */
     public abstract <U extends T> U createConfigBeanForType(Class<U> configBeanType)
             throws TransactionFailure;
+
+
+    protected <U extends T> void addConfigBeanFor(Class<U> domainExtensionType, C configLoader) {
+              ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(configLoader)).getMasterView();
+              Habitat habitat = cb.getHabitat();
+              List<ConfigBeanDefaultValue> configBeanDefaultValueList = ZeroConfigUtils.getDefaultConfigurations(domainExtensionType);
+              SnippetParser snippetParser = new SnippetParser();
+              snippetParser.parsConfigBean(habitat, configBeanDefaultValueList);
+          }
 }

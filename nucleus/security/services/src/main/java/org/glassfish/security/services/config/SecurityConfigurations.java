@@ -39,22 +39,23 @@
  */
 package org.glassfish.security.services.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
-import com.sun.enterprise.config.serverbeans.DomainExtension;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The top level security configuration which holds the list of configured security services.
  */
 @Configured
+@HasNoDefaultConfiguration
 public interface SecurityConfigurations extends ConfigBeanProxy, Injectable, DomainExtension {
     /**
      * Gets the list of configured security services.

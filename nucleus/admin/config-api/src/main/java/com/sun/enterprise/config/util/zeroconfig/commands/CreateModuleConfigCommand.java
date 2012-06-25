@@ -43,6 +43,7 @@ package com.sun.enterprise.config.util.zeroconfig.commands;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -61,7 +62,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
 import javax.inject.Inject;
-import java.io.InputStream;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -196,12 +197,17 @@ public final class CreateModuleConfigCommand implements AdminCommand {
     }
 
     private String getDefaultConfigFor(Class configBeanType, ActionReport report, String serviceName) throws Exception {
-        if (ZeroConfigUtils.getDefaultSnippetUrl(configBeanType) == null) {
+        if (!ZeroConfigUtils.hasCustomConfig(configBeanType)) {
             report.setMessage(localStrings.getLocalString("create.module.config.config.embedded.in.class", DEFAULT_FORMAT, serviceName));
             return ZeroConfigUtils.serializeConfigBeanByType(configBeanType, habitat);
         } else {
-            InputStream st = ZeroConfigUtils.getDefaultSnippetUrl(configBeanType).openStream();
-            return ZeroConfigUtils.streamToString(st, "utf-8");
+            List<ConfigBeanDefaultValue> defaults= ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+            StringBuilder builder = new StringBuilder();
+            for(ConfigBeanDefaultValue value:defaults){
+                builder.append(value.getXmlConfiguration());
+                builder.append("\r\n");
+            }
+            return builder.toString();
         }
     }
 
@@ -209,7 +215,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
         boolean defaultConfigCreated = false;
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
-            if (c.checkIfConfigExists(configBeanType)) {
+            if (c.checkIfConfigExtensionExists(configBeanType)) {
                 report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
             c.getExtensionByType(configBeanType);

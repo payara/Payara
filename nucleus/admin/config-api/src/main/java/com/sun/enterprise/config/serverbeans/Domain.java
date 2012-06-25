@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import org.glassfish.api.admin.config.*;
-import org.jvnet.hk2.config.types.PropertyBag;
-import org.jvnet.hk2.config.types.Property;
+import com.sun.enterprise.util.StringUtils;
+import org.glassfish.api.admin.config.ApplicationName;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
+import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
@@ -50,11 +52,17 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
-import com.sun.enterprise.util.StringUtils;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 import javax.validation.constraints.NotNull;
 import java.beans.PropertyVetoException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -68,6 +76,7 @@ import java.util.logging.Logger;
 public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, SystemPropertyBag, ConfigLoader  {
 
     public static final String DOMAIN_NAME_PROPERTY = "administrative.domain.name";
+
 
     /**
      * Gets the value of the applicationRoot property.
@@ -94,7 +103,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
      * Specifies where the server instance's log files are kept, including
      * HTTP access logs, server logs, and transaction logs.
      * Default is $INSTANCE-ROOT/logs
-     * 
+     *
      * @return possible object is
      *         {@link String }
      */
@@ -185,7 +194,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
      *         {@link Resources }
      */
     @Element
-    @NotNull            
+    @NotNull
     Resources getResources();
 
     /**
@@ -310,35 +319,35 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
     props={
         @PropertyDesc(name="com.sun.aas.installRoot",
             description="Operating system dependent. Path to the directory where the server is installed"),
-            
+
         @PropertyDesc(name="com.sun.aas.instanceRoot",
             description="Operating system dependent. Path to the top level directory for a server instance"),
-            
+
         @PropertyDesc(name="com.sun.aas.hostName",
             description="Operating system dependent. Path to the name of the host (machine)"),
-            
+
         @PropertyDesc(name="com.sun.aas.javaRoot",
             description="Operating system dependent. Path to the library directory for the Sun GlassFish Message Queue software"),
-            
+
         @PropertyDesc(name="com.sun.aas.imqLib",
             description="Operating system dependent. Path to the installation directory for the Java runtime"),
-            
+
         @PropertyDesc(name="com.sun.aas.imqLib",
             description="Operating system dependent. Path to the installation directory for the Java runtime"),
-            
+
         @PropertyDesc(name="com.sun.aas.configName", defaultValue="server-config",
             description="Name of the <config> used by a server instance"),
-            
+
         @PropertyDesc(name="com.sun.aas.instanceName", defaultValue="server1",
             description="Name of the server instance. Not used in the default configuration, but can be used to customize configuration"),
-            
+
         @PropertyDesc(name="com.sun.aas.domainName", defaultValue="domain1",
             description="Name of the domain. Not used in the default configuration, but can be used to customize configuration")
     }
     )
     @Element
     List<SystemProperty> getSystemProperty();
-    
+
     /**
     	Properties as per {@link PropertyBag}
      */
@@ -456,6 +465,8 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
 
     @DuckTyped
     <T extends DomainExtension> T getExtensionByType(Class<T> type);
+    @DuckTyped
+    <P extends DomainExtension> boolean checkIfDomainExtensionExists(Class<P> configBeanType);
 
     /**
      * @param configBeanType The config bean type we want to check whether the configuration exists for it or not.
@@ -495,7 +506,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
          * or if no matches
          */
         public static List<Cluster> getClustersOnNode(Domain domain, String nodeName) {
-           
+
             HashMap<String,Cluster> clMap = new HashMap<String,Cluster>();
             List<Server> serverList = getInstancesOnNode(domain, nodeName);
 
@@ -513,7 +524,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             }
             return new ArrayList(clMap.values());
         }
-        
+
         public static List<Application> getAllDefinedSystemApplications(Domain me) {
             List<Application> allSysApps = new ArrayList<Application>();
             SystemApplications sa = me.getSystemApplications();
@@ -648,8 +659,8 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             return null;
         }
 
-        public static boolean isCurrentInstanceMatchingTarget(Domain d, 
-            String target, String appName, String currentInstance, 
+        public static boolean isCurrentInstanceMatchingTarget(Domain d,
+            String target, String appName, String currentInstance,
             List<String> referencedTargets) {
 
             if (target == null || currentInstance == null) {
@@ -661,7 +672,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
                 targets.add(target);
             } else {
                 if (referencedTargets == null) {
-                    referencedTargets = 
+                    referencedTargets =
                         d.getAllReferencedTargetsForApplication(appName);
                 }
                 targets = referencedTargets;
@@ -690,7 +701,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
 
         public static List<Server> getServersInTarget(
             Domain me, String target) {
-            List<Server> servers = new ArrayList<Server>(); 
+            List<Server> servers = new ArrayList<Server>();
             Server server = me.getServerNamed(target);
             if (server != null) {
                 servers.add(server);
@@ -699,7 +710,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
                 if (cluster != null) {
                     servers.addAll(cluster.getInstances());
                 }
-            } 
+            }
             return servers;
         }
 
@@ -759,13 +770,13 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
                 // and return false if the cluster level enable attribute
                 // is false
                 ApplicationRef clusterRef = getApplicationRefInTarget(me, appName, containingCluster.getName());
-                if (clusterRef == null || 
+                if (clusterRef == null ||
                     !Boolean.valueOf(clusterRef.getEnabled())) {
                     return false;
                 }
             }
 
-            for (ApplicationRef ref : 
+            for (ApplicationRef ref :
                 getApplicationRefsInTarget(me, target, true)) {
                 if (ref.getRef().equals(appName)) {
                     found = true;
@@ -777,7 +788,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             // if we found the ref(s) and the enable attribute(s) is/are true
             if (found) {
                 return true;
-            } 
+            }
             return false;
         }
 
@@ -785,7 +796,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             Domain me, String appName, String target) {
             Application application = me.getApplications().getApplication(
                 appName);
-            if (application != null && 
+            if (application != null &&
                 Boolean.valueOf(application.getEnabled())) {
                 List<String> targets = new ArrayList<String>();
                 if (!target.equals("domain")) {
@@ -862,7 +873,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             return apps;
          }
 
-         public static String getVirtualServersForApplication(Domain d, 
+         public static String getVirtualServersForApplication(Domain d,
              String target, String appName) {
              ApplicationRef appRef = d.getApplicationRefInTarget(
                  appName, target);
@@ -873,7 +884,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
              }
          }
 
-         public static String getEnabledForApplication(Domain d, 
+         public static String getEnabledForApplication(Domain d,
              String target, String appName) {
              ApplicationRef appRef = d.getApplicationRefInTarget(
                  appName, target);
@@ -943,15 +954,27 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             return (server != null ? true : false);
         }
 
-        public static <T extends DomainExtension> T getExtensionByType(Domain d, Class<T> type) {
+        public static <P extends DomainExtension> boolean checkIfDomainExtensionExists(Domain d, Class<P> configBeanType) {
+             for (DomainExtension extension : d.getExtensions()) {
+                 try {
+                     configBeanType.cast(extension);
+                     return true;
+                 } catch (Exception e) {
+                     // ignore, not the right type.
+                 }
+             }
+             return false;
+         }
+
+        public static <T extends DomainExtension> T getExtensionByType(Domain d, Class<T> type) throws TransactionFailure {
             for (DomainExtension extension : d.getExtensions()) {
                 try {
                     return type.cast(extension);
                 } catch (Exception e) {
-                    // ignore, not the right type.
                 }
             }
-            return null;
+            DomainSnippetLoader loader = new DomainSnippetLoader(d);
+            return loader.createConfigBeanForType(type);
         }
     }
 }

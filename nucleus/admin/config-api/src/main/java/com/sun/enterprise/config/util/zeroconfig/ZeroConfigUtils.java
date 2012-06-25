@@ -148,7 +148,6 @@ public final class ZeroConfigUtils {
     }
 
     private static Method findDeeperSuitableCollectionGetter(Class owner, Class typeToSet) {
-
         Class[] ifs = typeToSet.getInterfaces();
         Method[] methods = owner.getMethods();
         for (Method m : methods) {
@@ -204,40 +203,67 @@ public final class ZeroConfigUtils {
 
 
     public static ConfigBeanProxy getOwningObject(String location, Habitat habitat) {
-
-        //TODO MS4 We ignore anything at domain level for ms3 just config level
-        if (!location.startsWith("domain/configs/")) return null;
-
-        Class typeToFindGetter = getOwningClassForLocation(location, habitat);
-        if (typeToFindGetter == null) {
-            return null;
-        }
-        //if we want to set something at domain level, we already know it even if it is a whole new Config object
-        if (typeToFindGetter.equals(Domain.class)) return habitat.getComponent(Domain.class);
-        //Check if config object is where the location or it goes deeper in the config layers.
-        StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
-        //something directly inside the config itself
-        if (tokenizer.countTokens() == 3) {
-            return habitat.getComponent(Domain.class).getConfigNamed(location.substring(location.lastIndexOf("/") + 1, location.length()));
-        }
-
-        location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
-        tokenizer = new StringTokenizer(location, "/", false);
-        String configName = tokenizer.nextToken();
-        ConfigBeanProxy parent = habitat.getComponent(Domain.class).getConfigNamed(configName);
-
-        String childElement;
-        String parentElement = "Config";
-        while (tokenizer.hasMoreTokens()) {
-            try {
-                childElement = tokenizer.nextToken();
-                parent = getOwner(parent, parentElement, childElement, habitat);
-                parentElement = childElement;
-            } catch (Exception e) {
-                LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
+        if (!location.startsWith("domain/configs/")) {
+            if (!location.startsWith("domain")) {
+                //Sorry only know domain and below :D
+                return null;
             }
+            StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
+            //something directly inside the domain itself as we know one token is domain for sure
+            if (tokenizer.countTokens() == 1) {
+                return habitat.getComponent(Domain.class);
+            }
+            location = location.substring(location.indexOf("/", "domain".length()) + 1);
+            tokenizer = new StringTokenizer(location, "/", false);
+            ConfigBeanProxy parent = habitat.getComponent(Domain.class);
+
+            //skipping the domain itself as a token, we know it and took it away.
+            String parentElement = "domain";
+            String childElement = null;
+            while (tokenizer.hasMoreTokens()) {
+                try {
+                    childElement = tokenizer.nextToken();
+                    parent = getOwner(parent, parentElement, childElement, habitat);
+                    parentElement = childElement;
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, "cannot get parent config bean for: " + childElement, e);
+                }
+            }
+            return parent;
+
+
+        } else {
+
+            Class typeToFindGetter = getOwningClassForLocation(location, habitat);
+            if (typeToFindGetter == null) {
+                return null;
+            }
+
+            //Check if config object is where the location or it goes deeper in the config layers.
+            StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
+            //something directly inside the config itself
+            if (tokenizer.countTokens() == 3) {
+                return habitat.getComponent(Domain.class).getConfigNamed(location.substring(location.lastIndexOf("/") + 1, location.length()));
+            }
+
+            location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
+            tokenizer = new StringTokenizer(location, "/", false);
+            String configName = tokenizer.nextToken();
+            ConfigBeanProxy parent = habitat.getComponent(Domain.class).getConfigNamed(configName);
+
+            String childElement;
+            String parentElement = "Config";
+            while (tokenizer.hasMoreTokens()) {
+                try {
+                    childElement = tokenizer.nextToken();
+                    parent = getOwner(parent, parentElement, childElement, habitat);
+                    parentElement = childElement;
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
+                }
+            }
+            return parent;
         }
-        return parent;
     }
 
     private static ConfigBeanProxy getOwner(ConfigBeanProxy parent, String parentElement, String childElement,
@@ -282,8 +308,7 @@ public final class ZeroConfigUtils {
     public static <T extends ConfigBeanProxy> void setConfigBean(T finalConfigBean, ConfigBeanDefaultValue configBeanDefaultValue, Habitat habitat, ConfigBeanProxy parent) {
 
         Class clz = ZeroConfigUtils.getOwningClassForLocation(configBeanDefaultValue.getLocation(), habitat);
-        Method m;
-        m = getMatchingSetterMethod(clz, configBeanDefaultValue.getConfigBeanClass());
+        Method m = getMatchingSetterMethod(clz, configBeanDefaultValue.getConfigBeanClass());
         if (m != null) {
             try {
                 m.invoke(parent, finalConfigBean);
@@ -300,10 +325,15 @@ public final class ZeroConfigUtils {
                 if (configBeanDefaultValue.isReplaceCurrentIfExists()) {
                     String name = getNameForConfigBean(finalConfigBean, configBeanDefaultValue.getConfigBeanClass());
                     ConfigBeanProxy itemToRemove = getNamedConfigBeanFromCollection(col, name, configBeanDefaultValue.getConfigBeanClass());
-                    col.remove(itemToRemove);
+                    try {
+                        if (itemToRemove != null) {
+                            col.remove(itemToRemove);
+                        }
+                    } catch (Exception ex) {
+                        LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + " as it does not exist", ex);
+                    }
                 }
                 ((Collection) m.invoke(parent)).add(finalConfigBean);
-
             } catch (Exception e) {
                 LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
             }
@@ -325,7 +355,6 @@ public final class ZeroConfigUtils {
         for (Method method : methods) {
             Attribute attributeAnnotation = method.getAnnotation(Attribute.class);
             if ((attributeAnnotation != null) && attributeAnnotation.key()) {
-                String name;
                 return (String) method.invoke(configBean);
             }
         }
@@ -360,10 +389,6 @@ public final class ZeroConfigUtils {
         return className.toString();
     }
 
-    public static <P extends ConfigBeanProxy> URL getDefaultSnippetUrl(Class<P> configBean) {
-        String xmlSnippetFileLocation = "META-INF/" + configBean.getSimpleName() + ".xml";
-        return configBean.getClassLoader().getResource(xmlSnippetFileLocation);
-    }
 
     public static Class getClassFor(String serviceName, Habitat habitat) {
         serviceName = getServiceNameIfNamedComponent(serviceName);
@@ -493,7 +518,7 @@ public final class ZeroConfigUtils {
         Domain domain = habitat.getComponent(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
-            if (c.checkIfConfigExists(configBeanType)) {
+            if (c.checkIfConfigExtensionExists(configBeanType)) {
                 return true;
             }
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {

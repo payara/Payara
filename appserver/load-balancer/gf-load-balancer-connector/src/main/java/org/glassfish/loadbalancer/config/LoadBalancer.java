@@ -40,32 +40,35 @@
 
 package org.glassfish.loadbalancer.config;
 
-import java.beans.PropertyVetoException;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
-import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.component.Injectable;
-
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
-import org.glassfish.config.support.*;
-import org.jvnet.hk2.config.*;
-
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.config.support.DeletionDecorator;
+import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.ActionReport;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.Transaction;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  */
@@ -75,6 +78,7 @@ import javax.validation.constraints.NotNull;
 }) */
 
 @Configured
+@HasNoDefaultConfiguration
 public interface LoadBalancer extends ConfigBeanProxy, Injectable, PropertyBag {
 
     /**
