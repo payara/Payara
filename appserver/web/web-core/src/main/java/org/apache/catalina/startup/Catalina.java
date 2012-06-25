@@ -416,7 +416,6 @@ public class Catalina extends Embedded {
                 is.setByteStream(fis);
                 digester.push(this);
                 digester.parse(is);
-                fis.close();
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Catalina.stop: ", e);
                 System.exit(1);
@@ -430,20 +429,34 @@ public class Catalina extends Embedded {
         }
 
         // Stop the existing server
+        Socket socket = null;
+        OutputStream stream = null;
         try {
-            Socket socket = new Socket("127.0.0.1", server.getPort());
-            OutputStream stream = socket.getOutputStream();
+            socket = new Socket("127.0.0.1", server.getPort());
+            stream = socket.getOutputStream();
             String shutdown = server.getShutdown();
             for (int i = 0; i < shutdown.length(); i++)
                 stream.write(shutdown.charAt(i));
             stream.flush();
-            stream.close();
-            socket.close();
         } catch (IOException e) {
             log.log(Level.SEVERE, "Catalina.stop: ", e);
             System.exit(1);
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
-
     }
 
 
