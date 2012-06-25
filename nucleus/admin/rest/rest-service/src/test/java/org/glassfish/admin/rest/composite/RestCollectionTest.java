@@ -39,15 +39,11 @@
  */
 package org.glassfish.admin.rest.composite;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.Map;
 import java.util.Set;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -56,24 +52,9 @@ import java.util.Set;
 public class RestCollectionTest {
     RestCollection rc;
 
-    public RestCollectionTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
     @Before
     public void setUp() {
         rc = new RestCollection();
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test

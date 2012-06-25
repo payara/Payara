@@ -73,8 +73,10 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
     @Override
     public String getContent(RestCollection proxy) {
         StringBuilder sb = new StringBuilder();
-        final List<String> header = requestHeaders.get().getRequestHeader("X-Wrap-Object");
-        boolean wrapObject = ((header != null) && (header.size() > 0));
+        final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
+        final List<String> skipMetadataHeader = requestHeaders.get().getRequestHeader("X-Skip-Metadata");
+        boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
+        boolean skipMetadata = ((skipMetadataHeader != null) && (skipMetadataHeader.get(0).equalsIgnoreCase("true")));
 
         JSONArray models = new JSONArray();
         JSONArray metadata = new JSONArray();
@@ -93,7 +95,9 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         JSONObject response = new JSONObject();
         try {
             response.put("items", models);
-            response.put("metadata", metadata);
+            if (!skipMetadata) {
+                response.put("metadata", metadata);
+            }
             sb.append(response.toString(getFormattingIndentLevel()));
         } catch (JSONException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
