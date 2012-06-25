@@ -239,6 +239,8 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
          * @param changedInstance changed instance.
          */
         public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> changedType, T changedInstance) {
+	    NotProcessed np = null;
+            ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
             try {
                 ClassLoader ccl = clh.getConnectorClassLoader(null);
                 Thread.currentThread().setContextClassLoader(ccl);
