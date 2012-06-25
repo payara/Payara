@@ -39,23 +39,120 @@
  */
 package org.glassfish.api.admin;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Map;
+import javax.security.auth.Subject;
 
 /**
- * Defines the @AccessRequired and @AccessRequired.List annotations, used for
- * declaring what authorization is required for each admin command.
+ * Allows command developers to declare what resources are affected by
+ * the command and what actions must be authorized on each to allow the command
+ * to execute. 
  * <p>
+ * Use any or all of the following to control authorization:
+ * <ul>
+ * <li>
+ * Use the {@code @AccessRequired} annotation at the class level to declare a resource 
+ * name and action to be enforced; use {@code @AccessRequired.List to declare
+ * more than one combination of resources and actions.
+ * <li>
+ * Use the {@code @AccessRequired.To} annotation on a field that is a ConfigBean
+ * to declare one or more actions to be enforced on the resource derived from that config bean.
+ * <li>
+ * Have the command class implement {@code @AccessRequired.Authorizer} which
+ * prescribes the {@code isAuthorized} method
+ * that will make authorization decisions internally, without help from the
+ * command framework.
+ * </ul>
+ * The command processor will find all {@code @AccessRequired} annotations and
+ * subannotations and make sure all of them pass before allowing the command
+ * to proceed.  
+ * 
  * 
  * @author tjquinn
  */
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AccessRequired {
-    public String resourceName();
-    public String action();
+    /**
+     * Name(s) of the resource(s) to which access should be checked.  The name
+     * string can contain one or more tokens of the form ${fieldName} where "fieldName"
+     * is a field on the same command class (or a superclass) that contains a non-null value.
+     * If the referenced field is a ConfigBean then at runtime the resource 
+     * name of that ConfigBean replaces the token.  Otherwise the field's 
+     * {@code toString()} return value replaces the token.
+     */
+    public String[] resource();
     
+    /**
+     * One or more actions to authorize against the named resource.
+     */
+    public String[] action();
+   
+    /**
+     * Declares multiple class-level {@code @AccessRequired} authorization steps,
+     * typically each identifying different resources and/or different actions
+     */
+    @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface List {
         public AccessRequired[] value();
+    }
+    
+    /**
+     * Declares access control on an existing, non-null {@code ConfigBean}.  
+     * The system gets the name of the resource 
+     * from the {@code ConfigBean} itself and authorizes the specified actions
+     * using that resource.
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface To {
+        /**
+         * Action(s) to be authorized on the ConfigBean
+         * @return 
+         */
+        public String[] value();
+    }
+    
+    /**
+     * Declares access control for creating a new child {@code ConfigBean} in
+     * a collection on an existing {@code ConfigBean}.  
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface NewChild {
+        /**
+         * Type of the new {@code ConfigBean} to be created. 
+         */
+        public Class type();
+        
+        /**
+         * Action(s) to be authorized, defaulted to "create."
+         */
+        public String[] action() default "create";
+        
+        /**
+         * Declares multiple authorization checks for creating the same
+         * single new {@code ConfigBean}.
+         */
+        @Target(ElementType.FIELD)
+        @Retention(RetentionPolicy.RUNTIME)
+        public @interface List {
+            public NewChild[] value();
+        }
+    }
+    
+    /**
+     * Behavior required of all command classes which provide any of their
+     * own custom authorization enforcement. The system will invoke the
+     * class's {@code isAuthorized} method after it has injected {@code @Inject}
+     * and {@code @Param} fields and after it has invoked any {@code @PostConstruct}
+     * methods.
+     */
+    public interface Authorizer {
+        boolean isAuthorized(Subject subject, Map<String,Object> env);
     }
 }
