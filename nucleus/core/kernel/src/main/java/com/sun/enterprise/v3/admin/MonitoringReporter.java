@@ -70,6 +70,9 @@ import javax.inject.Inject;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.MONDOT;
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
+import java.io.ByteArrayOutputStream;
+import java.util.Map;
+import org.glassfish.api.ActionReport.MessagePart;
 
 
 /**
@@ -129,6 +132,165 @@ public class MonitoringReporter extends V2DottedNameSupport {
 
         runLocally();
         runRemotely();
+        if (targetIsMultiInstanceCluster && isInstanceRunning()) {
+            runAggregate();
+        }
+        
+    }
+
+    private boolean isInstanceRunning() {
+        boolean rs = false;
+        int num=0;
+
+        List<Server> allServers = targetService.getAllInstances();
+        for(Server server : allServers) {
+            if(server.isRunning()) {
+                num++;
+            }
+        }
+        if (num >= 2)
+            rs = true;
+
+        return rs;
+    }
+
+    private void runAggregate() {
+        List<String> list = getOutputLines();
+        setClusterInfo(list);
+    }
+
+    private List<String> getOutputLines() {
+        List<String> list = null;
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            reporter.writeReport(os);
+            String outputMessage = os.toString();
+            String lines[] = outputMessage.split("\\n");
+            list = Arrays.asList(lines);
+        } catch (Exception e) {
+        }
+        return list;
+    }
+
+    private ArrayList<String> getKeyValuePair(String str, String instanceName) {
+        ArrayList<String> list = new ArrayList<String>(2);
+        String key = null;
+        String value = null;
+        if (str != null) {
+            key = str.substring(0,str.lastIndexOf("="));
+            key = (key.substring(instanceName.length()+1)).trim();
+            value = (str.substring(str.lastIndexOf("=")+1,str.length())).trim();
+        }
+        list.add(0, key);
+        list.add(1, value);
+        return list;
+    }
+
+    private void setClusterInfo(List<String> list) {
+        List<HashMap> data = new ArrayList<HashMap>(targets.size());
+        int i;
+        for (i=0; i < targets.size();i++) {
+            data.add(new HashMap<String, String>());
+        }
+        HashMap<String, String> clusterInfo = new HashMap<String, String>();
+        int instanceCount = 0;
+        for (Server server : targets) {
+            String instanceName = server.getName();
+            Map<String, String> instanceMap = data.get(instanceCount);
+            String key = null;
+            for (String str : list) {
+                if (str.contains(instanceName) && str.contains("-count =")) {
+                    ArrayList<String> kv = getKeyValuePair(str,instanceName);
+                    key = (String)kv.get(0);
+                    instanceMap.put((String)kv.get(0), kv.get(1));
+                }
+                if (key != null) {
+                    String desc = key.substring(0,key.indexOf("count")) + "description";
+                    if (str.contains(desc)) {
+                        ArrayList<String> kv = getKeyValuePair(str,instanceName);
+                        clusterInfo.put((String)kv.get(0), kv.get(1));
+                    }
+                    String lastSampleTime = key.substring(0,key.indexOf("count")) + "lastsampletime";
+                    if (str.contains(lastSampleTime)) {
+                        ArrayList<String> kv = getKeyValuePair(str,instanceName);
+                        clusterInfo.put(instanceName + "." + (String)kv.get(0), kv.get(1));
+                        key = null;
+                    }
+                }
+            }
+            instanceCount++;
+        }
+
+        List<Server> allServers = targetService.getAllInstances();
+        String instanceListStr = "";
+        i=0;
+        for (Server server : allServers) {
+            if (server.isRunning()) {
+                if (i == 0)
+                    instanceListStr = server.getName();
+                else
+                    instanceListStr = instanceListStr + ", " + server.getName();
+                i++;
+            }
+        }
+        reporter.appendMessage("\nComputed Aggregate Data for " + i + " instances: "+ instanceListStr + " in cluster " + targetName + " :\n");
+        boolean noData = true;
+        HashMap<String, String> h = data.get(0);
+        Iterator it = h.keySet().iterator();
+        
+        while (it.hasNext()) {
+            int total=0,max=0,min=0,index=0;
+            float avg=0;
+            int[] values = new int[data.size()];
+            boolean flag = false;
+            String s = (String) it.next();
+            for (HashMap hm : data) {
+                String tmp = (String)hm.get(s);
+                // if tmp is null then the string is not available in all the instances, so not required to add this in the cluster information
+                if (tmp == null) {
+                    flag = true;
+                    break;
+                }
+                if (tmp != null) {
+                    int count  = Integer.parseInt(tmp);
+                    values[index++] = count;
+                    total = total + count;
+                }
+            }
+            if (!flag) {
+                noData = false;
+                Arrays.sort(values);
+                min = values[0];
+                max = values[values.length-1];
+                avg = (float)total/(float)data.size();
+                String descKey = s.substring(0, s.length()-5) + "description";
+                reporter.appendMessage(targetName + "." + s + "-total = " + total + "\n");
+                reporter.appendMessage(targetName + "." + s + "-avg = " + avg + "\n");
+                reporter.appendMessage(targetName + "." + s + "-max = " + max + "\n");
+                reporter.appendMessage(targetName + "." + s + "-min = " + min + "\n");
+                reporter.appendMessage(targetName + "." + descKey + " = " + clusterInfo.get(descKey) + "\n");
+                String lastSampleTimeKey = s.substring(0, s.length()-5) + "lastsampletime";
+                long sampletime = getLastSampleTime(clusterInfo, lastSampleTimeKey, data.size());
+                reporter.appendMessage(targetName + "." + lastSampleTimeKey + " = " + sampletime + "\n");
+            }
+        }
+        if (noData) {
+            reporter.appendMessage("No aggregated cluster data to report\n");
+        }
+    }
+
+    private long getLastSampleTime(HashMap clusterInfo, String lastSampleTimeKey, int numofInstances) {
+        long[] values = new long[numofInstances];
+        int index=0;
+        Iterator it = clusterInfo.keySet().iterator();
+        while (it.hasNext()) {
+            String s = (String) it.next();
+            if (s.contains(lastSampleTimeKey)) {
+                values[index++] = Long.parseLong((String)clusterInfo.get(s));
+            }
+        }
+        Arrays.sort(values);
+        return values[values.length-1];
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -351,7 +513,6 @@ public class MonitoringReporter extends V2DottedNameSupport {
      */
     private boolean initPatternAndTargets() {
         Server das = domain.getServerNamed("server");
-        String targetName = null;
 
         // no DAS in here!
         List<Server> allServers = targetService.getAllInstances();
@@ -681,6 +842,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private final static String DOTTED_NAME = ".dotted-name";
     private final StringBuilder cliOutput = new StringBuilder();
     private boolean targetIsMultiInstanceCluster = false;
+    private String targetName;
 
     private static class NameValue {
         String name;
