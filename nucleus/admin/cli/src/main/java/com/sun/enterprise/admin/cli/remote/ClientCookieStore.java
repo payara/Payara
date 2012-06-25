@@ -238,8 +238,6 @@ public class ClientCookieStore implements CookieStore {
             return false;
         }
 
-        boolean ignore = cookieStoreFile.setLastModified(
-            System.currentTimeMillis());
-        return true;
+        return (cookieStoreFile.setLastModified(System.currentTimeMillis()));
     }
 }
