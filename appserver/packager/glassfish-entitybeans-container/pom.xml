@@ -116,11 +116,11 @@
        </dependency>
     </dependencies>
 
-    <profiles>
+<!--    <profiles>
         <profile>
-            <!--
+            
                 Activate this profile with "mvn -Drepo.url=<ips-repository> -Dpython=<python> -P ips"
-             -->
+             
             <id>ips</id>
 	    <activation>
 	      <activeByDefault>false</activeByDefault>  
@@ -147,7 +147,7 @@
             </plugins>
 	    </build>
         </profile>
-   </profiles>        
+   </profiles>        -->
 
 </project>
 

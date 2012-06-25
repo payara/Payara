@@ -91,10 +91,10 @@
         <property name="package.name" value="glassfish-cmp"/>
         <property name="image.dir" value="${image.dir}"/>
     </ant>
-    <ant antfile="../distributions.xml" target="install-package">
+<!--    <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="glassfish-entitybeans-container"/>
         <property name="image.dir" value="${image.dir}"/>
-    </ant>
+    </ant>-->
     <ant antfile="../distributions.xml" target="install-package">
         <property name="package.name" value="metro"/>
         <property name="image.dir" value="${image.dir}"/>
