@@ -42,6 +42,7 @@ package org.glassfish.jdbc.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.jdbcruntime.service.JdbcAdminServiceImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -75,7 +76,7 @@ import javax.inject.Inject;
 public class GetValidationTableNames implements AdminCommand {
 
     @Inject
-    private ConnectorRuntime connectorRuntime;
+    private JdbcAdminServiceImpl jdbcAdminService;
 
     @Param
     private String poolName;
@@ -94,7 +95,7 @@ public class GetValidationTableNames implements AdminCommand {
 
         try {
             PoolInfo poolInfo = new PoolInfo(poolName, applicationName, moduleName);
-            Set<String> validationTableNames = connectorRuntime.getValidationTableNames(poolInfo);
+            Set<String> validationTableNames = jdbcAdminService.getValidationTableNames(poolInfo);
             Properties extraProperties = new Properties();
             extraProperties.put("validationTableNames", new ArrayList(validationTableNames));
             report.setExtraProperties(extraProperties);

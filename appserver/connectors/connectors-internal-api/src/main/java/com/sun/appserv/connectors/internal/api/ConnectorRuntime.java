@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,20 +108,6 @@ public interface ConnectorRuntime extends ConnectorConstants{
      * @throws ConnectorRuntimeException if the deletion fails
      */
     public void destroyActiveResourceAdapter(String moduleName) throws ConnectorRuntimeException;
-
-    /**
-     * Will be used by resource proxy objects to load the resource lazily.
-     *
-     * @param resource     Resource's config
-     * @param pool         Pool's config
-     * @param resourceType type of resource (Connector/Jdbc etc.,)
-     * @param resourceName name of the resource
-     * @param raName       Resource-adapter name
-     * @return status indicating whether the resource is successfully loaded or not
-     * @throws ConnectorRuntimeException when unable to load the resource
-     */
-    public boolean checkAndLoadResource(Object resource, Object pool, String resourceType, String resourceName,
-                                        String raName) throws ConnectorRuntimeException;
 
     /**
      * Shut down all pools and active resource-adapters
@@ -632,17 +618,6 @@ public interface ConnectorRuntime extends ConnectorConstants{
      */
     public boolean flushConnectionPool(String poolName) throws ConnectorRuntimeException;
 
-    /**
-     * Get Validation table names list for the database that the jdbc 
-     * connection pool refers to. This is used for connection validation.
-     * @param PoolInfo connection pool info
-     * @return all validation table names.
-     * @throws javax.resource.ResourceException
-     * @throws javax.naming.NamingException
-     */
-    public Set<String> getValidationTableNames(PoolInfo poolInfo) 
-            throws ResourceException;
-
      /**
      * Fetch the DataSource/Driver implementation class names for a particular 
      * dbVendor and resource type. Sometimes an already stored datasource <br>
@@ -670,14 +645,6 @@ public interface ConnectorRuntime extends ConnectorConstants{
     public Set<String> getJdbcDriverClassNames(String dbVendor, String resType,
             boolean introspect);
 
-    /**
-     * Get Validation class names list for the datasource/driver class name that the jdbc
-     * connection pool refers to. This is used for custom connection validation.
-     * @param className class name
-     * @return all validation class names.
-     */        
-    public Set<String> getValidationClassNames(String className);
-    
     /**
      * Check if Ping attribute is on during pool creation. This is used for
      * pinging the pool for erroneous values during pool creation.

@@ -516,25 +516,6 @@ public interface ConnectorConnectionPool extends ConfigBeanProxy, Injectable, Re
     void setPooling(String value) throws PropertyVetoException;
     
     /**
-     * Gets the value of the ping property.
-     *
-     * Property to ping pool during creation.
-     * 
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute (defaultValue="false", dataType=Boolean.class)
-    String getPing();
-
-    /**
-     * Sets the value of the ping property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setPing(String value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the matchConnections property.
      *
      * To switch on/off connection matching for the pool. It can be set to false

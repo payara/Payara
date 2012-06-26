@@ -56,7 +56,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.PerLookup;
-import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.Collection;
 import org.glassfish.api.admin.RestEndpoint;

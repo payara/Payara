@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -127,7 +127,7 @@ public class ConnectorService implements ConnectorConstants {
         return resourceJNDIName + RESOURCENAME_APPENDER + connectionDefName;
     }
 
-    public boolean checkAndLoadResource(Object resource, Object pool, String resourceType, String resourceName,
+/*    public boolean checkAndLoadResource(Object resource, Object pool, String resourceType, String resourceName,
                                         String raName)
             throws ConnectorRuntimeException {
         String resname = ConnectorAdminServiceUtils.getOriginalResourceName(resourceName);
@@ -139,7 +139,7 @@ public class ConnectorService implements ConnectorConstants {
         //DeferredResourceConfig defResConfig = resUtil.getDeferredResourceConfig(resname);
         return loadResourcesAndItsRar(defResConfig);
     }
-
+*/
     public boolean loadResourcesAndItsRar(DeferredResourceConfig defResConfig) {
         if (defResConfig != null) {
             try {

@@ -56,7 +56,6 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
-import com.sun.enterprise.resource.deployer.DataSourceDefinitionDeployer;
 import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
 import com.sun.enterprise.resource.pool.monitor.PoolMonitoringLevelListener;
@@ -87,6 +86,7 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 import org.jvnet.hk2.component.PreDestroy;
 import org.jvnet.hk2.component.Singleton;
@@ -139,7 +139,6 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private ConnectorSecurityAdminServiceImpl connectorSecurityAdmService;
     private ConnectorAdminObjectAdminServiceImpl adminObjectAdminService;
     private ConnectorRegistry connectorRegistry = ConnectorRegistry.getInstance();
-    private JdbcAdminServiceImpl jdbcAdminService;
     private PoolMonitoringLevelListener poolMonitoringLevelListener;
 
     @Inject
@@ -186,9 +185,6 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     @Inject
     private Provider<WorkContextHandler> workContextHandlerProvider;
-
-    @Inject
-    private Provider<DataSourceDefinitionDeployer> dataSourceDefinitionDeployerProvider;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -248,6 +244,8 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     private JavaEETransactionManager transactionManager;
     private ProcessEnvironment.ProcessType processType;
 
+    @Inject
+    private Habitat habitat;
 
     /**
      * Returns the ConnectorRuntime instance.
@@ -374,7 +372,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * Deletes the connector resource.
      *
-     * @param jndiName JNDI name of the resource to delete.
+     * @param resourceInfo JNDI name of the resource to delete.
      * @throws ConnectorRuntimeException if connector resource deletion fails.
      */
     public void deleteConnectorResource(ResourceInfo resourceInfo) throws ConnectorRuntimeException {
@@ -579,15 +577,21 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * user since a resource needs to be forcibly created in the DAS Too.
      * This API will mitigate this need.
      *
-     * @param jndiName  jndi name of the resource
+     * @param resourceInfo  jndi name of the resource
      * @return DataSource representing the resource.
      */
     private Object lookupDataSourceInDAS(ResourceInfo resourceInfo) {
         try{
-            return connectorResourceAdmService.lookupDataSourceInDAS(resourceInfo);
+            Collection<ConnectorRuntimeExtension> extensions =
+                    habitat.getAllByContract(ConnectorRuntimeExtension.class);
+            for(ConnectorRuntimeExtension extension : extensions) {
+                return extension.lookupDataSourceInDAS(resourceInfo);
+            }
+            //return connectorResourceAdmService.lookupDataSourceInDAS(resourceInfo);
         }catch(ConnectorRuntimeException cre){
             throw new RuntimeException(cre.getMessage(), cre);
         }
+        return null;
     }
 
     /**
@@ -872,8 +876,6 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         adminObjectAdminService = (ConnectorAdminObjectAdminServiceImpl)
                 ConnectorAdminServicesFactory.getService(ConnectorConstants.AOR);
         configParserAdmService = new ConnectorConfigurationParserServiceImpl();
-        jdbcAdminService = (JdbcAdminServiceImpl)
-                ConnectorAdminServicesFactory.getService(ConnectorConstants.JDBC);
 
         initializeEnvironment(processEnvironment);
         if(isServer()) {
@@ -965,15 +967,15 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * {@inheritDoc}
      */
-    public boolean checkAndLoadResource(Object resource, Object pool, String resourceType, String resourceName,
-                                        String raName) throws ConnectorRuntimeException {
-        return connectorService.checkAndLoadResource(resource, pool, resourceType, resourceName, raName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void cleanUpResourcesAndShutdownAllActiveRAs(){
+
+        Collection<ConnectorRuntimeExtension> extensions =
+                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+        for(ConnectorRuntimeExtension extension : extensions) {
+            Collection<Resource> resources = extension.getAllSystemRAResourcesAndPools();
+            resourceManagerProvider.get().undeployResources(resources);
+        }
+
         Domain domain = domainProvider.get();
         if(domain != null){
             Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
@@ -1351,14 +1353,22 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      * {@inheritDoc}
      */
     public void registerDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
-        dataSourceDefinitionDeployerProvider.get().registerDataSourceDefinitions(application);
+        Collection<ConnectorRuntimeExtension> extensions =
+                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+        for(ConnectorRuntimeExtension extension : extensions) {
+            extension.registerDataSourceDefinitions(application);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void unRegisterDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
-        dataSourceDefinitionDeployerProvider.get().unRegisterDataSourceDefinitions(application);
+        Collection<ConnectorRuntimeExtension> extensions =
+                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+        for(ConnectorRuntimeExtension extension : extensions) {
+            extension.unRegisterDataSourceDefinitions(application);
+        }
     }
 
     /**
@@ -1450,7 +1460,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * Flush Connection pool by reinitializing the connections
      * established in the pool.
-     * @param poolInfo
+     * @param poolName
      * @throws com.sun.appserv.connectors.internal.api.ConnectorRuntimeException
      */
     public boolean flushConnectionPool(String poolName) throws ConnectorRuntimeException {
@@ -1467,28 +1477,6 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         return ccPoolAdmService.flushConnectionPool(poolInfo);
     }
 
-
-    /**
-     * Get Validation table names list for the database that the jdbc
-     * connection pool refers to. This is used for connection validation.
-     * @param poolInfo
-     * @return all validation table names.
-     * @throws javax.resource.ResourceException
-     * @throws javax.naming.NamingException
-     */
-    public Set<String> getValidationTableNames(PoolInfo poolInfo) throws ResourceException {
-        return jdbcAdminService.getValidationTableNames(poolInfo);
-    }
-
-    /**
-     * Get Validation class names list for the datasource/driver class name that the jdbc
-     * connection pool refers to. This is used for custom connection validation.
-     * @param className class name
-     * @return all validation class names.
-     */
-    public Set<String> getValidationClassNames(String className) {
-        return jdbcAdminService.getValidationClassNames(className);
-    }
 
     /**
      * Get jdbc driver implementation class names list for the dbVendor and

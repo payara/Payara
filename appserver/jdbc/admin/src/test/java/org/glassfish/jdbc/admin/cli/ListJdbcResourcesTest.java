@@ -52,7 +52,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandContextImpl;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

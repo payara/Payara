@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
 		        <manifestEntries>
-                    <probe-provider-class-names>com.sun.enterprise.resource.pool.monitor.JdbcConnPoolProbeProvider,com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolProbeProvider,com.sun.enterprise.resource.pool.monitor.JdbcConnPoolAppProbeProvider,com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolAppProbeProvider</probe-provider-class-names>
+                    <probe-provider-class-names>com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolProbeProvider,com.sun.enterprise.resource.pool.monitor.ConnectorConnPoolAppProbeProvider</probe-provider-class-names>
                         </manifestEntries>
                     </archive>
                 </configuration>

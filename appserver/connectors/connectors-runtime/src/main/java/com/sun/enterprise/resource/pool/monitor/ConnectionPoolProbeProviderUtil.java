@@ -40,11 +40,14 @@
 
 package com.sun.enterprise.resource.pool.monitor;
 
+import com.sun.enterprise.connectors.ConnectionPoolMonitoringExtension;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Collection;
 
 /**
  * Utility class to create providers for monitoring purposes.
@@ -59,7 +62,10 @@ public class ConnectionPoolProbeProviderUtil {
     
     @Inject 
     private Provider<ConnectionPoolStatsProviderBootstrap> connectionPoolStatsProviderBootstrapProvider;
-    
+
+    @Inject
+    private Habitat habitat;
+
     public void registerProbeProvider() {
         if(ConnectorRuntime.getRuntime().isServer()) {
             getConnPoolBootstrap().registerProvider();
@@ -87,7 +93,11 @@ public class ConnectionPoolProbeProviderUtil {
      *
      */   
     public void createJdbcProbeProvider() {
-        jdbcProbeProvider = new JdbcConnPoolProbeProvider();
+        Collection<ConnectionPoolMonitoringExtension> extensions =
+                habitat.getAllByContract(ConnectionPoolMonitoringExtension.class);
+        for(ConnectionPoolMonitoringExtension extension : extensions) {
+            jdbcProbeProvider = extension.createProbeProvider();
+        }
     }
 
     public ConnectionPoolStatsProviderBootstrap getConnPoolBootstrap() {

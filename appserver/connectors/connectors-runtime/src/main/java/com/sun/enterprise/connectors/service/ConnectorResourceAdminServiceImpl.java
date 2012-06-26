@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package com.sun.enterprise.connectors.service;
 
 import com.sun.appserv.connectors.internal.api.*;
-import org.glassfish.connectors.config.JdbcResource;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -82,7 +81,7 @@ public class ConnectorResourceAdminServiceImpl extends ConnectorService {
     /**
      * Creates the connector resource on a given connection pool
      *
-     * @param jndiName     JNDI name of the resource to be created
+     * @param resourceInfo     JNDI name of the resource to be created
      * @param poolInfo     PoolName to which the connector resource belongs.
      * @param resourceType Resource type Unused.
      * @throws ConnectorRuntimeException If the resouce creation fails.
@@ -227,86 +226,4 @@ public class ConnectorResourceAdminServiceImpl extends ConnectorService {
         return namingService.lookup(actualResourceInfo, actualResourceInfo.getName(), env);
     }
 
-    /**
-     * Get a wrapper datasource specified by the jdbcjndi name
-     * This API is intended to be used in the DAS. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
-     * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
-     * without this API, a resource reference has to be present both in the DAS
-     * and the server instance. This makes the deployment more complex for the
-     * user since a resource needs to be forcibly created in the DAS Too.
-     * This API will mitigate this need.
-     *
-     * @param jndiName the jndi name of the resource
-     * @return DataSource representing the resource.
-     */
-    public Object lookupDataSourceInDAS(ResourceInfo resourceInfo) throws ConnectorRuntimeException{
-        MyDataSource myDS = new MyDataSource();
-        myDS.setResourceInfo(resourceInfo);
-        return myDS;
-    }
-
-    class MyDataSource implements DataSource {
-        private ResourceInfo resourceInfo;
-        private PrintWriter logWriter;
-        private int loginTimeout;
-
-        public void setResourceInfo(ResourceInfo resourceInfo) throws ConnectorRuntimeException{
-            validateResource(resourceInfo);
-            this.resourceInfo = resourceInfo;
-        }
-
-        private void validateResource(ResourceInfo resourceInfo) throws ConnectorRuntimeException {
-            ResourcesUtil resourcesUtil = ResourcesUtil.createInstance();
-            String jndiName = resourceInfo.getName();
-            String suffix = ConnectorsUtil.getValidSuffix(jndiName);
-
-            if(suffix != null){
-                //Typically, resource is created without suffix. Try without suffix.
-                String tmpJndiName = jndiName.substring(0, jndiName.lastIndexOf(suffix));
-                if(resourcesUtil.getResource(tmpJndiName, resourceInfo.getApplicationName(),
-                        resourceInfo.getModuleName(), JdbcResource.class) != null){
-                    return;
-                }
-            }
-
-            if(resourcesUtil.getResource(resourceInfo, JdbcResource.class) == null){
-                throw new ConnectorRuntimeException("Invalid resource : " + resourceInfo);
-            }
-        }
-
-        public Connection getConnection() throws SQLException {
-            return ConnectorRuntime.getRuntime().getConnection(resourceInfo);
-        }
-
-        public Connection getConnection(String username, String password) throws SQLException {
-            return ConnectorRuntime.getRuntime().getConnection(resourceInfo, username, password);
-        }
-
-        public PrintWriter getLogWriter() throws SQLException {
-            return logWriter;
-        }
-
-        public void setLogWriter(PrintWriter out) throws SQLException {
-           this.logWriter = out;
-        }
-
-        public void setLoginTimeout(int seconds) throws SQLException {
-           loginTimeout = seconds;
-        }
-
-        public int getLoginTimeout() throws SQLException {
-            return loginTimeout;
-        }
-        public boolean isWrapperFor(Class<?> iface) throws SQLException{
-           throw new SQLException("Not supported operation");
-        }
-        public <T> T unwrap(Class<T> iface) throws SQLException{
-           throw new SQLException("Not supported operation");
-        }
-
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-            throw new SQLFeatureNotSupportedException("Not supported operation");
-        }
-    }
 }

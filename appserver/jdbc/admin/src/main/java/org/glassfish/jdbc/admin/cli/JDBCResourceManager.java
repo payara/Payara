@@ -49,7 +49,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.I18n;
-import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.admin.cli.ResourceUtil;
 import org.glassfish.resources.api.ResourceStatus;

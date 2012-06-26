@@ -51,8 +51,6 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.resources.api.PoolInfo;
@@ -60,7 +58,6 @@ import org.glassfish.resources.listener.ResourceManagerLifecycleListener;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.*;
@@ -107,7 +104,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
     private Applications applications;
 
     @Inject
-    private BaseServiceLocator connectorRuntimeHabitat;
+    private Habitat connectorRuntimeHabitat;
 
     private ConnectorRuntime runtime;
 
@@ -153,7 +150,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
      */
     public boolean isConnectorRuntimeInitialized() {
         Collection<Inhabitant<? extends ConnectorRuntime>> inhabitants =
-                ((Habitat)connectorRuntimeHabitat).getInhabitants(ConnectorRuntime.class);
+                connectorRuntimeHabitat.getInhabitants(ConnectorRuntime.class);
         for(Inhabitant inhabitant : inhabitants){
             // there will be only one implementation of connector-runtime
             return inhabitant.isActive();
@@ -258,13 +255,7 @@ public class ConnectorResourceManagerLifecycleListener implements ResourceManage
                     for(Resource resource : resources.getResources()){
                         if(resource instanceof ResourcePool){
                             ResourcePool pool = (ResourcePool)resource;
-                            boolean ping = false;
-                            if(pool instanceof JdbcConnectionPool){
-                                ping = Boolean.valueOf(((JdbcConnectionPool)pool).getPing());
-                            }else if (pool instanceof ConnectorConnectionPool) {
-                                ping = Boolean.valueOf(((ConnectorConnectionPool)pool).getPing());
-                            }
-                            if(ping){
+                            if(Boolean.valueOf(pool.getPing())){
                                 PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
                                 CommandRunner commandRunner = commandRunnerProvider.get();
                                 ActionReport report = actionReportProvider.get();

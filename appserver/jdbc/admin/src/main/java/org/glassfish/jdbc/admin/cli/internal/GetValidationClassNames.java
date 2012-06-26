@@ -42,6 +42,7 @@ package org.glassfish.jdbc.admin.cli.internal;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.config.serverbeans.Resources;
+import org.glassfish.jdbcruntime.service.JdbcAdminServiceImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -74,7 +75,7 @@ import javax.inject.Inject;
 public class GetValidationClassNames implements AdminCommand {
 
     @Inject
-    private ConnectorRuntime connectorRuntime;
+    private JdbcAdminServiceImpl jdbcAdminService;
 
     @Param
     private String className;
@@ -86,7 +87,7 @@ public class GetValidationClassNames implements AdminCommand {
         final ActionReport report = context.getActionReport();
 
         try {
-            Set<String> validationClassNames = connectorRuntime.getValidationClassNames(className);
+            Set<String> validationClassNames = jdbcAdminService.getValidationClassNames(className);
             Properties extraProperties = new Properties();
             extraProperties.put("validationClassNames", new ArrayList(validationClassNames));
             report.setExtraProperties(extraProperties);

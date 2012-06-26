@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,9 @@
 
 package com.sun.enterprise.connectors;
 
+import com.sun.enterprise.config.serverbeans.BindableResource;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.ResourcePool;
 import org.glassfish.connectors.config.*;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 
@@ -49,10 +51,8 @@ public class DeferredResourceConfig {
 
     private String rarName;
     private AdminObjectResource adminObject;
-    private ConnectorConnectionPool connectionPool;
-    private ConnectorResource connectorResource;
-    private JdbcConnectionPool jdbcConnectionPool;
-    private JdbcResource jdbcResource;
+    private ResourcePool resourcePool;
+    private BindableResource bindableResource;
     private ResourceAdapterConfig[] resourceAdapterConfig;
     private Resource[] resourcesToLoad;
 
@@ -64,18 +64,14 @@ public class DeferredResourceConfig {
     public DeferredResourceConfig(
             String rarName,
             AdminObjectResource adminObject,
-            ConnectorConnectionPool connectionPool,
-            ConnectorResource connectorResource,
-            JdbcConnectionPool jdbcConnectionPool,
-            JdbcResource jdbcResource,
+            ResourcePool resourcePool,
+            BindableResource bindableResource,
             ResourceAdapterConfig[] resAdapterConfig) {
 
         this.rarName = rarName;
         this.adminObject = adminObject;
-        this.connectionPool = connectionPool;
-        this.connectorResource = connectorResource;
-        this.jdbcConnectionPool = jdbcConnectionPool;
-        this.jdbcResource = jdbcResource;
+        this.resourcePool = resourcePool;
+        this.bindableResource = bindableResource;
         this.resourceAdapterConfig = resAdapterConfig;
 
     }
@@ -96,37 +92,21 @@ public class DeferredResourceConfig {
         return this.adminObject;
     }
 
-    public void setConnectorConnectionPool(
-            ConnectorConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    public void setResourcePool(
+            ResourcePool resourcePool) {
+        this.resourcePool = resourcePool;
     }
 
-    public ConnectorConnectionPool getConnectorConnectionPool() {
-        return this.connectionPool;
+    public ResourcePool getResourcePool() {
+        return this.resourcePool;
     }
 
-    public void setConnectorResource(ConnectorResource connectorResource) {
-        this.connectorResource = connectorResource;
+    public void setBindableResource(BindableResource bindableResource) {
+        this.bindableResource = bindableResource;
     }
 
-    public ConnectorResource getConnectorResource() {
-        return this.connectorResource;
-    }
-
-    public void setJdbcConnectionPool(JdbcConnectionPool jdbcConnectionPool) {
-        this.jdbcConnectionPool = jdbcConnectionPool;
-    }
-
-    public JdbcConnectionPool getJdbcConnectionPool() {
-        return this.jdbcConnectionPool;
-    }
-
-    public void setJdbcResource(JdbcResource jdbcResource) {
-        this.jdbcResource = jdbcResource;
-    }
-
-    public JdbcResource getJdbcResource() {
-        return this.jdbcResource;
+    public BindableResource getBindableResource() {
+        return this.bindableResource;
     }
 
     public void setResourceAdapterConfig(

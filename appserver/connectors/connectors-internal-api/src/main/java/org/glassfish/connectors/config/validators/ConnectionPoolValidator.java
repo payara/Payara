@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package org.glassfish.connectors.config.validators;
 
 import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.JdbcConnectionPool;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 
 import javax.validation.ConstraintValidator;
@@ -70,23 +69,8 @@ public class ConnectionPoolValidator
     public boolean isValid(final ResourcePool pool,
         final ConstraintValidatorContext constraintValidatorContext) {
 
-        if(poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
-            if(pool instanceof JdbcConnectionPool) {
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String maxPoolSize = jdbcPool.getMaxPoolSize();
-                String steadyPoolSize = jdbcPool.getSteadyPoolSize();
-                if(steadyPoolSize == null) {
-                    steadyPoolSize = Constants.DEFAULT_STEADY_POOL_SIZE;
-                }
-                if (maxPoolSize == null) {
-                    maxPoolSize = Constants.DEFAULT_MAX_POOL_SIZE;
-                }
-                if (Integer.parseInt(maxPoolSize) <
-                        (Integer.parseInt(steadyPoolSize))) {
-                    //max pool size fault
-                    return false;
-                }
-            } else if(pool instanceof ConnectorConnectionPool) {
+        if (poolFaults == ConnectionPoolErrorMessages.MAX_STEADY_INVALID) {
+            if (pool instanceof ConnectorConnectionPool) {
                 ConnectorConnectionPool connPool = (ConnectorConnectionPool) pool;
                 String maxPoolSize = connPool.getMaxPoolSize();
                 String steadyPoolSize = connPool.getSteadyPoolSize();
@@ -101,93 +85,6 @@ public class ConnectionPoolValidator
                     //max pool size fault
                     return false;
                 }                
-            }
-        }
-        
-        if(poolFaults == ConnectionPoolErrorMessages.STMT_WRAPPING_DISABLED) {
-            if(pool instanceof JdbcConnectionPool) {
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String stmtCacheSize = jdbcPool.getStatementCacheSize();
-                String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
-                if (jdbcPool.getSqlTraceListeners() != null) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (stmtCacheSize != null && Integer.valueOf(stmtCacheSize) != 0) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (stmtLeakTimeout != null && Integer.valueOf(stmtLeakTimeout) != 0) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-                if (Boolean.valueOf(jdbcPool.getStatementLeakReclaim())) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        if(poolFaults == ConnectionPoolErrorMessages.TABLE_NAME_MANDATORY){
-            if(pool instanceof JdbcConnectionPool){
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                if (Boolean.valueOf(jdbcPool.getIsConnectionValidationRequired())) {
-                    if ("table".equals(jdbcPool.getConnectionValidationMethod())) {
-                        if(jdbcPool.getValidationTableName() == null || jdbcPool.getValidationTableName().equals("")){
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        if(poolFaults == ConnectionPoolErrorMessages.CUSTOM_VALIDATION_CLASS_NAME_MANDATORY){
-            if(pool instanceof JdbcConnectionPool){
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                if (Boolean.valueOf(jdbcPool.getIsConnectionValidationRequired())) {
-                    if ("custom-validation".equals(jdbcPool.getConnectionValidationMethod())) {
-                        if(jdbcPool.getValidationClassname() == null || jdbcPool.getValidationClassname().equals("")){
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (poolFaults == ConnectionPoolErrorMessages.RES_TYPE_MANDATORY) {
-            if (pool instanceof JdbcConnectionPool) {
-                JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-                String resType = jdbcPool.getResType();
-                String dsClassName = jdbcPool.getDatasourceClassname();
-                String driverClassName = jdbcPool.getDriverClassname();
-                if (resType == null) {
-                    //One of datasource/driver classnames must be provided.
-                    if ((dsClassName == null || dsClassName.equals("")) &&
-                            (driverClassName == null || driverClassName.equals(""))) {
-                        return false;
-                    } else {
-                        //Check if both are provided and if so, return false
-                        if (dsClassName != null && driverClassName != null) {
-                            return false;
-                        }
-                    }
-                } else if (resType.equals("javax.sql.DataSource") ||
-                        resType.equals("javax.sql.ConnectionPoolDataSource") ||
-                        resType.equals("javax.sql.XADataSource")) {
-                    //Then datasourceclassname cannot be empty
-                    if (dsClassName == null || dsClassName.equals("")) {
-                        return false;
-                    }
-                } else if (resType.equals("java.sql.Driver")) {
-                    //Then driver classname cannot be empty
-                    if (driverClassName == null || driverClassName.equals("")) {
-                        return false;
-                    }
-                }
             }
         }
         return true;

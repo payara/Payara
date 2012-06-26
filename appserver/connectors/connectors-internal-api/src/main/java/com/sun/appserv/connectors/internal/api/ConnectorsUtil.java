@@ -82,8 +82,6 @@ import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.connectors.config.ConnectorService;
-import org.glassfish.connectors.config.JdbcConnectionPool;
-import org.glassfish.connectors.config.JdbcResource;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
@@ -131,17 +129,8 @@ public class ConnectorsUtil {
     }
 
     public static boolean getPingDuringPoolCreation(PoolInfo poolInfo, Resources allResources) {
-        boolean pingOn = false;
         ResourcePool pool = getConnectionPoolConfig(poolInfo, allResources);
-        if(pool instanceof JdbcConnectionPool) {
-            JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
-            pingOn = Boolean.parseBoolean(jdbcPool.getPing());
-        } else if (pool instanceof ConnectorConnectionPool) {
-            ConnectorConnectionPool ccPool =
-                    (ConnectorConnectionPool) pool;
-            pingOn = Boolean.parseBoolean(ccPool.getPing());
-        }
-        return pingOn;
+        return Boolean.parseBoolean(pool.getPing());
     }
 
     /**
@@ -348,15 +337,11 @@ public class ConnectorsUtil {
         List<Resource> resources = new ArrayList<Resource>();
         List<Resource> pools = new ArrayList<Resource>();
         for(Resource resource : allResources.getResources()){
-            if(resource instanceof JdbcConnectionPool){
-                pools.add(resource);
-            } else if( resource instanceof ConnectorConnectionPool){
+             if( resource instanceof ConnectorConnectionPool){
                 String raName = ((ConnectorConnectionPool)resource).getResourceAdapterName();
                 if( ConnectorsUtil.belongsToSystemRA(raName) ){
                     pools.add(resource);
                 }
-            } else if(resource instanceof JdbcResource){
-                resources.add(resource);
             } else if( resource instanceof ConnectorResource){
                 String poolName = ((ConnectorResource)resource).getPoolName();
                 String raName = getResourceAdapterNameOfPool(poolName, allResources);
@@ -374,9 +359,9 @@ public class ConnectorsUtil {
         return resources;
     }
 
-/**
+    /**
      * Given the poolname, retrieve the resourceadapter name
-     * @param poolInfo connection pool name
+     * @param poolName connection pool name
      * @param allResources resources
      * @return resource-adapter name
      */
@@ -948,10 +933,6 @@ public class ConnectorsUtil {
             for (BindableResource resource : bindableResources) {
                 if (ConnectorResource.class.isAssignableFrom(resource.getClass())) {
                     if ((((ConnectorResource) resource).getPoolName()).equals(connectionPoolName)) {
-                        resourcesReferringPool.add(resource);
-                    }
-                } else if (JdbcResource.class.isAssignableFrom(resource.getClass())) {
-                    if ((((JdbcResource) resource).getPoolName()).equals(connectionPoolName)) {
                         resourcesReferringPool.add(resource);
                     }
                 }

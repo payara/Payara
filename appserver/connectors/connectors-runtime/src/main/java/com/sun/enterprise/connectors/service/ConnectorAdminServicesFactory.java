@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,8 +72,6 @@ public class ConnectorAdminServicesFactory {
             return new ConnectorSecurityAdminServiceImpl();
         } else if (type.equals(ConnectorConstants.AOR)) {
             return new ConnectorAdminObjectAdminServiceImpl();
-        } else if (type.equals(ConnectorConstants.JDBC)) { 
-            return new JdbcAdminServiceImpl();
         } else {
             return null;
         }

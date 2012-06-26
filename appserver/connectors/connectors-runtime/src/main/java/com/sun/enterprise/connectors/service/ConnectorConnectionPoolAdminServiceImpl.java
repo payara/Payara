@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import javax.security.auth.Subject;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.connectors.internal.api.PoolingException;
-import org.glassfish.connectors.config.JdbcResource;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 import org.glassfish.connectors.config.SecurityMap;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
@@ -68,6 +67,7 @@ import com.sun.enterprise.deployment.ConnectorConfigProperty ;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.resource.listener.UnpooledConnectionEventListener;
 import com.sun.enterprise.resource.pool.PoolManager;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.util.i18n.StringManager;
 import javax.resource.spi.ConnectionRequestInfo;
@@ -726,7 +726,14 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
       */
     private boolean isPoolReferredByResource(PoolInfo poolInfo){
         ResourcesUtil resUtil = ResourcesUtil.createInstance();
-        return (resUtil.isPoolReferredInServerInstance(poolInfo) || resUtil.isJdbcPoolReferredInServerInstance(poolInfo));
+        boolean isJdbcPoolReferredInServerInstance = false;
+        Collection<ConnectorRuntimeExtension> extensions =
+                Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+        for(ConnectorRuntimeExtension extension : extensions) {
+            isJdbcPoolReferredInServerInstance = extension.isConnectionPoolReferredInServerInstance(poolInfo);
+        }
+
+        return (resUtil.isPoolReferredInServerInstance(poolInfo) || isJdbcPoolReferredInServerInstance);
     }
     //END CR 6597868
 
@@ -736,7 +743,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @param prop
      * @return
      */
-    protected String getPropertyValue(String prop, 
+    public String getPropertyValue(String prop,
             ConnectorConnectionPool connectorConnectionPool) {
         String result = null;
         ConnectorDescriptorInfo cdi = connectorConnectionPool.getConnectorDescriptorInfo();
@@ -1657,36 +1664,11 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      */
     private PoolInfo getPoolNameFromResourceJndiName(ResourceInfo resourceInfo) {
         PoolInfo poolInfo= null;
-        JdbcResource jdbcResource = null;
-        ResourceInfo actualResourceInfo = resourceInfo;
-        String jndiName = resourceInfo.getName();
-
-        actualResourceInfo =
-                new ResourceInfo(jndiName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
-        ConnectorRuntime runtime = ConnectorRuntime.getRuntime();
-        jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(runtime.getResources(actualResourceInfo),
-                JdbcResource.class, actualResourceInfo.getName());
-        if(jdbcResource == null){
-            String suffix = ConnectorsUtil.getValidSuffix(jndiName);
-            if(suffix != null){
-                jndiName = jndiName.substring(0, jndiName.lastIndexOf(suffix));
-                actualResourceInfo =
-                        new ResourceInfo(jndiName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
-            }
-        }
-        jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(runtime.getResources(actualResourceInfo),
-                JdbcResource.class, actualResourceInfo.getName());
-
-        if (jdbcResource != null) {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("jdbcRes is ---: " + jdbcResource.getJndiName());
-                _logger.fine("poolName is ---: " + jdbcResource.getPoolName());
-            }
-        }
-        if(jdbcResource != null){
-            poolInfo = new PoolInfo(jdbcResource.getPoolName(), actualResourceInfo.getApplicationName(),
-                    actualResourceInfo.getModuleName());
+        Collection<ConnectorRuntimeExtension> extensions =
+                Globals.getDefaultHabitat().getAllByContract(ConnectorRuntimeExtension.class);
+        for(ConnectorRuntimeExtension extension : extensions) {
+            poolInfo = extension.getPoolNameFromResourceJndiName(resourceInfo);
         }
         return poolInfo;
-    }                          
+    }
 }

@@ -49,7 +49,7 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.connectors.config.JdbcResource;
+import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;

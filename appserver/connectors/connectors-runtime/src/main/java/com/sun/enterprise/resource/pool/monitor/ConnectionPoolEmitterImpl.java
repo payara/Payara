@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,6 @@ import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.glassfish.connectors.config.JdbcConnectionPool;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.resources.api.PoolInfo;
@@ -80,7 +79,6 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
     private Map<Long, String> resourceAppAssociationMap;
     private static Logger _logger = LogDomains.getLogger(ConnectionPoolEmitterImpl.class,
             LogDomains.RSR_LOGGER);
-    private List<JdbcConnPoolAppStatsProvider> jdbcPoolAppStatsProviders = null;
     private List<ConnectorConnPoolAppStatsProvider> ccPoolAppStatsProviders = null;
     private ConnectorRuntime runtime;
 
@@ -88,10 +86,10 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
     private static InitialContext ic = null;
 
     /**
-     * Constructor.
-     *
-     * @param jdbcPool the jdbc connection pool on whose behalf this
-     * ConnectionPoolEmitterImpl emits jdbc pool related probe events
+     * Constructor
+     * @param poolInfo connection pool on whose behalf this emitter emits pool related
+     * probe events
+     * @param provider
      */
     public ConnectionPoolEmitterImpl(PoolInfo poolInfo, ConnectionPoolProbeProvider provider) {
         this.poolInfo = poolInfo;
@@ -99,7 +97,6 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
         this.appName = poolInfo.getApplicationName();
         this.moduleName = poolInfo.getModuleName();
         this.poolProbeProvider = provider;
-        this.jdbcPoolAppStatsProviders = new ArrayList<JdbcConnPoolAppStatsProvider>();
         this.ccPoolAppStatsProviders = new ArrayList<ConnectorConnPoolAppStatsProvider>();
         this.appStatsMap = new HashMap<PoolInfo, Map<String, ConnectionPoolAppEmitterImpl>>();
         this.resourceAppAssociationMap = new HashMap<Long, String>();
@@ -391,19 +388,10 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * @return
      */
     private ConnectionPoolAppProbeProvider registerConnectionPool(String appName) {
-        ConnectionPoolAppProbeProvider probeAppProvider = null;
         ResourcePool pool = runtime.getConnectionPoolConfig(poolInfo);
-        if (pool instanceof JdbcConnectionPool) {
-            probeAppProvider = new JdbcConnPoolAppProbeProvider();
-            JdbcConnPoolAppStatsProvider jdbcPoolAppStatsProvider =
-                    new JdbcConnPoolAppStatsProvider(poolInfo, appName);
-            StatsProviderManager.register(
-                    "jdbc-connection-pool",
-                    PluginPoint.SERVER,
-                    "resources/" + ConnectorsUtil.escapeResourceNameForMonitoring(poolName) + "/" + appName,
-                    jdbcPoolAppStatsProvider);
-            jdbcPoolAppStatsProviders.add(jdbcPoolAppStatsProvider);
-        } else if (pool instanceof ConnectorConnectionPool) {
+        ConnectionPoolAppProbeProvider probeAppProvider =
+                runtime.getProbeProviderUtil().getConnPoolBootstrap().registerPool(poolInfo, appName);
+        if (pool instanceof ConnectorConnectionPool) {
             probeAppProvider = new ConnectorConnPoolAppProbeProvider();
             ConnectorConnPoolAppStatsProvider ccPoolAppStatsProvider =
                     new ConnectorConnPoolAppStatsProvider(poolInfo, appName);
@@ -446,19 +434,13 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
      * Unregister the AppStatsProviders registered for this connection pool.
      */
     public void unregisterAppStatsProviders() {
-        Iterator jdbcProviders = jdbcPoolAppStatsProviders.iterator();
-        while (jdbcProviders.hasNext()) {
-            JdbcConnPoolAppStatsProvider jdbcPoolAppStatsProvider =
-                    (JdbcConnPoolAppStatsProvider) jdbcProviders.next();
-            StatsProviderManager.unregister(jdbcPoolAppStatsProvider);
-        }
+        runtime.getProbeProviderUtil().getConnPoolBootstrap().unRegisterPool();
         Iterator ccProviders = ccPoolAppStatsProviders.iterator();
         while (ccProviders.hasNext()) {
             ConnectorConnPoolAppStatsProvider ccPoolAppStatsProvider =
                     (ConnectorConnPoolAppStatsProvider) ccProviders.next();
             StatsProviderManager.unregister(ccPoolAppStatsProvider);
         }
-        jdbcPoolAppStatsProviders.clear();
         ccPoolAppStatsProviders.clear();
     }
 }

@@ -101,5 +101,7 @@
         <module>admin</module>
 	<module>templates</module>
 	<module>admin-l10n</module>
+	<module>jdbc-config</module>
+	<module>jdbc-runtime</module>
     </modules>
 </project>

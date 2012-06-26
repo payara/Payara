@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,5 +82,24 @@ public interface ResourcePool extends Resource, Payload {
             return resource.getName();
         }
     }
+
+    /**
+     * Gets the value of the ping property.
+     *
+     * Property to ping pool during creation.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="false", dataType=Boolean.class)
+    String getPing();
+
+    /**
+     * Sets the value of the ping property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setPing(String value) throws PropertyVetoException;
 
 }

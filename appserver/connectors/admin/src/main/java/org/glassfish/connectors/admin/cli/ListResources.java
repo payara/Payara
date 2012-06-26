@@ -47,7 +47,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
-import org.glassfish.connectors.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.resources.util.BindableResourcesHelper;
