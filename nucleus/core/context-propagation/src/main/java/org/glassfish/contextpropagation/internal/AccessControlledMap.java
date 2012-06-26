@@ -70,7 +70,7 @@ public class AccessControlledMap {
     } else {
       if (entry != null && (entry.allowAllToRead ||
           contextAccessController.isAccessAllowed(key, ContextAccessLevel.READ))) {
-        return entry.getValue();
+        return (T) entry.getValue();
       }
     } 
     throw new InsufficientCredentialException();
@@ -89,7 +89,7 @@ public class AccessControlledMap {
 
   public <T> T remove(String key) throws InsufficientCredentialException {
     contextAccessController.checkAccessAllowed(key, ContextAccessLevel.DELETE);
-    return simpleMap.remove(key);
+    return (T) simpleMap.remove(key);
   }
 
   public EnumSet<PropagationMode> getPropagationModes(String key) throws InsufficientCredentialException {

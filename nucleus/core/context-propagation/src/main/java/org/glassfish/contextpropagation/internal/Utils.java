@@ -296,21 +296,21 @@ public class Utils {
 
     public <T> T put(String key, String value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
           key,  new Entry(value , propagationModes, 
               isAsciiString(value) ?Entry.ContextType.ASCII_STRING : Entry.ContextType.STRING));
     }
 
     public <T> T putNotAscii(String key, String value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
-          key,  new Entry(value , propagationModes, Entry.ContextType.STRING));
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
+          key, new Entry(value , propagationModes, Entry.ContextType.STRING));
     }
 
     public <T> T putAscii(String key, String value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
       if (isAsciiString(value)) {
-        return mapFinder.getMapAndCreateIfNeeded().put(
+        return (T) mapFinder.getMapAndCreateIfNeeded().put(
             key, new Entry(value , propagationModes, Entry.ContextType.ASCII_STRING));
       } else {
         throw new IllegalArgumentException("The specified string is not an ascii string: " + value);
@@ -319,18 +319,18 @@ public class Utils {
 
     public <T, U extends Number> T put(String key, U value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
           key,  new Entry(value , propagationModes, Entry.ContextType.fromNumberClass(value.getClass())));
     }
 
     public <T> T put(String key, Boolean value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
           key,  new Entry(value , propagationModes, Entry.ContextType.BOOLEAN));
     }
 
     public <T extends ViewCapable> T createViewCapable(String prefix) throws InsufficientCredentialException {
-      return createViewCapable(prefix, true);
+      return (T) createViewCapable(prefix, true);
     }
 
     public <T extends ViewCapable> T createViewCapable(String prefix, boolean isOriginator) throws InsufficientCredentialException {
@@ -344,13 +344,13 @@ public class Utils {
         mapFinder.getMapAndCreateIfNeeded().put(prefix,  entry);
         entry.value = factory.createInstance(view);
         entry.propagationModes = factory.getPropagationModes();
-        return entry.getValue();
+        return (T) entry.getValue();
       }
     }
 
     public <T> T putSerializable(String key, Serializable value,
         EnumSet<PropagationMode> propagationModes) throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
           key,  new Entry(value , propagationModes, Entry.ContextType.SERIALIZABLE));
     }
 
@@ -369,7 +369,7 @@ public class Utils {
     public <T> T put(String name, Character context,
         EnumSet<PropagationMode> propagationModes)
             throws InsufficientCredentialException {
-      return mapFinder.getMapAndCreateIfNeeded().put(
+      return (T) mapFinder.getMapAndCreateIfNeeded().put(
           name, new Entry(context , propagationModes, Entry.ContextType.BYTE));
     }
 

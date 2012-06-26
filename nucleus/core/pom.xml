@@ -62,6 +62,6 @@
         <module>logging</module>
         <module>logging-l10n</module>
         <module>kernel-l10n</module>
-<!--        <module>context-propagation</module>-->
+        <module>context-propagation</module>
     </modules>
 </project>

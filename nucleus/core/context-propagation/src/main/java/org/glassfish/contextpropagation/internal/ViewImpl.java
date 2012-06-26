@@ -76,7 +76,7 @@ public class ViewImpl implements View {
 
   @Override
   public <T> T get(String name) {
-    return sMap.get(makeKey(name));
+    return (T) sMap.get(makeKey(name));
   }
 
   private String makeKey(String name) {
@@ -95,36 +95,36 @@ public class ViewImpl implements View {
   @Override
   public <T> T put(String name, String context,
       EnumSet<PropagationMode> propagationModes) {
-    return sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.STRING).init(true, allowAllToRead(name)));
+    return (T) sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.STRING).init(true, allowAllToRead(name)));
   }
 
   @Override
   public <T, U extends Number> T put(String name, U context,
       EnumSet<PropagationMode> propagationModes) {
-    return sMap.put(newKey(name), new Entry(context, propagationModes, 
+    return (T) sMap.put(newKey(name), new Entry(context, propagationModes, 
         ContextType.fromNumberClass(context.getClass())).init(true, allowAllToRead(name)));
   }
 
   @Override
   public <T> T put(String name, Boolean context,
       EnumSet<PropagationMode> propagationModes) {
-    return sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.BOOLEAN).init(true, allowAllToRead(name)));  }
+    return (T) sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.BOOLEAN).init(true, allowAllToRead(name)));  }
 
   @Override
   public <T> T put(String name, Character context,
       EnumSet<PropagationMode> propagationModes) {
-    return sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.CHAR).init(true, allowAllToRead(name)));
+    return (T) sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.CHAR).init(true, allowAllToRead(name)));
   }
 
    public <T> T putSerializable(String name, Serializable context,
       EnumSet<PropagationMode> propagationModes, boolean allowAllToRead) {
-    return sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.SERIALIZABLE).init(true, allowAllToRead));
+    return (T) sMap.put(newKey(name), new Entry(context, propagationModes, ContextType.SERIALIZABLE).init(true, allowAllToRead));
   }
 
   @Override
   public <T> T remove(String name) {
     names.remove(name);
-    return sMap.remove(makeKey(name));
+    return (T) sMap.remove(makeKey(name));
   }
 
   public void clean() {

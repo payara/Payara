@@ -85,10 +85,12 @@ public class SimpleMap {
   protected List<ContextLifecycle> getAddedContextLifecycles() { 
     List<ContextLifecycle> result = addedContexts;
     addedContexts = null;
-    return result; }
+    return result;
+  }
 
+  @SuppressWarnings("unchecked")
   public <T> T get(String key) {
-    return extractResult(key, getEntry(key), "get");
+    return (T) extractResult(key, getEntry(key), "get");
   }
 
   @SuppressWarnings("unchecked")
@@ -103,7 +105,7 @@ public class SimpleMap {
   @SuppressWarnings("unchecked")
   public <T> T put(String key, Entry entry) {
     validate(key, entry);
-    T value = entry.getValue();
+    T value = (T) entry.getValue();
     Entry oldEntry = map.put(key, entry);
     if (oldEntry != null && (oldEntry.getValue() instanceof ContextLifecycle)) {
       ((ContextLifecycle) oldEntry.value).contextChanged(value);
@@ -122,6 +124,7 @@ public class SimpleMap {
     return (T) (oldEntry == null ? null : oldEntry.value);
   }
 
+  @SuppressWarnings("unchecked")
   public <T> T remove(String key) {
     validate("remove", key);
     Entry entry = (Entry) map.remove(key);
@@ -133,7 +136,7 @@ public class SimpleMap {
         ((ViewImpl) entry.getView()).clean();
       }
     }
-    return extractResult(key, entry, "remove");
+    return (T) extractResult(key, entry, "remove");
   }
 
   private void validate(String key, Entry entry) {
