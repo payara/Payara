@@ -45,6 +45,8 @@ import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.RootXMLNode;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -170,4 +172,17 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
     }
 
     private static Boolean restrictDTDDeclarations=null;
+
+    /**
+     * receives notiification of the value for a particular tag
+     * 
+     * @param element the xml element
+     * @param value it's associated value
+     */
+    public void setElementValue(XMLElement element, String value) {
+      if (! DOLUtils.setElementValue(element, value, getDescriptor())) {
+        super.setElementValue(element, value);
+      }
+    }
+    
 }

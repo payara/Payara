@@ -222,4 +222,8 @@ public interface DescriptorConstants {
 
     /** Object to Relational mapping DD entry */
     String ORM_DD_ENTRY = "META-INF/orm.xml";
+
+    /** Schema Namespaces for WLS */
+    String WLS_SCHEMA_NAMESPACE_BEA = "http://www.bea.com/ns/weblogic/";
+    String WLS_SCHEMA_NAMESPACE_ORACLE = "http://xmlns.oracle.com/weblogic/";
 }

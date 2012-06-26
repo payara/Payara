@@ -190,8 +190,14 @@ public class SaxParserHandler extends DefaultHandler {
                     if (systemID==null || systemID.lastIndexOf('/')==systemID.length()) {
                         return null;
                     }
-                    
-                    String fileName = getSchemaURLFor(systemID.substring(systemID.lastIndexOf('/')+1));                    
+
+                    String fileName = null;
+                    String namespaceResolution = resolveSchemaNamespace(systemID);
+                    if (namespaceResolution != null) {
+                      fileName = getSchemaURLFor(namespaceResolution);
+                    } else {
+                      fileName = getSchemaURLFor(systemID.substring(systemID.lastIndexOf('/')+1));                    
+                    }
                     // if this is not a request for a schema located in our repository, 
                     // let's hope that the hint provided by schemaLocation is correct
                     if (fileName==null) {
@@ -276,7 +282,6 @@ public class SaxParserHandler extends DefaultHandler {
      * @param schemaSystemID the system id for the schema
      */
     public static File getSchemaFileFor(String schemaSystemID) throws IOException {
-        
 	if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
             DOLUtils.getDefaultLogger().fine("Getting Schema " + schemaSystemID);
 	}
@@ -289,7 +294,26 @@ public class SaxParserHandler extends DefaultHandler {
 	return f;
     }
     
-    
+
+    /**
+     * Determine whether the syatemID starts with a known namespace.
+     * If so, strip off that namespace and return the rest.
+     * Otherwise, return null
+     * @param systemID The sytemID to examine
+     * @return the part if the namespace to find in the file system
+     * or null if the systemID does not start with a known namespace
+     */
+    public static String resolveSchemaNamespace(String systemID) {
+      List<String> namespaces = DOLUtils.getProprietarySchemaNamespaces();
+      for (int n = 0; n < namespaces.size(); ++n) {
+        String namespace = namespaces.get(n);
+        if (systemID.startsWith(namespace)) {
+          return systemID.substring(namespace.length());
+        }
+      }
+      return null;
+    }
+
     public void notationDecl(java.lang.String name,
                          java.lang.String publicId,
                          java.lang.String systemId)

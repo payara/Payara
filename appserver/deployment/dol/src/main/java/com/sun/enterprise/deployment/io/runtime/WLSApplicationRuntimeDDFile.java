@@ -88,7 +88,7 @@ public class WLSApplicationRuntimeDDFile extends
             }
             return node;
         }
-        return null;
+        return new WeblogicApplicationNode();
     }
 
     /**

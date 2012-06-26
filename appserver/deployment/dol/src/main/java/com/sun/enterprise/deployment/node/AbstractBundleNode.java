@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.xml.TagNames;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.Collection;
 import java.util.Collections;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
@@ -105,45 +106,10 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
      * @param element the xml element
      * @param value it's associated value
      */
-    public void setElementValue(XMLElement element, String value) {    
-        if (SCHEMA_LOCATION_TAG.equals(element.getCompleteName())) {    
-            // we need to keep all the non j2ee/javaee schemaLocation tags
-            StringTokenizer st = new StringTokenizer(value);
-            StringBuffer sb = new StringBuffer();
-            while (st.hasMoreElements()) {
-                String namespace = (String) st.nextElement();
-		String schema;
-		if (st.hasMoreElements()) {
-		    schema = (String) st.nextElement();
-		} else {
-		    schema = namespace;
-		    namespace = TagNames.JAVAEE_NAMESPACE;
-		}
-                if (namespace.equals(TagNames.J2EE_NAMESPACE)) 
-                    continue;
-                if (namespace.equals(TagNames.JAVAEE_NAMESPACE)) 
-                    continue;
-                if (namespace.equals(W3C_XML_SCHEMA)) 
-                    continue;
-                sb.append(namespace);
-                sb.append(" ");
-                sb.append(schema);
-            }
-            String clientSchemaLocation = sb.toString();
-            if (clientSchemaLocation!=null && clientSchemaLocation.length()!=0) {
-                Object o = getDescriptor();
-                if (o instanceof RootDeploymentDescriptor) {
-                    ((RootDeploymentDescriptor) o).setSchemaLocation(clientSchemaLocation);
-                }
-            }
-        } else if (element.getQName().equals(TagNames.METADATA_COMPLETE)) {
-            Object o = getDescriptor();
-            if (o instanceof BundleDescriptor) {
-                ((BundleDescriptor) o).setFullAttribute(value);
-            }
-        } else {
-            super.setElementValue(element, value);
-        }
+    public void setElementValue(XMLElement element, String value) {
+      if (! DOLUtils.setElementValue(element, value, getDescriptor())) {
+        super.setElementValue(element, value);
+      }
     }
     
     /**
