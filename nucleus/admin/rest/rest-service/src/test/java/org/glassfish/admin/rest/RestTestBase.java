@@ -107,7 +107,7 @@ public class RestTestBase {
 
         final RestTestBase rtb = new RestTestBase();
         rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-        rtb.client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
+        rtb.client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
         rtb.get("/domain/rotate-log");
     }
 
@@ -118,7 +118,7 @@ public class RestTestBase {
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
                 rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-                rtb.client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
+                rtb.client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
                 Response cr = rtb.client.target(rtb.getAddress("/domain/view-log")).request().get(Response.class);
 
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("target/surefire-reports/" + currentTestClass + "-server.log")));
@@ -155,7 +155,7 @@ public class RestTestBase {
     protected void getClient() {
         if (client == null) {
             client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-            client.configuration().register(new CsrfProtectionFilter()).enable(new JsonJaxbFeature());
+            client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
         }
     }
 

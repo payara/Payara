@@ -49,12 +49,12 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Target;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ClientFactory;
+import javax.ws.rs.client.ClientFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -256,7 +256,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         Client client2 = ClientFactory.newClient();
         RestUtil.initialize(client2);
-        Target target = client2.target(restURL);
+        WebTarget target = client2.target(restURL);
         target.configuration().register(new HttpBasicAuthFilter(username, password));
         MultivaluedMap payLoad = new MultivaluedHashMap();
         payLoad.putSingle("remoteHostName", request.getRemoteHost());

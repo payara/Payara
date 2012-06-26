@@ -58,13 +58,13 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Target;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ClientFactory;
+import javax.ws.rs.client.ClientFactory;
 
 import javax.faces.context.FacesContext;
 import javax.net.ssl.HostnameVerifier;
@@ -107,7 +107,7 @@ public class RestUtil {
    public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = ClientFactory.newClient();
-            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).enable(new JsonJacksonFeature());
+            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).register(new JsonJacksonFeature());
         }
 
         return JERSEY_CLIENT;
@@ -799,7 +799,7 @@ public class RestUtil {
 
     public static Response getRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        Target target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        WebTarget target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
         Response cr = target
                 .request().cookie(new Cookie(REST_TOKEN_COOKIE, token))
                 .get(Response.class);
@@ -809,7 +809,7 @@ public class RestUtil {
 
     public static void getRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        Target target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
+        WebTarget target = JERSEY_CLIENT.target(endpoint).queryParams(buildMultivalueMap(attrs));
         Response cr = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, token))
@@ -831,7 +831,7 @@ public class RestUtil {
         if (address.startsWith("/")) {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
-        Target target = getJerseyClient().target(address).queryParams(buildMultivalueMap(payload));
+        WebTarget target = getJerseyClient().target(address).queryParams(buildMultivalueMap(payload));
         Response resp = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -840,7 +840,7 @@ public class RestUtil {
     }
 
     public static RestResponse post(String address, Object payload, String contentType) {
-        Target target = getJerseyClient().target(address);
+        WebTarget target = getJerseyClient().target(address);
         if (contentType == null) {
             contentType = MediaType.APPLICATION_JSON;
         }
@@ -856,7 +856,7 @@ public class RestUtil {
     }
 
     public static RestResponse post(String address, Map<String, Object> payload) {
-        Target target = getJerseyClient().target(address);
+        WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
@@ -868,7 +868,7 @@ public class RestUtil {
     }
 
     public static RestResponse put(String address, Map<String, Object> payload) {
-        Target target = getJerseyClient().target(address);
+        WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
         Response cr = target
 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
@@ -880,7 +880,7 @@ public class RestUtil {
     }
 
     public static RestResponse delete(String address, Map<String, Object> payload) {
-        Target target = getJerseyClient().target(address);
+        WebTarget target = getJerseyClient().target(address);
         Response cr = target.queryParams(buildMultivalueMap(payload))
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -889,7 +889,7 @@ public class RestUtil {
     }
 
     public static RestResponse options(String address, String responseType) {
-        Target target = getJerseyClient().target(address);
+        WebTarget target = getJerseyClient().target(address);
         Response cr = target
                 .request(responseType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -927,7 +927,7 @@ public class RestUtil {
 
     public static void postRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
         String token = (String) request.getSession().getAttribute(AdminConsoleAuthModule.REST_TOKEN);
-        Target target = JERSEY_CLIENT.target(endpoint);
+        WebTarget target = JERSEY_CLIENT.target(endpoint);
         MultivaluedMap formData = buildMultivalueMap(attrs);
         Response cr = target
                 .request(RESPONSE_TYPE)

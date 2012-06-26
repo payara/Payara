@@ -49,7 +49,7 @@ import java.util.Properties;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Target;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -83,7 +83,7 @@ public abstract class ProxyImpl implements Proxy {
             if (forwardInstance != null) {
                 UriBuilder forwardUriBuilder = constructForwardURLPath(sourceUriInfo);
                 URI forwardURI = forwardUriBuilder.scheme("https").host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
-                Target resourceBuilder = client.target(forwardURI);
+                WebTarget resourceBuilder = client.target(forwardURI);
                 addAuthenticationInfo(client, resourceBuilder, forwardInstance, habitat);
                 Response response = resourceBuilder.request(MediaType.APPLICATION_JSON).get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
                 Response.Status status = Response.Status.fromStatusCode(response.getStatus());
@@ -134,7 +134,7 @@ public abstract class ProxyImpl implements Proxy {
     /**
      * Use SSL to authenticate
      */
-    private void addAuthenticationInfo(Client client, Target resourceBuilder, Server server, BaseServiceLocator habitat) {
+    private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, BaseServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
         client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(server.getAdminHost()));

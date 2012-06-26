@@ -58,13 +58,17 @@ import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
 
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.*;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import org.glassfish.hk2.Factory;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
@@ -110,10 +114,10 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         }
         return false;
     }
-    
+
     /** Overwrite this if you need different test of type compatibility.
      * Used from isWritable method.
-     */ 
+     */
     protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
         return desiredType.isAssignableFrom(type);
     }

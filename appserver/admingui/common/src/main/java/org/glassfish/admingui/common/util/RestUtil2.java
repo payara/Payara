@@ -18,7 +18,6 @@ import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Target;
 import javax.ws.rs.core.Response;
 
 /**

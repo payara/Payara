@@ -44,6 +44,7 @@ import java.io.InputStream;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -55,7 +56,7 @@ import org.glassfish.admingui.common.util.RestUtil;
  * @author andriy.zhdanov
  */
 public class LogViewerContentSource  implements DownloadServlet.ContentSource {
-    
+
      /**
      *  <p> This method returns a unique string used to identify this
      *      {@link DownloadServlet#getContentSource(String)}.  This string must be
@@ -83,18 +84,22 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
         String restUrl = request.getParameter("restUrl");
         String start = request.getParameter("start");
         String instanceName = request.getParameter("instanceName");
-        
+
         // Create the tmpFile
         InputStream tmpFile = null;
         try {
             String endpoint = restUrl + "/view-log/";
             Map<String, Object> attrsMap = new HashMap<String, Object>();
-            attrsMap.put("start", start); 
+            attrsMap.put("start", start);
             attrsMap.put("instanceName", instanceName);
             Response cr = RestUtil.getRequestFromServlet(request, endpoint, attrsMap);
             Map<String, String> headers = new HashMap<String, String>();
-            if (cr.getHeaders().getHeader("X-Text-Append-Next") != null) {
-                headers.put("X-Text-Append-Next", cr.getHeaders().getHeaderValues("X-Text-Append-Next").get(0));
+            String xTextAppendNextHeader = cr.getHeader("X-Text-Append-Next");
+            if (!xTextAppendNextHeader.isEmpty()) {
+                StringTokenizer tokenizer = new StringTokenizer(xTextAppendNextHeader, ",");
+                if (tokenizer.hasMoreElements()) {
+                    headers.put("X-Text-Append-Next", tokenizer.nextToken());
+                }
             }
             ctx.setAttribute(DownloadServlet.HEADERS, headers);
             tmpFile = cr.readEntity(InputStream.class);

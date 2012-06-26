@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Target;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -134,9 +134,9 @@ public abstract class RestClientBase {
     public RestResponse execute(Method method, String endPoint, Map<String, Object> payload) {
         return execute(method, endPoint, payload, false);
     }
-    
+
     public RestResponse execute(Method method, String endPoint, Map<String, Object> payload, boolean needsMultiPart) {
-        final Target target = client.target(getRestUrl() + endPoint);
+        final WebTarget target = client.target(getRestUrl() + endPoint);
         Response clientResponse;
         switch (method) {
             case POST: {
