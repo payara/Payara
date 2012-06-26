@@ -389,6 +389,13 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         }
     }
 
+    public void setHandlesForStatsProviders(Object statsProvider, Collection<ProbeClientMethodHandle> handles) {
+        // save the handles also against statsProvider so you can unregister when statsProvider is unregistered
+        StatsProviderRegistryElement spre =
+                this.statsProviderRegistry.getStatsProviderRegistryElement(statsProvider);
+        spre.setHandles(handles);
+    }
+
     private boolean getMonitoringEnabled() {
         return Boolean.parseBoolean(monitoringService.getMonitoringEnabled());
     }
@@ -829,7 +836,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         return srvrNode;
     }
 
-    private boolean getEnabledValue(String configElement) {
+    boolean getEnabledValue(String configElement) {
         boolean enabled = true;
         String level = getMonitoringLevel(configElement);
         if (level != null) {

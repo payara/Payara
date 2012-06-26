@@ -225,6 +225,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         spmd = new StatsProviderManagerDelegateImpl(pcm, probeRegistry, mrdr, domain, serverEnv.getInstanceName(),
                 monitoringService);
         StatsProviderManager.setStatsProviderManagerDelegate(spmd);
+        StatsProviderUtil.setStatsProviderManagerDelegate(spmd);
         if (logger.isLoggable(Level.FINE))
             logger.fine(" StatsProviderManagerDelegate is assigned");
 
