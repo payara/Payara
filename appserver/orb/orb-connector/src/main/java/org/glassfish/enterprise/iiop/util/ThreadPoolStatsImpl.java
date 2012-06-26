@@ -70,7 +70,6 @@ public class ThreadPoolStatsImpl
 
     private ThreadPool threadPool;
     private WorkQueue workQueue;
-    private String threadPoolName;
     private String workQueueName;
     private CountStatisticImpl numberOfBusyThreads;
     private CountStatisticImpl numberOfAvailableThreads;
@@ -96,7 +95,6 @@ public class ThreadPoolStatsImpl
 
     public ThreadPoolStatsImpl(ThreadPool threadPool) throws NoSuchWorkQueueException {
         this.threadPool = threadPool;
-        this.threadPoolName = threadPool.getName();
 
         getWorkQueueForThreadPool();
 
