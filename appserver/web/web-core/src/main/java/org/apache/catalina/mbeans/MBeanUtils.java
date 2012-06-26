@@ -98,8 +98,6 @@ public class MBeanUtils {
      * is a class name, and the second element is the managed bean name.
      */
     private static String exceptions[][] = {
-        { "org.apache.catalina.core.StandardDefaultContext",
-          "DefaultContext" },
     };
 
 
@@ -199,17 +197,6 @@ public class MBeanUtils {
                         ",resourcetype=Context,path=" + path + 
                         ",host=" + host.getName() +
                         ",name=" + environment.getName());
-        } else if (container instanceof DefaultContext) {
-            container = ((DefaultContext)container).getParent();
-            if (container instanceof Host) {
-                Host host = (Host) container;
-                name = new ObjectName(domain + ":type=Environment" + 
-                        ",resourcetype=HostDefaultContext,host=" + host.getName() +
-                        ",name=" + environment.getName());
-            } else if (container instanceof Engine) {
-                name = new ObjectName(domain + ":type=Environment" + 
-                        ",resourcetype=ServiceDefaultContext,name=" + environment.getName());
-            }
         }
         
         return (name);
@@ -248,19 +235,6 @@ public class MBeanUtils {
                         ",host=" + host.getName() +
                         ",class=" + resource.getType() +
                         ",name=" + encodedResourceName);
-        } else if (container instanceof DefaultContext) {            
-            container = ((DefaultContext)container).getParent();
-            if (container instanceof Host) {
-                Host host = (Host) container;
-                name = new ObjectName(domain + ":type=Resource" + 
-                        ",resourcetype=HostDefaultContext,host=" + host.getName() +
-                        ",class=" + resource.getType() +
-                        ",name=" + encodedResourceName);
-            } else if (container instanceof Engine) {
-                name = new ObjectName(domain + ":type=Resource" + 
-                        ",resourcetype=ServiceDefaultContext,class=" + resource.getType() +
-                        ",name=" + encodedResourceName);
-            }
         }
         
         return (name);
@@ -298,50 +272,12 @@ public class MBeanUtils {
                         ",resourcetype=Context,path=" + path + 
                         ",host=" + host.getName() +
                         ",name=" + encodedResourceLinkName);
-        } else if (container instanceof DefaultContext) {            
-            container = ((DefaultContext)container).getParent();
-            if (container instanceof Host) {
-                Host host = (Host) container;
-                name = new ObjectName(domain + ":type=ResourceLink" + 
-                        ",resourcetype=HostDefaultContext,host=" + host.getName() +
-                        ",name=" + encodedResourceLinkName);
-            } else if (container instanceof Engine) {
-                name = new ObjectName(domain + ":type=ResourceLink" + 
-                        ",resourcetype=ServiceDefaultContext,name=" + encodedResourceLinkName);
-            }
         }
         
         return (name);
 
     }
-    
-    
-    /**
-     * Create an <code>ObjectName</code> for this
-     * <code>DefaultContext</code> object.
-     *
-     * @param domain Domain in which this name is to be created
-     * @param context The DefaultContext to be named
-     *
-     * @exception MalformedObjectNameException if a name cannot be created
-     */
-    static ObjectName createObjectName(String domain,
-                                              DefaultContext context)
-        throws MalformedObjectNameException {
 
-        ObjectName name = null;
-        Container container = context.getParent();
-        if (container instanceof Host) {
-            Host host = (Host) container;
-            name = new ObjectName(domain + ":type=DefaultContext,host=" +
-                              host.getName());
-        } else if (container instanceof Engine) {
-            name = new ObjectName(domain + ":type=DefaultContext");
-        }
-
-        return (name);
-
-    }
 
     /**
      * Create an <code>ObjectName</code> for this
@@ -413,18 +349,6 @@ public class MBeanUtils {
             Host host = (Host) container.getParent();
             name = new ObjectName(domain + ":type=Loader,path=" + path +
                               ",host=" + host.getName());
-        } else if (container == null) {
-            // What is that ???
-            DefaultContext defaultContext = loader.getDefaultContext();
-            if (defaultContext != null) {
-                Container parent = defaultContext.getParent();
-                if (parent instanceof Engine) {
-                    name = new ObjectName(domain + ":type=DefaultLoader");
-                } else if (parent instanceof Host) {
-                    name = new ObjectName(domain + ":type=DefaultLoader,host=" +
-                            parent.getName());
-                }
-            }
         }
 
         return (name);
@@ -497,17 +421,6 @@ public class MBeanUtils {
             Host host = (Host) container.getParent();
             name = new ObjectName(domain + ":type=Manager,path=" + path +
                               ",host=" + host.getName());
-        } else if (container == null) {
-            DefaultContext defaultContext = manager.getDefaultContext();
-            if (defaultContext != null) {
-                Container parent = defaultContext.getParent();
-                if (parent instanceof Engine) {
-                    name = new ObjectName(domain + ":type=DefaultManager");
-                } else if (parent instanceof Host) {
-                    name = new ObjectName(domain + ":type=DefaultManager,host=" +
-                            parent.getName());
-                }
-            }
         }
 
         return (name);
@@ -541,16 +454,6 @@ public class MBeanUtils {
             name = new ObjectName(domain + ":type=NamingResources" + 
                         ",resourcetype=Context,path=" + path + 
                         ",host=" + host.getName());
-        } else if (container instanceof DefaultContext) {
-            container = ((DefaultContext)container).getParent();
-            if (container instanceof Host) {
-                Host host = (Host) container;
-                name = new ObjectName(domain + ":type=NamingResources" + 
-                        ",resourcetype=HostDefaultContext,host=" + host.getName());
-            } else if (container instanceof Engine) {
-                name = new ObjectName(domain + ":type=NamingResources" + 
-                        ",resourcetype=ServiceDefaultContext");
-            }
         }
         
         return (name);

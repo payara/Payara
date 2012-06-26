@@ -139,21 +139,6 @@ public interface Host extends Container {
 
 
     /**
-     * Set the DefaultContext
-     * for new web applications.
-     *
-     * @param defaultContext The new DefaultContext
-     */
-    public void addDefaultContext(DefaultContext defaultContext);
-
-
-    /**
-     * Retrieve the DefaultContext for new web applications.
-     */
-    public DefaultContext getDefaultContext();
-    
-    
-    /**
      * Return the value of the deploy on startup flag.  If true, it indicates 
      * that this host's child webapps should be discovered and automatically 
      * deployed.
@@ -238,14 +223,6 @@ public interface Host extends Container {
 
 
     // --------------------------------------------------------- Public Methods
-
-
-    /**
-     * Import the DefaultContext config into a web application context.
-     *
-     * @param context web application context to import default context
-     */
-    public void importDefaultContext(Context context);
 
 
     /**

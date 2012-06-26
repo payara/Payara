@@ -118,21 +118,6 @@ public interface Loader {
      */
     public void setContainer(Container container);
 
-
-    /**
-     * Return the DefaultContext with which this Manager is associated.
-     */
-    public DefaultContext getDefaultContext();
-
-
-    /**
-     * Set the DefaultContext with which this Manager is associated.
-     *
-     * @param defaultContext The newly associated DefaultContext
-     */
-    public void setDefaultContext(DefaultContext defaultContext);
-    
-        
     
     /**
      * Return the "follow standard delegation model" flag used to configure

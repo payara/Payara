@@ -170,12 +170,6 @@ public class WebappLoader
 
 
     /**
-     * The DefaultContext with which this Loader is associated.
-     */
-    protected DefaultContext defaultContext = null;
-    
-    
-    /**
      * The "follow standard delegation model" flag that will be used to
      * configure our ClassLoader.
      */
@@ -303,29 +297,6 @@ public class WebappLoader
             setReloadable( ((Context) this.container).getReloadable() );
             ((Context) this.container).addPropertyChangeListener(this);
         }
-    }
-
-
-    /**
-     * Return the DefaultContext with which this Loader is associated.
-     * 4985680 What is that ???
-     */
-    public DefaultContext getDefaultContext() {
-        return (this.defaultContext);
-    }
-
-
-    /**
-     * Set the DefaultContext with which this Loader is associated.
-     *
-     * @param defaultContext The newly associated DefaultContext
-     */
-    public void setDefaultContext(DefaultContext defaultContext) {
-
-        DefaultContext oldDefaultContext = this.defaultContext;
-        this.defaultContext = defaultContext;
-        support.firePropertyChange("defaultContext", oldDefaultContext, this.defaultContext);
-
     }
 
 

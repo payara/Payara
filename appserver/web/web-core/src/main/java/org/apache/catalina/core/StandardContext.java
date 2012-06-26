@@ -5328,18 +5328,6 @@ public class StandardContext
         setAvailable(false);
         setConfigured(false);
 
-        // Install DefaultContext configuration
-        if (!getOverride()) {
-            Container host = getParent();
-            if (host instanceof StandardHost) {
-                ((StandardHost)host).installDefaultContext(this);
-                Container engine = host.getParent();
-                if( engine instanceof StandardEngine ) {
-                    ((StandardEngine)engine).installDefaultContext(this);
-                }
-            }
-        }
-
         // Add missing components as necessary
         if (webappResources == null) {   // (1) Required by Loader
             if (log.isLoggable(Level.FINE)) {

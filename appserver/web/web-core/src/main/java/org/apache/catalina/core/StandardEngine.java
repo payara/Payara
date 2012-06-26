@@ -135,12 +135,6 @@ public class StandardEngine
     /** Mbeans loaded by the engine.  
      */ 
     private List<ObjectName> mbeans;
-    
-    /**
-     * DefaultContext config
-     */
-    private DefaultContext defaultContext;
-
 
     /**
      * The JVM Route ID for this Tomcat instance. All Route ID's must be unique
@@ -232,30 +226,6 @@ public class StandardEngine
 
 
     /**
-     * Set the DefaultContext
-     * for new web applications.
-     *
-     * @param defaultContext The new DefaultContext
-     */
-    public void addDefaultContext(DefaultContext defaultContext) {
-
-        DefaultContext oldDefaultContext = this.defaultContext;
-        this.defaultContext = defaultContext;
-        support.firePropertyChange("defaultContext",
-                                   oldDefaultContext, this.defaultContext);
-
-    }
-
-
-    /**
-     * Retrieve the DefaultContext for new web applications.
-     */
-    public DefaultContext getDefaultContext() {
-        return (this.defaultContext);
-    }
-
-
-    /**
      * Return the <code>Service</code> with which we are associated (if any).
      */
     public Service getService() {
@@ -289,35 +259,6 @@ public class StandardEngine
     }
 
     // --------------------------------------------------------- Public Methods
-
-
-    /**
-     * Install the StandardContext portion of the DefaultContext
-     * configuration into current Context.
-     *
-     * @param context current web application context
-     */
-    public void installDefaultContext(Context context) {
-
-        if (defaultContext != null &&
-            defaultContext instanceof StandardDefaultContext) {
-
-            ((StandardDefaultContext)defaultContext).installDefaultContext(context);
-        }
-    }
-
-
-    /**
-     * Import the DefaultContext config into a web application context.
-     *
-     * @param context web application context to import default context
-     */
-    public void importDefaultContext(Context context) {
-
-        if ( this.defaultContext != null )
-            this.defaultContext.importDefaultContext(context);
-
-    }
 
 
     /**

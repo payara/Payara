@@ -1076,7 +1076,6 @@ public class ContextConfig
         Container container = context.getParent();
         if( !context.getOverride() ) {
             if( container instanceof Host ) {
-                ((Host)container).importDefaultContext(context);
              
                 // Reset the value only if the attribute wasn't
                 // set on the context.
@@ -1092,9 +1091,6 @@ public class ContextConfig
                 }
                 
                 container = container.getParent();
-            }
-            if( container instanceof Engine ) {
-                ((Engine)container).importDefaultContext(context);
             }
         }
 

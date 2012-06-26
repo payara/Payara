@@ -151,7 +151,6 @@ public final class StandardServer
         "org.apache.catalina.authenticator.SSLAuthenticator",
         "org.apache.catalina.core.NamingContextListener",
         "org.apache.catalina.core.StandardContextValve",
-        "org.apache.catalina.core.StandardDefaultContext",
         "org.apache.catalina.core.StandardEngineValve",
         "org.apache.catalina.core.StandardHostValve",
         "org.apache.catalina.startup.ContextConfig",

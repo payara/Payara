@@ -121,12 +121,6 @@ public abstract class ManagerBase implements Manager {
 
 
     /**
-     * The DefaultContext with which this Manager is associated.
-     */
-    protected DefaultContext defaultContext = null;
-    
-    
-    /**
      * The distributable flag for Sessions created by this Manager.  If this
      * flag is set to <code>true</code>, any user attributes added to a
      * session controlled by this Manager must be Serializable.
@@ -317,26 +311,6 @@ public abstract class ManagerBase implements Manager {
     }
 
 
-    /**
-     * Return the DefaultContext with which this Manager is associated.
-     */
-    public DefaultContext getDefaultContext() {
-        return defaultContext;
-    }
-
-
-    /**
-     * Set the DefaultContext with which this Manager is associated.
-     *
-     * @param defaultContext The newly associated DefaultContext
-     */
-    public void setDefaultContext(DefaultContext defaultContext) {
-        DefaultContext oldDefaultContext = this.defaultContext;
-        this.defaultContext = defaultContext;
-        support.firePropertyChange("defaultContext", oldDefaultContext, this.defaultContext);
-    }
-    
-    
     /**
      * Return the debugging detail level for this component.
      */
