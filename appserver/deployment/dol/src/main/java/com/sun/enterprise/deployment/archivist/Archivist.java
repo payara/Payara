@@ -886,11 +886,9 @@ public abstract class Archivist<T extends BundleDescriptor> {
         // here, write out all, or write out the highest precedence one, 
         // or not write out)
         List<ConfigurationDeploymentDescriptorFile> confDDFilesToWrite = getSortedConfigurationDDFiles(in); 
-        /*
         if (confDDFilesToWrite.isEmpty()) {
             confDDFilesToWrite = getConfigurationDDFiles();
         }
-        */
         for (ConfigurationDeploymentDescriptorFile ddFile : confDDFilesToWrite) {
             ddFile.setArchiveType(getModuleType());
             OutputStream os = out.putNextEntry(
