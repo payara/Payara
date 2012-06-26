@@ -422,7 +422,7 @@ public final class ZeroConfigUtils {
 
     }
 
-    private static String serializeConfigBean(ConfigBeanProxy configBean) {
+    public static String serializeConfigBean(ConfigBeanProxy configBean) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
         try {
@@ -518,11 +518,11 @@ public final class ZeroConfigUtils {
         Domain domain = habitat.getComponent(Domain.class);
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config c = domain.getConfigNamed(target);
-            if (c.checkIfConfigExtensionExists(configBeanType)) {
+            if (c.checkIfExtensionExists(configBeanType)) {
                 return true;
             }
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            if (domain.checkIfConfigExists(configBeanType)) {
+            if (domain.checkIfExtensionExists(configBeanType)) {
                 return true;
             }
         }

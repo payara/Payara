@@ -465,8 +465,6 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
 
     @DuckTyped
     <T extends DomainExtension> T getExtensionByType(Class<T> type);
-    @DuckTyped
-    <P extends DomainExtension> boolean checkIfDomainExtensionExists(Class<P> configBeanType);
 
     /**
      * @param configBeanType The config bean type we want to check whether the configuration exists for it or not.
@@ -474,7 +472,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
      * @return true if configuration for the type exists in the target area of domain.xml and false if not.
      */
     @DuckTyped
-    <P extends ConfigBeanProxy> boolean checkIfConfigExists(Class<P> configBeanType);
+    <P extends ConfigBeanProxy> boolean checkIfExtensionExists(Class<P> configBeanType);
 
     class Duck {
         public static String getName(Domain domain) {
@@ -954,7 +952,7 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             return (server != null ? true : false);
         }
 
-        public static <P extends DomainExtension> boolean checkIfDomainExtensionExists(Domain d, Class<P> configBeanType) {
+        public static <P extends DomainExtension> boolean checkIfExtensionExists(Domain d, Class<P> configBeanType) {
              for (DomainExtension extension : d.getExtensions()) {
                  try {
                      configBeanType.cast(extension);

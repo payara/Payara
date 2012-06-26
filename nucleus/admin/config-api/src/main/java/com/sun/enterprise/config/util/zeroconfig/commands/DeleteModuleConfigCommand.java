@@ -42,6 +42,7 @@ package com.sun.enterprise.config.util.zeroconfig.commands;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -103,6 +104,14 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         Config config = domain.getConfigNamed(target);
+        if (target != null) {
+            if (domain.getConfigNamed(target) == null) {
+                report.setMessage(localStrings.getLocalString("delete.module.config.target.name.invalid",
+                        "The target name you specified is invalid. Please double check the target name and try again"));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        }
 
         if (serviceName == null) {
             report.setMessage(localStrings.getLocalString("delete.module.config.service.name.is.required",
@@ -122,7 +131,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
         }
 
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            if (config.checkIfConfigExtensionExists(configBeanType)) {
+            if (config.checkIfExtensionExists(configBeanType)) {
                 try {
                     ConfigSupport.apply(new SingleConfigCode<Config>() {
                         @Override
@@ -157,8 +166,42 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             }
 
         }
-        //TODO implement the deletion from the domain configuration
-        // which is checked by configBeanType.isAssignableFrom(DomainExtension.class
+        else if (DomainExtension.class.isAssignableFrom(configBeanType)) {
+            if (domain.checkIfExtensionExists(configBeanType)) {
+                try {
+                    ConfigSupport.apply(new SingleConfigCode<Domain>() {
+                        @Override
+                        public Object run(Domain param) throws PropertyVetoException,
+                                TransactionFailure {
+                            List<DomainExtension> domainExtensions;
+                            domainExtensions = param.getExtensions();
+                            for (DomainExtension ext : domainExtensions) {
+                                String configExtensionClass = GlassFishConfigBean.unwrap(ext).getProxyType().getSimpleName();
+                                if (configExtensionClass.equals(className)) {
+                                    domainExtensions.remove(ext);
+                                    break;
+                                }
+                            }
+
+                            return domainExtensions;
+                        }
+                    }, domain);
+                    report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                } catch (TransactionFailure e) {
+                    String actual = e.getMessage();
+                    String msg = localStrings.getLocalString("delete.module.config.failed.to.delete.config",
+                            DEFAULT_FORMAT, serviceName, actual);
+                    report.setMessage(msg);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setFailureCause(e);
+                }
+            } else {
+                report.setMessage(localStrings.getLocalString("delete.module.config.no.configuration",
+                        "No customized configuration exist for this service nor the default configuration has been added to the domain.xml."));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            }
+
+        }
 
     }
 }

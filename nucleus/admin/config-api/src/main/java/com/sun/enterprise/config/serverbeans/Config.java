@@ -416,7 +416,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @return true if configuration for the type exists in the target area of domain.xml and false if not.
      */
     @DuckTyped
-    <P extends ConfigExtension> boolean checkIfConfigExtensionExists(Class<P> configBeanType);
+    <P extends ConfigExtension> boolean checkIfExtensionExists(Class<P> configBeanType);
 
     class Duck {
         private final static Logger LOG = Logger.getLogger(Duck.class.getName());
@@ -515,7 +515,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             }
         }
 
-        public static <P extends ConfigExtension> boolean checkIfConfigExtensionExists(Config c, Class<P> configBeanType) {
+        public static <P extends ConfigExtension> boolean checkIfExtensionExists(Config c, Class<P> configBeanType) {
             for (ConfigExtension extension : c.getExtensions()) {
                 try {
                     configBeanType.cast(extension);
