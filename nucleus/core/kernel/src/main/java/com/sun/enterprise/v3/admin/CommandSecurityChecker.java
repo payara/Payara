@@ -39,19 +39,17 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
-import org.glassfish.api.admin.AccessRequired;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -109,13 +107,16 @@ public class CommandSecurityChecker {
      */
     public void authorize(final Subject subject,
             final Map<String,Object> env,
-            final AdminCommand command) throws SecurityException {
+            final AdminCommand command,
+            final Object adminCommandContext) throws SecurityException {
         
         final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
         
         try {
-            if ( ! (invokeIsAuthorizedOnCommand(subject, env, command, failedAccessChecks)
-                    && checkAccessRequired(subject, env, command, failedAccessChecks))) {
+            if (command instanceof AccessRequired.CommandContextDependent) {
+                ((AccessRequired.CommandContextDependent) command).setCommandContext(adminCommandContext);
+            }
+            if ( ! checkAccessRequired(subject, env, command, failedAccessChecks)) {
                 throw new SecurityException(failedAccessChecks.toString());
             }
         } catch (Exception ex) {
@@ -123,16 +124,13 @@ public class CommandSecurityChecker {
         }
     }
     
-    private boolean invokeIsAuthorizedOnCommand(final Subject subject, final Map<String,Object> env, 
-            final AdminCommand command, final List<AccessCheck> failedAccessChecks) {
+    private boolean addChecksFromAuthorizer(final Subject subject, 
+            final AdminCommand command, final List<AccessCheck> accessChecks) {
         if (command instanceof AccessRequired.Authorizer) {
-            final boolean result = ((AccessRequired.Authorizer) command).isAuthorized(subject, env);
-            if (! result) {
-                failedAccessChecks.add(new AccessCheck("Authorizer.isAuthorized","invocation"));
-                return false;
-            }
+            accessChecks.addAll(((AccessRequired.Authorizer) command).getAccessChecks());
+            return true;
         }
-        return true;
+        return false;
     }
     
     private boolean checkAccessRequired(final Subject subject,
@@ -142,19 +140,18 @@ public class CommandSecurityChecker {
                 throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         
-        addChecksFromExplicitAccessRequiredAnnos(command, accessChecks);
+        addChecksFromAuthorizer(subject, command, accessChecks);
+        final boolean isAnnotated = addChecksFromExplicitAccessRequiredAnnos(command, accessChecks);
         /*
          * If the developer explicitly specified @AccessRequired annos, don't
          * try to process implied ReST ones.
          */
-        if (accessChecks.isEmpty()) {
+        if ( ! isAnnotated) {
             addAccessChecksFromReSTEndpoints(command, accessChecks);
         }
-//        addCRUDAccesses(command, accessChecks);
-        
         boolean result = true;
         for (AccessCheck a : accessChecks) {
-            final boolean thisResult = authService.isAuthorized(subject, a.resourceName, a.action);
+            final boolean thisResult = authService.isAuthorized(subject, resourceNameFromAccessCheck(a), a.action());
             if ( ! thisResult) {
                 failedAccessChecks.add(a);
             }
@@ -163,32 +160,47 @@ public class CommandSecurityChecker {
         return result;
     }
     
-    private void addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,
+    private String resourceNameFromAccessCheck(final AccessCheck c) {
+        String resourceName = c.resource();
+        if (resourceName == null) {
+            resourceName = resourceNameFromConfigBeanType(c.parent(), c.childType());
+        }
+        return resourceName;
+    }
+    
+    private boolean addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,
             final List<AccessCheck> accessChecks) 
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        boolean isAnnotated = false;
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
             final Class<?> c = cIt.next();
             final AccessRequired ar = c.getAnnotation(AccessRequired.class);
             if (ar != null) {
+                isAnnotated = true;
                 addAccessChecksFromAnno(ar, command, accessChecks);
             }
             final AccessRequired.List arList = c.getAnnotation(AccessRequired.List.class);
             if (arList != null) {
+                isAnnotated = true;
                 for (final AccessRequired repeatedAR : arList.value()) {
                     addAccessChecksFromAnno(repeatedAR, command, accessChecks);
                 }
             }
-            addAccessChecksFromFields(c, command, accessChecks);            
+            isAnnotated |= addAccessChecksFromFields(c, command, accessChecks);
+            
         }
+        return isAnnotated;
     }
     
-    private void addAccessChecksFromFields(
+    private boolean addAccessChecksFromFields(
             final Class<?> c,
             final AdminCommand command,
             final List<AccessCheck> accessChecks) throws IllegalArgumentException, IllegalAccessException {
+        boolean isAnnotatedOnFields = false;
         for (Field f : c.getDeclaredFields()) {
-            addAccessChecksFromAnno(f, command, accessChecks);
+            isAnnotatedOnFields |= addAccessChecksFromAnno(f, command, accessChecks);
         }
+        return isAnnotatedOnFields;
     }
     
     private void addAccessChecksFromAnno(final AccessRequired ar, final AdminCommand command,
@@ -202,15 +214,32 @@ public class CommandSecurityChecker {
         }
     }
     
-    private void addAccessChecksFromAnno(final Field f, final AdminCommand command,
+    private boolean addAccessChecksFromAnno(final Field f, final AdminCommand command,
             final List<AccessCheck> accessChecks) throws IllegalArgumentException, IllegalAccessException {
+        boolean isAnnotated = false;
         final AccessRequired.To arTo = f.getAnnotation(AccessRequired.To.class);
         if (arTo != null) {
+            isAnnotated = true;
             final String resourceNameForField = resourceNameFromField(f, command);
             for (final String access : arTo.value()) {
                 accessChecks.add(new AccessCheck(resourceNameForField, access));
             }
         }
+        final AccessRequired.NewChild arNC = f.getAnnotation(AccessRequired.NewChild.class);
+        if (arNC != null) {
+            isAnnotated = true;
+            String resourceNameForField = null;
+            if (ConfigBeanProxy.class.isAssignableFrom(arNC.type())) {
+                isAnnotated = true;
+                resourceNameForField = resourceNameFromConfigBeanType(arNC.type());
+            }
+            if (resourceNameForField != null) {
+                for (final String action : arNC.action()) {
+                    accessChecks.add(new AccessCheck(resourceNameForField, action));
+                }
+            }
+        }
+        return isAnnotated;
     }
     
     private String processTokens(final String expr, final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -244,17 +273,20 @@ public class CommandSecurityChecker {
     
     private String resourceNameFromField(final Field f, final AdminCommand command) 
             throws IllegalArgumentException, IllegalAccessException {
-        if (ConfigBeanProxy.class.isAssignableFrom(f.getDeclaringClass())) {
-            return resourceNameFromConfigBean((ConfigBeanProxy) f.get(command));
+        f.setAccessible(true);
+        if (ConfigBeanProxy.class.isAssignableFrom(f.getType())) {
+            return resourceNameFromConfigBeanProxy((ConfigBeanProxy) f.get(command));
+        } else if (ConfigBean.class.isAssignableFrom(f.getType())) {
+            return resourceNameFromDom((ConfigBean) f.get(command));
         }
         return f.get(command).toString();
     }
     
-    private String resourceNameFromConfigBean(ConfigBeanProxy b) {
-        return resourceNameFromConfigBean(Dom.unwrap(b));
+    private String resourceNameFromConfigBeanProxy(ConfigBeanProxy b) {
+        return resourceNameFromDom(Dom.unwrap(b));
     }
         
-    private String resourceNameFromConfigBean(Dom d) {
+    private String resourceNameFromDom(Dom d) {
         
         final StringBuilder path = new StringBuilder();
         while (d != null) {
@@ -270,9 +302,14 @@ public class CommandSecurityChecker {
         return path.toString();
     }
     
-    private String resourceNameFromConfigBean(Class<? extends ConfigBeanProxy> c) {
+    private String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c) {
         ConfigBeanProxy b = locator.getComponent(c);
-        return (b != null ? resourceNameFromConfigBean(b) : "?");
+        return (b != null ? resourceNameFromConfigBeanProxy(b) : "?");
+    }
+    
+    private String resourceNameFromConfigBeanType(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType) {
+        final Dom dom = Dom.unwrap(parent);
+        return resourceNameFromDom(dom) + "/" + dom.document.buildModel(childType).getTagName();
     }
     
     private void addAccessChecksFromReSTEndpoints(final AdminCommand command, 
@@ -295,35 +332,27 @@ public class CommandSecurityChecker {
     private void addAccessChecksFromReSTEndpoint(
             final RestEndpoint restEndpoint, final List<AccessCheck> accessChecks) {
         final String action = optypeToAction.get(restEndpoint.opType());
-        final String resource = resourceNameFromConfigBean(restEndpoint.configBean());
+        /*
+         * For the moment, if there is no RestParam then the config bean class given
+         * in the anno is an unnamed singleton target of the action.  If there is a RestParam
+         * then the target is (probably) the unnamed singleton parent of the config bean class given
+         * and the new child's type is the config bean class.
+         */
+        String resource;
+        if (restEndpoint.params().length == 0) {
+            resource = resourceNameFromConfigBeanType(restEndpoint.configBean());
+        } else {
+            // TODO need to do something with the endpoint params
+            resource = resourceNameFromConfigBeanType(restEndpoint.configBean());
+        }
         accessChecks.add(new AccessCheck(resource, action));
     }
     
-    private static class AccessCheck {
-        private final String resourceName;
-        private final String action;
-        private String note = "";
-        
-        private AccessCheck(final String resourceName, final String action, final String note) {
-            this.resourceName = resourceName;
-            this.action = action;
-            this.note = note;
-        }
-        
-        private AccessCheck(final String resourceName, final String action) {
-            this(resourceName, action, "");
-        }
+    private String resourceKeyFromReSTEndpoint(final RestEndpoint restEndpoint) {
+        for (RestParam p : restEndpoint.params()) {
 
-        @Override
-        public String toString() {
-            return (new StringBuilder("AccessCheck ")).
-                    append(resourceName).
-                    append("=").
-                    append(action).
-                    append("//").
-                    append(note).
-                    toString();
         }
+        return "";
     }
     
     /**

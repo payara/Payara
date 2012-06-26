@@ -46,6 +46,7 @@ import com.sun.hk2.component.InjectionResolver;
 import com.sun.hk2.component.LazyInhabitant;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
 import org.glassfish.common.util.admin.ParamTokenizer;
 import org.jvnet.hk2.annotations.Inject;
@@ -66,7 +67,9 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.AccessRequired;
 import org.jvnet.hk2.annotations.InhabitantAnnotation;
+import org.jvnet.hk2.component.*;
 
 /**
  * services pertinent to generic CRUD command implementations
@@ -74,7 +77,7 @@ import org.jvnet.hk2.annotations.InhabitantAnnotation;
  * @author Jerome Dochez
  *
  */
-public abstract class GenericCrudCommand implements CommandModelProvider, PostConstruct {
+public abstract class GenericCrudCommand implements CommandModelProvider, PostConstruct, AccessRequired.CommandContextDependent {
     
     private InjectionResolver<Param> injector;
 
@@ -90,6 +93,30 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     Method targetMethod;
     // default level of noise, useful for just swithching these classes in debugging.
     protected final Level level = Level.FINE;
+    
+    @javax.inject.Inject
+    BaseServiceLocator habitat;
+    
+    InjectionManager manager;
+    CrudResolver resolver;
+    InjectionResolver paramResolver;
+    Class<? extends CrudResolver> resolverType;
+    
+    void prepareInjection(final AdminCommandContext ctx) {
+        // inject resolver with command parameters...
+        manager = new InjectionManager();
+
+        resolver = habitat.getComponent(resolverType);
+
+        paramResolver = getInjectionResolver();
+
+        manager.inject(resolver, paramResolver);
+    }
+    
+    @Override
+    public void setCommandContext(Object adminCommandContext) {
+        prepareInjection((AdminCommandContext) adminCommandContext);
+    }
 
     public void postConstruct() {
         List<String> indexes = myself.metadata().get(InhabitantsFile.INDEX_KEY);

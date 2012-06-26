@@ -43,6 +43,7 @@ package org.glassfish.config.support;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModel;
@@ -65,12 +66,11 @@ import java.util.List;
 @Scoped(PerLookup.class)
 public class GenericListCommand  extends GenericCrudCommand implements AdminCommand {
 
-    @Inject
-     BaseServiceLocator habitat;
-
-    Class<? extends CrudResolver> resolverType;
     CommandModel model;
     Listing listing;
+    
+    @AccessRequired.To("read")
+    private ConfigBeanProxy parentBean;
 
     @Override
     public void postConstruct() {
@@ -100,22 +100,21 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
             throw new ComponentException(msg, e);
 
         }
-
+        
     }
+    
+    @Override
+    void prepareInjection(final AdminCommandContext ctx) {
+        super.prepareInjection(ctx);
 
+        parentBean = resolver.resolve(ctx, parentType);
+        
+    }
+    
     @Override
     public void execute(final AdminCommandContext context) {
 
         final ActionReport result = context.getActionReport();
-
-        // inject resolver with command parameters...
-        final InjectionManager manager = new InjectionManager();
-
-        CrudResolver resolver = habitat.getComponent(resolverType);
-
-        manager.inject(resolver, getInjectionResolver());
-
-        final ConfigBeanProxy parentBean = resolver.resolve(context, parentType);
         if (parentBean==null) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCreateCommand.target_object_not_found",

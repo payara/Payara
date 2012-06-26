@@ -42,7 +42,6 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.ExceptionUtil;
-import com.sun.hk2.component.InjectionResolver;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
@@ -52,9 +51,12 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.security.auth.Subject;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 /**
  * Generic create command implementation.
@@ -68,15 +70,13 @@ import java.beans.PropertyVetoException;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand {
+public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.Authorizer {
 
-    @Inject
-    BaseServiceLocator habitat;
-    
-    Class<? extends CrudResolver> resolverType;
     GenericCommandModel model;
     Create create;
-
+    
+    private ConfigBeanProxy parentBean;
+    
     @Override
     public void postConstruct() {
 
@@ -104,27 +104,34 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
             throw new ComponentException(msg, e);
 
         }
-
+        
     }
 
+    @Override
+    public Collection<AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> checks = new ArrayList<AccessCheck>();
+        checks.add(new AccessCheck(parentBean, (Class<? extends ConfigBeanProxy>) targetType, "create"));
+        return checks;
+    }
+    
+    
+    @Override
+    void prepareInjection(final AdminCommandContext ctx) {
+        super.prepareInjection(ctx);
+        parentBean = resolver.resolve(ctx, parentType);
+    }
 
+    @Override
+    public void setCommandContext(Object adminCommandContext) {
+        super.setCommandContext(adminCommandContext);
+        prepareInjection((AdminCommandContext) adminCommandContext);
+    }
 
-
+    
     @Override
     public void execute(final AdminCommandContext context) {
 
         final ActionReport result = context.getActionReport();
-        
-        // inject resolver with command parameters...
-        final InjectionManager manager = new InjectionManager();
-
-        CrudResolver resolver = habitat.getComponent(resolverType);
-
-        final InjectionResolver paramResolver = getInjectionResolver();
-
-        manager.inject(resolver, paramResolver);
-
-        final ConfigBeanProxy parentBean = resolver.resolve(context, parentType);
         if (parentBean==null) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCreateCommand.target_object_not_found",

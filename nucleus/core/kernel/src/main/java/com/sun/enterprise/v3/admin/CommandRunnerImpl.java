@@ -1181,7 +1181,7 @@ public class CommandRunnerImpl implements CommandRunner {
                  */
                 final Map<String,Object> env = buildEnvMap(parameters);
                 try {
-                    commandSecurityChecker.authorize(context.getSubject(), env, command);
+                    commandSecurityChecker.authorize(context.getSubject(), env, command, context);
                 } catch (SecurityException ex) {
                     report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);

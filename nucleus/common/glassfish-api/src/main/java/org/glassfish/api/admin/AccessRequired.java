@@ -43,8 +43,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Map;
-import javax.security.auth.Subject;
+import java.util.Collection;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
  * Allows command developers to declare what resources are affected by
@@ -146,13 +146,110 @@ public @interface AccessRequired {
     }
     
     /**
+     * Represents an authorization check: a resource and an action to be 
+     * authorized on that resource.
+     */
+    public class AccessCheck {
+        private final String resource;
+        private final String action;
+        private final String note;
+        private final Class<? extends ConfigBeanProxy> childType;
+        private final ConfigBeanProxy parent;
+
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param resource the resource to be checked
+         * @param action the action on the resource
+         * @param note descriptive note about the access check; used during logging
+         */
+        public AccessCheck(final String resource, final String action, final String note) {
+            this.resource = resource;
+            this.action = action;
+            this.note = note;
+            childType = null;
+            parent = null;
+        }
+        
+        /**
+         * Creates a new {@code AccessCheck}
+         * @param resource the resource to be checked
+         * @param action the action on the resource
+         */
+        public AccessCheck(final String resource, final String action) {
+            this(resource, action, "");
+        }
+        
+        public AccessCheck(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType, final String action, final String note) {
+            this.parent = parent;
+            this.childType = childType;
+            this.action = action;
+            this.note = note;
+            this.resource = null;
+        }
+        
+        public AccessCheck(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType, final String action) {
+            this(parent, childType, action, "");
+        }
+        
+        public String resource() {
+            return resource;
+        }
+        
+        public String action() {
+            return action;
+        }
+        
+        public Class<? extends ConfigBeanProxy> childType() {
+            return childType;
+        }
+        
+        public ConfigBeanProxy parent() {
+            return parent;
+        }
+        
+        public String note() {
+            return note;
+        }
+        
+        @Override
+        public String toString() {
+            return (new StringBuilder("AccessCheck ")).
+                    append((resource != null) ? resource : parent.toString()).
+                    append((resource == null) ? "/" : "").
+                    append((resource == null) ? childType.getName() : "").
+                    append("=").
+                    append(action).
+                    append("//").
+                    append(note).
+                    toString();
+        }
+    }
+    
+    /**
      * Behavior required of all command classes which provide any of their
      * own custom authorization enforcement. The system will invoke the
-     * class's {@code isAuthorized} method after it has injected {@code @Inject}
+     * class's {@code getAccessChecks} method after it has injected {@code @Inject}
      * and {@code @Param} fields and after it has invoked any {@code @PostConstruct}
-     * methods.
+     * methods.  The getAccessChecks method returns one or more {@link AccessCheck}
+     * objects, indicating additional authorization checking that secure
+     * admin should perform beyond what is triggered by the annotations.
      */
     public interface Authorizer {
-        boolean isAuthorized(Subject subject, Map<String,Object> env);
+        Collection<AccessCheck> getAccessChecks();
+    }
+    
+    /**
+     * Commands that need the AdminCommandContext before they can provide their
+     * own access checks implement this interface.
+     * <p>
+     * The admin command context is passed on the execute method, which the 
+     * system invokes after it invokes {@link Authorizer#getAccessChecks}.  If
+     * the command class uses the admin command context in preparing its own
+     * access checks it implements this interface and the command framework
+     * passes it the command context, which the command can save for use during 
+     * the {@code getAccessChecks} invocation.
+     */
+    public interface CommandContextDependent {
+        void setCommandContext(Object adminCommandContext);
     }
 }
