@@ -174,6 +174,11 @@ public class Catalog implements Serializable {
         positions.equals(((Catalog) obj).positions);
   }
 
+  @Override
+  public int hashCode() {
+     return super.hashCode();
+  }
+
   public short getStart() {
     return start;
   }

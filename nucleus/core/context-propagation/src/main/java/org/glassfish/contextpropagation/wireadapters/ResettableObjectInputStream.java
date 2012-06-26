@@ -257,4 +257,9 @@ public class ResettableObjectInputStream extends ObjectInputStream {
     return underlying.equals(obj);
   }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
 }
