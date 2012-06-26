@@ -209,37 +209,39 @@ public class CompositeUtil {
         return ar;
     }
 
-    public static <T> T hydrateClass(Class<T> modelClass, JSONObject json)  {
+    public static <T> T hydrateClass(Class<T> modelClass, JSONObject json) {
         try {
             T model = CompositeUtil.getModel(modelClass, modelClass, new Class[]{});
             for (Method setter : getSetters(modelClass)) {
                 String name = setter.getName();
-                String attribute = name.substring(3,4).toLowerCase() + name.substring(4);
+                String attribute = name.substring(3, 4).toLowerCase() + name.substring(4);
                 Type param0 = setter.getGenericParameterTypes()[0];
-                java.lang.Object o = json.get(attribute);
-                if (JSONArray.class.isAssignableFrom(o.getClass())) {
-                    JSONArray array = (JSONArray)o;
-                    List values = new ArrayList();
-                    Type type = Object.class;
-                    if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
-                        type = ((ParameterizedType) param0).getActualTypeArguments()[0];
-                    }
-
-                    for (int i = 0; i < array.length(); i++) {
-                        Object element = array.get(i);
-                        System.out.println(element.getClass());
-                        if (JSONObject.class.isAssignableFrom(element.getClass())) {
-                            values.add(hydrateClass((Class)type, (JSONObject)element));
-                        } else {
-                            values.add(element);
+                if (json.has(attribute)) {
+                    java.lang.Object o = json.get(attribute);
+                    if (JSONArray.class.isAssignableFrom(o.getClass())) {
+                        JSONArray array = (JSONArray) o;
+                        List values = new ArrayList();
+                        Type type = Object.class;
+                        if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
+                            type = ((ParameterizedType) param0).getActualTypeArguments()[0];
                         }
-                    }
-                    setter.invoke(model, values);
-                } else if (JSONObject.class.isAssignableFrom(o.getClass())){
-                    setter.invoke(model, hydrateClass(param0.getClass(), (JSONObject) o));
-                } else {
 
-                    setter.invoke(model, o);
+                        for (int i = 0; i < array.length(); i++) {
+                            Object element = array.get(i);
+                            System.out.println(element.getClass());
+                            if (JSONObject.class.isAssignableFrom(element.getClass())) {
+                                values.add(hydrateClass((Class) type, (JSONObject) element));
+                            } else {
+                                values.add(element);
+                            }
+                        }
+                        setter.invoke(model, values);
+                    } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
+                        setter.invoke(model, hydrateClass(param0.getClass(), (JSONObject) o));
+                    } else {
+
+                        setter.invoke(model, o);
+                    }
                 }
             }
             return model;
