@@ -81,7 +81,7 @@ public class DomainXmlTransformer {
     private Logger _logger = Logger.getAnonymousLogger(
             "com.sun.logging.enterprise.system.container.ejb.LogStrings");
 
-    private static final String VIRTUAL_SERVER = "virtual-server";
+    private static final String VIRTUAL_SERVER = "virtual-server"; // should not skip
     private static final String NETWORK_LISTENERS = "network-listeners";
     private static final String IIOP_LISTENER = "iiop-listener";
     private static final String PROTOCOLS = "protocols";
@@ -101,8 +101,7 @@ public class DomainXmlTransformer {
     private static final String FALSE = "false";
     private static final String TRUE = "true";
 
-    private static final Set<String> SKIP_ELEMENTS = new HashSet(Arrays.asList(APPLICATION_REF, VIRTUAL_SERVER));
-    private static final Set<String> SKIP_ELEMENTS_KEEP_PORTS = new HashSet(Arrays.asList(APPLICATION_REF));
+    private static final Set<String> SKIP_ELEMENTS = new HashSet(Arrays.asList(APPLICATION_REF));
     private static final Set<String> EMPTY_ELEMENTS = new HashSet(Arrays.asList(NETWORK_LISTENERS, PROTOCOLS, APPLICATIONS, CLUSTERS));
     private static final Set<String> EMPTY_ELEMENTS_KEEP_PORTS = new HashSet(Arrays.asList(APPLICATIONS, CLUSTERS));
     private static final Set<String> SKIP_SETTINGS_ELEMENTS = new HashSet(Arrays.asList(IIOP_LISTENER));
@@ -133,7 +132,6 @@ public class DomainXmlTransformer {
                         XMLInputFactory.class.getClassLoader());
         
         Set<String> empty_elements = (keepPorts)? EMPTY_ELEMENTS_KEEP_PORTS : EMPTY_ELEMENTS;
-        Set<String> skip_elements = (keepPorts)? SKIP_ELEMENTS_KEEP_PORTS : SKIP_ELEMENTS;
         try {
             fis = new FileInputStream(in);
             out = File.createTempFile("domain", "xml");
@@ -154,7 +152,7 @@ public class DomainXmlTransformer {
                 XMLEvent event = parser.nextEvent();
                 if (event.isStartElement()) {
                     String name = event.asStartElement().getName().getLocalPart();
-                    if (skip_elements.contains(name)) {
+                    if (SKIP_ELEMENTS.contains(name)) {
                         if (_logger.isLoggable(Level.FINE)) {
                             _logger.fine("[DomainXmlTransformer] Skipping all of: " + name);
                         }
