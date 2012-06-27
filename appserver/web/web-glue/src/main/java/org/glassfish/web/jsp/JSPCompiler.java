@@ -113,9 +113,6 @@ public final class JSPCompiler {
         
         // START SJSAS 6311155
         String appName = wbd.getApplication().getName();
-        boolean delegate = true;
-        com.sun.enterprise.deployment.runtime.web.ClassLoader clBean =
-                wbd.getSunDescriptor().getClassLoader();
 
         // so far, this is not segragated per web bundle, all web-bundles will get the
         // same sysClassPath

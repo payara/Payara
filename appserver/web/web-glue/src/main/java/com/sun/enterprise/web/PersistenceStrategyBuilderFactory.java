@@ -128,7 +128,11 @@ public class PersistenceStrategyBuilderFactory {
      */    
 
     public String getApplicationId(Context ctx) {
-        return ((com.sun.enterprise.web.WebModule)ctx).getID();
+        if (ctx instanceof WebModule) {
+            return ((WebModule)ctx).getID();
+        } else {
+            return ctx.getName();
+        }
     }    
 
 }
