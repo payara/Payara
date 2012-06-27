@@ -93,6 +93,8 @@ public class AdminLoginModule implements LoginModule {
     private RestSessionManager restSessionManager;
     
     private SecureAdmin secureAdmin = null;
+    
+    private boolean isAuthenticated;
 
     private Subject subject;
     private CallbackHandler callbackHandler;
@@ -175,12 +177,16 @@ public class AdminLoginModule implements LoginModule {
         * Make sure this login module has some way of authenticating this user.  
         * Otherwise we don't need it to be invoked during commit or logout.
         */
-        boolean isAuthenticated = false;
+        isAuthenticated = false;
         for (AdminAuthenticator auth : authenticators) {
             isAuthenticated |= auth.identify(subjectToAssemble);
         }
 
         logger.log(PROGRESS_LEVEL, "login returning {0}", isAuthenticated);
+        
+        if ( ! isAuthenticated) {
+            throw new LoginException();
+        }
         return isAuthenticated;
     }
 
@@ -192,6 +198,9 @@ public class AdminLoginModule implements LoginModule {
 
     @Override
     public boolean commit() throws LoginException {
+        if ( ! isAuthenticated) {
+            return false;
+        }
         updateFromSubject(subject, subjectToAssemble);
         logger.log(PROGRESS_LEVEL, "commiting");
         final Level dumpLevel = Level.FINER;
@@ -214,7 +223,11 @@ public class AdminLoginModule implements LoginModule {
         return true;
     }
 
+    @Override
     public boolean abort() throws LoginException {
+        if ( ! isAuthenticated) {
+            return false;
+        }
         logger.log(PROGRESS_LEVEL, "aborting");
         removeAddedInfo();
         return true;
