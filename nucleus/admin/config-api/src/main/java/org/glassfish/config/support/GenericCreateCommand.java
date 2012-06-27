@@ -108,7 +108,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
     }
 
     @Override
-    public Collection<AccessCheck> getAccessChecks() {
+    public Collection<? extends AccessCheck> getAccessChecks() {
         final Collection<AccessCheck> checks = new ArrayList<AccessCheck>();
         checks.add(new AccessCheck(parentBean, (Class<? extends ConfigBeanProxy>) targetType, "create"));
         return checks;

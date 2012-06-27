@@ -40,10 +40,13 @@
 
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -74,12 +77,18 @@ import javax.inject.Inject;
         path="uptime", 
         description="Uptime")
 })
+//@AccessRequired(resource="domain", action="read")
 public class UptimeCommand implements AdminCommand {
 
+//    @AccessRequired.To("read")
     @Inject
     ServerEnvironmentImpl env;
     @Param(name = "milliseconds", optional = true, defaultValue = "false")
     Boolean milliseconds;
+    
+    @Inject
+//    @AccessRequired.NewChild(type=Application.class, action="test")
+    private Applications apps;
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();

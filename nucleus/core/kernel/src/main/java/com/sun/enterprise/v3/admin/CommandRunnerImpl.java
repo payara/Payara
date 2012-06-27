@@ -40,6 +40,7 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.CachedCommandModel;
+import com.sun.enterprise.admin.util.CommandSecurityChecker;
 import java.util.EnumSet;
 import java.util.Map;
 import javax.security.auth.Subject;

@@ -55,7 +55,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
  * <ul>
  * <li>
  * Use the {@code @AccessRequired} annotation at the class level to declare a resource 
- * name and action to be enforced; use {@code @AccessRequired.List to declare
+ * name and action to be enforced; use {@code @AccessRequired.List} to declare
  * more than one combination of resources and actions.
  * <li>
  * Use the {@code @AccessRequired.To} annotation on a field that is a ConfigBean
@@ -148,75 +148,239 @@ public @interface AccessRequired {
     /**
      * Represents an authorization check: a resource and an action to be 
      * authorized on that resource.
+     * <p>
+     * Note that the resource can be identified in one of several ways:
+     * <ul>
+     * <li>with the resource name
+     * <li>with a resource {@code ConfigBean}
+     * <li>with a {@code ConfigBean} parent and a child type
+     * </ul>
+     * <p>
+     * Secure admin submits each {@code AccessCheck} to the authorization service
+     * separately and records the result as {@link #isSuccessful} which can be
+     * retrieved by commands that prepare their own access checks.
+     * <p>
+     * A command which prepares its own access checks can also indicate if a
+     * failure of the access check should or should not be fatal to the overall
+     * authorization operation.  This is useful, for example, in attempting to list
+     * all accounts.  The command could prepare an {@code AccessCheck} for each
+     * account of interest, marking each as non-fatal.  Because secure admin
+     * records the success of each access check, the "list accounts" {@code execute}
+     * command can check each of its custom {@code AccessCheck}s and report
+     * on only those accounts whose access checks succeeded.
      */
     public class AccessCheck {
-        private final String resource;
+        private final String resourceName;
         private final String action;
         private final String note;
         private final Class<? extends ConfigBeanProxy> childType;
         private final ConfigBeanProxy parent;
+        private final ConfigBeanProxy resource;
+        private final boolean isFailureFatal;
+        private boolean isSuccessful = false;
 
         /**
          * Creates a new {@code AccessCheck}.
-         * @param resource the resource to be checked
+         * @param resourceName the resource to be checked
          * @param action the action on the resource
          * @param note descriptive note about the access check; used during logging
+         * @param isFailureFinal whether a failure of this access check should cause the entire authorization to fail
          */
-        public AccessCheck(final String resource, final String action, final String note) {
-            this.resource = resource;
+        public AccessCheck(final String resourceName, 
+                final String action, 
+                final String note, 
+                final boolean isFailureFinal) {
+            this.resourceName = resourceName;
             this.action = action;
             this.note = note;
             childType = null;
             parent = null;
+            this.isFailureFatal = isFailureFinal;
+            resource = null;
         }
         
         /**
-         * Creates a new {@code AccessCheck}
-         * @param resource the resource to be checked
+         * Creates a new {@code AccessCheck}.
+         * @param resourceName the name of the resource to be checked
          * @param action the action on the resource
+         * @param note descriptive note about the access check; used during logging
          */
-        public AccessCheck(final String resource, final String action) {
-            this(resource, action, "");
+        public AccessCheck(final String resourceName, final String action, final String note) {
+            this(resourceName, action, note, true /* isFailureFinal */);
         }
         
-        public AccessCheck(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType, final String action, final String note) {
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param resourceName the name of the resource to be checked
+         * @param action the action on the resource
+         * @param isFailureFinal whether a failure of this access check should force a failure of the entire authorization operation
+         */
+        public AccessCheck(final String resourceName, final String action, final boolean isFailureFinal) {
+            this(resourceName, action, "", isFailureFinal);
+        }
+        
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param resource the config bean that is the resource to check
+         * @param action the action on the resource
+         * @param isFailureFatal whether a failure of this access check should force a failure of the entire authorization operation
+         */
+        public AccessCheck(final ConfigBeanProxy resource,
+                final String action,
+                final boolean isFailureFatal) {
+            this.resourceName = null;
+            this.resource = resource;
+            this.action = action;
+            this.note = null;
+            childType = null;
+            parent = null;
+            this.isFailureFatal = isFailureFatal;
+        }
+        
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param resourceName the resource to be checked
+         * @param action the action on the resource
+         */
+        public AccessCheck(final String resourceName, final String action) {
+            this(resourceName, action, "", true /* isFailureFinal */);
+        }
+        
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param parent the config bean of the parent resource to which a child is to be added
+         * @param childType the type of the child to be added
+         * @param action the action on the resource (typically "create")
+         * @param note descriptive note about the access check; used during logging
+         * @param isFailureFinal whether a failure of this access check should force a failure of the entire authorization operation
+         */
+        public AccessCheck(final ConfigBeanProxy parent, 
+                final Class<? extends ConfigBeanProxy> childType, 
+                final String action, 
+                final String note,
+                final boolean isFailureFinal) {
             this.parent = parent;
             this.childType = childType;
             this.action = action;
             this.note = note;
-            this.resource = null;
+            this.resourceName = null;
+            this.isFailureFatal = isFailureFinal;
+            resource = null;
         }
         
-        public AccessCheck(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType, final String action) {
-            this(parent, childType, action, "");
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param parent the config bean of the parent resource to which a child is to be added
+         * @param childType the type of the child to be added
+         * @param action the action on the resource (typically "create")
+         * @param isFailureFinal whether a failure of this access check should force a failure of the entire authorization operation
+         */
+        public AccessCheck(final ConfigBeanProxy parent, 
+                final Class<? extends ConfigBeanProxy> childType, 
+                final String action,
+                final boolean isFailureFinal) {
+            this(parent, childType, action, "", isFailureFinal);
         }
         
-        public String resource() {
-            return resource;
+        /**
+         * Creates a new {@code AccessCheck}.
+         * @param parent the config bean of the parent resource to which a child is to be added
+         * @param childType the type of the child to be added
+         * @param action the action on the resource (typically "create")
+         */
+        public AccessCheck(final ConfigBeanProxy parent, 
+                final Class<? extends ConfigBeanProxy> childType, 
+                final String action) {
+            this(parent, childType, action, true);
         }
         
+        /**
+         * Returns the resource name, if any was set when the access check was created.
+         * @return 
+         */
+        public String resourceName() {
+            return resourceName;
+        }
+        
+        /**
+         * Returns the action for the access check.
+         * @return 
+         */
         public String action() {
             return action;
         }
         
+        /**
+         * Returns the type of the child to be added as part of a create-style
+         * operation, as set when the access check was created.
+         * @return 
+         */
         public Class<? extends ConfigBeanProxy> childType() {
             return childType;
         }
         
+        /**
+         * Returns the parent config bean to which a child was to be added.
+         * @return 
+         */
         public ConfigBeanProxy parent() {
             return parent;
         }
         
+        /**
+         * Returns the note associated with the access check.
+         * @return 
+         */
         public String note() {
             return note;
         }
         
+        /**
+         * Returns the config bean to be acted upon 
+         * @return 
+         */
+        public ConfigBeanProxy resource() {
+            return resource;
+        }
+        
+        /**
+         * Returns whether a failure of this access check would automatically
+         * trigger a failure of the entire authorization operation of which
+         * it is a part.
+         * @return 
+         */
+        public boolean isFailureFinal() {
+            return isFailureFatal;
+        }
+        
+        /**
+         * Invoked by secure admin to record the result of performing the 
+         * access check; <b>command developers should not typically use this
+         * method themselves.</b>
+         * @param passed 
+         */
+        public void setSuccessful(final boolean passed) {
+            isSuccessful = passed;
+        }
+        
+        /**
+         * Returns whether the access check succeeded.
+         * @return 
+         */
+        public boolean isSuccessful() {
+            return isSuccessful;
+        }
+        
+        /**
+         * Formats the access check as a human-friendly string.
+         * @return 
+         */
         @Override
         public String toString() {
             return (new StringBuilder("AccessCheck ")).
-                    append((resource != null) ? resource : parent.toString()).
-                    append((resource == null) ? "/" : "").
-                    append((resource == null) ? childType.getName() : "").
+                    append((resourceName != null) ? resourceName : parent.toString()).
+                    append((resourceName == null) ? "/" : "").
+                    append((resourceName == null) ? childType.getName() : "").
                     append("=").
                     append(action).
                     append("//").
@@ -235,12 +399,13 @@ public @interface AccessRequired {
      * admin should perform beyond what is triggered by the annotations.
      */
     public interface Authorizer {
-        Collection<AccessCheck> getAccessChecks();
+        Collection<? extends AccessCheck> getAccessChecks();
     }
     
     /**
      * Commands that need the AdminCommandContext before they can provide their
-     * own access checks implement this interface.
+     * own access checks implement this interface; <b>most commands will not need
+     * to use this.</b>
      * <p>
      * The admin command context is passed on the execute method, which the 
      * system invokes after it invokes {@link Authorizer#getAccessChecks}.  If

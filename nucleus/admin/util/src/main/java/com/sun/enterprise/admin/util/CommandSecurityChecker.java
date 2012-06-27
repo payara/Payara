@@ -37,14 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin;
+package com.sun.enterprise.admin.util;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.jvnet.hk2.annotations.Service;
@@ -57,7 +59,8 @@ import org.jvnet.hk2.config.Dom;
 /**
  * Utility class which checks if the Subject is allowed to execute the specified command.
  * <p>
- * The processing includes {@link AccessRequired}} annotations, and if the command
+ * The processing includes {@link AccessRequired}} annotations, CRUD commands, 
+ * {@code RestEndpoint} annotations, and if the command
  * class implements {@link AccessRequired.Authorizer} it also invokes the
  * corresponding {@code isAuthorized} method.  To succeed the overall authorization
  * all annotations must pass and the {@code isAuthorized} method must return true.
@@ -69,10 +72,18 @@ public class CommandSecurityChecker {
     
     @Inject
     private BaseServiceLocator locator;
+
+// TODO waiting for the correct config and Az implementation
+//    @Inject
+//    private AuthorizationService authService;
     
     
     private static final Map<RestEndpoint.OpType,String> optypeToAction = initOptypeMap();
     
+    /**
+     * Maps RestEndpoint HTTP methods to the corresponding security action.
+     * @return 
+     */
     private static EnumMap<RestEndpoint.OpType,String> initOptypeMap() {
         final EnumMap<RestEndpoint.OpType,String> result = new EnumMap(RestEndpoint.OpType.class);
         result.put(RestEndpoint.OpType.DELETE, "delete");
@@ -90,7 +101,7 @@ public class CommandSecurityChecker {
      */
     private final static class AuthService {
         private boolean isAuthorized(final Subject subject, 
-                final String resourceName,
+                final URI resourceURI,
                 final String action) {
             return true;
         }
@@ -110,13 +121,19 @@ public class CommandSecurityChecker {
             final AdminCommand command,
             final Object adminCommandContext) throws SecurityException {
         
-        final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         
         try {
             if (command instanceof AccessRequired.CommandContextDependent) {
                 ((AccessRequired.CommandContextDependent) command).setCommandContext(adminCommandContext);
             }
-            if ( ! checkAccessRequired(subject, env, command, failedAccessChecks)) {
+            if ( ! checkAccessRequired(subject, env, command, accessChecks)) {
+                final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
+                for (AccessCheck a : accessChecks) {
+                    if ( ! a.isSuccessful()) {
+                        failedAccessChecks.add(a);
+                    }
+                }
                 throw new SecurityException(failedAccessChecks.toString());
             }
         } catch (Exception ex) {
@@ -136,32 +153,27 @@ public class CommandSecurityChecker {
     private boolean checkAccessRequired(final Subject subject,
             final Map<String,Object> env,
             final AdminCommand command,
-            final List<AccessCheck> failedAccessChecks) 
+            final List<AccessCheck> accessChecks) 
                 throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         
         addChecksFromAuthorizer(subject, command, accessChecks);
-        final boolean isAnnotated = addChecksFromExplicitAccessRequiredAnnos(command, accessChecks);
-        /*
-         * If the developer explicitly specified @AccessRequired annos, don't
-         * try to process implied ReST ones.
-         */
-        if ( ! isAnnotated) {
-            addAccessChecksFromReSTEndpoints(command, accessChecks);
-        }
+        addChecksFromExplicitAccessRequiredAnnos(command, accessChecks);
+        addChecksFromReSTEndpoints(command, accessChecks);
+
         boolean result = true;
-        for (AccessCheck a : accessChecks) {
-            final boolean thisResult = authService.isAuthorized(subject, resourceNameFromAccessCheck(a), a.action());
-            if ( ! thisResult) {
-                failedAccessChecks.add(a);
-            }
-            result &= thisResult;
+        for (final AccessCheck a : accessChecks) {
+            a.setSuccessful(authService.isAuthorized(subject, resourceURIFromAccessCheck(a), a.action()));
+            result &= ( (! a.isFailureFinal()) || a.isSuccessful());
         }
         return result;
     }
     
+    private URI resourceURIFromAccessCheck(final AccessCheck c) {
+        return URI.create(resourceNameFromAccessCheck(c));
+    }
+    
     private String resourceNameFromAccessCheck(final AccessCheck c) {
-        String resourceName = c.resource();
+        String resourceName = c.resourceName();
         if (resourceName == null) {
             resourceName = resourceNameFromConfigBeanType(c.parent(), c.childType());
         }
@@ -312,7 +324,7 @@ public class CommandSecurityChecker {
         return resourceNameFromDom(dom) + "/" + dom.document.buildModel(childType).getTagName();
     }
     
-    private void addAccessChecksFromReSTEndpoints(final AdminCommand command, 
+    private void addChecksFromReSTEndpoints(final AdminCommand command, 
             final List<AccessCheck> accessChecks) {
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
             final Class<?> c = cIt.next();
