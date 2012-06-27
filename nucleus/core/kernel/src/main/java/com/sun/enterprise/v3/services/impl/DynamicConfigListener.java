@@ -167,7 +167,7 @@ public class DynamicConfigListener implements ConfigListener {
                     final Future future = grizzlyService.createNetworkProxy(listener);
                     if (future != null) {
                         future.get(RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                        grizzlyService.registerNetworkProxy();
+                        grizzlyService.registerContainerAdapters();
                     } else {
                         logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
                                 listener.getName());
@@ -190,20 +190,9 @@ public class DynamicConfigListener implements ConfigListener {
                         }
                         return null;
                     }
-                    // Restart GrizzlyProxy on the address/port
-                    // Address/port/id could have been changed - so try to find
-                    // corresponding proxy both ways
-                    if (!grizzlyService.removeNetworkProxy(listener)) {
-                        grizzlyService.removeNetworkProxy(listener.getName());
-                    }
-                    final Future future = grizzlyService.createNetworkProxy(listener);
-                    if (future != null) {
-                        future.get(30, TimeUnit.SECONDS);
-                        grizzlyService.registerNetworkProxy();
-                    } else {
-                        logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
-                                listener.getName());
-                    }
+                    
+                    // Restart the network listener
+                    grizzlyService.restartNetworkListener(listener, RECONFIG_LOCK_TIMEOUT_SEC, TimeUnit.SECONDS);
                 }
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Network listener configuration error. Type: " + type, e);
