@@ -298,7 +298,7 @@ public abstract class ContainerBase
     /**
      * Has this component been started?
      */
-    protected boolean started = false;
+    protected volatile boolean started = false;
 
     protected boolean initialized=false;
 
