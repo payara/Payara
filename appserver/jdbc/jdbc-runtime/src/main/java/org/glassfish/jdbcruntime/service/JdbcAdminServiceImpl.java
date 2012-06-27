@@ -88,14 +88,14 @@ public class JdbcAdminServiceImpl extends ConnectorService {
     private final static String DRIVER_PROPERTIES = "driver.properties";
     private final static String CONVAL_PROPERTIES = "validationclassnames.properties";
 
-    private static JdbcAdminServiceImpl jdbcAdminService;
+    private static JdbcAdminServiceImpl jdbcAdminService = new JdbcAdminServiceImpl();
 
     /**
      * Default constructor
      */
     public JdbcAdminServiceImpl() {
         super();
-        jdbcAdminService = this;
+        //jdbcAdminService = this;
         ccPoolAdmService = (ConnectorConnectionPoolAdminServiceImpl)
                 ConnectorAdminServicesFactory.getService(ConnectorConstants.CCP);
     }
