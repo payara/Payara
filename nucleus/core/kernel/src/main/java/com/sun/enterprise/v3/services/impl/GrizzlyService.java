@@ -285,6 +285,7 @@ public class GrizzlyService implements Startup, RequestDispatcher, PostConstruct
         if (future == null) {
             logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
                     networkListener.getName());
+            return;
         }
         
         try {
