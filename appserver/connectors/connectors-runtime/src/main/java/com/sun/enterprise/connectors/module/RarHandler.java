@@ -140,4 +140,25 @@ public class RarHandler extends AbstractArchiveHandler {
         ReadableArchive archive = context.getSource();
         return (archive != null && archive.getParentArchive() != null);
     }
+
+    /**
+     * Returns the classpath URIs for this archive.
+     *
+     * @param archive file
+     * @return classpath URIs for this archive
+     */
+    @Override
+    public List<URI> getClassPathURIs(ReadableArchive archive) {
+        List<URI> uris = super.getClassPathURIs(archive);
+        try {
+            File archiveFile = new File(archive.getURI());
+            if (archiveFile.exists() && archiveFile.isDirectory()) {
+                // add top level jars
+                uris.addAll(ASClassLoaderUtil.getLibDirectoryJarURIs(archiveFile));
+            }
+        } catch (Exception e) {
+            _logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        return uris;
+    }
 }
