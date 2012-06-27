@@ -135,7 +135,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
         if (targetIsMultiInstanceCluster && isInstanceRunning()) {
             runAggregate();
         }
-        
+
     }
 
     private boolean isInstanceRunning() {
@@ -156,7 +156,8 @@ public class MonitoringReporter extends V2DottedNameSupport {
 
     private void runAggregate() {
         List<String> list = getOutputLines();
-        setClusterInfo(list);
+        ActionReport aggregateReporter = reporter.addSubActionsReport();
+        setClusterInfo(aggregateReporter, list);
     }
 
     private List<String> getOutputLines() {
@@ -186,7 +187,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
         return list;
     }
 
-    private void setClusterInfo(List<String> list) {
+    private void setClusterInfo(ActionReport aggregateReporter, List<String> list) {
         List<HashMap> data = new ArrayList<HashMap>(targets.size());
         int i;
         for (i=0; i < targets.size();i++) {
@@ -233,7 +234,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
                 i++;
             }
         }
-        reporter.appendMessage("\nComputed Aggregate Data for " + i + " instances: "+ instanceListStr + " in cluster " + targetName + " :\n");
+        aggregateReporter.appendMessage("\nComputed Aggregate Data for " + i + " instances: "+ instanceListStr + " in cluster " + targetName + " :\n");
         boolean noData = true;
         HashMap<String, String> h = data.get(0);
         Iterator it = h.keySet().iterator();
@@ -264,18 +265,18 @@ public class MonitoringReporter extends V2DottedNameSupport {
                 max = values[values.length-1];
                 avg = (float)total/(float)data.size();
                 String descKey = s.substring(0, s.length()-5) + "description";
-                reporter.appendMessage(targetName + "." + s + "-total = " + total + "\n");
-                reporter.appendMessage(targetName + "." + s + "-avg = " + avg + "\n");
-                reporter.appendMessage(targetName + "." + s + "-max = " + max + "\n");
-                reporter.appendMessage(targetName + "." + s + "-min = " + min + "\n");
-                reporter.appendMessage(targetName + "." + descKey + " = " + clusterInfo.get(descKey) + "\n");
+                aggregateReporter.appendMessage(targetName + "." + s + "-total = " + total + "\n");
+                aggregateReporter.appendMessage(targetName + "." + s + "-avg = " + avg + "\n");
+                aggregateReporter.appendMessage(targetName + "." + s + "-max = " + max + "\n");
+                aggregateReporter.appendMessage(targetName + "." + s + "-min = " + min + "\n");
+                aggregateReporter.appendMessage(targetName + "." + descKey + " = " + clusterInfo.get(descKey) + "\n");
                 String lastSampleTimeKey = s.substring(0, s.length()-5) + "lastsampletime";
                 long sampletime = getLastSampleTime(clusterInfo, lastSampleTimeKey, data.size());
-                reporter.appendMessage(targetName + "." + lastSampleTimeKey + " = " + sampletime + "\n");
+                aggregateReporter.appendMessage(targetName + "." + lastSampleTimeKey + " = " + sampletime + "\n");
             }
         }
         if (noData) {
-            reporter.appendMessage("No aggregated cluster data to report\n");
+            aggregateReporter.appendMessage("No aggregated cluster data to report\n");
         }
     }
 
