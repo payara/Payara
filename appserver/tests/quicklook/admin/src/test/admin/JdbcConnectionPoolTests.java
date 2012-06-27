@@ -63,7 +63,7 @@ public class JdbcConnectionPoolTests extends BaseAsadminTest {
     @Parameters({"resources.xml.relative.path"})
     @BeforeClass
     public void setupEnvironment(String relative) {
-        String cwd = System.getProperty("user.dir");
+        String cwd = System.getProperty("BASEDIR");
         path = new File(cwd, relative);
     }
     @Test(groups={"pulse"}) // test method

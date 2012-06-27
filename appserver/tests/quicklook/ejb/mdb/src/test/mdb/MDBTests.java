@@ -40,6 +40,7 @@
 
 package test.mdb;
 
+import java.io.File;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 import org.testng.annotations.Parameters;
@@ -50,13 +51,14 @@ public class MDBTests {
     private boolean execReturn = false;
     private String APPCLIENT = System.getProperty("APPCLIENT");
     private String ASADMIN = System.getProperty("ASADMIN");
+    private String cwd = System.getProperty("BASEDIR");
     private String cmd;
     private String mdbApp= "ejb-ejb30-hello-mdbApp";
 
     @Parameters({ "BATCH_FILE1" })
     @Test
     public void createJMSRscTest(String batchFile1) throws Exception {
-        cmd = ASADMIN + " multimode --file " + batchFile1;
+        cmd = ASADMIN + " multimode --file " + cwd + File.separator + batchFile1;
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Create JMS resource failed ...");
     }
@@ -64,8 +66,8 @@ public class MDBTests {
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "createJMSRscTest" })
     public void deployJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = ASADMIN + " deploy  --retrieve=" + mdbAppDir
-                + " " + mdbAppDir + mdbApp + ".ear ";
+        cmd = ASADMIN + " deploy  --retrieve=" + cwd + File.separator + mdbAppDir
+                + " " + cwd + File.separator + mdbAppDir + mdbApp + ".ear ";
         //System.out.println("CMD = "+cmd);
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Deploy the mdb app failed ... ");
@@ -74,7 +76,7 @@ public class MDBTests {
     @Parameters({ "MDB_APP_DIR" })
     @Test(dependsOnMethods = { "deployJMSAppTest" })
     public void runJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = APPCLIENT+" -client "+mdbAppDir+mdbApp+"Client.jar ";
+        cmd = APPCLIENT+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar ";
 //           + "-name ejb-ejb30-hello-mdbClient " ;
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
@@ -91,7 +93,7 @@ public class MDBTests {
     @Parameters({ "BATCH_FILE2" })
     @Test (dependsOnMethods = { "undeployJMSAppTest" })
     public void deleteJMSRscTest(String batchFile2) throws Exception {
-        cmd = ASADMIN + " multimode --file " + batchFile2;
+        cmd = ASADMIN + " multimode --file " + cwd + File.separator + batchFile2;
         execReturn = RtExec.execute(cmd);
         Assert.assertEquals(execReturn, true, "Delete JMD Resource failed ...");
     }
