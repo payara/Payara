@@ -98,8 +98,6 @@ public class AdminLoginModule implements LoginModule {
 
     private Subject subject;
     private CallbackHandler callbackHandler;
-    private Map<String, ?> sharedState;
-    private Map<String, ?> options;
 
     private String authRealm = null;
 
@@ -142,8 +140,6 @@ public class AdminLoginModule implements LoginModule {
     
             this.subject = subject;
             this.callbackHandler = callbackHandler;
-            this.sharedState = sharedState;
-            this.options = options;
             authRealm = (String) options.get("auth-realm");
         }
 

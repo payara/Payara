@@ -83,7 +83,7 @@ public class CommandThreadPool implements Startup, PostConstruct {
     @Inject
     private Logger logger;
 
-    private ExecutorService svc;
+    private ExecutorService svc = null;
 
     public CommandThreadPool() {}
 
@@ -128,7 +128,8 @@ public class CommandThreadPool implements Startup, PostConstruct {
         return Startup.Lifecycle.SERVER;
     }
 
-    private class InstanceStateThreadFactory implements ThreadFactory {
+    private static class InstanceStateThreadFactory implements ThreadFactory {
+        @Override
         public Thread newThread(Runnable runnableObj) {
             Thread t = new Thread(runnableObj);
             t.setDaemon(true);

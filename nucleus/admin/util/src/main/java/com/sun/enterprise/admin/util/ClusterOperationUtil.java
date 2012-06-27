@@ -209,12 +209,13 @@ public class ClusterOperationUtil {
         long maxWaitTime = RemoteAdminCommand.getReadTimeout();
         long timeBeforeAsadminTimeout = maxWaitTime;
         long waitStart = System.currentTimeMillis();
-        for(String s : futures.keySet()) {
+        for(Map.Entry<String, Future<InstanceCommandResult>> fe : futures.entrySet()) {
+            String s = fe.getKey();
             ActionReport.ExitCode finalResult;
             try {
                 logger.fine(strings.getLocalString("dynamicreconfiguration.diagnostics.waitingonjob",
                         "Waiting for command {0} to be completed at instance {1}", commandName, s));
-                Future<InstanceCommandResult> aFuture = futures.get(s);
+                Future<InstanceCommandResult> aFuture = fe.getValue();
                 InstanceCommandResult aResult = aFuture.get(maxWaitTime, TimeUnit.MILLISECONDS);
                 long elapsedTime = System.currentTimeMillis() - waitStart;
                 timeBeforeAsadminTimeout -= elapsedTime;

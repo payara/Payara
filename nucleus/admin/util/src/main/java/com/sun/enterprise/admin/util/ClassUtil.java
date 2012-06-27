@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -70,12 +70,6 @@ public final class ClassUtil
 	ClassUtil( )
 	{
 		// disallow instantiation
-	}
-	
-		static private void
-	p( Object o )
-	{
-		System.out.println( o.toString() );
 	}
 	
 	/*
@@ -308,7 +302,7 @@ public final class ClassUtil
 			
 			if ( theClass == null )
 			{
-				theClass	= theClass.forName( classname );
+				theClass	= Class.forName( classname );
 			}
 		}
 		return( theClass );
@@ -334,7 +328,7 @@ public final class ClassUtil
 		@returns	the corresponding Object class or the original Class if not a primitive.
 	 */
 		public static Class
-	PrimitiveClassToObjectClass( final Class theClass )
+	primitiveClassToObjectClass( final Class theClass )
 	{
 		Class	result	= theClass;
 		
@@ -360,7 +354,7 @@ public final class ClassUtil
 		@returns	true if it's a primitive class, false otherwise.
 	 */
 		public static boolean
-	IsPrimitiveClass( final Class theClass )
+	isPrimitiveClass( final Class theClass )
 	{
 		boolean	isSimple	= false;
 		
@@ -381,7 +375,7 @@ public final class ClassUtil
 	
 	
 		public static String
-	PrimitiveLetterToClassName( final char primitive)
+	primitiveLetterToClassName( final char primitive)
 	{
 		String	result	= "" + primitive;
 		
@@ -395,7 +389,8 @@ public final class ClassUtil
 			case 'I':	result	= "int";	break;
 			case 'J':	result	= "long";	break;
 			case 'S':	result	= "short";	break;
-			case 'Z':	result	= "boolean";break;
+			case 'Z':	result	= "boolean";    break;
+                        default:        result  = "unknown";    break;
 		}
 		
 		return( result );
@@ -477,13 +472,16 @@ public final class ClassUtil
 					case 'J': 	result	= "long";	break;
 					case 'F': 	result	= "float";	break;
 					case 'D': 	result	= "double";	break;
+                                        default:        result  = "unknown";    break;
 				}
 			}
 			
-			for( int i = 0; i < depth; ++i )
+			StringBuilder resultBuf = new StringBuilder(result);
+                        for( int i = 0; i < depth; ++i )
 			{
-				result	= result + "[]";
+				resultBuf.append("[]");
 			}
+                        result = resultBuf.toString();
 		}
 		
 		if ( result.startsWith( javaLang ) )
@@ -524,7 +522,7 @@ public final class ClassUtil
 			else if ( name.length() == 1 )
 			{
 				// may be a primitive type
-				name	= PrimitiveLetterToClassName( name.charAt( 0 ) );
+				name	= primitiveLetterToClassName( name.charAt( 0 ) );
 			}
 		}
 		else
@@ -564,14 +562,14 @@ public final class ClassUtil
 
 
 		private static Object
-	InstantiateObject( final String theString )
+	instantiateObject( final String theString )
 		throws Exception
 	{
 		Object	result	= null;
 		
 		try
 		{
-			result	= InstantiateNumber( theString );
+			result	= instantiateNumber( theString );
 		}
 		catch( NumberFormatException e )
 		{
@@ -610,7 +608,7 @@ public final class ClassUtil
 	}
 	
 		public static Object
-	InstantiateObject( final Class theClass, final Object [] args )
+	instantiateObject( final Class theClass, final Object [] args )
 		throws Exception
 	{
 		final Class []		signature	= new Class [ args.length ];
@@ -679,7 +677,7 @@ public final class ClassUtil
 	
 	
 		public static Object
-	InstantiateObject( final Class theClass, final String theString )
+	instantiateObject( final Class theClass, final String theString )
 		throws Exception
 	{
 		final Class []		signature	= new Class [] { String.class };
@@ -715,25 +713,25 @@ public final class ClassUtil
 			Double			 if decimal point (for maximum precision)
 	 */
 		private static Object
-	InstantiateNumber( final String theString )
+	instantiateNumber( final String theString )
 		throws Exception
 	{
 		Object	result	= null;
 		
 		if ( theString.indexOf( '.' ) >= 0 )
 		{
-			result	= InstantiateObject( Double.class, theString );
+			result	= instantiateObject( Double.class, theString );
 		}
 		else
 		{
 			try
 			{
-				result	= InstantiateObject( Integer.class, theString );
+				result	= instantiateObject( Integer.class, theString );
 			}
 			catch( NumberFormatException e )
 			{
 				// perhaps it wouldn't fit; try it as a long
-				result	= InstantiateObject( Long.class, theString );
+				result	= instantiateObject( Long.class, theString );
 			}
 		}
 		return( result );
@@ -748,7 +746,7 @@ public final class ClassUtil
 		@param theString	the string to be supplied to the constructor
 	 */
 		public static Object
-	InstantiateFromString( final Class theClass, final String theString )
+	instantiateFromString( final Class theClass, final String theString )
 		throws Exception
 	{
 		Object result	= null;
@@ -757,12 +755,12 @@ public final class ClassUtil
 		if ( theClass == Object.class )
 		{
 			// special case, apply rules to create an object
-			result	= InstantiateObject( theString );
+			result	= instantiateObject( theString );
 		}
 		else if ( theClass == Number.class )
 		{
 			// special case, apply rules to create a number
-			result	= InstantiateNumber( theString );
+			result	= instantiateNumber( theString );
 		}
 		else if ( theClass == Character.class || theClass == char.class)
 		{
@@ -771,14 +769,14 @@ public final class ClassUtil
 				throw new IllegalArgumentException( "not a character: " + theString );
 			}
 			
-			result	= new Character( theString.charAt( 0 ) );
+			result	= Character.valueOf( theString.charAt( 0 ) );
 		}
 		else
 		{
 			
-			final Class			objectClass	= PrimitiveClassToObjectClass( theClass );
+			final Class			objectClass	= primitiveClassToObjectClass( theClass );
 			
-			result	= InstantiateObject( objectClass, theString );
+			result	= instantiateObject( objectClass, theString );
 		}
 		
 		return( result );
@@ -793,24 +791,24 @@ public final class ClassUtil
 		@param theClass		the class from which an instance should be instantiated
 	 */
 		public static Object
-	InstantiateDefault( final Class inClass )
+	instantiateDefault( final Class inClass )
 		throws Exception
 	{
 		Object result	= null;
 		
-		final Class			objectClass	= PrimitiveClassToObjectClass( inClass );
+		final Class			objectClass	= primitiveClassToObjectClass( inClass );
 		
 		if ( Number.class.isAssignableFrom( objectClass ) )
 		{
-			result	= InstantiateFromString( objectClass, "0" );
+			result	= instantiateFromString( objectClass, "0" );
 		}
 		else if ( objectClass == Boolean.class)
 		{
-			result	= new Boolean( "true" );
+			result	= Boolean.TRUE;
 		}
 		else if ( objectClass == Character.class)
 		{
-			result	= new Character( 'X' );
+			result	= Character.valueOf('X');
 		}
 		else if ( classIsArray( objectClass ) )
 		{
@@ -818,11 +816,11 @@ public final class ClassUtil
 		}
 		else if ( objectClass == Object.class )
 		{
-			result	= new String( "anyObject" );
+			result	= "anyObject";
 		}
 		else if ( objectClass == String.class )
 		{
-			result	= new String( "" );
+			result	= "";
 		}
 		else if ( objectClass == java.net.URL.class )
 		{
@@ -856,7 +854,7 @@ public final class ClassUtil
 	 final static int	sNumBaseTypes	= Array.getLength( sJavaLangTypes );
 	 
 		public static String
-	ExpandClassName( final String name )
+	expandClassName( final String name )
 	{
 		String	fullName	= name;
 		
