@@ -42,13 +42,18 @@ package com.sun.enterprise.admin.util;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.security.auth.Subject;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
@@ -68,12 +73,24 @@ import org.jvnet.hk2.config.Dom;
  * @author tjquinn
  */
 @Service
+@Singleton
 public class CommandSecurityChecker {
+    
+    @LoggerInfo(subsystem="ADMSEC", description="Admin security ")
+    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
+
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
+
+    static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, LOG_MESSAGES_RB);
+    
+    private static final Level PROGRESS_LEVEL = Level.FINE;
+    private static final String LINE_SEP = System.getProperty("line.separator");
     
     @Inject
     private BaseServiceLocator locator;
 
-// TODO waiting for the correct config and Az implementation
+// TODO waiting for the correct config and implementation
 //    @Inject
 //    private AuthorizationService authService;
     
@@ -120,7 +137,6 @@ public class CommandSecurityChecker {
             final Map<String,Object> env,
             final AdminCommand command,
             final Object adminCommandContext) throws SecurityException {
-        
         final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         
         try {
@@ -142,10 +158,18 @@ public class CommandSecurityChecker {
     }
     
     private boolean addChecksFromAuthorizer(final Subject subject, 
-            final AdminCommand command, final List<AccessCheck> accessChecks) {
+            final AdminCommand command, final List<AccessCheck> accessChecks,
+            final StringBuilder sb) {
         if (command instanceof AccessRequired.Authorizer) {
-            accessChecks.addAll(((AccessRequired.Authorizer) command).getAccessChecks());
-            return true;
+            final Collection<? extends AccessCheck> checks = ((AccessRequired.Authorizer) command).getAccessChecks();
+            accessChecks.addAll(checks);
+            if (sb != null && ! checks.isEmpty()) {
+                sb.append("  Class's getAccessChecks()").append(LINE_SEP);
+                for (AccessCheck a : checks) {
+                    sb.append("    ").append(a).append(LINE_SEP);
+                }
+            }
+            return ! checks.isEmpty();
         }
         return false;
     }
@@ -156,14 +180,23 @@ public class CommandSecurityChecker {
             final List<AccessCheck> accessChecks) 
                 throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         
-        addChecksFromAuthorizer(subject, command, accessChecks);
-        addChecksFromExplicitAccessRequiredAnnos(command, accessChecks);
-        addChecksFromReSTEndpoints(command, accessChecks);
+        final StringBuilder sb = (ADMSEC_LOGGER.isLoggable(PROGRESS_LEVEL) ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing...").append(LINE_SEP) : null);
+        
+        addChecksFromAuthorizer(subject, command, accessChecks, sb);
+        addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, sb);
+        addChecksFromReSTEndpoints(command, accessChecks, sb);
 
         boolean result = true;
         for (final AccessCheck a : accessChecks) {
             a.setSuccessful(authService.isAuthorized(subject, resourceURIFromAccessCheck(a), a.action()));
+            if (sb != null) {
+                sb.append("      isSuccessful -> ").append(a.isSuccessful()).append(LINE_SEP);
+            }
             result &= ( (! a.isFailureFinal()) || a.isSuccessful());
+        }
+        if (sb != null) {
+            sb.append(LINE_SEP).append("...final result: ").append(result).append(LINE_SEP);
+            ADMSEC_LOGGER.log(PROGRESS_LEVEL, sb.toString());
         }
         return result;
     }
@@ -175,30 +208,38 @@ public class CommandSecurityChecker {
     private String resourceNameFromAccessCheck(final AccessCheck c) {
         String resourceName = c.resourceName();
         if (resourceName == null) {
-            resourceName = resourceNameFromConfigBeanType(c.parent(), c.childType());
+            resourceName = AccessRequired.Util.resourceNameFromConfigBeanType(c.parent(), c.childType());
         }
         return resourceName;
     }
     
     private boolean addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,
-            final List<AccessCheck> accessChecks) 
+            final List<AccessCheck> accessChecks,
+            final StringBuilder sb) 
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         boolean isAnnotated = false;
+                
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
             final Class<?> c = cIt.next();
             final AccessRequired ar = c.getAnnotation(AccessRequired.class);
             if (ar != null) {
                 isAnnotated = true;
-                addAccessChecksFromAnno(ar, command, accessChecks);
+                if (sb != null) {
+                    sb.append("  @AccessRequired on").append(c.getName()).append(LINE_SEP);
+                }
+                addAccessChecksFromAnno(ar, command, accessChecks, sb);
             }
             final AccessRequired.List arList = c.getAnnotation(AccessRequired.List.class);
             if (arList != null) {
                 isAnnotated = true;
+                if (sb != null) {
+                    sb.append("  @AccessRequired on").append(c.getName()).append(LINE_SEP);
+                }
                 for (final AccessRequired repeatedAR : arList.value()) {
-                    addAccessChecksFromAnno(repeatedAR, command, accessChecks);
+                    addAccessChecksFromAnno(repeatedAR, command, accessChecks, sb);
                 }
             }
-            isAnnotated |= addAccessChecksFromFields(c, command, accessChecks);
+            isAnnotated |= addAccessChecksFromFields(c, command, accessChecks, sb);
             
         }
         return isAnnotated;
@@ -207,34 +248,53 @@ public class CommandSecurityChecker {
     private boolean addAccessChecksFromFields(
             final Class<?> c,
             final AdminCommand command,
-            final List<AccessCheck> accessChecks) throws IllegalArgumentException, IllegalAccessException {
+            final List<AccessCheck> accessChecks,
+            final StringBuilder sb) throws IllegalArgumentException, IllegalAccessException {
         boolean isAnnotatedOnFields = false;
         for (Field f : c.getDeclaredFields()) {
-            isAnnotatedOnFields |= addAccessChecksFromAnno(f, command, accessChecks);
+            isAnnotatedOnFields |= addAccessChecksFromAnno(f, command, accessChecks, sb);
         }
         return isAnnotatedOnFields;
     }
     
     private void addAccessChecksFromAnno(final AccessRequired ar, final AdminCommand command,
-            final List<AccessCheck> accessChecks) 
+            final List<AccessCheck> accessChecks, final StringBuilder sb) 
             throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         for (final String resource : ar.resource()) {
             final String translatedResource = processTokens(resource, command);
             for (final String action : ar.action()) {
-                accessChecks.add(new AccessCheck(translatedResource, action));
+                final AccessCheck a = new AccessCheck(translatedResource, action);
+                accessChecks.add(a);
+                if (sb != null) {
+                    sb.append("  @AccessRequired on class")
+                            .append(command.getClass().getName())
+                            .append(a)
+                            .append(LINE_SEP);
+                }
             }
         }
     }
     
     private boolean addAccessChecksFromAnno(final Field f, final AdminCommand command,
-            final List<AccessCheck> accessChecks) throws IllegalArgumentException, IllegalAccessException {
+            final List<AccessCheck> accessChecks, final StringBuilder sb) throws IllegalArgumentException, IllegalAccessException {
         boolean isAnnotated = false;
         final AccessRequired.To arTo = f.getAnnotation(AccessRequired.To.class);
         if (arTo != null) {
             isAnnotated = true;
             final String resourceNameForField = resourceNameFromField(f, command);
             for (final String access : arTo.value()) {
-                accessChecks.add(new AccessCheck(resourceNameForField, access));
+                final AccessCheck a = new AccessCheck(resourceNameForField, access);
+                accessChecks.add(a);
+                if (sb != null) {
+                    sb.append("  @AccessRequired.To on field ")
+                            .append(f.getDeclaringClass().getName())
+                            .append("#")
+                            .append(f.getName())
+                            .append(LINE_SEP)
+                            .append("    ")
+                            .append(a)
+                            .append(LINE_SEP);
+                }
             }
         }
         final AccessRequired.NewChild arNC = f.getAnnotation(AccessRequired.NewChild.class);
@@ -243,11 +303,22 @@ public class CommandSecurityChecker {
             String resourceNameForField = null;
             if (ConfigBeanProxy.class.isAssignableFrom(arNC.type())) {
                 isAnnotated = true;
-                resourceNameForField = resourceNameFromConfigBeanType(arNC.type());
+                resourceNameForField = resourceNameFromConfigBeanType(arNC.type(), locator);
             }
             if (resourceNameForField != null) {
                 for (final String action : arNC.action()) {
-                    accessChecks.add(new AccessCheck(resourceNameForField, action));
+                    final AccessCheck a = new AccessCheck(resourceNameForField, action);
+                    accessChecks.add(a);
+                    if (sb != null) {
+                        sb.append("  @AccessRequired.NewChild on field ")
+                                .append(f.getDeclaringClass().getName())
+                                .append("#")
+                                .append(f.getName())
+                                .append(LINE_SEP)
+                                .append("    ")
+                                .append(a)
+                                .append(LINE_SEP);
+                    }
                 }
             }
         }
@@ -287,62 +358,34 @@ public class CommandSecurityChecker {
             throws IllegalArgumentException, IllegalAccessException {
         f.setAccessible(true);
         if (ConfigBeanProxy.class.isAssignableFrom(f.getType())) {
-            return resourceNameFromConfigBeanProxy((ConfigBeanProxy) f.get(command));
+            return AccessRequired.Util.resourceNameFromConfigBeanProxy((ConfigBeanProxy) f.get(command));
         } else if (ConfigBean.class.isAssignableFrom(f.getType())) {
-            return resourceNameFromDom((ConfigBean) f.get(command));
+            return AccessRequired.Util.resourceNameFromDom((ConfigBean) f.get(command));
         }
         return f.get(command).toString();
     }
     
-    private String resourceNameFromConfigBeanProxy(ConfigBeanProxy b) {
-        return resourceNameFromDom(Dom.unwrap(b));
-    }
-        
-    private String resourceNameFromDom(Dom d) {
-        
-        final StringBuilder path = new StringBuilder();
-        while (d != null) {
-            if (path.length() > 0) {
-                path.insert(0, '/');
-            }
-            final ConfigModel m = d.model;
-            final String key = d.getKey();
-            final String pathSegment = m.getTagName() + (key == null ? "" : "/" + key);
-            path.insert(0, pathSegment);
-            d = d.parent();
-        }
-        return path.toString();
-    }
-    
-    private String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c) {
-        ConfigBeanProxy b = locator.getComponent(c);
-        return (b != null ? resourceNameFromConfigBeanProxy(b) : "?");
-    }
-    
-    private String resourceNameFromConfigBeanType(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType) {
-        final Dom dom = Dom.unwrap(parent);
-        return resourceNameFromDom(dom) + "/" + dom.document.buildModel(childType).getTagName();
-    }
-    
     private void addChecksFromReSTEndpoints(final AdminCommand command, 
-            final List<AccessCheck> accessChecks) {
+            final List<AccessCheck> accessChecks,
+            final StringBuilder sb) {
         for (ClassLineageIterator cIt = new ClassLineageIterator(command.getClass()); cIt.hasNext();) {
             final Class<?> c = cIt.next();
             final RestEndpoint restEndpoint;
             if ((restEndpoint = c.getAnnotation(RestEndpoint.class)) != null) {
-                addAccessChecksFromReSTEndpoint(restEndpoint, accessChecks);
+                addAccessChecksFromReSTEndpoint(restEndpoint, accessChecks, sb);
             }
             final RestEndpoints restEndpoints = c.getAnnotation(RestEndpoints.class);
             if (restEndpoints != null) {
                 for (RestEndpoint re : restEndpoints.value()) {
-                    addAccessChecksFromReSTEndpoint(re, accessChecks);
+                    addAccessChecksFromReSTEndpoint(re, accessChecks, sb);
                 }
             }
         }
     }
     
     private void addAccessChecksFromReSTEndpoint(
-            final RestEndpoint restEndpoint, final List<AccessCheck> accessChecks) {
+            final RestEndpoint restEndpoint, final List<AccessCheck> accessChecks,
+            final StringBuilder sb) {
         final String action = optypeToAction.get(restEndpoint.opType());
         /*
          * For the moment, if there is no RestParam then the config bean class given
@@ -352,14 +395,31 @@ public class CommandSecurityChecker {
          */
         String resource;
         if (restEndpoint.params().length == 0) {
-            resource = resourceNameFromConfigBeanType(restEndpoint.configBean());
+            resource = resourceNameFromConfigBeanType(restEndpoint.configBean(), locator);
         } else {
             // TODO need to do something with the endpoint params
-            resource = resourceNameFromConfigBeanType(restEndpoint.configBean());
+            resource = resourceNameFromConfigBeanType(restEndpoint.configBean(), locator);
         }
-        accessChecks.add(new AccessCheck(resource, action));
+        final AccessCheck a = new AccessCheck(resource, action);
+        accessChecks.add(a);
+        if (sb != null) {
+            sb.append("  From @RestEndpoint ")
+                    .append(restEndpoint.configBean().getName())
+                    .append(", op=")
+                    .append(restEndpoint.opType())
+                    .append(LINE_SEP)
+                    .append("    ")
+                    .append(a)
+                    .append(LINE_SEP);
+        }
     }
     
+    private static String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c, final BaseServiceLocator locator) {
+        ConfigBeanProxy b = locator.getComponent(c);
+        return (b != null ? AccessRequired.Util.resourceNameFromConfigBeanProxy(b) : "?");
+    }
+        
+        
     private String resourceKeyFromReSTEndpoint(final RestEndpoint restEndpoint) {
         for (RestParam p : restEndpoint.params()) {
 

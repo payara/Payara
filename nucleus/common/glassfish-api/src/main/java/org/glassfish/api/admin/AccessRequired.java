@@ -45,6 +45,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.Dom;
 
 /**
  * Allows command developers to declare what resources are affected by
@@ -175,6 +177,7 @@ public @interface AccessRequired {
         private final String note;
         private final Class<? extends ConfigBeanProxy> childType;
         private final ConfigBeanProxy parent;
+        private final String childName;
         private final ConfigBeanProxy resource;
         private final boolean isFailureFatal;
         private boolean isSuccessful = false;
@@ -197,6 +200,7 @@ public @interface AccessRequired {
             parent = null;
             this.isFailureFatal = isFailureFinal;
             resource = null;
+            childName = null;
         }
         
         /**
@@ -235,6 +239,7 @@ public @interface AccessRequired {
             childType = null;
             parent = null;
             this.isFailureFatal = isFailureFatal;
+            childName = null;
         }
         
         /**
@@ -259,6 +264,15 @@ public @interface AccessRequired {
                 final String action, 
                 final String note,
                 final boolean isFailureFinal) {
+            this(parent, childType, null /* childName */, action, note, isFailureFinal);
+        }
+        
+        public AccessCheck(final ConfigBeanProxy parent, 
+                final Class<? extends ConfigBeanProxy> childType, 
+                final String childName,
+                final String action, 
+                final String note,
+                final boolean isFailureFinal) {
             this.parent = parent;
             this.childType = childType;
             this.action = action;
@@ -266,6 +280,7 @@ public @interface AccessRequired {
             this.resourceName = null;
             this.isFailureFatal = isFailureFinal;
             resource = null;
+            this.childName = childName;
         }
         
         /**
@@ -295,10 +310,30 @@ public @interface AccessRequired {
         }
         
         /**
+         * Creates a new {@code AccessCheck} (typically for an existing target child)
+         * @param parent the parent of the config bean to be accessed
+         * @param childType the type of the child config bean
+         * @param childName the name of the child config bean
+         * @param action the action on the resource
+         */
+        public AccessCheck(final ConfigBeanProxy parent,
+                final Class<? extends ConfigBeanProxy> childType,
+                final String childName,
+                final String action) {
+            this(Util.resourceNameFromConfigBeanTypeAndName(parent, childType, childName), action);
+        }
+        /**
          * Returns the resource name, if any was set when the access check was created.
          * @return 
          */
         public String resourceName() {
+            if (parent != null) {
+                if (childName == null) {
+                    return Util.resourceNameFromConfigBeanType(parent, childType);
+                } else {
+                    return Util.resourceNameFromConfigBeanTypeAndName(parent, childType, childName);
+                }
+            }
             return resourceName;
         }
         
@@ -378,11 +413,13 @@ public @interface AccessRequired {
         @Override
         public String toString() {
             return (new StringBuilder("AccessCheck ")).
-                    append((resourceName != null) ? resourceName : parent.toString()).
-                    append((resourceName == null) ? "/" : "").
-                    append((resourceName == null) ? childType.getName() : "").
+                    append(resourceName()).
                     append("=").
                     append(action).
+                    append(", isSuccessful=").
+                    append(isSuccessful).
+                    append(", isFailureFatal=").
+                    append(isFailureFatal).
                     append("//").
                     append(note).
                     toString();
@@ -399,6 +436,15 @@ public @interface AccessRequired {
      * admin should perform beyond what is triggered by the annotations.
      */
     public interface Authorizer {
+        
+        /**
+         * Returns the {@code AccessCheck}s the command has computed at runtime 
+         * which should be included in the authorization, added to checks that 
+         * secure admin infers from the command's CRUD or RestEndpoint characteristics
+         * or {@code AccessRequired} annotations.
+         * 
+         * @return the {@code AccessCheck}s 
+         */
         Collection<? extends AccessCheck> getAccessChecks();
     }
     
@@ -416,5 +462,42 @@ public @interface AccessRequired {
      */
     public interface CommandContextDependent {
         void setCommandContext(Object adminCommandContext);
+    }
+    
+    /**
+     * Utility methods used both from AccessCheck and from CommandSecurityChecker.
+     */
+    public static class Util {
+        public static String resourceNameFromDom(Dom d) {
+        
+            final StringBuilder path = new StringBuilder();
+            while (d != null) {
+                if (path.length() > 0) {
+                    path.insert(0, '/');
+                }
+                final ConfigModel m = d.model;
+                final String key = d.getKey();
+                final String pathSegment = m.getTagName() + (key == null ? "" : "/" + key);
+                path.insert(0, pathSegment);
+                d = d.parent();
+            }
+            return path.toString();
+        }
+        
+        public static String resourceNameFromConfigBeanProxy(ConfigBeanProxy b) {
+            return resourceNameFromDom(Dom.unwrap(b));
+        }
+     
+        public static String resourceNameFromConfigBeanType(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType) {
+            final Dom dom = Dom.unwrap(parent);
+            return resourceNameFromDom(dom) + "/" + dom.document.buildModel(childType).getTagName();
+        }
+        
+        static String resourceNameFromConfigBeanTypeAndName(
+                final ConfigBeanProxy parent, 
+                final Class<? extends ConfigBeanProxy> childType,
+                final String childName) {
+            return resourceNameFromConfigBeanType(parent, childType) + (childName != null && ! childName.isEmpty() ? "/" + childName : "");
+        }
     }
 }

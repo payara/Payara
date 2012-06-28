@@ -68,12 +68,10 @@ public class TypeAndNameResolver implements CrudResolver {
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
         T proxy = habitat.getComponent(type, name);
-        if (proxy==null) {
-            String msg = localStrings.getLocalString(TypeAndNameResolver.class,
-                    "TypeAndNameResolver.target_object_not_found",
-                    "Cannot find a {0} with a name {1}", type.getSimpleName(), name);
-            throw new RuntimeException(msg);
-        }
         return proxy;
+    }
+    
+    public String name() {
+        return name;
     }
 }
