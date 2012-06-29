@@ -42,7 +42,7 @@ package org.glassfish.security.services.impl;
 import java.util.List;
 
 import org.glassfish.security.services.config.SecurityConfigurations;
-import org.glassfish.security.services.config.SecurityService;
+import org.glassfish.security.services.config.SecurityConfiguration;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -61,7 +61,7 @@ public class ServiceFactory {
 	 * 
 	 * @return null when no service configurations are found
 	 */
-	public static <T extends SecurityService> T getSecurityServiceConfiguration(Domain domain, Class<T> type) {
+	public static <T extends SecurityConfiguration> T getSecurityServiceConfiguration(Domain domain, Class<T> type) {
 		T config = null;
 
 		// Look for security service configurations

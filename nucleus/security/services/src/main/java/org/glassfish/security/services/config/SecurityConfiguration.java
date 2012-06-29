@@ -39,16 +39,16 @@
  */
 package org.glassfish.security.services.config;
 
-import java.beans.PropertyVetoException;
-import java.util.List;
-import javax.validation.constraints.NotNull;
-
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
+
+import javax.validation.constraints.NotNull;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
  * Base interface for all security service configurations.
@@ -58,7 +58,7 @@ import org.jvnet.hk2.config.Element;
  * present and an optional list of the specific security provider plugins. 
  */
 @Configured
-public interface SecurityService extends ConfigBeanProxy, Injectable {
+public interface SecurityConfiguration extends ConfigBeanProxy, Injectable {
     /**
      * Gets the name of the security service instance.
      */
@@ -90,8 +90,8 @@ public interface SecurityService extends ConfigBeanProxy, Injectable {
         /**
          * Gets a named security provider.
          */
-    	public static SecurityProvider getSecurityProviderByName(SecurityService service, String name) {
-            for (SecurityProvider config : service.getSecurityProviders()) {
+    	public static SecurityProvider getSecurityProviderByName(SecurityConfiguration securityServiceConfiguration, String name) {
+            for (SecurityProvider config : securityServiceConfiguration.getSecurityProviders()) {
                 if (config.getProviderName().equals(name)) {
                     return config;
                 }

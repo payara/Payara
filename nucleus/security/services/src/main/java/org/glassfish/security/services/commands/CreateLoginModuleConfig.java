@@ -43,6 +43,8 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 
 import javax.inject.Inject;
+
+import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -63,7 +65,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.security.services.config.LoginModuleConfig;
 import org.glassfish.security.services.config.SecurityConfigurations;
 import org.glassfish.security.services.config.SecurityProvider;
-import org.glassfish.security.services.config.SecurityService;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -113,15 +114,15 @@ public class CreateLoginModuleConfig implements AdminCommand {
         }
 
         // Get the security service
-        SecurityService service = secConfigs.getSecurityServiceByName(serviceName);
-        if (service == null) {
+        SecurityConfiguration securityServiceConfiguration = secConfigs.getSecurityServiceByName(serviceName);
+        if (securityServiceConfiguration == null) {
             report.setMessage("Unable to locate security service: " + serviceName);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
         // Get the security provider config
-        SecurityProvider provider = service.getSecurityProviderByName(providerName);
+        SecurityProvider provider = securityServiceConfiguration.getSecurityProviderByName(providerName);
         if (provider == null) {
             report.setMessage("Unable to locate security provider: " + providerName);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

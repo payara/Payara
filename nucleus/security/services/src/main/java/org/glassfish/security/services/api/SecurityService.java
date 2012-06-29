@@ -39,6 +39,8 @@
  */
 package org.glassfish.security.services.api;
 
+import org.glassfish.security.services.config.SecurityConfiguration;
+
 /**
  * Base interface used by all security services.
  */
@@ -46,5 +48,5 @@ public interface SecurityService {
     /**
      * Initialize the security service instance with the specific security service configuration.
      */
-    public void initialize(org.glassfish.security.services.config.SecurityService serviceConfiguration);
+    public void initialize(SecurityConfiguration securityServiceConfiguration);
 }

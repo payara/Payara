@@ -49,6 +49,8 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -106,8 +108,8 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	 * Create the JAAS Configuration using the specified LoginModule configurations
 	 */
 	@Override
-	public void initialize(org.glassfish.security.services.config.SecurityService serviceConfiguration) {
-        config = (org.glassfish.security.services.config.AuthenticationService) serviceConfiguration;
+	public void initialize(SecurityConfiguration securityServiceConfiguration) {
+        config = (org.glassfish.security.services.config.AuthenticationService) securityServiceConfiguration;
         if (config == null)
         	return;
 

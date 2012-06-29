@@ -53,27 +53,23 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
-import org.glassfish.security.services.api.authorization.AzEnvironment;
-import org.glassfish.security.services.api.authorization.AzObligations;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
+import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
 
 
 //import org.jvnet.hk2.annotations.Inject;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.PostConstruct;
-import org.glassfish.hk2.api.IterableProvider;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
 import org.glassfish.security.services.config.SecurityProvider;
-import org.glassfish.security.services.provider.authorization.AuthorizationProviderConfig;
 import org.glassfish.security.services.spi.AuthorizationProvider;
 
 
@@ -99,10 +95,10 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
     private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
     
     @Override
-    public void initialize(org.glassfish.security.services.config.SecurityService serviceConfiguration) {
+    public void initialize(SecurityConfiguration securityServiceConfiguration) {
                 
         //get service level config
-        atzSvCfg = (org.glassfish.security.services.config.AuthorizationService)serviceConfiguration;
+        atzSvCfg = (org.glassfish.security.services.config.AuthorizationService) securityServiceConfiguration;
 
         if (atzSvCfg == null) 
             throw new RuntimeException("The Authorization service is not configured in the domain configuration file");

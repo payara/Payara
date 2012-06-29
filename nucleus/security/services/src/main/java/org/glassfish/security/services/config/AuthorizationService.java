@@ -51,7 +51,7 @@ import org.jvnet.hk2.config.Element;
 import org.glassfish.security.services.provider.authorization.AuthorizationProviderConfig;
 
 @Configured
-public interface AuthorizationService extends SecurityService {
+public interface AuthorizationService extends SecurityConfiguration {
 
 
     /**

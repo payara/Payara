@@ -48,7 +48,7 @@ import org.jvnet.hk2.config.Configured;
  * The AuthenticationService Configuration
  */
 @Configured
-public interface AuthenticationService extends SecurityService {
+public interface AuthenticationService extends SecurityConfiguration {
     /**
      * Determines if the Authentication Service instance should use
      * a GlassFish AuthRealm PasswordCredential with the LoginModule(s).

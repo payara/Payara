@@ -43,6 +43,8 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 
 import javax.inject.Inject;
+
+import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -61,7 +63,6 @@ import org.glassfish.config.support.TargetType;
 
 import org.glassfish.security.services.config.AuthenticationService;
 import org.glassfish.security.services.config.SecurityConfigurations;
-import org.glassfish.security.services.config.SecurityService;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -91,8 +92,8 @@ public class CreateSecurityService implements AdminCommand {
     private Domain domain;
 
     // Service configuration type and handler
-    private Class<? extends SecurityService> clazzServiceType;
-    private ServiceConfigHandler<? extends SecurityService> serviceConfigHandler;
+    private Class<? extends SecurityConfiguration> clazzServiceType;
+    private ServiceConfigHandler<? extends SecurityConfiguration> serviceConfigHandler;
 
 	/**
 	 * Execute the create-security-service admin command.
@@ -134,12 +135,12 @@ public class CreateSecurityService implements AdminCommand {
 
         // Add service configuration to the security configurations
         // TODO - Add validation logic required for base service configuration
-        SecurityService config = null;
+        SecurityConfiguration config = null;
         try {
-            config = (SecurityService) ConfigSupport.apply(new SingleConfigCode<SecurityConfigurations>() {
+            config = (SecurityConfiguration) ConfigSupport.apply(new SingleConfigCode<SecurityConfigurations>() {
                 @Override
                 public Object run(SecurityConfigurations param) throws PropertyVetoException, TransactionFailure {
-                    SecurityService svcConfig = param.createChild(clazzServiceType);
+                    SecurityConfiguration svcConfig = param.createChild(clazzServiceType);
                     svcConfig.setName(serviceName);
                     svcConfig.setDefault(enableDefault);
                     param.getSecurityServices().add(svcConfig);
@@ -163,8 +164,8 @@ public class CreateSecurityService implements AdminCommand {
 	/**
 	 * Base class for service type configuration handling
 	 */
-	private abstract class ServiceConfigHandler<T extends SecurityService> {
-		abstract T setupConfiguration(ActionReport report, SecurityService serviceConfig);
+	private abstract class ServiceConfigHandler<T extends SecurityConfiguration> {
+		abstract T setupConfiguration(ActionReport report, SecurityConfiguration securityServiceConfig);
 	}
 
 	/**
@@ -172,9 +173,9 @@ public class CreateSecurityService implements AdminCommand {
 	 */
 	private class AuthenticationConfigHandler extends ServiceConfigHandler<AuthenticationService> {
 		@Override
-		public AuthenticationService setupConfiguration(ActionReport report, SecurityService serviceConfig) {
+		public AuthenticationService setupConfiguration(ActionReport report, SecurityConfiguration securityServiceConfig) {
 		    // TODO - Additional type checking needed?
-		    AuthenticationService config = (AuthenticationService) serviceConfig;
+		    AuthenticationService config = (AuthenticationService) securityServiceConfig;
 		    try {
 		        config = (AuthenticationService) ConfigSupport.apply(new SingleConfigCode<AuthenticationService>() {
 		            @Override
