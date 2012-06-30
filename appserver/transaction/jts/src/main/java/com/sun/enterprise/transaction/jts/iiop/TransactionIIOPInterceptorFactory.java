@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import com.sun.jts.pi.InterceptorImpl;
 import com.sun.jts.jta.TransactionServiceProperties;
 import com.sun.jts.CosTransactions.Configuration;
+import com.sun.jts.CosTransactions.DefaultTransactionService;
 
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -66,7 +67,6 @@ import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import com.sun.corba.ee.spi.costransactions.TransactionService;
 import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.legacy.interceptor.ORBInitInfoExt;
 import com.sun.corba.ee.spi.logging.POASystemException;
@@ -82,8 +82,6 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     // The log message bundle is in com.sun.jts package
     private static Logger _logger =
             LogDomains.getLogger(InterceptorImpl.class, LogDomains.TRANSACTION_LOGGER);
-
-    private static String jtsClassName = "com.sun.jts.CosTransactions.DefaultTransactionService";
 
     private static Properties jtsProperties = new Properties();
     private static TSIdentificationImpl tsIdent = new TSIdentificationImpl();
@@ -142,38 +140,26 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
             // standalone clients.
             interceptor.setOrb(theORB);
             try {
-                Class theJTSClass = Class.forName(jtsClassName);
+                DefaultTransactionService jts = new DefaultTransactionService();
+                jts.identify_ORB(theORB, tsIdent, jtsProperties ) ;
+                interceptor.setTSIdentification(tsIdent);
 
-                if (theJTSClass != null) {
-                        try {
-                        TransactionService jts = (TransactionService)theJTSClass.newInstance();
-                        jts.identify_ORB(theORB, tsIdent, jtsProperties ) ;
-                        interceptor.setTSIdentification(tsIdent);
+                // V2-XXX should jts.get_current() be called everytime
+                // resolve_initial_references is called ??
+                org.omg.CosTransactions.Current transactionCurrent = jts.get_current();
 
-                        // V2-XXX should jts.get_current() be called everytime
-                        // resolve_initial_references is called ??
-                        org.omg.CosTransactions.Current transactionCurrent =
-                                jts.get_current();
+                theORB.getLocalResolver().register( ORBConstants.TRANSACTION_CURRENT_NAME,
+                        NullaryFunction.Factory.makeConstant(
+                        (org.omg.CORBA.Object)transactionCurrent));
 
-                        theORB.getLocalResolver().register( ORBConstants.TRANSACTION_CURRENT_NAME,
-                            NullaryFunction.Factory.makeConstant(
-                                (org.omg.CORBA.Object)transactionCurrent));
-
-                        // the JTS PI use this to call the proprietary hooks
-                        theORB.getLocalResolver().register( "TSIdentification", 
-                            NullaryFunction.Factory.makeConstant(
-                                (org.omg.CORBA.Object)tsIdent));
-                        txServiceInitialized = true;
-                    } catch (Exception ex) {
-                        throw new INITIALIZE("JTS Exception: " + ex,
-                                POASystemException.JTS_INIT_ERROR,
-                                CompletionStatus.COMPLETED_MAYBE);
-                    }
-                }
-            } catch (ClassNotFoundException cnfe) {
-                _logger.log(Level.SEVERE,"iiop.inittransactionservice_exception",cnfe);
+                // the JTS PI use this to call the proprietary hooks
+                theORB.getLocalResolver().register( "TSIdentification", 
+                        NullaryFunction.Factory.makeConstant((org.omg.CORBA.Object)tsIdent));
+                txServiceInitialized = true;
+            } catch (Exception ex) {
+                throw new INITIALIZE("JTS Exception: " + ex,
+                        POASystemException.JTS_INIT_ERROR, CompletionStatus.COMPLETED_MAYBE);
             }
-
 
             // Add IOR Interceptor only for OTS tagged components
             TxIORInterceptor iorInterceptor = new TxIORInterceptor(codec, habitat);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,7 +77,6 @@ import org.omg.CosNaming.NamingContextPackage.*;
 import org.omg.PortableServer.*;
 import org.omg.CORBA.LocalObject;
 
-import com.sun.corba.ee.spi.costransactions.TransactionService;
 import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 
 import com.sun.jts.codegen.otsidl.*;
@@ -97,6 +96,7 @@ import com.sun.jts.utils.LogFormatter;
  * @version 0.01
  *
  * @author Simon Holdsworth, IBM Corporation
+ * @author mvatkina
  *
  * @see
 */
@@ -106,8 +106,7 @@ import com.sun.jts.utils.LogFormatter;
 //   0.01  SAJH   Initial implementation.
 //-----------------------------------------------------------------------------
 
-public class DefaultTransactionService implements TransactionService,
-    ProxyChecker {
+public class DefaultTransactionService implements ProxyChecker {
     private static CurrentImpl currentInstance = null;
     private static TransactionFactoryImpl factoryInstance = null;
     //private static AdministrationImpl adminInstance = null;
