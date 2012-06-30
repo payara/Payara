@@ -751,6 +751,8 @@ public class StandardContext
 
     protected boolean showArchivedRealPathEnabled = true;
 
+    protected int servletReloadCheckSecs = 1;
+
     // ----------------------------------------------------- Context Properties
 
     public String getEncodedPath() {

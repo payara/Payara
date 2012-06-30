@@ -147,6 +147,8 @@ public class WebBundleDescriptor extends BundleDescriptor
 
     private boolean showArchivedRealPathEnabled = true;
 
+    private int servletReloadCheckSecs = 1;
+
     // conflict resolution checking
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
@@ -1917,6 +1919,14 @@ public class WebBundleDescriptor extends BundleDescriptor
 
     public void setShowArchivedRealPathEnabled(boolean enabled) {
         showArchivedRealPathEnabled = enabled;
+    }
+
+    public int getServletReloadCheckSecs() {
+        return servletReloadCheckSecs;
+    }
+
+    public void setServletReloadCheckSecs(int secs) {
+        servletReloadCheckSecs = secs;
     }
 
     /**
