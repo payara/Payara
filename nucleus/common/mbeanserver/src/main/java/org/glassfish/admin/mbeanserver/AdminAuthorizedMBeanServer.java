@@ -101,32 +101,27 @@ public class AdminAuthorizedMBeanServer {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            final String connectionId = JMXRMIConnectionContext.getConnectionId();
             if (isAllowed(method, args)) {
                 return method.invoke(mBeanServer, args);
             } else {
                 final String format = mLogger.getResourceBundle().getString(JMX_NOACCESS);
                 final String objNameString = objectNameString(args);
-                final String operationImpact = impactToString(operationImpact(method, args));
-                final String msg = MessageFormat.format(format, operationName(method, args),
+                final String operationImpact = impactToString(operationImpact(args));
+                final String msg = MessageFormat.format(format, operationName(args),
                         objNameString, AdminAccessController.Access.READONLY, operationImpact);
                 mLogger.log(Level.FINE, 
                         "Disallowing access to {0} operation {1} because the impact is declared as {2}", 
                         new Object[]{
                             objNameString, 
-                            operationName(method, args), 
+                            operationName(args), 
                             operationImpact}
                         );
                 throw new AccessControlException(msg);
             }
         }
         
-        private String operationName(final Method method, final Object[] args) {
-            if (method.getName().equals("invoke")) {
-                return ((objectNameString(args) == null) || (args.length < 2) || (args[1] == null) ? "null" : (String) args[1]);
-            } else {
-                return method.getName();
-            }
+        private String operationName(final Object[] args) {
+            return ((objectNameString(args) == null) || (args.length < 2) || (args[1] == null) ? "null" : (String) args[1]);
         }
         
         private String objectNameString(Object[] args) {
@@ -167,27 +162,11 @@ public class AdminAuthorizedMBeanServer {
                 return false;
             }
             
-            return ( ! method.getName().equals("invoke") 
-                       || (operationImpact(method, args) == MBeanOperationInfo.INFO));
+            return ( ! method.getName().equals("invoke"))
+                    || (operationImpact(args) == MBeanOperationInfo.INFO);
         }
         
-        private int operationImpact(final Method method, final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
-            if (RESTRICTED_METHOD_NAMES.contains(method.getName())) {
-                return MBeanOperationInfo.ACTION;
-            }
-            if (method.getName().equals("invoke")) {
-                return operationImpactOfInvoke(args);
-            } else {
-                /*
-                 * We've checked for setAttribute(s) and invoke already.  We
-                 * are OK with any other operation.
-                 */
-                return MBeanOperationInfo.INFO;
-            }
-        }
-        
-        private int operationImpactOfInvoke(final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
-            
+        private int operationImpact(final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
             final ObjectName objectName = (ObjectName) args[0];
             final String operationName = (String) args[1];
             final String[] signature = (String[]) args[3];
