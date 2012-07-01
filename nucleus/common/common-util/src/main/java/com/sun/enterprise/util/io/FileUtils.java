@@ -1193,6 +1193,56 @@ public class FileUtils {
     }
 
     /**
+     * Read in the given resourceName as a resource, and convert to a String
+     *
+     * @param resourceName
+     * @return the contents of the resource as a String or null if absent
+     */
+    public static String resourceToString(String resourceName) {
+        byte[] bytes = resourceToBytes(resourceName);
+
+        return bytes == null ? null : new String(bytes);
+    }
+
+    /**
+     * Read in the given resourceName as a resource, and convert to a byte array
+     *
+     * @param resourceName
+     * @return the contents of the resource as a byte array or null if absent
+     */
+    public static byte[] resourceToBytes(String resourceName) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        InputStream is = cl.getResourceAsStream(resourceName);
+
+        if (is == null)
+            return null;
+
+        try {
+            is = new BufferedInputStream(is);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int n;
+
+            while ((n = is.read(buffer)) != -1) {
+                baos.write(buffer, 0, n);
+            }
+            is.close();
+            return baos.toByteArray();
+        }
+        catch (Exception e) {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (Exception ex) {
+                    // ignore...
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
      * Represents a unit of work that should be retried, if needed, until it
      * succeeds or the configured retry limit is reached.
      * <p/>

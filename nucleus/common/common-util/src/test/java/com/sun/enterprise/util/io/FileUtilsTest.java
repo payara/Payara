@@ -41,6 +41,7 @@ package com.sun.enterprise.util.io;
 
 import com.sun.enterprise.universal.io.SmartFile;
 import java.io.File;
+import java.util.Arrays;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -93,5 +94,42 @@ public class FileUtilsTest {
         assertEquals(shouldBeSameAsChild, sanitizedChild);
     }
 
+    @Test
+    public void testResourceToString() {
+        String resname = "simplestring.txt";
+        String contents = "Simple String Here!";
+        String fetched = FileUtils.resourceToString(resname);
+        assertEquals(contents, fetched);
+    }
+    @Test
+    public void testEmptyButExistingResourceToString() {
+        String resname = "empty.txt";
+        String fetched = FileUtils.resourceToString(resname);
+        assertNotNull(fetched);
+        assertTrue(fetched.length() == 0);
+    }
 
+    @Test
+    public void testNonExistingResourceToString() {
+        String resname = "doesnotexist.txt";
+        String fetched = FileUtils.resourceToString(resname);
+        assertNull(fetched);
+    }
+    @Test
+    public void testNonExistingResourceToBytes() {
+        String resname = "doesnotexist.txt";
+        byte[] fetched = FileUtils.resourceToBytes(resname);
+        // null -- not an empty array!
+        assertNull(fetched);
+    }
+    @Test
+    public void testResourceToBytes() {
+        String resname = "verysimplestring.txt";
+        byte[] fetched = FileUtils.resourceToBytes(resname);
+
+        assertEquals(fetched[0], 65);
+        assertEquals(fetched[1], 66);
+        assertEquals(fetched[2], 67);
+        assertEquals(fetched.length, 3);
+    }
 }
