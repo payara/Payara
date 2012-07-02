@@ -99,7 +99,6 @@ public class RestCommandAdapter extends RestAdapter {
         //Parameters
         r.add(ParameterMapFormReader.class);
         r.add(JsonParameterMapProvider.class);
-        PayloadPartProvider inst = new PayloadPartProvider();
         r.add(PayloadPartProvider.class);
 //        //Debuging filters
 //        r.add(LoggingFilter.class);
