@@ -54,6 +54,7 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.deployment.versioning.VersioningUtils;
 
 /**
  * Writes a client JAR file, if one is needed, suitable for downloading.
@@ -77,7 +78,7 @@ public class ClientJarWriter {
     
     public ClientJarWriter(final ExtendedDeploymentContext deploymentContext) {
         this.deploymentContext = deploymentContext;
-        name = deploymentContext.getCommandParameters(DeployCommandParameters.class).name();
+        name = VersioningUtils.getUntaggedName(deploymentContext.getCommandParameters(DeployCommandParameters.class).name());
         logger = deploymentContext.getLogger();
     }
     
