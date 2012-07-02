@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
@@ -60,12 +59,15 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import org.glassfish.hk2.scopes.PerLookup;
+import org.jvnet.hk2.annotations.Scoped;
 import org.xml.sax.SAXParseException;
 
 /**
  * Extension Archivist for webservices.
  */
 @Service
+@Scoped(PerLookup.class)
 @ExtensionsArchivistFor("webservices")
 public class WebServicesArchivist extends ExtensionsArchivist {
 
