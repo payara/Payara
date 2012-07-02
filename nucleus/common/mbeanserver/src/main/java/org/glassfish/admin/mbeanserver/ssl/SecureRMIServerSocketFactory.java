@@ -70,9 +70,11 @@ public class SecureRMIServerSocketFactory
     private final BaseServiceLocator habitat;
     private final Ssl ssl;
     // The list of cipher suite
-    private volatile String[] enabledCipherSuites = null;
+    private String[] enabledCipherSuites;
+    private volatile Object enabledCipherSuitesLock;
     //the list of protocols
-    private volatile String[] enabledProtocols = null;
+    private String[] enabledProtocols;
+    private volatile Object enabledProtocolsLock;
     private final Object cipherSuitesSync = new Object();
     private final Object protocolsSync = new Object();
     private Map socketMap = new HashMap<Integer, Socket>();
@@ -162,9 +164,10 @@ public class SecureRMIServerSocketFactory
     private void configureSSLSocket(SSLServerSocket sslSocket,
             SSLConfigurator sslConfigHolder) {
         if (sslConfigHolder.getEnabledCipherSuites() != null) {
-            if (enabledCipherSuites == null) {
+            if (enabledCipherSuitesLock == null) {
                 synchronized (cipherSuitesSync) {
-                    if (enabledCipherSuites == null) {
+                    if (enabledCipherSuitesLock == null) {
+                        enabledCipherSuitesLock = new Object();
                         enabledCipherSuites = configureEnabledCiphers(sslSocket,
                                 sslConfigHolder.getEnabledCipherSuites());
                     }
@@ -175,9 +178,10 @@ public class SecureRMIServerSocketFactory
         }
 
         if (sslConfigHolder.getEnabledProtocols() != null) {
-            if (enabledProtocols == null) {
+            if (enabledProtocolsLock == null) {
                 synchronized (protocolsSync) {
-                    if (enabledProtocols == null) {
+                    if (enabledProtocolsLock == null) {
+                        enabledProtocolsLock = new Object();
                         enabledProtocols = configureEnabledProtocols(sslSocket,
                                 sslConfigHolder.getEnabledProtocols());
                     }
