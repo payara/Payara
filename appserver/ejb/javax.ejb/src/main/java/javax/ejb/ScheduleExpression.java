@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -245,6 +245,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the second attribute.
+     * @param s the attribute value as a <code>String</code>
      */
     public ScheduleExpression second(String s) {
         second_ = s; 
@@ -253,6 +254,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the second attribute.
+     * @param s the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression second(int s) {
         second_ = s + "";
@@ -270,6 +273,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the minute attribute.
+     * @param m the attribute value as a <code>String</code>
      */
     public ScheduleExpression minute(String m) {
         minute_ = m;
@@ -278,6 +282,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the minute attribute.
+     * @param m the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression minute(int m) {
         minute_ = m + "";
@@ -295,6 +301,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the hour attribute.
+     * @param h the attribute value as a <code>String</code>
      */
     public ScheduleExpression hour(String h) {
         hour_ = h;
@@ -303,6 +310,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the hour attribute.
+     * @param h the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression hour(int h) {
         hour_ = h + "";
@@ -320,6 +329,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the day of the month attribute.
+     * @param d the attribute value as a <code>String</code>
      */
     public ScheduleExpression dayOfMonth(String d) {
         dayOfMonth_ = d;
@@ -328,6 +338,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the day of the month attribute.
+     * @param d the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression dayOfMonth(int d) {
         dayOfMonth_ = d + "";
@@ -345,6 +357,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the month attribute.
+     * @param m the attribute value as a <code>String</code>
      */
     public ScheduleExpression month(String m) {
         month_ = m;
@@ -353,6 +366,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the month attribute.
+     * @param m the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression month(int m) {
         month_ = m + "";
@@ -370,6 +385,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the day of the week attribute.
+     * @param d the attribute value as a <code>String</code>
      */
     public ScheduleExpression dayOfWeek(String d) {
         dayOfWeek_ = d;
@@ -378,6 +394,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the day of the week attribute.
+     * @param d the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression dayOfWeek(int d) {
         dayOfWeek_ = d + "";
@@ -395,6 +413,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the year attribute.
+     * @param y the attribute value as a <code>String</code>
      */
     public ScheduleExpression year(String y) {
         year_ = y;
@@ -403,6 +422,8 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the year attribute.
+     * @param y the attribute value as an <code>int</code>, if the value 
+     * is a simple integer value
      */
     public ScheduleExpression year(int y) {
         year_ = y + "";
@@ -420,6 +441,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the timezone.
+     * @param timezoneID the Time zone specified as an ID String
      */
     public ScheduleExpression timezone(String timezoneID) {
         timezoneID_ = timezoneID;
@@ -437,6 +459,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the start date.
+     * @param s the start date 
      */
     public ScheduleExpression start(Date s) {
         start_ = (s == null) ? null : new Date(s.getTime());
@@ -455,6 +478,7 @@ public class ScheduleExpression implements Serializable {
 
     /**
      * Set the end date.
+     * @param e the end date 
      */
     public ScheduleExpression end(Date e) {
         end_ = (e == null) ? null : new Date(e.getTime());
