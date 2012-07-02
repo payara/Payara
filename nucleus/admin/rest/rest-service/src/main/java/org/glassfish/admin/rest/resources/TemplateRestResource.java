@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.resources;
 
+import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -307,10 +308,46 @@ public class TemplateRestResource {
         this.tagName = tagName;
         entity = parent.nodeElement(tagName);
         if (entity == null) {
+            // In some cases, the tagName requested is not found in the DOM tree.  This is true,
+            // for example, for the various ZeroConf elements (e.g., transaction-service).  If
+            // the zero conf element is not in domain.xml, then it won't be in the Dom tree
+            // returned by HK2.  If that's the case, we can use ZeroConfigUtils.getOwningObject()
+            // to find the ConfigBean matching the path requested, which will add the node to
+            // the Dom tree. Once that's done, we can return that node and proceed as normal
+            ConfigBeanProxy cbp = ZeroConfigUtils.getOwningObject(buildPath(parent) + "/" + tagName, habitat);
+            if (cbp != null) {
+                entity = Dom.unwrap(cbp);
+                childModel = entity.model;
+            }
             //throw new WebApplicationException(new Exception("Trying to create an entity using generic create"),Response.Status.INTERNAL_SERVER_ERROR);
         } else {
             childModel = entity.model;
         }
+    }
+
+    /**
+     * This method will build the path string as needed by ZeroConfigUtils.getOwningObject().
+     * There is a mismatch between what the method expects and the way the REST URIs are constructed.
+     * For example, for the transaction-service element, the REST URI, stripped of the HTTP and
+     * server context information, looks like this:
+     * /domain/configs/config/server-config/transaction-service.  The format expected by the
+     * getOwningObject(), however, looks like this:
+     * domain/configs/server-config/transaction-service. In the REST URIs, if there is a collection of
+     * Named items, the type of the collection is inserted into the URI ("config" here) followed by
+     * the name of the particular instance ("server-config").  In building the path, we must identify
+     * Named instances and insert the name of the instance rather than the type.  We apply this logic
+     * as we recurse up to the top of the Dom tree to finish building the path desired.
+     * @param node
+     * @return
+     */
+    private String buildPath (Dom node) {
+        final Dom parentNode = node.parent();
+        String part = node.model.getTagName();
+        String name = node.attribute("name");
+        if (name != null) {
+            part = name;
+        }
+        return (parentNode != null) ? (buildPath(parentNode) + "/" + part) : part;
     }
 
     /**
