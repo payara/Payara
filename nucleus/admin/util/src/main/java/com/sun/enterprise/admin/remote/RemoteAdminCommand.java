@@ -55,7 +55,6 @@ import org.glassfish.api.admin.CommandModel.ParamModel;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.GFBase64Encoder;
-import com.sun.enterprise.admin.util.CommandModelData;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.util.AuthenticationInfo;
 import com.sun.enterprise.admin.util.CachedCommandModel;
@@ -98,6 +97,11 @@ import org.xml.sax.SAXException;
  * Any files returned by the command will be stored in the current
  * directory.  The setFileOutputDirectory method can be used to control
  * where returned files are saved.
+ * 
+ * <p>
+ * <b>This implementation is now in retention period. All content was migrated
+ * to RemoteRestAdminCommand. This implementation will be removed just after
+ * all necessary changes and tests will be done.</b>
  */
 public class RemoteAdminCommand {
 
@@ -157,12 +161,14 @@ public class RemoteAdminCommand {
      */
     static {
         String rt = System.getProperty(READ_TIMEOUT);
-        if (rt == null)
+        if (rt == null) {
             rt = System.getenv(READ_TIMEOUT);
-        if (rt != null)
+        }
+        if (rt != null) {
             defaultReadTimeout = Integer.parseInt(rt);
-        else
+        } else {
             defaultReadTimeout = 10 * 60 * 1000;       // 10 minutes
+        }
     }
 
     /**
@@ -262,9 +268,10 @@ public class RemoteAdminCommand {
      * won't allow any URL spoofing attacks.
      */
     private void checkName() throws CommandException {
-        if (!name.matches(COMMAND_NAME_REGEXP))
+        if (!name.matches(COMMAND_NAME_REGEXP)) {
             throw new CommandException("Illegal command name: " + name);
-            // XXX - I18N
+            //todo: XXX - I18N
+        }
     }
 
     /**
@@ -460,17 +467,19 @@ public class RemoteAdminCommand {
                     addFileOption(uriString, paramName, paramValue);
                 } else if (opt.getParam().password()) {
                     addPasswordOption(uriString, paramName, paramValue);
-                } else
+                } else {
                     addStringOption(uriString, paramName, paramValue);
+                }
             }
 
             // add operands
             for (String operand : operands) {
                 if (operandParam.getType() == File.class ||
-                        operandParam.getType() == File[].class)
+                        operandParam.getType() == File[].class) {
                     addFileOption(uriString, "DEFAULT", operand);
-                else
+                } else {
                     addStringOption(uriString, "DEFAULT", operand);
+                }
             }
 
             // remove the last character, whether it was "?" or "&"
@@ -630,8 +639,7 @@ public class RemoteAdminCommand {
      */
     private void doHttpCommand(String uriString, String httpMethod,
             HttpCommand cmd, boolean isForMetadata) throws CommandException {
-        HttpURLConnection urlConnection = null;
-
+        HttpURLConnection urlConnection;
         /*
          * There are various reasons we might retry the command - an authentication
          * challenges from the DAS, shifting from an insecure connection to
@@ -1247,18 +1255,18 @@ public class RemoteAdminCommand {
             }
         } else {
             this.commandModelFromCache = false;
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
+            }
             //if (!omitCache) {
                 try {
                     AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
                 } catch (Exception ex) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        logger.log(Level.WARNING, "Can not put data to cache under key {0}", createCommandCacheKey());
+                        logger.log(Level.WARNING, strings.get("CantPutToCache", createCommandCacheKey()));
                     }
                 }
             //}
-            if (logger.isLoggable(Level.FINEST)) {
-                logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
-            }
         }
     }
     

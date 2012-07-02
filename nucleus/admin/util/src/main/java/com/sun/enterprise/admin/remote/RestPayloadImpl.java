@@ -38,17 +38,22 @@
  * holder.
  */
 
-package org.glassfish.admin.rest.shareable;
+package com.sun.enterprise.admin.remote;
 
+import com.sun.enterprise.admin.remote.reader.ActionReportJsonReader;
+import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.glassfish.admin.payload.PayloadImpl;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.jersey.media.multipart.*;
@@ -93,16 +98,21 @@ public class RestPayloadImpl extends PayloadImpl {
             throw new UnsupportedOperationException("Not supported for RestPauloadImpl.");
         }
         
-        public MultiPart addToMultipart(MultiPart mp) {
+        public MultiPart addToMultipart(MultiPart mp, Logger logger) {
             if (mp == null) {
                 if (client2Server) {
+                    logger.finest("addToMultipart: Creating FormDataMultiPart for result");
                     mp = new FormDataMultiPart();
                 } else {
+                    logger.finest("addToMultipart: Creating MultiPart [mixed] for result");
                     mp = new MultiPart();
                 }
             }
             ArrayList<Payload.Part> parts = getParts();
+            logger.finest("addToMultipart: parts.size = " + parts.size());
+            int index = 0;
             for (Payload.Part part : parts) {
+                index++;
                 String contentType = part.getContentType();
                 MediaType mt = new MediaType();
                 if (contentType != null && !contentType.isEmpty()) {
@@ -114,15 +124,27 @@ public class RestPayloadImpl extends PayloadImpl {
                     }
                 }
                 BodyPart bp;
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.log(Level.FINEST, "addToMultipart[{0}]: name: {1}, type: {2}", new Object[]{index, part.getName(), mt});
+                }
                 if (client2Server) {
                     bp = new FormDataBodyPart(part.getName(), part, mt);
                 } else {
                     bp = new BodyPart(part, mt);
-                    bp.setContentDisposition(ContentDisposition.type("file").fileName(part.getName()).build());
+                    ContentDisposition cd = ContentDisposition.type("file").fileName(part.getName()).build();
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "addToMultipart[{0}]: Content Disposition: {1}", new Object[]{index, cd});
+                    }
+                    bp.setContentDisposition(cd);
                 }
                 Properties props = part.getProperties();
-                for (String key : props.stringPropertyNames()) {
-                    bp.getHeaders().add(addContentPrefix(key), props.getProperty(key));
+                for (Map.Entry<Object, Object> entry : props.entrySet()) {
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.log(Level.FINEST, "addToMultipart[{0}]: Header: {1}: {2}", 
+                                new Object[]{index, addContentPrefix((String) entry.getKey()), entry.getValue()});
+                    }
+                    bp.getHeaders().add(addContentPrefix((String) entry.getKey()), 
+                            props.getProperty((String) entry.getValue()));
                 }
                 mp.bodyPart(bp);
             }
@@ -133,14 +155,14 @@ public class RestPayloadImpl extends PayloadImpl {
             if (key == null) {
                 return null;
             }
-            String lKey = key.toLowerCase();
+            String lKey = key.toLowerCase(Locale.ENGLISH);
             //todo: JDK7: convert to String switch-case
             if ("content-disposition".equals(lKey) ||
                     "content-type".equals(lKey) ||
                     "content-transfer-encoding".equals(lKey)) {
                 return key;
             } else {
-                return key.substring("content-".length());
+                return "Content-" + key;
             }
         }
         
@@ -150,7 +172,7 @@ public class RestPayloadImpl extends PayloadImpl {
         
         private List<Payload.Part> parts = new ArrayList<Payload.Part>();
         
-        private Inbound() {
+        public Inbound() {
         }
         
         private void add(BodyPart bodyPart, String name) throws WebApplicationException {
@@ -194,12 +216,19 @@ public class RestPayloadImpl extends PayloadImpl {
             return result;
         }
         
-        public static Inbound parseFromFormDataMultipart(MultiPart mp) throws WebApplicationException {
-            Inbound result = new Inbound();
-            if (mp == null) {
-                return result;
+        public static ActionReport fillFromMultipart(MultiPart mp, Inbound inb, Logger logger) throws WebApplicationException {
+            if (logger == null) {
+                logger = LogDomains.getLogger(RestPayloadImpl.class, LogDomains.ADMIN_LOGGER);
             }
+            if (mp == null) {
+                return null;
+            }
+            if (inb == null) {
+                inb = new Inbound();
+            }
+            ActionReport result = null;
             List<BodyPart> bodyParts = mp.getBodyParts();
+            int index = 0;
             for (BodyPart bodyPart : bodyParts) {
                 String name = "noname";
                 ContentDisposition cd = bodyPart.getContentDisposition();
@@ -208,7 +237,28 @@ public class RestPayloadImpl extends PayloadImpl {
                         name = cd.getFileName();
                     }
                 }
-                result.add(bodyPart, name);
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "--------- BODY PART [{0}] ---------", index);
+                    MultivaluedMap<String, String> headers = bodyPart.getHeaders();
+                    for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                        for (String value : entry.getValue()) {
+                            logger.log(Level.FINER, "{0}: {1}", new Object[]{entry.getKey(), value});
+                        }
+                    }
+                }
+                if (bodyPart.getMediaType().isCompatible(new MediaType("actionreport", "json"))) {
+                    if (logger.isLoggable(Level.FINER)) {
+                        String body = bodyPart.getEntityAs(String.class);
+                        logger.log(Level.FINER, body);
+                    }
+                    result = bodyPart.getEntityAs(ActionReport.class);
+                } else {
+                    logger.log(Level.FINER, "   <<Content>>");
+                    inb.add(bodyPart, name);
+                }
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.log(Level.FINER, "------- END BODY PART [{0}] -------", index);
+                }
             }
             return result;
         }
@@ -217,7 +267,7 @@ public class RestPayloadImpl extends PayloadImpl {
             if (key == null) {
                 return null;
             }
-            String lKey = key.toLowerCase();
+            String lKey = key.toLowerCase(Locale.ENGLISH);
             //todo: JDK7: convert to String switch-case
             if ("content-disposition".equals(lKey) ||
                     "content-type".equals(lKey) ||

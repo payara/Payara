@@ -66,6 +66,7 @@ import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 
 import com.sun.logging.LogDomains;
 
@@ -208,9 +209,17 @@ public abstract class CLICommand implements PostConstruct {
 
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
-        return new RemoteCommand(name,
-            habitat.getComponent(ProgramOptions.class),
-            habitat.getComponent(Environment.class));
+        Environment environment = habitat.getComponent(Environment.class);
+        if (environment != null && environment.getBooleanOption("USE_REST")) {
+            logger.finest("AS_ADMIN_USE_REST environment variable is on.");
+            return new RemoteCLICommand(name,
+                habitat.getComponent(ProgramOptions.class),
+                environment);
+        } else {
+            return new RemoteCommand(name,
+                habitat.getComponent(ProgramOptions.class),
+                environment);
+        }
     }
 
     /**
@@ -792,8 +801,9 @@ public abstract class CLICommand implements PostConstruct {
     protected boolean checkHelp() throws CommandException {
         if (programOpts.isHelp()) {
             BufferedReader br = getManPage();
-            if (br == null)
+            if (br == null) {
                 throw new CommandException(strings.get("ManpageMissing", name));
+            }
             br = expandManPage(br);
             String line;
             try {
@@ -829,7 +839,7 @@ public abstract class CLICommand implements PostConstruct {
          * don't have the CommandModel yet.)
          * Remote commands are checked on the server.
          */
-        if (!(this instanceof RemoteCommand)) {
+        if (!(this instanceof RemoteCommand) && !(this instanceof RemoteCLICommand)) {
             Scoped scoped = this.getClass().getAnnotation(Scoped.class);
             if (scoped == null) {
                 throw new CommandException(strings.get("NoScope", name));

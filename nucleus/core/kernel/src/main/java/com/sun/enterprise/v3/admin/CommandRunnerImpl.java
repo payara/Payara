@@ -639,7 +639,7 @@ public class CommandRunnerImpl implements CommandRunner {
     }
     
     @Override
-    public BufferedReader getHelp(CommandModel model) {
+    public BufferedReader getHelp(CommandModel model) throws CommandNotFoundException {
         BufferedReader manPage = getManPage(model.getCommandName(), model);
         if (manPage != null) {
             return manPage;

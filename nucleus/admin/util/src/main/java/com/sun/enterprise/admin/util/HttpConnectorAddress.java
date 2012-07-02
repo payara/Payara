@@ -309,7 +309,7 @@ public final class HttpConnectorAddress {
         return new GFBase64Encoder().encode(clearString.getBytes());
     }
 
-    private static class BasicHostnameVerifier implements HostnameVerifier {
+    public static class BasicHostnameVerifier implements HostnameVerifier {
         private final String host;
         public BasicHostnameVerifier(String host) {
             if (host == null)

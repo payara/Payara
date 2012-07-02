@@ -41,27 +41,14 @@ package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.util.StringUtils;
 import com.sun.logging.LogDomains;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
-import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.RestService;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
-import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 
 /** Marshals {@code CommandModel} into XML and JSON representation.
  *
@@ -69,13 +56,10 @@ import org.jvnet.hk2.config.IndentingXMLStreamWriter;
  */
 @Provider
 @Produces({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MediaType.APPLICATION_JSON, "application/x-javascript"})
-public class CommandModelStaxProvider extends BaseProvider<CommandModel> {
+public class CommandModelStaxProvider extends AbstractStaxProvider<CommandModel> {
     
-    private static final XMLOutputFactory XML_FACTORY = XMLOutputFactory.newInstance();
-    private static final MappedNamespaceConvention JSON_CONVENTION = new MappedNamespaceConvention();
-    
-    public final static Logger logger =
-            LogDomains.getLogger(RestService.class, LogDomains.ADMIN_LOGGER);
+    protected static final Logger logger =
+            LogDomains.getLogger(CommandModelStaxProvider.class, LogDomains.ADMIN_LOGGER);
     
     public CommandModelStaxProvider() {
         super(CommandModel.class, MediaType.APPLICATION_XML_TYPE, 
@@ -83,23 +67,7 @@ public class CommandModelStaxProvider extends BaseProvider<CommandModel> {
     }
     
     @Override
-    protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
-        return desiredType.isAssignableFrom(type);
-    }
-    
-    private static XMLStreamWriter getXmlWriter(OutputStream os, boolean indent) throws XMLStreamException {
-        XMLStreamWriter wr = XML_FACTORY.createXMLStreamWriter(os, Constants.ENCODING);
-        if (indent) {
-            wr = new IndentingXMLStreamWriter(wr);
-        }
-        return wr;
-    }
-
-    private static XMLStreamWriter getJsonWriter(OutputStream os) throws UnsupportedEncodingException {
-        return new MappedXMLStreamWriter(JSON_CONVENTION, new OutputStreamWriter(os, Constants.ENCODING));
-    }
-    
-    private static void writeContentToStream(CommandModel proxy, XMLStreamWriter wr) throws XMLStreamException {
+    protected void writeContentToStream(CommandModel proxy, XMLStreamWriter wr) throws XMLStreamException {
         if (proxy == null) {
             return;
         }
@@ -121,6 +89,12 @@ public class CommandModelStaxProvider extends BaseProvider<CommandModel> {
             wr.writeStartElement("option");
             wr.writeAttribute("name", p.getName());
             wr.writeAttribute("type", CommandModelHtmlProvider.simplifiedTypeOf(p));
+            if (par.primary()) {
+                wr.writeAttribute("primary", "true");
+            }
+            if (par.multiple()) {
+                wr.writeAttribute("multiple", "true");
+            }
             if (par.optional()) {
                 wr.writeAttribute("optional", "true");
             }
@@ -153,53 +127,4 @@ public class CommandModelStaxProvider extends BaseProvider<CommandModel> {
         wr.writeEndDocument();
     }
 
-    @Override
-    public String getContent(CommandModel proxy) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            writeContentToStream(proxy, getXmlWriter(baos, super.getFormattingIndentLevel() > -1));
-            return baos.toString(Constants.ENCODING);
-        } catch (XMLStreamException se) {
-            //todo: JDK7 - Connect both catches
-            logger.log(Level.SEVERE, "Cannot marshal CommandModel", se);
-            return "";
-        } catch (UnsupportedEncodingException uee) {
-            logger.log(Level.SEVERE, "Cannot marshal CommandModel", uee);
-            return "";
-        }
-    }
-    
-    /** Faster with direct stream writing
-     */
-    @Override
-    public void writeTo(CommandModel proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-            MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        try {
-            String writeBefore = null;
-            String writeAfter = null;
-            XMLStreamWriter writer;
-            if (mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
-                String callBackJSONP = getCallBackJSONP();
-                if (callBackJSONP != null) {
-                    writeBefore = callBackJSONP + "(";
-                    writeAfter = ")";
-                }
-                writer = getJsonWriter(entityStream);
-            } else {
-                writer = getXmlWriter(entityStream, super.getFormattingIndentLevel() > -1);
-            }
-            //Write it
-            if (writeBefore != null) {
-                entityStream.write(writeBefore.getBytes(Constants.ENCODING));
-            }
-            writeContentToStream(proxy, writer);
-            if (writeAfter != null) {
-                entityStream.write(writeAfter.getBytes(Constants.ENCODING));
-            }
-        } catch (XMLStreamException uee) {
-            logger.log(Level.SEVERE, "Cannot marshal CommandModel", uee);
-            throw new WebApplicationException(uee, Response.Status.INTERNAL_SERVER_ERROR);
-        }
-    }
-    
 }

@@ -55,13 +55,10 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import javax.security.auth.login.LoginException;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PostConstruct;
 
@@ -74,14 +71,12 @@ import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;

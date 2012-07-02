@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.provider;
+package com.sun.enterprise.admin.remote.writer;
 
 import java.io.IOException;
 import java.io.OutputStream;

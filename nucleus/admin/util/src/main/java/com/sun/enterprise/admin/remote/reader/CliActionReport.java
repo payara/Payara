@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,39 +38,35 @@
  * holder.
  */
 
-package com.sun.enterprise.v3.common;
+package com.sun.enterprise.admin.remote.reader;
 
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.ActionReport;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import org.glassfish.api.ActionReport;
 
 /**
- * Superclass for common ActionReport extension.
+ * Temporary implementation. Copy of AcctionReporter. It is here until 
+ * ActionReport refactoring will be complete. 
  *
- * @author Jerome Dochez
+ * @author mmares
  */
-public abstract class ActionReporter extends ActionReport {
+//TODO: Remove when ActionReport refactoring will be done
+public class CliActionReport extends ActionReport {
 
+    private static final String EOL = System.getProperty("line.separator");
+    
     protected Throwable exception = null;
     protected String actionDescription = null;
-    protected List<ActionReporter> subActions = new ArrayList<ActionReporter>();
+    protected List<CliActionReport> subActions = new ArrayList<CliActionReport>();
     protected ExitCode exitCode = ExitCode.SUCCESS;
     protected MessagePart topMessage = new MessagePart();
-    protected String contentType = "text/html";
-
-    protected static final String EOL_MARKER = "%%%EOL%%%";
 
     /** Creates a new instance of HTMLActionReporter */
-    public ActionReporter() {
+    public CliActionReport() {
     }
 
     public void setFailure() {
@@ -122,20 +118,13 @@ public abstract class ActionReporter extends ActionReport {
 
     @Override
     public ActionReport addSubActionsReport() {
-        ActionReporter subAction;
-        try {
-            subAction = this.getClass().newInstance();
-        } catch (IllegalAccessException ex) {
-            return null;
-        } catch (InstantiationException ex) {
-            return null;
-        }
+        CliActionReport subAction = new CliActionReport();
         subActions.add(subAction);
         return subAction;
     }
 
     @Override
-    public List<ActionReporter> getSubActionsReport() {
+    public List<CliActionReport> getSubActionsReport() {
         return subActions;
     }
 
@@ -192,65 +181,36 @@ public abstract class ActionReporter extends ActionReport {
         in.close();
     }
     
-    /**
-     * Returns the content type to be used in sending the response back to 
-     * the client/caller.
-     * <p>
-     * This is the default type.  Specific subclasses of ActionReporter might
-     * override the method to return a different valid type.
-     * @return content type to be used in formatting the command response to the client
-     */
     @Override
     public String getContentType() {
-        return contentType;
+        throw new UnsupportedOperationException();
     }
     @Override
     public void setContentType(String s) {
-        contentType = s;
+        throw new UnsupportedOperationException();
     }
 
-    /** Returns combined messages. Meant mainly for long running
-     *  operations where some of the intermediate steps can go wrong, although
-     *  overall operation succeeds. Does nothing if either of the arguments are null.
-     *  The traversal visits the message of current reporter first. The various
-     *  parts of the message are separated by EOL_MARKERs. 
-     * <p>
-     * Note: This method is a recursive implementation.
-     * @param aReport a given (usually top-level) ActionReporter instance
-     * @param sb StringBuilder instance that contains all the messages  
-     */
-    protected void getCombinedMessages(ActionReporter aReport, StringBuilder sb) {
-        if (aReport == null || sb == null)
-            return;
-        String mainMsg = ""; //this is the message related to the topMessage
-        String failMsg; //this is the message related to failure cause
-        // Other code in the server may write something like report.setMessage(exception.getMessage())
-        // and also set report.setFailureCause(exception). We need to avoid the duplicate message.
-        if (aReport.getMessage() != null && aReport.getMessage().length() != 0) {
-            mainMsg = aReport.getMessage();
-            String format = "{0}";
-            if (ActionReport.ExitCode.WARNING.equals(aReport.getActionExitCode())) {
-                LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActionReporter.class);
-                format = localStrings.getLocalString("flag.message.as.warning", "Warning: {0}");
-            }
-            if (ActionReport.ExitCode.FAILURE.equals(aReport.getActionExitCode())) {
-                LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActionReporter.class);
-                format = localStrings.getLocalString("flag.message.as.failure", "Failure: {0}");
-            }
-            if (sb.length() > 0) sb.append(EOL_MARKER);
-            sb.append(MessageFormat.format(format,mainMsg));
-        }
-        if (aReport.getFailureCause() != null && aReport.getFailureCause().getMessage() != null && aReport.getFailureCause().getMessage().length() != 0) {
-            failMsg = aReport.getFailureCause().getMessage();
-            if (!failMsg.equals(mainMsg)) {
-                if (sb.length() > 0) sb.append(EOL_MARKER);
-                sb.append(failMsg);
-            }
-        }
-        for (ActionReporter sub : aReport.subActions) {
-            getCombinedMessages(sub, sb);
-        }
-    }
+//    public static void getCombinedMessages(CliActionReport aReport, StringBuilder sb) {
+//        if (aReport == null || sb == null)
+//            return;
+//        String mainMsg = ""; //this is the message related to the topMessage
+//        String failMsg; //this is the message related to failure cause
+//        // Other code in the server may write something like report.setMessage(exception.getMessage())
+//        // and also set report.setFailureCause(exception). We need to avoid the duplicate message.
+//        if (aReport.getMessage() != null && aReport.getMessage().length() != 0) {
+//            if (sb.length() > 0) sb.append(EOL);
+//            sb.append(aReport.getMessage());
+//        }
+//        if (aReport.getFailureCause() != null && aReport.getFailureCause().getMessage() != null && aReport.getFailureCause().getMessage().length() != 0) {
+//            failMsg = aReport.getFailureCause().getMessage();
+//            if (!failMsg.equals(mainMsg))
+//                if (sb.length() > 0) sb.append(EOL);
+//                sb.append(failMsg);
+//        }
+//        for (CliActionReport sub : aReport.subActions) {
+//            getCombinedMessages(sub, sb);
+//        }
+//    }
 
     @Override
     public boolean hasSuccesses() {
@@ -267,14 +227,14 @@ public abstract class ActionReporter extends ActionReport {
         return has(this,ExitCode.FAILURE);
     }
 
-    private static boolean has(ActionReporter ar, ExitCode value) {
+    private static boolean has(CliActionReport ar, ExitCode value) {
         if (null != ar.exitCode && ar.exitCode.equals(value)) {
             return true;
         }
-        Queue<ActionReporter> q = new LinkedList<ActionReporter>();
+        Queue<CliActionReport> q = new LinkedList<CliActionReport>();
         q.addAll(ar.subActions);
         while (!q.isEmpty()) {
-            ActionReporter lar = q.remove();
+            CliActionReport lar = q.remove();
             ExitCode ec = lar.getActionExitCode();
             if (null != ec && ec.equals(value)) {
                 return true;
@@ -283,5 +243,89 @@ public abstract class ActionReporter extends ActionReport {
             }
         }
         return false;
+    }
+
+    @Override
+    public void writeReport(OutputStream os) throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    private void addIndent(int level, StringBuilder sb) {
+        for (int i = 0; i < level; i++) {
+            sb.append("    ");
+        }
+    }
+    
+    private void messageToString(int indentLevel, String id, MessagePart msg, StringBuilder sb) {
+        if (msg == null) {
+            return;
+        }
+        addIndent(indentLevel, sb);
+        sb.append("MESSAGE - ").append(id).append(EOL);
+        if (msg.getMessage() != null && !msg.getMessage().isEmpty()) {
+            addIndent(indentLevel, sb);
+            sb.append(" : ").append(msg.getMessage()).append(EOL);
+        }
+        if (msg.getChildrenType() != null) {
+            addIndent(indentLevel, sb);
+            sb.append(" childrenType: ").append(msg.getChildrenType()).append(EOL);
+        }
+        for (Map.Entry<Object, Object> entry : msg.getProps().entrySet()) {
+            addIndent(indentLevel, sb);
+            sb.append(" >").append(entry.getKey()).append(" = ").append(entry.getValue());
+            sb.append(EOL);
+        }
+        if (msg.getChildren() != null) {
+            int counter = 0;
+            for (MessagePart child : msg.getChildren()) {
+                messageToString(indentLevel + 1, id + ".M" + counter, child, sb);
+                counter++;
+            }
+        }
+    }
+    
+    private String toString(int indentLevel, String id, CliActionReport ar) {
+        if (id == null) {
+            id = "0";
+        }
+        StringBuilder r = new StringBuilder();
+        addIndent(indentLevel, r);
+        r.append("ACTION REPORT - ").append(id);
+        r.append(" [").append(ar.getActionExitCode().name()).append(']').append(EOL);
+        if (ar.getActionDescription() != null) {
+            addIndent(indentLevel, r);
+            r.append(" actionDescription: ").append(ar.getActionDescription()).append(EOL);
+        }
+        if (ar.getFailureCause() != null) {
+            addIndent(indentLevel, r);
+            r.append(" failure: ");
+            String msg = ar.getFailureCause().getMessage();
+            if (msg != null && !msg.isEmpty()) {
+                r.append(msg).append(EOL);
+            } else {
+                r.append('[').append(ar.getFailureCause().getClass().getName());
+                r.append(']').append(EOL);
+            }
+        }
+        for (Map.Entry<Object, Object> entry : ar.getExtraProperties().entrySet()) {
+            addIndent(indentLevel, r);
+            r.append(" >").append(entry.getKey()).append(" = ").append(entry.getValue());
+            r.append(EOL);
+        }
+        messageToString(indentLevel + 1, id + ".M0", ar.getTopMessagePart(), r);
+        r.append(EOL);
+        if (ar.getSubActionsReport() != null) {
+            int counter = 0;
+            for (CliActionReport sub : ar.getSubActionsReport()) {
+                r.append(toString(indentLevel + 1, id + "." + counter, sub));
+                counter++;
+            }
+        }
+        return r.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return toString(0, "0", this);
     }
 }

@@ -59,7 +59,7 @@ import javax.net.ssl.X509TrustManager;
  * the client side asadmintruststore (default name is ~/.gfclient/truststore).
  * Once in the truststore, the user is never prompted to confirm a second time.
  */
-class AsadminTrustManager implements X509TrustManager {
+public class AsadminTrustManager implements X509TrustManager {
         
     private final Object _alias;    
     private boolean _alreadyInvoked;

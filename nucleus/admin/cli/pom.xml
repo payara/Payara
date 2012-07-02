@@ -202,6 +202,11 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>launcher</artifactId>
             <version>${project.parent.version}</version>
