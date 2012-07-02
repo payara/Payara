@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,6 @@ public class CounterImpl extends AbstractTreeNode implements Counter {
     long max = 0;
     long min = 0;
     private AtomicLong lastSampleTime = new AtomicLong();
-    private String NAME = "counter";
     private String DESCRIPTION = "Counter CountStatistic";
     private String UNIT = java.lang.Long.class.toString();
 

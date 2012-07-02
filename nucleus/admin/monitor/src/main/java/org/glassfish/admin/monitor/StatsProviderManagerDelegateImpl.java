@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,7 +108,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
     private final String instanceName;
     private final TreeNode serverNode;
     private static final ObjectName MONITORING_ROOT = AMXGlassfish.DEFAULT.monitoringRoot();
-    static ObjectName MONITORING_SERVER;
+    private ObjectName MONITORING_SERVER;
     private String DOMAIN;
     private String PP;
     private String TYPE;
@@ -656,7 +656,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
                 String methodName = m.getName();
                 String id = ma.id();
                 if ((id == null) || id.isEmpty()) { // if id not specified, derive from method name
-                    String methodNameLower = methodName.toLowerCase();
+                    String methodNameLower = methodName.toLowerCase(Locale.ENGLISH);
                     if (methodNameLower.startsWith("get") && methodNameLower.length() > 3) {
                         id = methodNameLower.substring(3);
                     }
@@ -821,15 +821,7 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
         if (srvrNode != null) {
             return srvrNode;
         }
-        // server
-        Server srvr = null;
-        List<Server> ls = domain.getServers().getServer();
-        for (Server sr : ls) {
-            if (instanceName.equals(sr.getName())) {
-                srvr = sr;
-                break;
-            }
-        }
+        
         srvrNode = TreeNodeFactory.createTreeNode(instanceName, null, instanceName);
         srvrNode.setEnabled(false);
         mrdr.add(instanceName, srvrNode);

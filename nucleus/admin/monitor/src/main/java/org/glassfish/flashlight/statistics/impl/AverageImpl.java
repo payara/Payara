@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,14 +44,9 @@
  */
 package org.glassfish.flashlight.statistics.impl;
 
-import java.util.Collection;
-import org.glassfish.flashlight.datatree.TreeNode;
-import org.glassfish.flashlight.statistics.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
 import org.glassfish.flashlight.datatree.impl.AbstractTreeNode;
+import org.glassfish.flashlight.statistics.Average;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.PerLookup;
@@ -95,6 +90,7 @@ public class AverageImpl extends AbstractTreeNode implements Average {
      * TBD: Remove reference to getSampleTime -> see comment on getSampleTime
      * method
      */
+    @Override
     public void addDataPoint(long value) {
         if (min.get() == DEFAULT_MIN_BOUND) // initial seeding
         {
@@ -111,6 +107,7 @@ public class AverageImpl extends AbstractTreeNode implements Average {
         lastSampleTime.set(getSampleTime ());
     }
 
+    @Override
     public double getAverage() {
         double total = sum.doubleValue();
         double count = times.doubleValue();
@@ -118,20 +115,24 @@ public class AverageImpl extends AbstractTreeNode implements Average {
 	return (Double.isNaN(avg) ? 0 : avg);
     }
 
+    @Override
     public void setReset() {
         times.set(0);
         sum.set(0);
 
     }
 
+    @Override
     public long getMin() {
         return min.get();
     }
 
+    @Override
     public long getMax() {
         return max.get();
     }
 
+    @Override
     public String toString() {
         return "Statistic " + getClass().getName() + NEWLINE +
                 "Name: " + getName() + NEWLINE +
@@ -146,34 +147,41 @@ public class AverageImpl extends AbstractTreeNode implements Average {
         return getAverage();
     }
 
+    @Override
     public long getSize() {
         return times.get();
     }
 
+    @Override
     public long getHighWaterMark() {
         return getMax();
     }
 
+    @Override
     public long getLowWaterMark() {
         return getMin();
     }
 
+    @Override
     public long getCurrent() {
-        Double d = new Double(getAverage());
-        return d.longValue();
+        return Double.valueOf(getAverage()).longValue();
     }
 
+    @Override
     public String getUnit() {
         return this.UNIT;
     }
 
+    @Override
     public String getDescription() {
         return this.DESCRIPTION;
     }
 
+    @Override
     public long getStartTime() {
         return this.startTime;
     }
+    @Override
     public long getTotal (){
         return sum.get();
 
@@ -187,6 +195,7 @@ public class AverageImpl extends AbstractTreeNode implements Average {
         return System.currentTimeMillis();
    
     }
+    @Override
     public long getLastSampleTime() {
         return this.lastSampleTime.longValue();
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,11 +42,7 @@ package org.glassfish.admin.monitor;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,13 +53,10 @@ import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderInfo;
 
 public class StatsProviderRegistry {
-    List<StatsProviderRegistryElement> regElements = new ArrayList();
     private Map<String, List<StatsProviderRegistryElement>>
                         configToRegistryElementMap = new HashMap();
     private Map<Object, StatsProviderRegistryElement>
                         statsProviderToRegistryElementMap = new HashMap();
-    private Map<String, Boolean> configEnabledMap = new HashMap();
-    private MonitoringRuntimeDataRegistry mrdr;
     private boolean isAMXReady = false;
     private boolean isMBeanEnabled = true;
     
@@ -71,9 +64,8 @@ public class StatsProviderRegistry {
     public static final Map<String, Integer> configLevelsMap = new ConcurrentHashMap();
 
     public StatsProviderRegistry(MonitoringRuntimeDataRegistry mrdr) {
-        this.mrdr = mrdr;
         for (int i = 0; i < defaultConfigLevels.length; i++) {
-            configLevelsMap.put(defaultConfigLevels[i].toUpperCase(), i);
+            configLevelsMap.put(defaultConfigLevels[i].toUpperCase(Locale.ENGLISH), i);
         }
     }
 
@@ -158,7 +150,7 @@ public class StatsProviderRegistry {
         return this.isMBeanEnabled;
     }
 
-    class StatsProviderRegistryElement {
+    static class StatsProviderRegistryElement {
         String configStr;
         PluginPoint pp;
         String subTreePath;
@@ -184,7 +176,7 @@ public class StatsProviderRegistry {
             String configLevelStr = spInfo.getConfigLevel();
 
             configLevel =
-                    StatsProviderRegistry.configLevelsMap.get(configLevelStr.toUpperCase());
+                    StatsProviderRegistry.configLevelsMap.get(configLevelStr.toUpperCase(Locale.ENGLISH));
         }
 
         public String getConfigStr() {
@@ -244,7 +236,7 @@ public class StatsProviderRegistry {
         }
 
         public boolean isEnableAllowed(String userConfigLevelStr) {
-            Integer userConfigLevel = StatsProviderRegistry.configLevelsMap.get(userConfigLevelStr.toUpperCase());
+            Integer userConfigLevel = StatsProviderRegistry.configLevelsMap.get(userConfigLevelStr.toUpperCase(Locale.ENGLISH));
             if ((userConfigLevel != null) && (userConfigLevel >= configLevel))
                 return true;
             return false;

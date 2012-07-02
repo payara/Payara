@@ -263,7 +263,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         if (appName == null) return;
         if (cl == null) {
             if (logger.isLoggable(Level.FINE)){
-                logger.fine("Null classloader passed for application : " + appName);
+                logger.log(Level.FINE, "Null classloader passed for application : {0}", appName);
             }
             return;
         }
@@ -273,30 +273,24 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         }
     }
 
+    // noop to satisfy interface
+    @Override
     public synchronized void moduleStopped(Module module) {
-        if (module == null) return;
-        String str = module.getName();
-        //Cannot really remove the Provider b'cos of a bug in BTrace. We should just not reprocess the module
-        /*
-        if (map.containsKey(str)) {
-            map.remove(str);
-            removeProvider(module);
-        }
-        */
     }
 
     // noop to satisfy interface
+    @Override
     public void moduleInstalled(Module module) {
     }
 
     // noop to satisfy interface
+    @Override
     public void moduleUpdated(Module module) {
     }
 
     private void addProvider(Module module) {
         if (logger.isLoggable(Level.FINE))
             logger.fine(" Adding the Provider - verified the module");
-        String mname = module.getName();
         ClassLoader mcl = module.getClassLoader();
         //get manifest entries and process
         ModuleDefinition md = module.getModuleDefinition();
@@ -314,7 +308,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         //get manifest entries and process
         File manifestFile = new File(appDir, "META-INF" + File.separator + "MANIFEST.MF");
         String appDirPath = "";
-        Manifest mf = null;
+        Manifest mf;
         if (manifestFile != null) {
             try {
                 appDirPath = appDir.getCanonicalPath();
@@ -322,7 +316,8 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 mf = new Manifest(fis);
             } catch (IOException ex) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Can't access " + "META-INF"+File.separator+"MANIFEST.MF" + " for " + appDirPath);
+                    logger.log(Level.FINE,"Can''t access "+"META-INF{0}" + "MANIFEST.MF" + " for {1}", 
+                            new Object[]{File.separator, appDirPath});
                     logger.fine(ex.getLocalizedMessage());
                 }
                 return;
@@ -466,13 +461,6 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         }
     }
 
-    private void removeProvider(Module module) {
-        //Cannot really remove the Provider b'cos of a bug in BTrace (Cannot re-retransform).
-        // We should just not reprocess the module, next time around
-        if (logger.isLoggable(Level.FINE))
-            logger.fine("removeProvider ...");
-    }
-
     private void processProbeProviderClass(Class cls) {
         if (logger.isLoggable(Level.FINE))
             logger.fine("processProbeProviderClass for " + cls);
@@ -519,8 +507,8 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 continue;
 
             if (event.getSource() instanceof ModuleMonitoringLevels) {
-                String newEnabled = newVal.toString().toUpperCase();
-                String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase();
+                String newEnabled = newVal.toString().toUpperCase(Locale.ENGLISH);
+                String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase(Locale.ENGLISH);
                 if (logger.isLoggable(Level.FINE))
                     logger.log(Level.FINE, "levelChangeEventReceived",
                                 new Object[]{propName, newEnabled, oldEnabled});
@@ -531,8 +519,8 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             else if (event.getSource() instanceof ContainerMonitoring) {
                 ContainerMonitoring cm = (ContainerMonitoring)event.getSource();
 
-                String newEnabled = newVal.toString().toUpperCase();
-                String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase();
+                String newEnabled = newVal.toString().toUpperCase(Locale.ENGLISH);
+                String oldEnabled = (oldVal == null) ? "OFF" : oldVal.toString().toUpperCase(Locale.ENGLISH);
                 if (logger.isLoggable(Level.FINE))
                     logger.log(Level.FINE, "levelChangeEventReceived",
                                 new Object[]{propName, newEnabled, oldEnabled});
