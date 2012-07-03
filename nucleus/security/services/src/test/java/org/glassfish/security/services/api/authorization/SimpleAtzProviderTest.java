@@ -61,7 +61,7 @@ import org.glassfish.security.services.impl.authorization.AzEnvironmentImpl;
 @RunWith(Hk2Runner.class)
 public class SimpleAtzProviderTest {
     
-    @Inject @Named("Simple Authorization Provider")
+    @Inject @Named("simpleAuthorization")
     private AuthorizationProvider simpleAtzPrv = null;
     
     

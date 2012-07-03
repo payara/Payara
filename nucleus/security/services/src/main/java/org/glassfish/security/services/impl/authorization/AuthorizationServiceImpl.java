@@ -84,7 +84,8 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
     @Inject
     ServerContext serverContext;
 
-    private BaseServiceLocator serviceLocator = null;
+    @Inject
+    private BaseServiceLocator serviceLocator;
     
     private org.glassfish.security.services.config.AuthorizationService atzSvCfg;
     
@@ -105,13 +106,11 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
         
         //get provider level config
         //consider only one provider for now
-        atzPrvConfig = atzSvCfg.getAtzSecurityProviders().get(0);
+        atzPrvConfig = atzSvCfg.getSecurityProviders().get(0);
 
         if (atzPrvConfig == null)
             throw new RuntimeException("No provider  configured for the Authorization service in the domain configuration file");
         
-        serviceLocator = Globals.getDefaultBaseServiceLocator();
-
         //get the provider
         atzProvider = serviceLocator.getComponent(AuthorizationProvider.class, atzPrvConfig.getName());
         

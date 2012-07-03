@@ -56,6 +56,11 @@
         </login-module-config>
       </security-provider>
     </authentication-service>
+    <authorization-service default="true" name="authorizationService">
+      <security-provider name="simpleAuthorization" type="Simple" provider-name="simpleAuthorizationProvider">
+        <authorization-provider-config support-policy-deploy="false" name="simpleAuthorizationProviderConfig"></authorization-provider-config>
+      </security-provider>
+    </authorization-service>
   </security-configurations>
   <system-applications />
   <resources>

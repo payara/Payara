@@ -45,8 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.glassfish.security.services.config.LoginModuleConfig;
-import org.glassfish.security.services.config.SecurityProvider;
+import javax.validation.constraints.NotNull;
+
+import org.glassfish.security.services.config.SecurityProviderConfig;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
@@ -55,10 +56,21 @@ import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 
+import com.sun.enterprise.config.serverbeans.customvalidators.JavaClassName;
+
 
 @Configured
-public interface AuthorizationProviderConfig extends SecurityProvider, PropertyBag {
+public interface AuthorizationProviderConfig extends SecurityProviderConfig, PropertyBag {
 
+    
+    /**
+     * Gets the class name of the authorization provider.
+     */
+    @Attribute(required=false)
+    @NotNull
+    @JavaClassName
+    public String getProviderClass();
+    public void setProviderClass(String value) throws PropertyVetoException;
     
     /**
      * Configuration parameter indicating if the provider support policy deploy or not
@@ -69,10 +81,10 @@ public interface AuthorizationProviderConfig extends SecurityProvider, PropertyB
     void setSupportPolicyDeploy(boolean value) throws PropertyVetoException;
 
     /**
-     * configuration parameter to indicate th version of the provider
+     * configuration parameter to indicate the version of the provider
      * @return version of the provider
      */
-    @Attribute(required=true)
+    @Attribute(required=false)
     String getVersion();
     void setVersion(String value) throws PropertyVetoException;
     

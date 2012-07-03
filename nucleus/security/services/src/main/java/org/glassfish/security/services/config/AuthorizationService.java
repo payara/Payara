@@ -40,48 +40,12 @@
 
 package org.glassfish.security.services.config;
 
-import java.beans.PropertyVetoException;
-import java.util.List;
 
-import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
-import org.jvnet.hk2.config.Element;
 
-import org.glassfish.security.services.provider.authorization.AuthorizationProviderConfig;
 
 @Configured
 public interface AuthorizationService extends SecurityConfiguration {
-
-
-    /**
-     * Description of the service
-     * @return
-     */
-    @Attribute(required=false)
-    String getDescription();
-    void setDescription(String value) throws PropertyVetoException;
-
-    
-    @Element("atz-security-provider")
-    List<AuthorizationProviderConfig> getAtzSecurityProviders();
-
-    @DuckTyped
-    AuthorizationProviderConfig getAtzSecurityProviderByName(String name);
-
-    class Duck {
-        /**
-         * Gets a named security provider.
-         */
-        public static AuthorizationProviderConfig getAtzSecurityProviderByName(AuthorizationService service, String name) {
-            for (AuthorizationProviderConfig config : service.getAtzSecurityProviders()) {
-                if (config.getProviderName().equals(name)) {
-                    return config;
-                }
-            }
-            return null;
-        }
-    }
 
     
 }

@@ -40,6 +40,9 @@
 
 package org.glassfish.security.services.provider.authorization;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzEnvironment;
 import org.glassfish.security.services.api.authorization.AzObligations;
@@ -59,9 +62,11 @@ import org.glassfish.hk2.api.PerLookup;
 
 import org.jvnet.hk2.annotations.Service;
 
+import com.sun.logging.LogDomains;
 
 
-@Service (name="Simple Authorization Provider")
+
+@Service (name="simpleAuthorization")
 @PerLookup
 public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
 
@@ -70,12 +75,20 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider {
     private boolean deployable;
     private String version;
     
+    protected static final Logger _logger = 
+        LogDomains.getLogger(SimpleAuthorizationProviderImpl.class, LogDomains.SECURITY_LOGGER);
+
+    
     @Override
     public void initialize(SecurityProvider providerConfig) {
-
-        cfg = (AuthorizationProviderConfig)providerConfig;
+                
+        cfg = (AuthorizationProviderConfig)providerConfig.getSecurityProviderConfig().get(0);        
         deployable = cfg.getSupportPolicyDeploy();
         version = cfg.getVersion();
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "provide to do policy deploy: " + deployable);
+            _logger.log(Level.FINE, "provide version to use: " + version);
+        }
     }
 
     @Override
