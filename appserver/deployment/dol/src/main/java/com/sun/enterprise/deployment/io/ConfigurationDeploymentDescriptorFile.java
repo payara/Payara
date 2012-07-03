@@ -63,4 +63,12 @@ public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDe
      */
     public void registerBundle(final Map<String, Class> rootNodesMap,
             final Map<String, String> publicIDToDTDMap) {}
+
+  /**
+   * Return whether this configuration file can be validated.
+   * @return whether this configuration file can be validated.
+   */
+  public boolean isValidating() {
+    return false;
+  }
 }

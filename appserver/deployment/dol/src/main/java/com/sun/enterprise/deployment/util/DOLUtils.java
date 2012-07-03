@@ -382,8 +382,12 @@ public class DOLUtils {
                 }
             }
             confDD.setErrorReportingString(archive.getURI().getSchemeSpecificPart());
-            confDD.setXMLValidation(main.getRuntimeXMLValidation());
-            confDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
+            if (confDD.isValidating()) {
+              confDD.setXMLValidation(main.getRuntimeXMLValidation());
+              confDD.setXMLValidationLevel(main.getRuntimeXMLValidationLevel());
+            } else {
+              confDD.setXMLValidation(false);
+            }
             confDD.read(descriptor, is);
         } finally {
             if (is != null) {

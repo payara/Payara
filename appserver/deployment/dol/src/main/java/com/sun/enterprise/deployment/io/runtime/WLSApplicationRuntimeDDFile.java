@@ -103,4 +103,12 @@ public class WLSApplicationRuntimeDDFile extends
             final Map<String, String> publicIDToDTDMap) {
         rootNodesMap.put(WeblogicApplicationNode.registerBundle(publicIDToDTDMap), WeblogicApplicationNode.class);
     }
+
+  /**
+   * Return whether this configuration file can be validated.
+   * @return whether this configuration file can be validated.
+   */
+  public boolean isValidating() {
+    return true;
+  }
 }
