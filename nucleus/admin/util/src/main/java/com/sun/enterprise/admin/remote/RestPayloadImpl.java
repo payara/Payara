@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.admin.remote;
 
-import com.sun.enterprise.admin.remote.reader.ActionReportJsonReader;
 import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,7 +108,9 @@ public class RestPayloadImpl extends PayloadImpl {
                 }
             }
             ArrayList<Payload.Part> parts = getParts();
-            logger.finest("addToMultipart: parts.size = " + parts.size());
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "addToMultipart: parts.size = {0}", parts.size());
+            }
             int index = 0;
             for (Payload.Part part : parts) {
                 index++;
@@ -144,7 +145,7 @@ public class RestPayloadImpl extends PayloadImpl {
                                 new Object[]{index, addContentPrefix((String) entry.getKey()), entry.getValue()});
                     }
                     bp.getHeaders().add(addContentPrefix((String) entry.getKey()), 
-                            props.getProperty((String) entry.getValue()));
+                            (String) entry.getValue());
                 }
                 mp.bodyPart(bp);
             }
