@@ -231,6 +231,7 @@ public class RestPayloadImpl extends PayloadImpl {
             List<BodyPart> bodyParts = mp.getBodyParts();
             int index = 0;
             for (BodyPart bodyPart : bodyParts) {
+                index++;
                 String name = "noname";
                 ContentDisposition cd = bodyPart.getContentDisposition();
                 if (cd != null) {

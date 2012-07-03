@@ -97,7 +97,14 @@ public interface CommandRunner {
      * @param command Command to be checked
      * @param eTag ETag to validate
      */
-    public boolean validateCommandModelETag(String commandName, AdminCommand command, String eTag);
+    public boolean validateCommandModelETag(AdminCommand command, String eTag);
+    
+    /** Checks if given command model eTag is equal to current command model eTag
+     * 
+     * @param model of command to be checked
+     * @param eTag ETag to validate
+     */
+    public boolean validateCommandModelETag(CommandModel model, String eTag);
 
     /**
      * Obtain and return the command implementation defined by the passed commandName 

@@ -79,6 +79,7 @@ public class RestCommandAdapter extends RestAdapter {
             put("json", MediaType.APPLICATION_JSON_TYPE);
             put("html", MediaType.TEXT_HTML_TYPE);
             put("txt", MediaType.TEXT_PLAIN_TYPE);
+            put("multi", new MediaType("multipart", null));
         }};
     }
     
@@ -86,7 +87,6 @@ public class RestCommandAdapter extends RestAdapter {
     protected Set<Class<?>> getResourceClasses() {
         final Set<Class<?>> r = new HashSet<Class<?>>();
         r.add(CommandResource.class);
-        r.add(ParameterMapFormReader.class);
         //ActionReport - providers
         r.add(ActionReportXmlProvider.class);
         r.add(ActionReportJsonProvider.class);

@@ -338,7 +338,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             if ((executeOn != null) && (executeOn.value().length ==1) &&
                     executeOn.value()[0].equals(RuntimeType.SINGLE_INSTANCE)) {
                 return true;
-
             }
         }
         return false;
@@ -359,7 +358,6 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             //There is no Cookie header in request so generate a new JSESSIONID  or
             //failover has occured in which case you can generate a new JSESSIONID
             sessionId = createSessionId();
-
         }
         StringBuilder sb = new StringBuilder();
         final Cookie cookie = new Cookie(SESSION_COOKIE_NAME, sessionId);
@@ -573,7 +571,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             }
             //Validate admin command eTag
             String modelETag = req.getHeader(RemoteAdminCommand.COMMAND_MODEL_MATCH_HEADER);
-            if (modelETag != null && !commandRunner.validateCommandModelETag(command, adminCommand, modelETag)) {
+            if (modelETag != null && !commandRunner.validateCommandModelETag(adminCommand, modelETag)) {
                 String message =
                     adminStrings.getLocalString("commandmodel.etag.invalid",
                         "Cached command model for command {0} is invalid.", command);

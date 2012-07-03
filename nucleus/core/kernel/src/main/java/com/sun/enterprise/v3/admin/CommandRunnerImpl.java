@@ -193,29 +193,28 @@ public class CommandRunnerImpl implements CommandRunner {
     }
     
     @Override
-    public boolean validateCommandModelETag(String commandName, AdminCommand command, String eTag) {
+    public boolean validateCommandModelETag(AdminCommand command, String eTag) {
         if (command == null) {
             return true; //Everithing is ok for unexisting command
         }
         if (eTag == null || eTag.isEmpty()) {
             return false;
         }
-//        NameCommandClassPair key = new NameCommandClassPair(commandName, command.getClass());
-//        String actualETag = commandModelEtagMap.get(key);
-//        if (actualETag == null) {
-            CommandModel model = getModel(command);
-            if (model == null) {
-                return true; //Unexisting model => it is ok (but weard in fact)
-            }
-            String actualETag = CachedCommandModel.computeETag(model);
-//            commandModelEtagMap.put(key, actualETag);
-//        } else {
-//            if (logger.isLoggable(Level.FINEST)) {
-//                logger.log(Level.FINEST, "validateCommandModelETag({0}, {1}): Found in local cache!");
-//            }
-//        }
+        CommandModel model = getModel(command);
+        return validateCommandModelETag(model, eTag);
+    }
+    
+    @Override
+    public boolean validateCommandModelETag(CommandModel model, String eTag) {
+        if (model == null) {
+            return true; //Unexisting model => it is ok (but weard in fact)
+        }
+        if (eTag == null || eTag.isEmpty()) {
+            return false;
+        }
+        String actualETag = CachedCommandModel.computeETag(model);
         return eTag.equals(actualETag);
-    } 
+    }
 
     /**
      * Obtain and return the command implementation defined by

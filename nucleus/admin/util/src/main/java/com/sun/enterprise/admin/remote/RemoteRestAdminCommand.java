@@ -134,8 +134,10 @@ public class RemoteRestAdminCommand {
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
-    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("actionreport", "json");
-    private static final MediaType MEDIATYPE_MULTIPART = new MediaType("multipart", null);
+    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("actionreport", "json", 
+            new HashMap<String, String>(1) {{ put("q", "0.8"); }});
+    private static final MediaType MEDIATYPE_MULTIPART = new MediaType("multipart", null,
+            new HashMap<String, String>(1) {{ put("q", "0.9"); }});
     private static final int defaultReadTimeout; // read timeout for URL conns
     
     //JAX-RS Client related attributes
@@ -410,17 +412,12 @@ public class RemoteRestAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
-        if (commandModel == null && !omitCache) {
+        if (commandModel == null) {
             long startNanos = System.nanoTime();
             try {
-                commandModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), CommandModel.class);
+                commandModel = getCommandModelFromCahce();
                 if (commandModel != null) {
                     this.commandModelFromCache = true;
-                    if (commandModel instanceof CachedCommandModel) {
-                        CachedCommandModel ccm = (CachedCommandModel) commandModel;
-                        this.usage = ccm.getUsage();
-                        addedUploadOption = ccm.isAddedUploadOption();
-                    }
                     if (logger.isLoggable(Level.FINEST)) {
                         logger.log(Level.FINEST, "Command model for command {0} was successfully loaded from the cache. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
                     }
@@ -439,6 +436,28 @@ public class RemoteRestAdminCommand {
             fetchCommandModel();
         }
         return commandModel;
+    }
+    
+    private CommandModel getCommandModelFromCahce() {
+        String cachedModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), String.class);
+        if (cachedModel == null) {
+            return null;
+        }
+        cachedModel = cachedModel.trim();
+        int ind = cachedModel.indexOf('\n');
+        if (ind < 0) {
+            return null;
+        }
+        String eTag = cachedModel.substring(0, ind);
+        if (!eTag.startsWith("ETag:")) {
+            return null;
+        }
+        eTag = eTag.substring(5).trim();
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log(Level.FINEST, "Cached command model ETag is {0}", eTag);
+        }
+        String content = cachedModel.substring(ind + 1).trim();
+        return parseMetadata(content, eTag);
     }
     
     /** If command model was load from local cache.
@@ -469,7 +488,8 @@ public class RemoteRestAdminCommand {
         }
         //execute
         ParameterMap preparedParams = processParams(opts);
-        Response response = doRestCommand(preparedParams, null, "POST", false, new MediaType("actionreport", "json"));
+        Response response = doRestCommand(preparedParams, null, "POST", false, 
+                MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT);
         MediaType resultMediaType = response.getMediaType();
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Result type is {0}", resultMediaType);
@@ -1245,6 +1265,9 @@ public class RemoteRestAdminCommand {
         if (code == HttpURLConnection.HTTP_PRECON_FAILED) {
             throw new CommandValidationException("Code: " + HttpURLConnection.HTTP_PRECON_FAILED + ": Cached CommandModel is invalid.");
         }
+        if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+            throw new InvalidCommandException(response.readEntity(String.class));
+        }
         /*
          * The DAS might be redirecting to a secure port.  If so, follow
          * the redirection.
@@ -1253,7 +1276,7 @@ public class RemoteRestAdminCommand {
             return response.getHeader("Location");
         }
         if (code != HttpURLConnection.HTTP_OK) {
-            throw new CommandException(strings.get("BadResponse", "" + code,
+            throw new CommandException(strings.get("BadResponse", String.valueOf(code),
                                         response.readEntity(String.class)));
         }
         /*
@@ -1418,21 +1441,24 @@ public class RemoteRestAdminCommand {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.log(Level.FINEST, "Command model for {0} command fetched from remote server first part. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
             }
-            commandModel = parseMetadata(str, res.getEntityTag());
+            EntityTag eTag = res.getEntityTag();
+            commandModel = parseMetadata(str, eTag == null ? null : eTag.getValue());
             if (commandModel != null) {
                 this.commandModelFromCache = false;
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "Command model for {0} command fetched from remote server. [Duration: {1} nanos]", new Object[] {name, System.nanoTime() - startNanos});
                 }
-                //if (!omitCache) {
-                    try {
-                        AdminCacheUtils.getCache().put(createCommandCacheKey(), commandModel);
-                    } catch (Exception ex) {
-                        if (logger.isLoggable(Level.WARNING)) {
-                            logger.log(Level.WARNING, strings.get("CantPutToCache", createCommandCacheKey()));
-                        }
+                try {
+                    StringBuilder forCache = new StringBuilder(str.length() + 40);
+                    forCache.append("ETag: ").append(eTag == null ? "" : eTag.getValue());
+                    forCache.append("\n");
+                    forCache.append(str);
+                    AdminCacheUtils.getCache().put(createCommandCacheKey(), forCache.toString());
+                } catch (Exception ex) {
+                    if (logger.isLoggable(Level.WARNING)) {
+                        logger.log(Level.WARNING, strings.get("CantPutToCache", createCommandCacheKey()), ex);
                     }
-                //}
+                }
             } else {
                 throw new InvalidCommandException(strings.get("unknownError"));
             }
@@ -1559,7 +1585,7 @@ public class RemoteRestAdminCommand {
      * @param in the input stream
      * @return the set of ValidOptions
      */
-    private CachedCommandModel parseMetadata(String str, EntityTag etag) {
+    private CachedCommandModel parseMetadata(String str, String etag) {
         if (logger.isLoggable(Level.FINER)) { // XXX - assume "debug" == "FINER"
             logger.finer("------- RAW METADATA RESPONSE ---------");
             logger.log(Level.FINER, "ETag: {0}", etag);
@@ -1573,8 +1599,7 @@ public class RemoteRestAdminCommand {
             boolean sawFile = false;
             JSONObject obj = new JSONObject(str);
             obj = obj.getJSONObject("command");
-            String strETag = etag == null ? null : etag.getValue();
-            CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), strETag);
+            CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
             cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
             cm.setUsage(obj.optString("usage"));
             Object optns = obj.opt("option");
@@ -1624,6 +1649,7 @@ public class RemoteRestAdminCommand {
                 addedUploadOption = true;
                 cm.setAddedUploadOption(true);
             }
+            this.usage = cm.getUsage();
             return cm;
         } catch (JSONException ex) {
             logger.log(Level.FINER, "Can not parse command metadata", ex);
