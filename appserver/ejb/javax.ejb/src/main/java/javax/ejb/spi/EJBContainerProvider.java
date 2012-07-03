@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,6 +72,9 @@ public interface EJBContainerProvider {
      * If a provider does not qualify as the provider for the
      * embeddable application, it must return null.
      *
+     * @param properties Spec-defined and/or vendor-specific
+     * properties, that were passed to <code>javax.ejb.embeddable.EJBContainer#createEJBContainer(Map&#60;&#63;,&#63;&#62;)</code> call
+     * 
      * @return EJBContainer instance or null
      */
     public EJBContainer createEJBContainer(Map<?,?> properties) throws EJBException;
