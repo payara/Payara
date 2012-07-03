@@ -314,10 +314,13 @@ public class TemplateRestResource {
             // returned by HK2.  If that's the case, we can use ZeroConfigUtils.getOwningObject()
             // to find the ConfigBean matching the path requested, which will add the node to
             // the Dom tree. Once that's done, we can return that node and proceed as normal
-            ConfigBeanProxy cbp = ZeroConfigUtils.getOwningObject(buildPath(parent) + "/" + tagName, habitat);
-            if (cbp != null) {
-                entity = Dom.unwrap(cbp);
-                childModel = entity.model;
+            String location = buildPath(parent) + "/" + tagName;
+            if (location.startsWith("domain/configs")) {
+                ConfigBeanProxy cbp = ZeroConfigUtils.getOwningObject(location, habitat);
+                if (cbp != null) {
+                    entity = Dom.unwrap(cbp);
+                    childModel = entity.model;
+                }
             }
             //throw new WebApplicationException(new Exception("Trying to create an entity using generic create"),Response.Status.INTERNAL_SERVER_ERROR);
         } else {
