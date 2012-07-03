@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,13 @@ public final class AsyncResult<V> implements Future<V> {
 
     private final V resultValue;
 
+    /**
+     * Creates a <code>AsyncResult</code> instance to wrap the result of an
+     * asynchronous method call
+     *
+     * @param result the result of an asynchronous method call to be made
+     * available to the client
+     */
     public AsyncResult(V result) {
         resultValue = result;
     }
@@ -69,6 +76,7 @@ public final class AsyncResult<V> implements Future<V> {
     /**
      * This method should not be called.  See Class-level comments.
      */
+    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         throw new java.lang.IllegalStateException
 	    ("Object does not represent an acutal Future");
@@ -77,6 +85,7 @@ public final class AsyncResult<V> implements Future<V> {
     /**
      * This method should not be called.  See Class-level comments.
      */
+    @Override
     public boolean isCancelled() {
         throw new java.lang.IllegalStateException
 	    ("Object does not represent an acutal Future");
@@ -85,6 +94,7 @@ public final class AsyncResult<V> implements Future<V> {
     /**
      * This method should not be called.  See Class-level comments.
      */
+    @Override
     public boolean isDone() {
         throw new java.lang.IllegalStateException
 	    ("Object does not represent an acutal Future");
@@ -93,6 +103,7 @@ public final class AsyncResult<V> implements Future<V> {
     /**
      * This method should not be called.  See Class-level comments.
      */
+    @Override
     public V get() throws InterruptedException, ExecutionException {
 	    return resultValue;
     }
@@ -100,6 +111,7 @@ public final class AsyncResult<V> implements Future<V> {
     /**
      * This method should not be called.  See Class-level comments.
      */
+    @Override
     public V get(long timeout, TimeUnit unit) 
 	throws InterruptedException, ExecutionException, TimeoutException {
 	throw new java.lang.IllegalStateException
