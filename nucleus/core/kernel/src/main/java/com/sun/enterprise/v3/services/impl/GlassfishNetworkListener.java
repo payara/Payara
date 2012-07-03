@@ -96,6 +96,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         unregisterMonitoringStatsProviders();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Class<T> adapterClass) {
         if (HttpAdapter.class.equals(adapterClass)) {
@@ -121,65 +122,70 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     protected void configureHttpProtocol(final Habitat habitat,
             final NetworkListener networkListener,
             final Http http, final FilterChainBuilder filterChainBuilder) {
-        registerMonitoringStatsProviders();
 
-        final V3Mapper mapper = new V3Mapper(logger);
+        if (httpAdapter == null) {
+            registerMonitoringStatsProviders();
 
-        mapper.setPort(port);
-        mapper.setId(name);
+            final V3Mapper mapper = new V3Mapper(logger);
 
-        final ContainerMapper containerMapper = new ContainerMapper(grizzlyService, this);
-        containerMapper.setMapper(mapper);
-        containerMapper.setDefaultHost(http.getDefaultVirtualServer());
-        containerMapper.configureMapper();        
+            mapper.setPort(port);
+            mapper.setId(name);
 
-        VirtualServer vs = null;
-        String webAppRootPath = null;
-        
-        final Collection<VirtualServer> list = grizzlyService.getHabitat().getAllByContract(VirtualServer.class);
-        final String vsName = http.getDefaultVirtualServer();
-        for (final VirtualServer virtualServer : list) {
-            if (virtualServer.getId().equals(vsName)) {
-                vs = virtualServer;
-                webAppRootPath = vs.getDocroot();
+            final ContainerMapper containerMapper = new ContainerMapper(grizzlyService, this);
+            containerMapper.setMapper(mapper);
+            containerMapper.setDefaultHost(http.getDefaultVirtualServer());
+            containerMapper.configureMapper();
 
-                if (!grizzlyService.hasMapperUpdateListener() && vs.getProperty() != null
-                    && !vs.getProperty().isEmpty()) {
-                    for (final Property p : vs.getProperty()) {
-                        final String propertyName = p.getName();
-                        if (propertyName.startsWith("alternatedocroot")) {
-                            String value = p.getValue();
-                            String[] mapping = value.split(" ");
+            VirtualServer vs = null;
+            String webAppRootPath = null;
 
-                            if (mapping.length != 2) {
-                                logger.log(Level.WARNING, "Invalid alternate_docroot {0}", value);
-                                continue;
+            final Collection<VirtualServer> list = grizzlyService.getHabitat().getAllByContract(VirtualServer.class);
+            final String vsName = http.getDefaultVirtualServer();
+            for (final VirtualServer virtualServer : list) {
+                if (virtualServer.getId().equals(vsName)) {
+                    vs = virtualServer;
+                    webAppRootPath = vs.getDocroot();
+
+                    if (!grizzlyService.hasMapperUpdateListener() && vs.getProperty() != null
+                            && !vs.getProperty().isEmpty()) {
+                        for (final Property p : vs.getProperty()) {
+                            final String propertyName = p.getName();
+                            if (propertyName.startsWith("alternatedocroot")) {
+                                String value = p.getValue();
+                                String[] mapping = value.split(" ");
+
+                                if (mapping.length != 2) {
+                                    logger.log(Level.WARNING, "Invalid alternate_docroot {0}", value);
+                                    continue;
+                                }
+
+                                String docBase = mapping[1].substring("dir=".length());
+                                String urlPattern = mapping[0].substring("from=".length());
+                                final StaticHttpHandler staticResourceService =
+                                        new StaticHttpHandler(docBase);
+                                List<String> al = toArray(vs.getHosts(), ";");
+                                al.add(http.getDefaultVirtualServer());
+                                containerMapper.register(urlPattern, al, staticResourceService, null);
                             }
-
-                            String docBase = mapping[1].substring("dir=".length());
-                            String urlPattern = mapping[0].substring("from=".length());
-                            final StaticHttpHandler staticResourceService =
-                                    new StaticHttpHandler(docBase);
-                            List<String> al = toArray(vs.getHosts(), ";");
-                            al.add(http.getDefaultVirtualServer());
-                            containerMapper.register(urlPattern, al, staticResourceService, null);
                         }
                     }
+                    break;
                 }
-                break;
             }
-        }
 
-        httpAdapter = new HttpAdapterImpl(vs, containerMapper, webAppRootPath);
-        containerMapper.addDocRoot(webAppRootPath);
+            httpAdapter = new HttpAdapterImpl(vs, containerMapper, webAppRootPath);
+            containerMapper.addDocRoot(webAppRootPath);
 
-        Inhabitant<Mapper> onePortMapper = new ExistingSingletonInhabitant<Mapper>(mapper);
-        ((Habitat) grizzlyService.getHabitat()).addIndex(onePortMapper, Mapper.class.getName(), address.toString() + port);
+            Inhabitant<Mapper> onePortMapper = new ExistingSingletonInhabitant<Mapper>(mapper);
+            ((Habitat) grizzlyService.getHabitat()).addIndex(onePortMapper, Mapper.class.getName(), address.toString() + port);
 
-        super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
-        final Protocol protocol = http.getParent();
-        for (NetworkListener listener : protocol.findNetworkListeners()) {
-            grizzlyService.notifyMapperUpdateListeners(listener, mapper);
+            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
+            final Protocol protocol = http.getParent();
+            for (NetworkListener listener : protocol.findNetworkListeners()) {
+                grizzlyService.notifyMapperUpdateListeners(listener, mapper);
+            }
+        } else {
+            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
         }
     }
 
