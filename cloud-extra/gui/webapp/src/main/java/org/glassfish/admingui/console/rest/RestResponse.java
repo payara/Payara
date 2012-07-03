@@ -40,15 +40,6 @@
 
 package org.glassfish.admingui.console.rest;
 
-import org.glassfish.admingui.console.*;
-import com.sun.jersey.api.client.ClientResponse;
-//import org.glassfish.admin.rest.clientutils.MarshallingUtils;
-import org.w3c.dom.*;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +51,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ws.rs.core.Response;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.w3c.dom.*;
 
 /**
  * <p>	This class abstracts the response from the admin console code so that
@@ -72,7 +71,7 @@ public abstract class RestResponse {
 
     public abstract String getResponseBody();
 
-    public static RestResponse getRestResponse(ClientResponse response) {
+    public static RestResponse getRestResponse(Response response) {
         return new JerseyRestResponse(response);
     }
 
@@ -121,17 +120,17 @@ public abstract class RestResponse {
 
 
 class JerseyRestResponse extends RestResponse {
-    protected ClientResponse response;
+    protected Response response;
     private String body = null;
 
-    public JerseyRestResponse(ClientResponse response) {
+    public JerseyRestResponse(Response response) {
         this.response = response;
     }
 
     @Override
     public String getResponseBody() {
         if (body == null) {
-            body = response.getEntity(String.class);
+            body = response.readEntity(String.class);
         }
         return body;
     }
@@ -156,7 +155,7 @@ class JerseyRestResponse extends RestResponse {
 // FIXME: Do not put responseBody into the Map... too big, not needed
         result.put("responseBody", getResponseBody());
 
-        String contentType = response.getHeaders().getFirst("Content-type");
+        String contentType = response.getMediaType().toString();
         if (contentType != null) {
             String responseBody = getResponseBody();
             contentType = contentType.toLowerCase(new Locale("UTF-8"));

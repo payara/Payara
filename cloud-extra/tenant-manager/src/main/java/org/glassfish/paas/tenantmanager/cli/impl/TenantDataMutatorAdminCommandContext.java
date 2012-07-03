@@ -47,6 +47,7 @@ import org.jvnet.hk2.config.Transaction;
 
 import javax.security.auth.Subject;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ProgressStatus;
 
 /**
  * A wrapper for AdminCommandContext. Enables carrying additional information like current transaction from TenantDataMutatorWrapper to consuming command
@@ -99,6 +100,11 @@ public class TenantDataMutatorAdminCommandContext implements AdminCommandContext
     @Override
     public void setSubject(Subject subject) {
         delegate.setSubject(subject);
+    }
+
+    @Override
+    public ProgressStatus getProgressStatus() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

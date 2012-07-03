@@ -39,17 +39,13 @@
  */
 package org.glassfish.elasticity.metrics.util;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.Client;
 import org.glassfish.elasticity.metrics.util.MarshallingUtils;
 
 import javax.ws.rs.core.MediaType;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by IntelliJ IDEA.
@@ -66,24 +62,25 @@ public class CollectMetricData {
         Map<String, Object> res= null;
 
         try {
-            /*
+            String json = "";
+
+/*
             URL dataURL = new URL(url + ".json");
             URLConnection conn = dataURL.openConnection();
-            String json = "";
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             for (String line = br.readLine(); line != null; line = br.readLine()) {
 //                System.out.println("** Got line: " + line);
                 json = line;
             }
- */
+*/
 
-            Client client = Client.create();
+            javax.ws.rs.client.Client client = ClientFactory.newClient();
 
-            ClientResponse response = client.resource(url).accept(RESPONSE_TYPE).get(ClientResponse.class);
-
-            res = getEntityValues(response);
-/*
+           Response response = client.target(url).request(RESPONSE_TYPE).get(Response.class);
+            if (response.getStatus() == 200)        // untill OE can tell us that the instance is ready
+                res = getEntityValues(response);
+ /*
             Map responseMap = MarshallingUtils.buildMapFromDocument(json);
 
             Object obj = responseMap.get("extraProperties");
@@ -92,7 +89,7 @@ public class CollectMetricData {
             } else {
                 res = responseMap;
             }
- */
+*/
         } catch (Exception ex){
                 ex.printStackTrace();
         }
@@ -107,10 +104,10 @@ public class CollectMetricData {
       * @param response
       * @return
       */
-     protected static Map<String, Object> getEntityValues(ClientResponse response) {
+     protected static Map<String, Object> getEntityValues(Response response) {
          Map<String, Object> map = new HashMap<String, Object>();
 
-         String xml = response.getEntity(String.class);
+         String xml = response.readEntity(String.class);
          Map responseMap = MarshallingUtils.buildMapFromDocument(xml);
          Object obj = responseMap.get("extraProperties");
          if (obj != null) {

@@ -133,8 +133,8 @@ public class TenantManagerTest extends ConfigApiTest {
             Assert.assertNotNull("Zero Services", tenant.getServices());
             Assert.assertNotNull("Zero Extensions", tenant.getExtensions());
             Environments environments = tenant.getEnvironments();
-            Assert.assertEquals("Next Id", 1, environments.allocateId());
-            Assert.assertEquals("Next Id", 2, environments.allocateId());
+            Assert.assertEquals("Next Id", 1L, environments.allocateId().longValue());
+            Assert.assertEquals("Next Id", 2L, environments.allocateId().longValue());
             tenantManager.setCurrentTenant("tenant2");
             tenant = tenantManager.get(Tenant.class);
             Assert.assertNotNull("currentTenant", tenant);

@@ -157,9 +157,9 @@ public class MQServicePlugin extends ServiceProvisioningEngineBase<MQServiceType
 
                 if (descriptor instanceof EjbBundleDescriptor) {
                     EjbBundleDescriptor ejbDesc = (EjbBundleDescriptor) descriptor;
-                    Set<EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
+                    Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
                     for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
-                        populateResourceRefsAsServiceReferences(ejbDescriptor, serviceReferences);
+                        populateResourceRefsAsServiceReferences((Descriptor) ejbDescriptor, serviceReferences);
                     }
                     //ejb interceptors
                     Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
