@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -213,9 +213,6 @@ public class LoadBalancerStats implements com.sun.enterprise.admin.monitor.stats
 			org.w3c.dom.Node childNode = children.item(i);
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
-			if (childNode.getFirstChild() != null) {
-				childNodeValue = childNode.getFirstChild().getNodeValue();
-			}
 			if (childNodeName == "cluster-stats") {
 				ClusterStats aClusterStats = new com.sun.enterprise.admin.monitor.stats.lb.ClusterStats();
 				aClusterStats.readNode(childNode);

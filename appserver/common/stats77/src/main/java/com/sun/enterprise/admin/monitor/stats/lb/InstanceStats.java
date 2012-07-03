@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -478,10 +478,6 @@ public class InstanceStats implements com.sun.enterprise.admin.monitor.stats.lb.
 		// Validating property numActiveRequests
 		if (getNumActiveRequests() == null) {
 			throw new com.sun.enterprise.admin.monitor.stats.lb.LoadBalancerStats.ValidateException("getNumActiveRequests() == null", "numActiveRequests", this);	// NOI18N
-		}
-		// Validating property applicationStats
-		for (int _index = 0; _index < sizeApplicationStats(); ++_index) {
-			boolean element = isApplicationStats(_index);
 		}
 		// Validating property applicationStatsId
 		if (getApplicationStatsId() == null) {

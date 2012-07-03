@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,16 @@
 
 package com.sun.enterprise.admin.monitor.stats;
 
-import com.sun.enterprise.admin.monitor.stats.StringStatistic;
 import java.util.List;
 import java.util.Map;
+import org.glassfish.j2ee.statistics.JTAStats;
 
 /** Defines additional Sun ONE Application Server specific statistic to transaction service.
  * @author  <a href="mailto:Kedar.Mhaswade@sun.com">Kedar Mhaswade</a>
  * @since S1AS8.0
  * @version $Revision: 1.4 $
  */
-public interface JTAStats extends org.glassfish.j2ee.statistics.JTAStats {
+public interface GFJTAStats extends JTAStats {
 
 	/** Returns the IDs of the transactions that are currently active, as a StrignStatistic. 
 	 * An active transaction is same as an in-flight transaction. Every such transaction can be rolled back after

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -156,10 +156,6 @@ public class ClusterStats implements com.sun.enterprise.admin.monitor.stats.lb.C
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
-			String childNodeValue = "";
-			if (childNode.getFirstChild() != null) {
-				childNodeValue = childNode.getFirstChild().getNodeValue();
-			}
 			if (childNodeName == "instance-stats") {
 				InstanceStats aInstanceStats = new com.sun.enterprise.admin.monitor.stats.lb.InstanceStats();
 				aInstanceStats.readNode(childNode);
