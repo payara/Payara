@@ -310,9 +310,9 @@ public class FileLogger
         File dir = new File(directory);
         if (!dir.isAbsolute())
             dir = new File(System.getProperty("catalina.base"), directory);
-        if (!dir.mkdirs()) {
-            // simply ignore since the following logic for initializing the
-            // writer will take care of it.
+        if (!dir.mkdirs() && !dir.exists()) {
+            writer = null;
+            return;
         }
 
         // Open the current log file
