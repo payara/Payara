@@ -109,41 +109,33 @@ public @interface AccessRequired {
      * from the {@code ConfigBean} itself and authorizes the specified actions
      * using that resource.
      */
-    @Target(ElementType.FIELD)
+    @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface To {
+    public @interface Typed {
+        
+        /**
+         * Type of the resource to be checked.
+         * @return 
+         */
+        public Class<?> type();
+        
+        /**
+         * Key values or ${fieldName} references to fields providing key values
+         * to be inserted where required in the resource path.
+         * @return 
+         */
+        public String[] key();
+        
         /**
          * Action(s) to be authorized on the ConfigBean
          * @return 
          */
-        public String[] value();
-    }
-    
-    /**
-     * Declares access control for creating a new child {@code ConfigBean} in
-     * a collection on an existing {@code ConfigBean}.  
-     */
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface NewChild {
-        /**
-         * Type of the new {@code ConfigBean} to be created. 
-         */
-        public Class type();
+        public String[] action();
         
-        /**
-         * Action(s) to be authorized, defaulted to "create."
-         */
-        public String[] action() default "create";
-        
-        /**
-         * Declares multiple authorization checks for creating the same
-         * single new {@code ConfigBean}.
-         */
-        @Target(ElementType.FIELD)
+        @Target(ElementType.TYPE)
         @Retention(RetentionPolicy.RUNTIME)
         public @interface List {
-            public NewChild[] value();
+            public Typed[] value();
         }
     }
     

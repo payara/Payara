@@ -39,14 +39,12 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.util.CachedCommandModel;
-import com.sun.enterprise.admin.util.CommandSecurityChecker;
+import com.sun.enterprise.admin.util.*;
+import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.Map;
 import javax.security.auth.Subject;
 import org.glassfish.api.admin.CommandWrapperImpl;
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
-import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.module.common_impl.LogHelper;
@@ -1172,6 +1170,8 @@ public class CommandRunnerImpl implements CommandRunner {
                     return;
                 }
 
+                PostConstructRunner.runPostConstructs(command);
+                
                 /*
                  * Now that parameters have been injected into the command object,
                  * decide if the current Subject should be permitted to execute
@@ -1570,7 +1570,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         return result;
     }
-
+    
     /*
      * Some private classes used in the implementation of CommandRunner.
      */

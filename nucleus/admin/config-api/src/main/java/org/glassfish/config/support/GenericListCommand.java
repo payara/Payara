@@ -41,6 +41,8 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AccessRequired;
@@ -50,13 +52,11 @@ import org.glassfish.api.admin.CommandModel;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.InjectionManager;
 import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 
-import javax.inject.Inject;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 /**
  * Generic list command implementation.
@@ -64,12 +64,12 @@ import java.util.List;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericListCommand  extends GenericCrudCommand implements AdminCommand {
+public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AccessRequired.Authorizer {
 
     CommandModel model;
     Listing listing;
     
-    @AccessRequired.To("read")
+//    @AccessRequired.To("read")
     private ConfigBeanProxy parentBean;
 
     @Override
@@ -102,6 +102,13 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
         }
         
     }
+
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final Collection<AccessCheck> checks = new ArrayList<AccessCheck>();
+        checks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(parentBean), "read"));
+        return checks;
+    }
+    
     
     @Override
     void prepareInjection(final AdminCommandContext ctx) {
