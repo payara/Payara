@@ -239,6 +239,10 @@ public class MarshallingUtils {
                     map.put(key, processJsonArray((JSONArray)value));
                 } else if (value instanceof JSONObject) {
                     map.put(key, processJsonObject((JSONObject)value));
+                } else if (value.getClass().getSimpleName().equalsIgnoreCase("null")) {
+                    // The Map may not store null values, but we shouldn't rely on
+                    // that behavior, just to be safe
+                    map.put(key, null);
                 } else {
                     map.put(key, value);
                 }

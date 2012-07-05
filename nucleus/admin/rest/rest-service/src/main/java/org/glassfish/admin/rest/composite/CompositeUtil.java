@@ -103,7 +103,7 @@ public class CompositeUtil {
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
-    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass, Class<?>[] extensions) throws Exception {
+    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass, Class<?>[] extensions) {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
             // TODO: This will be replace by HK2 code, once the HK2 integration is completed
@@ -134,11 +134,19 @@ public class CompositeUtil {
 
             createConstructor(classWriter, className, properties);
             classWriter.visitEnd();
-            Class<?> newClass = defineClass(similarClass, className, classWriter.toByteArray());
+            Class<?> newClass;
+            try {
+                newClass = defineClass(similarClass, className, classWriter.toByteArray());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
             generatedClasses.put(className, newClass);
         }
-
-        return (T) generatedClasses.get(className).newInstance();
+        try {
+            return (T) generatedClasses.get(className).newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
@@ -194,17 +202,16 @@ public class CompositeUtil {
         return parameters;
     }
 
+    public static ActionReporter executeCommand(String command) {
+        return executeCommand(command, new ParameterMap());
+    }
+    
     public static ActionReporter executeCommand(String command, ParameterMap parameters) {
-        RestActionReporter ar;
-        if (!parameters.entrySet().isEmpty()) {
-            ar = ResourceUtil.runCommand(command, parameters, Globals.getDefaultBaseServiceLocator(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
-            if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(ar.getCombinedMessage()).
-                        build());
-            }
-        } else {
-            ar = new RestActionReporter();
-            ar.setActionExitCode(ExitCode.SUCCESS);
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters, Globals.getDefaultBaseServiceLocator(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+                    entity(ar.getCombinedMessage()).
+                    build());
         }
         return ar;
     }
@@ -228,7 +235,6 @@ public class CompositeUtil {
 
                         for (int i = 0; i < array.length(); i++) {
                             Object element = array.get(i);
-                            System.out.println(element.getClass());
                             if (JSONObject.class.isAssignableFrom(element.getClass())) {
                                 values.add(hydrateClass((Class) type, (JSONObject) element));
                             } else {
