@@ -278,10 +278,10 @@ public class CommandSecurityChecker {
             final List<AccessCheckWork> accessChecks,
             final Class<?> c,
             final boolean isTaggable) {
-        final List<String> keyValues = new ArrayList<String>();
-        for (String key : arTyped.key()) {
-            
-        }
+//        final List<String> keyValues = new ArrayList<String>();
+//        for (String key : arTyped.key()) {
+//            
+//        }
     }
 //    private boolean addAccessChecksFromFields(
 //            final Class<?> c,
@@ -353,7 +353,7 @@ public class CommandSecurityChecker {
             final AdminCommand command,
             final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
-        final Class<?> type = arTyped.type();
+//        final Class<?> type = arTyped.type();
         return false; // not yet anyway
     }
     
@@ -451,12 +451,12 @@ public class CommandSecurityChecker {
     }
         
         
-    private String resourceKeyFromReSTEndpoint(final RestEndpoint restEndpoint) {
-        for (RestParam p : restEndpoint.params()) {
-
-        }
-        return "";
-    }
+//    private String resourceKeyFromReSTEndpoint(final RestEndpoint restEndpoint) {
+//        for (RestParam p : restEndpoint.params()) {
+//
+//        }
+//        return "";
+//    }
     
     private static class AccessCheckWork {
         private final AccessCheck accessCheck;
