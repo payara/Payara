@@ -359,7 +359,7 @@ public class StandardManager
     public void clearStore() {
         File file = file();
         if (file != null && file.exists()) {
-            file.delete();
+            deleteFile(file);
         }
     }
     // END SJSAS 6359401
@@ -437,12 +437,15 @@ public class StandardManager
                 // ignore
             }
             // Delete the persistent storage file
-            if (!file.delete() && log.isLoggable(Level.FINE)) {
-                log.fine("Cannot delete file: " + file);
-            }
+            deleteFile(file);
         }
     }
 
+    private void deleteFile(File file) {
+        if (!file.delete() && log.isLoggable(Level.FINE)) {
+            log.fine("Cannot delete file: " + file);
+        }
+    }
 
     /*
      * Reads any sessions from the given input stream, and initializes the

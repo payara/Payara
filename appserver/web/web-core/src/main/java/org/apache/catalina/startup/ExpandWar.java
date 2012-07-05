@@ -205,7 +205,13 @@ public class ExpandWar {
                 expand(input, expandedFile);
                 long lastModified = jarEntry.getTime();
                 if ((lastModified != -1) && (lastModified != 0)) {
-                     expandedFile.setLastModified(lastModified);
+                    if (!expandedFile.setLastModified(lastModified)) {
+                        if (log.isLoggable(Level.WARNING)) {
+                            log.warning(sm.getString(
+                                    "expandWar.setLastModifiedFailed",
+                                    expandedFile.getAbsoluteFile()));
+                        }
+                    }
                 }
                 input.close();
                 input = null;
@@ -432,7 +438,10 @@ public class ExpandWar {
             if (file.isDirectory()) {
                 deleteDir(file, logFailure);
             } else {
-                file.delete();
+                if (!file.delete() && logFailure) {
+                    log.severe(sm.getString(
+                            "expandWar.deleteFailed", file.getAbsolutePath()));
+                }
             }
         }
 
