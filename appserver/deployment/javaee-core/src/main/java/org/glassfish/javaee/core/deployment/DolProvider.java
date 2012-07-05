@@ -158,6 +158,10 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         String xmlValidationLevel = dasConfig.getDeployXmlValidation();
         archivist.setXMLValidationLevel(xmlValidationLevel);
         if (xmlValidationLevel.equals("none")) {
+          archivist.setXMLValidation(false);
+        }
+        archivist.setRuntimeXMLValidationLevel(xmlValidationLevel);
+        if (xmlValidationLevel.equals("none")) {
           archivist.setRuntimeXMLValidation(false);
         }
         Collection<Sniffer> sniffers = dc.getTransientAppMetaData(DeploymentProperties.SNIFFERS, Collection.class);
