@@ -91,7 +91,7 @@ public class RestTestBase {
 
     private static String currentTestClass = "";
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(groups="online")
     public static void initialize() {
         adminPort = getParameter("admin.port", "4848");
         instancePort = getParameter("instance.port", "8080");
@@ -104,7 +104,7 @@ public class RestTestBase {
         rtb.get("/domain/rotate-log");
     }
 
-    @AfterClass(alwaysRun=true)
+    @AfterClass(groups="online")
     public static void captureLog() {
         try {
 
@@ -133,7 +133,6 @@ public class RestTestBase {
 
     @BeforeMethod(alwaysRun=true)
     public void setup() {
-        getClient();
         currentTestClass = this.getClass().getName();
     }
 
@@ -145,6 +144,7 @@ public class RestTestBase {
         return baseUrl + getContextRoot() + address;
     }
 
+    @BeforeMethod(groups="online")
     protected void getClient() {
         if (client == null) {
             client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();

@@ -206,6 +206,18 @@ public class CompositeUtil {
         return executeCommand(command, new ParameterMap());
     }
     
+    public static ActionReporter executeCommand(String command, String... params) {
+        if (params.length % 2 != 0) {
+            throw new IllegalArgumentException("There must be an even number of parameters passed to CompositeUtil.executeCommand(String, Object...);");
+        }
+        ParameterMap pm = new ParameterMap();
+        for (int i = 0; i < params.length; i += 2) {
+            pm.add(params[i], params[i+1]);
+        }
+        
+        return executeCommand(command, new ParameterMap());
+    }
+
     public static ActionReporter executeCommand(String command, ParameterMap parameters) {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters, Globals.getDefaultBaseServiceLocator(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
