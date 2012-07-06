@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,129 +49,138 @@
  *		2. Tools->Options->Indentation Engines->Java Indentation Engine->Expand Tabs to Spaces = False.
  *		3. Tools->Options->Indentation Engines->Java Indentation Engine->Number of Spaces per Tab = 4.
  */
-
 package com.sun.enterprise.admin.util.jmx;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import javax.management.AttributeList;
+import java.util.*;
 import javax.management.Attribute;
-import java.util.StringTokenizer;
+import javax.management.AttributeList;
 
-/** A class that has some useful utility methods to deal with
- * <ul>
- * <li> Jmx Attributes </li>
- * <li> Jmx AttributeLists. </li>
- * </ul>
- * It is expected to enhance this class with more utility methods.
- * @author  Kedar.Mhaswade@Sun.Com
+/**
+ * A class that has some useful utility methods to deal with <ul> <li> Jmx
+ * Attributes </li> <li> Jmx AttributeLists. </li> </ul> It is expected to
+ * enhance this class with more utility methods.
+ *
+ * @author Kedar.Mhaswade@Sun.Com
  * @since Sun Java System Application Server 8
  */
 public class AttributeListUtils {
-	
-	private AttributeListUtils() {
+
+    private AttributeListUtils() {
         //disallow
-	}
-	
-	/** Checks whether this list contains a JMX {@link Attribute} with given name. Note that
-	 * this method will return true if there is at least one attribute with given name.
+    }
+
+    /**
+     * Checks whether this list contains a JMX {@link Attribute} with given
+     * name. Note that this method will return true if there is at least one
+     * attribute with given name.
+     *
      * @param al an instance of {@link AttributeList}
-	 * @param name a String representing the name of the attribute. The name may not be null.
-	 * @return true if there is at least one attribute in the list with given name,
-	 * false otherwise
-	 * @throws IllegalArgumentException if the attribute list or name is null 
-	 */
-	public static final boolean containsNamedAttribute(final AttributeList al,
-    final String name) {
-		if (al == null || name == null)
-			throw new IllegalArgumentException ("null arg");
-		boolean contains = false;
-		final Iterator it = al.iterator();
-		while (it.hasNext()) {
-			final Attribute at = (Attribute) it.next();
-			if (name.equals(at.getName())) { //attribute name may not be null - guaranteed
-				contains = true;
-				break;
-			}
-		}
-		return ( contains );
-	}
-	
-	/** Checks whether an attribute with the name same as that of the given
-	 * attribute exists in this list. The given name may not be null.
+     * @param name a String representing the name of the attribute. The name may
+     * not be null.
+     * @return true if there is at least one attribute in the list with given
+     * name, false otherwise
+     * @throws IllegalArgumentException if the attribute list or name is null
+     */
+    public static boolean containsNamedAttribute(final AttributeList al,
+            final String name) {
+        if (al == null || name == null) {
+            throw new IllegalArgumentException("null arg");
+        }
+        boolean contains = false;
+        final Iterator it = al.iterator();
+        while (it.hasNext()) {
+            final Attribute at = (Attribute) it.next();
+            if (name.equals(at.getName())) { //attribute name may not be null - guaranteed
+                contains = true;
+                break;
+            }
+        }
+        return (contains);
+    }
+
+    /**
+     * Checks whether an attribute with the name same as that of the given
+     * attribute exists in this list. The given name may not be null.
+     *
      * @param al an instance of {@link AttributeList}
-	 * @param a an Attribute with a name and a value
-	 * @return true if there exists at least one attribute with same name, false
-	 * otherwise
-	 * @throws IllegalArgumentException if the attribute list or name is null 
-	 */
-	public static final boolean containsNamedAttribute(final AttributeList al,
-    final Attribute a) {
-		if (al == null || a == null)
-			throw new IllegalArgumentException ("null arg");
-		return ( containsNamedAttribute(al, a.getName()) );
-	}
-	
-    /** Returns the given list as a map of attributes, keyed on the names of the attribute
-     * in the list. The passed argument may not be null. The mappings are between
-     * the names of attributes and attributes themselves.
+     * @param a an Attribute with a name and a value
+     * @return true if there exists at least one attribute with same name, false
+     * otherwise
+     * @throws IllegalArgumentException if the attribute list or name is null
+     */
+    public static boolean containsNamedAttribute(final AttributeList al,
+            final Attribute a) {
+        if (al == null || a == null) {
+            throw new IllegalArgumentException("null arg");
+        }
+        return (containsNamedAttribute(al, a.getName()));
+    }
+
+    /**
+     * Returns the given list as a map of attributes, keyed on the names of the
+     * attribute in the list. The passed argument may not be null. The mappings
+     * are between the names of attributes and attributes themselves.
+     *
      * @param al the list of attributes that need to be mapped
      * @return an instance of {@link Map}
      * @throws IllegalArgumentException if the argument is null
      */
-    public static final Map asNameMap(final AttributeList al) {
+    public static Map asNameMap(final AttributeList al) {
         if (al == null) {
-			throw new IllegalArgumentException ("null arg");
+            throw new IllegalArgumentException("null arg");
         }
-        final Map m         = new HashMap();
-        final Iterator it   = al.iterator();
+        final Map m = new HashMap();
+        final Iterator it = al.iterator();
         while (it.hasNext()) {
             final Attribute a = (Attribute) it.next();
             m.put(a.getName(), a);
         }
-        return ( m );
+        return (m);
     }
-    
-    /** JMX 1.2 specification had a weird limitation that a Dynamic MBean
-     * may not have an attribute whose name is <b> not a valid Java 
-     * identifier <b>. This method is a utility method to convert the any
-     * arbitrary name into a String that can be a valid JMX 1.2 attribute.
-     * Every character in the string passed that is neither a Character.isJavaIdentifierStart
-     * nor a Character.isJavaIdentifierPart is replace with a valid character
-     * '_'.
+
+    /**
+     * JMX 1.2 specification had a weird limitation that a Dynamic MBean may not
+     * have an attribute whose name is <b> not a valid Java identifier <b>. This
+     * method is a utility method to convert the any arbitrary name into a
+     * String that can be a valid JMX 1.2 attribute. Every character in the
+     * string passed that is neither a Character.isJavaIdentifierStart nor a
+     * Character.isJavaIdentifierPart is replace with a valid character '_'.
+     *
      * @param name a String that represents any non null name
      * @return a String that represents a name valid for a JMX 1.2 MBean.
-     * @throws IllegalArgumentException if the parameter is null or is of zero length
+     * @throws IllegalArgumentException if the parameter is null or is of zero
+     * length
      */
-    public static final String toJmx12Attribute(final String name) {
-        if (name == null || name.length() == 0)
-            throw new IllegalArgumentException ("invalid arg");
+    public static String toJmx12Attribute(final String name) {
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("invalid arg");
+        }
         final char rc = '_';
         assert (Character.isJavaIdentifierStart(rc) && Character.isJavaIdentifierPart(rc));
         final char[] chars = new char[name.length()];
         name.getChars(0, name.length(), chars, 0);
-        if (! Character.isJavaIdentifierStart(chars[0])) {
+        if (!Character.isJavaIdentifierStart(chars[0])) {
             chars[0] = rc;
         }
-        for (int i = 1 ; i < name.length() ; i++) { //note the index
-            if (! Character.isJavaIdentifierPart(chars[i])) {
+        for (int i = 1; i < name.length(); i++) { //note the index
+            if (!Character.isJavaIdentifierPart(chars[i])) {
                 chars[i] = rc;
             }
         }
-        return ( new String(chars) );
+        return (new String(chars));
     }
-    
-    /** Returns a String representation of an attribute list such that:
-     * <ul>
-     *  <li> Each attribute is a name and value separated by a ','. toString() on the value is called. </li>
-     *  <li> Each pair is separated by a new line character '\n'. </li>
-     * </ul>
-     * @param al the list of attributes - may be null, in which case an empty String is returned.
+
+    /**
+     * Returns a String representation of an attribute list such that: <ul> <li>
+     * Each attribute is a name and value separated by a ','. toString() on the
+     * value is called. </li> <li> Each pair is separated by a new line
+     * character '\n'. </li> </ul>
+     *
+     * @param al the list of attributes - may be null, in which case an empty
+     * String is returned.
      * @return a String representing the parameter passed
      */
-    public static final String toString(final AttributeList al) {
+    public static String toString(final AttributeList al) {
         final StringBuffer sb = new StringBuffer();
         final char SEP = ',';
         final char NL = '\n';
@@ -184,41 +193,45 @@ public class AttributeListUtils {
         }
         return (sb.toString());
     }
-    
+
     public static String dash2CamelCase(String dashed) {
-        /* This algorithm is obviously not accurate, as I have not written
-         * a generic parser/lexical analyzer, nor have I written a BNF. All it
-         * does is it converts Strings  like abc-def-ghi to AbcDefGhi. A hyphen, if followed
-         * by an alphabet, will be removed and the alphabet is capitalized. No more
-         * complications. The passed String is converted into lower case by default.
+        /*
+         * This algorithm is obviously not accurate, as I have not written a
+         * generic parser/lexical analyzer, nor have I written a BNF. All it
+         * does is it converts Strings like abc-def-ghi to AbcDefGhi. A hyphen,
+         * if followed by an alphabet, will be removed and the alphabet is
+         * capitalized. No more complications. The passed String is converted
+         * into lower case by default.
          */
-        if (dashed == null)
-            throw new IllegalArgumentException ("Null Arg");
-        dashed = dashed.toLowerCase();
+        if (dashed == null) {
+            throw new IllegalArgumentException("Null Arg");
+        }
+        dashed = dashed.toLowerCase(Locale.ENGLISH);
         final ArrayList list = new ArrayList();
         final StringTokenizer tz = new StringTokenizer(dashed, "-");
         while (tz.hasMoreTokens()) {
             list.add(tz.nextToken());
         }
         final String[] tmp = new String[list.size()];
-        final String[] strings = getCamelCaseArray((String[])list.toArray(tmp));
-        return ( strings2String(strings) );
+        final String[] strings = getCamelCaseArray((String[]) list.toArray(tmp));
+        return (strings2String(strings));
     }
-    
+
     private static String[] getCamelCaseArray(final String[] from) {
         final String[] humps = new String[from.length];
-        for (int i = 0 ; i < from.length ; i++) {
+        for (int i = 0; i < from.length; i++) {
             final StringBuffer sb = new StringBuffer(from[i]);
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
             humps[i] = sb.toString();
         }
-        return ( humps );
+        return (humps);
     }
+
     private static String strings2String(final String[] a) {
         final StringBuffer sb = new StringBuffer();
-        for (int i = 0 ; i < a.length ; i++) {
+        for (int i = 0; i < a.length; i++) {
             sb.append(a[i]);
         }
-        return ( sb.toString() );
+        return (sb.toString());
     }
 }

@@ -90,6 +90,7 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
 
     public ActionReport getReport() { return this.aReport; }
 
+    @Override
     public void run() {
         try {
             executeCommand(params);
@@ -98,12 +99,12 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
                 aReport.setMessage(strings.getLocalString("ice.successmessage", 
                         "{0}:\n{1}\n", getServer().getName(), getCommandOutput()));
             Map<String, String> attributes = this.getAttributes();
-            for(String key : attributes.keySet()) {
+            for(Map.Entry<String, String> ae : attributes.entrySet()) {
+                String key = ae.getKey();
                 if(key.endsWith("_value"))
                     continue;
                 if(!key.endsWith("_name")) {
-                    if(attributes.get(key) != null)
-                        aReport.getTopMessagePart().addProperty(key, attributes.get(key));
+                    aReport.getTopMessagePart().addProperty(key, ae.getValue());
                     continue;
                 }
                 String keyWithoutSuffix = key.substring(0, key.lastIndexOf("_name"));

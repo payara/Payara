@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.util;
 
 import java.io.File;
@@ -51,34 +50,40 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  */
 public final class LineTokenReplacer {
-    
-    private final TokenValue[]      tokenArray;
+
+    private final TokenValue[] tokenArray;
     private final String charsetName;
-    
+
     public LineTokenReplacer(TokenValueSet tokens) {
         this(tokens, null);
     }
-    
-    /** Creates a new instance of TokenReplacer */
+
+    /**
+     * Creates a new instance of TokenReplacer
+     */
     public LineTokenReplacer(TokenValueSet tokens, String charset) {
-            final Object[] tmp = tokens.toArray();
-            final int length = tmp.length;
-            this.tokenArray = new TokenValue[length];
-            System.arraycopy(tmp, 0, tokenArray, 0, length);
-            this.charsetName = charset;
+        final Object[] tmp = tokens.toArray();
+        final int length = tmp.length;
+        this.tokenArray = new TokenValue[length];
+        System.arraycopy(tmp, 0, tokenArray, 0, length);
+        this.charsetName = charset;
     }
-    
+
     /**
      * Get a Reader that substitutes the tokens in the content that it returns.
+     *
      * @param in the content in which tokens are to be substituted
      * @return a Reader that returns the substituted content
      */
     public Reader getReader(final Reader in) {
         return new Reader() {
+
             BufferedReader reader = new BufferedReader(in);
             String line = null;
             final String eol = System.getProperty("line.separator");
@@ -113,54 +118,55 @@ public final class LineTokenReplacer {
         //Edge-cases
         BufferedReader reader = null;
         BufferedWriter writer = null;
+        // @todo Java SE 7 - use try with resources
         try {
             reader = new BufferedReader(new FileReader(inputFile));
-            if(charsetName!=null)
-            {
-                FileOutputStream outputStream = new FileOutputStream(outputFile);
-                Charset charset = Charset.forName(charsetName);
-                writer = new BufferedWriter(new OutputStreamWriter(outputStream, charset));
+            try {
+                if (charsetName != null) {
+                    FileOutputStream outputStream = new FileOutputStream(outputFile);
+                    Charset charset = Charset.forName(charsetName);
+                    writer = new BufferedWriter(new OutputStreamWriter(outputStream, charset));
+                } else {
+                    writer = new BufferedWriter(new FileWriter(outputFile));
+                }
+                String lineContents;
+                while ((lineContents = reader.readLine()) != null) {
+                    String modifiedLine = replaceLine(lineContents);
+                    writer.write(modifiedLine);
+                    writer.newLine();
+                }
+            } finally {
+                if (writer != null) {
+                    writer.close();
+                }
             }
-            else
-            {
-                writer = new BufferedWriter(new FileWriter(outputFile));
-            }
-            String lineContents = null;
-            while((lineContents = reader.readLine()) != null) {
-                String modifiedLine = replaceLine(lineContents);
-                writer.write(modifiedLine);
-                writer.newLine();
-            }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
-        }
-        finally {
-            try {
-                if (reader != null)
+        } finally {
+            if (reader != null) {
+                try {
                     reader.close();
-                if (writer != null)
-                    writer.close();
+                } catch (IOException ex) {
+                }
             }
-            catch(Exception e) {}
         }
     }
-    
+
     public void replace(String inputFileName, String outputFileName) {
         this.replace(new File(inputFileName), new File(outputFileName));
     }
-    
+
     private String replaceLine(String lineWithTokens) {
         String tokenFreeString = lineWithTokens;
-        
-        for (int i = 0 ; i < tokenArray.length ; i++) {
-            TokenValue aPair        = tokenArray[i];
+
+        for (int i = 0; i < tokenArray.length; i++) {
+            TokenValue aPair = tokenArray[i];
             //System.out.println("To replace: " + aPair.delimitedToken);
             //System.out.println("Value replace: " + aPair.value);
             tokenFreeString = tokenFreeString.replace(aPair.delimitedToken,
-                aPair.value);
+                    aPair.value);
         }
-        return ( tokenFreeString );
+        return (tokenFreeString);
     }
 }

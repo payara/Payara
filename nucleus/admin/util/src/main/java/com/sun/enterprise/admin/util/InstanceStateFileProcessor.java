@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,22 +87,29 @@ class InstanceStateFileProcessor {
 
     static public InstanceStateFileProcessor createNew(HashMap<String, InstanceState> st, File xmlFileObject)
             throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(xmlFileObject));
-        writer.write("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
-        writer.newLine();
-        writer.write("<instance-state version=\"1.0\">");
-        writer.newLine();
-        writer.write("<gms-enabled>false</gms-enabled>");
-        writer.newLine();
-        for (String s : st.keySet()) {
-            writer.write("<instance name=\"" + s + "\" state=\""+
-                    InstanceState.StateType.NO_RESPONSE.getDescription()+"\" />");
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(xmlFileObject));
+
+            writer.write("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
             writer.newLine();
+            writer.write("<instance-state version=\"1.0\">");
+            writer.newLine();
+            writer.write("<gms-enabled>false</gms-enabled>");
+            writer.newLine();
+            for (String s : st.keySet()) {
+                writer.write("<instance name=\"" + s + "\" state=\""
+                        + InstanceState.StateType.NO_RESPONSE.getDescription() + "\" />");
+                writer.newLine();
+            }
+            writer.write("</instance-state>");
+            writer.newLine();
+            writer.flush();
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
         }
-        writer.write("</instance-state>");
-        writer.newLine();
-        writer.flush();
-        writer.close();
         return new InstanceStateFileProcessor(st, xmlFileObject);
     }
 
