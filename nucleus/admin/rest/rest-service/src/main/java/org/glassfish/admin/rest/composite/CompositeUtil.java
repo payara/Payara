@@ -215,7 +215,7 @@ public class CompositeUtil {
             pm.add(params[i], params[i+1]);
         }
         
-        return executeCommand(command, new ParameterMap());
+        return executeCommand(command, pm);
     }
 
     public static ActionReporter executeCommand(String command, ParameterMap parameters) {
