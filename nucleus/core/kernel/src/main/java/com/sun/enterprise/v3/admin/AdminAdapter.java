@@ -230,7 +230,11 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 report.setMessage("V3 cannot process this command at this time, please wait");            
             } else {
                 final Subject s = authenticator.loginAsAdmin(req);
-                if ( ! checkAccess(s, req.getRemoteHost(), report, res)) {
+                if (s == null) {
+                    reportAuthFailure(res, report, "adapter.auth.userpassword",
+                        "Invalid user name or password",
+                        HttpURLConnection.HTTP_UNAUTHORIZED,
+                        "WWW-Authenticate", "BASIC");
                     return;
                 }
                 report = doCommand(requestURI, req, report, outboundPayload, s);

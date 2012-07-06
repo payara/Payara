@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.LocalPassword;
+import org.glassfish.security.common.PrincipalImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -347,6 +349,12 @@ public class AdminLoginModule implements LoginModule {
             if (p != null) {
                 subject.getPrincipals().add(p);
                 logger.log(PROGRESS_LEVEL, "Attaching Principal {0}", p.getName());
+                for (SecureAdminPrincipal sap : secureAdmin.getSecureAdminPrincipal()) {
+                    if (sap.getDn().equals(p.getName())) {
+                        subject.getPrincipals().add(new PrincipalImpl(AdminConstants.DOMAIN_ADMIN_GROUP_NAME));
+                        break;
+                    }
+                }
             }
             return p != null;
         }
@@ -434,6 +442,8 @@ public class AdminLoginModule implements LoginModule {
                         pwCB.getPassword(), 
                         authRealm);
                 subject.getPrivateCredentials().add(pwCred);
+                final Principal adminGroupPrincipal = new PrincipalImpl(AdminConstants.DOMAIN_ADMIN_GROUP_NAME);
+                subject.getPrincipals().add(adminGroupPrincipal);
                 logger.log(PROGRESS_LEVEL, "AdminLoginModule detected local password");
             }
             return result;

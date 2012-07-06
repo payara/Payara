@@ -53,6 +53,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.*;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
@@ -87,9 +88,8 @@ public class CommandSecurityChecker {
     @Inject
     private BaseServiceLocator locator;
 
-// TODO waiting for the correct config and implementation
-//    @Inject
-//    private AuthorizationService authService;
+    @Inject
+    private AuthorizationService authService;
     
     @Inject
     private NamedResourceManager namedResourceMgr;
@@ -126,7 +126,7 @@ public class CommandSecurityChecker {
         }
     }
     
-    private final static AuthService authService = new AuthService();
+//    private final static AuthService authService = new AuthService();
     
     /**
      * Reports whether the Subject is allowed to perform the specified admin command.
@@ -152,7 +152,7 @@ public class CommandSecurityChecker {
                         failedAccessChecks.add(acWork.accessCheck);
                     }
                 }
-                throw new SecurityException(failedAccessChecks.toString());
+                throw new SecurityException();
             }
         } catch (Exception ex) {
             throw new SecurityException(ex);
@@ -175,6 +175,13 @@ public class CommandSecurityChecker {
         addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, isTaggable);
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
+        /*
+         * If this command has no access requirements specified, use a
+         * default one requiring write access on the domain.
+         */
+        if (accessChecks.isEmpty()) {
+            accessChecks.add(new BlanketAccessCheckWork(command));
+        }
         boolean result = true;
         final StringBuilder sb = (isTaggable ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing on ").append(command.getClass().getName()).append(LINE_SEP) : null);
         for (final AccessCheckWork a : accessChecks) {
@@ -360,9 +367,6 @@ public class CommandSecurityChecker {
     private String processTokens(final String expr, final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         
         final Matcher m = TOKEN_PATTERN.matcher(expr);
-        if ( ! m.matches()) {
-            return expr;
-        }
         final StringBuffer translated = new StringBuffer();
         while (m.find()) {
             final String token = (m.group(1) != null ? m.group(1) : m.group(2));
@@ -465,6 +469,12 @@ public class CommandSecurityChecker {
         private AccessCheckWork(final AccessCheck accessCheck, final String tag) {
             this.accessCheck = accessCheck;
             this.tag = tag;
+        }
+    }
+    
+    private static class BlanketAccessCheckWork extends AccessCheckWork {
+        private BlanketAccessCheckWork(final AdminCommand c) {
+            super(new AccessCheck("domain", "write"),"  Blanket access control on " + c.getClass().getName());
         }
     }
     

@@ -175,13 +175,13 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
         //default KS password
 
 
-        if (configDir != null) {
+        if (configDir.isDirectory()) {
             for (File configFile : configDir.listFiles()) {
-                if (configFile.getName().endsWith(NSS)) {
-                    return true;
+                    if (configFile.getName().endsWith(NSS)) {
+                        return true;
+                    }
                 }
             }
-        }
 
         return false;
     }
