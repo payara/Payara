@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,16 +39,14 @@
  */
 package org.glassfish.admin.rest;
 
-import java.util.Map;
 import java.net.URISyntaxException;
-import org.junit.After;
 import java.util.HashMap;
-import org.junit.Before;
-import org.junit.Test;
-
+import java.util.Map;
 import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.*;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * This class tests the changes to the handling of @Element("*") instances
@@ -60,7 +58,7 @@ public class ElementStarTest extends RestTestBase {
     protected String instanceName1;
     protected String instanceName2;
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void before() {
         instanceName1 = "instance_" + generateRandomString();
         instanceName2 = "instance_" + generateRandomString();
@@ -71,7 +69,7 @@ public class ElementStarTest extends RestTestBase {
         assertTrue(isSuccess(response));
     }
 
-    @After
+    @AfterMethod(alwaysRun=true)
     public void after() {
         Response response = delete("/domain/servers/server/" + instanceName1);
         assertTrue(isSuccess(response));
@@ -79,7 +77,7 @@ public class ElementStarTest extends RestTestBase {
         assertTrue(isSuccess(response));
     }
 
-    @Test
+    @Test(groups="online")
     public void testApplications() throws URISyntaxException {
         ApplicationTest at = getTestClass(ApplicationTest.class);
         final String app1 = "app" + generateRandomString();
@@ -95,7 +93,7 @@ public class ElementStarTest extends RestTestBase {
         assertEquals(2, children.size());
     }
 
-    @Test
+    @Test(groups="online")
     public void testResources() {
         // The DAS should already have two resource-refs (jdbc/__TimerPool and jdbc/__default)
         Response response = get ("/domain/servers/server/server/resource-ref");
@@ -103,7 +101,7 @@ public class ElementStarTest extends RestTestBase {
         assertTrue(children.size() >= 2);
     }
 
-    @Test
+    @Test(groups="online")
     public void testLoadBalancerConfigs() {
         final String lbName = "lbconfig-" + generateRandomString();
         Response response = post ("/domain/lb-configs/lb-config/",

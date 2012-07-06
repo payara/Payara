@@ -46,11 +46,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.Test;
-
 import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.*;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -60,13 +58,13 @@ public class JdbcTest extends RestTestBase {
     public static final String BASE_JDBC_RESOURCE_URL = "/domain/resources/jdbc-resource";
     public static final String BASE_JDBC_CONNECTION_POOL_URL = "/domain/resources/jdbc-connection-pool";
 
-    @Test
+    @Test(groups="online")
     public void testReadingPoolEntity() {
         Map<String, String> entity = getEntityValues(get(BASE_JDBC_CONNECTION_POOL_URL + "/__TimerPool"));
         assertEquals("__TimerPool", entity.get("name"));
     }
 
-    @Test
+    @Test(groups="online")
     public void testCreateAndDeletePool() {
         String poolName = "TestPool" + generateRandomString();
         Map<String, String> params = new HashMap<String, String>();
@@ -85,7 +83,7 @@ public class JdbcTest extends RestTestBase {
         assertEquals(404, response.getStatus());
     }
 
-//    @Test
+//    @Test(groups="online")
     // TODO: Disabled until 13348 is resolved
     public void testCreateResourceWithBackslash() {
         String poolName = "TestPool\\" + generateRandomString();
@@ -112,7 +110,7 @@ public class JdbcTest extends RestTestBase {
         assertEquals(404, response.getStatus());
     }
 
-    @Test
+    @Test(groups="online")
     public void createDuplicateResource() {
         final String resourceName = "jdbc/__default";
         Map<String, String> params = new HashMap<String, String>() {{
@@ -124,7 +122,7 @@ public class JdbcTest extends RestTestBase {
         assertFalse(isSuccess(response));
     }
 
-    @Test
+    @Test(groups="online")
     public void createDuplicateConnectionPool() {
         final String poolName = "DerbyPool";
         Map<String, String> params = new HashMap<String, String>() {{

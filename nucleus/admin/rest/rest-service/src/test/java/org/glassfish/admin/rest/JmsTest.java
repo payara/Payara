@@ -39,16 +39,13 @@
  */
 package org.glassfish.admin.rest;
 
-import org.junit.Test;
-import org.junit.Ignore;
-
-import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import javax.ws.rs.core.Response;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,7 +54,6 @@ import static org.junit.Assert.*;
  * Time: 2:28:27 PM
  * To change this template use File | Settings | File Templates.
  */
-@Ignore
 public class JmsTest extends RestTestBase {
     static final String URL_ADMIN_OBJECT_RESOURCE = "/domain/resources/admin-object-resource";
     static final String URL_CONNECTOR_CONNECTION_POOL = "/domain/resources/connector-connection-pool";
@@ -66,7 +62,7 @@ public class JmsTest extends RestTestBase {
     static final String URL_SEVER_JMS_DEST = "/domain/servers/server/server";
     static final String DEST_TYPE = "topic";
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsConnectionFactories() {
         final String poolName = "JmsConnectionFactory" + generateRandomString();
         Map<String, String> ccp_attrs = new HashMap<String, String>() {
@@ -130,7 +126,7 @@ public class JmsTest extends RestTestBase {
         checkStatusForSuccess(response);
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsDestinationResources() {
         final String jndiName = "jndi/" + generateRandomString();
         String encodedJndiName = jndiName;
@@ -157,7 +153,7 @@ public class JmsTest extends RestTestBase {
         checkStatusForSuccess(response);
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsPhysicalDestination() {
         final String destName = "jmsDest" + generateRandomString();
         final int maxNumMsgs = generateRandomNumber(500);
@@ -192,7 +188,7 @@ public class JmsTest extends RestTestBase {
         deleteJmsPhysicalDestination(destName, URL_SEVER_JMS_DEST);
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsPhysicalDestionationsWithClusters() {
         final String destName = "jmsDest" + generateRandomString();
         ClusterTest ct = getTestClass(ClusterTest.class);
@@ -223,13 +219,13 @@ public class JmsTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsPing() {
         String results = get(URL_SEVER_JMS_DEST + "/jms-ping").readEntity(String.class);
         assertTrue(results.contains("JMS-ping command executed successfully"));
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsFlush() {
         Map<String, String> payload = new HashMap<String, String>() {
             {
@@ -242,7 +238,7 @@ public class JmsTest extends RestTestBase {
         checkStatusForSuccess(response);
     }
 
-    @Test
+    @Test(groups="online-ignored")
     public void testJmsHosts() {
         final String jmsHostName = "jmshost" + generateRandomString();
         Map<String, String> newHost = new HashMap<String, String>() {

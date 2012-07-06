@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,34 +54,27 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.json.JsonJaxbFeature;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientModule;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-
-
-import static org.junit.Assert.fail;
 
 public class RestTestBase {
     protected static String baseUrl;
@@ -98,7 +91,7 @@ public class RestTestBase {
 
     private static String currentTestClass = "";
 
-    @BeforeClass
+    @BeforeClass(alwaysRun=true)
     public static void initialize() {
         adminPort = getParameter("admin.port", "4848");
         instancePort = getParameter("instance.port", "8080");
@@ -111,7 +104,7 @@ public class RestTestBase {
         rtb.get("/domain/rotate-log");
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun=true)
     public static void captureLog() {
         try {
 
@@ -138,7 +131,7 @@ public class RestTestBase {
         return CONTEXT_ROOT_MANAGEMENT;
     }
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void setup() {
         getClient();
         currentTestClass = this.getClass().getName();

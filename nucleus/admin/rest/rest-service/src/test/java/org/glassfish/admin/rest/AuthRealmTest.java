@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,13 @@
 
 package org.glassfish.admin.rest;
 
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import org.junit.Test;
-
 import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.*;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 public class AuthRealmTest extends RestTestBase {
     public static final String URL_LIST_GROUP_NAMES = "/domain/configs/config/server-config/security-service/auth-realm/admin-realm/list-group-names";
@@ -60,7 +58,7 @@ public class AuthRealmTest extends RestTestBase {
     public static final String URL_AUTH_REALM_CLASS_NAMES = "/domain/list-predefined-authrealm-classnames";
 
     // Disable this test for now...
-//    @Test
+//    @Test(groups="online")
     public void testListGroupNames() {
         Response response = get(URL_LIST_GROUP_NAMES, new HashMap<String, String>() {{
             put("userName", "admin");
@@ -75,13 +73,13 @@ public class AuthRealmTest extends RestTestBase {
         assertTrue(groups.size() > 0);
     }
 
-    @Test
+    @Test(groups="online")
     public void testSupportsUserManagement() {
         List<String> groups = getCommandResults(get(URL_SUPPORTS_USER_MANAGEMENT));
         assertEquals("true", groups.get(0));
     }
 
-//    @Test
+//    @Test(groups="online")
     public void testUserManagement() {
         final String userName = "user" + generateRandomString();
         Map<String, String> newUser = new HashMap<String, String>() {{
@@ -102,7 +100,7 @@ public class AuthRealmTest extends RestTestBase {
         assertFalse(values.contains(userName));
     }
 
-    @Test
+    @Test(groups="online")
     public void testListAuthRealmClassNames() {
         List<String> classNameList = getCommandResults(get(URL_AUTH_REALM_CLASS_NAMES));
         assertTrue(!classNameList.isEmpty());

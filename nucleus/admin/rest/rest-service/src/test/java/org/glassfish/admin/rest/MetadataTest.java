@@ -41,12 +41,10 @@
 package org.glassfish.admin.rest;
 
 import java.util.Map;
-import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-
 import javax.ws.rs.core.Response;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -56,7 +54,7 @@ public class MetadataTest extends RestTestBase {
     protected static final String URL_CONFIG = "/domain/configs/config.json";
     protected static final String URL_UPTIMECOMMAND = "/domain/uptime.json";
     
-    @Test
+    @Test(groups="online")
     public void configParameterTest() {
         Response response = options(URL_CONFIG);
         assertTrue(isSuccess(response));
@@ -70,7 +68,7 @@ public class MetadataTest extends RestTestBase {
         assertTrue(response.readEntity(String.class).contains("extraProperties"));
     }
     
-    @Test
+    @Test(groups="online")
     public void UpTimeMetadaDataTest() {
         Response response = options(URL_UPTIMECOMMAND);
         assertTrue(isSuccess(response));

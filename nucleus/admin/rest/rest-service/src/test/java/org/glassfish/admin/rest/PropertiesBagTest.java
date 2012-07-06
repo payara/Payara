@@ -49,13 +49,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -70,7 +65,7 @@ public class PropertiesBagTest extends RestTestBase {
     protected static final String URL_DERBYPOOL_PROPERTIES = "/domain/resources/jdbc-connection-pool/DerbyPool/property";
     private static final String REQUEST_FORMAT = MediaType.APPLICATION_JSON;
 
-    @Test
+    @Test(groups="online")
     public void propertyRetrieval() {
         Response response = get(URL_DOMAIN_PROPERTIES);
         checkStatusForSuccess(response);
@@ -78,17 +73,17 @@ public class PropertiesBagTest extends RestTestBase {
         assertTrue(isPropertyFound(properties, PROP_DOMAIN_NAME));
     }
 
-    @Test
+    @Test(groups="online")
     public void javaConfigProperties() {
         createAndDeleteProperties(URL_JAVA_CONFIG_PROPERTIES);
     }
 
-    @Test
+    @Test(groups="online")
     public void serverProperties() {
         createAndDeleteProperties(URL_SERVER_PROPERTIES);
     }
 
-    @Test
+    @Test(groups="online")
     public void propsWithEmptyValues() {
         List<Map<String, String>> properties = new ArrayList<Map<String, String>>();
         final String empty = "empty" + generateRandomNumber();
@@ -117,7 +112,7 @@ public class PropertiesBagTest extends RestTestBase {
         assertFalse(isPropertyFound(newProperties, bar));
     }
 
-    @Test
+    @Test(groups="online")
     public void testOptimizedPropertyHandling() {
         // First, test changing one property and adding a new
         List<Map<String, String>> properties = new ArrayList<Map<String, String>>();
@@ -177,7 +172,7 @@ public class PropertiesBagTest extends RestTestBase {
 
     // the prop name can not contain .
     // need to remove the . test when http://java.net/jira/browse/GLASSFISH-15418  is fixed
-//    @Test
+//    @Test(groups="online")
     public void testPropertiesWithDots() {
         List<Map<String, String>> properties = new ArrayList<Map<String, String>>();
         final String prop = "some.property.with.dots." + generateRandomNumber();
@@ -199,7 +194,7 @@ public class PropertiesBagTest extends RestTestBase {
     // saved. This test will create the jmsra config with a set of properties,
     // then update only one the object's properties, which should be a very quick,
     // inexpensive operation.
-    @Test
+    @Test(groups="online")
     public void testJmsRaCreateAndUpdate() {
         List<Map<String, String>> props = new ArrayList<Map<String, String>>(){{
            add(createProperty("AddressListBehavior", "random"));

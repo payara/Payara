@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,13 +46,11 @@ import java.util.Map;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import org.junit.After;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -75,7 +73,7 @@ public class JvmOptionsTest extends RestTestBase {
     private String URL_TEST_CONFIG;
     private String URL_TEST_CONFIG_JVM_OPTIONS;
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void createConfig() {
         if (configTest == null) {
             configTest = getTestClass(ConfigTest.class);
@@ -92,13 +90,13 @@ public class JvmOptionsTest extends RestTestBase {
         URL_TEST_CONFIG_JVM_OPTIONS = URL_TEST_CONFIG + "/java-config/jvm-options";
     }
 
-    @After
+    @AfterMethod(alwaysRun=true)
     public void deleteConfig() {
         configTest.deleteAndVerifyConfig(testConfigName);
     }
 
 
-    @Test
+    @Test(groups="online")
     public void getJvmOptions() {
         Response response = get(URL_SERVER_JVM_OPTIONS);
         assertTrue(isSuccess(response));
@@ -107,7 +105,7 @@ public class JvmOptionsTest extends RestTestBase {
         assertTrue(jvmOptions.size() > 0);
     }
 
-    @Test
+    @Test(groups="online")
     public void createAndDeleteOptions() {
         final String optionName = "-Doption" + generateRandomString();
         Map<String, String> newOptions = new HashMap<String, String>() {{
@@ -129,7 +127,7 @@ public class JvmOptionsTest extends RestTestBase {
         assertFalse(jvmOptions.contains(optionName+"=someValue"));
     }
 
-    @Test
+    @Test(groups="online")
     public void createAndDeleteOptionsWithoutValues() {
         final String option1Name = "-Doption" + generateRandomString();
         final String option2Name = "-Doption" + generateRandomString();
@@ -155,7 +153,7 @@ public class JvmOptionsTest extends RestTestBase {
         assertFalse(jvmOptions.contains(option2Name));
     }
 
-    @Test
+    @Test(groups="online")
     public void testIsolatedOptionsCreationOnNewConfig() {
         final String optionName = "-Doption" + generateRandomString();
 
@@ -177,7 +175,7 @@ public class JvmOptionsTest extends RestTestBase {
         assertFalse(jvmOptions.contains(optionName));
     }
 
-    @Test
+    @Test(groups="online")
     public void testProfilerJvmOptions() {
         final String profilerName = "profiler" + generateRandomString();
         final String optionName = "-Doption" + generateRandomString();
@@ -206,7 +204,7 @@ public class JvmOptionsTest extends RestTestBase {
         deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, true);
     }
 
-    @Test
+    @Test(groups="online")
     public void testJvmOptionWithColon() {
         final String optionName = "-XX:MaxPermSize";
         final String optionValue = "152m";

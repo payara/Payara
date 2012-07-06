@@ -41,8 +41,8 @@ package org.glassfish.admin.rest;
 
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  * This class will test that the zero-config effort is handled correctly by the
@@ -61,12 +61,11 @@ public class ZeroConfigTest extends RestTestBase {
      * server-config out of the box.  This should continue to be the case once
      * zero-config is fully implemented and integrated.
      */
-    @Test
+    @Test(groups="online")
     public void testTransactionService() {
         final Response response = get(BASE_SERVER_CONFIG_URL + "/transaction-service");
-        Assert.assertTrue(isSuccess(response));
+        assertTrue(isSuccess(response));
         Map<String, String> entity = getEntityValues(response);
-        System.out.println(entity);
-        Assert.assertNotNull(entity);
+        assertNotNull(entity);
     }
 }

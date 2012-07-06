@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,13 @@
 
 package org.glassfish.admin.rest;
 
-
-
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Response;
-
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  * @author Mitesh Meswani
@@ -62,7 +58,7 @@ public class TokenAuthenticationTest extends RestTestBase {
     private static final String GF_REST_TOKEN_COOKIE_NAME = "gfresttoken";
     private static final String TEST_GROUP = "newgroup";
 
-    @Test
+    @Test(groups="online")
     public void testTokenCreateAndDelete() {
         deleteUserAuthTestUser(null); // just in case
         //Verify a session token got created
@@ -78,7 +74,7 @@ public class TokenAuthenticationTest extends RestTestBase {
         assertTrue(isSuccess(response));
     }
 
-    @Test
+    @Test(groups="online")
     public void testAuthRequired() {
         Map<String, String> newUser = new HashMap<String, String>() {{
             put("id", AUTH_USER_NAME);

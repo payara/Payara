@@ -41,111 +41,111 @@ package org.glassfish.admin.rest.composite;
 
 import java.util.Map;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author jdlee
  */
 public class RestCollectionTest {
-    RestCollection rc;
+    private RestCollection rc;
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void setUp() {
         rc = new RestCollection();
     }
 
-    @Test
+    @Test(groups="offline")
     public void testAdd() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.size());
-        Assert.assertFalse(rc.isEmpty());
+        assertEquals(1, rc.size());
+        assertFalse(rc.isEmpty());
     }
 
-    @Test
+    @Test(groups="offline")
     public void testGet() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
 
         RestModel rm = rc.get("1");
-        Assert.assertEquals(tm, rm);
+        assertEquals(tm, rm);
     }
 
-    @Test
+    @Test(groups="offline")
     public void testRemove() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.size());
-        Assert.assertFalse(rc.isEmpty());
+        assertEquals(1, rc.size());
+        assertFalse(rc.isEmpty());
         rc.remove("1");
-        Assert.assertEquals(0, rc.size());
-        Assert.assertTrue(rc.isEmpty());
+        assertEquals(0, rc.size());
+        assertTrue(rc.isEmpty());
     }
 
-    @Test
+    @Test(groups="offline")
     public void testContainsKey() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.size());
-        Assert.assertFalse(rc.isEmpty());
-        Assert.assertTrue(rc.containsKey("1"));
+        assertEquals(1, rc.size());
+        assertFalse(rc.isEmpty());
+        assertTrue(rc.containsKey("1"));
     }
 
-    @Test
+    @Test(groups="offline")
     public void testContainsValue() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.size());
-        Assert.assertTrue(rc.containsValue(tm));
+        assertEquals(1, rc.size());
+        assertTrue(rc.containsValue(tm));
     }
 
-    @Test
+    @Test(groups="offline")
     public void testClear() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.size());
+        assertEquals(1, rc.size());
         rc.clear();
-        Assert.assertEquals(0, rc.size());
-        Assert.assertTrue(rc.isEmpty());
+        assertEquals(0, rc.size());
+        assertTrue(rc.isEmpty());
     }
 
-    @Test
+    @Test(groups="offline")
     public void testGetKeySet() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertTrue(rc.keySet().contains(new RestModelMetadata("1")));
+        assertTrue(rc.keySet().contains(new RestModelMetadata("1")));
     }
 
-    @Test
+    @Test(groups="offline")
     public void testGetValues() throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
 
         rc.put("1", tm);
-        Assert.assertEquals(1, rc.values().size());
+        assertEquals(1, rc.values().size());
     }
 
-    @Test
+    @Test(groups="offline")
     public void testEntrySet()  throws Exception {
         TestModel tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
-        Assert.assertNotNull(tm);
+        assertNotNull(tm);
         tm.setName("one");
         rc.put("1", tm);
         tm = CompositeUtil.getModel(TestModel.class, getClass(), null);
@@ -153,7 +153,7 @@ public class RestCollectionTest {
         rc.put("2", tm);
 
         Set<Map.Entry<RestModelMetadata, RestModel>> entries = rc.entrySet();
-        Assert.assertEquals(2, entries.size());
+        assertEquals(2, entries.size());
         // Test contents...
     }
 

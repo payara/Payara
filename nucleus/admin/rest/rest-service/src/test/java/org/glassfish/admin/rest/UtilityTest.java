@@ -39,13 +39,10 @@
  */
 package org.glassfish.admin.rest;
 
-import org.junit.Ignore;
-
 /**
  *
  * @author jdlee
  */
-@Ignore
 public class UtilityTest {
 
     // TODO - JERSEY2

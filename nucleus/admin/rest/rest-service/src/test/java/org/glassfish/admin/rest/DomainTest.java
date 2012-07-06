@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,18 @@
 
 package org.glassfish.admin.rest;
 
-import org.junit.Test;
-
-import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.*;
-
 import java.io.IOException;
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import javax.ws.rs.core.Response;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 public class DomainTest extends RestTestBase {
-    @Test
+    @Test(groups="online")
     public void testDomainGet() throws IOException {
         Map payload = new HashMap();
         Map<String, String> current = getEntityValues(get("/domain"));

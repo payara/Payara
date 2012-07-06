@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,12 +43,10 @@ package org.glassfish.admin.rest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-
 import javax.ws.rs.core.Response;
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -62,7 +60,7 @@ public class SystemPropertiesTest extends RestTestBase {
     public static final String URL_CREATE_INSTANCE = "/domain/create-instance";
     public static final String PROP_VALUE = "${com.sun.aas.instanceRoot}/foo";
 
-    @Test
+    @Test(groups="online")
     public void getSystemProperties() {
         Response response = get(URL_DAS_SYSTEM_PROPERTIES);
         checkStatusForSuccess(response);
@@ -70,7 +68,7 @@ public class SystemPropertiesTest extends RestTestBase {
         assertNotNull(systemProperties); // This may or may not be empty, depending on whether or not other tests failed
     }
 
-    @Test
+    @Test(groups="online")
     public void createSystemProperties() {
         final String prop1 = "property" + generateRandomString();
         final String prop2 = "property" + generateRandomString();
@@ -100,7 +98,7 @@ public class SystemPropertiesTest extends RestTestBase {
         checkStatusForSuccess(response);
     }
 
-    @Test
+    @Test(groups="online")
     public void createPropertiesWithColons() {
         final String prop1 = "property" + generateRandomString();
         Map<String, String> payload = new HashMap<String, String>() {{
@@ -126,7 +124,7 @@ public class SystemPropertiesTest extends RestTestBase {
         checkStatusForSuccess(response);
     }
     
-    @Test
+    @Test(groups="online")
     public void testNotResolvingDasSystemProperties() {
         final String prop1 = "property" + generateRandomString();
         Map<String, String> payload = new HashMap<String, String>() {{
@@ -136,7 +134,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(prop1, PROP_VALUE, PROP_VALUE+"-instace", "server");
     }
 
-    @Test
+    @Test(groups="online")
     public void testNotResolvingDasInstanceProperties() {
         final String instanceName = "in" + generateRandomNumber();
         final String propertyName = "property" + generateRandomString();
@@ -152,7 +150,7 @@ public class SystemPropertiesTest extends RestTestBase {
         createAndTestInstanceOverride(propertyName, PROP_VALUE, PROP_VALUE + "-instance", instanceName);
     }
     
-    @Test
+    @Test(groups="online")
     public void testNotResolvingClusterProperties() {
         final String propertyName = "property" + generateRandomString();
         final String clusterName = "c" + generateRandomNumber();

@@ -40,11 +40,11 @@
 
 package org.glassfish.admin.rest;
 
-import junit.framework.Assert;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.model.BaseModel;
-import org.junit.Test;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -54,13 +54,13 @@ public class CompositeUtilTest {
     private static String json =
             "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
 
-    @Test
+    @Test(groups="offline")
     public void readInJson() throws Exception {
         JSONObject o = new JSONObject(json);
         BaseModel model = CompositeUtil.hydrateClass(BaseModel.class, o);
 
-        Assert.assertEquals("testModel", model.getName());
-        Assert.assertEquals(2, model.getRelated().size());
-        Assert.assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
+        assertEquals("testModel", model.getName());
+        assertEquals(2, model.getRelated().size());
+        assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
     }
 }

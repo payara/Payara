@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,15 +40,12 @@
 
 package org.glassfish.admin.rest;
 
-import org.codehaus.jettison.json.JSONObject;
-import java.util.Map;
 import java.util.HashMap;
-import org.junit.Test;
-
+import java.util.Map;
 import javax.ws.rs.core.Response;
-
-import static org.junit.Assert.*;
-import org.junit.Ignore;
+import org.codehaus.jettison.json.JSONObject;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -58,8 +55,7 @@ public class NetworkListenerTest extends RestTestBase {
     protected static final String URL_PROTOCOL = "/domain/configs/config/server-config/network-config/protocols/protocol";
     protected static final String URL_SSL = "/domain/configs/config/server-config/network-config/protocols/protocol/http-listener-2/ssl";
 
-    @Test
-    @Ignore
+    @Test(groups="online-ignored")
     public void createHttpListener() {
         final String redirectProtocolName = "http-redirect"; //protocol_" + generateRandomString();
         final String portUniProtocolName = "pu-protocol"; //protocol_" + generateRandomString();
@@ -151,7 +147,7 @@ public class NetworkListenerTest extends RestTestBase {
 
     }
 
-    @Test
+    @Test(groups="online")
     public void testClearingProperties() {
         Map<String, String> params = new HashMap<String, String>() {{
             put("keyStore", "foo");

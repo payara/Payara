@@ -40,13 +40,13 @@
 
 package org.glassfish.admin.rest;
 
-import org.junit.Test;
 
-import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.Response;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.*;
 
 /**
  *
@@ -58,11 +58,12 @@ public class MonitoringTest extends RestTestBase {
     private static final String PING_CONNECTION_POOL_URL = "/domain/resources/ping-connection-pool";
     private static final String CONTEXT_ROOT_MONITORING = "monitoring";
 
+    @Override
     protected String getContextRoot() {
         return CONTEXT_ROOT_MONITORING;
     }
 
-    @Test
+    @Test(groups="online")
     public void initializeMonitoring() {
         // Enable monitoring
         String url = getManagementURL(MONITORING_RESOURCE_URL);
@@ -94,7 +95,7 @@ public class MonitoringTest extends RestTestBase {
      * Objective - Verify that basic monitoring is working
      * Strategy - Call /monitoring/domain and assert that "server" is present as child element
      */
-    @Test
+    @Test(groups="online")
     public void testBaseURL() {
         Map<String, String> entity = getChildResources(get("/domain")); // monitoring/domain
         assertNotNull(entity.get("server"));
@@ -104,7 +105,7 @@ public class MonitoringTest extends RestTestBase {
      * Objective - Verify that resources with dot work
      * Strategy - create a resource with "." in name and then try to access it
      */
-    @Test
+    @Test(groups="online")
     public void testDot() {
         // Step 1- Create a resource with "."
         final String POOL_NAME = "poolNameWith.dot";
@@ -142,7 +143,7 @@ public class MonitoringTest extends RestTestBase {
      * Objective - Verify that invalid resources returns 404
      * Strategy - Request an invalid resource under monitoring and ensure that 404 is returned
      */
-    @Test
+    @Test(groups="online")
     public void testInvalidResource() {
         Response response = get("/domain/server/foo");
         assertTrue("Did not receive ", response.getStatus() == javax.ws.rs.core.Response.Status.NOT_FOUND.getStatusCode() ) ;

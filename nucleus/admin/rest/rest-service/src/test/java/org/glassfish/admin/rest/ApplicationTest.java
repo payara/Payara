@@ -50,13 +50,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 /**
  *
  * @author jasonlee
@@ -66,7 +64,7 @@ public class ApplicationTest extends RestTestBase {
     public static final String URL_CODI_SAMPLE = "http://java.net/jira/secure/attachment/44850/GlassfishIssues.war";
     public static final String URL_CREATE_INSTANCE = "/domain/create-instance";
 
-    @Test
+    @Test(groups="online")
     public void testApplicationDeployment() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
 
@@ -82,7 +80,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-//    @Test
+//    @Test(groups="online")
     public void deployCodiApp() throws URISyntaxException, MalformedURLException, IOException {
         try {
             final String appName = "testApp" + generateRandomString();
@@ -105,7 +103,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="online")
     public void testApplicationDisableEnable() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
 
@@ -135,7 +133,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="online")
     public void listSubComponents() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
 
@@ -155,7 +153,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="online")
     public void testCreatingAndDeletingApplicationRefs() throws URISyntaxException {
         final String instanceName = "instance_" + generateRandomString();
         final String appName = "testApp" + generateRandomString();
@@ -193,7 +191,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="online")
     public void testGetContextRoot() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
 
@@ -213,8 +211,7 @@ public class ApplicationTest extends RestTestBase {
         }
     }
 
-    @Test
-    @Ignore
+    @Test(groups="online-ignored")
     public void testUndeploySubActionWarnings() throws URISyntaxException {
         final String appName = "testApp" + generateRandomString();
         final String serverName = "in" + generateRandomNumber();

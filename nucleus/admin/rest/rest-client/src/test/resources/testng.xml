@@ -1,0 +1,8 @@
+<suite name="REST_Tests" verbose="4">
+  <test name="REST_Tests">
+    <packages>
+      <package name="org.glassfish.admin.rest"/>
+      <package name="org.glassfish.admin.rest.composite"/>
+    </packages>
+  </test>
+</suite>

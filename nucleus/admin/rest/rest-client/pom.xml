@@ -56,11 +56,6 @@
     <description>Rest Interface for GlassFish Management and Monitoring</description>
 
     <dependencies>
-        <!--TODO - JERSEY2-->
-        <!--<dependency>-->
-            <!--<groupId>com.sun.jersey.contribs</groupId>-->
-            <!--<artifactId>jersey-multipart</artifactId>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>

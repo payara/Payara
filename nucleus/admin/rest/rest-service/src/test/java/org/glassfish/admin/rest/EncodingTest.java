@@ -56,20 +56,16 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.ActionReport.MessagePart;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
-
+import static org.testng.AssertJUnit.*;
 import javax.ws.rs.core.Response;
-import org.junit.Ignore;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author jasonlee
  */
 public class EncodingTest extends RestTestBase {
-    @Test
-    @Ignore // for now
+    @Test(groups="online-ignored")
     public void messageEncoding() {
         ClusterTest ct = this.getTestClass(ClusterTest.class);
         final String clusterName = "mec" + generateRandomNumber(10);
@@ -94,7 +90,7 @@ public class EncodingTest extends RestTestBase {
         }
     }
 
-    @Test
+    @Test(groups="offline")
     public void encodeAsJson() {
         RestActionReporter ar = buildActionReport();
         ActionReportResultJsonProvider provider = new ActionReportResultJsonProvider();
@@ -107,7 +103,7 @@ public class EncodingTest extends RestTestBase {
         assertTrue(responseMap.get("subReports") instanceof List);
     }
 
-    @Test
+    @Test(groups="offline")
     public void encodeAsXml() {
         RestActionReporter ar = buildActionReport();
         ActionReportResultXmlProvider provider = new ActionReportResultXmlProvider();
@@ -121,7 +117,7 @@ public class EncodingTest extends RestTestBase {
         assertTrue(responseMap.get("subReports") instanceof List);
     }
 
-    @Test
+    @Test(groups="offline")
     public void encodeAsHtml() {
         RestActionReporter ar = buildActionReport();
         ActionReportResultHtmlProvider provider = new ActionReportResultHtmlProvider();

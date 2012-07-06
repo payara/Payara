@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,9 +43,8 @@ package org.glassfish.admin.rest;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -55,7 +54,7 @@ public class ConfigTest extends RestTestBase {
 
     public static final String BASE_CONFIGS_URL = "/domain/configs";
 
-    @Test
+    @Test(groups="online")
     public void testConfigCopy() {
         String configName = "config-" + generateRandomString();
         MultivaluedMap formData = new MultivaluedHashMap();
@@ -65,7 +64,7 @@ public class ConfigTest extends RestTestBase {
         deleteAndVerifyConfig(configName);
     }
 
-    @Test
+    @Test(groups="online")
     public void duplicateCopyShouldFail() {
         String configName = "config-" + generateRandomString();
         MultivaluedMap formData = new MultivaluedHashMap();
