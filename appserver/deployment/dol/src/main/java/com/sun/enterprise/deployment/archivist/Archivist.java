@@ -130,7 +130,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     private boolean isValidatingXML = true;
 
     // boolean for runtime XML validation
-    private boolean isValidatingRuntimeXML = false;
+    private boolean isValidatingRuntimeXML = true;
 
     // xml validation error level reporting/recovering
     private String validationLevel = "parsing";
