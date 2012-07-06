@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.bea.com/ns/weblogic/10.0" xmlns:j2ee="http://java.sun.com/xml/ns/javaee" xmlns:wls="http://www.bea.com/ns/weblogic/10.0" xmlns="http://www.w3.org/2001/XMLSchema"
+ elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"/>
+
+  <complexType name="true-falseType">
+    <annotation>
+      <documentation>
+  This simple type designates a boolean with permissible values
+  - true/false
+  - yes/no
+  - 1/0
+      </documentation>
+    </annotation>
+    <simpleContent>
+      <restriction base="j2ee:xsdBooleanType">
+  <pattern value="(true|True|TRUE|false|False|FALSE|yes|Yes|YES|Y|no|No|NO|N|1|0)"/>
+      </restriction>
+    </simpleContent>
+  </complexType>
+  <complexType name="group-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="method-paramsType">
+    <sequence>
+      <element name="method-param"
+       type="j2ee:java-typeType"
+       minOccurs="0"
+       maxOccurs="unbounded">
+      </element>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <group name="reference-descriptorGroup">
+    <sequence>
+      <element name="resource-description" type="wls:resource-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="resource-env-description" type="wls:resource-env-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="ejb-reference-description" type="wls:ejb-reference-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="service-reference-description" type="wls:service-reference-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </group>
+  <complexType name="resource-descriptionType">
+    <sequence>
+      <element name="res-ref-name" type="j2ee:jndi-nameType"/>
+      <group ref="wls:resource-lookup" />
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="resource-env-descriptionType">
+    <sequence>
+      <element name="resource-env-ref-name" type="j2ee:jndi-nameType"/>
+      <group ref="wls:resource-lookup" />
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="ejb-reference-descriptionType">
+    <sequence>
+      <element name="ejb-ref-name" type="j2ee:ejb-ref-nameType"/>
+      <element name="jndi-name" type="j2ee:jndi-nameType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="service-reference-descriptionType">
+    <sequence>
+      <element name="service-ref-name" type="j2ee:jndi-nameType"/>
+      <element name="wsdl-url" type="j2ee:string"/>
+      <element name="call-property" type="wls:property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="port-info" type="wls:port-infoType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="port-infoType">
+    <sequence>
+      <element name="port-name" type="j2ee:string"/>
+      <element name="stub-property" type="wls:property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="call-property" type="wls:property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="property-namevalueType">
+    <sequence>
+      <element name="name" type="j2ee:string"/>
+      <element name="value" type="j2ee:string"/>
+    </sequence>
+  </complexType>
+  <complexType name="dispatch-policyType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="run-as-role-assignmentType">
+    <sequence>
+      <element name="role-name" type="j2ee:role-nameType"/>
+      <element name="run-as-principal-name" type="j2ee:string"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="run-as-principal-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="security-permissionType">
+    <sequence>
+      <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <element name="security-permission-spec" type="j2ee:string"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="security-role-assignmentType">
+    <sequence>
+      <element name="role-name" type="j2ee:role-nameType"/>
+      <choice>
+        <element name="principal-name" type="j2ee:string" maxOccurs="unbounded"/>
+        <element name="externally-defined" type="j2ee:emptyType"/>
+      </choice>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+
+<complexType name="response-time-request-classType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <element name="goal-ms" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="fair-share-request-classType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <element name="fair-share" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="context-request-classType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <element name="context-case" type="wls:context-caseType" maxOccurs="unbounded"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="context-caseType">
+  <sequence>
+    <choice>
+      <element name="user-name" type="j2ee:xsdStringType"/>
+      <element name="group-name" type="wls:group-nameType"/>
+    </choice>
+    <element name="request-class-name" type="j2ee:xsdStringType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+  
+<complexType name="application-admin-mode-triggerType">
+  <sequence>
+    <element name="max-stuck-thread-time" type="j2ee:xsdIntegerType" minOccurs="0" maxOccurs="1"/>
+    <element name="stuck-thread-count" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+  
+<complexType name="work-manager-shutdown-triggerType">
+  <sequence>
+    <element name="max-stuck-thread-time" type="j2ee:xsdIntegerType" minOccurs="0" maxOccurs="1"/>
+    <element name="stuck-thread-count" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+  
+<complexType name="max-threads-constraintType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <choice>
+      <element name="count" type="j2ee:xsdIntegerType"/>
+      <element name="pool-name" type="j2ee:xsdStringType"/>
+    </choice>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="min-threads-constraintType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <element name="count" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="capacityType">
+  <sequence>
+    <element name="name" type="j2ee:xsdStringType"/>
+    <element name="count" type="j2ee:xsdIntegerType"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="work-managerType">
+  <sequence>
+    <element name="name" type="wls:dispatch-policyType"/>
+    <choice minOccurs="0">
+      <element name="response-time-request-class" type="wls:response-time-request-classType"/>
+      <element name="fair-share-request-class" type="wls:fair-share-request-classType"/>
+      <element name="context-request-class" type="wls:context-request-classType"/>
+      <element name="request-class-name" type="j2ee:xsdStringType"/>
+    </choice>
+    <choice minOccurs="0">
+      <element name="min-threads-constraint" type="wls:min-threads-constraintType"/>
+      <element name="min-threads-constraint-name" type="j2ee:xsdStringType"/>
+    </choice>
+    <choice minOccurs="0">
+      <element name="max-threads-constraint" type="wls:max-threads-constraintType"/>
+      <element name="max-threads-constraint-name" type="j2ee:xsdStringType"/>
+    </choice>
+    <choice minOccurs="0">
+    <element name="capacity" type="wls:capacityType"/>
+    <element name="capacity-name" type="j2ee:xsdStringType"/>
+    </choice>
+    <choice minOccurs="0">
+      <element name="work-manager-shutdown-trigger" type="wls:work-manager-shutdown-triggerType"/>
+      <element name="ignore-stuck-threads" type="j2ee:xsdBooleanType"/>
+    </choice>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name = "loggingType">
+  <sequence>
+    <element name = "log-filename" type = "j2ee:string" minOccurs="0"/>
+    <element name = "logging-enabled" type = "wls:true-falseType" minOccurs="0"/>
+    <element name = "rotation-type" type = "j2ee:string" minOccurs="0"/>
+    <element name = "number-of-files-limited" type = "wls:true-falseType" minOccurs="0"/>
+    <element name = "file-count" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+    <element name = "file-size-limit" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+    <element name = "rotate-log-on-startup" type = "wls:true-falseType" minOccurs="0"/>
+    <element name = "log-file-rotation-dir" type = "j2ee:string" minOccurs="0"/>
+    <element name = "rotation-time" type = "j2ee:string" minOccurs="0"/>
+    <element name = "file-time-span" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+   <element name  = "date-format-pattern" type = "j2ee:string" minOccurs="0"/>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<group name="resource-lookup">
+    <choice>
+      <element name="jndi-name" type="j2ee:string"/>
+      <element name="resource-link" type="j2ee:string"/>
+    </choice>
+</group>
+
+<complexType name = "connection-pool-paramsType">
+  <sequence>
+    <element name = "initial-capacity" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <element name = "max-capacity" type = "j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    <element name = "capacity-increment" type = "j2ee:xsdPositiveIntegerType" minOccurs = "0"/>
+    <element name = "shrinking-enabled" type = "wls:true-falseType" minOccurs = "0"/>
+    <element name = "shrink-frequency-seconds" type = "j2ee:xsdPositiveIntegerType" minOccurs = "0"/>
+    <element name = "highest-num-waiters" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <element name = "highest-num-unavailable" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <element name = "connection-creation-retry-frequency-seconds" type = "j2ee:xsdIntegerType" minOccurs = "0"/>
+    <element name = "connection-reserve-timeout-seconds" type = "j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    <element name = "test-frequency-seconds" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <element name = "test-connections-on-create" type = "wls:true-falseType" minOccurs = "0"/>
+    <element name = "test-connections-on-release" type = "wls:true-falseType" minOccurs = "0"/>
+    <element name = "test-connections-on-reserve" type = "wls:true-falseType" minOccurs = "0"/>
+    <element name = "profile-harvest-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    <element name = "ignore-in-use-connections-enabled" type="wls:true-falseType" minOccurs="0"/>
+  </sequence>
+  <attribute name = "id" type = "ID"/>
+</complexType>
+
+<complexType name="message-destination-descriptorType">
+  <sequence>
+    <element name="message-destination-name" type="wls:message-destination-nameType"/>
+     <choice>
+       <sequence>
+         <element name="destination-jndi-name" type="wls:destination-jndi-nameType"/>
+         <element name="initial-context-factory" type="wls:initial-context-factoryType" minOccurs="0"/>
+         <element name="provider-url" type="wls:provider-urlType" minOccurs="0"/>
+       </sequence>
+       <element name="destination-resource-link" type="j2ee:string"/>
+     </choice>
+  </sequence>
+  <attribute name="id" type="ID"/>
+</complexType>
+
+<complexType name="message-destination-nameType">
+  <simpleContent>
+    <extension base="string">
+      <attribute name="id" type="ID"/>
+    </extension>
+  </simpleContent>
+</complexType>
+
+<complexType name="destination-jndi-nameType">
+  <simpleContent>
+    <extension base="string">
+      <attribute name="id" type="ID"/>
+    </extension>
+  </simpleContent>
+</complexType>
+
+<complexType name="initial-context-factoryType">
+  <simpleContent>
+    <extension base="string">
+      <attribute name="id" type="ID"/>
+    </extension>
+  </simpleContent>
+</complexType>
+
+<complexType name="provider-urlType">
+  <simpleContent>
+    <extension base="string">
+      <attribute name="id" type="ID"/>
+    </extension>
+  </simpleContent>
+</complexType>
+
+</schema>

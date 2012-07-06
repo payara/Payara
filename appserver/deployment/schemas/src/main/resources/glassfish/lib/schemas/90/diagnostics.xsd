@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.bea.com/ns/weblogic/90/diagnostics" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="wldf-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldfType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="wldfsmtp-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldf-notificationType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="mail-session-jndi-name" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="subject" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="body" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="recipient" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-watch-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="severity" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Info"/>
+                <xs:enumeration value="Warning"/>
+                <xs:enumeration value="Error"/>
+                <xs:enumeration value="Notice"/>
+                <xs:enumeration value="Critical"/>
+                <xs:enumeration value="Alert"/>
+                <xs:enumeration value="Emergency"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="log-watch-severity" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Info"/>
+                <xs:enumeration value="Warning"/>
+                <xs:enumeration value="Error"/>
+                <xs:enumeration value="Notice"/>
+                <xs:enumeration value="Critical"/>
+                <xs:enumeration value="Alert"/>
+                <xs:enumeration value="Emergency"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="watch" maxOccurs="unbounded" type="diag:wldf-watchType" minOccurs="0" nillable="true"/>
+          <xs:element name="image-notification" maxOccurs="unbounded" type="diag:wldf-image-notificationType" minOccurs="0" nillable="true"/>
+          <xs:element name="jms-notification" maxOccurs="unbounded" type="diag:wldfjms-notificationType" minOccurs="0" nillable="true"/>
+          <xs:element name="jmx-notification" maxOccurs="unbounded" type="diag:wldfjmx-notificationType" minOccurs="0" nillable="true"/>
+          <xs:element name="smtp-notification" maxOccurs="unbounded" type="diag:wldfsmtp-notificationType" minOccurs="0" nillable="true"/>
+          <xs:element name="snmp-notification" maxOccurs="unbounded" type="diag:wldfsnmp-notificationType" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-watchType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="rule-type" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Harvester"/>
+                <xs:enumeration value="Log"/>
+                <xs:enumeration value="EventData"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="rule-expression" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="severity" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Info"/>
+                <xs:enumeration value="Warning"/>
+                <xs:enumeration value="Error"/>
+                <xs:enumeration value="Notice"/>
+                <xs:enumeration value="Critical"/>
+                <xs:enumeration value="Alert"/>
+                <xs:enumeration value="Emergency"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="alarm-type" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="None"/>
+                <xs:enumeration value="ManualReset"/>
+                <xs:enumeration value="AutomaticReset"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="alarm-reset-period" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1000"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="notification" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-image-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldf-notificationType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="image-directory" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="image-lockout" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldfjms-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldf-notificationType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="destination-jndi-name" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="connection-factory-jndi-name" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:minLength value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldfjmx-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldf-notificationType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="notification-type" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldfsnmp-notificationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldf-notificationType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-harvesterType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="sample-period" minOccurs="0" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:long">
+                <xs:minInclusive value="1000"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="harvested-type" maxOccurs="unbounded" type="diag:wldf-harvested-typeType" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-harvested-typeType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="known-type" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="harvested-attribute" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="harvested-instance" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-resourceType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="instrumentation" type="diag:wldf-instrumentationType" minOccurs="0" nillable="true"/>
+          <xs:element name="harvester" type="diag:wldf-harvesterType" minOccurs="0" nillable="true"/>
+          <xs:element name="watch-notification" type="diag:wldf-watch-notificationType" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-instrumentationType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="include" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="exclude" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="wldf-instrumentation-monitor" maxOccurs="unbounded" type="diag:wldf-instrumentation-monitorType" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="wldf-instrumentation-monitorType">
+    <xs:complexContent>
+      <xs:extension base="diag:wldfType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics">
+        <xs:sequence>
+          <xs:element name="description" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="dye-mask" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="dye-filtering-enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+          <xs:element name="properties" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="action" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="location-type" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="before"/>
+                <xs:enumeration value="after"/>
+                <xs:enumeration value="around"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="pointcut" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="wldf-resource" type="diag:wldf-resourceType" xmlns:diag="http://www.bea.com/ns/weblogic/90/diagnostics"/>
+</xs:schema>

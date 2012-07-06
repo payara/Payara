@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ##################################################################### -->
+<!-- ##                                                                 ## -->
+<!-- ##	Copyright (c) 2002-2003 BEA Systems, Inc. All Rights Reserved   ## -->
+<!-- ##                                                                 ## -->
+<!-- ##################################################################### -->
+<xs:schema targetNamespace="http://www.bea.com/servers/portal/weblogic-portal/8.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bea.com/servers/portal/weblogic-portal/8.0" elementFormDefault="qualified">
+	<!-- Portal Application -->
+	<xs:element name="weblogic-portal-app">
+		<xs:annotation>
+			<xs:documentation>The weblogic-portal-app element is the root of the deployment descriptor for a portal application.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="description" minOccurs="0"/>
+				<xs:element ref="customization" minOccurs="0"/>
+				<xs:element ref="control-tree-creation-using-serialization" minOccurs="0"/>
+                <xs:element ref="compile-dot-portal" minOccurs="0"/>
+				<xs:element ref="pageflow" minOccurs="0"/>
+				<xs:element ref="validation" minOccurs="0"/>
+				<xs:element ref="entitlements" minOccurs="0"/>
+				<xs:element ref="localization" minOccurs="0"/>
+				<xs:element ref="control-state-location" minOccurs="0"/>
+				<xs:element ref="window-state" minOccurs="4" maxOccurs="4"/>
+				<xs:element ref="window-mode" minOccurs="2" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="customization">
+		<xs:annotation>
+			<xs:documentation>Enable (default) or disable customization. The portal has two modes of operation. In one mode users and Administrators are allowed to 'customize' (add/delete portlets, pages, books, etc) the portal via a browser. In this mode the portal EJBs and a database must be deployed. In the second mode (the browser hitting the .portal file directly) no customization is allowed and subsequently no portal EJBs or database are required. This flag is an indicator to the system what mode of operation the portal is in.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="enable"/>
+				<xs:element ref="propagate-preferences-on-deploy"/>
+				<xs:element ref="reload-database-on-redeploy" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+    <xs:element name="control-tree-creation-using-serialization">
+        <xs:annotation>
+            <xs:documentation>
+                Enables serialization/deserialization to be used to create a control tree. If turned off
+                reflection will be used to create a control tree which is faster and occupies less memory.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="enable" type="xs:boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="compile-dot-portal">
+        <xs:annotation>
+            <xs:documentation>This setting is no longer used.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="enable" type="xs:boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+	<xs:element name="pageflow">
+		<xs:annotation>
+			<xs:documentation>Enable (default) or disable pageflow components.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="enable"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="entitlements">
+		<xs:annotation>
+			<xs:documentation>
+                Turn entitlement checking off at runtime. The value of the resource-cache-size attribute is a size
+                for the control resources cache. This size depends on a number of desktops, portlets, pages, placeholders
+                and books contained in a portal. The size can be determined by enabling debug for
+                com.bea.netuix.servlets.entitlements.ControlResource in debug.properties file that prints out the size
+                for a portal when clicked on all the pages of a portal. The size to be used is from the last line
+                that is printed on the console after clicking on all the pages (all top-level and inner pages).
+            </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="enable"/>
+				<xs:element ref="desktop-not-entitled-error-code" minOccurs="0"/>
+			</xs:sequence>
+            <xs:attribute name="control-resource-cache-size" type="xs:positiveInteger" default="300"/>
+		</xs:complexType>
+	</xs:element>
+
+    <xs:element name="entitlements-resource-cache">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+        </xs:complexType>
+    </xs:element>
+
+	<xs:element name="localization">
+		<xs:annotation>
+			<xs:documentation>Enable (default) or disable localization. When localization is enabled, the portal framework attempts to deliver localized content based on a directory search. Set the enable element to "true" (default) to enable localization. Disable localization by setting this element to "false". Note that, for performance reasons, if the portal web app is prepared to deliver localized content, disable localization. To specify a locale provider, include the locale-provider element with value set to the class of the desired LocaleProvider implementation.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="enable"/>
+				<xs:element name="default-locale" minOccurs="0">
+					<xs:complexType>
+						<xs:attributeGroup ref="locale-attributes"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="locale-provider" type="xs:string" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="propagate-preferences-on-deploy">
+		<xs:annotation>
+			<xs:documentation>The propagate-preferences-on-deploy element specifies if portlet preferences should be propagated to the underlying preference store or not. If this element is present, portlet preferences will be propagated to the underlying preference store store. If the attribute propagate-to-instances is true, portlet preferences will also be propagated to instances created out of portlets.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="propagate-to-instances" type="xs:boolean"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="reload-database-on-redeploy">
+		<xs:annotation>
+			<xs:documentation>Because of the way iteritive development redeploys the web-app on any changes to a control or pageflow, this will stop the database from being reloaded if in dev mode (i.e. !AppDescriptor.isProductionModeEnabled).  This defaults to 'false', if in dev mode and you want the database to be reloaded from the web-app on a redeploy, set to 'true'.            </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="reload" type="xs:boolean"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="window-state">
+		<xs:annotation>
+			<xs:documentation>The window-state element describes properties of a container-supported window state.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="activate-image" minOccurs="0"/>
+				<xs:element ref="deactivate-image" minOccurs="0"/>
+				<xs:element ref="alt-text"/>
+			</xs:sequence>
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="normal"/>
+						<xs:enumeration value="minimized"/>
+						<xs:enumeration value="maximized"/>
+						<xs:enumeration value="delete"/>
+                        <xs:enumeration value="float"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="window-mode">
+		<xs:annotation>
+			<xs:documentation>The window-mode element describes properties of a container-supported window modes.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="activate-image" minOccurs="0"/>
+				<xs:element ref="deactivate-image" minOccurs="0"/>
+				<xs:element ref="alt-text"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="description" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>Description</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="activate-image" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>The html image displayed in the toggle button to activate this mode or state..</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="deactivate-image" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>The html image displayed in the toggle button to deactivate this mode or state.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="alt-text">
+		<xs:annotation>
+			<xs:documentation>Hover over text when button is set to activate or deactivate. This text may be localized</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="locale" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element ref="activate"/>
+							<xs:element ref="deactivate" minOccurs="0"/>
+						</xs:sequence>
+						<xs:attributeGroup ref="locale-attributes"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="activate" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>The html alternate text displayed when the cursor is hovered over the button to activate this mode or state.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="deactivate" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>The html alternate text displayed when the cursor is hovered over the button to deactivate this mode or state.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:attributeGroup name="locale-attributes">
+		<xs:annotation>
+			<xs:documentation>Attribute group specifying the valid attributes for a locale element</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="language" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:length value="2"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="country" use="optional">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:length value="2"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="variant" type="xs:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:element name="enable" type="xs:boolean"/>
+	<xs:element name="validation">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="include-files" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Enable (default) or disable validation of '.pinc' files.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="enable" type="xs:boolean"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="dot-files" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Enable (default) or disable validation of '.' files.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="enable" type="xs:boolean"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="control-state-location">
+		<xs:annotation>
+			<xs:documentation>The control-state-location element specifies the location for storing control state</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice>
+				<xs:element name="session">
+					<xs:annotation>
+						<xs:documentation>Stores the control state in the user's HTTP session. This is the default control state location. The control state may be preserved till the end of the session</xs:documentation>
+					</xs:annotation>
+					<xs:complexType/>
+				</xs:element>
+				<xs:element name="url">
+					<xs:annotation>
+						<xs:documentation>Encodes the control state in portal-framework generated links. The control state may be preserved forever. However, clients (browsers) may have limits on the maximum number of characters. When the control state length exceeds the specified max-length number of characters, the portal framework automatically switches the state location to HTTP session.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="max-length" type="xs:positiveInteger" use="required"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="cookie">
+					<xs:annotation>
+						<xs:documentation>Stores the control state as cookies. The expires attributes may be used to specify the lifetime (in seconds) of cookies user for storing control state.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:attribute name="expires" type="xs:integer"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="desktop-not-entitled-error-code">
+		<xs:annotation>
+			<xs:documentation>The desktop-not-entitled-code element defines the error code to return for access to a desktop denied by an entitlement.  The valid options for code are:
+                 401 - Unauthorized
+                 403 - Forbidden (default)
+                 404 - Not found - use if you don't want to let the user know that the resource exists.
+             </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:attribute name="error-code" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="401"/>
+						<xs:enumeration value="403"/>
+						<xs:enumeration value="404"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

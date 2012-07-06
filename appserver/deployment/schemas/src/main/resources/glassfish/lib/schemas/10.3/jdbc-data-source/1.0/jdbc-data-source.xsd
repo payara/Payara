@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.bea.com/ns/weblogic/jdbc-data-source" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0" xmlns:wls="http://www.bea.com/ns/weblogic/jdbc-data-source" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:j2ee="http://java.sun.com/xml/ns/j2ee">
+  <include schemaLocation="http://www.bea.com/ns/weblogic/weblogic-javaee/1.0/weblogic-javaee.xsd"/>
+  <element name="jdbc-data-source" type="wls:jdbc-data-sourceType"/>
+  <complexType name="jdbc-data-sourceType">
+    <sequence>
+      <element name="name" type="string"/>
+      <element name="internal-properties" type="wls:jdbc-propertiesType" nillable="true" minOccurs="0"/>
+      <element name="jdbc-driver-params" type="wls:jdbc-driver-paramsType" nillable="true" minOccurs="0"/>
+      <element name="jdbc-connection-pool-params" type="wls:jdbc-connection-pool-paramsType" nillable="true" minOccurs="0"/>
+      <element name="jdbc-data-source-params" type="wls:jdbc-data-source-paramsType" nillable="true" minOccurs="0"/>
+      <element name="jdbc-xa-params" type="wls:jdbc-xa-paramsType" nillable="true" minOccurs="0"/>
+    </sequence>
+    <attribute name="version" type="string" use="optional"/>
+  </complexType>
+  <complexType name="jdbc-driver-paramsType">
+    <sequence>
+      <element name="url" type="string" nillable="true" minOccurs="0"/>
+      <element name="driver-name" type="string" minOccurs="0"/>
+      <element name="properties" type="wls:jdbc-propertiesType" nillable="true" minOccurs="0"/>
+      <element name="password-encrypted" type="string" nillable="true" minOccurs="0"/>
+      <element name="use-xa-data-source-interface" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="jdbc-propertiesType">
+    <sequence>
+      <element name="property" type="wls:jdbc-propertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="jdbc-propertyType">
+    <sequence>
+      <element name="name" type="string" nillable="true" minOccurs="0"/>
+      <element name="value" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="jdbc-connection-pool-paramsType">
+    <sequence>
+      <element name="initial-capacity" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="max-capacity" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="capacity-increment" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="shrink-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="highest-num-waiters" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="connection-creation-retry-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="connection-reserve-timeout-seconds" type="j2ee:xsdIntegerType" minOccurs="0"/>
+      <element name="test-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="test-connections-on-reserve" type="wls:true-falseType" minOccurs="0"/>
+      <element name="profile-harvest-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="ignore-in-use-connections-enabled" type="wls:true-falseType" minOccurs="0"/>
+      <element name="inactive-connection-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="test-table-name" type="string" nillable="true" minOccurs="0"/>
+      <element name="login-delay-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="init-sql" type="string" nillable="true" minOccurs="0"/>
+      <element name="statement-cache-size" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="statement-cache-type" minOccurs="0">
+        <simpleType>
+          <restriction base="string">
+            <enumeration value="LRU"/>
+            <enumeration value="FIXED"/>
+          </restriction>
+        </simpleType>
+      </element>
+      <element name="remove-infected-connections" type="wls:true-falseType" minOccurs="0"/>
+      <element name="seconds-to-trust-an-idle-pool-connection" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="statement-timeout" type="j2ee:xsdIntegerType" minOccurs="0"/>
+      <element name="profile-type" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="jdbc-xa-debug-level" type="j2ee:xsdIntegerType" minOccurs="0"/>
+      <element name="credential-mapping-enabled" type="wls:true-falseType" minOccurs="0"/>
+      <element name="driver-interceptor" type="string" nillable="true" minOccurs="0"/>
+      <element name="pinned-to-thread" type="wls:true-falseType" minOccurs="0"/>
+      <element name="identity-based-connection-pooling-enabled" type="wls:true-falseType" minOccurs="0">
+        <annotation>
+          <documentation>This element was introduced in the 9.0.1 version of WebLogic Server.  It should not be used in instance documents that may be consumed by prior WebLogic Server versions.</documentation>
+        </annotation>
+      </element>
+    </sequence>
+  </complexType>
+  <complexType name="jdbc-data-source-paramsType">
+    <sequence>
+      <element name="jndi-name" type="string" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="scope" minOccurs="0">
+        <simpleType>
+          <restriction base="string">
+            <enumeration value="Global"/>
+            <enumeration value="Application"/>
+          </restriction>
+        </simpleType>
+      </element>
+      <element name="row-prefetch" type="wls:true-falseType" minOccurs="0"/>
+      <element name="row-prefetch-size" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="stream-chunk-size" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="algorithm-type" minOccurs="0">
+        <simpleType>
+          <restriction base="string">
+            <enumeration value="Failover"/>
+            <enumeration value="Load-Balancing"/>
+          </restriction>
+        </simpleType>
+      </element>
+      <element name="data-source-list" type="string" nillable="true" minOccurs="0"/>
+      <element name="connection-pool-failover-callback-handler" type="string" nillable="true" minOccurs="0"/>
+      <element name="failover-request-if-busy" type="wls:true-falseType" minOccurs="0"/>
+      <element name="global-transactions-protocol" minOccurs="0">
+        <simpleType>
+          <restriction base="string">
+            <enumeration value="TwoPhaseCommit"/>
+            <enumeration value="LoggingLastResource"/>
+            <enumeration value="EmulateTwoPhaseCommit"/>
+            <enumeration value="OnePhaseCommit"/>
+            <enumeration value="None"/>
+          </restriction>
+        </simpleType>
+      </element>
+    </sequence>
+  </complexType>
+  <complexType name="jdbc-xa-paramsType">
+    <sequence>
+      <element name="keep-xa-conn-till-tx-complete" type="wls:true-falseType" minOccurs="0"/>
+      <element name="need-tx-ctx-on-close" type="wls:true-falseType" minOccurs="0"/>
+      <element name="xa-end-only-once" type="wls:true-falseType" minOccurs="0"/>
+      <element name="new-xa-conn-for-commit" type="wls:true-falseType" minOccurs="0"/>
+      <element name="keep-logical-conn-open-on-release" type="wls:true-falseType" minOccurs="0"/>
+      <element name="resource-health-monitoring" type="wls:true-falseType" minOccurs="0"/>
+      <element name="recover-only-once" type="wls:true-falseType" minOccurs="0"/>
+      <element name="xa-set-transaction-timeout" type="wls:true-falseType" minOccurs="0"/>
+      <element name="xa-transaction-timeout" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="rollback-local-tx-upon-conn-close" type="wls:true-falseType" minOccurs="0"/>
+      <element name="xa-retry-duration-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="xa-retry-interval-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    </sequence>
+  </complexType>
+</schema>

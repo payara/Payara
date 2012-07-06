@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.bea.com/ns/weblogic/90" elementFormDefault="qualified" attributeFormDefault="unqualified" jaxb:version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:interception="http://www.bea.com/ns/weblogic/90" xmlns:wls="http://www.bea.com/ns/weblogic/90">
+  <xs:include schemaLocation="http://www.bea.com/ns/weblogic/920/weblogic-j2ee.xsd"/>
+  <xs:annotation>
+    <xs:appinfo>
+      <jaxb:globalBindings collectionType="indexed" generateIsSetMethod="true"/>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="weblogic-interception" type="interception:interception-type">
+    <xs:annotation>
+      <xs:appinfo>
+        <jaxb:class name="weblogicInterception"/>
+      </xs:appinfo>
+      <xs:documentation>Describe a related set of interception elements</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:complexType name="interception-type">
+    <xs:annotation>
+      <xs:appinfo>
+        <jaxb:class name="InterceptionType"/>
+      </xs:appinfo>
+      <xs:documentation>Describes a set of interception associations and processors</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="association" type="interception:associationType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="processor" type="interception:processorType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="processor-type" type="interception:processorTypeType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="associationType">
+    <xs:sequence>
+      <xs:element name="interception-point" type="interception:interceptionPointType"/>
+      <xs:element name="processor" type="interception:processorAssociationType"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="interceptionPointType">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string"/>
+      <xs:element name="name-segment" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="processorAssociationType">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string"/>
+      <xs:element name="name" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="processorType">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="metadata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="processorTypeType">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string"/>
+      <xs:element name="factory" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

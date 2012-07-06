@@ -1,0 +1,684 @@
+<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.bea.com/ns/weblogic/90/security/wls">
+  <xs:import namespace="http://www.bea.com/ns/weblogic/90/security" schemaLocation="http://www.bea.com/ns/weblogic/90/security.xsd"/>
+  <xs:complexType name="realm-adapter-authorizerType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:authorizerType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="wls-user-principal-allowed" nillable="true" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:login-exception-propagatorType">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="active-type" nillable="true" type="xs:string"/>
+          <xs:element default="true" minOccurs="0" name="base64-decoding-required" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="login-exception-propagatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:authenticatorType">
+        <xs:sequence>
+          <xs:element default="false" minOccurs="0" name="propagate-cause-for-login-exception" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-auditorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:auditorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cert-reg-managerType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="web-logic-cert-path-providerType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:cert-path-builderType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="read-only-sql-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:dbms-authenticatorType">
+        <xs:sequence>
+          <xs:element default="true" minOccurs="0" name="descriptions-supported" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="sql-get-users-password" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-user-exists" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-list-member-groups" nillable="true" type="xs:string"/>
+          <xs:element default="SELECT U_NAME FROM USERS WHERE U_NAME LIKE ?" minOccurs="0" name="sql-list-users" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-get-user-description" nillable="true" type="xs:string"/>
+          <xs:element default="SELECT G_NAME FROM GROUPS WHERE G_NAME LIKE ?" minOccurs="0" name="sql-list-groups" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-group-exists" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-is-member" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-get-group-description" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="dbms-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:authenticatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="enable-group-membership-lookup-hierarchy-caching" nillable="true" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="max-group-hierarchies-in-cache" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="data-source-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="group-hierarchy-cache-ttl" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="group-membership-searching" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="max-group-membership-search-level" nillable="true" type="xs:int"/>
+          <xs:element default="false" minOccurs="0" name="plaintext-passwords-enabled" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-authorizerType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:deployable-authorizerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:identity-asserterType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="user-name-mapper-class-name" nillable="true" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="trusted-client-principal" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="use-default-user-name-mapper" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="default-user-name-mapper-attribute-type" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="C"/>
+                <xs:enumeration value="CN"/>
+                <xs:enumeration value="E"/>
+                <xs:enumeration value="L"/>
+                <xs:enumeration value="O"/>
+                <xs:enumeration value="OU"/>
+                <xs:enumeration value="S"/>
+                <xs:enumeration value="STREET"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="@" minOccurs="0" name="default-user-name-mapper-attribute-delimiter" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="digest-replay-detection-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="300" minOccurs="0" name="digest-expiration-time-period" nillable="false" type="xs:int"/>
+          <xs:element minOccurs="0" name="digest-data-source-name" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="pki-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:credential-mapperType">
+        <xs:sequence>
+          <xs:element default="JKS" minOccurs="0" name="key-store-type" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="key-store-provider" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="key-store-file-name" nillable="true" type="xs:string"/>
+          <xs:element default="true" minOccurs="0" name="use-resource-hierarchy" nillable="false" type="xs:boolean"/>
+          <xs:element default="true" minOccurs="0" name="use-initiator-group-names" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="key-store-pass-phrase-encrypted" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-adjudicatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:adjudicatorType">
+        <xs:sequence>
+          <xs:element default="true" minOccurs="0" name="require-unanimous-permit" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:authenticatorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="windows-nt-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:authenticatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="domain-controllers" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Local"/>
+                <xs:enumeration value="LocalAndDomain"/>
+                <xs:enumeration value="Domain"/>
+                <xs:enumeration value="List"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="domain-controller" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="bad-domain-controller-retry" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Delay"/>
+                <xs:enumeration value="Never"/>
+                <xs:enumeration value="Always"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="bad-domain-controller-retry-interval" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="map-upn-names" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="First"/>
+                <xs:enumeration value="Last"/>
+                <xs:enumeration value="Always"/>
+                <xs:enumeration value="Never"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="logon-type" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Interactive"/>
+                <xs:enumeration value="Network"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="map-nt-domain-name" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="OldUPN"/>
+                <xs:enumeration value="UPN"/>
+                <xs:enumeration value="Never"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-credential-mapper-v2Type">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:credential-mapperType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="issuer-uri" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="name-qualifier" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="signing-key-alias" nillable="true" type="xs:string"/>
+          <xs:element default="120" minOccurs="0" name="default-time-to-live" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="0" minOccurs="0" name="default-time-to-live-delta" nillable="false" type="xs:int"/>
+          <xs:element minOccurs="0" name="name-mapper-class-name" nillable="true" type="xs:string"/>
+          <xs:element default="5" minOccurs="0" name="minimum-parser-pool-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="0" minOccurs="0" name="cred-cache-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="20" minOccurs="0" name="cred-cache-min-viable-ttl" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="signing-key-pass-phrase-encrypted" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-identity-asserter-v2Type">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:identity-asserterType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="name-mapper-class-name" nillable="true" type="xs:string"/>
+          <xs:element default="5" minOccurs="0" name="minimum-parser-pool-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="negotiate-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:identity-asserterType">
+        <xs:sequence>
+          <xs:element default="true" minOccurs="0" name="form-based-negotiation-enabled" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:deployable-credential-mapperType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="certificate-registryType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:cert-path-builderType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-partner-registryType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:login-exception-propagatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="enable-group-membership-lookup-hierarchy-caching" nillable="true" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="max-group-hierarchies-in-cache" nillable="true" type="xs:int"/>
+          <xs:element default="8" minOccurs="0" name="minimum-password-length" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="group-hierarchy-cache-ttl" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="group-membership-searching" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="max-group-membership-search-level" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="use-retrieved-user-name-as-principal" nillable="true" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="password-digest-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="keep-alive-enabled" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ldap-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:login-exception-propagatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="enable-group-membership-lookup-hierarchy-caching" nillable="true" type="xs:boolean"/>
+          <xs:element default="localhost" minOccurs="0" name="host" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="max-group-hierarchies-in-cache" nillable="true" type="xs:int"/>
+          <xs:element default="389" minOccurs="0" name="port" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="65534"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="person" minOccurs="0" name="user-object-class" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="group-hierarchy-cache-ttl" nillable="true" type="xs:int"/>
+          <xs:element default="false" minOccurs="0" name="ssl-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="uid" minOccurs="0" name="user-name-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="principal" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="user-dynamic-group-dn-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="user-base-dn" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="credential-encrypted" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="user-search-scope" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="subtree"/>
+                <xs:enumeration value="onelevel"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="true" minOccurs="0" name="cache-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="user-from-name-filter" nillable="true" type="xs:string"/>
+          <xs:element default="32" minOccurs="0" name="cache-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="all-users-filter" nillable="true" type="xs:string"/>
+          <xs:element default="60" minOccurs="0" name="cache-ttl" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="group-base-dn" nillable="true" type="xs:string"/>
+          <xs:element default="true" minOccurs="0" name="follow-referrals" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="group-search-scope" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="subtree"/>
+                <xs:enumeration value="onelevel"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="false" minOccurs="0" name="bind-anonymously-on-referrals" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="group-from-name-filter" nillable="true" type="xs:string"/>
+          <xs:element default="0" minOccurs="0" name="results-time-limit" nillable="false" type="xs:int"/>
+          <xs:element minOccurs="0" name="all-groups-filter" nillable="true" type="xs:string"/>
+          <xs:element default="0" minOccurs="0" name="connect-timeout" nillable="false" type="xs:int"/>
+          <xs:element default="groupofuniquenames" minOccurs="0" name="static-group-object-class" nillable="true" type="xs:string"/>
+          <xs:element default="0" minOccurs="0" name="parallel-connect-delay" nillable="false" type="xs:int"/>
+          <xs:element default="cn" minOccurs="0" name="static-group-name-attribute" nillable="true" type="xs:string"/>
+          <xs:element default="1" minOccurs="0" name="connection-retry-limit" nillable="false" type="xs:int"/>
+          <xs:element default="uniquemember" minOccurs="0" name="static-member-dn-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="static-group-dns-from-member-dn-filter" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="dynamic-group-object-class" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="dynamic-group-name-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="dynamic-member-url-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="group-membership-searching" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="max-group-membership-search-level" nillable="true" type="xs:int"/>
+          <xs:element minOccurs="0" name="use-retrieved-user-name-as-principal" nillable="true" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="ignore-duplicate-membership" nillable="true" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="keep-alive-enabled" nillable="false" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-relying-party-registryType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:saml-partner-registryType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ldap-x509-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:identity-asserterType">
+        <xs:sequence>
+          <xs:element default="localhost" minOccurs="0" name="host" nillable="true" type="xs:string"/>
+          <xs:element default="389" minOccurs="0" name="port" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="65534"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="false" minOccurs="0" name="ssl-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="principal" nillable="true" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="user-filter-attribute" nillable="true" type="xs:string"/>
+          <xs:element default="cn" minOccurs="0" name="username-attribute" nillable="true" type="xs:string"/>
+          <xs:element default="userCertificate;binary" minOccurs="0" name="certificate-attribute" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="credential-encrypted" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="certificate-mapping" nillable="true" type="xs:string"/>
+          <xs:element default="true" minOccurs="0" name="cache-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="32" minOccurs="0" name="cache-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="60" minOccurs="0" name="cache-ttl" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="true" minOccurs="0" name="follow-referrals" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="bind-anonymously-on-referrals" nillable="false" type="xs:boolean"/>
+          <xs:element default="0" minOccurs="0" name="results-time-limit" nillable="false" type="xs:int"/>
+          <xs:element default="0" minOccurs="0" name="connect-timeout" nillable="false" type="xs:int"/>
+          <xs:element default="0" minOccurs="0" name="parallel-connect-delay" nillable="false" type="xs:int"/>
+          <xs:element default="1" minOccurs="0" name="connection-retry-limit" nillable="false" type="xs:int"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="sql-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:read-only-sql-authenticatorType">
+        <xs:sequence>
+          <xs:element default="SHA-1" minOccurs="0" name="password-algorithm" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="password-style" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="PLAINTEXT"/>
+                <xs:enumeration value="HASHED"/>
+                <xs:enumeration value="SALTEDHASHED"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="true" minOccurs="0" name="password-style-retained" nillable="false" type="xs:boolean"/>
+          <xs:element default="INSERT INTO USERS VALUES ( ? , ? , ? )" minOccurs="0" name="sql-create-user" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-remove-user" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-remove-group-memberships" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-set-user-description" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-set-user-password" nillable="true" type="xs:string"/>
+          <xs:element default="INSERT INTO GROUPS VALUES ( ? , ? )" minOccurs="0" name="sql-create-group" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-set-group-description" nillable="true" type="xs:string"/>
+          <xs:element default="INSERT INTO GROUPMEMBERS VALUES( ?, ?)" minOccurs="0" name="sql-add-member-to-group" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-remove-member-from-group" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-remove-group" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-remove-group-member" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="sql-list-group-members" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-asserting-party-registryType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:saml-partner-registryType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="active-directory-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:ldap-authenticatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="use-token-groups-for-group-membership-lookup" nillable="true" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="enable-sid-to-group-lookup-caching" nillable="true" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="max-sid-to-group-lookups-in-cache" nillable="true" type="xs:int"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-adjudicatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:adjudicatorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="custom-dbms-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:dbms-authenticatorType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="plugin-class-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="plugin-properties" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-role-mapperType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:deployable-role-mapperType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-key-storeType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:key-storeType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-auditorType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:auditorType">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="active-context-handler-entry" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="severity" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="INFORMATION"/>
+                <xs:enumeration value="WARNING"/>
+                <xs:enumeration value="ERROR"/>
+                <xs:enumeration value="SUCCESS"/>
+                <xs:enumeration value="FAILURE"/>
+                <xs:enumeration value="CUSTOM"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="false" minOccurs="0" name="information-audit-severity-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="warning-audit-severity-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="error-audit-severity-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="success-audit-severity-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="failure-audit-severity-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="output-medium" nillable="true" type="xs:string"/>
+          <xs:element default="1440" minOccurs="0" name="rotation-minutes" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="#### Audit Record Begin" minOccurs="0" name="begin-marker" nillable="true" type="xs:string"/>
+          <xs:element default="Audit Record End ####" minOccurs="0" name="end-marker" nillable="true" type="xs:string"/>
+          <xs:element default="&lt;" minOccurs="0" name="field-prefix" nillable="true" type="xs:string"/>
+          <xs:element default="&gt;" minOccurs="0" name="field-suffix" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:credential-mapperType">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="issuer-uri" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="name-mapper-class-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="name-qualifier" nillable="true" type="xs:string"/>
+          <xs:element default="120" minOccurs="0" name="default-time-to-live" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="0" minOccurs="0" name="default-time-to-live-delta" nillable="false" type="xs:int"/>
+          <xs:element minOccurs="0" name="source-site-url" nillable="true" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="intersite-transfer-uri" nillable="true" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="assertion-retrieval-uri" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="artifact-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="assertion-store-class-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="assertion-store-properties" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="post-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="default-post-form" nillable="true" type="xs:string"/>
+          <xs:element default="5" minOccurs="0" name="minimum-parser-pool-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element minOccurs="0" name="assertion-configuration" nillable="true" type="xs:string"/>
+          <xs:element default="0" minOccurs="0" name="cred-cache-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="20" minOccurs="0" name="cred-cache-min-viable-ttl" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="novell-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:ldap-authenticatorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="iplanet-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:ldap-authenticatorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/90/security" base="sec:identity-asserterType">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="assertion-consumer-uri" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="post-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="false" minOccurs="0" name="artifact-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element default="5" minOccurs="0" name="minimum-parser-pool-size" nillable="false">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element default="true" minOccurs="0" name="recipient-check-enabled" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="used-assertion-cache-class-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="used-assertion-cache-properties" nillable="true" type="xs:string"/>
+          <xs:element default="false" minOccurs="0" name="enforce-one-use-policy" nillable="false" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="name-mapper-class-name" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="assertion-configuration" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="source-site-redirects" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="open-ldap-authenticatorType">
+    <xs:complexContent>
+      <xs:extension xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" base="wls:ldap-authenticatorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="realm-adapter-authenticator" type="wls:realm-adapter-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="realm-adapter-auditor" type="wls:realm-adapter-auditorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="web-logic-cert-path-provider" type="wls:web-logic-cert-path-providerType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="read-only-sql-authenticator" type="wls:read-only-sql-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-adjudicator" type="wls:default-adjudicatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="windows-nt-authenticator" type="wls:windows-nt-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="saml-identity-asserter-v2" type="wls:saml-identity-asserter-v2Type"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-authenticator" type="wls:default-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="ldap-authenticator" type="wls:ldap-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="realm-adapter-adjudicator" type="wls:realm-adapter-adjudicatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="novell-authenticator" type="wls:novell-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="saml-identity-asserter" type="wls:saml-identity-asserterType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="realm-adapter-authorizer" type="wls:realm-adapter-authorizerType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-authorizer" type="wls:default-authorizerType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-identity-asserter" type="wls:default-identity-asserterType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="pki-credential-mapper" type="wls:pki-credential-mapperType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="saml-authenticator" type="wls:saml-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="saml-credential-mapper-v2" type="wls:saml-credential-mapper-v2Type"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="negotiate-identity-asserter" type="wls:negotiate-identity-asserterType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-credential-mapper" type="wls:default-credential-mapperType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="certificate-registry" type="wls:certificate-registryType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="ldapx509-identity-asserter" type="wls:ldap-x509-identity-asserterType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="sql-authenticator" type="wls:sql-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="active-directory-authenticator" type="wls:active-directory-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="custom-dbms-authenticator" type="wls:custom-dbms-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-role-mapper" type="wls:default-role-mapperType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-key-store" type="wls:default-key-storeType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="default-auditor" type="wls:default-auditorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="saml-credential-mapper" type="wls:saml-credential-mapperType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="i-planet-authenticator" type="wls:iplanet-authenticatorType"/>
+  <xs:element xmlns:wls="http://www.bea.com/ns/weblogic/90/security/wls" name="open-ldap-authenticator" type="wls:open-ldap-authenticatorType"/>
+</xs:schema>

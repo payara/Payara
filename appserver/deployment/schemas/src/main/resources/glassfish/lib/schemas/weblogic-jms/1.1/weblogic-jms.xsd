@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-jms" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:jmsmd="http://xmlns.oracle.com/weblogic/weblogic-jms" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.1">
+  <element name="weblogic-jms" type="jmsmd:jms-type"/>
+  <complexType name="jms-type">
+    <sequence>
+      <element name="version" type="int" minOccurs="0"/>
+      <element name="notes" type="string" nillable="true" minOccurs="0"/>
+      <element name="quota" type="jmsmd:quota-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="template" type="jmsmd:template-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="destination-key" type="jmsmd:destination-key-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="connection-factory" type="jmsmd:jms-connection-factory-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="foreign-server" type="jmsmd:foreign-server-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="queue" type="jmsmd:queue-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="topic" type="jmsmd:topic-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="distributed-queue" type="jmsmd:distributed-queue-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="distributed-topic" type="jmsmd:distributed-topic-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="uniform-distributed-queue" type="jmsmd:uniform-distributed-queue-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="uniform-distributed-topic" type="jmsmd:uniform-distributed-topic-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-imported-destinations" type="jmsmd:saf-imported-destinations-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-remote-context" type="jmsmd:saf-remote-context-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-error-handling" type="jmsmd:saf-error-handling-type" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="destination-type">
+    <complexContent>
+      <extension base="jmsmd:targetable-type">
+        <sequence>
+          <element name="template" type="string" nillable="true" minOccurs="0"/>
+          <element name="destination-key" type="string" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="thresholds" type="jmsmd:threshold-params-type" minOccurs="0"/>
+          <element name="delivery-params-overrides" type="jmsmd:delivery-params-overrides-type" minOccurs="0"/>
+          <element name="delivery-failure-params" type="jmsmd:delivery-failure-params-type" minOccurs="0"/>
+          <element name="message-logging-params" type="jmsmd:message-logging-params-type" minOccurs="0"/>
+          <element name="attach-sender" default="supports" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="supports"/>
+                <enumeration value="always"/>
+                <enumeration value="never"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="production-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="insertion-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="consumption-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="maximum-message-size" type="int" minOccurs="0"/>
+          <element name="quota" type="string" nillable="true" minOccurs="0"/>
+          <element name="jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="local-jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="jms-create-destination-identifier" type="string" nillable="true" minOccurs="0"/>
+          <element name="default-unit-of-order" type="boolean" default="false" minOccurs="0"/>
+          <element name="saf-export-policy" default="All" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="All"/>
+                <enumeration value="None"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="messaging-performance-preference" type="int" default="50" minOccurs="0">
+            <annotation>
+              <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions</documentation>
+            </annotation>
+          </element>
+          <element name="unit-of-work-handling-policy" default="PassThrough" minOccurs="0">
+            <annotation>
+              <documentation>This element was introduced in the 9.0.2 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions</documentation>
+            </annotation>
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="PassThrough"/>
+                <enumeration value="SingleMessageDelivery"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="incomplete-work-expiration-time"
+                    type="int" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="topic-type">
+    <complexContent>
+      <extension base="jmsmd:destination-type">
+        <sequence>
+          <element name="multicast" type="jmsmd:multicast-params-type" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="queue-type">
+    <complexContent>
+      <extension base="jmsmd:destination-type"/>
+    </complexContent>
+  </complexType>
+  <complexType name="jms-connection-factory-type">
+    <complexContent>
+      <extension base="jmsmd:targetable-type">
+        <sequence>
+          <element name="jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="local-jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="default-delivery-params" type="jmsmd:default-delivery-params-type" minOccurs="0"/>
+          <element name="client-params" type="jmsmd:client-params-type" minOccurs="0"/>
+          <element name="transaction-params" type="jmsmd:transaction-params-type" minOccurs="0"/>
+          <element name="flow-control-params" type="jmsmd:flow-control-params-type" minOccurs="0"/>
+          <element name="load-balancing-params" type="jmsmd:load-balancing-params-type" minOccurs="0"/>
+          <element name="security-params" type="jmsmd:security-params-type" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="distributed-destination-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="local-jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="load-balancing-policy" type="string" nillable="true" minOccurs="0"/>
+          <element name="unit-of-order-routing" default="Hash" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="Hash"/>
+                <enumeration value="PathService"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="saf-export-policy" default="All" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="All"/>
+                <enumeration value="None"/>
+              </restriction>
+            </simpleType>
+          </element>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="distributed-destination-member-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="weight" type="int" minOccurs="0"/>
+          <element name="physical-destination-name" type="string" nillable="true" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="distributed-topic-type">
+    <complexContent>
+      <extension base="jmsmd:distributed-destination-type">
+        <sequence>
+          <element name="distributed-topic-member" type="jmsmd:distributed-destination-member-type" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="distributed-queue-type">
+    <complexContent>
+      <extension base="jmsmd:distributed-destination-type">
+        <sequence>
+          <element name="distributed-queue-member" type="jmsmd:distributed-destination-member-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="forward-delay" type="int" minOccurs="0"/>
+          <element name='reset-delivery-count-on-forward' type='boolean' default='true' minOccurs='0'/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="template-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="destination-key" type="string" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="thresholds" type="jmsmd:threshold-params-type" minOccurs="0"/>
+          <element name="delivery-params-overrides" type="jmsmd:delivery-params-overrides-type" minOccurs="0"/>
+          <element name="delivery-failure-params" type="jmsmd:delivery-failure-params-type" minOccurs="0"/>
+          <element name="message-logging-params" type="jmsmd:message-logging-params-type" minOccurs="0"/>
+          <element name="attach-sender" default="supports" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="supports"/>
+                <enumeration value="always"/>
+                <enumeration value="never"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="production-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="insertion-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="consumption-paused-at-startup" type="boolean" default="false" minOccurs="0"/>
+          <element name="maximum-message-size" type="int" minOccurs="0"/>
+          <element name="quota" type="string" nillable="true" minOccurs="0"/>
+          <element name="default-unit-of-order" type="boolean" default="false" minOccurs="0"/>
+          <element name="saf-export-policy" default="All" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="All"/>
+                <enumeration value="None"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="multicast" type="jmsmd:multicast-params-type" minOccurs="0"/>
+          <element name="group-params" type="jmsmd:group-params-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="messaging-performance-preference" type="int" default="50" minOccurs="0"/>
+          <element name="unit-of-work-handling-policy" default="PassThrough" minOccurs="0">
+            <annotation>
+              <documentation>This element was introduced in the 9.0.2 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions</documentation>
+            </annotation>
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="PassThrough"/>
+                <enumeration value="SingleMessageDelivery"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="incomplete-work-expiration-time"
+                    type="int" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="destination-key-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="property" type="string" nillable="true" minOccurs="0"/>
+          <element name="key-type" type="jmsmd:key-type-type" minOccurs="0"/>
+          <element name="sort-order" type="jmsmd:sort-order-type" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <simpleType name="key-type-type">
+    <restriction base="string">
+      <enumeration value="Boolean"/>
+      <enumeration value="Byte"/>
+      <enumeration value="Short"/>
+      <enumeration value="Int"/>
+      <enumeration value="Long"/>
+      <enumeration value="Float"/>
+      <enumeration value="Double"/>
+      <enumeration value="String"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="sort-order-type">
+    <restriction base="string">
+      <enumeration value="Ascending"/>
+      <enumeration value="Descending"/>
+    </restriction>
+  </simpleType>
+  <complexType name="foreign-server-type">
+    <complexContent>
+      <extension base="jmsmd:targetable-type">
+        <sequence>
+          <element name="foreign-destination" type="jmsmd:foreign-destination-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="foreign-connection-factory" type="jmsmd:foreign-connection-factory-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="initial-context-factory" type="string" nillable="true" minOccurs="0"/>
+          <element name="connection-url" type="string" nillable="true" minOccurs="0"/>
+          <element name="jndi-properties-credential-encrypted" type="string" nillable="true" minOccurs="0"/>
+          <element name="jndi-property" type="jmsmd:property-type" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="foreign-jndi-object-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="local-jndi-name" type="string" nillable="false"/>
+          <element name="remote-jndi-name" type="string" nillable="false"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="foreign-destination-type">
+    <complexContent>
+      <extension base="jmsmd:foreign-jndi-object-type"/>
+    </complexContent>
+  </complexType>
+  <complexType name="foreign-connection-factory-type">
+    <complexContent>
+      <extension base="jmsmd:foreign-jndi-object-type">
+        <sequence>
+          <element name="username" type="string" nillable="true" minOccurs="0"/>
+          <element name="password-encrypted" type="string" nillable="true" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="client-params-type">
+    <sequence>
+      <element name="client-id" type="string" nillable="true" minOccurs="0"/>
+      <element name="client-id-policy" type="string" nillable="true" minOccurs="0">
+        <annotation>
+          <documentation>
+             Reserved for future use. Early access is disabled by default.
+          </documentation>
+        </annotation>
+      </element>
+      <element name="subscription-sharing-policy" type="string" nillable="true" minOccurs="0">
+        <annotation>
+          <documentation>
+             Reserved for future use. Early access is disabled by default.
+          </documentation>
+        </annotation>
+      </element>
+      <element name="acknowledge-policy" type="jmsmd:acknowledge-policy-type" minOccurs="0"/>
+      <element name="allow-close-in-onMessage" type="boolean" default="true" minOccurs="0"/>
+      <element name="messages-maximum" type="int" minOccurs="0"/>
+      <element name="multicast-overrun-policy" type="jmsmd:overrun-policy-type" minOccurs="0"/>
+      <element name="synchronous-prefetch-mode" type="jmsmd:synchronous-prefetch-mode-type" minOccurs="0">
+        <annotation>
+          <documentation>This element was introduced in the 9.2 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions</documentation>
+        </annotation>
+      </element>
+      <element name="reconnect-policy" type="jmsmd:reconnect-policy-type" default="producer" minOccurs="0"/>
+      <element name="reconnect-blocking-millis" type="long" default="60000" minOccurs="0"/>
+      <element name="total-reconnect-period-millis" type="long" default="-1" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="default-delivery-params-type">
+    <sequence>
+      <element name="default-delivery-mode" type="jmsmd:delivery-mode-type" minOccurs="0"/>
+      <element name="default-time-to-deliver" type="string" minOccurs="0"/>
+      <element name="default-time-to-live" type="long" minOccurs="0"/>
+      <element name="default-priority" type="int" minOccurs="0"/>
+      <element name="default-redelivery-delay" type="long" minOccurs="0"/>
+      <element name="send-timeout" type="long" minOccurs="0"/>
+      <element name="default-compression-threshold" type="int" minOccurs="0"/>
+      <element name="default-unit-of-order" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="transaction-params-type">
+    <sequence>
+      <element name="transaction-timeout" type="long" minOccurs="0"/>
+      <element name="xa-connection-factory-enabled" type="boolean" default="false" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="flow-control-params-type">
+    <sequence>
+      <element name="flow-minimum" type="int" minOccurs="0"/>
+      <element name="flow-maximum" type="int" minOccurs="0"/>
+      <element name="flow-interval" type="int" minOccurs="0"/>
+      <element name="flow-steps" type="int" minOccurs="0"/>
+      <element name="flow-control-enabled" type="boolean" default="true" minOccurs="0"/>
+      <element name="one-way-send-mode" type="jmsmd:one-way-send-mode-type" minOccurs="0"/>
+      <element name="one-way-send-window-size" type="int" default="1" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="load-balancing-params-type">
+    <sequence>
+      <element name="load-balancing-enabled" type="boolean" default="true" minOccurs="0"/>
+      <element name="server-affinity-enabled" type="boolean" default="true" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <simpleType name="one-way-send-mode-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.2.0 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="enabled"/>
+      <enumeration value="disabled"/>
+      <enumeration value="topicOnly"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="synchronous-prefetch-mode-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="enabled"/>
+      <enumeration value="disabled"/>
+      <enumeration value="topicSubscriberOnly"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="reconnect-policy-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.2 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+      </documentation>
+    </annotation>
+    <restriction base="string">
+      <enumeration value="none"/>
+      <enumeration value="producer"/>
+      <enumeration value="all"/>
+    </restriction>
+  </simpleType>
+  <complexType name="quota-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="bytes-maximum" type="long" minOccurs="0"/>
+          <element name="messages-maximum" type="long" minOccurs="0"/>
+          <element name="policy" default="FIFO" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="FIFO"/>
+                <enumeration value="Preemptive"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="shared" type="boolean" default="true" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="threshold-params-type">
+    <sequence>
+      <element name="bytes-high" type="long" minOccurs="0"/>
+      <element name="bytes-low" type="long" minOccurs="0"/>
+      <element name="messages-high" type="long" minOccurs="0"/>
+      <element name="messages-low" type="long" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="delivery-params-overrides-type">
+    <sequence>
+      <element name="delivery-mode" type="jmsmd:delivery-mode-type" minOccurs="0"/>
+      <element name="time-to-deliver" type="string" nillable="true" minOccurs="0"/>
+      <element name="time-to-live" type="long" minOccurs="0"/>
+      <element name="priority" type="int" minOccurs="0"/>
+      <element name="redelivery-delay" type="long" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="delivery-failure-params-type">
+    <sequence>
+      <element name="error-destination" type="string" nillable="true" minOccurs="0"/>
+      <element name="redelivery-limit" type="int" minOccurs="0"/>
+      <element name="expiration-policy" type="jmsmd:expiration-policy-type" minOccurs="0"/>
+      <element name="expiration-logging-policy" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="message-logging-params-type">
+    <sequence>
+      <element name="message-logging-enabled" type="boolean" default="false" minOccurs="0"/>
+      <element name="message-logging-format" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="multicast-params-type">
+    <sequence>
+      <element name="multicast-address" type="string" nillable="true" minOccurs="0"/>
+      <element name="multicast-port" type="int" minOccurs="0"/>
+      <element name="multicast-time-to-live" type="int" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="property-type">
+    <sequence>
+      <element name="key" type="string" nillable="false"/>
+      <element name="value" type="string" nillable="false"/>
+    </sequence>
+  </complexType>
+  <simpleType name="expiration-policy-type">
+    <restriction base="string">
+      <enumeration value="Discard"/>
+      <enumeration value="Log"/>
+      <enumeration value="Redirect"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="delivery-mode-type">
+    <restriction base="string">
+      <enumeration value="Persistent"/>
+      <enumeration value="Non-Persistent"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="overrun-policy-type">
+    <restriction base="string">
+      <enumeration value="KeepOld"/>
+      <enumeration value="KeepNew"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="acknowledge-policy-type">
+    <restriction base="string">
+      <enumeration value="All"/>
+      <enumeration value="Previous"/>
+      <enumeration value="One"/>
+    </restriction>
+  </simpleType>
+  <complexType name="security-params-type">
+    <sequence>
+      <element name="attach-jmsx-user-id" type="boolean" default="false" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="named-entity-type">
+    <sequence>
+      <element name="notes" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+    <attribute name="name" type="string" use="required"/>
+  </complexType>
+  <complexType name="saf-queue-type">
+    <complexContent>
+      <extension base="jmsmd:saf-destination-type"/>
+    </complexContent>
+  </complexType>
+  <complexType name="saf-imported-destinations-type">
+    <complexContent>
+      <extension base="jmsmd:targetable-type">
+        <sequence>
+          <element name="saf-queue" type="jmsmd:saf-queue-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="saf-topic" type="jmsmd:saf-topic-type" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="jndi-prefix" type="string" nillable="true" minOccurs="0"/>
+          <element name="saf-remote-context" type="string" nillable="true" minOccurs="0"/>
+          <element name="saf-error-handling" type="string" nillable="true" minOccurs="0"/>
+          <element name="time-to-live-default" type="long" minOccurs="0"/>
+          <element name="use-saf-time-to-live-default" type="boolean" default="false" minOccurs="0"/>
+          <element name="unit-of-order-routing" default="Hash" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="Hash"/>
+                <enumeration value="PathService"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="message-logging-params" type="jmsmd:message-logging-params-type" minOccurs="0">
+            <annotation>
+              <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+            </annotation>
+          </element>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="saf-remote-context-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="saf-login-context" type="jmsmd:saf-login-context-type" minOccurs="0"/>
+          <element name="compression-threshold" type="int" minOccurs="0"/>
+          <element name="reply-to-saf-remote-context-name" type="string" nillable="true" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="saf-error-handling-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="policy" type="string" nillable="true" minOccurs="0"/>
+          <element name="log-format" type="string" nillable="true" minOccurs="0"/>
+          <element name="saf-error-destination" type="string" nillable="true" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="saf-login-context-type">
+    <sequence>
+      <element name="loginURL" type="string"/>
+      <sequence>
+        <element name="username" type="string" minOccurs="0"/>
+        <element name="password-encrypted" type="string" minOccurs="0"/>
+      </sequence>
+    </sequence>
+  </complexType>
+  <complexType name="saf-remote-context-property-type">
+    <sequence>
+      <element name="name" type="string"/>
+      <element name="value" type="string"/>
+    </sequence>
+  </complexType>
+  <complexType name="saf-topic-type">
+    <complexContent>
+      <extension base="jmsmd:saf-destination-type"/>
+    </complexContent>
+  </complexType>
+  <complexType name="saf-destination-type" abstract="true">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="remote-jndi-name" type="string" nillable="false"/>
+          <element name="local-jndi-name" type="string" nillable="true" minOccurs="0"/>
+          <element name="non-persistent-qos" default="At-Most-Once" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="At-Most-Once"/>
+                <enumeration value="At-Least-Once"/>
+                <enumeration value="Exactly-Once"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="saf-error-handling" type="string" nillable="true" minOccurs="0"/>
+          <element name="time-to-live-default" type="long" minOccurs="0"/>
+          <element name="use-saf-time-to-live-default" type="boolean" default="false" minOccurs="0"/>
+          <element name="unit-of-order-routing" default="Hash" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="Hash"/>
+                <enumeration value="PathService"/>
+              </restriction>
+            </simpleType>
+          </element>
+          <element name="message-logging-params" type="jmsmd:message-logging-params-type" minOccurs="0">
+            <annotation>
+              <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+            </annotation>
+          </element>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="group-params-type">
+    <sequence>
+      <element name="error-destination" type="string" nillable="true" minOccurs="0"/>
+    </sequence>
+    <attribute name="sub-deployment-name" type="string" use="required"/>
+  </complexType>
+  <complexType name="targetable-type">
+    <complexContent>
+      <extension base="jmsmd:named-entity-type">
+        <sequence>
+          <element name="sub-deployment-name" type="string" nillable="false" minOccurs="0"/>
+          <element name="default-targeting-enabled" type="boolean" default="false" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="uniform-distributed-destination-type">
+    <complexContent>
+      <extension base="jmsmd:destination-type">
+        <sequence>
+          <element name="load-balancing-policy" type="string" nillable="true" minOccurs="0"/>
+          <element name="unit-of-order-routing" default="Hash" minOccurs="0">
+            <simpleType>
+              <restriction base="string">
+                <enumeration value="Hash"/>
+                <enumeration value="PathService"/>
+              </restriction>
+            </simpleType>
+          </element>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="uniform-distributed-topic-type">
+    <complexContent>
+      <extension base="jmsmd:uniform-distributed-destination-type">
+        <sequence>
+          <element name="forwarding-policy" type="string" nillable="true" minOccurs="0">
+            <annotation>
+              <documentation>
+                Reserved for future use. Early access is disabled by default.
+              </documentation>
+            </annotation>
+          </element> 
+          <element name="multicast" type="jmsmd:multicast-params-type" minOccurs="0"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="uniform-distributed-queue-type">
+    <complexContent>
+      <extension base="jmsmd:uniform-distributed-destination-type">
+        <sequence>
+          <element name="forward-delay" type="int" minOccurs="0"/>
+          <element name='reset-delivery-count-on-forward' type='boolean' default='true' minOccurs='0'/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="weblogic-client-jms" type="jmsmd:client-saf-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+  </element>
+  <complexType name="client-saf-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+    <sequence>
+      <element name="persistent-store" type="jmsmd:default-persistent-store-type" minOccurs="0"/>
+      <element name="saf-agent" type="jmsmd:default-saf-agent-type" minOccurs="0"/>
+      <element name="connection-factory" type="jmsmd:jms-connection-factory-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-imported-destinations" type="jmsmd:saf-imported-destinations-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-remote-context" type="jmsmd:saf-remote-context-type" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="saf-error-handling" type="jmsmd:saf-error-handling-type" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="default-persistent-store-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+    <sequence>
+      <element name="notes" type="string" minOccurs="0"/>
+      <element name="directory-path" type="string" nillable="false" minOccurs="0"/>
+      <element name="synchronous-write-policy" default="Direct-Write" minOccurs="0">
+        <simpleType>
+          <restriction base="string">
+            <enumeration value="Disabled"/>
+            <enumeration value="Cache-Flush"/>
+            <enumeration value="Direct-Write"/>
+          </restriction>
+        </simpleType>
+      </element>
+    </sequence>
+  </complexType>
+  <complexType name="default-saf-agent-type">
+    <annotation>
+      <documentation>This element was introduced in the 9.0.1 version of 
+WebLogic Server.  It should not be used in instance documents that may be 
+consumed by prior WebLogic Server versions
+</documentation>
+    </annotation>
+    <sequence>
+      <element name="notes" type="string" nillable="true" minOccurs="0"/>
+      <element name="bytes-maximum" type="long" default="-1" minOccurs="0"/>
+      <element name="messages-maximum" type="long" default="-1" minOccurs="0"/>
+      <element name="maximum-message-size" type="int" default="2147483647" minOccurs="0"/>
+      <element name="default-retry-delay-base" type="long" default="20000" minOccurs="0"/>
+      <element name="default-retry-delay-maximum" type="long" default="180000" minOccurs="0"/>
+      <element name="default-retry-delay-multiplier" type="double" default="1.0" minOccurs="0"/>
+      <element name="window-size" type="int" default="10" minOccurs="0"/>
+      <element name="logging-enabled" type="boolean" default="true" minOccurs="0"/>
+      <element name="default-time-to-live" type="long" default="0" minOccurs="0"/>
+      <element name="message-buffer-size" type="long" default="-1" minOccurs="0"/>
+      <element name="paging-directory" type="string" nillable="true" minOccurs="0"/>
+      <element name="window-interval" type="long" default="0" minOccurs="0"/>
+    </sequence>
+  </complexType>
+</schema>

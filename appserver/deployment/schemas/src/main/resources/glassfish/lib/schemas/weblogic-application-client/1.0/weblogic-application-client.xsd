@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+
+<schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-application-client"
+
+        xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-application-client"
+
+        xmlns="http://www.w3.org/2001/XMLSchema" 
+
+        xmlns:j2ee="http://java.sun.com/xml/ns/javaee"
+        
+        elementFormDefault="qualified"
+		version="1.0">
+
+
+
+  <include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.0/weblogic-javaee.xsd"/>
+
+
+
+  <import namespace="http://java.sun.com/xml/ns/javaee" 
+
+             schemaLocation="http://java.sun.com/xml/ns/javaee/javaee_5.xsd" />
+
+
+
+  <element name="weblogic-application-client" 
+
+           type="wls:weblogic-application-clientType">
+
+  </element>
+
+
+
+  <complexType name="weblogic-application-clientType">       
+
+    <sequence>
+      <group ref="wls:reference-descriptorGroup"/>
+      <element name="message-destination-descriptor"
+      	type="wls:message-destination-descriptorType"
+      	minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+
+    <attribute name="id" type="ID"/>
+    <attribute name="version" type="string" use="optional"/>
+  </complexType>
+
+
+
+</schema>
+

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.bea.com/2004/03/wlw/external-config/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.bea.com/2004/03/wlw/external-config/" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="annotation-overrides" type="annotation-overridesBean"/>
+	<xs:complexType name="annotation-instanceBean">
+		<xs:sequence>
+			<xs:element name="annotation-class-name" type="xs:string" nillable="false"/>
+			<xs:element name="member" type="memberBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="array-member" type="array-memberBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="nested-annotation" type="nested-annotationBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="nested-annotation-array" type="nested-annotation-arrayBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="update-count" type="xs:long" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotated-classBean">
+		<xs:sequence>
+			<xs:element name="annotated-class-name" type="xs:string" nillable="false"/>
+			<xs:element name="component-type" type="xs:string" minOccurs="0"/>
+			<xs:element name="annotation" type="annotation-instanceBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="field" type="annotated-fieldBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="method" type="annotated-methodBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="annotation-manifest" type="annotation-manifestBean"/>
+	<xs:complexType name="annotation-definitionBean">
+		<xs:sequence>
+			<xs:element name="annotation-class-name" type="xs:string"/>
+			<xs:element name="membership-constraint" type="membership-constraintBean"/>
+			<xs:element name="allowed-on-declaration" type="xs:boolean"/>
+			<xs:element name="member-definition" type="member-definitionBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="member-definitionBean">
+		<xs:sequence>
+			<xs:element name="member-name" type="xs:string"/>
+			<xs:element name="is-array" type="xs:boolean"/>
+			<xs:element name="is-required" type="xs:boolean"/>
+			<xs:choice>
+				<xs:element name="annotation-ref" type="xs:string"/>
+				<xs:element name="enum-ref" type="enum-refBean"/>
+				<xs:element name="simple-type-definition" type="simple-type-definitionBean"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="enum-definitionBean">
+		<xs:sequence>
+			<xs:element name="enum-class-name" type="xs:string"/>
+			<xs:element name="enum-value" type="xs:string" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotation-manifestBean">
+		<xs:sequence>
+			<xs:element name="annotated-class" type="annotated-classBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="annotation-definition" type="annotation-definitionBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="enum-definition" type="enum-definitionBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotated-fieldBean">
+		<xs:sequence>
+			<xs:element name="field-name" type="xs:string" nillable="false"/>
+			<xs:element name="instance-type" type="xs:string" nillable="false"/>
+			<xs:element name="annotation" type="annotation-instanceBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotated-methodBean">
+		<xs:sequence>
+			<xs:element name="method-key" type="xs:string" nillable="false"/>
+			<xs:element name="method-name" type="xs:string" nillable="false"/>
+			<xs:element name="annotation" type="annotation-instanceBean" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="paramter-type" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="nested-annotation-arrayBean">
+		<xs:sequence>
+			<xs:element name="member-name" type="xs:string" nillable="false"/>
+			<xs:element name="annotation" type="annotation-instanceBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="array-memberBean">
+		<xs:sequence>
+			<xs:element name="member-name" type="xs:string" nillable="false"/>
+			<xs:element name="member-value" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="override-value" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="requires-encryption" nillable="false" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:choice minOccurs="0" maxOccurs="1">
+				<xs:element name="cleartext-override-value" nillable="false" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="secured-override-value-encrypted" nillable="false" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="memberBean">
+		<xs:sequence>
+			<xs:element name="member-name" type="xs:string" nillable="false"/>
+			<xs:element name="member-value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="override-value" type="xs:string" minOccurs="0"/>
+			<xs:element name="requires-encryption" nillable="false" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:choice minOccurs="0" maxOccurs="1">
+				<xs:element name="cleartext-override-value" nillable="false" type="xs:string" minOccurs="0" maxOccurs="1"/>
+				<xs:element name="secured-override-value-encrypted" nillable="false" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotation-overridesBean">
+		<xs:sequence>
+			<xs:element name="annotated-class" type="annotated-classBean" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="annotation-refBean">
+		<xs:sequence/>
+	</xs:complexType>
+	<xs:complexType name="enum-refBean">
+		<xs:sequence>
+			<xs:element name="enum-class-name" type="xs:string"/>
+			<xs:element name="default-value" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="membership-constraintBean">
+		<xs:sequence>
+			<xs:element name="membership-rule" type="xs:string"/>
+			<xs:element name="member-name" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="member-constraintBean">
+		<xs:sequence>
+			<xs:element name="constraint-type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="DATE"/>
+						<xs:enumeration value="DECIMAL"/>
+						<xs:enumeration value="INTEGER"/>
+						<xs:enumeration value="URL"/>
+						<xs:enumeration value="URN"/>
+						<xs:enumeration value="URI"/>
+						<xs:enumeration value="XML"/>
+						<xs:enumeration value="FILE"/>
+						<xs:enumeration value="CUSTOM"/>
+						<xs:enumeration value="QNAME"/>
+						<xs:enumeration value="TEXT"/>
+						<xs:enumeration value="JNDINAME_DATASOURCE"/>
+						<xs:enumeration value="JNDINAME_EJB"/>
+						<xs:enumeration value="JNDINAME_JMS_TOPIC"/>
+						<xs:enumeration value="JNDINAME_JMS_QUEUE"/>
+						<xs:enumeration value="JNDINAME_OTHER"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="max-length" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="min-value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="max-value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="scale" type="xs:int" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="nested-annotationBean">
+		<xs:sequence>
+			<xs:element name="member-name" type="xs:string"/>
+			<xs:element name="annotation" type="annotation-instanceBean"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="simple-type-definitionBean">
+		<xs:sequence>
+			<xs:element name="base-type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="BYTE"/>
+						<xs:enumeration value="SHORT"/>
+						<xs:enumeration value="INT"/>
+						<xs:enumeration value="LONG"/>
+						<xs:enumeration value="DOUBLE"/>
+						<xs:enumeration value="FLOAT"/>
+						<xs:enumeration value="CHAR"/>
+						<xs:enumeration value="BOOLEAN"/>
+						<xs:enumeration value="STRING"/>
+						<xs:enumeration value="ENUM"/>
+						<xs:enumeration value="CLASS"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="constraint" type="member-constraintBean" minOccurs="0"/>
+			<xs:element name="requires-encryption" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="default-value" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

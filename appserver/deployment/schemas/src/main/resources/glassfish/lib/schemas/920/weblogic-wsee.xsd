@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.bea.com/ns/weblogic/90" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:wls="http://www.bea.com/ns/weblogic/90" xmlns:j2ee="http://java.sun.com/xml/ns/j2ee" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.w3.org/2001/XMLSchema">
+  <import namespace="http://java.sun.com/xml/ns/j2ee" schemaLocation="http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"/>
+  <element name="weblogic-webservices" type="wls:weblogic-webservicesType"/>
+  <complexType name="weblogic-webservicesType">
+    <sequence>
+      <xsd:element name="webservice-description" type="wls:webservice-descriptionType" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Top level wsee internal DD element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="webservice-security" type="wls:webservice-securityType" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Webservice Security configuration element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </sequence>
+  </complexType>
+  <complexType name="webservice-descriptionType">
+    <sequence>
+      <xsd:element name="webservice-description-name" type="j2ee:string"/>
+      <xsd:element name="wsdl-publish-file" type="j2ee:string" minOccurs="0"/>
+      <xsd:element name="port-component" type="wls:port-componentType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="webservice-securityType">
+    <sequence>
+      <xsd:element name="mbean-name" type="j2ee:string"/>
+    </sequence>
+  </complexType>
+  <complexType name="port-componentType">
+    <sequence>
+      <xsd:element name="port-component-name" type="j2ee:string"/>
+      <xsd:element name="service-endpoint-address" type="wls:webservice-addressType" minOccurs="0"/>
+      <xsd:element name="login-config" type="j2ee:login-configType" minOccurs="0"/>
+      <xsd:element name="transport-guarantee" type="j2ee:transport-guaranteeType" minOccurs="0"/>
+      <xsd:element name="deployment-listener-list" type="wls:deployment-listener-listType" minOccurs="0"/>
+      <xsd:element name="wsdl" type="wls:wsdlType" minOccurs="0"/>
+      <xsd:element name="transaction-timeout" type="xsd:nonNegativeInteger" minOccurs="0"/>
+      <xsd:element name="callback-protocol" type="wls:callback-protocolType" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <xsd:complexType name="wsdlType">
+    <xsd:sequence>
+      <xsd:element name="exposed" type="xsd:boolean"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <complexType name="deployment-listener-listType">
+    <sequence>
+      <xsd:element name="deployment-listener" type="j2ee:string" minOccurs="1" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="webservice-addressType">
+    <sequence>
+      <xsd:element name="webservice-contextpath" type="j2ee:string"/>
+      <xsd:element name="webservice-serviceuri" type="j2ee:string"/>
+    </sequence>
+  </complexType>
+  <complexType name="callback-protocolType">
+    <xsd:simpleContent>
+      <xsd:restriction base="j2ee:string">
+        <xsd:enumeration value="http"/>
+        <xsd:enumeration value="https"/>
+        <xsd:enumeration value="jms"/>
+      </xsd:restriction>
+    </xsd:simpleContent>
+  </complexType>
+</schema>
