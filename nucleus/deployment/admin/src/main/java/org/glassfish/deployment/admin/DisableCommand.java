@@ -161,7 +161,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             // we need to set the default target for non-paas case first
             // so the versioned code could execute as expected
             if (target == null) {
-                target = deployment.getDefaultTarget();
+                target = deployment.getDefaultTarget(_classicstyle);
             }
         }
 
@@ -238,7 +238,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         // ready to do the real work
 
         if (target == null) {
-            target = deployment.getDefaultTarget(appName, origin);
+            target = deployment.getDefaultTarget(appName, origin, _classicstyle);
         }
 
         if (env.isDas() || !isundeploy) {

@@ -41,6 +41,7 @@
 package org.glassfish.api.deployment;
 
 import org.glassfish.api.admin.CommandParameters;
+import org.glassfish.api.Param;
 
 /**
  * Support class for all types of deployment operation parameters.
@@ -162,4 +163,9 @@ public abstract class OpsParams implements CommandParameters {
 
     public abstract String libraries();
 
+    // internal hidden param
+    // if this param is set to true, a classic style deployment will be
+    // executed regardless of the virtualization settings
+    @Param(optional=true, defaultValue="false")
+    public Boolean _classicstyle = false;
 }

@@ -140,7 +140,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         deployment.validateSpecifiedTarget(target);
 
         if (target == null) {
-            target = deployment.getDefaultTarget(name(), OpsParams.Origin.load);
+            target = deployment.getDefaultTarget(name(), OpsParams.Origin.load, _classicstyle);
         }
 
         if (!deployment.isRegistered(name())) {

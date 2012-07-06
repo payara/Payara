@@ -275,7 +275,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             }
 
             if (target == null) {
-                target = deployment.getDefaultTarget(name, origin);
+                target = deployment.getDefaultTarget(name, origin, _classicstyle);
             }
 
             // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
@@ -440,6 +440,12 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
 
                     // register application information in domain.xml
                     deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
+                    if (tracing!=null) {
+                        tracing.addMark(DeploymentTracing.Mark.REGISTRATION);
+                    }
+                    if (retrieve != null) {
+                        retrieveArtifacts(context, downloadableArtifacts.getArtifacts(), retrieve, false);
+                    }
                     suppInfo.setDeploymentContext(deploymentContext);
                     //Fix for issue 14442
                     //We want to report the worst subreport value.
@@ -461,14 +467,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     throw e;
                 }
 
-            }
-            if (tracing!=null) {
-                tracing.addMark(DeploymentTracing.Mark.REGISTRATION);
-            }
-            if(retrieve != null) {
-                retrieveArtifacts(context, downloadableArtifacts.getArtifacts(),
-                        retrieve, 
-                        false);
             }
         } catch(Throwable e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

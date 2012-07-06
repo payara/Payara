@@ -151,7 +151,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
         // we need to set the default target for non-paas case first 
         // so the versioned code could execute as expected
         if (target == null) {
-            target = deployment.getDefaultTarget();
+            target = deployment.getDefaultTarget(_classicstyle);
         }
 
         /**
@@ -204,7 +204,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             String appName = (String)it.next();
 
             if (target == null) {
-                target = deployment.getDefaultTarget(appName, origin);
+                target = deployment.getDefaultTarget(appName, origin, _classicstyle);
             }
             
             ApplicationInfo info = deployment.get(appName);

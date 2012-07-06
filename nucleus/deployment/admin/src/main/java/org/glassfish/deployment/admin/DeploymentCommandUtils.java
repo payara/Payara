@@ -128,7 +128,8 @@ public class DeploymentCommandUtils {
 
     public static String getTarget(ParameterMap parameters, OpsParams.Origin origin, Deployment deployment) {
         String appName = parameters.getOne("DEFAULT");
-        String targetName = deployment.getDefaultTarget(appName, origin);
+        Boolean isClassicStyle = Boolean.valueOf(parameters.getOne("_classicstyle"));
+        String targetName = deployment.getDefaultTarget(appName, origin, isClassicStyle);
         parameters.set("target", targetName);
         return targetName;
     }

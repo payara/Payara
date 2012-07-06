@@ -145,7 +145,7 @@ public class ValidateRemoteDirDeploymentCommand extends DeployCommandParameters
         }
 
         if (target == null) {
-            target = deployment.getDefaultTarget(name, origin);
+            target = deployment.getDefaultTarget(name, origin, _classicstyle);
         }
 
         final TargetInfo targetInfo = new TargetInfo(target);

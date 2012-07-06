@@ -264,8 +264,8 @@ public interface Deployment {
     public Collection<? extends Sniffer> getSniffers(ArchiveHandler archiveHandler, Collection<? extends Sniffer> sniffers, DeploymentContext context);
 
     // sets the default target when the target is not specified
-    public String getDefaultTarget(String appName, OpsParams.Origin origin);
+    public String getDefaultTarget(String appName, OpsParams.Origin origin, Boolean isClassicStyle);
 
     // gets the default target when no target is specified for non-paas case
-    public String getDefaultTarget();
+    public String getDefaultTarget(Boolean isClassicStyle);
 }

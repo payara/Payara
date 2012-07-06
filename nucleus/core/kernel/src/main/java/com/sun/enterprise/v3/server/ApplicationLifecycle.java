@@ -1479,17 +1479,29 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appRegistry.get(appName);
     }
 
+    private boolean isPaaSEnabled(Boolean isClassicStyle) {
+        if (isClassicStyle) {
+            return false;
+        } 
+ 
+        if (virtEnv != null && virtEnv.isPaasEnabled()) {
+            return true;
+        }
+
+        return false;
+    }
+
     // gets the default target when no target is specified for non-paas case
-    public String getDefaultTarget() {
-        if (virtEnv == null || !virtEnv.isPaasEnabled()) {
+    public String getDefaultTarget(Boolean isClassicStyle) {
+        if (!isPaaSEnabled(isClassicStyle)) {
             return DeploymentUtils.DAS_TARGET_NAME;     
         }
         return null;
     }
 
     // gets the default target when no target is specified
-    public String getDefaultTarget(String appName, OpsParams.Origin origin) {
-        if (virtEnv == null || !virtEnv.isPaasEnabled()) {
+    public String getDefaultTarget(String appName, OpsParams.Origin origin, Boolean isClassicStyle) {
+        if (!isPaaSEnabled(isClassicStyle)) {
             return DeploymentUtils.DAS_TARGET_NAME;     
         } else {
            // for deploy case, OE will set the deploy target later
