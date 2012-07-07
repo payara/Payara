@@ -104,7 +104,9 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
                 if(key.endsWith("_value"))
                     continue;
                 if(!key.endsWith("_name")) {
-                    aReport.getTopMessagePart().addProperty(key, ae.getValue());
+                    if (ae.getValue() != null) {
+                        aReport.getTopMessagePart().addProperty(key, ae.getValue());
+                    }
                     continue;
                 }
                 String keyWithoutSuffix = key.substring(0, key.lastIndexOf("_name"));
