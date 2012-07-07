@@ -1170,8 +1170,6 @@ public class CommandRunnerImpl implements CommandRunner {
                     return;
                 }
 
-                PostConstructRunner.runPostConstructs(command);
-                
                 /*
                  * Now that parameters have been injected into the command object,
                  * decide if the current Subject should be permitted to execute
