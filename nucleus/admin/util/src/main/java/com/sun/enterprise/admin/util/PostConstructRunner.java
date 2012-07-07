@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
 import javax.annotation.PostConstruct;
 
 /**
@@ -50,13 +51,24 @@ import javax.annotation.PostConstruct;
 public class PostConstructRunner {
     
     public static void runPostConstructs(final Object obj) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        /*
+         * As we ascend the hierarchy, record the @PostConstruct methods we find
+         * at each level at the beginning of the list.  After we have processed
+         * the whole hierarchy, the highest-level @PostConstruct methods will be
+         * first in the list. Processing them from first to last will execute them
+         * from the top of the hierarchy down.
+         */
+        final LinkedList<Method> postConstructMethods = new LinkedList<Method>();
         for (ClassLineageIterator cIT = new ClassLineageIterator(obj.getClass()); cIT.hasNext(); ) {
             for (Method m : cIT.next().getDeclaredMethods()) {
                 if (m.getAnnotation(PostConstruct.class) != null) {
-                    m.setAccessible(true);
-                    m.invoke(obj);
+                    postConstructMethods.addFirst(m);
                 }
             }
+        }
+        for (Method m : postConstructMethods) {
+            m.setAccessible(true);
+            m.invoke(obj);
         }
     }
     

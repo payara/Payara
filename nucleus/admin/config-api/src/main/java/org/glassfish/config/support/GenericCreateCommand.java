@@ -70,7 +70,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.Authorizer {
+public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.AccessCheckProvider {
 
     GenericCommandModel model;
     Create create;

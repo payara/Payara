@@ -64,7 +64,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericDeleteCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.Authorizer {
+public class GenericDeleteCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.AccessCheckProvider {
 
     @Inject
     CommandRunner runner;

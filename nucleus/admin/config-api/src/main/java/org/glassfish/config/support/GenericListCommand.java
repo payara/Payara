@@ -64,7 +64,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AccessRequired.Authorizer {
+public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AccessRequired.AccessCheckProvider {
 
     CommandModel model;
     Listing listing;

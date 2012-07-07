@@ -171,7 +171,7 @@ public class CommandSecurityChecker {
          * and so provide their own AccessCheck objects.  So the addChecksFromAuthorizer
          * method will cover the CRUD commands.
          */
-        addChecksFromAuthorizer(subject, command, accessChecks, isTaggable);
+        addChecksFromAccessCheckProvider(subject, command, accessChecks, isTaggable);
         addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, isTaggable);
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
@@ -207,11 +207,11 @@ public class CommandSecurityChecker {
      * @param isTaggable
      * @return 
      */
-    private boolean addChecksFromAuthorizer(final Subject subject, 
+    private boolean addChecksFromAccessCheckProvider(final Subject subject, 
             final AdminCommand command, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
-        if (command instanceof AccessRequired.Authorizer) {
-            final Collection<? extends AccessCheck> checks = ((AccessRequired.Authorizer) command).getAccessChecks();
+        if (command instanceof AccessRequired.AccessCheckProvider) {
+            final Collection<? extends AccessCheck> checks = ((AccessRequired.AccessCheckProvider) command).getAccessChecks();
             for (AccessCheck ac : checks) {
                 
                 accessChecks.add(new AccessCheckWork(ac,

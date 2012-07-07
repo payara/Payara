@@ -427,7 +427,7 @@ public @interface AccessRequired {
      * objects, indicating additional authorization checking that secure
      * admin should perform beyond what is triggered by the annotations.
      */
-    public interface Authorizer {
+    public interface AccessCheckProvider {
         
         /**
          * Returns the {@code AccessCheck}s the command has computed at runtime 
