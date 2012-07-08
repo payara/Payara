@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.PrivilegedActionException;
 import java.util.LinkedList;
 import javax.annotation.PostConstruct;
 
@@ -50,7 +51,7 @@ import javax.annotation.PostConstruct;
  */
 public class PostConstructRunner {
     
-    public static void runPostConstructs(final Object obj) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static void runPostConstructs(final Object obj) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, PrivilegedActionException {
         /*
          * As we ascend the hierarchy, record the @PostConstruct methods we find
          * at each level at the beginning of the list.  After we have processed
@@ -60,15 +61,33 @@ public class PostConstructRunner {
          */
         final LinkedList<Method> postConstructMethods = new LinkedList<Method>();
         for (ClassLineageIterator cIT = new ClassLineageIterator(obj.getClass()); cIT.hasNext(); ) {
-            for (Method m : cIT.next().getDeclaredMethods()) {
+            final Class<?> c = cIT.next();
+            for (Method m : c.getDeclaredMethods()) {
+                /*
+                 * The injection manager will already have run a postConstruct
+                 * method if the class implements the hk2 PostConstruct interface,
+                 * so don't invoke it again if the developer also annotated it
+                 * with @PostConstruct.  Ideally this will eventually migrate into
+                 * the injection manager implementation.
+                 */
                 if (m.getAnnotation(PostConstruct.class) != null) {
-                    postConstructMethods.addFirst(m);
+                    if ( ( ! PostConstruct.class.isAssignableFrom(c)) || ! m.getName().equals("postConstruct")) {
+                        postConstructMethods.addFirst(m);
+                    }
                 }
             }
         }
-        for (Method m : postConstructMethods) {
-            m.setAccessible(true);
-            m.invoke(obj);
+        for (final Method m : postConstructMethods) {
+            java.security.AccessController.doPrivileged(
+                new java.security.PrivilegedExceptionAction() {
+                    public java.lang.Object run() throws Exception {
+                        if( !m.isAccessible() ) {
+                            m.setAccessible(true);
+                        }
+                        m.invoke(obj);
+                        return null;
+                    }
+                });
         }
     }
     

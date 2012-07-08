@@ -1179,12 +1179,27 @@ public class CommandRunnerImpl implements CommandRunner {
                  */
                 final Map<String,Object> env = buildEnvMap(parameters);
                 try {
-                    commandSecurityChecker.authorize(context.getSubject(), env, command, context);
+                    if ( ! commandSecurityChecker.authorize(context.getSubject(), env, command, context)) {
+                        /*
+                         * If the command class tried to prepare itself but 
+                         * could not then the return is false and the command has
+                         * set the action report accordingly.  Don't process
+                         * the command further and leave the action report alone.
+                         */
+                        return;
+                    }
                 } catch (SecurityException ex) {
                     report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(adminStrings.getLocalString("commandrunner.noauth",
                             "User is not authorized for this command"));
+                    progressHelper.complete(context);
+                    return;
+                } catch (Exception ex) {
+                    report.setFailureCause(ex);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(adminStrings.getLocalString("commandrunner.errAuth",
+                            "Error during authorization"));
                     progressHelper.complete(context);
                     return;
                 }

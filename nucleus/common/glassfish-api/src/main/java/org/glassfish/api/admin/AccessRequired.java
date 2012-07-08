@@ -109,6 +109,56 @@ public @interface AccessRequired {
      * from the {@code ConfigBean} itself and authorizes the specified actions
      * using that resource.
      */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface To {
+        /**
+         * Action(s) to be authorized on the ConfigBean
+         * @return 
+         */
+        public String[] value();
+    }
+    
+    /**
+     * Declares access control for creating a new child {@code ConfigBean} in
+     * a collection on an existing {@code ConfigBean}.  
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface NewChild {
+        
+        /**
+         * Name of the collection on the owner that will contain the new child.
+         */
+        public String collection() default "";
+        
+        /**
+         * Type of the new {@code ConfigBean} to be created. 
+         */
+        public Class type();
+        
+        /**
+         * Action(s) to be authorized, defaulted to "create."
+         */
+        public String[] action() default "create";
+        
+        /**
+         * Declares multiple authorization checks for creating the same
+         * single new {@code ConfigBean}.
+         */
+        @Target(ElementType.FIELD)
+        @Retention(RetentionPolicy.RUNTIME)
+        public @interface List {
+            public NewChild[] value();
+        }
+    }
+    
+    /**
+     * Declares access control on an existing, non-null {@code ConfigBean}.  
+     * The system gets the name of the resource 
+     * from the {@code ConfigBean} itself and authorizes the specified actions
+     * using that resource.
+     */
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Typed {
@@ -321,7 +371,7 @@ public @interface AccessRequired {
         public String resourceName() {
             if (parent != null) {
                 if (childName == null) {
-                    return Util.resourceNameFromConfigBeanType(parent, childType);
+                    return Util.resourceNameFromConfigBeanType(parent, null, childType);
                 } else {
                     return Util.resourceNameFromConfigBeanTypeAndName(parent, childType, childName);
                 }
@@ -418,60 +468,30 @@ public @interface AccessRequired {
         }
     }
     
-    /**
-     * Behavior required of all command classes which provide any of their
-     * own custom authorization enforcement. The system will invoke the
-     * class's {@code getAccessChecks} method after it has injected {@code @Inject}
-     * and {@code @Param} fields and after it has invoked any {@code @PostConstruct}
-     * methods.  The getAccessChecks method returns one or more {@link AccessCheck}
-     * objects, indicating additional authorization checking that secure
-     * admin should perform beyond what is triggered by the annotations.
-     */
-    public interface AccessCheckProvider {
-        
-        /**
-         * Returns the {@code AccessCheck}s the command has computed at runtime 
-         * which should be included in the authorization, added to checks that 
-         * secure admin infers from the command's CRUD or RestEndpoint characteristics
-         * or {@code AccessRequired} annotations.
-         * 
-         * @return the {@code AccessCheck}s 
-         */
-        Collection<? extends AccessCheck> getAccessChecks();
-    }
     
-    /**
-     * Commands that need the AdminCommandContext before they can provide their
-     * own access checks implement this interface; <b>most commands will not need
-     * to use this.</b>
-     * <p>
-     * The admin command context is passed on the execute method, which the 
-     * system invokes after it invokes {@link Authorizer#getAccessChecks}.  If
-     * the command class uses the admin command context in preparing its own
-     * access checks it implements this interface and the command framework
-     * passes it the command context, which the command can save for use during 
-     * the {@code getAccessChecks} invocation.
-     */
-    public interface CommandContextDependent {
-        void setCommandContext(Object adminCommandContext);
-    }
     
     /**
      * Utility methods used both from AccessCheck and from CommandSecurityChecker.
      */
     public static class Util {
         public static String resourceNameFromDom(Dom d) {
-        
+            Dom lastDom = null;
             final StringBuilder path = new StringBuilder();
             while (d != null) {
                 if (path.length() > 0) {
                     path.insert(0, '/');
                 }
                 final ConfigModel m = d.model;
+                lastDom = d;
                 final String key = d.getKey();
                 final String pathSegment = m.getTagName() + (key == null ? "" : "/" + key);
                 path.insert(0, pathSegment);
                 d = d.parent();
+            }
+            if (lastDom != null) {
+                if (lastDom.getKey() != null) {
+                    path.insert(0, pluralize(lastDom.model.getTagName()) + '/');
+                }
             }
             return path.toString();
         }
@@ -480,16 +500,41 @@ public @interface AccessRequired {
             return resourceNameFromDom(Dom.unwrap(b));
         }
      
-        public static String resourceNameFromConfigBeanType(final ConfigBeanProxy parent, final Class<? extends ConfigBeanProxy> childType) {
-            final Dom dom = Dom.unwrap(parent);
-            return resourceNameFromDom(dom) + "/" + dom.document.buildModel(childType).getTagName();
+        public static String resourceNameFromConfigBeanType(
+                final ConfigBeanProxy parent, 
+                final String collectionName,
+                final Class<? extends ConfigBeanProxy> childType) {
+            return resourceNameFromConfigBeanType(Dom.unwrap(parent), collectionName, childType);
+            
+        }
+        
+        public static String resourceNameFromConfigBeanType(
+                final Dom parent, 
+                String collectionName,
+                final Class<? extends ConfigBeanProxy> childType) {
+            final StringBuilder sb = new StringBuilder(resourceNameFromDom(parent)).append('/');
+            final String tagName = parent.document.buildModel(childType).getTagName();
+            if (collectionName == null || collectionName.isEmpty()) {
+                collectionName = pluralize(tagName);
+            }
+            sb.append(collectionName).append('/').append(tagName);
+            return sb.toString();
         }
         
         static String resourceNameFromConfigBeanTypeAndName(
                 final ConfigBeanProxy parent, 
                 final Class<? extends ConfigBeanProxy> childType,
                 final String childName) {
-            return resourceNameFromConfigBeanType(parent, childType) + (childName != null && ! childName.isEmpty() ? "/" + childName : "");
+            return resourceNameFromConfigBeanType(parent, null, childType) + (childName != null && ! childName.isEmpty() ? "/" + childName : "");
+        }
+        
+        private static String pluralize(final String s) {
+            final char lastChar = s.charAt(s.length() - 1);
+            if (lastChar == 's' || lastChar == 'S' || lastChar == 'x' || lastChar == 'X') {
+                return s + "es";
+            } else {
+                return s + "s";
+            }
         }
     }
 }

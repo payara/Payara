@@ -56,6 +56,7 @@ import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.util.List;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 /**
@@ -64,7 +65,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AccessRequired.AccessCheckProvider {
+public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     CommandModel model;
     Listing listing;

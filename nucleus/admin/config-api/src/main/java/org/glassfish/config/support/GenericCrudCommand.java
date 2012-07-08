@@ -67,7 +67,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.jvnet.hk2.annotations.InhabitantAnnotation;
 import org.jvnet.hk2.component.*;
 
@@ -77,7 +77,7 @@ import org.jvnet.hk2.component.*;
  * @author Jerome Dochez
  *
  */
-public abstract class GenericCrudCommand implements CommandModelProvider, PostConstruct, AccessRequired.CommandContextDependent {
+public abstract class GenericCrudCommand implements CommandModelProvider, PostConstruct, AdminCommandSecurity.Preauthorization {
     
     private InjectionResolver<Param> injector;
 
@@ -114,8 +114,9 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     }
     
     @Override
-    public void setCommandContext(Object adminCommandContext) {
-        prepareInjection((AdminCommandContext) adminCommandContext);
+    public boolean preAuthorization(AdminCommandContext adminCommandContext) {
+        prepareInjection(adminCommandContext);
+        return true;
     }
 
     public void postConstruct() {

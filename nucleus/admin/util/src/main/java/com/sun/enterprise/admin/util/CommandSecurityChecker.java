@@ -49,8 +49,8 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.security.auth.Subject;
-import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
@@ -64,9 +64,10 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
  * <p>
  * The processing includes {@link AccessRequired}} annotations, CRUD commands, 
  * {@code RestEndpoint} annotations, and if the command
- * class implements {@link AccessRequired.Authorizer} it also invokes the
- * corresponding {@code isAuthorized} method.  To succeed the overall authorization
- * all annotations must pass and the {@code isAuthorized} method must return true.
+ * class implements {@link AdminCommandSecurity.AccessCheckProvider} it also invokes the
+ * corresponding {@code getAccessChecks} method.  To succeed the overall authorization
+ * all access checks - whether inferred from annotations or returned from 
+ * {@code getAccessChecks} must pass.
  * 
  * @author tjquinn
  */
@@ -113,20 +114,7 @@ public class CommandSecurityChecker {
     /*
      * Group 1 contains the token from $token; group 2 contains the token from ${token}
      */
-    private final static Pattern TOKEN_PATTERN = Pattern.compile("(?:\\$(\\w+))|(?:\\$\\{(\\w+)\\})"); //(?:\\$(\\w+))|(?:\\${(\\w+)})");
-    
-    /**
-     * Temporary stub implementation of the authentication service.
-     */
-    private final static class AuthService {
-        private boolean isAuthorized(final Subject subject, 
-                final URI resourceURI,
-                final String action) {
-            return true;
-        }
-    }
-    
-//    private final static AuthService authService = new AuthService();
+    private final static Pattern TOKEN_PATTERN = Pattern.compile("(?:\\$(\\w+))|(?:\\$\\{(\\w+)\\})");
     
     /**
      * Reports whether the Subject is allowed to perform the specified admin command.
@@ -135,28 +123,34 @@ public class CommandSecurityChecker {
      * @param command the admin command the Subject wants to execute
      * @return 
      */
-    public void authorize(final Subject subject,
+    public boolean authorize(final Subject subject,
             final Map<String,Object> env,
             final AdminCommand command,
-            final Object adminCommandContext) throws SecurityException {
+            final AdminCommandContext adminCommandContext) throws SecurityException {
         final List<AccessCheckWork> accessChecks = new ArrayList<AccessCheckWork>();
         
+        boolean result;
         try {
-            if (command instanceof AccessRequired.CommandContextDependent) {
-                ((AccessRequired.CommandContextDependent) command).setCommandContext(adminCommandContext);
-            }
-            if ( ! checkAccessRequired(subject, env, command, accessChecks)) {
-                final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
-                for (AccessCheckWork acWork : accessChecks) {
-                    if ( ! acWork.accessCheck.isSuccessful()) {
-                        failedAccessChecks.add(acWork.accessCheck);
-                    }
+            if (command instanceof AdminCommandSecurity.Preauthorization) {
+                if ( ! ((AdminCommandSecurity.Preauthorization) command).preAuthorization(adminCommandContext)) {
+                    return false;
                 }
-                throw new SecurityException();
             }
+            result = checkAccessRequired(subject, env, command, accessChecks);
         } catch (Exception ex) {
+            ADMSEC_LOGGER.log(Level.SEVERE, command.getClass().getName(), ex);
             throw new SecurityException(ex);
         }
+        if ( ! result) {
+            final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
+            for (AccessCheckWork acWork : accessChecks) {
+                if ( ! acWork.accessCheck.isSuccessful()) {
+                    failedAccessChecks.add(acWork.accessCheck);
+                }
+            }
+            throw new SecurityException();
+        }
+        return result;
     }
     
     private boolean checkAccessRequired(final Subject subject,
@@ -210,8 +204,8 @@ public class CommandSecurityChecker {
     private boolean addChecksFromAccessCheckProvider(final Subject subject, 
             final AdminCommand command, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
-        if (command instanceof AccessRequired.AccessCheckProvider) {
-            final Collection<? extends AccessCheck> checks = ((AccessRequired.AccessCheckProvider) command).getAccessChecks();
+        if (command instanceof AdminCommandSecurity.AccessCheckProvider) {
+            final Collection<? extends AccessCheck> checks = ((AdminCommandSecurity.AccessCheckProvider) command).getAccessChecks();
             for (AccessCheck ac : checks) {
                 
                 accessChecks.add(new AccessCheckWork(ac,
@@ -229,7 +223,7 @@ public class CommandSecurityChecker {
     private String resourceNameFromAccessCheck(final AccessCheck c) {
         String resourceName = c.resourceName();
         if (resourceName == null) {
-            resourceName = AccessRequired.Util.resourceNameFromConfigBeanType(c.parent(), c.childType());
+            resourceName = AccessRequired.Util.resourceNameFromConfigBeanType(c.parent(), null, c.childType());
         }
         return resourceName;
     }
@@ -250,7 +244,6 @@ public class CommandSecurityChecker {
             final AccessRequired.List arList = c.getAnnotation(AccessRequired.List.class);
             if (arList != null) {
                 isAnnotated = true;
-                String tagPrefix = null;
                 
                 for (final AccessRequired repeatedAR : arList.value()) {
                     addAccessChecksFromAnno(repeatedAR, command, accessChecks, c, isTaggable);
@@ -274,7 +267,7 @@ public class CommandSecurityChecker {
                 }
             }
             
-//            isAnnotated |= addAccessChecksFromFields(c, command, accessChecks, isTaggable);
+            isAnnotated |= addAccessChecksFromFields(c, command, accessChecks, isTaggable);
             
         }
         return isAnnotated;
@@ -290,17 +283,17 @@ public class CommandSecurityChecker {
 //            
 //        }
     }
-//    private boolean addAccessChecksFromFields(
-//            final Class<?> c,
-//            final AdminCommand command,
-//            final List<AccessCheckWork> accessChecks,
-//            final boolean isTaggable) throws IllegalArgumentException, IllegalAccessException {
-//        boolean isAnnotatedOnFields = false;
-//        for (Field f : c.getDeclaredFields()) {
-//            isAnnotatedOnFields |= addAccessChecksFromAnno(f, command, accessChecks, isTaggable);
-//        }
-//        return isAnnotatedOnFields;
-//    }
+    private boolean addAccessChecksFromFields(
+            final Class<?> c,
+            final AdminCommand command,
+            final List<AccessCheckWork> accessChecks,
+            final boolean isTaggable) throws IllegalArgumentException, IllegalAccessException {
+        boolean isAnnotatedOnFields = false;
+        for (Field f : c.getDeclaredFields()) {
+            isAnnotatedOnFields |= addAccessChecksFromAnno(f, command, accessChecks, isTaggable);
+        }
+        return isAnnotatedOnFields;
+    }
     
     private void addAccessChecksFromAnno(final AccessRequired ar, final AdminCommand command,
             final List<AccessCheckWork> accessChecks, final Class<?> currentClass, final boolean isTaggable) 
@@ -318,43 +311,104 @@ public class CommandSecurityChecker {
         }
     }
     
-//    private boolean addAccessChecksFromAnno(final Field f, final AdminCommand command,
-//            final List<AccessCheckWork> accessChecks, final boolean isTaggable) throws IllegalArgumentException, IllegalAccessException {
-//        boolean isAnnotated = false;
-//        final AccessRequired.To arTo = f.getAnnotation(AccessRequired.To.class);
-//        if (arTo != null) {
-//            isAnnotated = true;
-//            final String resourceNameForField = resourceNameFromField(f, command);
-//            for (final String access : arTo.value()) {
-//                final AccessCheck a = new AccessCheck(resourceNameForField, access);
-//                String tag = null;
-//                if (isTaggable) {
-//                    tag = "  @AccessRequired.To on field " + f.getDeclaringClass().getName() + "#" + f.getName();
-//                }
-//                accessChecks.add(new AccessCheckWork(a, tag));
-//            }
-//        }
-//        final AccessRequired.NewChild arNC = f.getAnnotation(AccessRequired.NewChild.class);
-//        if (arNC != null) {
-//            isAnnotated = true;
-//            String resourceNameForField = null;
-//            if (ConfigBeanProxy.class.isAssignableFrom(arNC.type())) {
-//                isAnnotated = true;
-//                resourceNameForField = resourceNameFromConfigBeanType(arNC.type(), locator);
-//            }
-//            if (resourceNameForField != null) {
-//                for (final String action : arNC.action()) {
-//                    final AccessCheck a = new AccessCheck(resourceNameForField, action);
-//                    String tag = null;
-//                    if (isTaggable) {
-//                        tag = "  @AccessRequired.NewChild on field " + f.getDeclaringClass().getName() + "#" + f.getName();
-//                    }
-//                    accessChecks.add(new AccessCheckWork(a, tag));
-//                }
-//            }
-//        }
-//        return isAnnotated;
-//    }
+    private boolean addAccessChecksFromAnno(final Field f, final AdminCommand command,
+            final List<AccessCheckWork> accessChecks, final boolean isTaggable) throws IllegalArgumentException, IllegalAccessException {
+        boolean isAnnotated = false;
+        f.setAccessible(true);
+        final AccessRequired.To arTo = f.getAnnotation(AccessRequired.To.class);
+        if (arTo != null) {
+            isAnnotated = true;
+            final String resourceNameForField = resourceNameFromField(f, command);
+            for (final String access : arTo.value()) {
+                final AccessCheck a = new AccessCheck(resourceNameForField, access);
+                String tag = null;
+                if (isTaggable) {
+                    tag = "  @AccessRequired.To on field " + f.getDeclaringClass().getName() + "#" + f.getName();
+                }
+                accessChecks.add(new AccessCheckWork(a, tag));
+            }
+        }
+        final AccessRequired.NewChild arNC = f.getAnnotation(AccessRequired.NewChild.class);
+        if (arNC != null) {
+            isAnnotated = true;
+            String resourceNameForField = resourceNameFromNewChildAnno(arNC, f, command);
+            /*
+             * We have the resource name for the parent.  Compute the rest of
+             * the resource name using the explicit collection name in the
+             * anno or the inferred name from the child type.
+             */
+            
+            for (final String action : arNC.action()) {
+                final AccessCheck a = new AccessCheck(resourceNameForField, action);
+                String tag = null;
+                if (isTaggable) {
+                    tag = "  @AccessRequired.NewChild on field " + f.getDeclaringClass().getName() + "#" + f.getName();
+                }
+                accessChecks.add(new AccessCheckWork(a, tag));
+            }
+        }
+        return isAnnotated;
+    }
+    
+    private String resourceNameFromNewChildAnno(final AccessRequired.NewChild arNC, final Field f, final AdminCommand command) throws IllegalArgumentException, IllegalAccessException {
+        /*
+         * The config beans convention - although not a requirement - is that
+         * an owner bean which has a collection of sub-beans has a single
+         * child named for the plural of the subtype, and then that single 
+         * child actually holds the collection.  For example, the domain 
+         * can contain multiple resources, each of which can be of a different
+         * subtype of resource.  This is modeled with the Domain having
+         * 
+         *  Resources getResources(); 
+         * 
+         * (this returns a single Resources object) and 
+         * the Resources object has 
+         * 
+         *  List<*> getResources();  // plural
+         * 
+         * Note that the name for the method on the single container object is not
+         * consistent.  For example, Domain also has 
+         * 
+         *  Servers getServers();
+         * 
+         * and then the Servers bean has
+         * 
+         *  List<*> getServer();  // singular
+         * 
+         * But in either case, the config path to an actual child is
+         * 
+         *  parent/collectionName/childType/childID
+         * 
+         * or in these examples,
+         * 
+         *  domain/resources/javamail-resource/MyIMAPMail
+         *  domain/servers/server/MyInstance
+         * 
+         * The AccessRequired.NewChild annotation requires the developer to provide
+         * the type of the child to be created and the name of the collection
+         * in which it is to be stored.  (Maybe in the future we can be
+         * smarter about inferring one from the other.)
+         */
+        final StringBuilder sb = new StringBuilder();
+        final Object parent = f.get(command);
+        final Class<?> childType = arNC.type();
+        if ( ! ConfigBeanProxy.class.isAssignableFrom(childType)) {
+            throw new SecurityException(Strings.get("secure.admin.childNotConfigBeanProxy", childType.getName()));
+        }
+        if (ConfigBeanProxy.class.isAssignableFrom(parent.getClass())) {
+            sb.append(AccessRequired.Util.resourceNameFromConfigBeanType(
+                    (ConfigBeanProxy) parent, 
+                    arNC.collection(),
+                    (Class<? extends ConfigBeanProxy>) childType));
+        } else if (ConfigBean.class.isAssignableFrom(parent.getClass())) {
+            sb.append(AccessRequired.Util.resourceNameFromConfigBeanType(
+                    (ConfigBean) parent, 
+                    arNC.collection(),
+                    (Class<? extends ConfigBeanProxy>) childType));
+        }
+
+        return sb.toString();
+    }
     
     private boolean addAccessChecksFromAnno(final AccessRequired.Typed arTyped,
             final AdminCommand command,

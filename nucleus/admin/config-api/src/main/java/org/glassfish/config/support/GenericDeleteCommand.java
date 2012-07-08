@@ -56,6 +56,7 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 
 /**
@@ -64,7 +65,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  * @author Jerome Dochez
  */
 @Scoped(PerLookup.class)
-public class GenericDeleteCommand extends GenericCrudCommand implements AdminCommand, AccessRequired.AccessCheckProvider {
+public class GenericDeleteCommand extends GenericCrudCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Inject
     CommandRunner runner;
