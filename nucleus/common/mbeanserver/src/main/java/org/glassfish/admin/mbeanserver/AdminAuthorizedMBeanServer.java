@@ -86,6 +86,9 @@ public class AdminAuthorizedMBeanServer {
             "setAttributes"
         ));
     
+    private static final Set<String> METHOD_NAMES_SUBJECT_TO_ACCESS_CONTROL = new HashSet<String> (Arrays.asList(
+            "invoke","setAttribute","setAttributes","getAttribute","getAttributes"));
+    
     
     private static class Handler implements InvocationHandler {
         
@@ -141,6 +144,8 @@ public class AdminAuthorizedMBeanServer {
              * read-only.
              */
             return ( ! isInstance) 
+                    ||  ! isSubjectToAccessControl(method, args) // do this before invoking isAMX to avoid intermittent
+                                                                 // problems during instance shutdown
                     || isAMX(args)
                     || isReadonlyRequest(method, args);
         }
@@ -161,6 +166,10 @@ public class AdminAuthorizedMBeanServer {
             return bootAMX.bootAMX().getDomain();
         }
 
+        private boolean isSubjectToAccessControl(final Method method, final Object[] args) {
+            return (METHOD_NAMES_SUBJECT_TO_ACCESS_CONTROL.contains(method.getName()));
+        }
+        
         private boolean isReadonlyRequest(final Method method, final Object[] args) throws InstanceNotFoundException, IntrospectionException, ReflectionException, NoSuchMethodException {
             if (RESTRICTED_METHOD_NAMES.contains(method.getName())) {
                 return false;
