@@ -43,6 +43,9 @@ package com.sun.enterprise.config.util.zeroconfig.commands;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
+import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.zeroconfig.ConfigCustomizationToken;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -60,8 +63,11 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,12 +81,14 @@ import java.util.logging.Logger;
 @Service(name = "get-active-config")
 @Scoped(PerLookup.class)
 @I18n("get.active.config")
-public final class GetActiveConfigCommand implements AdminCommand {
+public final class GetActiveConfigCommand extends AbstractZeroConfigCommand implements AdminCommand {
 
     private final Logger LOG = Logger.getLogger(GetActiveConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetActiveConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
+
+    private ActionReport report;
 
     @Inject
     private Domain domain;
@@ -97,7 +105,7 @@ public final class GetActiveConfigCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
+        ActionReport report = context.getActionReport();
         if (serviceName == null) {
             report.setMessage(localStrings.getLocalString("get.active.config.service.name.required",
                     "You need to specify a service name to get it's active configuration."));
@@ -128,24 +136,25 @@ public final class GetActiveConfigCommand implements AdminCommand {
                 if (serviceDefaultConfig != null) {
                     report.setMessage(serviceDefaultConfig);
                     report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return;
                 }
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
-                        DEFAULT_FORMAT, serviceName, target, e.getLocalizedMessage());
+                        DEFAULT_FORMAT, serviceName, target, e.getMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
                 report.setFailureCause(e);
-                return;
             }
         }
     }
 
-    private String getActiveConfigFor(Class configBeanType, Habitat habitat) {
-        //TODO We require to find all of the config elements related to this service and return them all
-        //in a formatted way. The following solution just shows the configuration for the configbean type and not
-        //related config beans.
+    private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
+
+        if (ZeroConfigUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+            return getCompleteConfiguration(defaults);
+        }
+
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config targetConfig = domain.getConfigNamed(target);
             if (targetConfig.checkIfExtensionExists(configBeanType)) {
@@ -163,5 +172,57 @@ public final class GetActiveConfigCommand implements AdminCommand {
         return null;
     }
 
+    private String getCompleteConfiguration(List<ConfigBeanDefaultValue> defaults) throws InvocationTargetException, IllegalAccessException {
+        StringBuilder builder = new StringBuilder();
+        for (ConfigBeanDefaultValue value : defaults) {
+            builder.append("At location: ");
+            builder.append(replaceExpressionsWithValues(value.getLocation()));
+            builder.append(System.getProperty("line.separator"));
+            String substituted = replacePropertiesWithCurrentValue(
+                    getDependentConfigElement(value), value);
+            builder.append(substituted);
+            builder.append(System.getProperty("line.separator"));
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
 
+    }
+
+    private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue) throws InvocationTargetException, IllegalAccessException {
+        ConfigBeanProxy configBean = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
+        if (configBean != null) {
+            return ZeroConfigUtils.serializeConfigBean(configBean);
+        } else {
+            return defaultValue.getXmlConfiguration();
+        }
+
+    }
+
+    private String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value) throws InvocationTargetException, IllegalAccessException {
+        for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
+            String toReplace = "\\$\\{" + token.getKey() + "\\}";
+            ConfigBeanProxy current = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(value, habitat);
+            if (current != null) {
+                String propertyValue = getPropertyValue(token, current);
+                if (propertyValue != null) {
+                    xmlConfiguration = xmlConfiguration.replaceAll(toReplace, propertyValue);
+                }
+            }
+        }
+        return xmlConfiguration;
+    }
+
+
+    private static String getPropertyValue(ConfigCustomizationToken token, ConfigBeanProxy finalConfigBean) {
+        ConfigBeanProxy parent = finalConfigBean.getParent();
+        while (!(parent instanceof SystemPropertyBag)) {
+            parent = parent.getParent();
+            if(parent==null) return null;
+        }
+            if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
+                return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
+            }
+
+        else return token.getDefaultValue();
+    }
 }

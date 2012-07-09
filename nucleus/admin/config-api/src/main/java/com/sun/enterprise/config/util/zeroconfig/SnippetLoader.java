@@ -85,6 +85,6 @@ public abstract class SnippetLoader<C extends ConfigLoader, T extends ConfigBean
               Habitat habitat = cb.getHabitat();
               List<ConfigBeanDefaultValue> configBeanDefaultValueList = ZeroConfigUtils.getDefaultConfigurations(domainExtensionType);
               SnippetParser snippetParser = new SnippetParser();
-              snippetParser.parsConfigBean(habitat, configBeanDefaultValueList);
+              snippetParser.prepareAndSetConfigBean(habitat, configBeanDefaultValueList);
           }
 }

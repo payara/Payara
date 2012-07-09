@@ -40,7 +40,8 @@
 
 package com.sun.enterprise.connectors.jms.config;
 
-import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.zeroconfig.CustomConfiguration;
+import com.sun.enterprise.config.util.zeroconfig.HasCustomizationTokens;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -48,7 +49,6 @@ import org.glassfish.api.admin.config.PropertyDesc;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -58,7 +58,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,6 +71,8 @@ import java.util.List;
 }) */
 
 @Configured
+@HasCustomizationTokens
+@CustomConfiguration(dasConfigFileName = "jms-service-das-config.xml", instanceConfigFileName = "jms-service-default-config.xml")
 public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Container {
 
     /**
@@ -368,20 +369,4 @@ public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Co
     )
     @Element
     List<Property> getProperty();
-
-    @DuckTyped
-    public ConfigBeanDefaultValue[] getDefaultValues();
-
-    class Duck {
-        private static final String DEFAULT_JMS_SERVICE =
-                "<jms-service default-jms-host=\"default_JMS_host\" type=\"EMBEDDED\">\n" +
-                "  <jms-host host=\"localhost\" name=\"default_JMS_host\"/>\n" +
-                "</jms-service>";
-
-        public static List<ConfigBeanDefaultValue> getDefaultValues() {
-            List<ConfigBeanDefaultValue> defaultValues = new ArrayList<ConfigBeanDefaultValue>(1);
-            defaultValues.add(new ConfigBeanDefaultValue("domain/configs/server-config", JmsService.class, DEFAULT_JMS_SERVICE, false));
-            return defaultValues;
-        }
-    }
 }

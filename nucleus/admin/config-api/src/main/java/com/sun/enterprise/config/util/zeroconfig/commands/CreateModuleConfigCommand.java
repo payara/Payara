@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.zeroconfig.ConfigCustomizationToken;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -61,6 +62,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+
 import javax.inject.Inject;
 import java.util.List;
 import java.util.logging.Level;
@@ -77,7 +79,7 @@ import java.util.logging.Logger;
 @Service(name = "create-module-config")
 @Scoped(PerLookup.class)
 @I18n("create.module.config")
-public final class CreateModuleConfigCommand implements AdminCommand {
+public final class CreateModuleConfigCommand extends AbstractZeroConfigCommand implements AdminCommand {
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
@@ -114,14 +116,14 @@ public final class CreateModuleConfigCommand implements AdminCommand {
                 return;
             }
         }
-        if (isAll && serviceName != null) {
+        if (isAll && (serviceName != null)) {
             report.setMessage(localStrings.getLocalString("create.module.config.service.name.ignored",
                     "You can only use --all or specify a service name. These two options are exclusive."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        if (!isAll && serviceName == null) {
+        if (!isAll && (serviceName == null)) {
             //TODO check for usability options, should we create the default configs, show them or fail the execution?
             report.setMessage(localStrings.getLocalString("create.module.config.no.service.no.all",
                     DEFAULT_FORMAT, target));
@@ -193,7 +195,7 @@ public final class CreateModuleConfigCommand implements AdminCommand {
 
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
-                        DEFAULT_FORMAT, serviceName, target, e.getLocalizedMessage());
+                        DEFAULT_FORMAT, serviceName, target, e.getMessage());
                 LOG.log(Level.INFO, msg, e);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
@@ -231,13 +233,24 @@ public final class CreateModuleConfigCommand implements AdminCommand {
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append("At location: ");
-                builder.append(value.getLocation());
-                builder.append("\r\n");
-                builder.append(value.getXmlConfiguration());
-                builder.append("\r\n");
+                builder.append(replaceExpressionsWithValues(value.getLocation()));
+                builder.append(System.getProperty("line.separator"));
+                String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),
+                        value.getXmlConfiguration());
+                builder.append(substituted);
+                builder.append(System.getProperty("line.separator"));
             }
+            builder.deleteCharAt(builder.length() - 1);
             return builder.toString();
         }
+    }
+
+    private String replacePropertiesWithDefaultValues(List<ConfigCustomizationToken> tokens, String xmlConfig) {
+        for (ConfigCustomizationToken token : tokens) {
+            String toReplace = "\\$\\{" + token.getKey() + "\\}";
+            xmlConfig = xmlConfig.replaceAll(toReplace, token.getDefaultValue());
+        }
+        return xmlConfig;
     }
 
     private void createAllMissingElements(String target) throws Exception {

@@ -43,6 +43,9 @@ package com.sun.enterprise.config.util.zeroconfig.commands;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
+import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
+import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.zeroconfig.ConfigCustomizationToken;
 import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -61,13 +64,16 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.PerLookup;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -86,6 +92,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
+    private ActionReport report;
 
     @Inject
     private Domain domain;
@@ -102,7 +109,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
+        report = context.getActionReport();
         Config config = domain.getConfigNamed(target);
         if (target != null) {
             if (domain.getConfigNamed(target) == null) {
@@ -130,6 +137,78 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             return;
         }
 
+        if (ZeroConfigUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+            deleteDependentConfigElements(defaults);
+        } else {
+            deleteTopLevelExtensionByType(config, className, configBeanType);
+        }
+    }
+
+    private void deleteDependentConfigElements(final List<ConfigBeanDefaultValue> defaults) {
+        for (ConfigBeanDefaultValue configBeanDefaultValue : defaults) {
+            deleteDependentConfigElement(configBeanDefaultValue);
+        }
+    }
+
+    private void deleteDependentConfigElement(final ConfigBeanDefaultValue defaultValue) {
+        Class parentClass = ZeroConfigUtils.getOwningClassForLocation(defaultValue.getLocation(), habitat);
+        final Class configBeanClass = ZeroConfigUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), habitat);
+        final Method m = ZeroConfigUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
+        if (m != null) {
+            try {
+                final ConfigBeanProxy parent = ZeroConfigUtils.getOwningObject(defaultValue.getLocation(), habitat);
+                ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+                    @Override
+                    public Object run(ConfigBeanProxy param) throws PropertyVetoException,
+                            TransactionFailure {
+                        List col = null;
+                        ConfigBeanProxy configBean = null;
+                        try {
+                            col = (List) m.invoke(param);
+                            if (col != null) {
+                                configBean = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
+                            }
+                        } catch (Exception e) {
+                            String message = localStrings.getLocalString("delete.module.config.failed.deleting.dependant",
+                                    "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements ");
+                            report.setMessage(message);
+                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            LOG.log(Level.INFO, message, e);
+                        }
+
+                        if (configBean != null) {
+                            boolean deleted = ZeroConfigUtils.deleteConfigurationForConfigBean(configBean, col, defaultValue, habitat);
+                            if (!deleted) {
+                                for (int i = 0; i < col.size(); i++) {
+                                    if (configBeanClass.isAssignableFrom(col.get(i).getClass())) {
+                                        col.remove(col.get(i));
+                                        removeCustomTokens(defaultValue, configBean, habitat, parent);
+                                        return param;
+                                    }
+                                }
+                            }
+
+                        }
+                        return param;
+                    }
+                }, parent);
+            } catch (Exception e) {
+                String message = localStrings.getLocalString("delete.module.config.failed.deleting.dependant",
+                        "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements ");
+                report.setMessage(message);
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                LOG.log(Level.INFO, message, e);
+
+            }
+        } else {
+            report.setMessage(localStrings.getLocalString("delete.module.config.failed.deleting.dependant",
+                    "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements "));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
+    }
+
+    private void deleteTopLevelExtensionByType(Config config, final String className, Class configBeanType) {
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             if (config.checkIfExtensionExists(configBeanType)) {
                 try {
@@ -146,7 +225,6 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                                     break;
                                 }
                             }
-
                             return configExtensions;
                         }
                     }, config);
@@ -165,8 +243,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
 
-        }
-        else if (DomainExtension.class.isAssignableFrom(configBeanType)) {
+        } else if (DomainExtension.class.isAssignableFrom(configBeanType)) {
             if (domain.checkIfExtensionExists(configBeanType)) {
                 try {
                     ConfigSupport.apply(new SingleConfigCode<Domain>() {
@@ -182,7 +259,6 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                                     break;
                                 }
                             }
-
                             return domainExtensions;
                         }
                     }, domain);
@@ -202,6 +278,32 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             }
 
         }
+    }
 
+    private static <T extends ConfigBeanProxy> boolean removeCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue, T finalConfigBean, final Habitat habitat, ConfigBeanProxy parent) throws TransactionFailure, PropertyVetoException {
+        if (parent instanceof SystemPropertyBag) {
+            removeSystemPropertyForTokens(configBeanDefaultValue.getCustomizationTokens(), (SystemPropertyBag) parent);
+            return true;
+        } else {
+            ConfigBeanProxy curParent = finalConfigBean;
+            while (!(curParent instanceof SystemPropertyBag)) {
+                curParent = curParent.getParent();
+            }
+            if (configBeanDefaultValue.getCustomizationTokens().size() != 0) {
+                final SystemPropertyBag bag = (SystemPropertyBag) curParent;
+                final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
+                removeSystemPropertyForTokens(tokens, bag);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static void removeSystemPropertyForTokens(List<ConfigCustomizationToken> tokens, SystemPropertyBag bag) throws TransactionFailure {
+        for (ConfigCustomizationToken token : tokens) {
+            if (bag.containsProperty(token.getKey())) {
+                bag.getSystemProperty().remove(bag.getSystemProperty(token.getKey()));
+            }
+        }
     }
 }

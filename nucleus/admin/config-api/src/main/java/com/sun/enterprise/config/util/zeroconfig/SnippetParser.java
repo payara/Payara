@@ -55,7 +55,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.xml.stream.XMLStreamReader;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,15 +65,14 @@ import java.util.logging.Logger;
  * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-public class SnippetParser<C extends ConfigLoader> {
+class SnippetParser<C extends ConfigLoader> {
     private static final Logger logger = Logger.getLogger(LogDomains.CONFIG_LOGGER);
 
     /**
          * @param habitat    The Habitat object to add the config to
          * @param <T>        the ConfigBeanProxy type we are looking for
-         * @throws IOException if it fails to read the snippetUrl.
          */
-        public <T extends ConfigBeanProxy> void parsConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) {
+        public <T extends ConfigBeanProxy> void prepareAndSetConfigBean(final Habitat habitat, List<ConfigBeanDefaultValue> values) {
 
             ConfigParser configParser = new ConfigParser(habitat);
             // I don't use the GlassFish document here as I don't need persistence
@@ -85,6 +83,8 @@ public class SnippetParser<C extends ConfigLoader> {
                 }
             };
 
+            //TODO requires rework to put all the changes that a service may introduce into one transaction
+            //the solution is to put the loop into the apply method...  But it would be some fine amount of work
             for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
                 Domain domain = habitat.getComponent(Domain.class);
                 SnippetPopulator populator = new SnippetPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
@@ -93,8 +93,9 @@ public class SnippetParser<C extends ConfigLoader> {
                     final ConfigBeanProxy parent =ZeroConfigUtils.getOwningObject(configBeanDefaultValue.getLocation(),habitat);
                     ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                         public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-                                ZeroConfigUtils.setConfigBean(
-                                        doc.getRoot().createProxy(configBeanDefaultValue.getConfigBeanClass())
+                            Class configBeanClass = ZeroConfigUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), habitat);
+                            ZeroConfigUtils.setConfigBean(
+                                        doc.getRoot().createProxy(configBeanClass)
                                         ,configBeanDefaultValue, habitat, param);
                             return param;
                         }
