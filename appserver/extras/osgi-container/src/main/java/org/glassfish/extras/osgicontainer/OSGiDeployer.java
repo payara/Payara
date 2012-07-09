@@ -65,7 +65,7 @@ public class OSGiDeployer implements Deployer<OSGiContainer, OSGiDeployedBundle>
     private static final String BUNDLE_ID = "bundle.id";
 
     public OSGiDeployedBundle load(OSGiContainer container, DeploymentContext context) {
-        return new OSGiDeployedBundle(getApplicationBundle(context));
+        return new OSGiDeployedBundle(getApplicationBundle(context, true));
     }
 
     public void unload(OSGiDeployedBundle appContainer, DeploymentContext context) {
@@ -101,31 +101,44 @@ public class OSGiDeployer implements Deployer<OSGiContainer, OSGiDeployedBundle>
 
     public boolean prepare(DeploymentContext context) {
         File file = context.getSourceDir();
+        OpsParams params = context.getCommandParameters(OpsParams.class);
+        if (params.origin.isDeploy()) {
+            assert(file.isDirectory());
+            installBundle(makeBundleLocation(file));
+        }
+        return true;
+    }
+
+    private Bundle installBundle(final String location) {
         try {
-            OpsParams params = context.getCommandParameters(OpsParams.class);
-            if (params.origin.isDeploy()) {
-                assert(file.isDirectory());
-                Bundle bundle = getBundleContext().installBundle(makeBundleLocation(file));
-                System.out.println("Installed " + bundle + " from " + bundle.getLocation());
-            }
+            Bundle bundle = getBundleContext().installBundle(location);
+            System.out.println("Installed " + bundle + " from " + bundle.getLocation());
+            return bundle;
         } catch (BundleException e) {
             throw new RuntimeException(e);
         }
-        return true; 
     }
 
     private BundleContext getBundleContext() {
         return BundleReference.class.cast(getClass().getClassLoader()).getBundle().getBundleContext();
     }
 
-    private Bundle getApplicationBundle(DeploymentContext context) {
+    private Bundle getApplicationBundle(DeploymentContext context, boolean reinstallIfAbsent) {
         String location = makeBundleLocation(context.getSourceDir());
         for(Bundle b : getBundleContext().getBundles()) {
             if (location.equals(b.getLocation())) {
                 return b;
             }
         }
+        if (reinstallIfAbsent) {
+            System.out.println("Bundle does not exist, so reinstalling from " + location);
+            return installBundle(location);
+        }
         throw new RuntimeException("Unable to determine bundle corresponding to application location " + context.getSourceDir());
+    }
+
+    private Bundle getApplicationBundle(DeploymentContext context) {
+        return getApplicationBundle(context, false);
     }
 
     private String makeBundleLocation(File file) {
