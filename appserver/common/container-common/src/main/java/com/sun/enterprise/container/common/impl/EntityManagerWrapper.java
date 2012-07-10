@@ -1091,5 +1091,39 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         callFlowAgent = defaultHabitat.getByContract(CallFlowAgent.class);
     }
 
+    public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {
+            // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+        }
+
+    public Query createQuery(CriteriaUpdate updateQuery) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public Query createQuery(CriteriaDelete deleteQuery) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public boolean isJoinedToTransaction() {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
 
 }

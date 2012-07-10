@@ -53,6 +53,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Cache;
 import javax.persistence.PersistenceUnitUtil;
+import javax.persistence.Query;
+import javax.persistence.SynchronizationType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.metamodel.Metamodel;
 import java.io.IOException;
@@ -249,6 +251,21 @@ public class EntityManagerFactoryWrapper
         BaseServiceLocator defaultHabitat = Globals.getDefaultHabitat();
         invMgr        = defaultHabitat.getByContract(InvocationManager.class);
         compEnvMgr    = defaultHabitat.getByContract(ComponentEnvManager.class);
+    }
+
+    public void addNamedQuery(String name, Query query) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public <T> T unwrap(Class<T> cls) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
+    }
+
+    public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
+        // TODO: implement
+        throw new RuntimeException("Not implemented ... WIP ...");
     }
 
 
