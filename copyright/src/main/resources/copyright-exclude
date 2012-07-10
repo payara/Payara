@@ -3,6 +3,8 @@ appserver/deployment/schemas/
 appserver/deployment/dtds/
 nucleus/deployment/schemas/
 nucleus/deployment/dtds/
+nucleus/common/common-util/src/test/resources/simplestring.txt
+nucleus/common/common-util/src/test/resources/verysimplestring.txt 
 appserver/connectors/descriptors/src/main/resources/glassfish/lib/dtds/
 appserver/connectors/descriptors/src/main/resources/glassfish/lib/schemas/
 /yui/
