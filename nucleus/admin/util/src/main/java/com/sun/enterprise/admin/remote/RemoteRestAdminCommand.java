@@ -495,13 +495,13 @@ public class RemoteRestAdminCommand {
             logger.log(Level.FINER, "Result type is {0}", resultMediaType);
         }
         if (MEDIATYPE_ACTIONREPORT.isCompatible(resultMediaType)) {
-            if (logger.isLoggable(Level.FINER)) {
-                String data = response.readEntity(String.class);
-                logger.log(Level.FINER, "-------- RAW DATA --------");
-                logger.log(Level.FINER, data);
-                logger.log(Level.FINER, "------ END RAW DATA ------");
-            }
             setActionReport(response.readEntity(ActionReport.class));
+//            if (logger.isLoggable(Level.FINER)) {
+//                String data = response.readEntity(String.class);
+//                logger.log(Level.FINER, "-------- RAW DATA --------");
+//                logger.log(Level.FINER, data);
+//                logger.log(Level.FINER, "------ END RAW DATA ------");
+//            }
         } else if (MEDIATYPE_MULTIPART.isCompatible(resultMediaType)) {
             MultiPart mp = response.readEntity(MultiPart.class);
             Inbound inbound = new RestPayloadImpl.Inbound();
