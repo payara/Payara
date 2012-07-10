@@ -225,6 +225,15 @@ public class EJBTimerServiceWrapper implements TimerService {
         return timerWrappers;
     }
 
+    @Override
+    public Collection<Timer> getAllTimers() throws IllegalStateException, EJBException {
+
+        checkCallPermission();
+
+        Collection<Timer> timerWrappers = new HashSet();
+        return timerWrappers;
+    }
+
     private Object getTimedObjectPrimaryKey() {
         if( !entity_ ) {
             return null;

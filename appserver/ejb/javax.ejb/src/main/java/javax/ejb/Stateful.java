@@ -76,4 +76,12 @@ public @interface Stateful {
      * A string describing the stateful session bean.
      */ 
     String description() default "";
+
+    /**
+     * Specifies whether this stateful session bean is passivation capable
+     *
+     * @since EJB 3.2
+     */
+    boolean passivationCapable() default true;
+
 }
