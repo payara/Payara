@@ -42,6 +42,7 @@ package com.sun.enterprise.connectors;
 
 import com.sun.appserv.connectors.internal.api.*;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
@@ -83,6 +84,7 @@ public class ActiveRAFactory {
             throws ConnectorRuntimeException {
 
         ActiveResourceAdapter activeResourceAdapter = null;
+        ClassLoader originalContextClassLoader = null;
 
         ProcessEnvironment.ProcessType processType = ConnectorRuntime.getRuntime().getEnvironment();
         ResourceAdapter ra = null;
@@ -103,6 +105,7 @@ public class ActiveRAFactory {
                 }
             }
 
+            originalContextClassLoader = Utility.setContextClassLoader(loader);
             activeResourceAdapter = instantiateActiveResourceAdapter(cd, moduleName, loader, ra);
 
         } catch (ClassNotFoundException Ex) {
@@ -124,6 +127,10 @@ public class ActiveRAFactory {
             _logger.log(Level.SEVERE, "rardeployment.illegalaccess_error", raClass);
             _logger.log(Level.SEVERE, "", cre);
             throw cre;
+        } finally {
+            if (originalContextClassLoader != null) {
+                Utility.setContextClassLoader(originalContextClassLoader);
+            }
         }
         return activeResourceAdapter;
     }
