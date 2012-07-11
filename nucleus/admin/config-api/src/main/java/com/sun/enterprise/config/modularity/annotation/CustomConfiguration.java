@@ -38,27 +38,29 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig.commands;
+package com.sun.enterprise.config.modularity.annotation;
 
-import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
+import org.jvnet.hk2.annotations.Contract;
 
-import java.util.StringTokenizer;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Contract annotation to mark any config bean which accepts customization values during domain creation.
+ * For example the com.sun.enterprise.connectors.jms.config.JmsService need a port number for the default JmsHost.
+ * Although the JmsService or any other config bean of that sort will carry some default values for the port numbers
+ * but this contract makes it easy to locate and query all config beans that has the accept customization during domain
+ * creation to be located and later on queried for the SystemProperties they need.
+ *
  * @author Masoud Kalali
  */
-public abstract class AbstractZeroConfigCommand {
-
-    protected String replaceExpressionsWithValues(String location) {
-            StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
-            while (tokenizer.hasMoreElements()) {
-                String level = tokenizer.nextToken();
-                if (level.contains("${")) {
-                    String expr = location.substring(location.indexOf("${"), location.indexOf("}")+1);
-                    String value = ZeroConfigUtils.resolveExpression(location.substring(location.indexOf("${"), location.indexOf("}") + 1));
-                    location =location.replace(expr,value);
-                }
-            }
-            return location;
-        }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Contract
+public @interface CustomConfiguration {
+    String defaultConfigFileName() default "module-configuration.xml";
+    String dasConfigFileName() default "module-configuration.xml";
+    boolean usesOnTheFlyConfigGeneration() default false;
 }

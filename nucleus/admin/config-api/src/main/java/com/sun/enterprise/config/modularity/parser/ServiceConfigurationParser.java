@@ -38,7 +38,11 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.parser;
+
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
+import com.sun.enterprise.util.LocalStringManager;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -66,8 +70,13 @@ public class ServiceConfigurationParser {
     private static final String CUSTOMIZATION_TOKEN = "customization-token";
     private static final String TITLE = "title";
     private static final String CONFIG_BEAN_CLASS_NAME = "config-bean-class-name";
+    private LocalStringManager localStrings;
 
-    public List<ConfigBeanDefaultValue> parseServiceConfiguration(InputStream xmlDocumentStream) throws XMLStreamException {
+    public ServiceConfigurationParser(LocalStringManager localStrings) {
+        this.localStrings = localStrings;
+    }
+
+    public List<ConfigBeanDefaultValue> parseServiceConfiguration(InputStream xmlDocumentStream ) throws XMLStreamException {
 
         List<ConfigBeanDefaultValue> configBeans = new ArrayList<ConfigBeanDefaultValue>();
         XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -108,11 +117,11 @@ public class ServiceConfigurationParser {
                         if (attribute.getName().toString().equals(DEFAUL_VALUE)) {
                             value = attribute.getValue();
                         } else if (attribute.getName().toString().equals(DESCRIPTION)) {
-                            description = attribute.getValue();
+                            description = getLocalizedValue(attribute.getValue());
                         } else if (attribute.getName().toString().equals(NAME)) {
                             name = attribute.getValue();
                         } else if (attribute.getName().toString().equals(TITLE)) {
-                            title = attribute.getValue();
+                            title = getLocalizedValue(attribute.getValue());
                         }
                     }//attributes
 
@@ -146,4 +155,13 @@ public class ServiceConfigurationParser {
         }//eventReader
         return configBeans;
     }
+
+    private String getLocalizedValue(String value) {
+        if(value.startsWith("$")){
+            value = localStrings.getLocalString(value.substring(1,value.length()),value.substring(1,value.length()));
+        }
+            return value;
+    }
+
+
 }

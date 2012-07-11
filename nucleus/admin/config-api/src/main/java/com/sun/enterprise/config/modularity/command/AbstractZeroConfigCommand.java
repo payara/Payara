@@ -38,20 +38,27 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.command;
 
-import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.StringTokenizer;
 
 /**
  * @author Masoud Kalali
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Contract
-public @interface HasCustomizationTokens {
+public abstract class AbstractZeroConfigCommand {
+
+    protected String replaceExpressionsWithValues(String location) {
+            StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
+            while (tokenizer.hasMoreElements()) {
+                String level = tokenizer.nextToken();
+                if (level.contains("${")) {
+                    String expr = location.substring(location.indexOf("${"), location.indexOf("}")+1);
+                    String value = ZeroConfigUtils.resolveExpression(location.substring(location.indexOf("${"), location.indexOf("}") + 1));
+                    location =location.replace(expr,value);
+                }
+            }
+            return location;
+        }
 }

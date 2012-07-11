@@ -38,16 +38,16 @@
   holder.
   -->
 <service-config>
-    <config-bundle location="domain/configs/config[${CURRENT_INSTANCE_CONFIG_NAME}]" replace-if-exist="false">
+    <config-bundle location="domain/configs/config[$CURRENT_INSTANCE_CONFIG_NAME]" replace-if-exist="false">
         <customization-tokens>
             <customization-token
-            title = "JMS service port number" name="JMS_PROVIDER_PORT"
+            title = "$jms.service.portNumber.title" name="JMS_PROVIDER_PORT"
             default-value="7676"
-            description="Port Number that JMS Service will listen for remote clients connection."/>
+            description="$jms.service.portNumber.description"/>
         </customization-tokens>
         <configuration-element config-bean-class-name="com.sun.enterprise.connectors.jms.config.JmsService">
 <![CDATA[<jms-service default-jms-host="default_JMS_host" type="EMBEDDED">
-    <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"/>
+   <jms-host port="${JMS_PROVIDER_PORT}" host="localhost" name="default_JMS_host"/>
 </jms-service>]]>
         </configuration-element>
     </config-bundle>

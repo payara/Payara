@@ -38,14 +38,22 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity;
 
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
+import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
+import com.sun.enterprise.config.modularity.parser.ServiceConfigurationParser;
+import com.sun.enterprise.config.modularity.parser.SnippetPopulator;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
+import com.sun.enterprise.util.LocalStringManager;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.GlassFishConfigBean;
@@ -131,9 +139,11 @@ public final class ZeroConfigUtils {
             }
         } else {
 
-            String fileName = isDas ? c.dasConfigFileName() : c.instanceConfigFileName();
+            String fileName = isDas ? c.dasConfigFileName() : c.defaultConfigFileName();
             //TODO properly handle the exceptions
-            ServiceConfigurationParser parser = new ServiceConfigurationParser();
+            LocalStringManager localStrings =
+                                new LocalStringManagerImpl(configBeanClass);
+                        ServiceConfigurationParser parser = new ServiceConfigurationParser(localStrings);
             try {
                 defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, fileName).openStream());
             } catch (XMLStreamException e) {
@@ -560,7 +570,7 @@ public final class ZeroConfigUtils {
 
     public static String resolveExpression(String expression){
         if(expression.startsWith("$")){
-            String name = expression.substring(2, expression.length()-1);
+            String name = expression.substring(1, expression.length());
             if(name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME"))
 //TODO P1: find out how these placeholders are being resolved
 //                expression= ServerEnvironment.DEFAULT_INSTANCE_NAME;

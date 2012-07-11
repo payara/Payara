@@ -40,7 +40,7 @@
 package org.glassfish.security.services.config;
 
 import com.sun.enterprise.config.serverbeans.DomainExtension;
-import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
+import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;

@@ -38,41 +38,20 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.annotation;
+
+import org.jvnet.hk2.annotations.Contract;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Will carry a set of four strings which will be used during domain creation to find what initial values are required by a config bean to acquire them during the domain creation process.
- *
  * @author Masoud Kalali
  */
-public class ConfigCustomizationToken {
-
-    private String key;
-    private String title;
-    private String description;
-    private String defaultValue;
-
-
-    public ConfigCustomizationToken(String key, String title, String description, String defaultValue) {
-        this.key = key;
-        this.title = title;
-        this.description = description;
-        this.defaultValue = defaultValue;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Contract
+public @interface HasCustomizationTokens {
 }

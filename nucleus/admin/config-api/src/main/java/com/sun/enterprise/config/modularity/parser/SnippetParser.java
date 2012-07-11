@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.jvnet.hk2.component.Habitat;
@@ -90,7 +92,7 @@ class SnippetParser<C extends ConfigLoader> {
                 SnippetPopulator populator = new SnippetPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, domain);
                 populator.run(configParser);
                 try {
-                    final ConfigBeanProxy parent =ZeroConfigUtils.getOwningObject(configBeanDefaultValue.getLocation(),habitat);
+                    final ConfigBeanProxy parent = ZeroConfigUtils.getOwningObject(configBeanDefaultValue.getLocation(), habitat);
                     ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                         public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                             Class configBeanClass = ZeroConfigUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), habitat);

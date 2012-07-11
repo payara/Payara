@@ -38,12 +38,13 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.customization;
 
 /**
  * @author Masoud Kalali
  */
 
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.io.InputStream;

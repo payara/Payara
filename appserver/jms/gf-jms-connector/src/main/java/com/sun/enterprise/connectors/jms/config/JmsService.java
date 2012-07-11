@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.connectors.jms.config;
 
-import com.sun.enterprise.config.util.zeroconfig.CustomConfiguration;
-import com.sun.enterprise.config.util.zeroconfig.HasCustomizationTokens;
+import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
+import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -72,7 +72,7 @@ import java.util.List;
 
 @Configured
 @HasCustomizationTokens
-@CustomConfiguration(dasConfigFileName = "jms-service-das-config.xml", instanceConfigFileName = "jms-service-default-config.xml")
+@CustomConfiguration(dasConfigFileName = "jms-service-das-config.xml", defaultConfigFileName = "jms-service-default-config.xml")
 public interface JmsService extends ConfigExtension, Injectable, PropertyBag, Container {
 
     /**

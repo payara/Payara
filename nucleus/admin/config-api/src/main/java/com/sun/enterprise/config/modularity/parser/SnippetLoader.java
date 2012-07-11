@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
 import com.sun.enterprise.config.serverbeans.ConfigSnippetLoader;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;

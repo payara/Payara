@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.resources;
 
-import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;

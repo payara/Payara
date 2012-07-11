@@ -38,48 +38,22 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.annotation;
 
-import com.sun.enterprise.config.serverbeans.ConfigLoader;
-import com.sun.enterprise.module.bootstrap.Populator;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.DomDocument;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 /**
- * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
- * @author Bhakti Mehta
+ * To annotated the config beans that cannot have default configuration value build by the generic configuration creation mechanism.
+ * For example, the org.glassfish.loadbalancer.config.LoadBalancers cannot have default value because it will be an empty
+ * collection and thus meaningless. This annotation preserve the current behaviour of the system and help developers
+ * mark a config bean and prevent it being created using the default mechanisms.
+ *
  * @author Masoud Kalali
  */
-public class SnippetPopulator implements Populator {
 
-    private final static Logger LOG = Logger.getLogger(SnippetPopulator.class.getName());
-    private final DomDocument doc;
-    private final ConfigLoader loader;
-    private final String xmlContent;
-
-    public SnippetPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
-            this.xmlContent =xmlContent;
-            this.doc = doc;
-            this.loader = loader;
-        }
-
-    public void run(org.jvnet.hk2.config.ConfigParser parser) {
-            try {
-                InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
-                XMLStreamReader reader  = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
-                parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
-            } catch (XMLStreamException e) {
-                LOG.log(Level.INFO,"Cannot parse default configuration", e);
-            }
-
-    }
+@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface HasNoDefaultConfiguration {
 }

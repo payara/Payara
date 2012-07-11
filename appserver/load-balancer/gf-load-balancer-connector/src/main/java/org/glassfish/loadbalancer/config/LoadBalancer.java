@@ -41,7 +41,7 @@
 package org.glassfish.loadbalancer.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
+import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;

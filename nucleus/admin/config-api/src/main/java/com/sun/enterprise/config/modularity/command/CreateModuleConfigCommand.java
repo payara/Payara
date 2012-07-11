@@ -38,14 +38,14 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig.commands;
+package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
-import com.sun.enterprise.config.util.zeroconfig.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.util.zeroconfig.ConfigCustomizationToken;
-import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;

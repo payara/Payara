@@ -40,9 +40,9 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-import com.sun.enterprise.config.util.zeroconfig.HasNoDefaultConfiguration;
-import com.sun.enterprise.config.util.zeroconfig.SnippetLoader;
-import com.sun.enterprise.config.util.zeroconfig.ZeroConfigUtils;
+import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
+import com.sun.enterprise.config.modularity.parser.SnippetLoader;
+import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.SingleConfigCode;

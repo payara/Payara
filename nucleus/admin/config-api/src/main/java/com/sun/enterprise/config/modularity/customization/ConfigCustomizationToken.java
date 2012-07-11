@@ -38,22 +38,41 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+package com.sun.enterprise.config.modularity.customization;
 
 /**
- * To annotated the config beans that cannot have default configuration value build by the generic configuration creation mechanism.
- * For example, the org.glassfish.loadbalancer.config.LoadBalancers cannot have default value because it will be an empty
- * collection and thus meaningless. This annotation preserve the current behaviour of the system and help developers
- * mark a config bean and prevent it being created using the default mechanisms.
+ * Will carry a set of four strings which will be used during domain creation to find what initial values are required by a config bean to acquire them during the domain creation process.
  *
  * @author Masoud Kalali
  */
+public class ConfigCustomizationToken {
 
-@Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface HasNoDefaultConfiguration {
+    private String key;
+    private String title;
+    private String description;
+    private String defaultValue;
+
+
+    public ConfigCustomizationToken(String key, String title, String description, String defaultValue) {
+        this.key = key;
+        this.title = title;
+        this.description = description;
+        this.defaultValue = defaultValue;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 }

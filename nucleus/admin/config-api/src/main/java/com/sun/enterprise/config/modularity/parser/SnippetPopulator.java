@@ -38,29 +38,48 @@
  * holder.
  */
 
-package com.sun.enterprise.config.util.zeroconfig;
+package com.sun.enterprise.config.modularity.parser;
 
-import org.jvnet.hk2.annotations.Contract;
+import com.sun.enterprise.config.serverbeans.ConfigLoader;
+import com.sun.enterprise.module.bootstrap.Populator;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Contract annotation to mark any config bean which accepts customization values during domain creation.
- * For example the com.sun.enterprise.connectors.jms.config.JmsService need a port number for the default JmsHost.
- * Although the JmsService or any other config bean of that sort will carry some default values for the port numbers
- * but this contract makes it easy to locate and query all config beans that has the accept customization during domain
- * creation to be located and later on queried for the SystemProperties they need.
- *
+ * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
+ * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Contract
-public @interface CustomConfiguration {
-    String instanceConfigFileName() default "module-configuration.xml";
-    String dasConfigFileName() default "module-configuration.xml";
-    boolean usesOnTheFlyConfigGeneration() default false;
+public class SnippetPopulator implements Populator {
+
+    private final static Logger LOG = Logger.getLogger(SnippetPopulator.class.getName());
+    private final DomDocument doc;
+    private final ConfigLoader loader;
+    private final String xmlContent;
+
+    public SnippetPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
+            this.xmlContent =xmlContent;
+            this.doc = doc;
+            this.loader = loader;
+        }
+
+    public void run(org.jvnet.hk2.config.ConfigParser parser) {
+            try {
+                InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
+                XMLStreamReader reader  = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
+                parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
+            } catch (XMLStreamException e) {
+                LOG.log(Level.INFO,"Cannot parse default configuration", e);
+            }
+
+    }
 }
