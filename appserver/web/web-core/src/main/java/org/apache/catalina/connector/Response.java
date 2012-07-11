@@ -463,7 +463,9 @@ public class Response
      * @param request The new associated request
      */
     public void setRequest(org.apache.catalina.Request request) {
-        this.request = (Request) request;
+        if (request instanceof Request) {
+            this.request = (Request) request;
+        }
     }
 
 

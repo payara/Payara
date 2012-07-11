@@ -97,7 +97,7 @@ public class FilterDef implements Serializable {
     /*
      * The filter instance
      */
-    private Filter filter;
+    private transient Filter filter;
 
     /**
      * The name of this filter, which must be unique among the filters

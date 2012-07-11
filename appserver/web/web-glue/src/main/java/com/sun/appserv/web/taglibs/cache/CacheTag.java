@@ -110,7 +110,7 @@ public class CacheTag extends BodyTagSupport
     /**
      * The actual cache itself.
      */
-    private Cache _cache;
+    private transient Cache _cache;
 
     /**
      * The logger to use for logging ALL web container related messages.
