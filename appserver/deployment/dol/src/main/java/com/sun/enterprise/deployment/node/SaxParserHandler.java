@@ -78,6 +78,9 @@ public class SaxParserHandler extends DefaultHandler {
         "http://java.sun.com/xml/jaxp/properties/schemaSource";    
     public static final String W3C_XML_SCHEMA =
         "http://www.w3.org/2001/XMLSchema";
+
+    private static final String TRUE_STR = "true";
+    private static final String FALSE_STR = "false";
     
     private static final class MappingStuff {
         public final ConcurrentMap<String, Boolean> mBundleRegistrationStatus = new ConcurrentHashMap<String, Boolean>();
@@ -454,8 +457,17 @@ public class SaxParserHandler extends DefaultHandler {
                                         elementData.toString().trim());
                 }
             } else {
-                topNode.setElementValue(element, 
-                                        elementData.toString().trim());
+              /*
+               * Allow any case for true/false & convert to lower case
+               */
+              String val = elementData.toString().trim();
+              if (TRUE_STR.equalsIgnoreCase(val)) {
+                topNode.setElementValue(element, val.toLowerCase(Locale.US));
+              } else if (FALSE_STR.equalsIgnoreCase(val)) {
+                topNode.setElementValue(element, val.toLowerCase(Locale.US));
+              } else {
+                topNode.setElementValue(element, val);
+              }
             }
             elementData=null;
         }        
