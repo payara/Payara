@@ -384,23 +384,27 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         Collection<Handler> handlers = habitat.getAllByContract(Handler.class);
         if (handlers != null && handlers.size() > 0) {
-            synchronized (logMgr) {
-                // I need to reset the formatter for the existing console handlers
-                Enumeration<String> loggerNames = logMgr.getLoggerNames();
-                while (loggerNames.hasMoreElements()) {
-                    String loggerName = loggerNames.nextElement();
-                    logMgr.getLogger(loggerName);
-                    for (Handler handler : logger.getHandlers()) {
-                        if (handler.getFormatter() instanceof UniformLogFormatter) {
-                            ((UniformLogFormatter) handler.getFormatter()).setDelegate(agentDelegate);
+            // Need to lock Logger.class first before locking LogManager to avoid deadlock.
+            // See GLASSFISH-7274 for more details.
+            synchronized(java.util.logging.Logger.class){
+                synchronized (logMgr) {
+                    // I need to reset the formatter for the existing console handlers
+                    Enumeration<String> loggerNames = logMgr.getLoggerNames();
+                    while (loggerNames.hasMoreElements()) {
+                        String loggerName = loggerNames.nextElement();
+                        logMgr.getLogger(loggerName);
+                        for (Handler handler : logger.getHandlers()) {
+                            if (handler.getFormatter() instanceof UniformLogFormatter) {
+                                ((UniformLogFormatter) handler.getFormatter()).setDelegate(agentDelegate);
+                            }
                         }
                     }
-                }
-                // add the new handlers to the root logger
-                for (Handler handler : handlers) {
-                    addHandler(handler);
-                }
+                    // add the new handlers to the root logger
+                    for (Handler handler : handlers) {
+                        addHandler(handler);
+                    }
 
+                }
             }
         }
         // add the filter if there is one
