@@ -100,7 +100,7 @@ public class FlashlightProbeProviderFactory
         LogDomains.getLogger(FlashlightProbeProviderFactory.class, LogDomains.MONITORING_LOGGER);
     private static final ResourceBundle rb = logger.getResourceBundle();
 
-    private final HashMap<String, Class> primTypes = new HashMap<String, Class>() {
+    private static final HashMap<String, Class> primTypes = new HashMap<String, Class>() {
         {
             put("int",Integer.TYPE);
             put("byte",Byte.TYPE);
