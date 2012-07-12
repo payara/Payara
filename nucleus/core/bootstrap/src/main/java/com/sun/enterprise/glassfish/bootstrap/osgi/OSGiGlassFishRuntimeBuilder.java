@@ -201,8 +201,8 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         final ServiceReference reference =
                 framework.getBundleContext().getServiceReference(GlassFishRuntime.class.getName());
         if (reference != null) {
-            GlassFishRuntime gfr = (GlassFishRuntime) framework.getBundleContext().getService(reference);
-            return gfr;
+            GlassFishRuntime embeddedGfr = (GlassFishRuntime) framework.getBundleContext().getService(reference);
+            return new OSGiGlassFishRuntime(embeddedGfr, framework);
         }
         throw new GlassFishException("No GlassFishRuntime available");
     }

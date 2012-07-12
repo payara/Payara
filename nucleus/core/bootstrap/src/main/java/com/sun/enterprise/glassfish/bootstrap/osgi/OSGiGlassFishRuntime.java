@@ -42,9 +42,12 @@
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
 import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishRuntimeDecorator;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -58,13 +61,13 @@ import java.util.Properties;
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class OSGiGlassFishRuntime extends EmbeddedOSGiGlassFishRuntime {
+public class OSGiGlassFishRuntime extends GlassFishRuntimeDecorator {
 
     // cache the value, because we can't use bundleContext after this bundle is stopped.
-    Framework framework; // system bundle is the framework
+    private volatile Framework framework; // system bundle is the framework
 
-    public OSGiGlassFishRuntime(final Framework framework) {
-        super();
+    public OSGiGlassFishRuntime(GlassFishRuntime embeddedGfr, final Framework framework) {
+        super(embeddedGfr);
         this.framework = framework;
     }
 
@@ -86,10 +89,11 @@ public class OSGiGlassFishRuntime extends EmbeddedOSGiGlassFishRuntime {
     }
 
     @Override
-    protected GlassFish createGlassFish(ModuleStartup gfKernel, BaseServiceLocator habitat, Properties gfProps) throws GlassFishException {
-        GlassFish gf = new GlassFishImpl(gfKernel, habitat, gfProps);
-        int finalStartLevel = Integer.valueOf(gfProps.getProperty(
+    public GlassFish newGlassFish(GlassFishProperties glassfishProperties) throws GlassFishException {
+        GlassFish embeddedGf = super.newGlassFish(glassfishProperties);
+        int finalStartLevel = Integer.valueOf(glassfishProperties.getProperties().getProperty(
                 Constants.FINAL_START_LEVEL_PROP, "2"));
-        return new OSGiGlassFishImpl(this, gf, framework.getBundleContext(), finalStartLevel);
+        return new OSGiGlassFishImpl(embeddedGf, framework.getBundleContext(), finalStartLevel);
     }
+
 }

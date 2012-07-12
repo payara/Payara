@@ -42,13 +42,8 @@
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
 import com.sun.enterprise.glassfish.bootstrap.Constants;
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.launch.Framework;
+import org.glassfish.embeddable.*;
+import org.osgi.framework.*;
 
 import java.io.File;
 import java.net.URI;
@@ -71,6 +66,8 @@ import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_P
  * necessary GlassFish bundles) or it just makes a new GlassFishRuntime and registers it in service registry.
  * Former is the case when user installs and starts just this bundle, where as latter is the case when this
  * bundle is invoked as part of GlassFish launching code as found in {@link OSGiGlassFishRuntimeBuilder}.
+ * The reason for registering a GlassFishRuntime service is that the service has dependency on things like HK2
+ * which are not available via parent loader, so unless we register here, we will have ClassCastException.
  *
  * @author Sanjeeb.Sahoo@Sun.COM
  * @see #prepareStartupContext(org.osgi.framework.BundleContext)
@@ -78,16 +75,37 @@ import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_P
 public class GlassFishMainActivator implements BundleActivator {
     private BundleContext context;
     private String installRoot;
-    private static volatile GlassFishRuntime gfr;
+
+    /**
+     * GlassFishRuntime being a singleton can't be bootstrapped more than once.
+     * We can't maintain a static variable & perform a null check to detect whether it has been bootstrapped
+     * or not, because this class being a non-exported class will get replaced when this bundle is updated.
+     * Nor can we assume that GlassFishRuntime.class is loaded by this bundle, for we actually expect/recommend
+     * users to have embeddable packages be part of system bundle. In such a case, we can't bootstrap it
+     * more than once in the same framework without shutting down GlassFishRuntime.
+     * So, we make use of the service registry to help us detect if we have bootstrapped the runtime
+     * or someone else has. When we bootstrap, we note it by storing it in a field and accordingly shutdown in our
+     * stop().
+     *
+     * @see #start
+     */
+    private GlassFishRuntime gfr;
+
+    /**
+     * The created GlassFish instance - can be null. We currently create GlassFish only in embedded mode.
+     * In non-embedde mode, we let it get created by the launcher.
+     */
     private GlassFish gf;
 
     private static final String[] DEFAULT_INSTALLATION_LOCATIONS_RELATIVE = new String[]{
+            // Order is important. endorsed must be ahead of others
             "modules/endorsed/",
             "modules/",
             "modules/autostart/"
     };
 
     private static final String[] DEFAULT_START_LOCATIONS_RELATIVE = new String[]{
+            // Order is important. endorsed must be ahead of others
             "modules/endorsed/",
             "modules/osgi-adapter.jar",
             "modules/osgi-resource-locator.jar",
@@ -95,26 +113,48 @@ public class GlassFishMainActivator implements BundleActivator {
             "modules/org.apache.felix.fileinstall.jar",
             "modules/autostart/"
     };
+    /**
+     * Are in activated in embedded or non-embedded mode?
+     * Depending on the mode, either we bootstrap the runtime or just register the runtime as a service.
+     */
+    private boolean nonEmbedded;
 
     public void start(BundleContext context) throws Exception {
         this.context = context;
-        if (nonEmbedded()) {
-            Framework framework = (Framework) context.getBundle(0);
-            gfr = new OSGiGlassFishRuntime(framework);
-            context.registerService(GlassFishRuntime.class.getName(), gfr, null);
+        nonEmbedded = isNonEmbedded();
+        if (nonEmbedded) {
+            GlassFishRuntime embeddedGfr = new EmbeddedOSGiGlassFishRuntime(context);
+            context.registerService(GlassFishRuntime.class.getName(), embeddedGfr, null);
+            System.out.println("Registered " + embeddedGfr + " in service registry.");
         } else {
             Properties properties = prepareStartupContext(context);
             final BootstrapProperties bsProperties = new BootstrapProperties(properties);
-            if (gfr == null) {
+
+            System.out.println(GlassFishRuntime.class + " is loaded by [" + GlassFishRuntime.class.getClassLoader() + "]");
+            GlassFishRuntime existingGfr = lookupGfr();
+            if (existingGfr == null) {
+                System.out.println("Bootstrapping a new GlassFishRuntime");
                 // Should we do the following in a separate thread?
                 gfr = GlassFishRuntime.bootstrap(bsProperties, getClass().getClassLoader());
+                existingGfr = gfr;
+            } else {
+                System.out.println("Using existing GlassFishRuntime: [" + existingGfr + "]");
             }
-            gf = gfr.newGlassFish(new GlassFishProperties(properties));
+            gf = existingGfr.newGlassFish(new GlassFishProperties(properties));
             gf.start();
         }
     }
 
-    private boolean nonEmbedded() {
+    /**
+     *
+     * @return an already bootstrapped GlassFishRuntime or null if no such runtime is bootstrapped
+     */
+    private GlassFishRuntime lookupGfr() {
+        final ServiceReference serviceReference = context.getServiceReference(GlassFishRuntime.class.getName());
+        return serviceReference != null ? (GlassFishRuntime) context.getService(serviceReference) : null;
+    }
+
+    private boolean isNonEmbedded() {
         return context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
     }
 
@@ -199,14 +239,26 @@ public class GlassFishMainActivator implements BundleActivator {
     }
 
     public void stop(BundleContext context) throws Exception {
-        if (gf != null) {
-            gf.stop();
-            gf.dispose();
+        if (nonEmbedded) {
+            System.out.println("We are in non-embedded mode, so " + context.getBundle() + " has nothing to do.");
+            return;
+        }
+        try {
+            // gf can be null - especially in non-embedded mode.
+            if (gf != null && gf.getStatus() != GlassFish.Status.DISPOSED) {
+                gf.dispose(); // dispose calls stop
+            }
+        } finally {
             gf = null;
+        }
+
+        if (gfr != null) { // gfr is non-null only if this activator has bootstrapped, else it's null.
+            gfr.shutdown();
+            gfr = null;
         }
     }
 
-    public BundleContext getBundleContext() {
+    private BundleContext getBundleContext() {
         return context;
     }
 

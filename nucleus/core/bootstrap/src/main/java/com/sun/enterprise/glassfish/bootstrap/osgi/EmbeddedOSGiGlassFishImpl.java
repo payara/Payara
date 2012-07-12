@@ -44,27 +44,61 @@ package com.sun.enterprise.glassfish.bootstrap.osgi;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishDecorator;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A specialized implementation of GlassFish which takes care of calling
- * {@link EmbeddedOSGiGlassFishRuntime#remove(GlassFish)} when {@link #dispose()} is called.
- * This is done so that GlassFish service can be unregistered from service registry.
+ * registering & unregistering GlassFish service from service registry when GlassFish is started and stopped.
  *
  * This object is created by {@link EmbeddedOSGiGlassFishRuntime}
  *
  * @author sanjeeb.sahoo@oracle.com
  */
 public class EmbeddedOSGiGlassFishImpl extends GlassFishDecorator {
-    private final EmbeddedOSGiGlassFishRuntime gfr; // needed during dispose
+    private final Logger logger = Logger.getLogger(getClass().getPackage().getName());
+    private ServiceRegistration reg;
+    private final BundleContext bundleContext;
 
-    public EmbeddedOSGiGlassFishImpl(EmbeddedOSGiGlassFishRuntime gfr, GlassFish decoratedGf) {
+    public EmbeddedOSGiGlassFishImpl(GlassFish decoratedGf, BundleContext bundleContext) {
         super(decoratedGf);
-        this.gfr = gfr;
+        this.bundleContext = bundleContext;
     }
 
     @Override
-    public void dispose() throws GlassFishException {
-        super.dispose();
-        gfr.remove(this);
+    public void start() throws GlassFishException {
+        super.start();
+        registerService();
+    }
+
+    @Override
+    public void stop() throws GlassFishException {
+        unregisterService();
+        super.stop();
+    }
+
+    private void registerService() {
+        reg = getBundleContext().registerService(GlassFish.class.getName(), this, null);
+        logger.logp(Level.INFO, "EmbeddedOSGiGlassFishImpl", "registerService",
+                "Registered {0} as OSGi service registration: {1}", new Object[]{this, reg});
+    }
+
+    private void unregisterService() {
+        if (getBundleContext() != null) { // bundle is still active
+            try {
+                reg.unregister();
+                logger.logp(Level.INFO, "EmbeddedOSGiGlassFishImpl", "unregisterService",
+                        "Unregistered {0} from service registry", new Object[]{this});
+            } catch (IllegalStateException e) {
+                logger.logp(Level.WARNING, "EmbeddedOSGiGlassFishImpl", "remove", "Exception while unregistering ", e);
+            }
+        }
+    }
+
+    private BundleContext getBundleContext() {
+        return bundleContext;
     }
 }

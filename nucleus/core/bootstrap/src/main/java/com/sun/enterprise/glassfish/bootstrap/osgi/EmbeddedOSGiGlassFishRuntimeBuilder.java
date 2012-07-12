@@ -73,7 +73,7 @@ public class EmbeddedOSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         configureBundles(bsProps);
         provisionBundles(bsProps);
-        GlassFishRuntime gfr = new EmbeddedOSGiGlassFishRuntime();
+        GlassFishRuntime gfr = new EmbeddedOSGiGlassFishRuntime(getBundleContext());
         getBundleContext().registerService(GlassFishRuntime.class.getName(), gfr, bsProps.getProperties());
         return gfr;
     }
