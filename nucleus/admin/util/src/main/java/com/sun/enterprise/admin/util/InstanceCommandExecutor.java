@@ -41,13 +41,13 @@
 package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.admin.remote.ServerRemoteAdminCommand;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import java.util.logging.Logger;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
@@ -84,6 +84,7 @@ public class InstanceCommandExecutor extends ServerRemoteAdminCommand implements
         this.result = res;
     }
 
+    @Override
     public String getCommandOutput() { return this.output; }
 
     public Server getServer() { return server; }

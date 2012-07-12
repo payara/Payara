@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import org.glassfish.api.ParamDefaultCalculator;
+import org.glassfish.api.admin.Progress;
 
 /**
  * Model for an administrative command
@@ -75,6 +76,7 @@ public class CommandModelImpl extends CommandModel {
     final private I18n i18n;
     final private boolean dashOk;
     final private LocalStringManager localStrings;
+    final private boolean supportsProgress;
 
     public CommandModelImpl(Class<?> commandType) {
 
@@ -84,6 +86,7 @@ public class CommandModelImpl extends CommandModel {
         i18n = commandType.getAnnotation(I18n.class);
         execOn = commandType.getAnnotation(ExecuteOn.class);
         localStrings = new LocalStringManagerImpl(commandType);
+        supportsProgress = commandType.getAnnotation(Progress.class) != null;
 
         params = init(commandType, i18n, localStrings);
         Class currentClazz = commandType;
@@ -125,6 +128,7 @@ public class CommandModelImpl extends CommandModel {
         return results;
     }
 
+    @Override
     public String getLocalizedDescription() {
         if (i18n!=null) {
             return localStrings.getLocalString(i18n.value(), "");
@@ -133,6 +137,7 @@ public class CommandModelImpl extends CommandModel {
         }
     }
 
+    @Override
     public String getUsageText() {
         if (i18n!=null) {
             return localStrings.getLocalString(i18n.value()+".usagetext", null);
@@ -141,14 +146,17 @@ public class CommandModelImpl extends CommandModel {
         }
     }
 
+    @Override
     public String getCommandName() {
         return commandName;
     }
 
+    @Override
     public CommandModel.ParamModel getModelFor(String paramName) {
         return params.get(paramName);
     }
 
+    @Override
     public Collection<String> getParametersNames() {
         return params.keySet();
     }
@@ -161,6 +169,11 @@ public class CommandModelImpl extends CommandModel {
     @Override
     public ExecuteOn getClusteringAttributes() {
         return execOn;
+    }
+    
+    @Override
+    public boolean supportsProgress() {
+        return supportsProgress;
     }
 
     /**
@@ -227,10 +240,12 @@ public class CommandModelImpl extends CommandModel {
         }
 
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Param getParam() {
             return new Param() {
                 @Override
@@ -300,6 +315,7 @@ public class CommandModelImpl extends CommandModel {
             };
         }
 
+        @Override
         public String getLocalizedDescription() {
             String paramDesc=null;
             if (i18n!=null) {

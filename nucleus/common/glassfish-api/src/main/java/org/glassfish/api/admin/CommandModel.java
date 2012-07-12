@@ -109,6 +109,13 @@ public abstract class CommandModel {
      * @return the command class, or null if none
      */
     public abstract Class<?> getCommandClass();
+    
+    /** This command supports progress status. It is possible to listen to
+     * its progress during command execution.
+     * 
+     * @return {@code true} only if command is annotated @Progress
+     */
+    public abstract boolean supportsProgress();
 
     /**
      * Return the cluster parameters for this command  or null if none are

@@ -52,7 +52,6 @@ import org.jvnet.hk2.config.DomDocument;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.rmi.MarshalException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +65,7 @@ public class GenericCommandModel extends CommandModel {
     final ExecuteOn cluster;
     final I18n i18n;
     final LocalStringManager localStrings;
+    final boolean supportsProgress;
 
     /**
      * GenericCommandModel constructor.
@@ -79,6 +79,8 @@ public class GenericCommandModel extends CommandModel {
      * @param localStrings	where to find strings for the command
      * @param document		the DomDocument for the command
      * @param commandName	the name of the command
+     * @param supportsProgress  {@code true} only if command working 
+     *                          with ProgressStatus
      * @param extraTypes	any extra types that might also define
      * 				parameters for the command
      */
@@ -89,12 +91,14 @@ public class GenericCommandModel extends CommandModel {
                                LocalStringManager localStrings,
                                DomDocument document,
                                String commandName,
+                               boolean supportsProgress,
                                Class<?>... extraTypes) {
         this.commandName = commandName;
         this.commandClass = targetType;
         this.cluster = cluster;
         this.i18n = i18n;
         this.localStrings = localStrings;
+        this.supportsProgress = supportsProgress;
 
         if (useAnnotations && targetType!=null &&
 		ConfigBeanProxy.class.isAssignableFrom(targetType)) {
@@ -148,14 +152,17 @@ public class GenericCommandModel extends CommandModel {
         return localStrings.getLocalString(i18n.value()+".usagetext", null);
     }
 
+    @Override
     public String getCommandName() {
         return commandName;
     }
 
+    @Override
     public ParamModel getModelFor(String paramName) {
         return params.get(paramName);
     }
 
+    @Override
     public Collection<String> getParametersNames() {
         return params.keySet();
     }
@@ -168,6 +175,11 @@ public class GenericCommandModel extends CommandModel {
     @Override
     public ExecuteOn getClusteringAttributes() {
         return cluster;
+    }
+    
+    @Override
+    public boolean supportsProgress() {
+        return supportsProgress;
     }
 
     private final class ParamBasedModel extends ParamModel {
@@ -191,10 +203,12 @@ public class GenericCommandModel extends CommandModel {
             }
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Param getParam() {
             return param;
         }
@@ -203,6 +217,7 @@ public class GenericCommandModel extends CommandModel {
             return i18n;
         }
 
+        @Override
         public Class getType() {
             return String.class;
         }
@@ -219,6 +234,7 @@ public class GenericCommandModel extends CommandModel {
             this.i18n = i18n;
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -233,38 +249,47 @@ public class GenericCommandModel extends CommandModel {
             }
         }
 
+        @Override
         public Class getType() {
             return String.class;
         }
 
+        @Override
         public Param getParam() {
             return new Param() {
 
+                @Override
                 public Class<? extends Annotation> annotationType() {
                     return Param.class;
                 }
 
+                @Override
                 public String name() {
                     return name;
                 }
 
+                @Override
                 public String acceptableValues() {
                     return null;
                 }
 
+                @Override
                 public boolean optional() {
                     return !attr.key();
 
                 }
 
+                @Override
                 public String shortName() {
                     return null;
                 }
 
+                @Override
                 public boolean primary() {
                     return attr.key();
                 }
 
+                @Override
                 public String defaultValue() {
                     return attr.defaultValue();
                 }
@@ -274,22 +299,27 @@ public class GenericCommandModel extends CommandModel {
                     return ParamDefaultCalculator.class;
                 }
 
+                @Override
                 public boolean password() {
                     return false;
                 }
 
+                @Override
                 public char separator() {
                     return ',';
                 }
 
+                @Override
                 public boolean multiple() {
                     return false;
                 }
-
+                
+                @Override
                 public boolean obsolete() {
                     return false;
                 }
 
+                @Override
                 public String alias() {
                     return "";
                 }

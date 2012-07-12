@@ -91,7 +91,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
             model = new GenericCommandModel(targetType, true, create.cluster(), create.i18n(),
                     new LocalStringManagerImpl(targetType),
                     habitat.getComponent(DomDocument.class),
-                    commandName, create.resolver(), create.decorator());
+                    commandName, false, create.resolver(), create.decorator());
             if (logger.isLoggable(level)) {
                 for (String paramName : model.getParametersNames()) {
                     CommandModel.ParamModel param = model.getModelFor(paramName);

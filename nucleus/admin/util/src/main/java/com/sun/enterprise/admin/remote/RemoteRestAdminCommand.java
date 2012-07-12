@@ -1601,6 +1601,7 @@ public class RemoteRestAdminCommand {
             obj = obj.getJSONObject("command");
             CachedCommandModel cm = new CachedCommandModel(obj.getString("@name"), etag);
             cm.dashOk = obj.optBoolean("@unknown-options-are-operands", false);
+            cm.supportsProgress = obj.optBoolean("@supports-progress", false);
             cm.setUsage(obj.optString("usage"));
             Object optns = obj.opt("option");
             if (!JSONObject.NULL.equals(optns)) {

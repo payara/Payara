@@ -40,22 +40,14 @@
 
 package com.sun.enterprise.admin.util;
 
-import org.glassfish.api.Param;
-import org.glassfish.api.UnknownOptionsAreOperands;
-import org.glassfish.api.I18n;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.CommandModel;
-import org.jvnet.hk2.annotations.Service;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.AnnotatedElement;
-import java.util.Map;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import org.glassfish.api.Param;
 import org.glassfish.api.ParamDefaultCalculator;
+import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.admin.ExecuteOn;
 
 /**
  * A command and parameter model that allows the data to be supplied directly.
@@ -69,6 +61,7 @@ public class CommandModelData extends CommandModel {
     private final Map<String, CommandModel.ParamModel> params =
                                 new LinkedHashMap<String, ParamModel>();
     private final String commandName;
+    public boolean supportsProgress = false;
     public boolean dashOk = false;
 
     public CommandModelData(String name) {
@@ -112,6 +105,11 @@ public class CommandModelData extends CommandModel {
     @Override
     public ExecuteOn getClusteringAttributes() {
         return null;
+    }
+    
+    @Override
+    public boolean supportsProgress() {
+        return this.supportsProgress;
     }
 
     /**
