@@ -39,20 +39,28 @@
  */
 package org.glassfish.admin.rest.resources;
 
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
-import java.io.File;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.admin.rest.RestService;
+import org.glassfish.admin.rest.provider.MethodMetaData;
+import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.results.OptionsResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.RestRedirect;
+import org.glassfish.config.support.Delete;
+import org.glassfish.hk2.inject.Injector;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -69,31 +77,19 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.TransactionFailure;
-
-import org.glassfish.admin.rest.RestService;
-import org.glassfish.admin.rest.provider.MethodMetaData;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.results.OptionsResult;
-import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.RestRedirect;
-import org.glassfish.config.support.Delete;
-import org.glassfish.hk2.inject.Injector;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jvnet.hk2.component.Habitat;
-
+import java.io.File;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 
@@ -311,12 +307,12 @@ public class TemplateRestResource {
             // In some cases, the tagName requested is not found in the DOM tree.  This is true,
             // for example, for the various ZeroConf elements (e.g., transaction-service).  If
             // the zero conf element is not in domain.xml, then it won't be in the Dom tree
-            // returned by HK2.  If that's the case, we can use ZeroConfigUtils.getOwningObject()
+            // returned by HK2.  If that's the case, we can use ConfigModularityUtils.getOwningObject()
             // to find the ConfigBean matching the path requested, which will add the node to
             // the Dom tree. Once that's done, we can return that node and proceed as normal
             String location = buildPath(parent) + "/" + tagName;
             if (location.startsWith("domain/configs")) {
-                ConfigBeanProxy cbp = ZeroConfigUtils.getOwningObject(location, habitat);
+                ConfigBeanProxy cbp = ConfigModularityUtils.getOwningObject(location, habitat);
                 if (cbp != null) {
                     entity = Dom.unwrap(cbp);
                     childModel = entity.model;
@@ -329,7 +325,7 @@ public class TemplateRestResource {
     }
 
     /**
-     * This method will build the path string as needed by ZeroConfigUtils.getOwningObject().
+     * This method will build the path string as needed by ConfigModularityUtils.getOwningObject().
      * There is a mismatch between what the method expects and the way the REST URIs are constructed.
      * For example, for the transaction-service element, the REST URI, stripped of the HTTP and
      * server context information, looks like this:

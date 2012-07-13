@@ -40,13 +40,13 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
-import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -81,7 +81,7 @@ import java.util.logging.Logger;
 @Service(name = "get-active-config")
 @Scoped(PerLookup.class)
 @I18n("get.active.config")
-public final class GetActiveConfigCommand extends AbstractZeroConfigCommand implements AdminCommand {
+public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
 
     private final Logger LOG = Logger.getLogger(GetActiveConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
@@ -122,8 +122,8 @@ public final class GetActiveConfigCommand extends AbstractZeroConfigCommand impl
         }
 
         if (serviceName != null) {
-            String className = ZeroConfigUtils.convertConfigElementNameToClassName(serviceName);
-            Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
+            String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
+            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("get.active.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -150,24 +150,24 @@ public final class GetActiveConfigCommand extends AbstractZeroConfigCommand impl
 
     private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {
 
-        if (ZeroConfigUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+        if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
             return getCompleteConfiguration(defaults);
         }
 
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
             Config targetConfig = domain.getConfigNamed(target);
             if (targetConfig.checkIfExtensionExists(configBeanType)) {
-                return ZeroConfigUtils.serializeConfigBean(targetConfig.getExtensionByType(configBeanType));
+                return ConfigModularityUtils.serializeConfigBean(targetConfig.getExtensionByType(configBeanType));
             } else {
-                return ZeroConfigUtils.serializeConfigBeanByType(configBeanType, habitat);
+                return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
             }
 
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfExtensionExists(configBeanType)) {
-                return ZeroConfigUtils.serializeConfigBean(domain.getExtensionByType(configBeanType));
+                return ConfigModularityUtils.serializeConfigBean(domain.getExtensionByType(configBeanType));
             }
-            return ZeroConfigUtils.serializeConfigBeanByType(configBeanType, habitat);
+            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
         }
         return null;
     }
@@ -189,9 +189,9 @@ public final class GetActiveConfigCommand extends AbstractZeroConfigCommand impl
     }
 
     private String getDependentConfigElement(ConfigBeanDefaultValue defaultValue) throws InvocationTargetException, IllegalAccessException {
-        ConfigBeanProxy configBean = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
+        ConfigBeanProxy configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
         if (configBean != null) {
-            return ZeroConfigUtils.serializeConfigBean(configBean);
+            return ConfigModularityUtils.serializeConfigBean(configBean);
         } else {
             return defaultValue.getXmlConfiguration();
         }
@@ -201,7 +201,7 @@ public final class GetActiveConfigCommand extends AbstractZeroConfigCommand impl
     private String replacePropertiesWithCurrentValue(String xmlConfiguration, ConfigBeanDefaultValue value) throws InvocationTargetException, IllegalAccessException {
         for (ConfigCustomizationToken token : value.getCustomizationTokens()) {
             String toReplace = "\\$\\{" + token.getKey() + "\\}";
-            ConfigBeanProxy current = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(value, habitat);
+            ConfigBeanProxy current = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(value, habitat);
             if (current != null) {
                 String propertyValue = getPropertyValue(token, current);
                 if (propertyValue != null) {
@@ -225,4 +225,7 @@ public final class GetActiveConfigCommand extends AbstractZeroConfigCommand impl
 
         else return token.getDefaultValue();
     }
+
+
+
 }

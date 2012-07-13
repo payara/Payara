@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.config.serverbeans;
 
+import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.admin.config.PropertiesDesc;
@@ -971,8 +972,8 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
                 } catch (Exception e) {
                 }
             }
-            DomainSnippetLoader loader = new DomainSnippetLoader(d);
-            return loader.createConfigBeanForType(type);
+            ModuleConfigurationLoader loader = new ModuleConfigurationLoader<Domain, T>(d);
+            return (T) loader.createConfigBeanForType(type);
         }
     }
 }

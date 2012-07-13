@@ -59,7 +59,7 @@ import java.util.List;
 /**
  * @author Masoud Kalali
  */
-public class ServiceConfigurationParser {
+public class ModuleConfigurationParser {
     private static final String CONFIG_BUNDLE = "config-bundle";
     private static final String LOCATION = "location";
     private static final String REPLACE_IF_EXISTS = "replace-if-exist";
@@ -72,7 +72,7 @@ public class ServiceConfigurationParser {
     private static final String CONFIG_BEAN_CLASS_NAME = "config-bean-class-name";
     private LocalStringManager localStrings;
 
-    public ServiceConfigurationParser(LocalStringManager localStrings) {
+    public ModuleConfigurationParser(LocalStringManager localStrings) {
         this.localStrings = localStrings;
     }
 

@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.config.modularity.command;
 
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 
 import java.util.StringTokenizer;
 
 /**
  * @author Masoud Kalali
  */
-public abstract class AbstractZeroConfigCommand {
+public abstract class AbstractConfigModularityCommand {
 
     protected String replaceExpressionsWithValues(String location) {
             StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
@@ -55,7 +55,7 @@ public abstract class AbstractZeroConfigCommand {
                 String level = tokenizer.nextToken();
                 if (level.contains("${")) {
                     String expr = location.substring(location.indexOf("${"), location.indexOf("}")+1);
-                    String value = ZeroConfigUtils.resolveExpression(location.substring(location.indexOf("${"), location.indexOf("}") + 1));
+                    String value = ConfigModularityUtils.resolveExpression(location.substring(location.indexOf("${"), location.indexOf("}") + 1));
                     location =location.replace(expr,value);
                 }
             }

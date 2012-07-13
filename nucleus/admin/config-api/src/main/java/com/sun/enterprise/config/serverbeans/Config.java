@@ -41,6 +41,7 @@
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
@@ -465,18 +466,16 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static <T extends ConfigExtension> T getExtensionByType(Config c, Class<T> type) throws TransactionFailure {
             T configExtension;
-            //This require extra checking, Does all ConfigBeans referenced in this class are implementing Container?
             for (ConfigExtension extension : c.getExtensions()) {
                 try {
                     configExtension = type.cast(extension);
-                    //Dom.unwrap(configExtension).addDefaultChildren();
                     return configExtension;
                 } catch (Exception e) {
                     // ignore, not the right type.
                 }
             }
-            ConfigSnippetLoader loader = new ConfigSnippetLoader(c);
-                return loader.createConfigBeanForType(type);
+            ModuleConfigurationLoader loader = new ModuleConfigurationLoader<Config, T>(c);
+                return (T) loader.createConfigBeanForType(type);
         }
 
         public static NetworkListener getAdminListener(Config c) {

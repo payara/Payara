@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -79,7 +79,7 @@ import java.util.logging.Logger;
 @Service(name = "create-module-config")
 @Scoped(PerLookup.class)
 @I18n("create.module.config")
-public final class CreateModuleConfigCommand extends AbstractZeroConfigCommand implements AdminCommand {
+public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
@@ -174,8 +174,8 @@ public final class CreateModuleConfigCommand extends AbstractZeroConfigCommand i
                 return;
             }
         } else if (serviceName != null) {
-            String className = ZeroConfigUtils.convertConfigElementNameToClassName(serviceName);
-            Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
+            String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
+            Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
             if (configBeanType == null) {
                 String msg = localStrings.getLocalString("create.module.config.not.such.a.service.found",
                         DEFAULT_FORMAT, className, serviceName);
@@ -226,10 +226,10 @@ public final class CreateModuleConfigCommand extends AbstractZeroConfigCommand i
     }
 
     private String getDefaultConfigFor(Class configBeanType, Habitat habitat) throws Exception {
-        if (!ZeroConfigUtils.hasCustomConfig(configBeanType)) {
-            return ZeroConfigUtils.serializeConfigBeanByType(configBeanType, habitat);
+        if (!ConfigModularityUtils.hasCustomConfig(configBeanType)) {
+            return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
         } else {
-            List<ConfigBeanDefaultValue> defaults = ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
                 builder.append("At location: ");

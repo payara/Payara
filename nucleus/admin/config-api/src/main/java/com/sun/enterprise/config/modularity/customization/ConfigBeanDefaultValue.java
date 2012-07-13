@@ -44,7 +44,7 @@ package com.sun.enterprise.config.modularity.customization;
  * @author Masoud Kalali
  */
 
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import java.io.InputStream;
@@ -114,7 +114,7 @@ public class ConfigBeanDefaultValue {
     public <U extends ConfigBeanProxy> ConfigBeanDefaultValue(String location, String configBeanClassName, InputStream xmlSnippetFileInputStream, boolean replaceCurrentIfExists, List<ConfigCustomizationToken> customizationTokens) {
         this.location = location;
         this.configBeanClassName = configBeanClassName;
-        this.xmlConfiguration = ZeroConfigUtils.streamToString(xmlSnippetFileInputStream, "utf-8");
+        this.xmlConfiguration = ConfigModularityUtils.streamToString(xmlSnippetFileInputStream, "utf-8");
         this.replaceCurrentIfExists = replaceCurrentIfExists;
         this.customizationTokens = customizationTokens;
     }

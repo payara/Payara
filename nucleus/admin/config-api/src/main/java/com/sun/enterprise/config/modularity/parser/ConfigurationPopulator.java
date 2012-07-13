@@ -37,56 +37,56 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
-import com.sun.enterprise.config.serverbeans.ConfigSnippetLoader;
-import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.ConfigBean;
+import com.sun.enterprise.module.bootstrap.Populator;
+import com.sun.enterprise.util.LocalStringManager;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigView;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.DomDocument;
 
-import java.lang.reflect.Proxy;
-import java.util.List;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Containing shared functionalists between different derived classes like ConfigSnippetLoader and so on.
- * Shared functionalists includes finding, loading the configuration and creating a ConFigBean from it.
+ * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
  *
+ * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-public abstract class SnippetLoader<C extends ConfigLoader, T extends ConfigBeanProxy> {
-    private final static Logger LOG = Logger.getLogger(ConfigSnippetLoader.class.getName());
+public class ConfigurationPopulator implements Populator {
 
-    protected final C configLoader;
+    private final static Logger LOG = Logger.getLogger(ConfigurationPopulator.class.getName());
+    private final DomDocument doc;
+    private final ConfigLoader loader;
+    private final String xmlContent;
 
-    protected <U extends T> SnippetLoader(C configLoader) {
-        this.configLoader = configLoader;
+    public ConfigurationPopulator(String xmlContent, DomDocument doc, ConfigLoader loader) {
+        this.xmlContent = xmlContent;
+        this.doc = doc;
+        this.loader = loader;
     }
 
-    /**
-     * Assumes that the requested  configBeanType configuration does not exist in the domain.xml so we will
-     * create it according to the priorities explained at
-     * http://aseng-wiki.us.oracle.com/asengwiki/display/GlassFish/Zero+Config+One+Pager#ZeroConfigOnePager-ConfigSources
-     *
-     * @param configBeanType the @ConfigBean type we want it's configuration.
-     * @return an instance of the requested configBeanType
-     * @throws org.jvnet.hk2.config.TransactionFailure
-     *
-     */
-    public abstract <U extends T> U createConfigBeanForType(Class<U> configBeanType)
-            throws TransactionFailure;
-
-
-    protected <U extends T> void addConfigBeanFor(Class<U> domainExtensionType, C configLoader) {
-              ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(configLoader)).getMasterView();
-              Habitat habitat = cb.getHabitat();
-              List<ConfigBeanDefaultValue> configBeanDefaultValueList = ZeroConfigUtils.getDefaultConfigurations(domainExtensionType);
-              SnippetParser snippetParser = new SnippetParser();
-              snippetParser.prepareAndSetConfigBean(habitat, configBeanDefaultValueList);
-          }
+    public void run(org.jvnet.hk2.config.ConfigParser parser) {
+        try {
+            InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
+            XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
+            parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) loader));
+        } catch (XMLStreamException e) {
+            LocalStringManager localStrings =
+                    new LocalStringManagerImpl(ConfigurationParser.class);
+            final String msg = localStrings.getLocalString(
+                    "can.not.get.default.configuration.for",
+                    "Can not read default configuration");
+            LOG.log(Level.SEVERE, msg, e);
+        }
+    }
 }

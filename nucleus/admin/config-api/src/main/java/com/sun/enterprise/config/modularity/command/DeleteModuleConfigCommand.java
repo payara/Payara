@@ -40,13 +40,13 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
-import com.sun.enterprise.config.modularity.ZeroConfigUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -127,8 +127,8 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             return;
         }
 
-        final String className = ZeroConfigUtils.convertConfigElementNameToClassName(serviceName);
-        Class configBeanType = ZeroConfigUtils.getClassFor(serviceName, habitat);
+        final String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
+        Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
         if (configBeanType == null) {
             String msg = localStrings.getLocalString("delete.module.config.not.such.a.service.found",
                     DEFAULT_FORMAT);
@@ -137,8 +137,8 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
             return;
         }
 
-        if (ZeroConfigUtils.hasCustomConfig(configBeanType)) {
-            List<ConfigBeanDefaultValue> defaults = ZeroConfigUtils.getDefaultConfigurations(configBeanType);
+        if (ConfigModularityUtils.hasCustomConfig(configBeanType)) {
+            List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
             deleteDependentConfigElements(defaults);
         } else {
             deleteTopLevelExtensionByType(config, className, configBeanType);
@@ -152,12 +152,12 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     }
 
     private void deleteDependentConfigElement(final ConfigBeanDefaultValue defaultValue) {
-        Class parentClass = ZeroConfigUtils.getOwningClassForLocation(defaultValue.getLocation(), habitat);
-        final Class configBeanClass = ZeroConfigUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), habitat);
-        final Method m = ZeroConfigUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
+        Class parentClass = ConfigModularityUtils.getOwningClassForLocation(defaultValue.getLocation(), habitat);
+        final Class configBeanClass = ConfigModularityUtils.getClassForFullName(defaultValue.getConfigBeanClassName(), habitat);
+        final Method m = ConfigModularityUtils.findSuitableCollectionGetter(parentClass, configBeanClass);
         if (m != null) {
             try {
-                final ConfigBeanProxy parent = ZeroConfigUtils.getOwningObject(defaultValue.getLocation(), habitat);
+                final ConfigBeanProxy parent = ConfigModularityUtils.getOwningObject(defaultValue.getLocation(), habitat);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     @Override
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException,
@@ -167,7 +167,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                         try {
                             col = (List) m.invoke(param);
                             if (col != null) {
-                                configBean = ZeroConfigUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
+                                configBean = ConfigModularityUtils.getCurrentConfigBeanForDefaultValue(defaultValue, habitat);
                             }
                         } catch (Exception e) {
                             String message = localStrings.getLocalString("delete.module.config.failed.deleting.dependant",
@@ -178,7 +178,7 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
                         }
 
                         if (configBean != null) {
-                            boolean deleted = ZeroConfigUtils.deleteConfigurationForConfigBean(configBean, col, defaultValue, habitat);
+                            boolean deleted = ConfigModularityUtils.deleteConfigurationForConfigBean(configBean, col, defaultValue, habitat);
                             if (!deleted) {
                                 for (int i = 0; i < col.size(); i++) {
                                     if (configBeanClass.isAssignableFrom(col.get(i).getClass())) {
