@@ -228,8 +228,10 @@ public class FlashlightProbeClientMediator
                 continue;
 
             String probeString = probeAnn.value();
+            if (probeString == null)
+                continue;
 
-            if ((probeString != null) && (invokerId != null)) {
+            if (invokerId != null) {
                 String[] strArr = probeString.split(":");
                 probeString = strArr[0] + ":"
                         + strArr[1] + ":"
