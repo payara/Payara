@@ -206,12 +206,12 @@ public class MonitoringReporter extends V2DottedNameSupport {
                     instanceMap.put((String)kv.get(0), kv.get(1));
                 }
                 if (key != null) {
-                    String desc = key.substring(0,key.indexOf("count")) + "description";
+                    String desc = key.substring(0,key.indexOf("-count")) + "-description";
                     if (str.contains(desc)) {
                         ArrayList<String> kv = getKeyValuePair(str,instanceName);
                         clusterInfo.put((String)kv.get(0), kv.get(1));
                     }
-                    String lastSampleTime = key.substring(0,key.indexOf("count")) + "lastsampletime";
+                    String lastSampleTime = key.substring(0,key.indexOf("-count")) + "-lastsampletime";
                     if (str.contains(lastSampleTime)) {
                         ArrayList<String> kv = getKeyValuePair(str,instanceName);
                         clusterInfo.put(instanceName + "." + (String)kv.get(0), kv.get(1));
