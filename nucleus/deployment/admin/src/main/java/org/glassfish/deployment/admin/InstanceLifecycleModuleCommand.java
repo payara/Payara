@@ -53,7 +53,7 @@ import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Transaction;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -70,7 +70,7 @@ import org.glassfish.api.admin.RestEndpoints;
  * The command to create application ref for lifecycle module on instance
  */
 @Service(name="_lifecycle")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

@@ -48,7 +48,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 
@@ -56,7 +56,7 @@ import java.io.IOException;
  * Suspend a machine.
  */
 @Service(name="suspend-machine")
-@Scoped(PerLookup.class)
+@PerLookup
 public class SuspendMachine  implements AdminCommand {
 
     @Param(optional=true)

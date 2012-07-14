@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.glassfish.config.support.ConfigurationPersistence;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -69,7 +69,7 @@ import java.util.logging.Logger;
  * @author Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class DomainXmlPersistence implements ConfigurationPersistence, ConfigurationAccess {
 
     @Inject

@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.xml.sax.SAXParseException;
 
@@ -67,7 +67,7 @@ import org.xml.sax.SAXParseException;
  * Extension Archivist for webservices.
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 @ExtensionsArchivistFor("webservices")
 public class WebServicesArchivist extends ExtensionsArchivist {
 

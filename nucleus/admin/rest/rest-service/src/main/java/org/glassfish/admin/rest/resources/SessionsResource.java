@@ -60,9 +60,10 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
 
 import java.util.HashMap;
+
+import javax.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.jvnet.hk2.annotations.Inject;
 
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;

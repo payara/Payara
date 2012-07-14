@@ -39,28 +39,20 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
-import org.glassfish.virtualization.libvirt.jna.Connect;
-import org.glassfish.virtualization.libvirt.jna.Domain;
-import org.glassfish.virtualization.runtime.*;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.VirtualMachine;
-import org.glassfish.virtualization.spi.EventSource;
-import org.glassfish.virtualization.util.ListenableFutureImpl;
-import org.glassfish.virtualization.util.RuntimeContext;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+
 import javax.inject.Inject;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -71,11 +63,40 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.Level;
+
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.virtualization.config.MachineConfig;
+import org.glassfish.virtualization.config.VirtualMachineConfig;
+import org.glassfish.virtualization.config.Virtualizations;
+import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
+import org.glassfish.virtualization.libvirt.jna.Connect;
+import org.glassfish.virtualization.libvirt.jna.Domain;
+import org.glassfish.virtualization.runtime.AbstractMachine;
+import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.EventSource;
+import org.glassfish.virtualization.spi.FileOperations;
+import org.glassfish.virtualization.spi.MachineOperations;
+import org.glassfish.virtualization.spi.OsInterface;
+import org.glassfish.virtualization.spi.PhasedFuture;
+import org.glassfish.virtualization.spi.StoragePool;
+import org.glassfish.virtualization.spi.StorageVol;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.ListenableFutureImpl;
+import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.component.Habitat;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.sun.enterprise.config.serverbeans.Cluster;
 
 /**
  * Abstraction for this machine, assumptions are being made that this java process runs with
@@ -107,8 +128,11 @@ public class LibVirtLocalMachine extends AbstractMachine implements PostConstruc
     @Inject
     ClassLoaderHierarchy clh;
 
-    public static LibVirtLocalMachine from(Injector injector,  LibVirtServerPool group, MachineConfig config) {
-        return injector.inject(new LibVirtLocalMachine(group, config));
+    public static LibVirtLocalMachine from(ServiceLocator injector,  LibVirtServerPool group, MachineConfig config) {
+        LibVirtLocalMachine libVirtLocalMachine = new LibVirtLocalMachine(group, config);
+	    injector.inject(libVirtLocalMachine);
+	    
+	    return libVirtLocalMachine;
     }
 
     protected  LibVirtLocalMachine(LibVirtServerPool group, MachineConfig config) {

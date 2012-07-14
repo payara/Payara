@@ -54,7 +54,7 @@ import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.SecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -73,7 +73,7 @@ import javax.inject.Inject;
  * Update Connector SecurityMap command
  */
 @Service(name="update-connector-security-map")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("update.connector.security.map")
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,

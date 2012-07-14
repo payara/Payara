@@ -56,7 +56,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.logging.LogDomains;
 import com.sun.web.security.CNonceCacheImpl;
 
@@ -65,7 +65,7 @@ import com.sun.web.security.CNonceCacheImpl;
  * @author vbkumarjayanti
  */
 @Service(name="HA-CNonceCache")
-@Scoped(PerLookup.class)
+@PerLookup
 public class HACNonceCacheImpl  implements CNonceCache {
 
     @Inject
@@ -236,7 +236,7 @@ public class HACNonceCacheImpl  implements CNonceCache {
                     setInstanceName(props.get(CNonceCacheFactory.INSTANCE_NAME_PROP)).
                     setStoreName(storeName).setKeyClazz(String.class)
                     .setValueClazz(NonceInfo.class);
-            BackingStoreFactory bsFactory = services.forContract(BackingStoreFactory.class).named(BS_TYPE_REPLICATED).get();
+            BackingStoreFactory bsFactory = services.getService(BackingStoreFactory.class, BS_TYPE_REPLICATED);
             backingStore = bsFactory.createBackingStore(bsConfig);
         } catch (BackingStoreException ex) {
             logger.log(Level.WARNING, null, ex);

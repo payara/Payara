@@ -55,7 +55,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Causes InstanceRegisterInstanceCommand executions on the correct remote instances.
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name="_post-unregister-instance")
 @Supplemental(value="_unregister-instance", ifFailure=FailurePolicy.Warn)
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

@@ -46,7 +46,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ import java.util.List;
  * in shoal-gms-impl.jar
  */
 @Service(name="validate-multicast")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class ValidateMulticastCommand extends CLICommand {
 
     @Param(name="multicastport", optional=true)

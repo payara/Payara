@@ -64,7 +64,7 @@ import org.glassfish.quality.ToDo;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -371,7 +371,7 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag, Payl
     }
     
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class Decorator implements CreationDecorator<LbConfig> {
 
         @Param (name = "name", optional=true)
@@ -490,7 +490,7 @@ public interface LbConfig extends ConfigBeanProxy, Injectable, PropertyBag, Payl
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class DeleteDecorator implements DeletionDecorator<LbConfigs, LbConfig> {
         @Inject
         private Domain domain;

@@ -42,7 +42,7 @@ package org.glassfish.appclient.client.acc;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Implements ReadableArchive for the https protocol to support
@@ -56,7 +56,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author tjquinn
  */
 @Service(name="https")
-@Scoped(PerLookup.class)
+@PerLookup
 public class HTTPSInputArchive extends HTTPInputArchive {
 
 }

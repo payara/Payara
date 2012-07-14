@@ -51,6 +51,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
@@ -110,7 +111,7 @@ public class UpgradeStartup implements ModuleStartup {
     CommandRunner commandRunner;
 
     @Inject @Optional
-    DomainUpgrade[] upgrades=null;
+    IterableProvider<DomainUpgrade> upgrades;
 
     // we need to refine, a better logger should be used.
     @Inject

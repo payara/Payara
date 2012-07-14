@@ -40,19 +40,17 @@
 
 package org.glassfish.kernel.embedded;
 
-import com.sun.hk2.component.InhabitantsParserDecorator;
-import com.sun.hk2.component.InhabitantsParser;
-import com.sun.enterprise.server.logging.LogManagerService;
-import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
-import com.sun.enterprise.v3.admin.AdminAdapter;
-import com.sun.enterprise.v3.admin.PublicAdminAdapter;
-import com.sun.enterprise.v3.admin.PrivateAdminAdapter;
-import com.sun.enterprise.v3.server.GFDomainXml;
-import com.sun.enterprise.v3.server.DomainXmlPersistence;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.kohsuke.MetaInfServices;
 
-import java.net.URLClassLoader;
-import java.net.URL;
+import com.sun.enterprise.server.logging.LogManagerService;
+import com.sun.enterprise.v3.admin.PrivateAdminAdapter;
+import com.sun.enterprise.v3.admin.PublicAdminAdapter;
+import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
+import com.sun.enterprise.v3.server.DomainXmlPersistence;
+import com.sun.enterprise.v3.server.GFDomainXml;
 
 /**
  * Kernel's decoration for embedded environment.
@@ -60,28 +58,77 @@ import java.net.URL;
  * @author Jerome Dochez
  */
 @MetaInfServices
-public class EmbeddedInhabitantsParser implements InhabitantsParserDecorator {
+public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
+  
+	private ServiceLocator serviceLocator;
 
+	public EmbeddedInhabitantsParser(ServiceLocator serviceLocator) {
+	this.serviceLocator = serviceLocator;	
+	}
+	
     public String getName() {
         return "Embedded";
     }
 
-    public void decorate(InhabitantsParser parser) {
+//    private void decorate(InhabitantsParser parser) {
+//
+//        // we don't want to reconfigure the loggers.
+//
+//        parser.drop(AdminConsoleAdapter.class);
+//
+//        String enableCLI = System.getenv("GF_EMBEDDED_ENABLE_CLI");
+//        if (enableCLI == null || !enableCLI.equalsIgnoreCase("true")) {
+//            parser.drop(PublicAdminAdapter.class);
+//            parser.drop(LogManagerService.class);
+//            parser.drop(PrivateAdminAdapter.class);
+//        }
+//        parser.replace(GFDomainXml.class, EmbeddedDomainXml.class);
+//        
+//        parser.replace(DomainXmlPersistence.class, EmbeddedDomainPersistence.class);
+//
+//    }
 
-        // we don't want to reconfigure the loggers.
+	@Override
+	public DescriptorImpl process(DescriptorImpl descriptorImpl) {
 
-        parser.drop(AdminConsoleAdapter.class);
+		// we don't want to reconfigure the loggers.
 
-        String enableCLI = System.getenv("GF_EMBEDDED_ENABLE_CLI");
-        if (enableCLI == null || !enableCLI.equalsIgnoreCase("true")) {
-            parser.drop(PublicAdminAdapter.class);
-            parser.drop(LogManagerService.class);
-            parser.drop(PrivateAdminAdapter.class);
-        }
-        parser.replace(GFDomainXml.class, EmbeddedDomainXml.class);
-        
-        parser.replace(DomainXmlPersistence.class, EmbeddedDomainPersistence.class);
+		boolean skip = false;
 
-    }
+		if (AdminConsoleAdapter.class.getCanonicalName().equals(
+				descriptorImpl.getImplementation())) {
+			skip = true;
+		}
+
+		String enableCLI = System.getenv("GF_EMBEDDED_ENABLE_CLI");
+		if (enableCLI == null || !enableCLI.equalsIgnoreCase("true")) {
+
+			if (PublicAdminAdapter.class.getCanonicalName().equals(
+					descriptorImpl.getImplementation())
+					|| LogManagerService.class.getCanonicalName().equals(
+							descriptorImpl.getImplementation())
+					|| PrivateAdminAdapter.class.getCanonicalName().equals(
+							descriptorImpl.getImplementation())) {
+				skip = true;
+			}
+		}
+
+		if (GFDomainXml.class.getCanonicalName().equals(
+				descriptorImpl.getImplementation())) {
+			descriptorImpl.setImplementation(EmbeddedDomainXml.class
+					.getCanonicalName());
+		}
+
+		if (DomainXmlPersistence.class.getCanonicalName().equals(
+				descriptorImpl.getImplementation())) {
+			descriptorImpl.setImplementation(EmbeddedDomainPersistence.class
+					.getCanonicalName());
+		}
+
+		if (!skip) {
+			return descriptorImpl;
+		}
+		return null;
+	}
 }
 

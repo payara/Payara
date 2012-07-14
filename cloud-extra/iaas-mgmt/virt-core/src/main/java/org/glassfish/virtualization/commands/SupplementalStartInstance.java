@@ -56,7 +56,7 @@ import javax.inject.Provider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * hidden command to start the virtual machine when the instance is requested to start.
@@ -65,7 +65,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service
 @Supplemental(value = "start-instance", on= Supplemental.Timing.Before )
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class SupplementalStartInstance implements AdminCommand {
 

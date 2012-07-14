@@ -41,7 +41,7 @@ package com.sun.enterprise.security.admin.cli;
 
 import org.glassfish.api.Startup;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 /**
  *
  * Starting in GlassFish 3.1.2, the DAS uses SSL to send admin requests to

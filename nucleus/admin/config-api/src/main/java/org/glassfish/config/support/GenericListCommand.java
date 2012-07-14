@@ -52,7 +52,7 @@ import org.glassfish.api.admin.CommandModel;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.util.List;
@@ -64,7 +64,7 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
  *
  * @author Jerome Dochez
  */
-@Scoped(PerLookup.class)
+@PerLookup
 public class GenericListCommand  extends GenericCrudCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     CommandModel model;

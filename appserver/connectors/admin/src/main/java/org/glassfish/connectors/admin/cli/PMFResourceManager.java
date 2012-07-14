@@ -49,7 +49,7 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.resource.ResourceException;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ import java.util.Properties;
  * older versions of sun-resources.xml is used.<BR>
  */
 @Service(name= ServerTags.PERSISTENCE_MANAGER_FACTORY_RESOURCE)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.pmf.resource")
 public class PMFResourceManager implements ResourceManager {
 

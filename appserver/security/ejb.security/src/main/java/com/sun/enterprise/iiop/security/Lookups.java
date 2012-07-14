@@ -43,6 +43,7 @@ package com.sun.enterprise.iiop.security;
 import java.lang.ref.WeakReference;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -70,7 +71,7 @@ public class Lookups {
     /**
      * Static singleton {@link Habitat} instance.
      */
-    private static final BaseServiceLocator habitat = Globals.getDefaultHabitat();
+    private static final ServiceLocator habitat = Globals.getDefaultHabitat();
 
     /**
      * Static singleton {@link Lookups} instance.  Note that this is assigned lazily and may
@@ -95,7 +96,9 @@ public class Lookups {
     private static synchronized boolean checkSingleton(){
         if (singleton == null && habitat != null) {
             // Obtaining the singleton through the habitat will cause the injections to occur.
-            singleton = habitat.getComponent(Lookups.class);
+            singleton = habitat.create(Lookups.class);
+            habitat.inject(singleton);
+            habitat.postConstruct(singleton);
         }
         return singleton != null;
     }

@@ -40,14 +40,18 @@
 
 package com.sun.enterprise.naming.impl;
 
+import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 
 import javax.naming.NamingException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -61,14 +65,14 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
  */
 public class NamedNamingObjectManager {
 
-    private static final AtomicReference<BaseServiceLocator> habitatRef
-            = new AtomicReference<BaseServiceLocator>();
+    private static final AtomicReference<ServiceLocator> habitatRef
+            = new AtomicReference<ServiceLocator>();
 
     private static final Map<String, NamedNamingObjectProxy> proxies = new HashMap<String, NamedNamingObjectProxy>();
 
     private static final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-    public static void checkAndLoadProxies(BaseServiceLocator habitat)
+    public static void checkAndLoadProxies(ServiceLocator habitat)
             throws NamingException {
         if (NamedNamingObjectManager.habitatRef.get() != habitat) {
             if (habitat != null) {
@@ -107,24 +111,37 @@ public class NamedNamingObjectManager {
 //                }
 //            }
 //        }
-        for (Inhabitant<?> inhabitant : ((Habitat) getHabitat()).getInhabitants(NamespacePrefixes.class)) {
-            for (String prefix : inhabitant.getDescriptor().getNames()) {
-                if (name.startsWith(prefix)) {
-                    proxy = (NamedNamingObjectProxy) inhabitant.get();
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.logp(Level.FINE, "NamedNamingObjectManager", "tryNamedProxies",
-                                "found a new proxy [{0}] for [{1}]", new Object[]{proxy, name});
-                    }
-                    cacheProxy(prefix, proxy);
-                    return proxy.handle(name);
-                }
-            }
-        }
+        
+		for (ServiceHandle<?> inhabitant : getHabitat()
+				.getAllServiceHandles(NamespacePrefixes.class)) {
+		    List<String> prefixes = inhabitant.getActiveDescriptor().getMetadata().get(GlassfishNamingManager.NAMESPACE_METADATA_KEY);
+		    if (prefixes == null) continue;
+		    
+		    String prefix = null;
+		    for (String candidate : prefixes) {
+		        if (name.startsWith(candidate)) {
+		            prefix = candidate;
+		            break;
+		        }
+		    }
+		    
+			if (prefix != null) {
+				proxy = (NamedNamingObjectProxy) inhabitant.getService();
+				if (logger.isLoggable(Level.FINE)) {
+					logger.logp(Level.FINE, "NamedNamingObjectManager",
+							"tryNamedProxies",
+							"found a new proxy [{0}] for [{1}]", new Object[] {
+									proxy, name });
+				}
+				cacheProxy(prefix, proxy);
+				return proxy.handle(name);
+			}
+		}
 
         return null;
     }
 
-    private static BaseServiceLocator getHabitat() {
+    private static ServiceLocator getHabitat() {
         return habitatRef.get();
     }
 

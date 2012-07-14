@@ -47,7 +47,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.*;
@@ -65,7 +65,7 @@ import com.sun.enterprise.util.io.ServerDirs;
  * automatically.
  */
 @org.jvnet.hk2.annotations.Service(name = "create-service")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class CreateServiceCommand extends CLICommand {
     @Param(name = "name", optional = true)
     private String serviceName;

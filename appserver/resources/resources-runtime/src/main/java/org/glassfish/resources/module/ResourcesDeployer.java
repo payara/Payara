@@ -66,8 +66,8 @@ import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 import org.jvnet.hk2.config.*;
 
 import org.glassfish.api.event.EventListener;
@@ -93,8 +93,6 @@ import static org.glassfish.resources.api.ResourceConstants.*;
 @Service
 public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, ResourcesApplication>
         implements PostConstruct, PreDestroy, EventListener {
-
-    @Inject
     private static org.glassfish.resources.admin.cli.ResourceFactory resourceFactory;
 
     @Inject
@@ -106,13 +104,10 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     @Inject
     private Provider<ResourcesApplication> resourcesApplicationProvider;
 
-    @Inject
     private static ApplicationRegistry appRegistry;
 
-    @Inject
     private static Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
-    @Inject
     private static ResourcesBinder resourcesBinder;
 
     @Inject
@@ -121,7 +116,6 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     @Inject
     private Events events;
 
-    @Inject
     private static Applications applications;
 
     private static Map<String, Application> preservedApps = new HashMap<String, Application>();
@@ -131,8 +125,17 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
 
-
-    public ResourcesDeployer(){
+    @Inject
+    public ResourcesDeployer(org.glassfish.resources.admin.cli.ResourceFactory resourceFactoryParam,
+            ApplicationRegistry appRegistryParam,
+            Provider<ResourceManagerFactory> resourceManagerFactoryProviderParam,
+            ResourcesBinder resourcesBinderParam,
+            Applications applicationsParam) {
+        resourceFactory = resourceFactoryParam;
+        appRegistry = appRegistryParam;
+        resourceManagerFactoryProvider = resourceManagerFactoryProviderParam;
+        resourcesBinder = resourcesBinderParam;
+        applications = applicationsParam;
     }
 
     public void postConstruct() {

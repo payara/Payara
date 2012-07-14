@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ha-file-store</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish ha-file-store</name>
 
     <developers>
@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
     </dependencies>
     

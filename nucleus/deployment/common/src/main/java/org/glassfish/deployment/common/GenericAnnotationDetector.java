@@ -87,7 +87,7 @@ public class GenericAnnotationDetector extends AnnotationScanner {
         }      
         ArchiveFactory archiveFactory = null;
         if (Globals.getDefaultHabitat() != null) {
-            archiveFactory = Globals.getDefaultHabitat().byType(ArchiveFactory.class).get();
+            archiveFactory = Globals.getDefaultHabitat().getService(ArchiveFactory.class);
         }
 
         if (archiveFactory != null) {

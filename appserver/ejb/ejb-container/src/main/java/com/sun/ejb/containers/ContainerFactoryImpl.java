@@ -82,8 +82,8 @@ public final class ContainerFactoryImpl implements ContainerFactory {
                 if ( sd.isStateless() ) {
                     container = new StatelessSessionContainer(ejbDescriptor, loader);
                 } else if( sd.isStateful() ) {
-                    StatefulContainerBuilder sfsbBuilder = services.byType(
-                            StatefulContainerBuilder.class).get();
+                    StatefulContainerBuilder sfsbBuilder = services.getService(
+                            StatefulContainerBuilder.class);
                     sfsbBuilder.buildContainer(dynamicConfigContext, ejbDescriptor, loader);
                     container = sfsbBuilder.getContainer();
                 } else {

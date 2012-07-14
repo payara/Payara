@@ -45,14 +45,14 @@ import org.glassfish.virtualization.spi.VirtException;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * resume a suspended virtual machine
  * @author Jerome Dochez
  */
 @Service(name="resume-vm")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ResumeVirtualMachine extends VirtualMachineMgt implements AdminCommand {
     @Override
     void doWork(VirtualMachine vm) throws VirtException {

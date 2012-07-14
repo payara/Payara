@@ -59,12 +59,13 @@ import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.util.cluster.SyncRequest;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Synchronize a local server instance.
  */
 @Service(name = "_synchronize-instance")
-@Scoped(PerLookup.class)
+@PerLookup
 public class SynchronizeInstanceCommand extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true, optional = true)

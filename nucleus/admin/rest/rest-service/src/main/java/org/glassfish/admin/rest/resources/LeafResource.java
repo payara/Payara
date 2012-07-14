@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.inject.Provider;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -69,7 +70,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.hk2.Factory;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;
 
 import static org.glassfish.admin.rest.utils.Util.decode;
@@ -80,16 +81,13 @@ import static org.glassfish.admin.rest.utils.Util.decode;
  */
 public abstract class LeafResource {
     @Context
-    protected Factory<HttpHeaders> requestHeaders;
+    protected Provider<HttpHeaders> requestHeaders;
 
     @Context
-    protected Factory<UriInfo> uriInfo;
+    protected Provider<UriInfo> uriInfo;
 
     @Context
-    protected Injector injector;
-
-    @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     protected LeafContent entity;
     protected Dom parent;

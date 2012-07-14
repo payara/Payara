@@ -74,7 +74,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Dom;
@@ -95,7 +95,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
     protected static final String TAG_SYSTEM_PROPERTY = "system-property";
 
     @Context
-    protected Injector injector;
+    protected ServiceLocator injector;
 
     protected Dom entity;
 //    protected Dom parent;

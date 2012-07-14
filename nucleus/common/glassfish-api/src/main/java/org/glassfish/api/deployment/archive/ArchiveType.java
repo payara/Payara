@@ -59,7 +59,7 @@ import org.jvnet.hk2.annotations.Scoped;
  * @author Sanjeeb Sahoo
  */
 @Contract
-@Scoped(org.jvnet.hk2.component.Singleton.class)
+@javax.inject.Singleton
 public abstract class ArchiveType {
     /**
      * File extension for this type of archive. Empty string is used if there is no extension specified.

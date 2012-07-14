@@ -42,6 +42,7 @@ package org.glassfish.admingui.plugin;
 
 import org.glassfish.api.admingui.ConsoleProvider;
 
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
@@ -81,7 +82,7 @@ import javax.inject.Inject;
 public class ConsolePluginService {
     @Inject Logger logger;
     @Inject Habitat habitat;
-    @Inject ConsoleProvider providers[];
+    @Inject IterableProvider<ConsoleProvider> providers;
 
 /*
     @Inject ModulesRegistry modulesRegistry;
@@ -108,7 +109,7 @@ public class ConsolePluginService {
 	initialized = true;
 
 	// First find the parser
-	if ((providers != null) && (providers.length > 0)) {
+	if ((providers != null) && (providers.iterator().hasNext())) {
 	    // Get our parser...
 	    ConfigParser parser = new ConfigParser(habitat);
 	    URL url = null;
@@ -327,7 +328,7 @@ public class ConsolePluginService {
      */
     public Map<String, List<URL>> getResources(String name) {
 	Map<String, List<URL>> result = new HashMap<String, List<URL>>();
-	if ((providers != null) && (providers.length > 0)) {
+	if ((providers != null) && (providers.iterator().hasNext())) {
 	    // Get our parser...
 	    Enumeration<URL> urls = null;
 	    URL url = null;

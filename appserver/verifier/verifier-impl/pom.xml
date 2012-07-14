@@ -50,7 +50,7 @@
         <relativePath>../../pom.xml</relativePath>        
     </parent>
     <artifactId>verifier</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Verifier implementation module</name>
 
     <properties>
@@ -60,8 +60,8 @@
     <build>
       <plugins>
         <plugin>
-          <groupId>org.glassfish.hk2</groupId>
-          <artifactId>hk2-maven-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
           <configuration>
             <archive>
               <manifest>

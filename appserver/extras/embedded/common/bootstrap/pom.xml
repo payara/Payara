@@ -53,7 +53,7 @@
   </parent>
 
     <artifactId>bootstrap</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish UberJar Activator</name>
 
     <build>

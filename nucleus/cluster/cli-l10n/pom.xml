@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>cluster-cli-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>cluster-cli Localization</name>
     <build>
         <plugins>

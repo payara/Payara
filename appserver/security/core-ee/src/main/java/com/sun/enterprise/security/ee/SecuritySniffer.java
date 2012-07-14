@@ -40,15 +40,14 @@
 
 package com.sun.enterprise.security.ee;
 
-import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
 import com.sun.enterprise.security.SecurityLifecycle;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 import javax.enterprise.deploy.shared.ModuleType;
 
@@ -69,18 +68,21 @@ public class SecuritySniffer extends GenericSniffer {
     final String[] containers = { "com.sun.enterprise.security.ee.SecurityContainer" };
 
     @Inject
-    Habitat habitat;
+    private ServiceLocator habitat;
     
-    Inhabitant<SecurityLifecycle> lifecycle;
-    private static final Class[] ejbAnnotations = new Class[]{
+    private ServiceHandle<SecurityLifecycle> lifecycle;
+    
+    @SuppressWarnings("unchecked")
+    private static final Class<? extends Annotation>[] ejbAnnotations = new Class[]{
         javax.ejb.Stateless.class, javax.ejb.Stateful.class,
         javax.ejb.MessageDriven.class, javax.ejb.Singleton.class
     };
 
     public SecuritySniffer() {
         super("security", "WEB-INF/web.xml", null);
+        
     }
-
+    
    /**
      * Returns true if the passed file or directory is recognized by this
      * instance.
@@ -110,8 +112,8 @@ public class SecuritySniffer extends GenericSniffer {
      */
     @Override
      public Module[] setup(String containerHome, Logger logger) throws IOException {
-        lifecycle = habitat.getInhabitantByType(SecurityLifecycle.class);
-        lifecycle.get();
+        lifecycle = habitat.getServiceHandle(SecurityLifecycle.class);
+        lifecycle.getService();
         return null;
     }
 
@@ -122,7 +124,7 @@ public class SecuritySniffer extends GenericSniffer {
     @Override
      public void tearDown() {
         if (lifecycle!=null) {
-            lifecycle.release();
+            lifecycle.destroy();
         }
     }
 

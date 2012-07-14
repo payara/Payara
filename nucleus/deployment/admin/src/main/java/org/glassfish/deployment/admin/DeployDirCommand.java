@@ -50,7 +50,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 
 
@@ -60,7 +60,7 @@ import org.jvnet.hk2.annotations.Scoped;
  *
  */
 @Service(name="deploydir")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("deploydir.command")
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})

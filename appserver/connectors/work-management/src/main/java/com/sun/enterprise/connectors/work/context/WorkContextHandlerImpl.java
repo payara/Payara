@@ -51,7 +51,7 @@ import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;
 
@@ -72,7 +72,7 @@ import java.io.Serializable;
  * @since GlassFish v3
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class WorkContextHandlerImpl implements WorkContextHandler {
 
     private static final List<Class<? extends WorkContext>> containerSupportedContexts =

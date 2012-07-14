@@ -70,7 +70,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transaction;
 
@@ -104,7 +104,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 @Service(name="create-application-ref")
 @I18n("create.application.ref.command")
 @ExecuteOn(value={RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="create-application-ref"),

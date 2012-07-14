@@ -61,12 +61,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
 import org.jvnet.hk2.config.ConfigBeanProxy;

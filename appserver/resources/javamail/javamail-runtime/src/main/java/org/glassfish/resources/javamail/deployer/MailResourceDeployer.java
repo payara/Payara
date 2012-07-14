@@ -55,7 +55,7 @@ import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
@@ -79,7 +79,7 @@ import java.util.logging.Logger;
  */
 @Service
 @ResourceDeployerInfo(MailResource.class)
-@Scoped(Singleton.class)
+@Singleton
 public class MailResourceDeployer extends GlobalResourceDeployer
         implements ResourceDeployer {
 

@@ -42,6 +42,8 @@ package com.sun.enterprise.deploy.shared;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.util.Vector;
@@ -64,6 +66,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
+
 import static org.junit.Assert.*;
 
 /**
@@ -108,7 +112,7 @@ public class FileArchiveTest {
         return result;
     }
 
-    private static BaseServiceLocator habitat;
+    private static ServiceLocator habitat;
     private static ArchiveFactory archiveFactory;
 
     public FileArchiveTest() {
@@ -117,7 +121,7 @@ public class FileArchiveTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         habitat = Utils.getNewHabitat();
-        archiveFactory = habitat.getComponent(ArchiveFactory.class);
+        archiveFactory = habitat.getService(ArchiveFactory.class);
 
     }
 

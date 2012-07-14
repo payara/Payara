@@ -44,7 +44,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.io.*;
 import java.text.SimpleDateFormat;

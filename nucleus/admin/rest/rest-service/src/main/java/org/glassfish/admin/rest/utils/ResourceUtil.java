@@ -96,8 +96,8 @@ import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -225,7 +225,7 @@ public class ResourceUtil {
      * @return ActionReport object with command execute status details.
      */
     public static RestActionReporter runCommand(String commandName, Map<String, String> parameters,
-            BaseServiceLocator habitat, String resultType) {
+            ServiceLocator habitat, String resultType) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             p.set(entry.getKey(), entry.getValue());
@@ -234,7 +234,7 @@ public class ResourceUtil {
         return runCommand(commandName, p, habitat, resultType);
     }
 
-    public static RestActionReporter runCommand(String commandName, ParameterMap parameters, BaseServiceLocator habitat, String resultType) {
+    public static RestActionReporter runCommand(String commandName, ParameterMap parameters, ServiceLocator habitat, String resultType) {
         CommandRunner cr = Globals.getDefaultBaseServiceLocator().getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
 //        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
@@ -296,7 +296,7 @@ public class ResourceUtil {
      * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
-    public static MethodMetaData getMethodMetaData(String command, BaseServiceLocator habitat, Logger logger) {
+    public static MethodMetaData getMethodMetaData(String command, ServiceLocator habitat, Logger logger) {
         return getMethodMetaData(command, null, habitat, logger);
     }
 
@@ -311,7 +311,7 @@ public class ResourceUtil {
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(String command, HashMap<String, String> commandParamsToSkip,
-            BaseServiceLocator habitat, Logger logger) {
+            ServiceLocator habitat, Logger logger) {
         MethodMetaData methodMetaData = new MethodMetaData();
 
         if (command != null) {
@@ -503,9 +503,9 @@ public class ResourceUtil {
     /*
      * test if a command really exists in the current runningVM
      */
-    public static boolean commandIsPresent(BaseServiceLocator habitat, String commandName) {
+    public static boolean commandIsPresent(ServiceLocator habitat, String commandName) {
         try {
-            habitat.getComponent(AdminCommand.class, commandName);
+            habitat.getService(AdminCommand.class, commandName);
             return true;
         } catch (Exception e) {
 
@@ -523,8 +523,8 @@ public class ResourceUtil {
      * method.
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
-            String commandName, BaseServiceLocator habitat, Logger logger) {
-        return habitat.getComponent(CommandRunner.class).getModel(commandName, logger).getParameters();
+            String commandName, ServiceLocator habitat, Logger logger) {
+        return habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger).getParameters();
     }
 
     /**
@@ -540,8 +540,8 @@ public class ResourceUtil {
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Collection<String> commandParamsToSkip,
-            BaseServiceLocator habitat, Logger logger) {
-        CommandModel cm = habitat.getComponent(CommandRunner.class).getModel(commandName, logger);
+            ServiceLocator habitat, Logger logger) {
+        CommandModel cm = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger);
         Collection<String> parameterNames = cm.getParametersNames();
 
         ArrayList<CommandModel.ParamModel> metaData = new ArrayList<CommandModel.ParamModel>();
@@ -1062,12 +1062,12 @@ public class ResourceUtil {
         ar.getExtraProperties().put("methods", methodMetaData);
     }
 
-    public static synchronized RestConfig getRestConfig(BaseServiceLocator habitat) {
+    public static synchronized RestConfig getRestConfig(ServiceLocator habitat) {
         if (restConfig == null) {
             if (habitat == null) {
                 return null;
             }
-            Domain domain = habitat.getComponent(Domain.class);
+            Domain domain = habitat.getService(Domain.class);
             if (domain != null) {
                 Config config = domain.getConfigNamed("server-config");
                 if (config != null) {
@@ -1084,7 +1084,7 @@ public class ResourceUtil {
      * attributes of a config bean
      */
 
-    public static boolean canShowDeprecatedItems(BaseServiceLocator habitat) {
+    public static boolean canShowDeprecatedItems(ServiceLocator habitat) {
 
         RestConfig rg = getRestConfig(habitat);
         if ((rg != null) && (rg.getShowDeprecatedItems().equalsIgnoreCase("true"))) {
@@ -1099,9 +1099,9 @@ public class ResourceUtil {
      *
      * @return subject identifying the user/client
      */
-    public static Subject authenticateViaAdminRealm(BaseServiceLocator habitat, Request req, String remoteHost) throws LoginException, IOException {
+    public static Subject authenticateViaAdminRealm(ServiceLocator habitat, Request req, String remoteHost) throws LoginException, IOException {
         Subject subject = null;
-        final AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
+        final AdminAccessController authenticator = habitat.getService(AdminAccessController.class);
         if (authenticator != null) {
             // This is temporary workaround for a Grizzly issue that prohibits uploading (deploy)  files larger than 2MB when secure admin is enabled.
             // The workaround will not be required in trunk when the corresponding Grizzly issue is fixed.
@@ -1120,8 +1120,8 @@ public class ResourceUtil {
      * @param remoteHost
      * @return
      */
-    public static AdminAccessController.Access chooseAccess(final BaseServiceLocator habitat, final Subject subject, final String remoteHost) {
-        final AdminAccessController authenticator = habitat.getByContract(AdminAccessController.class);
+    public static AdminAccessController.Access chooseAccess(final ServiceLocator habitat, final Subject subject, final String remoteHost) {
+        final AdminAccessController authenticator = habitat.getService(AdminAccessController.class);
         final AdminAccessController.Access access = authenticator.chooseAccess(subject, remoteHost);
         return access;
         }

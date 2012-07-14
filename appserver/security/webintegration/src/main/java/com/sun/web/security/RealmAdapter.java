@@ -131,8 +131,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  * This is the realm adapter used to authenticate users and authorize
@@ -143,7 +143,7 @@ import org.jvnet.hk2.component.PostConstruct;
  * @author JeanFrancois Arcand
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class RealmAdapter extends RealmBase implements RealmInitializer, PostConstruct {
 
     //private static final String UNCONSTRAINED = "unconstrained";
@@ -1417,6 +1417,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             iex.initCause(ex);
             throw iex;
         }
+        
         if (serverAuthConfig != null) {
             //JSR 196 is enabled for this application
             result = validate(request, response, config, authenticator, calledFromAuthenticate);

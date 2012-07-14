@@ -75,9 +75,9 @@ public class InjectionServicesImpl implements InjectionServices {
 
 
             Habitat h = Globals.getDefaultHabitat();
-            ComponentEnvManager compEnvManager = (ComponentEnvManager) h.forContract(ComponentEnvManager.class).get();
+            ComponentEnvManager compEnvManager = (ComponentEnvManager) h.getService(ComponentEnvManager.class);
 
-            EjbContainerServices containerServices = h.forContract(EjbContainerServices.class).get();
+            EjbContainerServices containerServices = h.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
 

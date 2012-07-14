@@ -52,7 +52,7 @@ import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
@@ -74,7 +74,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 
 @Service(name="list-iiop-listeners")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.iiop.listeners")
 @ExecuteOn(value={RuntimeType.DAS})
@@ -109,7 +109,7 @@ public class ListIiopListeners implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        final Target targetUtil = services.byType(Target.class ).get() ;
+        final Target targetUtil = services.getService(Target.class ) ;
         final Config config = targetUtil.getConfig(target) ;
         final IiopService iiopService = config.getExtensionByType(IiopService.class);
 

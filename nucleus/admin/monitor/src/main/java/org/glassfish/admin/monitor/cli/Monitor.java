@@ -48,7 +48,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.inject.Inject;
@@ -60,7 +60,7 @@ import java.util.Iterator;
  * @author Prashanth Abbagani
  */
 @Service(name="monitor")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("monitor.command")
 public class Monitor implements AdminCommand {
 

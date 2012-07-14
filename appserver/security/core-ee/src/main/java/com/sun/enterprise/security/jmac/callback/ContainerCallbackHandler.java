@@ -57,14 +57,14 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import com.sun.enterprise.security.jmac.config.CallbackHandlerConfig;
 import com.sun.enterprise.security.jmac.config.HandlerContext;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author  Shing Wai Chan
  */
 @Service
-@ContractProvided(CallbackHandler.class)
+@ContractsProvided(CallbackHandler.class)
 public final class ContainerCallbackHandler 
         implements CallbackHandler, CallbackHandlerConfig {
     private CallbackHandler handler = null;

@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.deployment.io;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Index;
+import org.glassfish.hk2.api.Metadata;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -54,13 +55,17 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * and this annotation must be placed on a class that extends
  * {@link com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile}.
  */
-@Contract
+@Qualifier
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ConfigurationDeploymentDescriptorFileFor {
+    /** Used as the metadata key */
+    public final static String DESCRIPTOR_FOR = "DescriptorFor";
+    
     /**
      * the value of the annotation should represent the area 
      * this configuration deployment descriptor file is for
      */
-    @Index String value();
+    @Metadata(DESCRIPTOR_FOR)
+    String value();
 }

@@ -48,7 +48,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.loadbalancer.config.LoadBalancer;
 
@@ -83,7 +83,7 @@ import javax.inject.Inject;
  * @author Kshitiz Saxena
  */
 @Service(name = "export-http-lb-config")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("export.http.lb.config")
 @RestEndpoints({
     @RestEndpoint(configBean=LbConfig.class,

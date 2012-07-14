@@ -729,7 +729,7 @@ public class WebSecurityManager  {
      */
     private String getVirtualServers(String appName) {
         String ret = null;
-        Server server = serverContext.getDefaultServices().forContract(Server.class).get();
+        Server server = serverContext.getDefaultServices().getService(Server.class);
         for (ApplicationRef appRef : server.getApplicationRef()) {
             if (appRef.getRef().equals(appName)) {
                 return appRef.getVirtualServers();

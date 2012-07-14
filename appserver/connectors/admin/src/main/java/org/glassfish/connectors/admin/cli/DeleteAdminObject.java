@@ -56,7 +56,7 @@ import org.glassfish.connectors.config.AdminObjectResource;
 import org.glassfish.resources.admin.cli.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -72,7 +72,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(value={RuntimeType.ALL})
 @Service(name="delete-admin-object")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.admin.ojbect")
 public class DeleteAdminObject implements AdminCommand {
     

@@ -62,7 +62,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Lists the JVM options configured in server's configuration.
@@ -71,7 +71,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @since GlassFish V3
  */
 @Service(name="list-jvm-options")   //implements the cli command by this "name"
-@Scoped(PerLookup.class)            //should be provided "per lookup of this class", not singleton
+@PerLookup            //should be provided "per lookup of this class", not singleton
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jvm.options")
 @ExecuteOn({RuntimeType.DAS})

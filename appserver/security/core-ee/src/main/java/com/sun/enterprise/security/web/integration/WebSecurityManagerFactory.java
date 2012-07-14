@@ -56,13 +56,13 @@ import javax.security.jacc.PolicyContextException;
 import javax.security.jacc.PolicyContextHandler;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /** @author JeanFrancois Arcand
  *  @author Harpreet Singh
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
     private static Logger logger =

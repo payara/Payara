@@ -46,7 +46,7 @@ import javax.net.ssl.SSLSocket;
 import org.glassfish.grizzly.config.ssl.SSLImplementation;
 import org.glassfish.grizzly.config.ssl.ServerSocketFactory;
 import org.glassfish.grizzly.ssl.SSLSupport;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Sudarsan Sridhar
  */
 @Service(name="com.sun.enterprise.security.ssl.GlassfishSSLImpl")
-@ContractProvided(SSLImplementation.class)
+@ContractsProvided(SSLImplementation.class)
 public class GlassfishSSLImpl extends SSLImplementation {
     public GlassfishSSLImpl() {
     }

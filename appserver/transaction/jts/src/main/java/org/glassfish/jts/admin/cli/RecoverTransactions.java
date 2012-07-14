@@ -56,7 +56,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.logging.Level;
 import org.glassfish.api.admin.RestEndpoint;
@@ -66,7 +66,7 @@ import org.glassfish.api.admin.RestParam;
 @Service(name = "recover-transactions")
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(RuntimeType.DAS)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("recover.transactions")
 @RestEndpoints({
     @RestEndpoint(configBean=Server.class,

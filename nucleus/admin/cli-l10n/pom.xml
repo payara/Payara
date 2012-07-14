@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>admin-cli-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>admin-cli Localization</name>
     <build>
         <plugins>
@@ -76,8 +76,8 @@
                 </configuration>
             </plugin>
             <plugin>
-              <groupId>org.glassfish.hk2</groupId>
-              <artifactId>hk2-maven-plugin</artifactId>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                   <archive>
                     <manifestEntries>

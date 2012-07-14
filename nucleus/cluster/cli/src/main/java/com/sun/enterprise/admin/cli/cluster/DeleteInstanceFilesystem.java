@@ -54,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
@@ -65,7 +66,7 @@ import com.sun.enterprise.admin.cli.remote.RemoteCommand;
  * Delete a local server instance.
  */
 @Service(name = "_delete-instance-filesystem")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeleteInstanceFilesystem extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true, optional = false)

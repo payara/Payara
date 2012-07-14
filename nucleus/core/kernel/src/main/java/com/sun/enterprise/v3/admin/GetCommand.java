@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 
@@ -65,7 +65,7 @@ import org.jvnet.hk2.config.types.Property;
  * Time: 12:17:26 AM
  */
 @Service(name = "get")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @RestEndpoints({

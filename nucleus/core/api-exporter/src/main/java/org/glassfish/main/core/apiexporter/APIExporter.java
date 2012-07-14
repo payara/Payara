@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,19 +38,14 @@
  * holder.
  */
 
-package org.glassfish.config.support;
+package org.glassfish.main.core.apiexporter;
 
-import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Delete;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * Useful annotation for {@link Create} and {@link Delete} compositions
- *
- * @author Jerome Dochez
+ * This is a marker interface for the APIExporter bundle so the classloader
+ * can be determined without using OSGi APIs.
  */
-public @interface CRUD {
-
-    Create[] creates();
-
-    Delete[] deletes();
+@Contract
+public interface APIExporter {
 }

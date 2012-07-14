@@ -57,7 +57,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Implements ReadableArchive based on multiple underlying ReadableArchives,
@@ -67,7 +67,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author tjquinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class MultiReadableArchive extends AbstractReadableArchive {
 
     private ReadableArchive parentArchive = null;

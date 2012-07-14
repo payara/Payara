@@ -497,6 +497,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                     c.getNetworkConfig(),
                     c.getSecurityService(),
                     c.getThreadPools(),
+                    c.getMonitoringService(),
             };
             for (ConfigBeanProxy cbp : dirref) {
                 if (cbp != null) {

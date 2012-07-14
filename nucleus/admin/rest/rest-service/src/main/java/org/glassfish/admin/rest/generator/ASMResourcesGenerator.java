@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.generator;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author Ludovic Champenois
@@ -49,7 +49,7 @@ public class ASMResourcesGenerator extends ResourcesGeneratorBase {
     protected final String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
     protected final String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
 
-    public ASMResourcesGenerator(BaseServiceLocator habitat) {
+    public ASMResourcesGenerator(ServiceLocator habitat) {
         super(habitat);
     }
 

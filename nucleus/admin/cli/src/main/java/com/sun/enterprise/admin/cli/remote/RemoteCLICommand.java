@@ -919,7 +919,7 @@ public class RemoteCLICommand extends CLICommand {
             return manHabitat;
         ModulesRegistry registry =
                 new StaticModulesRegistry(getModuleClassLoader());
-        manHabitat = registry.createHabitat("default");
+        manHabitat = new Habitat(); // Gets the ServiceLocator with name "default"
         return manHabitat;
     }
 

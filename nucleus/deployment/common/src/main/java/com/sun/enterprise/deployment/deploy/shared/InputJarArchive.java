@@ -48,7 +48,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
 import java.util.*;
@@ -69,7 +69,7 @@ import java.net.URISyntaxException;
  * @author Jerome Dochez
  */
 @Service(name="jar")
-@Scoped(PerLookup.class)
+@PerLookup
 public class InputJarArchive extends JarArchive implements ReadableArchive {
     
     final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);

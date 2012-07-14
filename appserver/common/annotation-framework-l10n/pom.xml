@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>annotation-framework-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Java EE Annotation Framework Localization</name>
 
     <developers>

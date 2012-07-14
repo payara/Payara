@@ -53,7 +53,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +68,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name="list-javamail-resources")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.javamail.resources")
 @RestEndpoints({

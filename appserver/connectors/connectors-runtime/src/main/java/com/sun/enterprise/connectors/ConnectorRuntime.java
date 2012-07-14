@@ -72,6 +72,8 @@ import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.SecurityMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ConnectorClassLoaderService;
 import org.glassfish.internal.api.DelegatingClassLoader;
@@ -87,14 +89,12 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.naming.NamingException;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
@@ -125,7 +125,7 @@ import java.util.logging.Logger;
  * @author Binod P.G, Srikanth P, Aditya Gore, Jagadish Ramu
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api.ConnectorRuntime,
         PostConstruct, PreDestroy {
 

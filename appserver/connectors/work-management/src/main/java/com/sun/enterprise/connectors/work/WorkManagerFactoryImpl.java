@@ -47,7 +47,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -75,7 +75,7 @@ import java.util.logging.Logger;
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class WorkManagerFactoryImpl implements WorkManagerFactory {
 
     private static final String DEFAULT =

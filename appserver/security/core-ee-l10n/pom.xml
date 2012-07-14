@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>security-ee-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Java EE Security Core Classes Localization</name>
 
     <build>

@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>cmp-generator-database</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Database Generator module for cmp</name>
     
     <developers>

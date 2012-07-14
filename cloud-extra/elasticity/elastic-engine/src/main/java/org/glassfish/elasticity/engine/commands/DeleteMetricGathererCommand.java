@@ -49,7 +49,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
@@ -62,7 +62,7 @@ import org.glassfish.elasticity.config.serverbeans.*;
  */
 @Service(name="delete-metric-gatherer")
 @I18n("delete.metric.gatherer")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeleteMetricGathererCommand implements AdminCommand{
 
      @Inject

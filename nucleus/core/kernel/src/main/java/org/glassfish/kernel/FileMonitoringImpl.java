@@ -44,7 +44,7 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.api.admin.FileMonitoring;
 
 import java.io.File;

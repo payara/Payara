@@ -58,7 +58,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -80,7 +80,7 @@ import java.util.logging.Logger;
  */
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "collect-log-files")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("collect.log.files")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

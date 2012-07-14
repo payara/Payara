@@ -51,7 +51,7 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.config.support.Delete;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.jvnet.hk2.component.Habitat;
@@ -104,7 +104,7 @@ public class TemplateRestResource {
     @Context
     protected HttpHeaders requestHeaders;
     @Context
-    protected Injector injector;
+    protected ServiceLocator injector;
     @Context
     protected UriInfo uriInfo;
     @Context

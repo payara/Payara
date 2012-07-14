@@ -53,7 +53,7 @@ import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -73,7 +73,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  *
  */
 @Service(name="list-jms-resources")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jms.resources")
 @ExecuteOn({RuntimeType.DAS})

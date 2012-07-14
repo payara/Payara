@@ -58,7 +58,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Create data structures that describe the command.
@@ -67,7 +67,7 @@ import org.jvnet.hk2.component.PerLookup;
  * 
  */
 @Service(name="list-descriptors", metadata="mode=debug")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("list.commands")
 
 public class ListCommandDescriptorsCommand implements AdminCommand {

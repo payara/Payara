@@ -41,7 +41,6 @@
 package org.glassfish.kernel.config;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.config.ConfigParser;
 import org.glassfish.api.admin.config.Container;
@@ -91,21 +90,19 @@ public class DefaultConfigParser implements ConfigParser {
             }
         };
 
-        (new Populator() {
-
-            public void run(org.jvnet.hk2.config.ConfigParser parser) {
-                long now = System.currentTimeMillis();
-                if (configuration != null) {
-                    try {
-                        DomDocument newElement = parser.parse(configuration,  doc, Dom.unwrap(config));
-                        logger.info(newElement.getRoot().getProxyType().toString());
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                    Logger.getAnonymousLogger().fine("time to parse domain.xml : " + String.valueOf(System.currentTimeMillis() - now));
-                }
-            }
-        }).run(configParser);
+		long now = System.currentTimeMillis();
+		if (configuration != null) {
+			try {
+				DomDocument newElement = configParser.parse(configuration, doc,
+						Dom.unwrap(config));
+				logger.info(newElement.getRoot().getProxyType().toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Logger.getAnonymousLogger().fine(
+					"time to parse domain.xml : "
+							+ String.valueOf(System.currentTimeMillis() - now));
+		}
 
         // add the new container configuration to the server config
         final T container = doc.getRoot().createProxy(configType);

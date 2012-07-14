@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-registration</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Registration</name>
     <description>GlassFish specific module for registration</description>
 
@@ -68,7 +68,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

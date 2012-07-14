@@ -51,7 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-updatecenter-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Update Center Plugin Localization</name>
     <description>Update Center plugin bundle for GlassFish V3 Admin Console Localization</description>
 

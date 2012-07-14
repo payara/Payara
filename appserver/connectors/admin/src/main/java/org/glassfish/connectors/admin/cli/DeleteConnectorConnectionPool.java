@@ -52,10 +52,10 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.resources.api.ResourceStatus;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +73,7 @@ import javax.inject.Inject;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="delete-connector-connection-pool")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.connector.connection.pool")
 public class DeleteConnectorConnectionPool implements AdminCommand {
     
@@ -93,10 +93,10 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     private Domain domain;
     
     @Inject
-    private Server[] servers;
+    private IterableProvider<Server> servers;
 
     @Inject
-    private Cluster[] clusters;
+    private IterableProvider<Cluster> clusters;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -172,7 +172,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     }
 
     //TODO duplicate code in JDBCConnectionPoolManager
-    private Object deleteAssociatedResources(final Server[] servers, final Cluster[] clusters, Resources resources,
+    private Object deleteAssociatedResources(final Iterable<Server> servers, final Iterable<Cluster> clusters, Resources resources,
                                            final boolean cascade, final String poolName) throws TransactionFailure {
         if (cascade) {
             ConfigSupport.apply(new SingleConfigCode<Resources>() {
@@ -180,8 +180,8 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
                     Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
                     for (BindableResource referringResource : referringResources) {
                         // delete resource-refs
-                        deleteResourceRefs(servers, referringResource.getJndiName());
-                        deleteResourceRefs(clusters, referringResource.getJndiName());
+                        deleteServerResourceRefs(servers, referringResource.getJndiName());
+                        deleteClusterResourceRefs(clusters, referringResource.getJndiName());
 
                         // remove the resource
                         param.getResources().remove(referringResource);
@@ -199,7 +199,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     }
 
     //TODO duplicate code in JDBCConnectionPoolManager
-    private void deleteResourceRefs(Server[] servers, final String refName)
+    private void deleteServerResourceRefs(Iterable<Server> servers, final String refName)
             throws TransactionFailure {
         if(servers != null){
             for (Server server : servers) {
@@ -208,7 +208,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
         }
     }
 
-    private void deleteResourceRefs(Cluster[] clusters, final String refName)
+    private void deleteClusterResourceRefs(Iterable<Cluster>clusters, final String refName)
             throws TransactionFailure {
         if(clusters != null){
             for (Cluster cluster : clusters) {

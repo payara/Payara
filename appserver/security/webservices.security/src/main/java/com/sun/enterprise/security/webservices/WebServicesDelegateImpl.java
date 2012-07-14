@@ -70,14 +70,14 @@ import javax.xml.soap.SOAPPart;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  *
  * @author kumar.jayanti
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class WebServicesDelegateImpl implements WebServicesDelegate {
 
     protected static final Logger _logger = 

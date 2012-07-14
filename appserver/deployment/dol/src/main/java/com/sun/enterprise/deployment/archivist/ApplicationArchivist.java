@@ -65,7 +65,7 @@ import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.xml.sax.SAXParseException;
 
 import javax.inject.Inject;
@@ -80,7 +80,7 @@ import java.util.logging.Level;
  * @author  Jerome Dochez
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 @ArchivistFor(EarType.ARCHIVE_TYPE)
 public class ApplicationArchivist extends Archivist<Application> {
     @Inject

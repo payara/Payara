@@ -52,7 +52,7 @@ import org.glassfish.api.admin.CommandValidationException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.remote.*;
 
@@ -61,7 +61,7 @@ import com.sun.enterprise.admin.cli.remote.*;
  * @author Byron Nevins
  */
 @Service(name = "restart-local-instance")
-@Scoped(PerLookup.class)
+@PerLookup
 public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
 
     @Param(name = "debug", optional = true)

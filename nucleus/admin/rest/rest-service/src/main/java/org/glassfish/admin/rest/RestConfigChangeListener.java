@@ -43,6 +43,7 @@ import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.beans.PropertyChangeEvent;
 
 import org.glassfish.admin.rest.adapter.Reloader;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -50,7 +51,6 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * This test listen to a property change event only injecting the parent containing the property.
@@ -62,9 +62,9 @@ public class RestConfigChangeListener implements ConfigListener {
     private Reloader r;
     private ResourceConfig rc;
     private ServerContext sc;
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
-    public RestConfigChangeListener(BaseServiceLocator habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
+    public RestConfigChangeListener(ServiceLocator habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
         this.r = reload;
         this.rc = rc;
         this.sc = sc;

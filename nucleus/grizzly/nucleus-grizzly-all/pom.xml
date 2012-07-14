@@ -99,7 +99,7 @@
                             org.glassfish.grizzly.*;version=${grizzly.version}
                         </Export-Package>
                         <Import-Package>*</Import-Package>
-                        <Include-Resource>META-INF/inhabitants/=target/classes/META-INF/inhabitants/</Include-Resource>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>
                     
@@ -145,6 +145,17 @@
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-config</artifactId>
+            <!-- grizzly was bringing in the following old hk2 jar that we don't want on the classpath -->
+            <exclusions>
+               <exclusion>
+                  <groupId>org.glassfish.hk2</groupId>
+                  <artifactId>config-types</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.glassfish.hk2</groupId>
+                  <artifactId>config-types</artifactId>
+               </exclusion>
+           </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.gmbal</groupId>

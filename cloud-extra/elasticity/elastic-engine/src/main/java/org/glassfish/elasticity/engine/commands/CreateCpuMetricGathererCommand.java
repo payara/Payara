@@ -51,7 +51,7 @@ import org.glassfish.elasticity.config.serverbeans.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -64,7 +64,7 @@ import java.util.logging.Logger;
  */
 @Service(name="create-cpu-metric-gatherer")
 @I18n("create.cpu.metric.gatherers")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateCpuMetricGathererCommand implements AdminCommand{
 
    @Inject

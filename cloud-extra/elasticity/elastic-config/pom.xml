@@ -51,7 +51,6 @@
 	</parent>
 
 	<artifactId>elastic-config</artifactId>
-	<packaging>hk2-jar</packaging>
 	<name>GlassFish Elasticity Config</name>
 
 	<developers>

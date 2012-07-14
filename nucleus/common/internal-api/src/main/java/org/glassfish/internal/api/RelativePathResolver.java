@@ -85,7 +85,7 @@ public class RelativePathResolver {
     private static MasterPassword masterPasswordHelper = null;
 
     static{
-        masterPasswordHelper = Globals.getDefaultHabitat().forContract(MasterPassword.class).get();
+        masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPassword.class);
     }
     
     protected synchronized static Logger getLogger() {

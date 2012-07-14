@@ -225,8 +225,8 @@ public class WebModuleContextConfig extends ContextConfig {
 
         context.setConfigured(false);
 
-        ComponentEnvManager namingMgr = services.forContract(
-            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class).get();
+        ComponentEnvManager namingMgr = services.getService(
+            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
         if (namingMgr != null) {
             try {
                 boolean webBundleContainsEjbs =
@@ -391,7 +391,7 @@ public class WebModuleContextConfig extends ContextConfig {
         }
 
         if (authenticator instanceof DigestAuthenticator) {
-            Config config = services.forContract(Config.class).named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
+            Config config = services.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
             SecurityService securityService = config.getSecurityService();
             String digestAlgorithm = null;
             if (securityService != null) {
@@ -422,8 +422,8 @@ public class WebModuleContextConfig extends ContextConfig {
     protected synchronized void stop() {
         
         super.stop();
-        ComponentEnvManager namingMgr = services.forContract(
-            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class).get();
+        ComponentEnvManager namingMgr = services.getService(
+            com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
         unbindFromComponentNamespace(namingMgr);
 
     }

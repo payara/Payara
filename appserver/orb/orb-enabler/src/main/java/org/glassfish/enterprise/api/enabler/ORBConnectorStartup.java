@@ -41,7 +41,7 @@
 package org.glassfish.enterprise.api.enabler;
 
 import org.glassfish.api.Startup;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;

@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.runtime;
 
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.spi.OsInterface;
 import javax.inject.Inject;
@@ -57,8 +57,10 @@ public class LocalUser implements VirtUser {
 
     String authMethod=""; // not sure we will ever need another value.
 
-    public static LocalUser myself(Injector injector) {
-        return injector.inject(new LocalUser());
+    public static LocalUser myself(ServiceLocator injector) {
+    	LocalUser retVal = new LocalUser();
+    	injector.inject(retVal);
+        return retVal;
     }
 
     private LocalUser() {

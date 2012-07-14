@@ -54,7 +54,7 @@ import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;
 
@@ -68,7 +68,7 @@ import javax.inject.Inject;
         CommandTarget.CLUSTERED_INSTANCE })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name="list-connector-resources")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.connector.resources")
 @RestEndpoints({

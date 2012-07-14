@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-jms-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console JMS Plugin Localization</name>
 
     <developers>

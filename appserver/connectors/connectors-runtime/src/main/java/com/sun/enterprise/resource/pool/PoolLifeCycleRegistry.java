@@ -47,7 +47,7 @@ import java.util.List;
 
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * Implementation of PoolLifeCycle to listen to events related to a 
@@ -58,7 +58,7 @@ import org.jvnet.hk2.component.Singleton;
  * 
  * @author Shalini M
  */
-@Scoped(Singleton.class)
+@Singleton
 public class PoolLifeCycleRegistry implements PoolLifeCycle {
 
     //List of listeners 

@@ -55,7 +55,7 @@ import com.sun.enterprise.ee.cms.core.Signal;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

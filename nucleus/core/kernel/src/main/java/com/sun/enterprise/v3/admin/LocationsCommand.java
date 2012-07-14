@@ -51,7 +51,7 @@ import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
 
@@ -65,7 +65,7 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
  * @author Jerome Dochez
  */
 @Service(name="__locations")
-@Scoped(Singleton.class)
+@Singleton
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("locations.command")
 @RestEndpoints({

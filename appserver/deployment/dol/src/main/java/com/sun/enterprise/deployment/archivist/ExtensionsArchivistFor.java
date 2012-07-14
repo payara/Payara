@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Index;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
+
+import org.glassfish.hk2.api.Metadata;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -54,13 +55,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * and this annotation must be placed on a class that extends
  * {@link com.sun.enterprise.deployment.archivist.ExtensionsArchivist}.
  */
-@Contract
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
+@Qualifier
 public @interface ExtensionsArchivistFor {
     /**
      * see {@link org.glassfish.api.container.Sniffer.getModuleType} and its
      * implementation classes for valid string values.
      */
-    @Index String value();
+    @Metadata(ArchivistFactory.EXTENSION_ARCHIVE_TYPE)
+    String value();
 }

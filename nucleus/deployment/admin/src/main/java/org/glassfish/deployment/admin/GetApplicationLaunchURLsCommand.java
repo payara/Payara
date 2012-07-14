@@ -53,7 +53,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.config.support.PropertyResolver;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.*;
@@ -71,7 +71,7 @@ import org.glassfish.api.admin.ParameterMap;
 
 @Service(name="_get-application-launch-urls")
 @ExecuteOn(value={RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Applications.class, opType= RestEndpoint.OpType.GET, path="_get-application-launch-urls", description="Get Urls for launch the application")

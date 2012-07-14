@@ -42,16 +42,19 @@ package com.sun.enterprise.admin.cli.optional;
 
 import java.io.File;
 import java.io.IOException;
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
-import com.sun.enterprise.admin.cli.*;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
+import com.sun.enterprise.admin.cli.CLIProcessExecutor;
 import com.sun.enterprise.universal.glassfish.GFLauncherUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.OS;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 /**
@@ -65,7 +68,7 @@ import java.util.Arrays;
  *  @author Bill Shannon
  */
 @Service(name = "start-database")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class StartDatabaseCommand extends DatabaseCommand {
     private final static String DATABASE_DIR_NAME = "databases";
 

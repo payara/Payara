@@ -42,9 +42,9 @@ package org.glassfish.persistence.ejb.entitybean.container;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerProvider;
@@ -54,13 +54,13 @@ import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.glassfish.hk2.api.PostConstruct;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
 
 @Service
 public final class EntityContainerProviderImpl implements PostConstruct, ContainerProvider {
-
+    
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 

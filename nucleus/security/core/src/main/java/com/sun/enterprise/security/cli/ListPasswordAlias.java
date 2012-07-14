@@ -50,7 +50,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.api.admin.*;
@@ -84,7 +84,7 @@ import javax.inject.Named;
  */
 
 @Service(name="list-password-aliases")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.password.alias")
 @ExecuteOn({RuntimeType.DAS})

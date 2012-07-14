@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>transaction-internal-api-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Transaction Service Internal API Localization</name>
 
     <build>

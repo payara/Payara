@@ -42,7 +42,7 @@ package org.glassfish.admin.rest.generator;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,15 +51,16 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.config.support.Create;
-import org.glassfish.config.support.Creates;
 import org.glassfish.config.support.Delete;
-import org.glassfish.config.support.Deletes;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigInjector;
 
 /**
  * @author Mitesh Meswani
@@ -126,6 +127,7 @@ public class CommandResourceMetaData {
         return customResources;
     }
 
+    @SuppressWarnings("unchecked")
     public static List<CommandResourceMetaData> getRestRedirectPointToBean(String beanName) {
         synchronized (restRedirects) {
             if (restRedirects.isEmpty()) {
@@ -133,10 +135,24 @@ public class CommandResourceMetaData {
 
                 processConfigBeans(habitat);
 
-                Iterator<Inhabitant<?>> iter = habitat.getInhabitantsByContract(AdminCommand.class.getName()).iterator();
-                while (iter.hasNext()) {
-                    Inhabitant<?> inhab = iter.next();
-                    final Class<? extends AdminCommand> clazz = (Class<? extends AdminCommand>) inhab.type();
+                List<ActiveDescriptor<?>> iter = habitat.getDescriptors(
+                        BuilderHelper.createContractFilter(AdminCommand.class.getName()));
+                for (ActiveDescriptor<?> ad : iter) {
+                    if (!(ad.getQualifiers().contains(RestEndpoints.class.getName()))) {
+                        continue;
+                    }
+                    
+                    if (!ad.isReified()) {
+                        try {
+                            habitat.reifyDescriptor(ad);
+                        }
+                        catch (MultiException me) {
+                            // If we can't see the command, forget it
+                            continue;
+                        }
+                    }
+                    
+                    final Class<? extends AdminCommand> clazz = (Class<? extends AdminCommand>) ad.getImplementationClass();
                     RestEndpoints endpoints = clazz.getAnnotation(RestEndpoints.class);
                     if (endpoints != null) {
                         RestEndpoint[] list = endpoints.value();
@@ -172,13 +188,24 @@ public class CommandResourceMetaData {
     }
 
     private static void processConfigBeans(Habitat habitat) {
-        Iterator<String> types = habitat.getAllTypes();
-        String t;
-        while (types.hasNext()) {
-            t = types.next();
-            if (t != null) {
+    	
+    	ServiceLocator serviceLocator = (ServiceLocator) habitat;
+
+		List<ActiveDescriptor<?>> allDescriptors = serviceLocator.getDescriptors(
+		        BuilderHelper.createContractFilter(ConfigInjector.class.getName()));
+		
+		HashSet<String> alreadyChecked = new HashSet<String>();
+
+        for (ActiveDescriptor<?> ad : allDescriptors){
+            List<String> targets = ad.getMetadata().get("target");
+            if (targets == null) continue;
+            
+            for (String t : targets) {
+                if (alreadyChecked.contains(t)) continue;
+                alreadyChecked.add(t);
+                
                 try {
-                    Class tclass = Class.forName(t);
+                    Class<?> tclass = Class.forName(t);
                     if (tclass != null && ConfigBeanProxy.class.isAssignableFrom(tclass)) {
                         String beanName = tclass.getSimpleName();
                         for (Method m : tclass.getMethods()) {
@@ -186,16 +213,6 @@ public class CommandResourceMetaData {
                                 addCreateMethod(beanName, m, m.getAnnotation(Create.class));
                             } else if (m.isAnnotationPresent(Delete.class)) {
                                 addDeleteMethod(beanName, m, m.getAnnotation(Delete.class));
-                            } else if (m.isAnnotationPresent(Creates.class)) {
-                                Creates creates = m.getAnnotation(Creates.class);
-                                for (Create c : creates.value()) {
-                                    addCreateMethod(beanName, m, c);
-                                }
-                            } else if (m.isAnnotationPresent(Deletes.class)) {
-                                Deletes deletes = m.getAnnotation(Deletes.class);
-                                for (Delete d : deletes.value()) {
-                                    addDeleteMethod(beanName, m, d);
-                                }
                             }
                         }
                     }

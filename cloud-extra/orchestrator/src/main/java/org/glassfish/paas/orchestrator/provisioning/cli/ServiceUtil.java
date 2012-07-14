@@ -43,7 +43,6 @@ package org.glassfish.paas.orchestrator.provisioning.cli;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.ServiceOrchestratorImpl;
 import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.config.Service;
@@ -56,6 +55,8 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.TemplateIdentifier;
 import org.glassfish.paas.orchestrator.service.spi.*;
 import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -73,7 +74,7 @@ import java.util.logging.Logger;
 
 
 @org.jvnet.hk2.annotations.Service
-@Scoped(Singleton.class)
+@Singleton
 public class ServiceUtil {
 
     private static ExecutorService threadPool = Executors.newCachedThreadPool();

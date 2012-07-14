@@ -59,8 +59,8 @@ import javax.ws.rs.core.MediaType;
 
 import javax.security.auth.login.LoginException;
 
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
 
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestConfigChangeListener;
@@ -81,6 +81,9 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractModule;
@@ -128,7 +131,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     @Inject
     private RestSessionManager sessionManager;
 
-    @Inject
+    @Inject @Optional
     private AdminAccessController adminAuthenticator;
 
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
@@ -174,9 +177,13 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     }
                 }
 
-                final Subject s = adminAuthenticator.loginAsAdmin(req);
-                AdminAccessController.Access access = adminAuthenticator.chooseAccess(s, req.getRemoteHost());
-                if (access.isOK()) {
+                AdminAccessController.Access access = null;
+                if (adminAuthenticator != null) {
+                    final Subject s = adminAuthenticator.loginAsAdmin(req);
+                    access = adminAuthenticator.chooseAccess(s, req.getRemoteHost());
+                }
+                
+                if (access == null || access.isOK()) {
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
                     if ((context != null) && (!"".equals(context)) && (adapter == null)) {
@@ -315,14 +322,29 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         rc.addSingletons(r);
         rc.addClasses(ReloadResource.class);
 
+        /**
+         * JRW JRW
+         *
+         */
         rc.addModules(getJsonModule(), new MultiPartModule(), new AbstractModule() {
             @Override
             protected void configure() {
-                bind(Reloader.class).toInstance(r);
-                bind(ServerContext.class).toInstance(sc);
-                bind(Habitat.class).toInstance(habitat);
-                bind(RestSessionManager.class).toInstance(habitat.getComponent(RestSessionManager.class));
+                AbstractActiveDescriptor<Reloader> descriptor = BuilderHelper.createConstantDescriptor(r);
+                descriptor.addContractType(Reloader.class);
+                bind(descriptor);
 
+                AbstractActiveDescriptor<ServerContext> scDescriptor = BuilderHelper.createConstantDescriptor(sc);
+                scDescriptor.addContractType(ServerContext.class);
+                bind(scDescriptor);
+
+                AbstractActiveDescriptor<Habitat> hDescriptor = BuilderHelper.createConstantDescriptor(habitat);
+                hDescriptor.addContractType(Habitat.class);
+                bind(hDescriptor);
+                
+                RestSessionManager rsm = habitat.getService(RestSessionManager.class);
+                AbstractActiveDescriptor<RestSessionManager> rmDescriptor =
+                        BuilderHelper.createConstantDescriptor(rsm);
+                bind(rmDescriptor);
             }
         });
 

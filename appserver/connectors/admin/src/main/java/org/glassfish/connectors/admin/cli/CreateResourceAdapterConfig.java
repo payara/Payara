@@ -55,7 +55,7 @@ import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -75,7 +75,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_ID
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name=RAC_CREATE_RAC_COMMAND)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.resource.adapter.config")
 public class CreateResourceAdapterConfig implements AdminCommand {
 

@@ -54,14 +54,14 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
  * @author kshitiz
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class BaseLBService {
 
     @Param(name = "servicename", primary = true)

@@ -41,7 +41,7 @@ package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.elasticity.config.serverbeans.AlertActions;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -54,7 +54,7 @@ import java.beans.PropertyVetoException;
  * TODO: Must change this into a real ConfigBean
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class JVMMemoryAlertConfig
     implements AlertConfig {
 

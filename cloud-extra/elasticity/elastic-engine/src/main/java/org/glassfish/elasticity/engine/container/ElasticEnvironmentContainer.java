@@ -51,8 +51,7 @@ import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticAlert;
 import org.glassfish.elasticity.engine.util.ElasticEngineThreadPool;
 import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.glassfish.hk2.scopes.PerLookup;
-import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -61,7 +60,7 @@ import org.jvnet.hk2.component.Habitat;
 import javax.inject.Inject;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ElasticEnvironmentContainer
     implements ElasticEnvironment {
     

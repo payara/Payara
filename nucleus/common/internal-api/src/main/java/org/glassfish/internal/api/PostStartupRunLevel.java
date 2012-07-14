@@ -46,7 +46,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.jvnet.hk2.annotations.RunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
 
 /**
  * The meta annotation representing the {@link PostStartup} RunLevel.

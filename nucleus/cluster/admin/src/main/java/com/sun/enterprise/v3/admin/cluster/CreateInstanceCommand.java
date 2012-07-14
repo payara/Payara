@@ -54,6 +54,8 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -71,7 +73,7 @@ import javax.inject.Inject;
  */
 @Service(name = "create-instance")
 @I18n("create.instance")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
@@ -86,7 +88,7 @@ public class CreateInstanceCommand implements AdminCommand {
     @Inject
     BaseServiceLocator habitat;
     @Inject
-    Node[] nodeList;
+    IterableProvider<Node> nodeList;
     @Inject
     private Nodes nodes;
     @Inject

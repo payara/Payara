@@ -42,7 +42,8 @@ package org.glassfish.config.support;
 
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ExecuteOn;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.config.GenerateServiceFromMethod;
+import org.jvnet.hk2.config.GeneratedServiceName;
 import org.glassfish.api.admin.AdminCommand;
 
 import java.lang.annotation.ElementType;
@@ -130,12 +131,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Jerome Dochez
  */
-@Contract
 @Retention(RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-@InhabitantAnnotation("default")
-@ContractProvided(AdminCommand.class)
-@ServiceProvider(GenericCreateCommand.class)
+@Target({ ElementType.METHOD, ElementType.TYPE})
+@GenerateServiceFromMethod(implementation="org.glassfish.config.support.GenericCreateCommand",
+                           advertisedContracts="org.glassfish.api.admin.AdminCommand")
 public @interface Create {
 
     /**
@@ -143,7 +142,7 @@ public @interface Create {
      *
      * @return the command name as the user types it.
      */
-    @Index
+    @GeneratedServiceName
     String value();
 
     /**

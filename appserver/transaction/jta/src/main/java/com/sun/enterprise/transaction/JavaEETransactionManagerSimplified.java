@@ -68,15 +68,17 @@ import com.sun.enterprise.util.i18n.StringManager;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.Rank;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.ResourceHandler;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.common.util.Constants;
 
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -93,7 +95,8 @@ import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
  * @author Marina Vatkina
  */
 @Service
-@ContractProvided(TransactionManager.class)
+@ContractsProvided({TransactionManager.class, JavaEETransactionManager.class})
+@Rank(Constants.DEFAULT_IMPLEMENTATION_RANK) // This should be the default impl if it is available
 public class JavaEETransactionManagerSimplified 
         implements JavaEETransactionManager, PostConstruct {
 

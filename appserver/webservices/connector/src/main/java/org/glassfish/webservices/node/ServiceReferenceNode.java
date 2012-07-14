@@ -58,7 +58,7 @@ import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.w3c.dom.Node;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.glassfish.internal.api.Globals;
@@ -77,7 +77,7 @@ import java.util.logging.Level;
  */
 
 @Service(name="service-ref")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ServiceReferenceNode extends DisplayableComponentNode implements JndiEnvRefNode<ServiceReferenceDescriptor> {
 
     

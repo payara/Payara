@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-model</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>model module for cmp</name>
 
     <developers>

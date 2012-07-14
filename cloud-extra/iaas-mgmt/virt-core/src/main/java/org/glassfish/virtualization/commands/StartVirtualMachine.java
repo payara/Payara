@@ -46,14 +46,14 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Start a stopped virtual machine.
  * @author Jerome Dochez
  */
 @Service(name="start-vm")
-@Scoped(PerLookup.class)
+@PerLookup
 public class StartVirtualMachine extends VirtualMachineMgt implements AdminCommand {
     @Inject
     VirtualMachineLifecycle vmLifecycle;

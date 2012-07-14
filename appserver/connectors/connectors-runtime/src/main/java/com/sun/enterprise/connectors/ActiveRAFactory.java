@@ -54,7 +54,7 @@ import java.util.Collection;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  * @author Binod P.G
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ActiveRAFactory {
     private static Logger _logger = LogDomains.getLogger(ActiveRAFactory.class,LogDomains.RSR_LOGGER);
 

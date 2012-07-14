@@ -46,7 +46,7 @@ import org.glassfish.virtualization.spi.Disk;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import java.io.IOException;
  * Abstraction for a virtual disk, based on OS scripts for implementation
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ScriptBasedDisk implements Disk {
 
     @Inject

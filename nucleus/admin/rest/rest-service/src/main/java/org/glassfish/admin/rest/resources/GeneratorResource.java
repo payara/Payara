@@ -52,7 +52,7 @@ import javax.ws.rs.core.Context;
 
 import org.glassfish.admin.rest.generator.ResourcesGenerator;
 import org.glassfish.admin.rest.generator.TextResourcesGenerator;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
@@ -67,7 +67,7 @@ public class GeneratorResource {
     private static final String DEFAULT_OUTPUT_DIR = System.getProperty("user.home") +
             "/tmp/glassfish";
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     @GET
     @Produces({"text/plain"})
@@ -78,7 +78,7 @@ public class GeneratorResource {
         String retVal = "Code Generation done at : " + outputDir;
 
         try {
-            Domain entity = habitat.getComponent(Domain.class);
+            Domain entity = habitat.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;

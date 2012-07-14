@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import java.util.logging.Logger;
 import java.util.List;
 
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -69,7 +70,7 @@ import javax.inject.Inject;
  * @author Yamini K B
  */
 @Service(name = "disable-http-lb-server")
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

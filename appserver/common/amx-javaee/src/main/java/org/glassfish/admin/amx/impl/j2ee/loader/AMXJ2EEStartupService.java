@@ -82,8 +82,8 @@ import java.util.logging.Logger;
  */
 @Service
 public final class AMXJ2EEStartupService
-        implements org.jvnet.hk2.component.PostConstruct,
-        org.jvnet.hk2.component.PreDestroy,
+        implements org.glassfish.hk2.api.PostConstruct,
+        org.glassfish.hk2.api.PreDestroy,
         AMXLoader, ConfigListener {
 
     private static void debug(final String s) {

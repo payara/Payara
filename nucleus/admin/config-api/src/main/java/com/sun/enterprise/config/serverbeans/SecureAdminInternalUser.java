@@ -47,7 +47,7 @@ import org.glassfish.config.support.CreationDecorator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -98,7 +98,7 @@ public interface SecureAdminInternalUser extends Injectable, ConfigBeanProxy {
     void setPasswordAlias(String value);
     
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     public class CrDecorator implements CreationDecorator<SecureAdminInternalUser> {
 
         @Param(optional=false, primary=true)

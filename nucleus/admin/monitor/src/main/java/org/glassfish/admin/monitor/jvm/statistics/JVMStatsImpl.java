@@ -44,7 +44,7 @@ import java.util.*;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -73,7 +73,7 @@ import javax.inject.Named;
  */
 //public class JVMStatsImpl implements JVMStats, MonitorContract {
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class JVMStatsImpl implements MonitorContract {
 
     @Inject

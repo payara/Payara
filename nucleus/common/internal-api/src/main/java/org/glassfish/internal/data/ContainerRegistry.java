@@ -43,7 +43,7 @@ package org.glassfish.internal.data;
 import org.glassfish.api.container.Sniffer;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
@@ -55,7 +55,7 @@ import java.util.*;
  * @author Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ContainerRegistry {
 
     @Inject

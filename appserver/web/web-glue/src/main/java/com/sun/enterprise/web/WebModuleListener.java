@@ -309,7 +309,7 @@ final class WebModuleListener
         WebComponentInvocation inv = new WebComponentInvocation(webModule);
         try {
             invocationMgr.preInvoke(inv);
-            JCDIService jcdiService = defaultServices.forContract(JCDIService.class).get();
+            JCDIService jcdiService = defaultServices.getService(JCDIService.class);
             // JCDIService can be absent if weld integration is missing in the runtime, so check for null is needed.
             if (jcdiService != null && jcdiService.isCurrentModuleJCDIEnabled()) {
                 jcdiService.setELResolver(servletContext);

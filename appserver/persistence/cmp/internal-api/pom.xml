@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-internal-api</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>internal-api module for cmp</name>
 
     <developers>

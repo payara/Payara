@@ -58,7 +58,7 @@ import java.util.List;
 public class ContainerExtensionTest extends ConfigApiTest {
 
 
-    BaseServiceLocator habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
 
     @Override
     public String getFileName() {

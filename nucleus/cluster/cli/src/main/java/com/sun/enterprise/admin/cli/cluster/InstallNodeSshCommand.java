@@ -56,13 +56,13 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * @author Byron Nevins
  */
 @Service(name = "install-node-ssh")
-@Scoped(PerLookup.class)
+@PerLookup
 public class InstallNodeSshCommand extends InstallNodeBaseCommand {
     @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
     private String user;

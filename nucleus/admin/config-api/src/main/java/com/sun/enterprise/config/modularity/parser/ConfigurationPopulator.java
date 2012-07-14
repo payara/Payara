@@ -41,7 +41,7 @@
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
-import com.sun.enterprise.module.bootstrap.Populator;
+// import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -62,7 +62,7 @@ import java.util.logging.Logger;
  * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-public class ConfigurationPopulator implements Populator {
+public class ConfigurationPopulator /* implements Populator */ {
 
     private final static Logger LOG = Logger.getLogger(ConfigurationPopulator.class.getName());
     private final DomDocument doc;

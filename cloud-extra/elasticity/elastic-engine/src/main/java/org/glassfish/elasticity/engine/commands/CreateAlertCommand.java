@@ -46,6 +46,7 @@ import java.beans.PropertyVetoException;
 
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -66,7 +67,7 @@ import org.glassfish.api.admin.RestEndpoints;
  */
 @Service(name = "create-alert")
 @I18n("create.alert")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-alert", description = "Create alert") })
 public class CreateAlertCommand implements AdminCommand {

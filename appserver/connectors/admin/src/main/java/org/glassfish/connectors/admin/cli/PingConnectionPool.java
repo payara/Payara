@@ -52,7 +52,7 @@ import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
@@ -61,7 +61,7 @@ import javax.inject.Inject;
  * 
  */
 @Service(name="ping-connection-pool")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("ping.connection.pool")

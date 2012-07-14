@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>orb-enabler</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish ORB enabler implementation</name>
 
     <developers>
@@ -69,7 +69,7 @@
     <dependencies>
     	<dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>    
     	<dependency>
             <groupId>org.glassfish.main.common</groupId>

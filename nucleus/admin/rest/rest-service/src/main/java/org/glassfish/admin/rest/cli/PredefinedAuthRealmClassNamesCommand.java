@@ -48,7 +48,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.admin.*;
 
 import javax.inject.Inject;
@@ -59,7 +59,7 @@ import javax.inject.Inject;
  * @author ludovic Champenois
  */
 @Service(name = "__list-predefined-authrealm-classnames")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

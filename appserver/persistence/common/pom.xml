@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>persistence-common</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Common persistence code between JPA and CMP</name>
     
     <developers>

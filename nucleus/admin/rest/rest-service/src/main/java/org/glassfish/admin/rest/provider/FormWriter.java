@@ -64,7 +64,7 @@ import org.glassfish.hk2.Factory;
 @Provider
 public class FormWriter implements MessageBodyWriter<Dom> {
     @Context
-    protected Factory<UriInfo> uriInfo;
+    protected javax.inject.Provider<UriInfo> uriInfo;
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {

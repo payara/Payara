@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jdbc-admin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JDBC admin Localization</name>
 
     <build>

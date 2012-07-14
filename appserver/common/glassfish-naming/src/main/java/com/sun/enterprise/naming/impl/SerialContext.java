@@ -256,7 +256,13 @@ public class SerialContext implements Context {
         if( testMode ) {
             processType = ProcessType.Server;
         } else {
-            ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
+            ProcessEnvironment processEnv = services.getService(ProcessEnvironment.class);
+            if (processEnv == null) {
+                processEnv = services.create(ProcessEnvironment.class);
+                services.inject(processEnv);
+                services.postConstruct(processEnv);
+            }
+            
             processType = processEnv.getProcessType();
         }
 
@@ -299,7 +305,7 @@ public class SerialContext implements Context {
 
         orb = orbFromEnv;
         if (services != null) { // can happen in test mode
-            ServerContext sc = services.forContract(ServerContext.class).get();
+            ServerContext sc = services.getService(ServerContext.class);
             if (sc != null) {
                 commonCL = sc.getCommonClassLoader();
             }
@@ -339,7 +345,7 @@ public class SerialContext implements Context {
     }
 
     private ORB getORB() {
-        ORBLocator orbHelper = services.forContract(ORBLocator.class).get();
+        ORBLocator orbHelper = services.getService(ORBLocator.class);
         if (orb == null) {
             orb = orbHelper.getORB() ;
         }
@@ -439,7 +445,7 @@ public class SerialContext implements Context {
         // Before any lookup bind any NamedNamingObjectProxy
         // Skip if in plain Java SE client
         // TODO this should really be moved somewhere else
-        NamedNamingObjectManager.checkAndLoadProxies((BaseServiceLocator) services);
+        NamedNamingObjectManager.checkAndLoadProxies(services);
 
         /**
          * In case a user is creating an IC with env passed in constructor; env

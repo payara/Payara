@@ -51,7 +51,7 @@
     </parent>
     <artifactId>jaspic.provider.framework</artifactId>
     <name>JSR-196 Provider Framework Reference Implementation</name>
-    <packaging>hk2-jar</packaging>
+    
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>

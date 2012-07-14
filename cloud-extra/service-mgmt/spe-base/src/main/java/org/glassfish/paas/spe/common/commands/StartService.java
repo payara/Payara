@@ -54,7 +54,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * This is an additional command in order to be able to start a service manually.
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author bhavanishankar@java.net
  */
 @Service(name = "_start-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class StartService implements AdminCommand {
 

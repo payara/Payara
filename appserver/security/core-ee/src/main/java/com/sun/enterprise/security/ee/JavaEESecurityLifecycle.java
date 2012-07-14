@@ -50,15 +50,15 @@ import java.util.logging.Logger;
 import javax.security.auth.message.config.AuthConfigFactory;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 /**
  *
  * @author vbkumarjayanti
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, PostConstruct {
 
     private static final Logger _logger = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER);

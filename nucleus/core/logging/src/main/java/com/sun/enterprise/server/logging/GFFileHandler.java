@@ -50,15 +50,15 @@ import org.glassfish.api.logging.Task;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 import java.io.*;
 import java.text.FieldPosition;
@@ -80,8 +80,8 @@ import java.util.logging.*;
  * @AUTHOR: Carla Mott
  */
 @Service
-@Scoped(Singleton.class)
-@ContractProvided(java.util.logging.Handler.class)
+@Singleton
+@ContractsProvided({GFFileHandler.class, java.util.logging.Handler.class})
 public class GFFileHandler extends StreamHandler implements PostConstruct, PreDestroy {
 
 
@@ -93,9 +93,6 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
 
     @Inject @Optional
     Agent agent;
-
-    @Inject
-    Version version;
 
     // This is a OutputStream to keep track of number of bytes
     // written out to the stream
@@ -251,7 +248,7 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         };
         pump.setDaemon(true);
         pump.start();
-        LogRecord lr = new LogRecord(Level.INFO, "Running GlassFish Version: " + version.getFullVersion());
+        LogRecord lr = new LogRecord(Level.INFO, "Running GlassFish Version: " + Version.getFullVersion());
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(getClass().getName());
         EarlyLogHandler.earlyMessages.add(lr);

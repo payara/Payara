@@ -177,7 +177,7 @@ public class CompositeUtil {
 
     public static ParameterMap addToParameterMap(ParameterMap parameters, String basePath, Class<?> configBean, Object source) {
         String name;
-        Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultBaseServiceLocator());
+        Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultHabitat());
         for (Method cbMethod : configBean.getMethods()) {
             name = cbMethod.getName();
             if (name.startsWith("set")/* && (cbMethod.getAnnotation(Attribute.class) !=null)*/) {
@@ -219,7 +219,8 @@ public class CompositeUtil {
     }
 
     public static ActionReporter executeCommand(String command, ParameterMap parameters) {
-        RestActionReporter ar = ResourceUtil.runCommand(command, parameters, Globals.getDefaultBaseServiceLocator(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
+                Globals.getDefaultHabitat(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
             throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
                     entity(ar.getCombinedMessage()).

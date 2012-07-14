@@ -39,7 +39,7 @@
  */
 package org.glassfish.virtualization.virtmgt.impl;
 
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.IAAS;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
@@ -58,10 +58,10 @@ import java.util.Iterator;
 public class GroupsAccessImpl implements GroupsAccess {
 
     final IAAS groupMgt;
-    final Injector injector;
+    final ServiceLocator injector;
 
     @Inject
-    public GroupsAccessImpl(Injector injector, IAAS groupMgt) {
+    public GroupsAccessImpl(ServiceLocator injector, IAAS groupMgt) {
         this.injector = injector;
         this.groupMgt = groupMgt;
     }

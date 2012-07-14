@@ -53,7 +53,7 @@ import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.http.ajp.AjpAddOn;
 import org.glassfish.grizzly.http.server.AddOn;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 
@@ -63,7 +63,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author Alexey Stashok
  */
 @Service(name = "ajp")
-@ContractProvided(AddOn.class)
+@ContractsProvided(AddOn.class)
 public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Http> {
 
     protected static final Logger _logger = LogDomains.getLogger(

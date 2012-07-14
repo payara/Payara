@@ -64,7 +64,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Causes InstanceDeployCommand executions on the correct remote instances.
@@ -73,7 +73,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name="_postdeploy")
 @Supplemental(value="deploy", ifFailure=FailurePolicy.Warn)
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

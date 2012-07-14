@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>resources-connector-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connector (glue) module for resources infrastructure Localization</name>
 
     <build>

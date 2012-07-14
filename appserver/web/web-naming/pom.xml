@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-naming</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Web Container Naming Utilities</name>
 
     <developers>

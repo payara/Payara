@@ -58,7 +58,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +73,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  *
  */
 @Service(name="create-threadpool")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.threadpool")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})

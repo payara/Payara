@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>glassfish-osgi-console-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>OSGi Console Plugin for GlassFish Administration Console Localization</name>
 
     <build>

@@ -49,12 +49,11 @@ import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
 
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * This class is responsible for handling the XML configuration information
@@ -62,7 +61,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @ConfigurationDeploymentDescriptorFileFor(WarType.ARCHIVE_TYPE)
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     /**

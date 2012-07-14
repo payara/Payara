@@ -49,14 +49,14 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
  * @author Byron Nevins
  */
 @Service(name = "uninstall-node-ssh")
-@Scoped(PerLookup.class)
+@PerLookup
 public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
     @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")
     private String user;

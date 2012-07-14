@@ -54,7 +54,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -70,7 +70,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.ALL)
 @Service(name="create-javamail-resource")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.javamail.resource")
 public class CreateJavaMailResource implements AdminCommand {
 

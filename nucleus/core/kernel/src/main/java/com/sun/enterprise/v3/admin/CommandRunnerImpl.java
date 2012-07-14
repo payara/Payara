@@ -93,6 +93,8 @@ import java.text.MessageFormat;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Scope;
+import javax.inject.Singleton;
 import javax.validation.*;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
@@ -126,7 +128,7 @@ public class CommandRunnerImpl implements CommandRunner {
     private ServerEnvironment serverEnv;
     @Inject
     private ProcessEnvironment processEnv;
-    @org.jvnet.hk2.annotations.Inject
+    @Inject
     private InstanceStateService state;
     @Inject
     private AdminCommandLock adminLock;
@@ -228,6 +230,18 @@ public class CommandRunnerImpl implements CommandRunner {
             ActionReport report, Logger logger) {
         return getCommand(null, commandName, report, logger);
     }
+    
+    private static Class<? extends Annotation> getScope(Class<?> onMe) {
+        for (Annotation anno : onMe.getAnnotations()) {
+            if (anno.annotationType().isAnnotationPresent(Scope.class)) {
+                return anno.annotationType();
+            }
+        
+        }
+        
+        return null;
+    }
+
 
     /**
      * Obtain and return the command implementation defined by
@@ -276,8 +290,8 @@ public class CommandRunnerImpl implements CommandRunner {
             return null;
         }
 
-        Scoped scoped = command.getClass().getAnnotation(Scoped.class);
-        if (scoped == null) {
+        Class<? extends Annotation> myScope = getScope(command.getClass());
+        if (myScope == null) {
             String msg = adminStrings.getLocalString("adapter.command.noscope",
                     "Implementation for the command {0} exists in the "
                     + "system,\nbut it has no @Scoped annotation", commandName);
@@ -285,7 +299,7 @@ public class CommandRunnerImpl implements CommandRunner {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             LogHelper.getDefaultLogger().info(msg);
             command = null;
-        } else if (scoped.value() == Singleton.class) {
+        } else if (Singleton.class.equals(myScope)) {
             // check that there are no parameters for this command
             CommandModel model = getModel(command);
             if (model.getParameters().size() > 0) {

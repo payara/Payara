@@ -50,9 +50,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 
 /**
@@ -63,7 +63,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @ConfigurationDeploymentDescriptorFileFor(EjbContainerUtil.EJB_CONTAINER_NAME)
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class EjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     /**

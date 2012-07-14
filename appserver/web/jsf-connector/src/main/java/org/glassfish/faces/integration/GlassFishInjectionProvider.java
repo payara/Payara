@@ -98,10 +98,10 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
     public GlassFishInjectionProvider(ServletContext servletContext) {
         Habitat defaultServices = (Habitat)servletContext.getAttribute(
                 HABITAT_ATTRIBUTE);
-        compEnvManager = defaultServices.forContract(ComponentEnvManager.class).get();
-        invokeMgr = defaultServices.forContract(InvocationManager.class).get();
-        injectionManager = defaultServices.forContract(InjectionManager.class).get();
-        jcdiService = defaultServices.forContract(JCDIService.class).get();
+        compEnvManager = defaultServices.getService(ComponentEnvManager.class);
+        invokeMgr = defaultServices.getService(InvocationManager.class);
+        injectionManager = defaultServices.getService(InjectionManager.class);
+        jcdiService = defaultServices.getService(JCDIService.class);
         
     }
 

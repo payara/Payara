@@ -45,8 +45,13 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.PostStartup;
+import org.glassfish.internal.api.PostStartupRunLevel;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.api.ResourcesBinder;
@@ -55,14 +60,13 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
+
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.List;
@@ -74,11 +78,11 @@ import java.util.logging.Logger;
  *
  * @author Jagadish Ramu
  */
-@Scoped(Singleton.class)
-@Service(name = "ResourceManager") // this name is used in ApplicationLoaderService
-public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, ConfigListener {
+@RunLevel( value= PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@Service(name="ResourceManager") // this name is used in ApplicationLoaderService
+public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 
-    private static final Logger logger =
+  private static final Logger logger =
             LogDomains.getLogger(ResourceManager.class, LogDomains.RESOURCE_BUNDLE);
 
     private static LocalStringManagerImpl localStrings =
@@ -91,7 +95,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
     private BindableResourcesHelper bindableResourcesHelper;
 
     @Inject
-    private Provider<ResourceManagerLifecycleListener>[] resourceManagerLifecycleListenerProviders;
+    private IterableProvider<ResourceManagerLifecycleListener> resourceManagerLifecycleListenerProviders;
 
     @Inject
     private Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
@@ -117,8 +121,7 @@ public class ResourceManager implements PostStartup, PostConstruct, PreDestroy, 
     }
 
     private void notifyListeners(ResourceManagerLifecycleListener.EVENT event) {
-        for (int i = 0; i < resourceManagerLifecycleListenerProviders.length; i++) {
-            ResourceManagerLifecycleListener listener = resourceManagerLifecycleListenerProviders[i].get();
+        for (ResourceManagerLifecycleListener listener : resourceManagerLifecycleListenerProviders) {
             listener.resourceManagerLifecycleEvent(event);
         }
     }

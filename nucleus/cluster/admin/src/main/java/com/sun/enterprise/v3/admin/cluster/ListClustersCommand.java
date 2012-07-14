@@ -56,8 +56,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -76,7 +76,7 @@ import org.glassfish.api.admin.*;
  * @author Byron Nevins
  */
 @Service(name = "list-clusters")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.clusters.command")
 @RestEndpoints({

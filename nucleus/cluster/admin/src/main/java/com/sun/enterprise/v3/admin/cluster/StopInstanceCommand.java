@@ -65,6 +65,7 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
@@ -74,8 +75,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
@@ -90,7 +91,7 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
  * @author Byron Nevins
  */
 @Service(name = "stop-instance")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE) // allow stop-instance always
 @I18n("stop.instance.command")
 @ExecuteOn(RuntimeType.DAS)
@@ -114,7 +115,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     @Inject
     private ServerEnvironment env;
     @Inject
-    Node[] nodeList;
+    IterableProvider<Node> nodeList;
     @Inject
     private ModulesRegistry registry;
     @Param(optional = true, defaultValue = "true")

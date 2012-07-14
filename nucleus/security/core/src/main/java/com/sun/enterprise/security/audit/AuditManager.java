@@ -71,7 +71,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  *
@@ -79,7 +79,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author  Shing Wai Chan
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class AuditManager {
     static final String NAME = "name";
     static final String CLASSNAME = "classname";
@@ -122,8 +122,8 @@ public final class AuditManager {
      */
     public void loadAuditModules() {
         try {
-            SecurityService securityBean = serverContext.getDefaultServices().forContract(SecurityService.class)
-                    .named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
+            SecurityService securityBean = serverContext.getDefaultServices().getService(SecurityService.class,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
             
             assert(securityBean != null);
             // @todo will be removed to incorporate the new structure.

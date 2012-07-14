@@ -58,15 +58,15 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 /**
  *
  * @author PRASHANTH ABBAGANI
  */
 @Service(name = "web")
-@Scoped(Singleton.class)
+@Singleton
 public class WebStatsProviderBootstrap implements PostConstruct {
 
     private static final Logger logger = LogDomains.getLogger(
@@ -75,7 +75,7 @@ public class WebStatsProviderBootstrap implements PostConstruct {
     private static final String NODE_SEPARATOR = "/";
 
     @Inject
-    private static Domain domain;
+    private Domain domain;
 
     // Map of apps and its StatsProvider list
     private ConcurrentMap<String, ConcurrentMap<String, Queue<Object>>> vsNameToStatsProviderMap =

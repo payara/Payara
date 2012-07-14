@@ -46,6 +46,7 @@ import java.beans.PropertyVetoException;
 
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -63,7 +64,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "_delete-elastic-service")
 @I18n("delete.ealastic.service")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 public class DeleteElasticServiceCommand implements AdminCommand {
 

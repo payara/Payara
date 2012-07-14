@@ -56,6 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.ObjectAnalyzer;
@@ -68,7 +69,7 @@ import com.sun.enterprise.admin.servermgmt.cli.StartServerHelper;
  */
 @Service(name = "start-local-instance")
 @ExecuteOn(RuntimeType.DAS)
-@Scoped(PerLookup.class)
+@PerLookup
 public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                                         implements StartServerCommand {
     @Param(optional = true, shortName = "v", defaultValue = "false")

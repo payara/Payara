@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-ejb-lite-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console EJB Local (Lite) Plugin Localization</name>
     <description>EJB Local (Lite) plugin bundle for GlassFish V3 Admin Console Localization</description>
 

@@ -49,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Dom;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -71,7 +71,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  * Time: 1:27:53 AM
  */
 @Service(name="list")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class ListCommand extends V2DottedNameSupport implements AdminCommand {
 

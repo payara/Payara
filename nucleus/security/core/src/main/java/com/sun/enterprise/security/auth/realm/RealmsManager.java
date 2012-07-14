@@ -65,7 +65,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -73,7 +73,7 @@ import org.jvnet.hk2.config.types.Property;
  * @author kumar.jayanti
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class RealmsManager {
     //per domain list of loaded Realms
     //Wanted to get rid of Hashtable but the API exporting  Enumeration<String> is preventing

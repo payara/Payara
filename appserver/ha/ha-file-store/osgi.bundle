@@ -47,7 +47,8 @@ Import-Package: \
                         org.glassfish.ha.store.annotations, \
                         org.glassfish.ha.store.api, \
                         org.glassfish.ha.store.criteria, \
-                        org.glassfish.ha.store.spi
+                        org.glassfish.ha.store.spi, \
+                        org.jvnet.hk2.annotations
 
 Bundle-SymbolicName: \
                         ${project.groupId}.${project.artifactId}

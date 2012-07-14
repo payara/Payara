@@ -52,7 +52,7 @@ import javax.inject.Singleton;
 
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;

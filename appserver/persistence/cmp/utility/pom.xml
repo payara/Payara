@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>cmp-utility</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>utility module for cmp</name>
     
     <developers>

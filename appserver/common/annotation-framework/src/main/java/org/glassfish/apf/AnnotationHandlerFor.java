@@ -41,8 +41,6 @@
 
 package org.glassfish.apf;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Index;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.annotation.Annotation;
@@ -58,9 +56,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author sanjeeb.sahoo@oracle.com
  */
-@Contract
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
 public @interface AnnotationHandlerFor {
-    @Index Class<? extends Annotation> value();
+    Class<? extends Annotation> value();
 }

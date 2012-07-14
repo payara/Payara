@@ -56,7 +56,7 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -85,7 +85,7 @@ import java.util.Properties;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @Service(name = "set-log-levels")
 @CommandLock(CommandLock.LockType.NONE)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("set.log.levels")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

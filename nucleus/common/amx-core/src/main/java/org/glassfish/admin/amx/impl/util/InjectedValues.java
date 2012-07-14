@@ -102,7 +102,7 @@ public class InjectedValues {
     }
 
     public static InjectedValues getInstance() {
-        return getDefaultServices().byType(InjectedValues.class).get();
+        return getDefaultServices().getService(InjectedValues.class);
     }
 
     public InjectedValues() {

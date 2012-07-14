@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>registration-impl-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Registration Impl Localization</name>
 
     <build>

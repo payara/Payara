@@ -62,7 +62,7 @@ import javax.management.AttributeList;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.*;
  *
  */
 @Service(name = "create-jmsdest")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})

@@ -63,7 +63,7 @@ import org.glassfish.webservices.SecurityService;
 import org.glassfish.webservices.WebServiceContextImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import com.sun.enterprise.security.SecurityContext;
 import java.security.Principal;
@@ -93,7 +93,7 @@ import javax.xml.soap.SOAPMessage;
  * @author Kumar
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class SecurityServiceImpl implements SecurityService {
     
     @Inject

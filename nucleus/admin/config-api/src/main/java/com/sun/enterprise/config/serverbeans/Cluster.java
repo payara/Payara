@@ -59,7 +59,7 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
@@ -550,7 +550,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class Decorator implements CreationDecorator<Cluster> {
 
         @Param
@@ -823,7 +823,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class DeleteDecorator implements DeletionDecorator<Clusters, Cluster> {
 
         @Param(name="nodeagent", optional=true,obsolete=true)

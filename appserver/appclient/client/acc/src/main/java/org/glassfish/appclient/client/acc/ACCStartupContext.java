@@ -48,7 +48,7 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * Start-up context for the ACC.  Note that this context is used also for
@@ -57,7 +57,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author tjquinn
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ACCStartupContext extends StartupContext {
 
     private static final String DERBY_ROOT_PROPERTY = "AS_DERBY_INSTALL";

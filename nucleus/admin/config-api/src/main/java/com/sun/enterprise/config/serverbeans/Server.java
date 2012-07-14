@@ -61,7 +61,7 @@ import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstrain
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
@@ -458,7 +458,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class CreateDecorator implements CreationDecorator<Server> {
 
         @Param(name = PARAM_CLUSTER, optional = true)
@@ -781,7 +781,7 @@ public interface Server extends ConfigBeanProxy, Injectable, PropertyBag, Named,
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class DeleteDecorator implements DeletionDecorator<Servers, Server> {
 
         @Inject

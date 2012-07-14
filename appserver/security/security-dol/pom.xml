@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>security-dol</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Security DOL Integration</name>
     <developers>
         <developer>
@@ -84,7 +84,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
 
                <dependency>

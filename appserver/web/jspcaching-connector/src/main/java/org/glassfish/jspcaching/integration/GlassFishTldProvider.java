@@ -53,8 +53,8 @@ import org.glassfish.web.config.serverbeans.WebContainer;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.enterprise.module.Module;
@@ -67,7 +67,7 @@ import com.sun.appserv.web.taglibs.cache.CacheTag;
  */
 
 @Service(name="jspCachingTld")
-@Scoped(Singleton.class)
+@Singleton
 public class GlassFishTldProvider
         implements TldProvider, PostConstruct {
 
@@ -114,8 +114,8 @@ public class GlassFishTldProvider
         /*
          * Check whether JSP caching has been enabled
          */        
-        Config cfg = serverContext.getDefaultServices().forContract(
-            Config.class).named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
+        Config cfg = serverContext.getDefaultServices().getService(
+            Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         WebContainer webContainer = cfg.getExtensionByType(WebContainer.class);
         if (webContainer == null) {
             return;

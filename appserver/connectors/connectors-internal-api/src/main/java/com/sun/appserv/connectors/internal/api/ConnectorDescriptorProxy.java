@@ -43,7 +43,7 @@ package com.sun.appserv.connectors.internal.api;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -55,7 +55,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 
 public class ConnectorDescriptorProxy implements NamingObjectProxy.InitializationNamingObjectProxy{
     @Inject

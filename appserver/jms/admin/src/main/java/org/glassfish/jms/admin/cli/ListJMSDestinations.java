@@ -68,7 +68,7 @@ import javax.management.ObjectName;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;
 
@@ -77,7 +77,7 @@ import org.glassfish.api.admin.*;
  *
  */
 @Service(name="list-jmsdest")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jms.dests")
 @ExecuteOn({RuntimeType.DAS})

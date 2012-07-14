@@ -48,11 +48,11 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -79,8 +79,8 @@ import java.util.logging.Logger;
  */
 
 @Service()
-@Scoped(PerLookup.class)
-@ContractProvided(Deployer.class) // bcos Deployer interface can't depend on HK2, we need ContractProvided here.
+@PerLookup
+@ContractsProvided(Deployer.class) // bcos Deployer interface can't depend on HK2, we need ContractProvided here.
 public class DeployerImpl implements Deployer {
 
     private static final Logger logger =

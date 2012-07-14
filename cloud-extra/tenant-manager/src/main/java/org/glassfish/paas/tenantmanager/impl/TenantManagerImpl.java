@@ -50,12 +50,17 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.paas.admin.CloudServices;
 import org.glassfish.paas.tenantmanager.config.TenantManagerConfig;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
@@ -288,30 +293,10 @@ public class TenantManagerImpl implements TenantManagerEx {
         // "rain dance" based on com.sun.enterprise.module.bootstrap.Main.createHabitat
         // own SingleModulesRegistry is not enough for multi-modules project, so
         // "clone" parent habitat, but set modulesRegistry for DomainXml beforehand. 
-        Habitat habitat = modulesRegistry.newHabitat();
-        InhabitantsParser parser = new InhabitantsParser(habitat); 
-        habitat.add(new ExistingSingletonInhabitant<ModulesRegistry>(ModulesRegistry.class, modulesRegistry));
+        Habitat habitat = new Habitat();
+        
         habitat.add(new ExistingSingletonInhabitant<StartupContext>(StartupContext.class, startupContext));
-        final ClassLoader oldCL = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-                return cl;
-            }
-        });
-        try {
-            // initialize habitat!
-            habitat = modulesRegistry.createHabitat("default", parser);
-        } finally {
-            AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                @Override
-                public Object run() {
-                    Thread.currentThread().setContextClassLoader(oldCL);
-                    return null;
-                }
-            });
-        }
+
         populate(habitat, name);
         // caution, transactions here must come from newly created habitat
         // see TenantDocument.save() instead
@@ -368,9 +353,6 @@ public class TenantManagerImpl implements TenantManagerEx {
 
     @Inject
     private Logger logger;
-
-    @Inject
-    private ModulesRegistry modulesRegistry;
 
     @Inject
     private StartupContext startupContext;

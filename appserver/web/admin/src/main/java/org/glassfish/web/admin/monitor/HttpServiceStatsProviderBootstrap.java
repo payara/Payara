@@ -58,8 +58,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigurationException;
 
 
@@ -68,7 +68,7 @@ import org.jvnet.hk2.config.ConfigurationException;
  * @author PRASHANTH ABBAGANI
  */
 @Service(name = "http-service")
-@Scoped(Singleton.class)
+@Singleton
 public class HttpServiceStatsProviderBootstrap implements PostConstruct {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

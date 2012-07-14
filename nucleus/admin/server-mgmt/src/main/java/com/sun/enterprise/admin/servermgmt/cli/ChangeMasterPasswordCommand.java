@@ -48,7 +48,7 @@ import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -80,7 +80,7 @@ import java.util.Arrays;
  * @author Bhakti Mehta
  */
 @Service(name = "change-master-password")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ChangeMasterPasswordCommand extends CLICommand {
 
     @Inject

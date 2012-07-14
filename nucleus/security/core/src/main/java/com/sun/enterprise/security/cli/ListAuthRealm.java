@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -80,7 +80,7 @@ import org.glassfish.config.support.TargetType;
  */
 
 @Service(name="list-auth-realms")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.auth.realm")
 @ExecuteOn({RuntimeType.DAS})

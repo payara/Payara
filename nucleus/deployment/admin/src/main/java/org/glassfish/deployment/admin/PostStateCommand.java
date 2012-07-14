@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
@@ -58,7 +58,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  * @author Tim Quinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class PostStateCommand implements AdminCommand {
     
     @Inject

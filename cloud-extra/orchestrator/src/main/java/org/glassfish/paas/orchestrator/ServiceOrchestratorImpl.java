@@ -55,7 +55,6 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
@@ -71,12 +70,13 @@ import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Singleton;
+
 import org.jvnet.hk2.component.Habitat;
 
 
 @org.jvnet.hk2.annotations.Service
-@Scoped(Singleton.class)
+@Singleton
 public class ServiceOrchestratorImpl implements ServiceOrchestrator {
 
     @Inject

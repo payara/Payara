@@ -98,7 +98,7 @@
                             org.glassfish.extras.grizzly.*;version=${project.version}
                         </Export-Package>
                         <Import-Package>*</Import-Package>
-                        <Include-Resource>META-INF/inhabitants/=target/classes/META-INF/inhabitants/</Include-Resource>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>
                     
@@ -141,6 +141,11 @@
             <groupId>org.glassfish.main.grizzly</groupId>
             <artifactId>glassfish-grizzly-container</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.glassfish.hk2</groupId>
+           <artifactId>hk2</artifactId>
+           <version>${hk2.version}</version>
         </dependency>
     </dependencies>
 </project>

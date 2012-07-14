@@ -42,10 +42,10 @@ package com.sun.enterprise.server.logging;
 
 
 import com.sun.appserv.server.util.Version;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,8 +66,8 @@ import java.util.logging.Formatter;
  * @author Naman Mehta
  */
 @Service()
-@ContractProvided(Formatter.class)
-@Scoped(PerLookup.class)
+@ContractsProvided(Formatter.class)
+@PerLookup
 public class ODLLogFormatter extends Formatter {
 
     // loggerResourceBundleTable caches references to all the ResourceBundle

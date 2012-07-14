@@ -49,13 +49,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.glassfish.flashlight.datatree.impl.AbstractTreeNode;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * @author Harpreet Singh
  */
 @Service(name = "counter")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CounterImpl extends AbstractTreeNode implements Counter {
 
     /** DEFAULT_UPPER_BOUND is maximum value Long can attain */

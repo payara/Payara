@@ -40,30 +40,31 @@
 
 package org.glassfish.virtualization.libvirt.commands;
 
-import com.sun.enterprise.config.serverbeans.Domain;
+import java.beans.PropertyVetoException;
+
+import javax.inject.Inject;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.libvirt.config.LibvirtVirtualization;
 import org.glassfish.virtualization.util.RuntimeContext;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.beans.PropertyVetoException;
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
  * Creates the default libvirt virtualization configuration
  * @author Jerome Dochez
  */
 @Service(name="create-ims-config-libvirt")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateLibVirtVirtualization implements AdminCommand {
 
     @Param(optional=true, defaultValue = "/usr/bin/kvm")

@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jsr109-impl-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JSR-109 implementation to deploy Metro Localization</name>
 
     <build>

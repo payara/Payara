@@ -41,7 +41,6 @@
 package org.glassfish.virtualization.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -55,7 +54,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import javax.xml.stream.XMLStreamReader;
@@ -71,7 +70,7 @@ import java.util.logging.Logger;
  * @author Jerome Dochez
  */
 @Service(name="create-ims-config-native")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateNativeIMSConfig implements AdminCommand {
 
     @Inject

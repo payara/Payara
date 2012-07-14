@@ -63,7 +63,7 @@ import org.glassfish.api.admin.RuntimeType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 
 /**
@@ -107,7 +107,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Tim Quinn
  */
 @Service(name = "enable-secure-admin")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("enable.secure.admin.command")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @RestEndpoints({

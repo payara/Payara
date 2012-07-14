@@ -62,7 +62,6 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.api.ActionReport;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
@@ -73,19 +72,17 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-import javax.ejb.EJBException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.Synchronization;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,7 +92,6 @@ import java.util.logging.Logger;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.io.File;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -251,8 +247,8 @@ public class EjbContainerUtilImpl
             // and the stack trace to know how did we get here.
 
             // Create the instance first to access the logger.
-            _me = Globals.getDefaultHabitat().byType(
-                    EjbContainerUtilImpl.class).get();
+            _me = Globals.getDefaultHabitat().getService(
+                    EjbContainerUtilImpl.class);
             _me.getLogger().log(Level.WARNING, 
                     "Internal error: EJBContainerUtilImpl was null",
                     new Throwable());

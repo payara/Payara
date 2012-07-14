@@ -55,6 +55,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
@@ -64,7 +65,7 @@ import javax.inject.Inject;
  * @author Yamini K B
  */
 @Service(name = "enable-http-lb-application")
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

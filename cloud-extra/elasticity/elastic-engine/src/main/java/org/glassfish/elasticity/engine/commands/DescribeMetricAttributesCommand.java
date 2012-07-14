@@ -51,11 +51,12 @@ import org.glassfish.elasticity.metric.TabularMetricAttribute;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.logging.Logger;
 /**
@@ -65,11 +66,11 @@ import java.util.logging.Logger;
  * */
  @Service(name="describe-metric-attributes")
 @I18n("describe.metric.attributes")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DescribeMetricAttributesCommand implements AdminCommand{
 
     @Inject
-    AbstractMetricGatherer[] metricGatherers;
+    IterableProvider<AbstractMetricGatherer> metricGatherers;
 
     @Inject
     Habitat services;

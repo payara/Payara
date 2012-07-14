@@ -53,7 +53,7 @@ import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +64,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 
 @Service(name="_list-resources")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

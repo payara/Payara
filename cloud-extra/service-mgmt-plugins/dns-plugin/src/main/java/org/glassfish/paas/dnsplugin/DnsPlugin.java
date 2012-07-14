@@ -64,7 +64,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.paas.dnsplugin.logger.DnsPluginLogger;
 import org.glassfish.paas.orchestrator.service.DnsServiceType;
@@ -77,7 +77,7 @@ import org.glassfish.paas.orchestrator.service.spi.Service;
  * 
  * @author Kshitiz Saxena
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @org.jvnet.hk2.annotations.Service
 public class DnsPlugin implements ServicePlugin {
 

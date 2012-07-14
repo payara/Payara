@@ -52,7 +52,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.*;
 
@@ -73,7 +73,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "_gms-announce-before-stop-cluster-command")
 @Supplemental(value = "stop-cluster", on = Supplemental.Timing.Before, ifFailure = FailurePolicy.Warn)
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST, 

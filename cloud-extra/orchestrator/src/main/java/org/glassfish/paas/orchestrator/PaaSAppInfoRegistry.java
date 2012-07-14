@@ -40,7 +40,6 @@
 
 package org.glassfish.paas.orchestrator;
 
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceReference;
@@ -48,14 +47,15 @@ import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
-import org.jvnet.hk2.annotations.Scoped;
 
 import java.util.*;
+
+import javax.inject.Singleton;
 
 /**
  * @author Jagadish Ramu
  */
-@Scoped(Singleton.class)
+@Singleton
 @org.jvnet.hk2.annotations.Service
 public class PaaSAppInfoRegistry {
 

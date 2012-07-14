@@ -45,7 +45,7 @@ import org.glassfish.paas.dbspecommon.DatabaseSPEBase;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -57,7 +57,7 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  * @author Shalini M
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @Service
 public class DerbyPlugin extends DatabaseSPEBase {
 

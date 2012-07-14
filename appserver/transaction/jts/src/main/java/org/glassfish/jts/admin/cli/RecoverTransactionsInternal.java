@@ -51,7 +51,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
 import com.sun.jts.CosTransactions.Configuration;
@@ -61,7 +61,7 @@ import java.util.logging.Level;
 @Service(name = "_recover-transactions-internal")
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
 @ExecuteOn(RuntimeType.INSTANCE)
-@Scoped(PerLookup.class)
+@PerLookup
 public class RecoverTransactionsInternal extends RecoverTransactionsBase implements AdminCommand {
 
     @Param(name="target", optional = false)

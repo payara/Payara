@@ -118,7 +118,7 @@ public class CSIv2SSLTaggedComponentHandlerImpl
             IIOPSSLUtil sslUtil = null;
             if (Globals.getDefaultHabitat() != null) {
                 sslUtil =
-                    Globals.getDefaultHabitat().forContract(IIOPSSLUtil.class).get();
+                    Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
                 return sslUtil.createSSLTaggedComponent(iorInfo, socketInfos);
             } else {
                 return null;
@@ -148,8 +148,8 @@ public class CSIv2SSLTaggedComponentHandlerImpl
 
             IIOPSSLUtil sslUtil = null;
             if (Globals.getDefaultHabitat() != null) {
-                sslUtil = Globals.getDefaultHabitat().forContract(
-                    IIOPSSLUtil.class).get();
+                sslUtil = Globals.getDefaultHabitat().getService(
+                    IIOPSSLUtil.class);
                 socketInfo = (List<SocketInfo>)sslUtil.getSSLPortsAsSocketInfo(
                     ior);
             }

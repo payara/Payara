@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -82,7 +82,7 @@ import org.glassfish.config.support.TargetType;
  * @author Nandini Ektare
  */
 @Service(name="delete-audit-module")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.audit.module")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})

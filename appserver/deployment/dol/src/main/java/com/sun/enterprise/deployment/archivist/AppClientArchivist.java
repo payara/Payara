@@ -55,7 +55,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ import java.util.logging.Level;
  * @author Sheetal Vartak
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 //TODO change to CarType.ARCHIVE_TYPE once moved to appclient module
 @ArchivistFor("car")
 public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {

@@ -53,6 +53,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.util.net.NetUtils;
 
@@ -68,7 +70,7 @@ import com.sun.enterprise.util.net.NetUtils;
  *
  */
 @Service(name = "_create-instance-filesystem")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateLocalInstanceFilesystemCommand extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true)

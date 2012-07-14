@@ -67,7 +67,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.logging.Level;
@@ -90,7 +90,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 @Service(name="enable")
 @I18n("enable.command")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,

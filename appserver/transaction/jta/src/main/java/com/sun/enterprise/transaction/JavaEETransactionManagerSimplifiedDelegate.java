@@ -62,7 +62,7 @@ import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.util.i18n.StringManager;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Inject;
 
 /**

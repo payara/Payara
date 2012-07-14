@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>web-cli-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Web module command line interface Localization</name>
 
     <build>

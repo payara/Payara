@@ -48,7 +48,7 @@ import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -72,7 +72,7 @@ import com.sun.enterprise.connectors.service.ConnectorAdminServicesFactory;
  * @author shalini
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class JdbcAdminServiceImpl extends ConnectorService {
 
     private ConnectorConnectionPoolAdminServiceImpl ccPoolAdmService;

@@ -53,7 +53,7 @@ import org.glassfish.hk2.api.Proxiable;
  */
 @Retention(RUNTIME)
 @Scope
-@Proxiable
+// @Proxiable MUST be added back in later once we understand why cglib is having problems
 @Target({ TYPE, METHOD })
 public @interface SecurityScope {
 }

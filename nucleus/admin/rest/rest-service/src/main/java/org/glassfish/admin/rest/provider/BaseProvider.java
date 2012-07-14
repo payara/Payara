@@ -44,7 +44,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.RestModel;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.admin.rest.RestConfig;
 
 import java.lang.reflect.InvocationTargetException;
@@ -70,6 +69,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.glassfish.hk2.Factory;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
 
@@ -83,13 +83,13 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     public static final String JSONP_CALLBACK = "jsoncallback";
 
     @Context
-    protected Factory<UriInfo> uriInfo;
+    protected javax.inject.Provider<UriInfo> uriInfo;
 
     @Context
-    protected Factory<HttpHeaders> requestHeaders;
+    protected javax.inject.Provider<HttpHeaders> requestHeaders;
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     protected Class desiredType;
 

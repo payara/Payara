@@ -45,11 +45,11 @@ import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 @Service
 @ResourceDeployerInfo(WorkSecurityMap.class)
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorWorkSecurityMapDeployer  extends AbstractConnectorResourceDeployer implements ResourceDeployer {
 
     public synchronized void deployResource(Object resource, String applicationName, String moduleName)

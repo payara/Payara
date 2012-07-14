@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-embed-impl</artifactId>
-    <packaging>hk2-jar</packaging>    
+        
     <name>GlassFish Web container Embedded Implementation</name>
 
     <developers>

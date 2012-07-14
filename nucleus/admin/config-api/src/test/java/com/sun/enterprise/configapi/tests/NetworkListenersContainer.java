@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 
 import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -60,6 +61,7 @@ import javax.inject.Inject;
  * Date: May 13, 2008
  * Time: 11:55:01 AM
  */
+@Service
 public class NetworkListenersContainer implements ConfigListener {
 
     @Inject

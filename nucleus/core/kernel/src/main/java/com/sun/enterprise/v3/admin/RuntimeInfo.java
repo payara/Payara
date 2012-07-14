@@ -71,7 +71,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 
@@ -81,7 +81,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
  * @author Ludovic Champenois
  */
 @Service(name = "_get-runtime-info")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})

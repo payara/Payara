@@ -40,14 +40,13 @@
 
 package org.glassfish.paas.dnsplugin;
 
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Singleton;
 
 @org.jvnet.hk2.annotations.Service
-@Scoped(Singleton.class)
+@Singleton
 public class DnsServiceUtil {
 
     @Inject

@@ -57,7 +57,7 @@ public class TransactionServicesImpl implements TransactionServices {
     private JavaEETransactionManager transactionManager = null;
 
     public TransactionServicesImpl(Habitat services) {
-        transactionManager = services.forContract(JavaEETransactionManager.class).get();
+        transactionManager = services.getService(JavaEETransactionManager.class);
         if (transactionManager == null) {
             throw new RuntimeException("Unable to retrieve transaction mgr.");
         }

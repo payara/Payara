@@ -53,19 +53,20 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Scoped;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.internal.api.Globals;
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class SecurityServicesUtil {
 
-    //private static BaseServiceLocator habitat = Globals.getDefaultHabitat();
-    @Inject
-    private static BaseServiceLocator habitat;
-    
+    private static BaseServiceLocator habitat = Globals.getDefaultHabitat();
+//    @Inject
+//    private BaseServiceLocator habitat;
+//    
     private static final LocalStringManagerImpl _localStrings =
             new LocalStringManagerImpl(SecurityServicesUtil.class);
     private static final Logger _logger = LogDomains.getLogger(SecurityServicesUtil.class, LogDomains.SECURITY_LOGGER);

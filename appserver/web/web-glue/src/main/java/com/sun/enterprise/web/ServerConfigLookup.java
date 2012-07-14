@@ -53,7 +53,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 
 import java.util.List;
@@ -61,7 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ServerConfigLookup {
 
     protected static final Logger _logger = LogDomains.getLogger(

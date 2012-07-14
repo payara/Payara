@@ -178,7 +178,7 @@ public final class JavaURLContext implements Context, Cloneable {
         } catch (NamingException ex) {
 
             Habitat services = Globals.getDefaultHabitat();
-            ProcessEnvironment processEnv = services.byType(ProcessEnvironment.class).get();
+            ProcessEnvironment processEnv = services.getService(ProcessEnvironment.class);
             if( fullName.startsWith("java:app/") &&
                 processEnv.getProcessType() == ProcessType.ACC ) {
 
@@ -210,7 +210,7 @@ public final class JavaURLContext implements Context, Cloneable {
                 }
 
                 if( obj == null ) {
-                   ComponentNamingUtil compNamingUtil = services.forContract(ComponentNamingUtil.class).get();
+                   ComponentNamingUtil compNamingUtil = services.getService(ComponentNamingUtil.class);
                    String internalGlobalJavaAppName =
                     compNamingUtil.composeInternalGlobalJavaAppName(appName, fullName);
 

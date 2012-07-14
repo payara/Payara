@@ -61,7 +61,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -79,7 +79,7 @@ import org.glassfish.paas.orchestrator.ServiceOrchestrator;
  *
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ElasticServiceContainer
     implements ElasticService {
 

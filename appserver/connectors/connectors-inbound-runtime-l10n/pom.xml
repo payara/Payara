@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-inbound-runtime-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connectors Inbound Support Localization</name>
 
     <developers>

@@ -39,18 +39,6 @@
  */
 package com.sun.enterprise.glassfish.bootstrap;
 
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.bootstrap.Main;
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.module.common_impl.AbstractFactory;
-import org.glassfish.embeddable.BootstrapProperties;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishProperties;
-import org.glassfish.embeddable.GlassFishRuntime;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -60,6 +48,22 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishProperties;
+import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.component.BaseServiceLocator;
+
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.Main;
+import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 
 /**
  * The GlassFishRuntime implementation for NonOSGi environments.
@@ -100,9 +104,23 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             setEnv(gfProps);
 
             final StartupContext startupContext = new StartupContext(gfProps.getProperties());
-            ModulesRegistry modulesRegistry = AbstractFactory.getInstance().createModulesRegistry();
-            final BaseServiceLocator habitat = main.createHabitat(modulesRegistry, startupContext);
-            final ModuleStartup gfKernel = main.findStartupService(modulesRegistry, habitat, null, startupContext);
+
+            ServiceLocator serviceLocator = main.createServiceLocator(startupContext);
+            
+            final BaseServiceLocator habitat = serviceLocator.getService(BaseServiceLocator.class);
+            
+            DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
+            DynamicConfiguration config = dcs.createDynamicConfiguration();
+
+            ModulesRegistry modulesRegistry = SingleHK2Factory.getInstance().createModulesRegistry();
+            
+            AbstractActiveDescriptor<ModulesRegistry> modulesRegistryDescriptor = BuilderHelper.createConstantDescriptor(modulesRegistry);
+			
+            config.addActiveDescriptor(modulesRegistryDescriptor);
+            
+            config.commit();
+            
+            final ModuleStartup gfKernel = main.findStartupService(null, startupContext);
             // create a new GlassFish instance
             GlassFishImpl gfImpl = new GlassFishImpl(gfKernel, habitat, gfProps.getProperties()) {
                 @Override

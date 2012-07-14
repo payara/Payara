@@ -50,12 +50,12 @@ import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.*;
 
 @org.jvnet.hk2.annotations.Service(name = "list-services")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({

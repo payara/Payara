@@ -52,24 +52,26 @@ import org.glassfish.api.admin.config.ApplicationName;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Bunch of utility methods for the new serverbeans config api based on jaxb
  */
-@Service
+@Service @Singleton
 public final class ConfigBeansUtilities {
 
-    @Inject
     private static Applications apps;
 
-    @Inject
     private static Domain domain;
     
     // dochez : this class needs to be killed but I have no time to do it now
     // I am making it a singleton, will force its initialization early enough so
     // users can continue using the static method. Eventually all these methods will
     // need to be moved to @DuckTyped methods on the interfaces directory.
-    public ConfigBeansUtilities() {
+    @Inject
+    public ConfigBeansUtilities(Applications paramApps, Domain paramDomain) {
+        apps = paramApps;
+        domain = paramDomain;
     }
 
     /**

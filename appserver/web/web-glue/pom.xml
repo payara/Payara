@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-glue</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Web Container glue code</name>
 
     <developers>
@@ -114,7 +114,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         
         <dependency>

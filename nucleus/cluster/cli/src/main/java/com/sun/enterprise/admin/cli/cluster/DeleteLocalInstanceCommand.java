@@ -48,6 +48,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 
 /**
@@ -60,7 +62,7 @@ import com.sun.enterprise.admin.cli.remote.RemoteCommand;
  * @author Byron Nevins
  */
 @Service(name = "delete-local-instance")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeleteLocalInstanceCommand extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true, optional = true)

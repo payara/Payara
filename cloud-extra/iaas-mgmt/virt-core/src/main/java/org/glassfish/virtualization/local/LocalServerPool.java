@@ -48,7 +48,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.*;
@@ -64,11 +65,11 @@ public class LocalServerPool implements PhysicalServerPool, ConfigListener {
     final ConcurrentMap<String, Machine> machines = new ConcurrentHashMap<String, Machine>();
     final Map<String, VirtualMachine> vms = new HashMap<String, VirtualMachine>();
     final AtomicInteger allocationCount = new AtomicInteger();
-    final Injector injector;
+    final ServiceLocator injector;
     final ServerPoolConfig config;
     final LocalServerPoolFactory serverPoolFactory;
 
-    public LocalServerPool(Injector injector, ServerPoolConfig config, LocalServerPoolFactory serverPoolFactory) {
+    public LocalServerPool(ServiceLocator injector, ServerPoolConfig config, LocalServerPoolFactory serverPoolFactory) {
         this.injector = injector;
         this.config = config;
         this.serverPoolFactory = serverPoolFactory;

@@ -134,7 +134,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
 
     private ORB getORB() {
         if (services != null) {
-            ORBLocator orbLocator = services.forContract(ORBLocator.class).get() ;
+            ORBLocator orbLocator = services.getService(ORBLocator.class) ;
             if (orbLocator != null) {
                 return orbLocator.getORB() ;
             }
@@ -163,7 +163,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
         if (useLB && !initialized) {
             synchronized( SerialInitContextFactory.class ) {
                 if (!initialized) {
-                    namingClusterInfo = services.forContract(NamingClusterInfo.class).get();
+                    namingClusterInfo = services.getService(NamingClusterInfo.class);
                     namingClusterInfo.initGroupInfoService(myEnv, defaultHost, defaultPort, getORB(), services);
                     membershipChangeForced = true ;
                     initialized = true ;
@@ -185,7 +185,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
                 // update rrPolicy to use that information, otherwise just
                 // rotate rrPolicy to the next element.
                 if(namingClusterInfo == null) {
-                    namingClusterInfo = services.forContract(NamingClusterInfo.class).get();
+                    namingClusterInfo = services.getService(NamingClusterInfo.class);
                 }
                 if (myEnv.containsKey( IIOP_ENDPOINTS_PROPERTY ) ||
                     myEnv.containsKey( LOAD_BALANCING_PROPERTY )) {

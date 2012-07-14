@@ -52,7 +52,6 @@ import com.sun.enterprise.v3.services.impl.monitor.FileCacheMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import com.sun.enterprise.v3.services.impl.monitor.KeepAliveMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.ThreadPoolMonitor;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -66,9 +65,15 @@ import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.IndexedFilter;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.grizzly.V3Mapper;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.types.Property;
 
 public class GlassfishNetworkListener extends GenericGrizzlyListener {
@@ -92,7 +97,17 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
     @Override
     public void destroy() {
-        ((Habitat) grizzlyService.getHabitat()).removeIndex(Mapper.class.getName(), (address.toString() + port));
+        ServiceLocator locator = grizzlyService.getHabitat();
+        IndexedFilter removeFilter = BuilderHelper.createNameAndContractFilter(Mapper.class.getName(),
+                (address.toString() + port));
+        
+        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
+        
+        config.addUnbindFilter(removeFilter);
+        
+        config.commit();
+        
         unregisterMonitoringStatsProviders();
     }
 
@@ -176,8 +191,11 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             httpAdapter = new HttpAdapterImpl(vs, containerMapper, webAppRootPath);
             containerMapper.addDocRoot(webAppRootPath);
 
-            Inhabitant<Mapper> onePortMapper = new ExistingSingletonInhabitant<Mapper>(mapper);
-            ((Habitat) grizzlyService.getHabitat()).addIndex(onePortMapper, Mapper.class.getName(), address.toString() + port);
+            AbstractActiveDescriptor<V3Mapper> aad = BuilderHelper.createConstantDescriptor(mapper);
+            aad.addContractType(Mapper.class);
+            aad.setName(address.toString() + port);
+            
+            ServiceLocatorUtilities.addOneDescriptor(grizzlyService.getHabitat(), aad);
 
             super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
             final Protocol protocol = http.getParent();

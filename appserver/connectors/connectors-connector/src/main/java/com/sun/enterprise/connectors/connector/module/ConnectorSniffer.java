@@ -50,7 +50,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -67,7 +67,7 @@ import javax.inject.Inject;
  * @author Jagadish Ramu
  */
 @Service(name = ConnectorConstants.CONNECTOR_MODULE)
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorSniffer extends GenericSniffer {
 
     @Inject

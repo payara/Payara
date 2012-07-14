@@ -50,6 +50,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -60,6 +61,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.config.serverbeans.Config;
 
+import java.util.Collections;
 import java.util.logging.Logger;
 
 /**
@@ -88,7 +90,7 @@ public class WebServiceContractImpl implements WebServicesContract{
 	private Provider<ApplicationRegistry> applicationRegistryProvider;
 
     @Inject @Optional
-	private Adapter[] adapters;
+	private IterableProvider<Adapter> adapters;
 
     @Inject @Optional
 	private Provider<InjectionManager> injectionManagerProvider;
@@ -136,8 +138,8 @@ public class WebServiceContractImpl implements WebServicesContract{
 		return env;
 	}
 
-	public Adapter[] getAdapters() {
-		return (adapters != null)?adapters:new Adapter[0];
+	public Iterable<Adapter> getAdapters() {
+		return (adapters != null) ? adapters : Collections.EMPTY_LIST;
 	}
 
 	public InjectionManager getInjectionManager() {

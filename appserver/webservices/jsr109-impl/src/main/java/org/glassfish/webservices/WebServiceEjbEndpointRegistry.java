@@ -50,7 +50,7 @@ import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
@@ -68,7 +68,7 @@ import org.glassfish.internal.api.Globals;
  * @author  Bhakti Mehta
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
     
     

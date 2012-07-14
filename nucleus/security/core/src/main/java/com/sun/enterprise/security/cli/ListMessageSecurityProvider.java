@@ -52,7 +52,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -77,7 +77,7 @@ import org.glassfish.config.support.TargetType;
  */
 
 @Service(name="list-message-security-providers")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.message.security.provider")
 @ExecuteOn({RuntimeType.DAS})

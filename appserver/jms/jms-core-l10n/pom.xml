@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jms-core-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JMS module Localization</name>
 
     <build>

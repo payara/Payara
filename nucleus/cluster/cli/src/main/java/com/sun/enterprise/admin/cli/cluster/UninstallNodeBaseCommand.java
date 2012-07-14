@@ -44,7 +44,7 @@ import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.Globals;
 
@@ -54,7 +54,7 @@ import org.glassfish.internal.api.Globals;
  * @author Byron Nevins
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 abstract class UninstallNodeBaseCommand extends NativeRemoteCommandsBase {
     @Param(name = "installdir", optional = true, defaultValue = "${com.sun.aas.productRoot}")
     private String installDir;

@@ -40,7 +40,8 @@
 package org.glassfish.virtualization.local;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.ServerPool;
@@ -57,12 +58,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="Native")
 public class LocalServerPoolFactory implements ServerPoolFactory {
 
-    final Injector injector;
+    final ServiceLocator injector;
     final private TemplateRepository templateRepository;
     final private Domain domain;
     final private ServerContext environment;
 
-    public LocalServerPoolFactory(@Inject Injector injector,
+    public LocalServerPoolFactory(@Inject ServiceLocator injector,
                                   @Inject TemplateRepository templateRepository,
                                   @Inject Domain domain,
                                   @Inject ServerContext environment) {

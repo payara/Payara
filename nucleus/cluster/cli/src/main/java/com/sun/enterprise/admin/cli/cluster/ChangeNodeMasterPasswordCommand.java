@@ -51,7 +51,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -64,7 +64,7 @@ import java.util.ArrayList;
  * @author Bhakti Mehta
  */
 @Service(name = "_change-master-password-node")
-@Scoped(PerLookup.class)
+@PerLookup
 
 public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 

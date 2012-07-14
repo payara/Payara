@@ -60,7 +60,7 @@ import org.glassfish.cluster.ssh.util.HostVerifier;
 import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -82,7 +82,7 @@ import java.util.logging.Logger;
 
 
 @Service(name="SSHLauncher")
-@Scoped(PerLookup.class)
+@PerLookup
 public class SSHLauncher {
 
     private static final String SSH_DIR = ".ssh" + File.separator;

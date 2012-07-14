@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>gf-load-balancer-connector-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Load Balancer Internal API Localization</name>
 
     <build>

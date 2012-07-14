@@ -53,7 +53,7 @@
   </parent>
 
     <artifactId>osgi-main</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish UberJar OSGI Main Module</name>
 
     <dependencies>

@@ -95,7 +95,7 @@ public abstract class AbstractProxyRestAdapter implements Adapter {
      */
     private synchronized ProxiedRestAdapter getDelegate() {
         if (delegate == null) {
-            delegate = getServices().forContract(ProxiedRestAdapter.class).named(getName()).get();
+            delegate = getServices().getService(ProxiedRestAdapter.class, getName());
             if (delegate == null) {
                 throw new RuntimeException(
                         "Unable to locate a service of type = " + ProxiedRestAdapter.class + " with name = " + getName());

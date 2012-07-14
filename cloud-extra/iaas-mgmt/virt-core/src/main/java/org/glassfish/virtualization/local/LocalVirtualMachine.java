@@ -49,7 +49,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.AbstractVirtualMachine;
@@ -66,8 +67,10 @@ public class LocalVirtualMachine extends AbstractVirtualMachine {
     final private Machine owner;
     final LocalServerPool pool;
 
-    public static LocalVirtualMachine from(Injector injector, VirtualMachineConfig config, LocalServerPool group, Machine owner) {
-        return injector.inject(new LocalVirtualMachine(config, group, owner));
+    public static LocalVirtualMachine from(ServiceLocator injector, VirtualMachineConfig config, LocalServerPool group, Machine owner) {
+        LocalVirtualMachine localVirtualMachine = new LocalVirtualMachine(config, group, owner);
+	    injector.inject(localVirtualMachine);
+	    return localVirtualMachine;
     }
 
     protected LocalVirtualMachine(VirtualMachineConfig config, LocalServerPool pool, Machine owner) {

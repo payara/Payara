@@ -103,7 +103,7 @@ public class DeepCopyTest extends ConfigApiTest {
             }
         }, getHabitat().getComponent(Configs.class));
         String resultingXML = save(document).toString();
-        Assert.assertTrue(resultingXML.contains("some-config"));
+        Assert.assertTrue("Expecting some-config, got " + resultingXML, resultingXML.contains("some-config"));
     }
 
     @Test

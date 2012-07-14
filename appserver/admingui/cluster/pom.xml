@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-cluster-plugin</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Clustering Support Plugin</name>
     <description>Clustering support plugin bundle for GlassFish V3 Admin Console</description>
 

@@ -53,7 +53,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -67,7 +67,7 @@ import java.util.Set;
  * @author Mitesh Meswani
  */
 @Service(name = "jpaCompositeSniffer")
-@Scoped(Singleton.class)
+@Singleton
 public class JPACompositeSniffer extends JPASniffer implements CompositeSniffer {
 
     @Inject

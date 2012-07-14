@@ -71,7 +71,7 @@ import java.util.Properties;
 @Ignore 
 public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigListener {
 
-    BaseServiceLocator habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
     PropertyChangeEvent event = null;
 
     public DomDocument getDocument(Habitat habitat) {

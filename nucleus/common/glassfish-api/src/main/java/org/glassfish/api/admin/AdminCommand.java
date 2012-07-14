@@ -46,7 +46,7 @@ import org.jvnet.hk2.annotations.Contract;
  * <p>
  * This is an admin command interface, command implementations have to be
  * stateless and should also have a {@link org.jvnet.hk2.component.Scope}
- * value of {@link org.jvnet.hk2.component.PerLookup}
+ * value of {@link org.glassfish.hk2.api.PerLookup}
  * </p>
  *
  * Command implementations should use the {@link org.glassfish.api.Param}

@@ -51,7 +51,7 @@ import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 
 import java.util.*;
 import java.util.logging.Logger;

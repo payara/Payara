@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>internal-api-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Private APIs of Glassfish Localization</name>
     <build>
         <plugins>

@@ -39,11 +39,12 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import org.glassfish.hk2.inject.Injector;
+import javax.inject.Inject;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.ServerPoolFactory;
-import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -54,10 +55,10 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="libvirt")
 public class LibVirtServerPoolFactory implements ServerPoolFactory {
 
-    final Injector injector;
+    final ServiceLocator injector;
 
     @Inject
-    public LibVirtServerPoolFactory(Injector injector) {
+    public LibVirtServerPoolFactory(ServiceLocator injector) {
         this.injector = injector;
     }
 

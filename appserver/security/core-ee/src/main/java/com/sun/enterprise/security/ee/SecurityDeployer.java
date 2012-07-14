@@ -69,7 +69,7 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.api.invocation.RegisteredComponentInvocationHandler;
 import org.glassfish.internal.data.ModuleInfo;

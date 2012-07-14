@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>stats77</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>stats77</name>
     <description>Interim replacement for JSR 77 Stats and Statistics</description>
 	

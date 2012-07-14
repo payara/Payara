@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jpa-container-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JPA container for glassfish Localization</name>
 
     <build>

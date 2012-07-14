@@ -85,7 +85,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
 
         // Step 2. Setup the module subsystem.
-        Main main = new EmbeddedMain();
+        Main main = new EmbeddedMain(cl);
         SingleHK2Factory.initialize(cl);
         ModulesRegistry modulesRegistry = AbstractFactory.getInstance().createModulesRegistry();
         modulesRegistry.setParentClassLoader(cl);

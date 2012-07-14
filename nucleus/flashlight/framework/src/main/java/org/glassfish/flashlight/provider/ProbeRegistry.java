@@ -47,7 +47,7 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.impl.core.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *         Date: Jul 20, 2008
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ProbeRegistry {
 
     private static volatile ProbeRegistry _me = new ProbeRegistry();

@@ -58,7 +58,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Represents the action report as XML like this:
@@ -86,7 +86,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author tjquinn
  */
 @Service(name="xml")
-@Scoped(PerLookup.class)
+@PerLookup
 public class XMLActionReporter extends ActionReporter {
 
     @Override

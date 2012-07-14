@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.hk2.component.InjectionResolver;
 import com.sun.logging.LogDomains;
@@ -48,8 +47,6 @@ import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.Progress;
 import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.jvnet.hk2.component.*;
 import org.glassfish.common.util.admin.CommandModelImpl;
@@ -59,11 +56,11 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.Supplemental.Timing;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 
 /**
@@ -75,13 +72,7 @@ import org.glassfish.internal.api.ServerContext;
 public class SupplementalCommandExecutorImpl implements SupplementalCommandExecutor {
 
     @Inject
-    private Domain domain;
-
-    @Inject
-    private ExecutorService threadExecutor;
-
-    @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private ServerEnvironment serverEnv;
@@ -95,16 +86,17 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(SupplementalCommandExecutor.class);
 
-    private Map<String, List<Inhabitant<? extends Supplemental>>> supplementalCommandsMap = null;
+    private Map<String, List<ServiceHandle<?>>> supplementalCommandsMap = null;
     
     public Collection<SupplementalCommand> listSuplementalCommands(String commandName) {
-        List<Inhabitant<? extends Supplemental>> supplementalList = getSupplementalCommandsList().get(commandName);
+        List<ServiceHandle<?>> supplementalList = getSupplementalCommandsList().get(commandName);
         if (supplementalList == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
+        
         Collection<SupplementalCommand> result = new ArrayList<SupplementalCommand>(supplementalList.size());
-        for (Inhabitant<? extends Supplemental> inh : supplementalList) {
-            AdminCommand cmdObject = (AdminCommand) inh.get();
+        for (ServiceHandle<?> handle : supplementalList) {
+            AdminCommand cmdObject = (AdminCommand) handle.getService();
             SupplementalCommand aCmd = new SupplementalCommandImpl(cmdObject);
             if( (serverEnv.isDas() && aCmd.whereToRun().contains(RuntimeType.DAS)) ||
                 (serverEnv.isInstance() && aCmd.whereToRun().contains(RuntimeType.INSTANCE)) ) {
@@ -153,34 +145,42 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
         }
         return finalResult;
     }
+    
+    private static String getOne(String key, Map<String, List<String>> metadata) {
+    	if (key == null || metadata == null) return null;
+    	List<String> found = metadata.get(key);
+    	if (found == null) return null;
+    	
+    	if (found.isEmpty()) return null;
+    	
+    	return found.get(0);
+    }
 
     /**
      * Get list of all supplemental commands, map it to various commands and cache this list
      */
-    private Map<String, List<Inhabitant<? extends Supplemental>>> getSupplementalCommandsList() {
-        if(supplementalCommandsMap == null) {
-            synchronized(this) {
-                if(supplementalCommandsMap == null) {
-                    supplementalCommandsMap = new ConcurrentHashMap<String, List<Inhabitant<? extends Supplemental>>>();
-                    Collection<Inhabitant<? extends Supplemental>> supplementals = habitat.getInhabitants(Supplemental.class);
-                    if(!supplementals.isEmpty()) {
-                        Iterator<Inhabitant<? extends Supplemental>> iter = supplementals.iterator();
-                        while(iter.hasNext()) {
-                            Inhabitant<? extends Supplemental> inh = iter.next();
-                            String commandName = inh.metadata().getOne("target");
-                            if(supplementalCommandsMap.containsKey(commandName)) {
-                                supplementalCommandsMap.get(commandName).add(inh);
-                            } else {
-                                ArrayList<Inhabitant<? extends Supplemental>> inhList =
-                                        new ArrayList<Inhabitant<? extends Supplemental>>();
-                                inhList.add(inh);
-                                supplementalCommandsMap.put(commandName, inhList);
-                            }
-                        }
-                    }
+    private Map<String, List<ServiceHandle<?>>> getSupplementalCommandsList() {
+        if (supplementalCommandsMap != null) return supplementalCommandsMap;
+        
+        synchronized(this) {
+            if (supplementalCommandsMap != null) return supplementalCommandsMap;
+            
+            supplementalCommandsMap = new ConcurrentHashMap<String, List<ServiceHandle<?>>>();
+            List<ServiceHandle<?>> supplementals = habitat.getAllServiceHandles(Supplemental.class);
+            for (ServiceHandle<?> handle : supplementals) {
+                ActiveDescriptor<?> inh = handle.getActiveDescriptor();
+                String commandName = getOne("target", inh.getMetadata());
+                if(supplementalCommandsMap.containsKey(commandName)) {
+                    supplementalCommandsMap.get(commandName).add(handle);
+                } else {
+                    ArrayList<ServiceHandle<?>> inhList =
+                            new ArrayList<ServiceHandle<?>>();
+                    inhList.add(handle);
+                    supplementalCommandsMap.put(commandName, inhList);
                 }
             }
         }
+        
         return supplementalCommandsMap;
     }
 

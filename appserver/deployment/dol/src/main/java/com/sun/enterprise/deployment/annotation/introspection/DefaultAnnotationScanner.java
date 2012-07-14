@@ -44,8 +44,8 @@ import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import java.util.Set;
 
@@ -57,7 +57,7 @@ import java.util.Set;
  * @author Jerome Dochez
  */
 @Service(name="default")
-@Scoped(Singleton.class)
+@Singleton
 public class DefaultAnnotationScanner implements AnnotationScanner, 
     PostConstruct {
 

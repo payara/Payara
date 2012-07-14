@@ -57,7 +57,7 @@ import java.util.logging.Level;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.common.util.admin.AuthTokenManager;
-import org.glassfish.hk2.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.Template;
 import org.glassfish.virtualization.config.VirtUser;

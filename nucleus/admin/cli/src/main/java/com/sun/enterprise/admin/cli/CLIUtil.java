@@ -212,9 +212,11 @@ public class CLIUtil {
 
         String cname = CLICommand.class.getName();
         for (Inhabitant<?> command : habitat.getInhabitantsByContract(cname)) {
-            for (String name : Inhabitants.getNamesFor(command, cname))
-                names.add(name);
+        	for (String name : Inhabitants.getNamesFor(command, cname)) {
+        		names.add(name);
+        	}
         }
+        
         String[] localCommands = names.toArray(new String[names.size()]);
         Arrays.sort(localCommands);
         return localCommands;

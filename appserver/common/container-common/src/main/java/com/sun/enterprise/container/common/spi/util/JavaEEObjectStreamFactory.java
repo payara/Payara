@@ -44,8 +44,8 @@ import com.sun.logging.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PerLookup;
+import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.*;

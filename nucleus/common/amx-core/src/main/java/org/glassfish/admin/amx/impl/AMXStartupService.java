@@ -84,8 +84,8 @@ An {@link AMXLoader} responsible for loading core amx MBeans
  */
 @Service
 public final class AMXStartupService
-        implements org.jvnet.hk2.component.PostConstruct,
-        org.jvnet.hk2.component.PreDestroy,
+        implements org.glassfish.hk2.api.PostConstruct,
+        org.glassfish.hk2.api.PreDestroy,
         AMXStartupServiceMBean {
 
     private static void debug(final String s) {

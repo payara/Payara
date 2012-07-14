@@ -52,7 +52,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -71,7 +71,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.*;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name=CCP_CREATE_COMMAND_NAME)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.connector.connection.pool")
 public class CreateConnectorConnectionPool implements AdminCommand {
 

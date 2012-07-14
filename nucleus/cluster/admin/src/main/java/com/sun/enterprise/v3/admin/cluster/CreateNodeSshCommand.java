@@ -54,6 +54,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 import org.glassfish.cluster.ssh.util.SSHUtil;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Remote AdminCommand to create and ssh node.  This command is run only on DAS.
@@ -63,7 +64,7 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
  */
 @Service(name = "create-node-ssh")
 @I18n("create.node.ssh")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Nodes.class,

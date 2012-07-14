@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Java EE Connector Architecture Runtime for GlassFish Localization</name>
 
     <developers>

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>cluster-admin</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>cluster-admin</name>
     <build>
 	<resources>

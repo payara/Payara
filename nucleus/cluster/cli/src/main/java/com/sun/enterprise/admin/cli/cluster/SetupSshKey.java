@@ -50,6 +50,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.util.SSHUtil;
@@ -59,7 +60,7 @@ import org.glassfish.cluster.ssh.util.SSHUtil;
  *
  */
 @Service(name = "setup-ssh")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Param(name = "sshuser", optional = true, defaultValue = "${user.name}")

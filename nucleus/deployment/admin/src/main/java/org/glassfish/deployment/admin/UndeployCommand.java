@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.io.File;
@@ -99,7 +99,7 @@ import org.glassfish.deployment.versioning.VersioningException;
  */
 @Service(name="undeploy")
 @I18n("undeploy.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({

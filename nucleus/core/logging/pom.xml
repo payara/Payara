@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Appserver Logging Classes</name>
     <description>Glassfish logging classes</description>
 

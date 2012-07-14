@@ -53,7 +53,7 @@ import org.glassfish.elasticity.config.serverbeans.LogAction;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -66,7 +66,7 @@ import java.util.logging.Logger;
  */
 @Service(name="delete-log-action")
 @I18n("delete.log.action")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeleteLogActionCommand implements AdminCommand{
 
     @Inject

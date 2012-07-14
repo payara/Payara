@@ -47,6 +47,7 @@ import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
@@ -59,6 +60,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.inject.Provider;
+
 /**
  * This class holds information about a particular container such as a reference
  * to the sniffer, the container itself and the list of applications deployed in
@@ -68,7 +71,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class EngineInfo<T extends Container, U extends ApplicationContainer> {
 
-    final Inhabitant<T> container;
+    final ServiceHandle<T> container;
     final Sniffer sniffer;
     ContainerRegistry registry = null;
     Deployer deployer;
@@ -80,7 +83,7 @@ public class EngineInfo<T extends Container, U extends ApplicationContainer> {
      * @param container instance of the container
      * @param sniffer sniffer associated with that container
      */
-    public EngineInfo(Inhabitant<T> container, Sniffer sniffer, ClassLoader cloader) {
+    public EngineInfo(ServiceHandle<T> container, Sniffer sniffer, ClassLoader cloader) {
         this.container = container;
         this.sniffer = sniffer;
     }
@@ -90,7 +93,7 @@ public class EngineInfo<T extends Container, U extends ApplicationContainer> {
      * @return the container instance
      */
     public T getContainer() {
-        return container.get();
+        return container.getService();
     }
 
     /**

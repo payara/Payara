@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,7 +71,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * @author Bill Shannon
  */
 @Service(name="_synchronize-files")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.EXCLUSIVE)
 @I18n("synchronize.command")
 @RestEndpoints({

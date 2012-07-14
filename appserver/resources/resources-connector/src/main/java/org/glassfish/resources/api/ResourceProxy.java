@@ -46,7 +46,7 @@ import org.glassfish.resources.naming.ResourceNamingService;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -63,7 +63,7 @@ import javax.naming.NamingException;
  * @author Jagadish Ramu
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ResourceProxy implements NamingObjectProxy.InitializationNamingObjectProxy {
 
     @Inject

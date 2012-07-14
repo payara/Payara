@@ -44,7 +44,7 @@ import java.util.*;
 
 import com.sun.enterprise.loader.ASURLClassLoader;
 import org.glassfish.internal.api.DelegatingClassLoader;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 
 /**
  * Simplistic class loader which will delegate to each module class loader in the order

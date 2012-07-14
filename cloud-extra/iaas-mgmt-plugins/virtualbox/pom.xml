@@ -52,7 +52,6 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>virtualbox</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>IaaS Plugin virtualbox</name>
 
     <properties>

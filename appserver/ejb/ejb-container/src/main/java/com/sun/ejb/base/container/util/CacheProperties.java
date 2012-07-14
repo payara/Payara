@@ -42,6 +42,7 @@ package com.sun.ejb.base.container.util;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -52,9 +53,9 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.glassfish.hk2.api.PostConstruct;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
 
 /**
  * A util class to read the bean cache related entries from

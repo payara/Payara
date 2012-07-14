@@ -54,7 +54,7 @@ import org.glassfish.api.invocation.InvocationException;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 @Service
 public class TransactionInvocationHandler implements ComponentInvocationHandler {

@@ -52,7 +52,6 @@
     </parent>
 
     <artifactId>ejb-full-container</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>Full EJB Container add-ons</name>
 
     <developers>

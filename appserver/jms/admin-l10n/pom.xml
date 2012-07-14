@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jms-admin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JMS admin Localization</name>
 
     <build>

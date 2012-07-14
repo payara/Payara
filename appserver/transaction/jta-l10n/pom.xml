@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jta-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JTA Implementation for Glassfish Localization</name>
 
     <build>

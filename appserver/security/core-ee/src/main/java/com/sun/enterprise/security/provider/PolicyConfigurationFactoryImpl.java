@@ -57,7 +57,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 
 /** 
  *  Implementation of jacc PolicyConfigurationFactory class
@@ -66,7 +66,7 @@ import org.jvnet.hk2.annotations.ContractProvided;
  * @version
  */
 @Service
-@ContractProvided(PolicyConfigurationFactory.class)
+@ContractsProvided(PolicyConfigurationFactory.class)
 public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
 
     private static LocalStringManagerImpl localStrings =

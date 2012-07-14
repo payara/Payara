@@ -56,7 +56,7 @@ import com.sun.enterprise.util.OS;
  * @author Byron Nevins
  */
 @Service(name = "setup-local-dcom")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class SetupLocalDcom extends CLICommand {
     @Param(name = "verbose", shortName = "v", primary = false, optional = true)
     boolean verbose;

@@ -60,7 +60,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +73,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Tim Quinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class SecureAdminUpgradeHelper {
     
     protected final static String DAS_CONFIG_NAME = "server-config";

@@ -52,7 +52,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-naming</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Glassfish Naming</name>
 
     <developers>

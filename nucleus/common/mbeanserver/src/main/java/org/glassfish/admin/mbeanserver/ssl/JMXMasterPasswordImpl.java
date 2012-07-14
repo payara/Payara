@@ -43,8 +43,8 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.security.common.MasterPassword;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -60,7 +60,7 @@ import java.util.Arrays;
  * To change this template use File | Settings | File Templates.
  */
 @Service(name="JMX SSL Password Provider Service")
-@Scoped(Singleton.class)
+@Singleton
 public class JMXMasterPasswordImpl implements MasterPassword, PreDestroy {
 
     private char[] _masterPassword;

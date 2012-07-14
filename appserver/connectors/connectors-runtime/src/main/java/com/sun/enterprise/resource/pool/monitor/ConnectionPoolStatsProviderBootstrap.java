@@ -53,22 +53,21 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 
 import java.util.*;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  * Bootstrap operations of stats provider objects are done by this class.
@@ -86,7 +85,7 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
  * @author Shalini M
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectionPoolStatsProviderBootstrap implements PostConstruct, 
         PoolLifeCycle {
 

@@ -50,7 +50,7 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.resource.spi.Connector;
 import java.util.Set;
@@ -60,7 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ConnectorValidator extends DefaultDOLVisitor implements ConnectorVisitor {
 
     private Logger _logger = LogDomains.getLogger(ConnectorValidator.class, LogDomains.RSR_LOGGER);

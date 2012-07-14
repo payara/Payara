@@ -66,7 +66,7 @@ public class AttributeRemovalTest extends ConfigApiTest {
 
     @Test
     public void removeAttributeTest() throws TransactionFailure {
-        HttpService httpService = Utils.getNewHabitat(this).getComponent(HttpService.class);
+        HttpService httpService = Utils.instance.getHabitat(this).getComponent(HttpService.class);
         VirtualServer vs = httpService.getVirtualServerByName("server");
         ConfigSupport.apply(new SingleConfigCode<VirtualServer>() {
 

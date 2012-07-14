@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-utility-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>utility module for cmp Localization</name>
 
     <build>

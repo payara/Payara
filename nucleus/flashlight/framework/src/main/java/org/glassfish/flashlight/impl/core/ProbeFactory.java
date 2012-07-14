@@ -44,7 +44,7 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Mahesh Kannan
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ProbeFactory {
 
 	private static AtomicInteger counter = new AtomicInteger();

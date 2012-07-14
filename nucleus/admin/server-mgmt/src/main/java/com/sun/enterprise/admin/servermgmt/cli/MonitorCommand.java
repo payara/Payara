@@ -47,6 +47,8 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
@@ -59,7 +61,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * @author Bill Shannon
  */
 @Service(name = "monitor")
-@Scoped(PerLookup.class)
+@PerLookup
 public class MonitorCommand extends CLICommand {
     @Param(optional = true, defaultValue = "30")
     private int interval = 30;	// default 30 seconds

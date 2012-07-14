@@ -50,7 +50,7 @@
     </parent>
 
     <artifactId>metro-glue</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Metro Glue Code</name>
 
     <developers>

@@ -52,7 +52,7 @@
   </parent>
 
     <artifactId>instanceroot-builder</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish UberJar InstanceRoot Builder Module</name>
 
     <build>

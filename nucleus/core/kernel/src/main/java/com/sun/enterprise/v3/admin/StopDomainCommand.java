@@ -49,7 +49,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * AdminCommand to stop the domain execution which mean shuting down the application
@@ -58,7 +58,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Jerome Dochez
  */
 @Service(name = "stop-domain")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @Async
 @I18n("stop.domain.command")

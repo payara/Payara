@@ -40,7 +40,7 @@
 
 package org.glassfish.internal.embedded;
 
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 
 import java.io.File;
 import java.util.logging.*;

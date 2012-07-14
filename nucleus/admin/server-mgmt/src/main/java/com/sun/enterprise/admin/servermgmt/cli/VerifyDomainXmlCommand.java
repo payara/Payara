@@ -41,6 +41,7 @@
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 
 import com.sun.enterprise.admin.cli.*;
@@ -57,8 +58,13 @@ import java.util.logging.Level;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 import org.glassfish.internal.api.*;
-import org.jvnet.hk2.annotations.*;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
@@ -73,7 +79,7 @@ import org.jvnet.hk2.config.DomDocument;
  * @author Nandini Ektare
  */
 @Service(name = "verify-domain-xml")
-@Scoped(PerLookup.class)
+@org.glassfish.hk2.api.PerLookup
 public final class VerifyDomainXmlCommand extends LocalDomainCommand {
 
     @Param(name = "domain_name", primary = true, optional = true)
@@ -118,8 +124,18 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
                         }
                     }
                 );
-            ModulesRegistry registry = new StaticModulesRegistry(cl);
-            Habitat habitat = registry.createHabitat("default");
+            
+            ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
+
+            Habitat habitat = new Habitat();
+            
+            try {
+            	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl),
+            	        new Hk2LoaderPopulatorPostProcessor(cl));
+            } catch (IOException e) {
+            	logger.log(Level.SEVERE, "Error initializing HK2", e);
+            }
+            
             ConfigParser parser = new ConfigParser(habitat);
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);

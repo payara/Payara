@@ -45,10 +45,12 @@ import java.util.logging.*;
 import java.security.SecureRandom;
 
 import javax.inject.Inject;
+
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 import org.glassfish.internal.api.*;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.logging.LogDomains;
@@ -63,8 +65,7 @@ import com.sun.logging.LogDomains;
  * @author Bill Shannon
  */
 @Service
-@Scoped(Singleton.class)        // only want one local password
-@InitRunLevel
+@RunLevel(InitRunLevel.VAL)
 public class LocalPasswordImpl implements PostConstruct, LocalPassword {
 
     @Inject

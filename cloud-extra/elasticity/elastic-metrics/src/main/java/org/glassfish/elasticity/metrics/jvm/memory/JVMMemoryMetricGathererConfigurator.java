@@ -2,7 +2,7 @@ package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.elasticity.api.MetricGathererConfigurator;
 import org.glassfish.elasticity.config.serverbeans.MetricGathererConfig;
-import org.glassfish.hk2.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;

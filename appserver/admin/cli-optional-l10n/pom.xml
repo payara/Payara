@@ -51,7 +51,7 @@
     </parent>
     
     <artifactId>cli-optional-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>admin-cli-optional-l10n</name>
     
     <developers>

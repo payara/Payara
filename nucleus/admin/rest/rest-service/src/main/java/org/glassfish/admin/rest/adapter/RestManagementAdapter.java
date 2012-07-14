@@ -41,14 +41,13 @@ package org.glassfish.admin.rest.adapter;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.Dom;
 
 import org.glassfish.admin.rest.RestResource;
@@ -61,6 +60,10 @@ import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractModule;
 import org.glassfish.jersey.media.json.JsonJacksonModule;
 
@@ -152,9 +155,9 @@ public class RestManagementAdapter extends RestAdapter {
         return features;
     }
 
-    private void generateASM(BaseServiceLocator habitat) {
+    private void generateASM(ServiceLocator habitat) {
         try {
-            Domain entity = habitat.getComponent(Domain.class);
+            Domain entity = habitat.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
 
             ResourcesGenerator resourcesGenerator = new ASMResourcesGenerator(habitat);
@@ -166,9 +169,13 @@ public class RestManagementAdapter extends RestAdapter {
     }
 
     private void addCompositeResources(Set<Class<?>> r) {
-        Iterator<Inhabitant<?>> iter = habitat.getInhabitantsByContract(RestResource.class.getName()).iterator();
-        while (iter.hasNext()) {
-            r.add(iter.next().type());
+        List<ServiceHandle<?>> handles = habitat.getAllServiceHandles(RestResource.class);
+        for (ServiceHandle<?> handle : handles) {
+            ActiveDescriptor<?> ad = handle.getActiveDescriptor();
+            if (!ad.isReified()) {
+                ad = habitat.reifyDescriptor(ad);
+            }
+            r.add(ad.getImplementationClass());
         }
     }
 }

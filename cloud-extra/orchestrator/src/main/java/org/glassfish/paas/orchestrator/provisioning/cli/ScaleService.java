@@ -58,7 +58,7 @@ import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -68,7 +68,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  * @author Sivakumar Thyagarajan
  */
 @org.jvnet.hk2.annotations.Service(name = "_scale-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = { CommandTarget.DAS })
 @CommandLock(CommandLock.LockType.NONE)

@@ -53,7 +53,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.container.Container;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;

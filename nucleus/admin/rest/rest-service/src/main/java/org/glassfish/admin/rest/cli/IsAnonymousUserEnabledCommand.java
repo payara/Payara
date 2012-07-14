@@ -51,7 +51,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
@@ -60,7 +60,7 @@ import javax.inject.Inject;
  * @author jasonlee
  */
 @Service(name = "__anonymous-user-enabled")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class, path="anonymous-user-enabled")
 })

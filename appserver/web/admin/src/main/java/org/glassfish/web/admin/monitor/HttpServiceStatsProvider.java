@@ -57,7 +57,7 @@ import org.glassfish.gmbal.ManagedObject;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  * Provides the monitoring data at the Web container level

@@ -59,7 +59,7 @@ import org.glassfish.api.ActionReport;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Map;
 import java.io.IOException;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.RestParam;
  */
 @Service(name="_get-deployment-configurations")
 @ExecuteOn(value={RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,

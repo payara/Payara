@@ -68,7 +68,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -81,7 +81,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @org.jvnet.hk2.annotations.Service(name = "collect-service-log-files")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({

@@ -42,7 +42,7 @@ package org.glassfish.grizzly.extras.addons;
 
 import org.glassfish.grizzly.http.server.AddOn;
 import org.glassfish.grizzly.websockets.WebSocketAddOn;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -51,6 +51,6 @@ import org.jvnet.hk2.annotations.Service;
  * @author Alexey Stashok
  */
 @Service(name="websocket")
-@ContractProvided(AddOn.class)
+@ContractsProvided(AddOn.class)
 public class WebSocketAddOnProvider extends WebSocketAddOn {
 }

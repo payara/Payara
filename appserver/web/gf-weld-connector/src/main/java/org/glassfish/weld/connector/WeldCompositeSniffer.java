@@ -50,7 +50,7 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.inject.Inject;
@@ -60,7 +60,7 @@ import javax.inject.Inject;
  * This sniffer determines if there are any beans.xml at the ear level.
  */
 @Service(name = "weldCompositeSniffer")
-@Scoped(Singleton.class)
+@Singleton
 public class WeldCompositeSniffer extends WeldSniffer implements CompositeSniffer {
 
     @Inject

@@ -40,7 +40,7 @@
 
 package org.glassfish.virtualization.util;
 
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.virtualization.config.TemplateIndex;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  */
 @Service(name="ServiceType")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ServiceType extends ValueBasedTemplateIndex {
 
     public enum Type { JavaEE, Database, MQ, LB, DNS }

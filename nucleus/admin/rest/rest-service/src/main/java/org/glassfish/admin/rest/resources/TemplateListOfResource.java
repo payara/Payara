@@ -64,7 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
 import static org.glassfish.admin.rest.utils.Util.decode;
@@ -81,7 +82,7 @@ public abstract class TemplateListOfResource {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected Injector injector;
+    protected ServiceLocator injector;
     @Context
     protected Habitat habitat;
     protected List<Dom> entity;

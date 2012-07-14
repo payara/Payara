@@ -49,7 +49,7 @@ import org.glassfish.paas.orchestrator.config.Service;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.config.SharedService;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +60,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
  * @author Jagadish Ramu
  */
 @org.jvnet.hk2.annotations.Service(name = "_list-lb-services")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class ListLBServices extends BaseLBService implements AdminCommand {
 

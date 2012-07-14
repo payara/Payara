@@ -69,6 +69,7 @@ import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.xml.sax.SAXParseException;
 
 import java.io.*;
@@ -164,7 +165,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     protected T descriptor;
 
     @Inject
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
 
     @Inject
     SJSASFactory annotationFactory;

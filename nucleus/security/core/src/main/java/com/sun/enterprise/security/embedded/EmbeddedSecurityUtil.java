@@ -63,7 +63,7 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -77,7 +77,7 @@ import org.jvnet.hk2.config.types.Property;
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     private static final Logger _logger = LogDomains.getLogger(EmbeddedSecurityUtil.class, LogDomains.SECURITY_LOGGER);

@@ -44,7 +44,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +57,7 @@ import java.util.Properties;
 /**
  * @author Jagadish Ramu
  */
-@Scoped(Singleton.class)
+@Singleton
 @Service
 public class ProvisionerUtil {
 

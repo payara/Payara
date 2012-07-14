@@ -52,7 +52,7 @@ import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -65,7 +65,7 @@ import org.jvnet.hk2.component.Habitat;
  * User: cmott
  * Date: 4/24/12
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @Service(name="CPAS")
 public class ElasticCpasParentFinder implements RootElementFinder{
 

@@ -65,7 +65,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;

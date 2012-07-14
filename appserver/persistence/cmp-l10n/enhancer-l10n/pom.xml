@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-enhancer-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>enhancer module for cmp Localization</name>
 
     <build>

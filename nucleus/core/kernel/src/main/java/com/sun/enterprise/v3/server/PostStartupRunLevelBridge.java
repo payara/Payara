@@ -40,11 +40,10 @@
 package com.sun.enterprise.v3.server;
 
 
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.api.PostStartupRunLevel;
-import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.RunLevelService;
 
 
 /**
@@ -55,8 +54,8 @@ import org.jvnet.hk2.component.RunLevelService;
  * @author Tom Beerbower
  */
 @SuppressWarnings("deprecation")
-@PostStartupRunLevel
-@Priority(2) // run early
+@RunLevel(PostStartupRunLevel.VAL)
+//@Priority(2) // run early
 @Service
 public class PostStartupRunLevelBridge extends RunLevelBridge {
 
@@ -64,9 +63,5 @@ public class PostStartupRunLevelBridge extends RunLevelBridge {
 
     public PostStartupRunLevelBridge() {
         super(PostStartup.class);
-    }
-
-    public PostStartupRunLevelBridge(Class additionalShutdownClass) {
-        super(PostStartup.class, additionalShutdownClass);
     }
 }

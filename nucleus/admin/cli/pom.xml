@@ -51,7 +51,7 @@
     </parent>
     
     <artifactId>admin-cli</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>admin-cli</name>
     
     <developers>
@@ -113,17 +113,16 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
-                    <destDir>target/classes</destDir>
-                    <!-- optional: <forPlatform></forPlatform> -->
                     <archive>
                         <manifest>
                             <mainClass>com.sun.enterprise.admin.cli.AsadminMain</mainClass>
                         </manifest>
                         <manifestEntries>
-				<Class-Path>cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar</Class-Path>
+				<Class-Path>cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar logging.jar</Class-Path>
                         <!-- 5776: we do not need backup jar entry, but I retain it, Kedar -->
                         </manifestEntries>
                     </archive>
@@ -182,6 +181,10 @@
  
     <dependencies>
         <dependency>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>asm-all-repackaged</artifactId>
             <version>${hk2.version}</version>
@@ -238,10 +241,6 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
         </dependency>
      </dependencies>
 </project>

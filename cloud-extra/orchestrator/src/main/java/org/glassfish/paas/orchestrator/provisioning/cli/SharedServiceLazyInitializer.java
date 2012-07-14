@@ -59,7 +59,7 @@ import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
@@ -76,7 +76,7 @@ import java.util.logging.Logger;
  */
 
 @org.jvnet.hk2.annotations.Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class SharedServiceLazyInitializer {
 
     @Inject

@@ -253,7 +253,7 @@ public class ContainerMapper extends StaticHttpHandler {
     }
 
     public synchronized void initializeFileURLPattern(String ext) {
-        for (Sniffer sniffer : grizzlyService.habitat.getAllByContract(Sniffer.class)) {
+        for (Sniffer sniffer : grizzlyService.getHabitat().<Sniffer>getAllServices(Sniffer.class)) {
             boolean match = false;
             if (sniffer.getURLPatterns() != null) {
 
@@ -266,7 +266,7 @@ public class ContainerMapper extends StaticHttpHandler {
 
                 HttpHandler adapter;
                 if (match) {
-                    adapter = grizzlyService.habitat.getComponent(SnifferAdapter.class);
+                    adapter = grizzlyService.getHabitat().getService(SnifferAdapter.class);
                     ((SnifferAdapter) adapter).initialize(sniffer, this);
                     ContextRootInfo c = new ContextRootInfo(adapter, null);
 

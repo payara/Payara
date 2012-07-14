@@ -47,7 +47,6 @@ import javax.inject.Inject;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -61,6 +60,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.security.services.config.LoginModuleConfig;
 import org.glassfish.security.services.config.SecurityConfigurations;
@@ -72,7 +72,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  * General create LoginModule config command.
  */
 @Service(name="create-login-module-config")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
 public class CreateLoginModuleConfig implements AdminCommand {

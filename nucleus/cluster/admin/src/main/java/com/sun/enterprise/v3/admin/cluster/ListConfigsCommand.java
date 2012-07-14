@@ -58,7 +58,7 @@ import org.glassfish.config.support.CommandTarget;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.*;
  */
 @Service(name = "list-configs")
 @I18n("list.configs.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value={CommandTarget.CLUSTER,

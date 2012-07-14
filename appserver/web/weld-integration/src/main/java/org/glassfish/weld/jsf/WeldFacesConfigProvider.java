@@ -79,7 +79,7 @@ public class WeldFacesConfigProvider implements FacesConfigResourceProvider {
 
         Habitat defaultServices = (Habitat)context.getAttribute(
                 HABITAT_ATTRIBUTE);
-        invokeMgr = defaultServices.forContract(InvocationManager.class).get();
+        invokeMgr = defaultServices.getService(InvocationManager.class);
         ComponentInvocation inv = invokeMgr.getCurrentInvocation();
         WebModule webModule = (WebModule)inv.getContainer();
         WebBundleDescriptor wdesc = webModule.getWebBundleDescriptor();

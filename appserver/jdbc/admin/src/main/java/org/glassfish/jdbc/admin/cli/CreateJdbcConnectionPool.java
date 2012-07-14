@@ -48,7 +48,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -65,7 +65,7 @@ import javax.inject.Inject;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="create-jdbc-connection-pool")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.jdbc.connection.pool")
 public class CreateJdbcConnectionPool implements AdminCommand {
     

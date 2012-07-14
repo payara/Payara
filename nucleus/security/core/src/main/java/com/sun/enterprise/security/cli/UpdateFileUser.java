@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -85,7 +85,7 @@ import org.glassfish.config.support.TargetType;
  */
 
 @Service(name="update-file-user")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("update.file.user")
 @ExecuteOn({RuntimeType.ALL})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})

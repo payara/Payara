@@ -41,7 +41,7 @@ package org.glassfish.elasticity.metrics.jvm.memory;
 
 import org.glassfish.elasticity.api.AlertConfigurator;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
-import org.glassfish.hk2.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.paas.orchestrator.service.spi.Service;
 
 import java.util.Collection;

@@ -40,7 +40,9 @@
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.LogManager;
 
 import javax.management.Attribute;
@@ -71,11 +73,11 @@ public class StructuredLogViewerResource {
     @Context
     protected BaseServiceLocator habitat;
     @Context
-    protected Injector injector;
+    protected ServiceLocator injector;
 
     @Path("lognames/")
     public LogNamesResource getLogNamesResource() {
-        LogNamesResource resource = injector.inject(LogNamesResource.class);
+        LogNamesResource resource = injector.createAndInitialize(LogNamesResource.class);
         return resource;
     }
 

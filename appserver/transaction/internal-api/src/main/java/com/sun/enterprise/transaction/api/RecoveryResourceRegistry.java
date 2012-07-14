@@ -42,7 +42,7 @@ package com.sun.enterprise.transaction.api;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.*;
 
@@ -59,7 +59,7 @@ import com.sun.enterprise.transaction.spi.RecoveryEventListener;
  * @since 9.1
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class RecoveryResourceRegistry  {
 
     private final static Set<RecoveryResourceListener> resourceListeners = 

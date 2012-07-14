@@ -53,7 +53,7 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.xml.sax.SAXParseException;
 
 import javax.enterprise.deploy.shared.ModuleType;

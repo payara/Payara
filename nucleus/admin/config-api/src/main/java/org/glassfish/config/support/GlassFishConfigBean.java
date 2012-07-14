@@ -92,7 +92,7 @@ public final class GlassFishConfigBean extends ConfigBean {
 
     @Override
     public <T extends ConfigBeanProxy> T createProxy(Class<T> proxyType) {
-        TranslatedConfigView.setHabitat(habitat);
+        TranslatedConfigView.setHabitat((BaseServiceLocator) getServiceLocator());
         if (defaultView==null) {
             defaultView = new TranslatedConfigView(this);
         }
@@ -114,7 +114,7 @@ public final class GlassFishConfigBean extends ConfigBean {
     public void initializationCompleted() {
         super.initializationCompleted();
         //System.out.println( "GlassFishConfigBean.initializationCompleted() for " + getProxyType().getName() );
-        for (ConfigBeanListener listener : habitat.getAllByContract(ConfigBeanListener.class)) {
+        for (ConfigBeanListener listener : getServiceLocator().<ConfigBeanListener>getAllServices(ConfigBeanListener.class)) {
             listener.onEntered(this);
         }
     }

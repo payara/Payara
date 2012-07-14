@@ -53,7 +53,7 @@ import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Implementation of the Scanner interface for Ejb jar.
@@ -61,7 +61,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Shing Wai Chan
  */
 @Service(name="ejb")
-@Scoped(PerLookup.class)
+@PerLookup
 public class EjbJarScanner extends ModuleScanner<EjbBundleDescriptor> {
 
     @Override

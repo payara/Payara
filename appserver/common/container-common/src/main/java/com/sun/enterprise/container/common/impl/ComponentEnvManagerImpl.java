@@ -95,7 +95,7 @@ public class ComponentEnvManagerImpl
     private BaseServiceLocator habitat;
 
     @Inject
-    private static Logger _logger;
+    private Logger _logger;
 
     @Inject
     GlassfishNamingManager namingManager;
@@ -616,9 +616,9 @@ public class ComponentEnvManagerImpl
             if (next.isEJBContext()) {
                 value = new EjbContextProxy(next.getRefType());
             } else if( next.isValidator() ) {
-                value = new ValidatorProxy();
+                value = new ValidatorProxy(_logger);
             } else if( next.isValidatorFactory() ) {
-                value = new ValidatorFactoryProxy();
+                value = new ValidatorFactoryProxy(_logger);
             } else if( next.isCDIBeanManager() ) {
                 value = namingUtils.createLazyNamingObjectFactory(name, "java:comp/BeanManager", false);
             } else if( next.isManagedBean() ) {
@@ -922,8 +922,10 @@ public class ComponentEnvManagerImpl
         private static final String nameForValidator = "java:comp/Validator";
         private volatile ValidatorFactory validatorFactory;
         private volatile Validator validator;
+        private final Logger _logger;
 
-        ValidatorProxy() {
+        private ValidatorProxy(Logger logger) {
+            this._logger = logger;
         }
 
         @Override
@@ -948,7 +950,7 @@ public class ComponentEnvManagerImpl
 
                 // case 2a no validatorFactory
                 if (null == validatorFactory) {
-                    ValidatorFactoryProxy factoryProxy = new ValidatorFactoryProxy();
+                    ValidatorFactoryProxy factoryProxy = new ValidatorFactoryProxy(_logger);
                     validatorFactory = (ValidatorFactory) factoryProxy.create(ctx);
                 }
 
@@ -971,8 +973,10 @@ public class ComponentEnvManagerImpl
     private static class ValidatorFactoryProxy implements NamingObjectProxy {
         private static final String nameForValidatorFactory = "java:comp/ValidatorFactory";
         private volatile ValidatorFactory validatorFactory;
+        private final Logger _logger;
 
-        ValidatorFactoryProxy() {
+        private ValidatorFactoryProxy(Logger logger) {
+            _logger = logger;
         }
 
         @Override

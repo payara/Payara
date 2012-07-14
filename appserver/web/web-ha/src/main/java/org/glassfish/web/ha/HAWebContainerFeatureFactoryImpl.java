@@ -67,7 +67,7 @@ public class HAWebContainerFeatureFactoryImpl extends PEWebContainerFeatureFacto
     @Override
     public SSOFactory getSSOFactory() {
         if (isSsoFailoverEnabled()) {
-            return services.byType(HASSOFactory.class).get();
+            return services.getService(HASSOFactory.class);
         } else {
             return new PESSOFactory();
         }

@@ -52,7 +52,7 @@ import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.logging.Logger;
 
@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "list-alerts")
 @I18n("list.alerts")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({ @RestEndpoint(configBean = Alerts.class, opType = RestEndpoint.OpType.GET, path = "list-alerts", description = "List alerts") })
 public class ListAlertsCommand implements AdminCommand {

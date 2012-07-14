@@ -49,7 +49,7 @@ import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
@@ -71,7 +71,7 @@ import java.util.logging.Level;
  * @author tjquinn
  */
 @Service(name="car")
-@Scoped(PerLookup.class)
+@PerLookup
 public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor> {
     private ApplicationClientDescriptor descriptor;
 

@@ -48,7 +48,7 @@ import java.util.logging.Logger;
 import org.apache.catalina.util.StringManager;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 
 
@@ -57,7 +57,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author vbkumarjayanti
  */
 @Service(name = "CNonceCache")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class CNonceCacheImpl extends LinkedHashMap<String, NonceInfo> implements CNonceCache {
 
     private static final long LOG_SUPPRESS_TIME = 5 * 60 * 1000;

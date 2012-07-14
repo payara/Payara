@@ -67,11 +67,11 @@ import org.glassfish.api.admin.RuntimeType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 @Service(name="_get-host-and-port")
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

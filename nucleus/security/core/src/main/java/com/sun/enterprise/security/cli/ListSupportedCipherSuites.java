@@ -53,7 +53,7 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * author - Nithya Subramanian
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
  **/
 
 @Service(name = "list-supported-cipher-suites")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.supported.cipher.suites")
 @ExecuteOn({RuntimeType.DAS})

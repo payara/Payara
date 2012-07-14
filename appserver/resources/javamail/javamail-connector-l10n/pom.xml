@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>javamail-connector-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connector (glue) for GlassFish JavaMail Support Localization</name>
 
     <build>

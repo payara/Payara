@@ -48,7 +48,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Remote AdminCommand to validate the connection to a DCOM node.
@@ -56,7 +56,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Byron Nevins
  */
 @Service(name = "ping-node-dcom")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({

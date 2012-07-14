@@ -51,14 +51,14 @@ import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
  * @author vbkumarjayanti
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class HAUtilImpl implements HAUtil {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

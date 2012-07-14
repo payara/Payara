@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>web-glue-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Web Container glue code Localization</name>
 
     <build>

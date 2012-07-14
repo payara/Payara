@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>jstl-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JSTL implementation connector module</name>
 
     <developers>
@@ -68,7 +68,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>

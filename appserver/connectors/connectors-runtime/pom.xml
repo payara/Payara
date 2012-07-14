@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Java EE Connector Architecture Runtime for GlassFish</name>
 
     <developers>
@@ -79,8 +79,8 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
 		        <manifestEntries>
@@ -131,7 +131,7 @@
 
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
 
         <dependency>

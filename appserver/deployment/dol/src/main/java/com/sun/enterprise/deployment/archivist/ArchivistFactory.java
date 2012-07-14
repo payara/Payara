@@ -40,21 +40,23 @@
 
 package com.sun.enterprise.deployment.archivist;
 
-import org.glassfish.api.ContractProvider;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.Descriptor;
+import org.glassfish.hk2.api.IndexedFilter;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -63,10 +65,13 @@ import java.util.Set;
  * @author  Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
-public class ArchivistFactory implements ContractProvider {
+@Singleton
+public class ArchivistFactory {
+    public final static String ARCHIVE_TYPE = "archiveType";
+    public final static String EXTENSION_ARCHIVE_TYPE = "extensionArchiveType";
+    
     @Inject
-    BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     public Archivist getArchivist(String archiveType, ClassLoader cl) {
         Archivist result = getArchivist(archiveType);
@@ -76,21 +81,20 @@ public class ArchivistFactory implements ContractProvider {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public Archivist getArchivist(String archiveType) {
-        Archivist result = null;
-        for (Inhabitant<?> inhabitant : ((Habitat) habitat).getInhabitants(ArchivistFor.class)) {
-            String indexedType = inhabitant.metadata().get(ArchivistFor.class.getName()).get(0);
-            if(indexedType.equals(archiveType)) {
-                result = (Archivist) inhabitant.get();
-            }
-        }
-        return result;
+        ActiveDescriptor<Archivist> best = (ActiveDescriptor<Archivist>)
+                habitat.getBestDescriptor(new ArchivistFilter(archiveType, ARCHIVE_TYPE, Archivist.class));
+        if (best == null) return null;
+        
+        return habitat.getServiceHandle(best).getService();
     }
 
     public Archivist getArchivist(ArchiveType moduleType) {
         return getArchivist(String.valueOf(moduleType));
     }
 
+    @SuppressWarnings("unchecked")
     public List<ExtensionsArchivist> getExtensionsArchivists(Collection<Sniffer> sniffers, ArchiveType moduleType) {
         Set<String> containerTypes = new HashSet<String>();
         for (Sniffer sniffer : sniffers) {
@@ -98,16 +102,68 @@ public class ArchivistFactory implements ContractProvider {
         }
         List<ExtensionsArchivist> archivists = new ArrayList<ExtensionsArchivist>();
         for (String containerType : containerTypes) {
-            for (Inhabitant<?> inhabitant : ((Habitat)habitat).getInhabitants(ExtensionsArchivistFor.class)) {
-                String indexedType = inhabitant.metadata().get(ExtensionsArchivistFor.class.getName()).get(0);
-                if(indexedType.equals(containerType)) {
-                    ExtensionsArchivist ea = (ExtensionsArchivist) inhabitant.get();
-                    if (ea.supportsModuleType(moduleType)) {
-                        archivists.add(ea);
-                    }
+            List<ActiveDescriptor<?>> descriptors =
+                    habitat.getDescriptors(
+                    new ArchivistFilter(containerType, EXTENSION_ARCHIVE_TYPE, ExtensionsArchivist.class));
+            
+            for (ActiveDescriptor<?> item : descriptors) {
+                
+                ActiveDescriptor<ExtensionsArchivist> descriptor =
+                        (ActiveDescriptor<ExtensionsArchivist>) item;
+            
+                ServiceHandle<ExtensionsArchivist> handle = habitat.getServiceHandle(descriptor);
+                ExtensionsArchivist ea = handle.getService();
+                if (ea.supportsModuleType(moduleType)) {
+                    archivists.add(ea);
                 }
             }
         }
         return archivists;
     }
+    
+    private static class ArchivistFilter implements IndexedFilter {
+        private final String archiveType;
+        private final String metadataKey;
+        private final Class<?> index;
+        
+        private ArchivistFilter(String archiveType, String metadataKey, Class<?> index) {
+            this.archiveType = archiveType;
+            this.metadataKey = metadataKey;
+            this.index = index;
+        }
+
+        /* (non-Javadoc)
+         * @see org.glassfish.hk2.api.Filter#matches(org.glassfish.hk2.api.Descriptor)
+         */
+        @Override
+        public boolean matches(Descriptor d) {
+            Map<String, List<String>> metadata = d.getMetadata();
+            
+            List<String> values = metadata.get(metadataKey);
+            if (values == null) {
+                return false;
+            }
+            
+            return values.contains(archiveType);
+        }
+
+        /* (non-Javadoc)
+         * @see org.glassfish.hk2.api.IndexedFilter#getAdvertisedContract()
+         */
+        @Override
+        public String getAdvertisedContract() {
+            return index.getName();
+        }
+
+        /* (non-Javadoc)
+         * @see org.glassfish.hk2.api.IndexedFilter#getName()
+         */
+        @Override
+        public String getName() {
+            return null;
+        }
+        
+    }
+    
+    
 }

@@ -52,10 +52,11 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -67,7 +68,7 @@ import javax.inject.Inject;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="delete-jdbc-connection-pool")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.jdbc.connection.pool")
 public class DeleteJdbcConnectionPool implements AdminCommand {
     
@@ -86,10 +87,10 @@ public class DeleteJdbcConnectionPool implements AdminCommand {
     private Domain domain;
 
     @Inject
-    private Server[] servers;
+    private IterableProvider<Server> servers;
 
     @Inject
-    private Cluster[] clusters;
+    private IterableProvider<Cluster> clusters;
 
     /**
      * Executes the command with the command parameters passed as Properties

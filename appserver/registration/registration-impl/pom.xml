@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>registration-impl</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Registration Impl</name>
     <description>Registration Impl</description>
 

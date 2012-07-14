@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = OSGiArchiveType.ARCHIVE_TYPE)
-@Scoped(org.jvnet.hk2.component.Singleton.class)
+@javax.inject.Singleton
 public class OSGiArchiveType extends ArchiveType {
     /**
      * String value of this module type. This is what is accepted in --type argument of deploy command.

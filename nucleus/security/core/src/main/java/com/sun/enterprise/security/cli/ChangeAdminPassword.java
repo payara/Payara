@@ -52,7 +52,7 @@ import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -85,7 +85,7 @@ import org.glassfish.internal.api.Target;
  */
 
 @Service(name="change-admin-password")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("change.admin.password")
 @ExecuteOn({RuntimeType.ALL})
 public class ChangeAdminPassword implements AdminCommand {

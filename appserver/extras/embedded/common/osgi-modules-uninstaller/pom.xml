@@ -52,7 +52,7 @@ holder.
   </parent>
 
     <artifactId>osgi-modules-uninstaller</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish OSGI Modules Uninstaller</name>
 
     <dependencies>

@@ -39,22 +39,16 @@
  */
 package com.sun.enterprise.v3.server;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+
+import javax.inject.Inject;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.hk2.PostConstruct;
-import org.glassfish.hk2.PreDestroy;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Priority;
-import org.jvnet.hk2.annotations.RunLevel;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.InhabitantActivator;
 
 /**
  * Abstract base for all run level bridges.
@@ -70,7 +64,7 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
     private final static Level level = AppServerStartup.level;
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator locator;
 
     /**
      * The legacy type we are bridging to.
@@ -78,21 +72,15 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
     private final Class bridgeClass;
 
     /**
-     * The class to stop during shutdown as well (optional).
+     * The service handles for the services that have been activated.
      */
-    private final Class additionalShutdownClass;
+    private List<ServiceHandle<?>> services = new LinkedList<ServiceHandle<?>>();
 
 
     // ----- Constructors ----------------------------------------------------
 
     RunLevelBridge(Class bridgeClass) {
         this.bridgeClass = bridgeClass;
-        this.additionalShutdownClass = null;
-    }
-
-    RunLevelBridge(Class bridgeClass, Class additionalShutdownClass) {
-        this.bridgeClass = bridgeClass;
-        this.additionalShutdownClass = additionalShutdownClass;
     }
 
 
@@ -101,25 +89,23 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
     @SuppressWarnings("unchecked")
     @Override
     public void postConstruct() {
-        List<Inhabitant<?>> inhabitants = sort(habitat.getInhabitants(bridgeClass));
-        for (Inhabitant<?> i : inhabitants) {
-            if (qualifies(true, i)) {
-                long start = System.currentTimeMillis();
-                logger.log(level, "starting {0}", i);
-                try {
-                    activate(i);
-                } catch (RuntimeException e) {
-                    logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {i, e.getMessage()});
-                    logger.log(level, "nested error", e);
-                    throw e;
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {i, e.getMessage()});
-                    logger.log(level, "nested error", e);
-                }
-                if (logger.isLoggable(level)) {
-                    logger.log(level, "start of " + i + " done in "
-                        + (System.currentTimeMillis() - start) + " ms");
-                }
+        List<ServiceHandle<?>> serviceHandles = locator.getAllServiceHandles(bridgeClass);
+        for (ServiceHandle<?> serviceHandle : serviceHandles) {
+            long start = System.currentTimeMillis();
+            logger.log(level, "starting {0}", serviceHandle);
+            try {
+                activate(serviceHandle);
+            } catch (RuntimeException e) {
+                logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {serviceHandle, e.getMessage()});
+                logger.log(Level.SEVERE, "nested error", e);
+                throw e;
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "problem starting {0}: {1}", new Object[] {serviceHandle, e.getMessage()});
+                logger.log(Level.SEVERE, "nested error", e);
+            }
+            if (logger.isLoggable(level)) {
+                logger.log(level, "start of " + serviceHandle + " done in "
+                    + (System.currentTimeMillis() - start) + " ms");
             }
         }
     }
@@ -130,30 +116,13 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
     @SuppressWarnings("unchecked")
     @Override
     public void preDestroy() {
-        List<Inhabitant<?>> inhabitants;
-        if (null == additionalShutdownClass) {
-            inhabitants = sort(habitat.getInhabitants(bridgeClass));
-        } else {
-            // Startup and PostStartup are merged according to their priority level and released
-            Collection<Inhabitant<?>> inhabitants1 = habitat.getInhabitants(bridgeClass);
-            Collection<Inhabitant<?>> inhabitants2 = habitat.getInhabitants(additionalShutdownClass);
-
-            inhabitants = new ArrayList<Inhabitant<?>>();
-            inhabitants.addAll(inhabitants2);
-            inhabitants.addAll(inhabitants1);
-
-            Collections.reverse(sort(inhabitants));
-        }
-        
-        for (Inhabitant<?> i : inhabitants) {
-            if (qualifies(false, i)) {
-                logger.log(level, "releasing {0}", i);
-                try {
-                    deactivate(i);
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, "problem releasing {0}: {1}", new Object[] {i, e.getMessage()});
-                    logger.log(level, "nested error", e);
-                }
+        for (ServiceHandle serviceHandle : services) {
+            logger.log(level, "releasing {0}", serviceHandle);
+            try {
+                serviceHandle.getActiveDescriptor().dispose(serviceHandle.getService());
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "problem releasing {0}: {1}", new Object[] {serviceHandle, e.getMessage()});
+                logger.log(level, "nested error", e);
             }
         }
     }
@@ -162,76 +131,16 @@ abstract class RunLevelBridge implements PostConstruct, PreDestroy {
     // ----- helper methods --------------------------------------------------
 
     /**
-     * Activate the given inhabitant.
+     * Activate a service handle.
      *
-     * @param i  the inhabitant
+     * @param serviceHandle  the service handle
+     *
+     * @return the service
      */
-    protected void activate(Inhabitant<?> i) {
-        i.get();
+    protected Object activate(ServiceHandle<?> serviceHandle) {
+        Object service = serviceHandle.getService();
+        services.add(0, serviceHandle);
+        return service;
     }
 
-    /**
-     * Deactivate the given inhabitant.
-     *
-     * @param i  the inhabitant
-     */
-    protected void deactivate(Inhabitant<?> i) {
-        i.release();
-    }
-
-    /**
-     * Determine if the given {@link Inhabitant} is using the new {@link RunLevel}-based mechanism.
-     *
-     * @return true if the given inhabitant is annotated with a run level annotation
-     */
-    protected boolean qualifies(boolean startup, Inhabitant<?> i) {
-        RunLevel rl = i.type().getAnnotation(RunLevel.class);
-        if (startup) {
-            // in this case we handle anything that doesn't have a RunLevel annotation on it
-            return (null == rl);
-        } else {
-            // in shutdown case we forcibly stop anything without a RunLevel OR anything that is
-            // not a "strict" type RunLevel - see javadoc and site documentation for details.
-            return (i.isActive() && (null == rl || !rl.strict()));
-        }
-    }
-
-    /**
-     * Get a sorted {@link List} from the the given {@link Collection}, reusing the same
-     * {@link Collection} if provided as a {@link List} type.
-     *
-     * @return the sorted list
-     */
-    @SuppressWarnings("unchecked")
-    protected List<Inhabitant<?>> sort(Collection<Inhabitant<?>> coll) {
-        List<Inhabitant<?>> sorted = (List.class.isInstance(coll)) ?
-                List.class.cast(coll) : new ArrayList<Inhabitant<?>>(coll);
-
-        if (sorted.size() > 1) {
-            logger.log(level, "sorting {0},{1}", new Object[] {bridgeClass, additionalShutdownClass});
-            Collections.sort(sorted, getInhabitantComparator());
-        }
-        return sorted;
-    }
-
-    /**
-     * Get a comparator based on {@link Inhabitant} priority.
-     *
-     * @return a comparator
-     */
-    private static Comparator<Inhabitant<?>> getInhabitantComparator() {
-        return new Comparator<Inhabitant<?>>() {
-            public int compare(Inhabitant<?> o1, Inhabitant<?> o2) {
-                int o1level = (o1.type().getAnnotation(Priority.class)!=null?
-                        o1.type().getAnnotation(Priority.class).value():5);
-                int o2level = (o2.type().getAnnotation(Priority.class)!=null?
-                        o2.type().getAnnotation(Priority.class).value():5);
-                if (o1level==o2level) {
-                    return 0;
-                } else if (o1level<o2level) {
-                    return -1;
-                } else return 1;
-            }
-        };
-    }
 }

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>deployment-client</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Deployment Client Classes and Interfaces</name>
 
     <developers>

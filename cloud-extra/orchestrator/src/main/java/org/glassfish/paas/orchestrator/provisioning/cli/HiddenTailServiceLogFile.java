@@ -54,7 +54,7 @@ import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.service.spi.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  */
 
 @org.jvnet.hk2.annotations.Service(name = "_hidden-tail-service-log-file")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("hidden.tail.server.logfile")
 @RestEndpoints({

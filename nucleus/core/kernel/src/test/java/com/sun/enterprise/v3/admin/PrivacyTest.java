@@ -43,8 +43,8 @@ package com.sun.enterprise.v3.admin;
 import org.junit.Test;
 import org.junit.Assert;
 import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Test the visibility annotation
@@ -55,14 +55,14 @@ public class PrivacyTest {
     public void privacyTests() {
         AdminAdapter publicAdaper = new PublicAdminAdapter();
         AdminAdapter privateAdapter = new PrivateAdminAdapter();
-        BaseServiceLocator habitat = Utils.getNewHabitat();
-        AdminCommand adminCommand = habitat.getComponent(AdminCommand.class, "simple-public-command");
+        ServiceLocator habitat = Utils.getNewHabitat();
+        AdminCommand adminCommand = habitat.getService(AdminCommand.class, "simple-public-command");
         Assert.assertTrue(publicAdaper.validatePrivacy(adminCommand));
         Assert.assertFalse(privateAdapter.validatePrivacy(adminCommand));
-        adminCommand = habitat.getComponent(AdminCommand.class, "notannoated-public-command");
+        adminCommand = habitat.getService(AdminCommand.class, "notannoated-public-command");
         Assert.assertTrue(publicAdaper.validatePrivacy(adminCommand));
         Assert.assertFalse(privateAdapter.validatePrivacy(adminCommand));
-        adminCommand = habitat.getComponent(AdminCommand.class, "simple-private-command");
+        adminCommand = habitat.getService(AdminCommand.class, "simple-private-command");
         Assert.assertFalse(publicAdaper.validatePrivacy(adminCommand));
         Assert.assertTrue(privateAdapter.validatePrivacy(adminCommand));
     }

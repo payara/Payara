@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-support-sqlstore-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>support-sqlstore module for cmp Localization</name>
 
     <build>

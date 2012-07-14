@@ -114,8 +114,8 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 //import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
@@ -132,7 +132,7 @@ import org.jvnet.hk2.config.types.Property;
  * @author Satish Kumar
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
     static Logger _logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class,  LogDomains.JMS_LOGGER);

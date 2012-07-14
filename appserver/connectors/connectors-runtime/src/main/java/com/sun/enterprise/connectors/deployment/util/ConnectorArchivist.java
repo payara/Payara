@@ -55,7 +55,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.util.List;
@@ -70,7 +70,7 @@ import javax.inject.Inject;
  * @version  
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 @ArchivistFor(RarType.ARCHIVE_TYPE)
 public class ConnectorArchivist extends Archivist<ConnectorDescriptor> {
 

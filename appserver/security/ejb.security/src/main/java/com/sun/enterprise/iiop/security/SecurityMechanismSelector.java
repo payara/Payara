@@ -100,8 +100,8 @@ import org.glassfish.enterprise.iiop.api.ProtocolManager;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.invocation.InvocationManager ;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 
@@ -118,7 +118,7 @@ import javax.inject.Inject;
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class SecurityMechanismSelector implements PostConstruct {
 
     private static final java.util.logging.Logger _logger =

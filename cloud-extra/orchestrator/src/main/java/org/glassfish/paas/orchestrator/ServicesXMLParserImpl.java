@@ -47,7 +47,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceDescription;
 import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -57,7 +57,7 @@ import java.io.InputStream;
  * @author bhavanishankar@java.net
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ServicesXMLParserImpl implements ServicesXMLParser {
 
     public ServiceMetadata discoverDeclaredServices(String appName, ReadableArchive ra) {

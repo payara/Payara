@@ -51,7 +51,7 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.hk2.scopes.Singleton;
+
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.listener.ResourceManagerLifecycleListener;
@@ -64,6 +64,7 @@ import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.naming.NamingException;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
@@ -79,7 +80,7 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorResourceManagerLifecycleListener implements ResourceManagerLifecycleListener, ConfigListener {
 
     @Inject

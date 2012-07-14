@@ -47,8 +47,9 @@ import org.glassfish.virtualization.spi.OsInterface;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.util.OsInterfaceFactory;
 import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.annotations.Factory;
 import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.*;
@@ -62,8 +63,8 @@ import java.util.Scanner;
  * @author Jerome Dochez
  */
 @Service(name="ubuntu")
-@Factory(OsInterfaceFactory.class)
-public class Ubuntu implements OsInterface {
+@ContractsProvided(OsInterfaceProvider.class)
+public class Ubuntu implements OsInterface, OsInterfaceProvider {
 
     @Inject
     ShellExecutor shell;
@@ -201,4 +202,9 @@ public class Ubuntu implements OsInterface {
         }
         return null;
     }
+
+	@Override
+	public OsInterface provideOsInterface() {
+		return this;
+	}
 }

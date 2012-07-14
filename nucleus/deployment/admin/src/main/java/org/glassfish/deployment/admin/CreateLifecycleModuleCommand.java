@@ -57,7 +57,7 @@ import org.glassfish.config.support.CommandTarget;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Transaction;
 
 import java.util.logging.Logger;
@@ -78,7 +78,7 @@ import org.glassfish.api.admin.RuntimeType;
 @Service(name="create-lifecycle-module")
 @I18n("create.lifecycle.module")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,

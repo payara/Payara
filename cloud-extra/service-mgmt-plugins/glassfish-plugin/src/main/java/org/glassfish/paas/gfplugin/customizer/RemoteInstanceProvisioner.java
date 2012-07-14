@@ -41,23 +41,23 @@
 package org.glassfish.paas.gfplugin.customizer;
 
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.spe.common.BasicProvisionedService;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
 import java.io.FileWriter;
 
+import javax.inject.Singleton;
+
 /**
  * @author Bhavanishankar S
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class RemoteInstanceProvisioner implements GlassFishPluginConstants {
 
     public void provision(GlassFishProvisionedService das, ProvisionedService... instances) {

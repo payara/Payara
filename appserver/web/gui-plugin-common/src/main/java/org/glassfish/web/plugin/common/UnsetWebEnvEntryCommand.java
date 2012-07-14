@@ -51,7 +51,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
@@ -59,7 +59,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name="unset-web-env-entry")
 @I18n("unsetWebEnvEntry.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,
         opType=RestEndpoint.OpType.POST, // TODO: should be DELETE? 

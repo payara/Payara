@@ -51,7 +51,7 @@ import org.glassfish.deployment.common.GenericAnnotationDetector;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -66,7 +66,7 @@ import javax.inject.Inject;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = RarDetector.ARCHIVE_TYPE)
-@Scoped(Singleton.class)
+@Singleton
 public class RarDetector implements ArchiveDetector {
     private static final Class[] connectorAnnotations = new Class[]{
             javax.resource.spi.Connector.class};
@@ -98,7 +98,7 @@ public class RarDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                archiveHandler = services.forContract(ArchiveHandler.class).named(ARCHIVE_TYPE).get();
+                archiveHandler = services.getService(ArchiveHandler.class, ARCHIVE_TYPE);
             }
             return archiveHandler;
         }

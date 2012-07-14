@@ -49,7 +49,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>security</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Security Core Classes</name>
     <developers>
         <developer>
@@ -129,18 +129,7 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <probe-provider-class-names>com.sun.enterprise.security.auth.realm.RealmsProbeProvider,com.sun.enterprise.security.WebSecurityDeployerProbeProvider,com.sun.enterprise.security.EjbSecurityPolicyProbeProvider</probe-provider-class-names>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
+           <plugin>
            <groupId>org.apache.maven.plugins</groupId>
            <artifactId>maven-dependency-plugin</artifactId>
            <executions>

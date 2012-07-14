@@ -53,7 +53,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 
@@ -64,7 +64,7 @@ import javax.inject.Inject;
  * @author Chris Kasso
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class AdminCommandLock {
 
     @Inject

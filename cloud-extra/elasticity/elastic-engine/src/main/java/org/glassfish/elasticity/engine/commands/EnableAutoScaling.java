@@ -48,7 +48,6 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.glassfish.hk2.scopes.PerLookup;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
@@ -56,6 +55,8 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
+import org.glassfish.hk2.api.PerLookup;
+
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 
@@ -68,7 +69,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  *
  */
 @Service(name="enable-auto-scaling")
-@Scoped(PerLookup.class)
+@PerLookup
 public class EnableAutoScaling
 	implements AdminCommand {
 

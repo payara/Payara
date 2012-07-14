@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>web-gui-plugin-common-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Web container and GUI plug-in common classes Localization</name>
 
     <build>

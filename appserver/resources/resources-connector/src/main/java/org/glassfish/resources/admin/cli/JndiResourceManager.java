@@ -49,7 +49,7 @@ import org.glassfish.resources.config.ExternalJndiResource;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -66,7 +66,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 
 @Service(name = ServerTags.EXTERNAL_JNDI_RESOURCE)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.jndi.resource")
 public class JndiResourceManager implements ResourceManager {
     final private static LocalStringManagerImpl localStrings =

@@ -52,7 +52,7 @@
     </parent>
     <groupId>org.glassfish.main.admingui</groupId>
     <artifactId>console-common</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Common</name>
     <description>This bundle contains common code that may be shared across plugins.</description>
 
@@ -62,20 +62,19 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <processors>
-                        <processor>
-                            <groupId>com.sun.jsftemplating</groupId>
-                            <artifactId>jsftemplating-dt</artifactId>
-                            <version>${jsftemplating.version}</version>
-                        </processor>
-                    </processors>
-
-                </configuration>
+             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.0-alpha-4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>

@@ -55,7 +55,7 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -71,7 +71,7 @@ import org.glassfish.api.admin.RuntimeType;
 @Service(name = "unfreeze-transaction-service")
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @ExecuteOn(RuntimeType.INSTANCE)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("unfreeze.transaction.service")
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,

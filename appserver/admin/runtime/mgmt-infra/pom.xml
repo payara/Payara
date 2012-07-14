@@ -49,14 +49,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rt-mgmt-infra</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Runtime Management Infrastructure</name>
     <description>Runtime Management Infrastructure Classes</description>
 
     <dependencies>
         <dependency>
           <groupId>org.glassfish.hk2</groupId>
-          <artifactId>auto-depends</artifactId>
+          <artifactId>core</artifactId>
         </dependency>
     </dependencies>
 

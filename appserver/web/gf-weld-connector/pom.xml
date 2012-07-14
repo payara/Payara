@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>gf-weld-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Weld connector for glassfish</name>
     
     <dependencies>

@@ -57,7 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import com.sun.enterprise.config.serverbeans.Node;
@@ -73,7 +73,7 @@ import com.sun.enterprise.config.serverbeans.Node;
  */
 @Service(name = "start-instance")
 @CommandLock(CommandLock.LockType.NONE) // don't prevent _synchronize-files
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("start.instance.command")
 @RestEndpoints({
     @RestEndpoint(configBean=Server.class,

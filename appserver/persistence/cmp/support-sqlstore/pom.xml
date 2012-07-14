@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-support-sqlstore</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>support-sqlstore module for cmp</name>
 
     <developers>

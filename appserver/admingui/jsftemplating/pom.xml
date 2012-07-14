@@ -98,7 +98,7 @@
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <!-- We don't use extensions as this interfers with
-                     hk2-maven-plugin and that results in hk2 artifacts
+                     HK2 and that results in hk2 artifacts
                      being copied as .hk2-jar. Instead, we configure the
                      plugin to run as part of package phase. By Sahoo.
                 <extensions>true</extensions>

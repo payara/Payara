@@ -63,22 +63,22 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.ejb.deployment.annotation.impl.EjbInWarScanner;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * @author Mahesh Kannan
  */
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 @ExtensionsArchivistFor("ejb")
 public class EjbInWarArchivist extends ExtensionsArchivist {
 
     @Inject
-    BaseServiceLocator serviceLocator;
+    ServiceLocator serviceLocator;
     
     @Inject
     Provider<EjbInWarScanner> scanner;

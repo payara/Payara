@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>elastic-api</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Elasticity API</name>
     
     <developers>
@@ -68,7 +68,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
     </dependencies>
 </project>

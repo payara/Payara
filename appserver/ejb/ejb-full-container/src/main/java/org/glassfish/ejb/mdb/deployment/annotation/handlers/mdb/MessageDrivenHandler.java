@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.ejb.deployment.annotation.handlers.mdb;
+package org.glassfish.ejb.mdb.deployment.annotation.handlers.mdb;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;

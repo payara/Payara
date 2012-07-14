@@ -75,7 +75,6 @@ public abstract class ClientGenerator {
 
     protected Set<String> alreadyGenerated = new HashSet<String>();
     protected Habitat habitat;
-    protected Version version;
     protected List<String> messages = new ArrayList<String>();
     protected String versionString;
     protected static final String ARTIFACT_NAME = "rest-client-wrapper";
@@ -84,7 +83,6 @@ public abstract class ClientGenerator {
 
     public ClientGenerator(Habitat habitat) {
         this.habitat = habitat;
-        version = habitat.getByType(Version.class);
         versionString = Version.getVersionNumber();
     }
 

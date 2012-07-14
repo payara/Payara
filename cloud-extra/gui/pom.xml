@@ -165,17 +165,6 @@
             <plugins>
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
-                    <artifactId>hk2-maven-plugin</artifactId>
-                    <version>${version.hk2}</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <archive>
-                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                        </archive>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
                     <artifactId>osgiversion-maven-plugin</artifactId>
                     <version>${version.hk2}</version>
                 </plugin>
@@ -191,10 +180,6 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

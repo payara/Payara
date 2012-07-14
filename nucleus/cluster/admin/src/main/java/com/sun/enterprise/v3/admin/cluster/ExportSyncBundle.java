@@ -57,7 +57,7 @@ import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Usage:
@@ -80,7 +80,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
 @Service(name = "export-sync-bundle")
-@Scoped(PerLookup.class)
+@PerLookup
 //@TargetType(value={CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @I18n("export-sync-bundle")
 @RestEndpoints({

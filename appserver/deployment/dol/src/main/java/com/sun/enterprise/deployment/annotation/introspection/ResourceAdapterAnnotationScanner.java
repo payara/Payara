@@ -42,13 +42,13 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.Set;
 import java.util.HashSet;
 
 @Service(name="rar")
-@Scoped(Singleton.class)
+@Singleton
 public class ResourceAdapterAnnotationScanner implements AnnotationScanner {
 
     private Set<String> annotations=null;

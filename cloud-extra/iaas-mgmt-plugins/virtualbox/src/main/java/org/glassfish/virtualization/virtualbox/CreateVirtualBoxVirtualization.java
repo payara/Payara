@@ -45,7 +45,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
@@ -61,7 +61,7 @@ import java.beans.PropertyVetoException;
  * Creates the default virtual box configuration.
  */
 @Service(name = "create-ims-config-virtualbox")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateVirtualBoxVirtualization implements AdminCommand {
 
     @Param(optional=true)

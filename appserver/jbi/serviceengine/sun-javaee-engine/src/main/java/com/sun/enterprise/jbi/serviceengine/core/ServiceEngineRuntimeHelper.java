@@ -47,7 +47,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.jbi.serviceengine.bridge.EndpointInfoCollector;
@@ -59,7 +59,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author Mohit Gupta
  */
 @Service(name = "ServiceEngineRuntimeHelper")
-@Scoped(Singleton.class)
+@Singleton
 public class ServiceEngineRuntimeHelper implements ContractProvider {
 
     private static ServiceEngineRuntimeHelper _runtime;

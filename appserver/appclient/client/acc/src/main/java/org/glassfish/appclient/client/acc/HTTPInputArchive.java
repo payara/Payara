@@ -61,7 +61,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deploy.shared.AbstractReadableArchive;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Implements ReadableArchive for the http (and https) protocol to support
@@ -75,7 +75,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author tjquinn
  */
 @Service(name="http")
-@Scoped(PerLookup.class)
+@PerLookup
 public class HTTPInputArchive extends AbstractReadableArchive {
 
     private URI archiveURI = null;

@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jts-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JTS Implementation for Glassfish Localization</name>
 
     <build>

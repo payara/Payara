@@ -54,7 +54,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ import java.util.logging.Level;
  * Deletes a virtual cluster (temporary, will be probably retroffited into normal delete-cluster command).
  */
 @Service(name="delete-virtual-cluster")
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeleteVirtualCluster implements AdminCommand {
 
     @Param(primary=true)

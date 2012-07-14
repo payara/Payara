@@ -41,25 +41,40 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.ASMainHelper;
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.bootstrap.BootException;
-import com.sun.enterprise.module.bootstrap.Main;
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
-import com.sun.enterprise.module.bootstrap.StartupContext;
+import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.bootstrap.ConfigPopulator;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.osgi.framework.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
-import java.io.File;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.enterprise.glassfish.bootstrap.ASMainHelper;
+import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
+import com.sun.enterprise.module.bootstrap.BootException;
+import com.sun.enterprise.module.bootstrap.Main;
+import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 
 /**
  * Implementation of GlassFishRuntime in an OSGi environment.
@@ -80,6 +95,30 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
     public EmbeddedOSGiGlassFishRuntime(BundleContext context) {
         this.context = context;
     }
+    
+    private void addStartupContext(ServiceLocator locator, StartupContext addMe) {
+        AbstractActiveDescriptor<StartupContext> descriptor = BuilderHelper.createConstantDescriptor(addMe);
+        
+        Set<Type> contractTypes = new HashSet<Type> (descriptor.getContractTypes());
+        for (Type type : contractTypes) {
+            descriptor.removeContractType(type);
+        }
+        descriptor.addContractType(StartupContext.class);
+        
+        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
+        
+        config.addActiveDescriptor(descriptor);
+        
+        config.commit();
+    }
+    
+    private void populateConfig(ServiceLocator serviceLocator) throws BootException {
+        //Populate this serviceLocator with config data
+        for (ConfigPopulator populator : serviceLocator.<ConfigPopulator>getAllServices(ConfigPopulator.class)) {
+            populator.populateConfig(serviceLocator);
+        }
+    }
 
     @Override
     public synchronized GlassFish newGlassFish(GlassFishProperties gfProps) throws GlassFishException {
@@ -92,10 +131,19 @@ public class EmbeddedOSGiGlassFishRuntime extends GlassFishRuntime {
             hk2Tracker.open();
             final Main main = (Main) hk2Tracker.waitForService(0);
             hk2Tracker.close();
-            final ModulesRegistry mr = ModulesRegistry.class.cast(getBundleContext().getService(getBundleContext().getServiceReference(ModulesRegistry.class.getName())));
-            final BaseServiceLocator habitat = main.createHabitat(mr, startupContext);
-            final ModuleStartup gfKernel = main.findStartupService(mr, habitat, null, startupContext);
-            GlassFish glassFish = createGlassFish(gfKernel, habitat, gfProps.getProperties());
+           
+            ServiceLocator serviceLocator = main.getServiceLocator();
+            
+            addStartupContext(serviceLocator, startupContext);
+            
+            // Config population must happen after
+            // the startup context is available
+            populateConfig(serviceLocator);
+            
+            BaseServiceLocator baseServiceLocator = serviceLocator.getService(BaseServiceLocator.class);
+            
+            final ModuleStartup gfKernel = main.findStartupService(null, startupContext);
+            GlassFish glassFish = createGlassFish(gfKernel, baseServiceLocator, gfProps.getProperties());
             gfs.add(glassFish);
             return glassFish;
         } catch (BootException ex) {

@@ -44,7 +44,6 @@ import org.glassfish.contextpropagation.bootstrap.LoggerAdapter.Level;
 import org.glassfish.contextpropagation.bootstrap.LoggerAdapter.MessageID;
 import org.glassfish.contextpropagation.internal.DependencyProviderImpl;
 import org.glassfish.contextpropagation.wireadapters.WireAdapter;
-import org.jvnet.hk2.annotations.Inject;
 
 /**
  * The classes in this package were designed to facilitate the integration of 
@@ -62,7 +61,7 @@ public class ContextBootstrap {
   private static String guid;
   public static boolean IS_DEBUG;
   
-  @Inject private static DependencyProvider dependencyProvider;  
+  private static DependencyProvider dependencyProvider;  
   static {
     if (dependencyProvider == null) {
       dependencyProvider = new DependencyProviderImpl(); // The service should have been injected, But we are not taking any chances.

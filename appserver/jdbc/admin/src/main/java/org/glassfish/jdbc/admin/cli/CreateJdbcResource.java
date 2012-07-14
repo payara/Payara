@@ -53,7 +53,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -71,7 +71,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="create-jdbc-resource")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.jdbc.resource")
 public class CreateJdbcResource implements AdminCommand {
     

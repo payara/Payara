@@ -54,7 +54,7 @@ import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.SecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +73,7 @@ import javax.inject.Inject;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="delete-connector-security-map")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.connector.security.map")
 public class DeleteConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
 

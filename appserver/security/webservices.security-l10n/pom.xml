@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>webservices.security-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>WebServices Security and JSR 196 SOAP Profile Implementation Localization</name>
 
     <build>

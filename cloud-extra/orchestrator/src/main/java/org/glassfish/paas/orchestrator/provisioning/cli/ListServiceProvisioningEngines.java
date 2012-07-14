@@ -51,7 +51,7 @@ import org.glassfish.paas.orchestrator.config.ServiceProvisioningEngines;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ import java.util.Locale;
  */
 
 @Service(name = "list-service-provisioning-engines")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @RestEndpoints({

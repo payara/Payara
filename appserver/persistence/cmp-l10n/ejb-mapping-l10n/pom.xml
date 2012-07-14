@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-ejb-mapping-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>ejb-mapping module for cmp Localization</name>
 
     <build>

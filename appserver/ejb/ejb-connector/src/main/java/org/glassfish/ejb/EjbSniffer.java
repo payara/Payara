@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.io.File;
@@ -71,7 +71,7 @@ import java.lang.annotation.Annotation;
  * @author Mahesh Kannan
  */
 @Service(name="Ejb")
-@Scoped(Singleton.class)
+@Singleton
 public class EjbSniffer  extends GenericSniffer {
 
     @Inject EjbType ejbType;

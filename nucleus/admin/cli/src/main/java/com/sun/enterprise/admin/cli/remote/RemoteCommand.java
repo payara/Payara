@@ -43,14 +43,20 @@ package com.sun.enterprise.admin.cli.remote;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.component.*;
+
 import com.sun.enterprise.module.*;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
@@ -905,9 +911,17 @@ public class RemoteCommand extends CLICommand {
     private static synchronized Habitat getManHabitat() {
         if (manHabitat != null)
             return manHabitat;
-        ModulesRegistry registry =
-                new StaticModulesRegistry(getModuleClassLoader());
-        manHabitat = registry.createHabitat("default");
+        
+        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
+
+        manHabitat = new Habitat();
+        
+        try {
+        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(getModuleClassLoader()));
+        } catch (IOException e) {
+        	logger.log(Level.SEVERE, "Error initializing HK2", e);
+        }
+        
         return manHabitat;
     }
 

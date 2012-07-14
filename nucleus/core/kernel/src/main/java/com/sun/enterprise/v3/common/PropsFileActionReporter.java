@@ -44,7 +44,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,7 +58,7 @@ import java.util.Map;
  * @author Jerome Dochez
  */
 @Service(name = "hk2-agent")
-@Scoped(PerLookup.class)
+@PerLookup
 public class PropsFileActionReporter extends ActionReporter {
 
     @Override

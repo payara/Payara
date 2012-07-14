@@ -47,7 +47,7 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.Context;
@@ -71,7 +71,7 @@ import java.util.Collection;
  *
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class DataSourceDefinitionProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
     @Inject
     private transient BaseServiceLocator habitat;

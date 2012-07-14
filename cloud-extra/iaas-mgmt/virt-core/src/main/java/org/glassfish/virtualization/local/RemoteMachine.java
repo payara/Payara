@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.VirtUser;
 import org.glassfish.virtualization.spi.MachineOperations;
@@ -69,8 +69,10 @@ public final class RemoteMachine extends LocalMachine {
     SSHFileOperations sshFileOperations;
     int references=0;
 
-    public static RemoteMachine from(Injector injector, LocalServerPool group, MachineConfig config, String ipAddress) {
-        return injector.inject(new RemoteMachine(group, config, ipAddress));
+    public static RemoteMachine from(ServiceLocator injector, LocalServerPool group, MachineConfig config, String ipAddress) {
+        RemoteMachine remoteMachine = new RemoteMachine(group, config, ipAddress);
+	    injector.inject(remoteMachine);
+	    return remoteMachine;
     }
 
     protected  RemoteMachine(LocalServerPool group, MachineConfig config, String ipAddress) {

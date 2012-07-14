@@ -49,7 +49,7 @@ import org.glassfish.elasticity.config.serverbeans.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import com.sun.enterprise.config.serverbeans.Domain;
 
@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  */
 @Service(name="create-log-action")
 @I18n("creaet.log.action")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateLogActionCommand implements AdminCommand {
     @Inject
     ElasticServices elasticServices;

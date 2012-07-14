@@ -80,8 +80,8 @@ import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
 import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 /**
  * Handles all management of the HTTP adapters created to support Java Web
@@ -90,7 +90,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author tjquinn
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class JWSAdapterManager implements PostConstruct {
     
     private final static String SIGNING_ALIAS_PROPERTY_NAME = "jar-signing-alias";

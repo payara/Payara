@@ -50,6 +50,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.OS;
 
@@ -57,7 +59,7 @@ import com.sun.enterprise.util.OS;
  * @author Byron Nevins
  */
 @Service(name = "setup-local-dcom")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class SetupLocalDcom extends CLICommand {
     @Param(name = "verbose", shortName = "v", primary = false, optional = true)
     boolean verbose;

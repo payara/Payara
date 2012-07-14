@@ -44,6 +44,8 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 
+import com.sun.appserv.server.util.Version;
+
 import java.io.*;
 import java.net.URI;
 import java.util.HashMap;
@@ -71,7 +73,7 @@ public class PythonClientGenerator extends ClientGenerator {
         ZipOutputStream zip = null;
         Map<String, URI> artifacts = new HashMap<String, URI>();
         try {
-            String ZIP_BASE_DIR = "glassfish-rest-client-VERSION".replace("VERSION", version.getVersionNumber());
+            String ZIP_BASE_DIR = "glassfish-rest-client-VERSION".replace("VERSION", Version.getVersionNumber());
             String ZIP_GF_PACKAGE_DIR = ZIP_BASE_DIR + "/glassfish";
             String ZIP_REST_PACKAGE_DIR = ZIP_GF_PACKAGE_DIR + "/rest";
 
@@ -118,7 +120,7 @@ public class PythonClientGenerator extends ClientGenerator {
     private String getFileContents(String fileName) {
         String contents = new Scanner(getClass().getClassLoader().getResourceAsStream("/client/python/" + fileName)).useDelimiter("\\Z").next();
 
-        return contents.replace("VERSION", version.getVersionNumber());
+        return contents.replace("VERSION", Version.getVersionNumber());
     }
     
     private void addFileFromClasspath(String targetDir, String fileName, ZipOutputStream zip) throws IOException {

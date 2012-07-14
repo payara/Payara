@@ -57,7 +57,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -79,7 +79,7 @@ import org.glassfish.api.admin.RuntimeType;
  * Registers a new virtual machine to this serverPool master.
  */
 @Service(name="register-virtual-machine")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

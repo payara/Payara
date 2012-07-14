@@ -52,7 +52,7 @@ import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
@@ -64,7 +64,7 @@ import javax.inject.Inject;
  * @author Byron Nevins (3.1+)
  */
 @Service(name = "enable-monitoring")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("enable.monitoring")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})

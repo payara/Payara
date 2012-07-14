@@ -48,14 +48,14 @@ import java.util.Hashtable;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  *
  * @author  Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class RoleMapperFactory implements SecurityRoleMapperFactory {
     private  Map CONTEXT_TO_APPNAME = new HashMap();
     private  Hashtable ROLEMAPPER = new Hashtable();

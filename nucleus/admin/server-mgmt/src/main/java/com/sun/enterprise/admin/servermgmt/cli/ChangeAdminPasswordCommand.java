@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileRealmHelper;
 
 /**
@@ -81,7 +82,7 @@ import org.glassfish.security.common.FileRealmHelper;
  * @author Bill Shannon
  */
 @Service(name = "change-admin-password")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("change.admin.password")
 public class ChangeAdminPasswordCommand extends LocalDomainCommand {
     private ParameterMap params;

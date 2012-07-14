@@ -40,6 +40,7 @@
 package org.glassfish.elasticity.engine.commands;
 
 import org.glassfish.elasticity.config.serverbeans.*;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -59,7 +60,7 @@ import java.util.logging.Logger;
  * To change this template use File | Settings | File Templates.
  */
 @Service(name = "test-alert")
-@Scoped(PerLookup.class)
+@PerLookup
 public class testElasticity implements AdminCommand {
 
 @Inject

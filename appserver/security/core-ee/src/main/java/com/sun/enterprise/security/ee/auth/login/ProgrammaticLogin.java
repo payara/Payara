@@ -60,7 +60,7 @@ import com.sun.enterprise.security.web.integration.WebProgrammaticLogin;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
@@ -88,7 +88,7 @@ import com.sun.enterprise.security.common.Util;
  * 
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ProgrammaticLogin 
 {
     private WebProgrammaticLogin webProgrammaticLogin;

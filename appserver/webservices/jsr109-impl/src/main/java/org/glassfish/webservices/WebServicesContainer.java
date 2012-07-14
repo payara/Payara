@@ -50,9 +50,9 @@ import org.glassfish.gmbal.ManagedObjectManagerFactory;
 import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 import javax.management.ObjectName;
 import java.io.IOException;
@@ -63,7 +63,7 @@ import java.lang.management.ManagementFactory;
  *
  */
 @Service(name="org.glassfish.webservices.WebServicesContainer")
-@Scoped(Singleton.class)
+@Singleton
 public class WebServicesContainer extends MBeanListener.CallbackImpl implements Container, PostConstruct, PreDestroy {
     private final WebServicesDeploymentMBean deploymentBean = new WebServicesDeploymentMBean();
     private ManagedObjectManager mom;

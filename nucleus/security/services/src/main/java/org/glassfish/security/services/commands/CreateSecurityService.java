@@ -47,7 +47,7 @@ import javax.inject.Inject;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -70,7 +70,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  * General create security service command.
  */
 @Service(name="create-security-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(CommandTarget.DAS)
 public class CreateSecurityService implements AdminCommand {

@@ -41,10 +41,11 @@
 package com.sun.enterprise.v3.server;
 
 import com.sun.logging.LogDomains;
+import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import java.io.File;
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -182,8 +184,20 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
 
     private List<File> findDerbyClient() {
         final String DERBY_HOME_PROP = "AS_DERBY_INSTALL";
-        String derbyHome = env.getStartupContext().getArguments().getProperty(DERBY_HOME_PROP,
+        StartupContext startupContext = env.getStartupContext();
+		Properties arguments = null;
+		
+		if (startupContext != null) {
+		  arguments = startupContext.getArguments();
+		}
+		
+		String derbyHome = null;
+		
+		if (arguments != null) {
+		   derbyHome = arguments.getProperty(DERBY_HOME_PROP,
                 System.getProperty(DERBY_HOME_PROP));
+		}
+		
         File derbyLib = null;
         if (derbyHome != null) {
             derbyLib = new File(derbyHome, "lib");

@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Represents the action report as XML like this:
@@ -81,7 +81,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Bill Shannon
  */
 @Service(name="metadata")   // XXX - need a better mapping
-@Scoped(PerLookup.class)
+@PerLookup
 public class XMLContentActionReporter extends ActionReporter {
 
     public void writeReport(OutputStream os)  {

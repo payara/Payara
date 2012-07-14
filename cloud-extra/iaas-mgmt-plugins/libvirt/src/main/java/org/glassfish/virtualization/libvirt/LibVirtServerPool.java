@@ -39,22 +39,47 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.spi.VirtualCluster;
-import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.EventSource;
-import org.glassfish.virtualization.util.RuntimeContext;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.config.*;
-
 import java.beans.PropertyChangeEvent;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.virtualization.config.MachineConfig;
+import org.glassfish.virtualization.config.ServerPoolConfig;
+import org.glassfish.virtualization.spi.AllocationPhase;
+import org.glassfish.virtualization.spi.EventSource;
+import org.glassfish.virtualization.spi.Machine;
+import org.glassfish.virtualization.spi.OsInterface;
+import org.glassfish.virtualization.spi.PhasedFuture;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
+import org.glassfish.virtualization.spi.TemplateInstance;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.virtualization.spi.VirtualMachine;
+import org.glassfish.virtualization.util.RuntimeContext;
+import org.jvnet.hk2.component.Habitat;
+import org.jvnet.hk2.config.Changed;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.Dom;
+import org.jvnet.hk2.config.NotProcessed;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * Runtime representation of a serverPool, with its members and such.
@@ -63,10 +88,10 @@ public class LibVirtServerPool implements PhysicalServerPool, ConfigListener {
 
     final ConcurrentMap<String, Machine> machines = new ConcurrentHashMap<String, Machine>();
     final AtomicInteger allocationCount = new AtomicInteger();
-    final Injector injector;
+    final ServiceLocator injector;
     final ServerPoolConfig config;
 
-    public LibVirtServerPool(Injector injector, ServerPoolConfig config) {
+    public LibVirtServerPool(ServiceLocator injector, ServerPoolConfig config) {
         this.injector = injector;
         this.config = config;
         Dom.unwrap(config).addListener(this);

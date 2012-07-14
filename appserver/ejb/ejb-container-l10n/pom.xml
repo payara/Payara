@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>ejb-container-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Core EJB container implementation Localization</name>
 
     <build>

@@ -43,13 +43,13 @@ package com.sun.enterprise.server.logging;
 import com.sun.logging.LogDomains;
 import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -64,8 +64,8 @@ import java.util.logging.*;
  * To change this template use File | Settings | File Templates.
  */
 @Service
-@Scoped(Singleton.class)
-@ContractProvided(java.util.logging.Handler.class)
+@Singleton
+@ContractsProvided(java.util.logging.Handler.class)
 public class SyslogHandler extends Handler implements PostConstruct, PreDestroy {
 
     @Inject

@@ -53,6 +53,9 @@ import java.util.logging.Logger;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.StatsProviderInfo;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.component.*;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import com.sun.enterprise.config.serverbeans.*;
@@ -61,7 +64,7 @@ import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -110,8 +113,7 @@ import javax.inject.Named;
  * @author abbagani
  */
 @Service
-@Scoped(Singleton.class)
-@InitRunLevel
+@RunLevel(InitRunLevel.VAL)
 public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventListener, ModuleLifecycleListener, ConfigListener {
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;

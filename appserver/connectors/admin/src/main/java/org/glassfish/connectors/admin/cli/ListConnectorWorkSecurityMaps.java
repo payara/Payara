@@ -51,7 +51,7 @@ import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.GroupMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,7 +66,7 @@ import javax.inject.Inject;
  *
  */
 @Service(name="list-connector-work-security-maps")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.connector.work.security.maps")
 @RestEndpoints({

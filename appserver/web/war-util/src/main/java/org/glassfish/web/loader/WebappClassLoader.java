@@ -71,7 +71,7 @@ import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.web.util.ExceptionUtils;
 import org.glassfish.web.util.IntrospectionUtils;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 
 import javax.naming.Binding;
 import javax.naming.NameClassPair;

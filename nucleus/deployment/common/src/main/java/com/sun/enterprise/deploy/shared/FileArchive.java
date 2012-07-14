@@ -51,7 +51,7 @@ import org.glassfish.api.deployment.archive.WritableArchive;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
 import java.util.*;
@@ -97,7 +97,7 @@ import java.net.URI;
  * @author Tim Quinn
  */
 @Service(name="file")
-@Scoped(PerLookup.class)
+@PerLookup
 public class FileArchive extends AbstractReadableArchive implements WritableArchive {
 
     private final static Level DEBUG_LEVEL = Level.FINE;

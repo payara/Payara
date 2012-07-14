@@ -49,7 +49,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.*;
 import java.util.Map;
 import org.glassfish.api.admin.RestEndpoints;
@@ -66,7 +66,7 @@ import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 
 @org.jvnet.hk2.annotations.Service(name = "_get-lb-launch-urls")
 @ExecuteOn(value = {RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.GET, path = "_get-lb-launch-urls", description = "Get Urls for launch the application via LB")

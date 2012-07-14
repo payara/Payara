@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>verifier-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Verifier implementation module Localization</name>
 
     <build>

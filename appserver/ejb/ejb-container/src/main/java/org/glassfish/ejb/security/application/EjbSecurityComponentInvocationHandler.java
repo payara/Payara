@@ -53,10 +53,10 @@ import org.glassfish.api.invocation.InvocationManager;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 @Service(name="ejbSecurityCIH")
-@Scoped(Singleton.class)
+@Singleton
 public class EjbSecurityComponentInvocationHandler implements  RegisteredComponentInvocationHandler {
 
     private static Logger _logger = null;

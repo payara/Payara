@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,34 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-package org.glassfish.api.admin.config;
-
-import org.jvnet.hk2.annotations.InhabitantAnnotation;
-import org.jvnet.hk2.annotations.InhabitantMetadata;
-import org.jvnet.hk2.config.Configured;
-
-import java.lang.annotation.*;
+package org.glassfish.common.util;
 
 /**
- * Listens to any change happening in the configuration that involves any instances of a particular
- * type.
- *
- * Not implemented yet...
- *
- * @author Jerome Dochez
+ * These are constants that can be used throughout the server
+ * 
+ * @author jwells
  */
-@Documented
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@InhabitantAnnotation("default")
-public @interface ListenTo {
-
+public class Constants {
     /**
-     * Returns the type of instances we are interested in receiving changes events.
-     *
-     * @return the configured subclass
+     * This constant should be used whenever there are multiple implementations
+     * of an &#64;Contract and one of them should be the default implementation
+     * that people should get if they have no other distinguising information
+     * in their lookup or &#64;Inject point.
      */
-    @InhabitantMetadata("target")
-    Class<? extends Configured> value();
+    public final static int DEFAULT_IMPLEMENTATION_RANK = 50;
+
 }

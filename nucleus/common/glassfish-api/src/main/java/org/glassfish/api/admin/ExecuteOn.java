@@ -40,11 +40,7 @@
 
 package org.glassfish.api.admin;
 
-import org.glassfish.api.ActionReport;
-import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.lang.annotation.*;
 
 /**
@@ -76,7 +72,7 @@ public @interface ExecuteOn {
      * @return a {@link ClusterExecutor} type or null to use the default executor that takes the
      * "target" command parameter to 
      */
-    Class<? extends ClusterExecutor> executor() default ExecuteOn.TargetBasedExecutor.class;
+    Class<? extends ClusterExecutor> executor() default TargetBasedExecutor.class;
 
 
     /**
@@ -106,23 +102,4 @@ public @interface ExecuteOn {
      * of this command fails.
      */
     FailurePolicy ifFailure() default FailurePolicy.Error;
-
-
-    /**
-     * Convenience implementation that delegate to a provided system executor. This
-     * provider will be looked up from the habitat by its type ClusterExecutor and the
-     * "target" name. 
-     */
-    @Service
-    final static class TargetBasedExecutor implements ClusterExecutor {
-
-        @Inject
-        @Named("GlassFishClusterExecutor")
-        private ClusterExecutor delegate=null;
-
-        @Override
-        public ActionReport.ExitCode execute(String commandName, AdminCommand command, AdminCommandContext context, ParameterMap parameters) {
-            return delegate.execute(commandName, command, context, parameters);
-        }
-    }
 }

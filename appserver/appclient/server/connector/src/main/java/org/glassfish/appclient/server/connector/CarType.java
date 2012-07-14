@@ -51,7 +51,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = CarType.ARCHIVE_TYPE)
-@Scoped(org.jvnet.hk2.component.Singleton.class)
+@javax.inject.Singleton
 public class CarType extends ArchiveType {
     /**
      * same as what's returned by {@link javax.enterprise.deploy.shared.ModuleType#CAR#toString()}

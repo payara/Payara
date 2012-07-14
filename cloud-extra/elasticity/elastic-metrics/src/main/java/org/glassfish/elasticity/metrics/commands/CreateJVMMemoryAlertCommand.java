@@ -41,6 +41,8 @@ package org.glassfish.elasticity.metrics.commands;
 
 import org.glassfish.elasticity.api.ElasticEngine;
 import org.glassfish.elasticity.config.serverbeans.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.beans.PropertyVetoException;
@@ -65,7 +67,7 @@ import org.glassfish.api.admin.RestEndpoints;
  */
 @Service(name = "create-jvm-memory-alert")
 @I18n("create.alert")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-jvm-memory-alert", description = "Create JVM memeory alert") })
 public class CreateJVMMemoryAlertCommand implements AdminCommand {

@@ -45,10 +45,23 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.naming.impl.ClientNamingConfiguratorImpl;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
+
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.naming.ClientNamingConfigurator;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -87,35 +100,53 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
              * which habitat we'll use.
              */
             Globals.setDefaultHabitat(habitat);
-
+            
+            ServiceLocator locator = habitat;
+            
+            DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+            DynamicConfiguration config = dcs.createDynamicConfiguration();
+            
             /*
              * Remove any already-loaded startup context so we can replace it
              * with the ACC one.
              */
-            habitat.removeAllByType(StartupContext.class);
+            config.addUnbindFilter(BuilderHelper.createContractFilter(StartupContext.class.getName()));
             
-            StartupContext startupContext = new ACCStartupContext();
-            habitat.add(new ExistingSingletonInhabitant(StartupContext.class, startupContext));
             /*
              * Following the example from AppServerStartup, remove any
              * pre-loaded lazy inhabitant for ProcessEnvironment that exists
              * from HK2's scan for services.  Then add in
              * an ACC ProcessEnvironment.
              */
-            Inhabitant<ProcessEnvironment> inh =
-                    habitat.getInhabitantByType(ProcessEnvironment.class);
-            if (inh!=null) {
-                habitat.remove(inh);
-            }
-            habitat.add(new ExistingSingletonInhabitant<ProcessEnvironment>
-                    (new ProcessEnvironment(ProcessEnvironment.ProcessType.ACC)));
+            config.addUnbindFilter(BuilderHelper.createContractFilter(ProcessEnvironment.class.getName()));
+            
+            config.commit();
+            
+            config = dcs.createDynamicConfiguration();
+            
+            StartupContext startupContext = new ACCStartupContext();
+            AbstractActiveDescriptor<?> startupContextDescriptor = BuilderHelper.createConstantDescriptor(startupContext);
+            startupContextDescriptor.addContractType(StartupContext.class);
+            config.addActiveDescriptor(startupContextDescriptor);
+            
+            ModulesRegistry modulesRegistry = new StaticModulesRegistry(ACCModulesManager.class.getClassLoader());
+            config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(modulesRegistry));
+            
+            config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(
+                    new ProcessEnvironment(ProcessEnvironment.ProcessType.ACC)));
 
             /*
              * Create the ClientNamingConfigurator used by naming.
              */
             ClientNamingConfigurator cnc = new ClientNamingConfiguratorImpl();
-            habitat.add(new ExistingSingletonInhabitant<ClientNamingConfigurator>(
-                    ClientNamingConfigurator.class, cnc));
+            config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(cnc));
+            
+            Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+            AbstractActiveDescriptor<Logger> di = BuilderHelper.createConstantDescriptor(logger);
+            di.addContractType(Logger.class);
+            config.addActiveDescriptor(di);
+            
+            config.commit();
        }
     }
 
@@ -140,11 +171,16 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
      */
     private static Habitat prepareHabitat(
             final ClassLoader loader) {
-        /*
-         * Initialize the habitat.
-         */
-        ModulesRegistry registry = new StaticModulesRegistry(loader);
-        Habitat h = registry.createHabitat("default");
-        return h;
+        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
+
+        habitat = new Habitat();
+        
+        try {
+        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader));
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
+  
+        return habitat;
     }
 }

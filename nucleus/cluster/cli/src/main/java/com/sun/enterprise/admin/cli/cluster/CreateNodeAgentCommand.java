@@ -49,6 +49,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
@@ -57,7 +59,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  */
 // XXX - make this command disappear until we actually implement it
 //@Service(name = "create-node-agent")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class CreateNodeAgentCommand extends CLICommand {
 
     /*

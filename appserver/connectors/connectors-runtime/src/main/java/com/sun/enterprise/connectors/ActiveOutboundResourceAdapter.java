@@ -46,7 +46,7 @@ import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
 import com.sun.enterprise.connectors.util.SetMethodAction;
 import com.sun.enterprise.connectors.util.ConnectorJavaBeanValidator;
@@ -75,7 +75,7 @@ import java.util.logging.Logger;
  * @author Binod P G, Sivakumar Thyagarajan
  */
 @Service(name= ConnectorConstants.AORA)
-@Scoped(PerLookup.class)
+@PerLookup
 public class ActiveOutboundResourceAdapter extends ActiveResourceAdapterImpl {
 
     @Inject

@@ -67,14 +67,14 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 
 /**
  * @author Jagadish Ramu
  */
 @Service(name = "_create-lb-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class CreateLBService extends BaseLBService implements AdminCommand, Runnable {
 

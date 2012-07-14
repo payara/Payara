@@ -53,6 +53,7 @@ import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -75,8 +76,8 @@ public class ServiceInitializerFilter extends BaseFilter {
 //    private long timeout = 60000;
 
     public ServiceInitializerFilter(final ServiceInitializerListener listener,
-            final BaseServiceLocator habitat, final Logger logger) {
-        initializerImplList = habitat.getAllByContract(LazyServiceInitializer.class);
+            final ServiceLocator habitat, final Logger logger) {
+        initializerImplList = habitat.getAllServices(LazyServiceInitializer.class);
 
         if (initializerImplList == null) {
             throw new IllegalStateException("NO Lazy Initialiser was found for port = " +

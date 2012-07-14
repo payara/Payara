@@ -51,14 +51,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.glassfish.flashlight.datatree.TreeNode;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * @author Harpreet Singh
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class MonitoringRuntimeDataRegistryImpl 
         implements MonitoringRuntimeDataRegistry {
     

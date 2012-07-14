@@ -57,7 +57,7 @@ import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +77,7 @@ import java.util.logging.Level;
  *
  */
 @Service(name = "create-local-instance")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.local.instance")
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
     private final String CONFIG = "config";

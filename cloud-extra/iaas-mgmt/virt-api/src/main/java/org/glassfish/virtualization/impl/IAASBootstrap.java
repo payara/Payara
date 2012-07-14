@@ -41,8 +41,7 @@
 package org.glassfish.virtualization.impl;
 
 import org.glassfish.api.Startup;
-import org.glassfish.hk2.Factory;
-import org.glassfish.hk2.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;

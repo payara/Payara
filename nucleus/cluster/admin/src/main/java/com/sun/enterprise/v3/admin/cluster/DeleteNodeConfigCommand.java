@@ -50,6 +50,8 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
@@ -64,7 +66,7 @@ import java.util.logging.Logger;
  */
 @Service(name = "delete-node-config")
 @I18n("delete.node.config")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Nodes.class,
@@ -77,7 +79,7 @@ public class DeleteNodeConfigCommand implements AdminCommand {
     BaseServiceLocator habitat;
 
     @Inject
-    Node[] nodeList;
+    IterableProvider<Node> nodeList;
 
     @Inject
     Nodes nodes;

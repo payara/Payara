@@ -58,23 +58,23 @@ import org.junit.runner.RunWith;
 import javax.inject.Inject;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.junit.Hk2Runner;
+import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
  * Test the command runner implementation.
  *
  * @author Jerome Dochez
  */
-//@RunWith(Hk2Runner.class)
 @Ignore
-public class CommandRunnerTest {
+public class CommandRunnerTest extends HK2Runner {
 
     @Inject
     CommandRunner commandRunner;
 
     @BeforeClass
     public static void setup() {
-        Habitat h = Hk2Runner.getHabitat();
+        Habitat h = new Habitat();
+        
         /*
          * The CommandRunnerImpl now injects Domain but these tests do not
          * exercise the code path that requires the domain.  So register a
@@ -100,8 +100,6 @@ public class CommandRunnerTest {
                                           handler);
         return d;
     }
-
-
 
     @Test
     public void tryOut() {

@@ -42,7 +42,7 @@ package com.sun.enterprise.deployment.annotation.introspection;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * Scans for annotations relevant to persistence units that indicate an app
@@ -51,7 +51,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author tjquinn
  */
 @Service(name="car")
-@Scoped(Singleton.class)
+@Singleton
 public class AppClientPersistenceDependencyAnnotationScanner extends AbstractAnnotationScanner {
 
     protected void init(java.util.Set<String> annotationsSet) {

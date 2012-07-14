@@ -42,7 +42,7 @@ package org.glassfish.web.admin.monitor.statistics;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -68,7 +68,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  *
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class HTTPListenerStatsImpl implements MonitorContract {
 
     @Inject

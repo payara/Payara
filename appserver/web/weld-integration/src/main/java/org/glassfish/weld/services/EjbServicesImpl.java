@@ -110,7 +110,7 @@ public class EjbServicesImpl implements EjbServices
 
                 Object ejbRef = ic.lookup(globalJndiName);
 
-                EjbContainerServices containerServices = services.forContract(EjbContainerServices.class).get();
+                EjbContainerServices containerServices = services.getService(EjbContainerServices.class);
 
                 sessionObj = new SessionObjectReferenceImpl(containerServices, ejbRef);
 

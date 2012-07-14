@@ -57,14 +57,14 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * This admin command list the containers currentely running within that
  * Glassfish instance
  */
 @Service(name="list-containers")
-@Scoped(Singleton.class)        // no per-execution state
+@Singleton        // no per-execution state
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.containers.command")
 @RestEndpoints({

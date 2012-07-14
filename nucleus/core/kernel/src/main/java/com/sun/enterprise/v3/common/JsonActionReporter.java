@@ -42,7 +42,7 @@ package com.sun.enterprise.v3.common;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -58,7 +58,7 @@ import java.util.Set;
  * @author Ludovic Champenois
  */
 @Service(name = "json")
-@Scoped(PerLookup.class)
+@PerLookup
 public class JsonActionReporter extends ActionReporter {
 
     /*

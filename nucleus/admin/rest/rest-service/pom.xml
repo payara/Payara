@@ -52,11 +52,16 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rest-service</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish Admin REST Service</name>
     <description>Rest Interface for GlassFish Management and Monitoring</description>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>gf-restadmin-connector</artifactId>

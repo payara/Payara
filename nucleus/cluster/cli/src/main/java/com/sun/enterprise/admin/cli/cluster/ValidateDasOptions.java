@@ -47,12 +47,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Validate DAS host, port, secure options.
  */
 @Service(name = "_validate-das-options")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ValidateDasOptions extends LocalInstanceCommand {
 
     @Param(name = "instance_name", primary = true, optional = false)

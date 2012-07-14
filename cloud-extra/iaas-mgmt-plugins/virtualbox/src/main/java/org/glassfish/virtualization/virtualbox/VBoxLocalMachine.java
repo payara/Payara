@@ -52,14 +52,12 @@ import java.util.concurrent.CountDownLatch;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
-import org.glassfish.virtualization.spi.Disk;
-import org.glassfish.virtualization.spi.FileOperations;
 import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.inject.Injector;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.logging.Level;
 import org.glassfish.virtualization.config.MachineConfig;
@@ -101,8 +99,11 @@ public class VBoxLocalMachine extends AbstractMachine implements PostConstruct {
     @Inject
     Host host;
 
-    public static VBoxLocalMachine from(Injector injector, VBoxGroup group, MachineConfig config) {
-        return injector.inject(new VBoxLocalMachine( group, config));
+    public static VBoxLocalMachine from(ServiceLocator injector, VBoxGroup group, MachineConfig config) {
+        VBoxLocalMachine vboxLocalMachine = new VBoxLocalMachine( group, config);
+		injector.inject(vboxLocalMachine);
+		
+		return vboxLocalMachine;
     }
 
     protected VBoxLocalMachine(VBoxGroup group, MachineConfig config) {

@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>cluster-uc</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>setup-local-dcom</name>
 
     <build>

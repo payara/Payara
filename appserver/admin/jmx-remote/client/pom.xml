@@ -63,7 +63,7 @@
 
     <artifactId>jmx-remote-client</artifactId>
 
-    <packaging>hk2-jar</packaging>
+    
 
     <name>JMX Remote Service Client</name>
 

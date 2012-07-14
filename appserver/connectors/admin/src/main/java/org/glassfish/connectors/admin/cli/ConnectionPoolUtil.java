@@ -47,12 +47,12 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectionPoolUtil {
 
     @Inject

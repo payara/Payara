@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>work-management-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Java EE Connector Architecture Work Management module Localization</name>
 
     <developers>

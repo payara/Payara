@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>gf-ejb-connector-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>EJB Container connector for Glassfish Localization</name>
 
     <build>

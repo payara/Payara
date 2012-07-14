@@ -45,11 +45,12 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.omg.CORBA.ORB;
 
 import javax.inject.Inject;
@@ -87,7 +88,7 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager {
     @LogMessageInfo(message = "Error during CosNaming.unbind for name {0}: {1}")
     public static final String ERROR_COSNAMING_UNBIND = "AS-NAMING-00004";
@@ -102,7 +103,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
     private static final int JAVA_MODULE_LENGTH = "java:module".length();
 
     @Inject
-    BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     //@Inject
     volatile InvocationManager invMgr=null;
@@ -831,7 +832,7 @@ public final class  GlassfishNamingManagerImpl implements GlassfishNamingManager
 
         ComponentInvocation ci;
         if (invMgr==null) {
-            ci= habitat.getByContract(InvocationManager.class).getCurrentInvocation();
+            ci= habitat.<InvocationManager>getService(InvocationManager.class).getCurrentInvocation();
         } else {
             ci= invMgr.getCurrentInvocation();
         }

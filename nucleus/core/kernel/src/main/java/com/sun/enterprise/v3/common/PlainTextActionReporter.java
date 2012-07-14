@@ -44,7 +44,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
 import java.util.*;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -55,7 +55,7 @@ import java.io.OutputStream;
  * @author Byron Nevins
  */
 @Service(name = "plain")
-@Scoped(PerLookup.class)
+@PerLookup
 public class PlainTextActionReporter extends ActionReporter {
 
     public static final String MAGIC = "PlainTextActionReporter";

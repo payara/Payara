@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-corba-plugin</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Corba Plugin</name>
     <description>Corba plugin bundle for GlassFish V3 Admin Console</description>
 

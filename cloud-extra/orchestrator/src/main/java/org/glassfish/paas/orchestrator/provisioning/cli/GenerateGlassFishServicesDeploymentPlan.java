@@ -54,7 +54,7 @@ import org.glassfish.paas.orchestrator.provisioning.util.JSONUtil;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -77,7 +77,7 @@ import java.util.jar.JarOutputStream;
  */
 
 @Service(name = "_generate-glassfish-services-deployment-plan")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)

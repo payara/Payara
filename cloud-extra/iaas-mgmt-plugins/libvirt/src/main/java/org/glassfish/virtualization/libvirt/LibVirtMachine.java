@@ -39,24 +39,22 @@
  */
 package org.glassfish.virtualization.libvirt;
 
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import com.trilead.ssh2.SFTPv3FileAttributes;
-import com.trilead.ssh2.SFTPv3DirectoryEntry;
-
-import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.config.*;
-import org.glassfish.virtualization.spi.MachineOperations;
-import org.glassfish.virtualization.spi.PhysicalServerPool;
-
-import org.glassfish.virtualization.spi.VirtException;
-import org.glassfish.virtualization.util.RuntimeContext;
-import javax.inject.Inject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
+import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.virtualization.config.MachineConfig;
+import org.glassfish.virtualization.config.VirtUser;
+import org.glassfish.virtualization.spi.MachineOperations;
+import org.glassfish.virtualization.spi.PhysicalServerPool;
+import org.glassfish.virtualization.spi.VirtException;
+import org.glassfish.virtualization.util.RuntimeContext;
 
 /**
  * Representation of a remote physical machine managed by the libvirt interfaces.
@@ -74,8 +72,11 @@ final class LibVirtMachine extends LibVirtLocalMachine {
     SSHFileOperations sshFileOperations;
     int references=0;
 
-    public static LibVirtMachine from(Injector injector, LibVirtServerPool group, MachineConfig config, String ipAddress) {
-        return injector.inject(new LibVirtMachine(group, config, ipAddress));
+    public static LibVirtMachine from(ServiceLocator injector, LibVirtServerPool group, MachineConfig config, String ipAddress) {
+        LibVirtMachine libVirtMachine = new LibVirtMachine(group, config, ipAddress);
+	    injector.inject(libVirtMachine);
+	    
+	    return libVirtMachine;
     }
 
     protected  LibVirtMachine(LibVirtServerPool group, MachineConfig config, String ipAddress) {

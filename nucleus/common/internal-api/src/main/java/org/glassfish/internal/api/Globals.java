@@ -40,11 +40,31 @@
 
 package org.glassfish.internal.api;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.common.util.admin.GlassFishErrorServiceImpl;
+import org.glassfish.common.util.admin.HK2BindTracingService;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.internal.api.Init;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 
@@ -58,14 +78,20 @@ import javax.inject.Inject;
 @Service(name = "globals")
 public class Globals implements Init {
 
-    @Inject
-    static volatile Habitat defaultHabitat;
+    private static volatile Habitat defaultHabitat;
 
     private static Object staticLock = new Object();
     
     // dochez : remove this once we can get rid of ConfigBeanUtilities class
     @Inject
-    ConfigBeansUtilities utilities;
+    private ConfigBeansUtilities utilities;
+    
+    @Inject
+    private Globals(Habitat habitat) {
+        if (defaultHabitat == null) {
+            defaultHabitat = habitat;
+        }
+    }
 
     public static BaseServiceLocator getDefaultBaseServiceLocator() {
     	return getDefaultHabitat();
@@ -91,8 +117,16 @@ public class Globals implements Init {
         if (defaultHabitat == null) {
             synchronized (staticLock) {
                 if (defaultHabitat == null) {
-                    ModulesRegistry registry = new StaticModulesRegistry(Globals.class.getClassLoader());
-                    defaultHabitat = registry.createHabitat("default");
+                    ServiceLocator locator = ServiceLocatorFactory.getInstance().create("default");
+                    
+                    Habitat previouslyCreated = locator.getService(Habitat.class);
+                    if (previouslyCreated != null) {
+                        defaultHabitat = previouslyCreated;
+                        return defaultHabitat;
+                    }
+                    
+                    defaultHabitat = new Habitat();
+                    initializeClient(locator);
                 }
             }
         }
@@ -103,5 +137,63 @@ public class Globals implements Init {
 	public static void setDefaultHabitat(BaseServiceLocator habitat) {
 		setDefaultHabitat((Habitat)habitat);
 	}
+	
+	private static void initializeClient(ServiceLocator locator) {
+	    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+	    if (cl == null) {
+	        cl = Globals.class.getClassLoader();
+	    }
+	    
+	    DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+	    DynamicConfiguration config = dcs.createDynamicConfiguration();
+	    
+	    Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	    AbstractActiveDescriptor<Logger> di = BuilderHelper.createConstantDescriptor(logger);
+	    di.addContractType(Logger.class);
+	    
+	    config.addActiveDescriptor(di);
+	    
+	    config.addActiveDescriptor(HK2BindTracingService.class);
+	    config.addActiveDescriptor(GlassFishErrorServiceImpl.class);
+	    
+	    SingleModulesRegistry smr = new SingleModulesRegistry(cl);
+	    
+	    config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(smr));
+	    config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(new StartupContext()));
+	    
+	    config.commit();
+	    
+	    try {
+            HK2Populator.populate(locator,
+                    new ClasspathDescriptorFileFinder(cl),
+                    new ClientPostProcessor());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error initializing HK2", e);
+        }
+	}
+	
+	private static final String SERVER_CONTEXT_IMPL = "com.sun.enterprise.v3.server.ServerContextImpl";
+    private static final HashSet<String> VERBOTEN_WORDS = new HashSet<String>();
+    
+    static {
+        VERBOTEN_WORDS.add(SERVER_CONTEXT_IMPL);
+    }
+    
+    private static class ClientPostProcessor implements PopulatorPostProcessor {
+
+        /* (non-Javadoc)
+         * @see org.glassfish.hk2.bootstrap.PopulatorPostProcessor#process(org.glassfish.hk2.utilities.DescriptorImpl)
+         */
+        @Override
+        public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+            if (VERBOTEN_WORDS.contains(descriptorImpl.getImplementation())) {
+                // This is a client
+                return null;
+            }
+            
+            return descriptorImpl;
+        }
+        
+    }
 
 }

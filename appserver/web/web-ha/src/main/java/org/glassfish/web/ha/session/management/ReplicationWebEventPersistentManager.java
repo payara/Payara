@@ -62,7 +62,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -79,7 +79,7 @@ import java.util.logging.Logger;
  * @author Rajiv Mordani
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ReplicationWebEventPersistentManager<T extends Storeable> extends ReplicationManagerBase<T>
         implements WebEventPersistentManager {
     
@@ -255,7 +255,7 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("Create backing store invoked with persistence type " + persistenceType + " and store name " + storeName);
         }
-        BackingStoreFactory factory = services.forContract(BackingStoreFactory.class).named(persistenceType).get();
+        BackingStoreFactory factory = services.getService(BackingStoreFactory.class, persistenceType);
         BackingStoreConfiguration<String, T> conf = new BackingStoreConfiguration<String, T>();
 
         if(gmsAdapterService.isGmsEnabled()) {

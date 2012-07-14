@@ -52,7 +52,6 @@
     </parent>
 
     <artifactId>entitybean-container</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>Entity Bean container</name>
 
     <developers>

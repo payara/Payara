@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common-full-plugin</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Full distribution plugin</name>
     <description>Plugin bundle for GlassFish v3 Admin Console common-full package</description>
 
@@ -60,6 +60,19 @@
 
     <build>
         <plugins>
+             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.0-alpha-4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>

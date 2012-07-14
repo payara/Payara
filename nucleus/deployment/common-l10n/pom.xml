@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-common-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Deployment Related Common Classes Localization</name>
     <build>
         <plugins>

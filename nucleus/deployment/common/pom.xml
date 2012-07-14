@@ -52,7 +52,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-common</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Deployment Related Common Classes</name>
 
     <developers>
@@ -88,8 +88,8 @@
     <build>
         <plugins>
             <plugin>
-               <groupId>org.glassfish.hk2</groupId>
-               <artifactId>hk2-maven-plugin</artifactId>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
                <configuration>
                    <archive>
                        <manifestEntries>
@@ -103,7 +103,7 @@
     <dependencies>
         <dependency>
                 <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2</artifactId>
+                <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

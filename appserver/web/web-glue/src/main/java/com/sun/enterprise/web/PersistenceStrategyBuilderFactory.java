@@ -101,7 +101,7 @@ public class PersistenceStrategyBuilderFactory {
                            resolvedPersistenceScope);
         }
 
-        PersistenceStrategyBuilder builder = services.forContract(PersistenceStrategyBuilder.class).named(persistenceType).get();
+        PersistenceStrategyBuilder builder = services.getService(PersistenceStrategyBuilder.class, persistenceType);
         if (builder == null) {
             builder = new MemoryStrategyBuilder();
             if (_logger.isLoggable(Level.FINEST)) {

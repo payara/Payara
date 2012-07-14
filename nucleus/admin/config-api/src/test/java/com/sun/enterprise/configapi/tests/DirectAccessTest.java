@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.JavaConfig;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
@@ -61,7 +62,7 @@ import java.util.Map;
  */
 public class DirectAccessTest extends ConfigPersistence {
     
-    BaseServiceLocator habitat = Utils.getNewHabitat(this);
+    Habitat habitat = Utils.instance.getHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -75,7 +76,7 @@ public class DirectAccessTest extends ConfigPersistence {
 
 
     @Override
-    public BaseServiceLocator getBaseServiceLocator() {
+    public ServiceLocator getBaseServiceLocator() {
         return habitat;
     }
         

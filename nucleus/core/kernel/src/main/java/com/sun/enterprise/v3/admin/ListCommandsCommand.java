@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.Inhabitants;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * Simple admin command to list all existing commands.
@@ -63,7 +63,7 @@ import org.jvnet.hk2.component.Singleton;
  * 
  */
 @Service(name="list-commands")
-@Scoped(Singleton.class)        // no per-execution state
+@Singleton        // no per-execution state
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

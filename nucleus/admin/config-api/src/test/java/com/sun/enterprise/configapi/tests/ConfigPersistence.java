@@ -40,20 +40,27 @@
 
 package com.sun.enterprise.configapi.tests;
 
-import org.glassfish.config.support.GlassFishDocument;
-import org.glassfish.config.support.ConfigurationPersistence;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
+import static org.junit.Assert.assertTrue;
 
-import org.jvnet.hk2.config.*;
-
+import java.beans.PropertyChangeEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.beans.PropertyChangeEvent;
 import java.util.List;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.glassfish.config.support.ConfigurationPersistence;
+import org.glassfish.tests.utils.Utils;
+import org.junit.After;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.IndentingXMLStreamWriter;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.TransactionListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * User: Jerome Dochez
@@ -62,11 +69,16 @@ import static org.junit.Assert.*;
  */
 public abstract class ConfigPersistence extends ConfigApiTest {
 
-
+    @After
+    public void tearDown() {
+    	Utils.instance.shutdownServiceLocator(this);
+    }
+    
     @Test
     public void test() throws TransactionFailure {
 
         final DomDocument document = getDocument(getHabitat());
+        
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.reset();
 
@@ -112,9 +124,9 @@ public abstract class ConfigPersistence extends ConfigApiTest {
         // now check if we persisted correctly...
 
         final String resultingXml = baos.toString();
-        //System.out.println(resultingXml);
+        
         logger.fine(resultingXml);
-        assertTrue(assertResult(resultingXml));
+        assertTrue("assertResult from " + getClass().getName() + " was false from " + resultingXml, assertResult(resultingXml));
     }
 
     public abstract void doTest() throws TransactionFailure;

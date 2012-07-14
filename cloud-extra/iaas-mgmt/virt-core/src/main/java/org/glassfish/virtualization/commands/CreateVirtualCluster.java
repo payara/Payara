@@ -62,7 +62,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +71,7 @@ import java.util.StringTokenizer;
 import org.glassfish.api.admin.CommandLock;
 
 @Service(name="create-virtual-cluster")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class CreateVirtualCluster implements AdminCommand {
 

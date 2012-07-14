@@ -50,13 +50,13 @@ import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * @author Jagadish Ramu
  */
 @Service(name = "_delete-lb-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class DeleteLBService extends BaseLBService implements AdminCommand {
 

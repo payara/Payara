@@ -52,6 +52,7 @@ import java.beans.PropertyVetoException;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.elasticity.engine.container.ElasticServiceContainer;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoint.OpType;
 import org.glassfish.api.admin.RestEndpoints;
@@ -61,7 +62,7 @@ import org.glassfish.api.admin.RestEndpoints;
 
 @Service(name = "configure-elastic-service-limits")
 @I18n("configure.elastic.service.limits")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({ @RestEndpoint(configBean = ElasticServiceConfig.class, opType = OpType.POST, path = "configure-elastic-service-limits", description = "Configure Elastic Service limits") })
 public class ConfigureElasticServiceLimits implements AdminCommand{
 

@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-ejb-mapping</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>ejb-mapping module for cmp</name>
 
     <developers>

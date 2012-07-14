@@ -59,7 +59,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * This service provides methods to handle application names
@@ -69,7 +69,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @I18n("versioning.service")
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class VersioningService {
 
     @Inject

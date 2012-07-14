@@ -63,7 +63,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -77,7 +77,7 @@ import java.util.logging.Logger;
  * @author ishan.vishnoi@java.net
  */
 @Service(name = "regenerate-glassfish-template")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class RegenerateGlassFishTemplate implements AdminCommand, Runnable {
 

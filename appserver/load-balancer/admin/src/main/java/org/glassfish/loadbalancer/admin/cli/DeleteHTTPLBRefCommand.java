@@ -52,6 +52,8 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -78,7 +80,7 @@ import javax.inject.Inject;
  * @author Yamini K B
  */
 @Service(name = "delete-http-lb-ref")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.http.lb.ref")
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)

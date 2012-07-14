@@ -50,7 +50,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.net.URI;
@@ -68,7 +68,7 @@ import java.util.logging.Logger;
 
 @ExecuteOn({RuntimeType.INSTANCE})
 @Service(name = "_get-log-file")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.log.file")
 @RestEndpoints({

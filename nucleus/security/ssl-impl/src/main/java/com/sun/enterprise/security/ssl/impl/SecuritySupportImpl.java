@@ -83,7 +83,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * This implements SecuritySupport used in PluggableFeatureFactory.
@@ -92,7 +92,7 @@ import org.jvnet.hk2.component.Singleton;
 // TODO: when we have two SecuritySupport implementations,
 // we create Habitat we'll select which SecuritySupport implementation to use.
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class SecuritySupportImpl extends SecuritySupport {
     private static final String DEFAULT_KEYSTORE_PASS = "changeit";
     private static final String DEFAULT_TRUSTSTORE_PASS = "changeit";
@@ -134,7 +134,7 @@ public class SecuritySupportImpl extends SecuritySupport {
         char[] trustStorePass = null;
         if (!isInstantiated()) {
             if (masterPasswordHelper == null && Globals.getDefaultHabitat() != null) {
-                masterPasswordHelper = Globals.getDefaultHabitat().byType(MasterPasswordImpl.class).get();
+                masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPasswordImpl.class);
             }
             if (masterPasswordHelper != null) {
                 keyStorePass = masterPasswordHelper.getMasterPassword();

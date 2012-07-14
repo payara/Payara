@@ -58,7 +58,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import java.util.Properties;
 import java.util.Collection;
@@ -73,7 +73,7 @@ import java.io.File;
  * 
  */
 @Service(name="redeploy")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("redeploy.command")
 @ExecuteOn(value={RuntimeType.DAS})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})

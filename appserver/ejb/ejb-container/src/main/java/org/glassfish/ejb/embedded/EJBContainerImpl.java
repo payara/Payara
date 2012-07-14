@@ -192,9 +192,9 @@ public class EJBContainerImpl extends EJBContainer {
             _logger.fine("IN close()");
         }
 
+        undeploy();
         cleanupTransactions();
         cleanupConnectorRuntime();
-        undeploy();
         if (res_app != null && res_app.deleteOnExit()) {
             try {
                 FileUtils.whack((File)res_app.getApplication());
@@ -228,7 +228,9 @@ public class EJBContainerImpl extends EJBContainer {
                     habitat.getInhabitantByType(TransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
                 TransactionManager txmgr = inhabitant.get();
-                txmgr.rollback();
+                if ( txmgr.getTransaction() != null ) {
+                    txmgr.rollback();
+                }
             }
         } catch (Throwable t) {
             _logger.log(Level.SEVERE, "Error in cleanupTransactions", t);

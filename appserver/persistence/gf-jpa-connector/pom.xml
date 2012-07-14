@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>gf-jpa-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connector for JPA runtime in glassfish</name>
     
     <developers>

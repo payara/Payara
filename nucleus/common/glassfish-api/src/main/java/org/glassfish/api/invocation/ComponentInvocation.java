@@ -42,9 +42,9 @@ package org.glassfish.api.invocation;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
-@Scoped(PerLookup.class)
+@PerLookup
 @Service
 public class ComponentInvocation
     implements Cloneable {

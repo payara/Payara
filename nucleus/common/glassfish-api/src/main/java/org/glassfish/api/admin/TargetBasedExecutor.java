@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,22 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.api.admin;
 
-package org.glassfish.config.support;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import org.jvnet.hk2.annotations.Multiple;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import org.glassfish.api.ActionReport;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * Annotation to define multiple Create annotations on a single method declaration
+ * Convenience implementation that delegate to a provided system executor. This
+ * provider will be looked up from the habitat by its type ClusterExecutor and the
+ * "target" name. 
  */
-@Retention(RUNTIME)
-@Target(ElementType.METHOD)
-@Multiple
-public @interface Creates {
-    Create[] value();
+@Service
+public final class TargetBasedExecutor implements ClusterExecutor {
+
+    @Inject
+    @Named("GlassFishClusterExecutor")
+    private ClusterExecutor delegate=null;
+
+    @Override
+    public ActionReport.ExitCode execute(String commandName, AdminCommand command, AdminCommandContext context, ParameterMap parameters) {
+        return delegate.execute(commandName, command, context, parameters);
+    }
 }

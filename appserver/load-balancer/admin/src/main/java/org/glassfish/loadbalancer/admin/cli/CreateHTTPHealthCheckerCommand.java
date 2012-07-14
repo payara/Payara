@@ -54,6 +54,8 @@ import org.jvnet.hk2.config.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -76,7 +78,7 @@ import javax.inject.Inject;
  * @author Yamini K B
  */
 @Service(name = "create-http-health-checker")
-@Scoped(PerLookup.class)
+@PerLookup
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @org.glassfish.api.admin.ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

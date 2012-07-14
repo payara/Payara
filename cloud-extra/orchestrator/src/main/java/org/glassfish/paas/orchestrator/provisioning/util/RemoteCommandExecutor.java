@@ -45,7 +45,7 @@ import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  * @author Jagadish Ramu
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class RemoteCommandExecutor {
 
     @Inject

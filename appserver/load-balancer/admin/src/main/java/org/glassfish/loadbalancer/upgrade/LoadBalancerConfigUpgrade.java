@@ -48,7 +48,7 @@ import org.glassfish.loadbalancer.config.LoadBalancer;
 import org.glassfish.loadbalancer.config.LoadBalancers;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 

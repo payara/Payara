@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.Before;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.tests.utils.Utils;
@@ -88,10 +89,10 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Before
     public void createNewHabitat() {
-        this.habitat = Utils.getNewHabitat(this);
+        this.habitat = Utils.instance.getHabitat(this);
     }
     
-    @Test
+    @Test // @Ignore
     public void doChangeToValidPool() throws TransactionFailure {
         Domain domain = habitat.getComponent(Domain.class);
         //Find JdbcResource to chenge its values
@@ -117,7 +118,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
             fail();
         }
     }
-    
+   
     @Test
     public void doChangeToInValidPool() throws TransactionFailure {
         Domain domain = habitat.getComponent(Domain.class);
@@ -126,7 +127,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         JdbcResource jdbc = null;
         while (iterator.hasNext()) {
             JdbcResource res = iterator.next();
-            if ("__TimerPool".equals(res.getPoolName())) {
+            if ("DerbyPool".equals(res.getPoolName())) {
                 jdbc = res;
                 break;
             }

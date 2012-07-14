@@ -48,10 +48,12 @@ import javax.inject.Singleton;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.Context;
 import org.glassfish.hk2.api.ServiceHandle;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * The security context used to enable the scoping of security service instances.
  */
+@Service
 @Singleton
 public class SecurityScopeContext implements Context<SecurityScope> {
     private final HashMap<String, HashMap<ActiveDescriptor<?>, Object>> contexts =
@@ -81,10 +83,10 @@ public class SecurityScopeContext implements Context<SecurityScope> {
 
     @SuppressWarnings("unchecked")
 	@Override
-    public <T> T find(ActiveDescriptor<T> descriptor) {
+    public boolean containsKey(ActiveDescriptor<?> descriptor) {
         HashMap<ActiveDescriptor<?>, Object> mappings = getCurrentContext();
         
-        return (T) mappings.get(descriptor);
+        return mappings.containsKey(descriptor);
     }
 
     @Override
@@ -103,5 +105,22 @@ public class SecurityScopeContext implements Context<SecurityScope> {
         }
         
         return retVal;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#supportsNullCreation()
+     */
+    @Override
+    public boolean supportsNullCreation() {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#shutdown()
+     */
+    @Override
+    public void shutdown() {
+        // Do nothing
+        
     }
 }

@@ -50,7 +50,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * AdminCommand to stop the instance
@@ -65,7 +65,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name = "_stop-instance")
 @Async
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE) // allow stop-instance always
 @ExecuteOn(RuntimeType.INSTANCE)
 @RestEndpoints({

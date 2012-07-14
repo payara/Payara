@@ -45,7 +45,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.SecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +53,7 @@ import java.util.List;
 /**
  * Create Connector SecurityMap command
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.connector.security.map")
 public class ConnectorSecurityMap {
     

@@ -55,7 +55,7 @@ import org.glassfish.resources.api.ResourceStatus;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -74,7 +74,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
  * @author Jennifer Chou, Jagadish Ramu
  */
 @Service(name = ServerTags.CONNECTOR_RESOURCE)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.connector.resource")
 public class ConnectorResourceManager implements ResourceManager {
 

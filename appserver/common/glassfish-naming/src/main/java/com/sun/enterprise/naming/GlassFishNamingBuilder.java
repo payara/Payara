@@ -42,11 +42,12 @@ package com.sun.enterprise.naming;
 
 import com.sun.enterprise.naming.impl.SerialInitContextFactory;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -79,7 +80,7 @@ import static com.sun.enterprise.naming.util.LogFacade.logger;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-@StartupRunLevel
+@RunLevel(value = StartupRunLevel.VAL, mode = RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, PostConstruct, PreDestroy
 {
     @LogMessageInfo(message = "Failed to load {0} using CommonClassLoader")

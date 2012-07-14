@@ -47,6 +47,8 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainsManager;
@@ -58,7 +60,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  *  This is a local command that deletes a domain.
  */
 @Service(name = "delete-domain")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class DeleteDomainCommand extends LocalDomainCommand {
 
     @Param(name = "domain_name", primary = true)

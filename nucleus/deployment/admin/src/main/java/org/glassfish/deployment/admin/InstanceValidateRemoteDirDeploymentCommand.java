@@ -55,7 +55,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Instance-only command which makes sure that a deployment directory seems to
@@ -71,7 +71,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Tim Quinn
  */
 @Service(name="_instanceValidateRemoteDirDeployment")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

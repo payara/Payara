@@ -39,7 +39,7 @@
  */
 package org.glassfish.virtualization.virtualbox;
 
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.ServerPoolConfig;
 import org.glassfish.virtualization.spi.ServerPool;
 import org.glassfish.virtualization.spi.ServerPoolFactory;
@@ -55,10 +55,10 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name="virtualbox")
 public class VirtualBoxSPF implements ServerPoolFactory {
-    final Injector injector;
+    final ServiceLocator injector;
 
     @Inject
-    public VirtualBoxSPF(Injector injector) {
+    public VirtualBoxSPF(ServiceLocator injector) {
         this.injector=injector;
     }
 

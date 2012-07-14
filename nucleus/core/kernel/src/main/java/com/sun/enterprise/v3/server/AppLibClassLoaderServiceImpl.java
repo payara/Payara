@@ -46,7 +46,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -68,7 +68,7 @@ import java.io.IOException;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class AppLibClassLoaderServiceImpl {
     /*
      * TODO(Sahoo): Not Yet Properly Implemented, as we have to bring in

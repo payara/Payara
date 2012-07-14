@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
-import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jeanfrancois Arcand
  */
 @Service
-@ContractProvided(Mapper.class)
+@ContractsProvided(Mapper.class)
 public class ContextMapper extends Mapper {
     protected final Logger logger;
     protected HttpHandler adapter;

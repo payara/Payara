@@ -41,7 +41,7 @@ package com.sun.enterprise.admin.cli.cluster;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * This class is needed for backwards compatibility.  uninstall-node will simply
@@ -49,6 +49,6 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Byron Nevins
  */
 @Service(name = "uninstall-node")
-@Scoped(PerLookup.class)
+@PerLookup
 public class UninstallNodeCommand extends UninstallNodeSshCommand {
 }

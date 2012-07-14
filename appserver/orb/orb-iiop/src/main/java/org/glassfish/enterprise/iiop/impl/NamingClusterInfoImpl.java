@@ -44,7 +44,8 @@ import com.sun.corba.ee.spi.folb.GroupInfoService;
 import org.glassfish.api.naming.NamingClusterInfo;
 import org.glassfish.api.naming.NamingObjectsProvider;
 import org.glassfish.hk2.Provider;
-import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -61,12 +62,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Singleton;
+
 /**
  * This class is responsible for setting up naming load-balancing including RoundRobinPolicy.
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class NamingClusterInfoImpl implements NamingClusterInfo {
     //move up to some class in top orb module
     @LoggerInfo(subsystem = "orb", description = "logger for GlassFish appserver orb modules", publish = true)
@@ -113,8 +116,8 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
         // this should force the initialization of the resources providers
         if (services !=null) {
-            for (Provider<NamingObjectsProvider> provider : services.forContract(NamingObjectsProvider.class).all()) {
-                provider.get();
+            for (ServiceHandle<?> provider : services.getAllServiceHandles(NamingObjectsProvider.class)) {
+                provider.getService();
                 // no - op. Do nothing with the provided object
             }
 //                        for (NamingObjectsProvider provider :

@@ -64,7 +64,7 @@ import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.glassfish.ejb.deployment.util.EjbBundleValidator;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * This class is responsible for handling J2EE EJB Bundlearchive files.
@@ -72,7 +72,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author  Jerome Dochez
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 @ArchivistFor(EjbType.ARCHIVE_TYPE)
 public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
 

@@ -59,13 +59,13 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * List transports command
  */
 @Service(name = "list-transports")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.transports")
 @ExecuteOn(RuntimeType.DAS)
@@ -95,7 +95,7 @@ public class ListTransports implements AdminCommand {
      * @param context information
      */
     public void execute(AdminCommandContext context) {
-        Target targetUtil = services.byType(Target.class).get();
+        Target targetUtil = services.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;

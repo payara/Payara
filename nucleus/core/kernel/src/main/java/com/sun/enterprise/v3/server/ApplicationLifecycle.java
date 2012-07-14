@@ -94,9 +94,9 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.PostConstruct;
+import javax.inject.Singleton;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -120,7 +120,7 @@ import java.net.URI;
  * @author Jerome Dochez, Sanjeeb Sahoo
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private static final String[] UPLOADED_GENERATED_DIRS = new String [] {"policy", "xml", "ejb", "jsp"};
@@ -139,9 +139,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     public ApplicationRegistry appRegistry;
-
-    @Inject
-    ModulesRegistry modulesRegistry;
 
     @Inject
     protected Applications applications;
@@ -990,7 +987,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     }
 
     protected boolean startContainers(Collection<EngineInfo> containersInfo, Logger logger, DeploymentContext context) {
-        ActionReport report = context.getActionReport();
+    	
+    	ActionReport report = context.getActionReport();
         for (EngineInfo engineInfo : containersInfo) {
             Container container;
             try {
@@ -999,6 +997,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 logger.log(Level.SEVERE, "Cannot start container  " +  engineInfo.getSniffer().getModuleType(),e);
                 return false;
             }
+                
             Class<? extends Deployer> deployerClass = container.getDeployer();
             Deployer deployer;
             try {

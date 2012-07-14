@@ -57,7 +57,7 @@ import org.glassfish.paas.tenantmanager.impl.SecurityStore;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
@@ -69,7 +69,7 @@ import javax.inject.Inject;
  *
  */
 @Service(name = "create-tenant")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.tenant")
 @TargetType(value={CommandTarget.STANDALONE_INSTANCE})
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS})

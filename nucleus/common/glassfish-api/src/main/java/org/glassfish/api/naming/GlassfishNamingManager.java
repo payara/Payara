@@ -63,6 +63,8 @@ import java.util.Map;
 public interface GlassfishNamingManager {
 
     public static final String LOGICAL_NAME ="com.sun.enterprise.naming.logicalName";
+    
+    public static final String NAMESPACE_METADATA_KEY = "NamespacePrefixes";
 
     /**
      * Get the initial context.

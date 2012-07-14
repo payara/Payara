@@ -58,13 +58,13 @@ import java.util.logging.Level;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Represents the active (runtime) inbound resource-adapter
  */
 @Service(name= ConnectorConstants.AIRA)
-@Scoped(PerLookup.class)
+@PerLookup
 public class ActiveInboundResourceAdapterImpl extends ActiveOutboundResourceAdapter
         implements ActiveInboundResourceAdapter {
 

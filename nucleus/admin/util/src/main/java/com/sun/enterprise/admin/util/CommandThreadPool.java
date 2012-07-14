@@ -54,8 +54,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -68,7 +68,7 @@ import java.util.logging.Logger;
  * @author Vijay Ramachandran
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class CommandThreadPool implements Startup, PostConstruct {
 
     @Inject

@@ -45,7 +45,7 @@ import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.naming.Context;
 import java.io.*;
@@ -61,7 +61,7 @@ import static com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFacto
  */
 
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class NamingUtilsImpl implements NamingUtils {
     @LogMessageInfo(message = "Exception in NamingManagerImpl copyMutableObject(): {0}",
     cause = "Problem with serialising or deserialising of the object",

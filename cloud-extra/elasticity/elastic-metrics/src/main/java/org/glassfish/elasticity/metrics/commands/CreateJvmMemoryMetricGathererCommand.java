@@ -50,7 +50,7 @@ import org.glassfish.elasticity.config.serverbeans.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  */
 @Service(name="create-jvm-memory-metric-gatherer")
 @I18n("create.jvm-memory.metric.gatherer")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
 
    @Inject
@@ -157,7 +157,7 @@ public class CreateJvmMemoryMetricGathererCommand implements AdminCommand{
 
     @Service(name = "create-memory-alert")
     @I18n("create.memory.alert")
-    @Scoped(PerLookup.class)
+    @PerLookup
     @RestEndpoints({ @RestEndpoint(configBean = ElasticServices.class, opType = RestEndpoint.OpType.POST, path = "create-memory-alert", description = "Create memory alert") })
     public static class CreateMemoryAlert implements AdminCommand{
 

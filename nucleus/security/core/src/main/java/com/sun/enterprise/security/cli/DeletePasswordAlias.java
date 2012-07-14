@@ -55,7 +55,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Delete Password Alias Command
@@ -78,7 +78,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 
 @Service(name="delete-password-alias")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.password.alias")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})

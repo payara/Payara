@@ -42,11 +42,10 @@ package com.sun.enterprise.admin.cli;
 
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
+import java.lang.annotation.Annotation;
 import java.util.logging.*;
 
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import com.sun.hk2.component.InjectionResolver;
@@ -57,6 +56,8 @@ import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
@@ -68,9 +69,9 @@ import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 
-import com.sun.logging.LogDomains;
-
 import javax.inject.Inject;
+import javax.inject.Scope;
+import javax.inject.Singleton;
 
 
 /**
@@ -93,7 +94,7 @@ import javax.inject.Inject;
  * @author Bill Shannon
  */
 @Contract
-@Scoped(PerLookup.class)
+@PerLookup
 public abstract class CLICommand implements PostConstruct {
     public static final int ERROR = CLIConstants.ERROR;
     public static final int CONNECTION_ERROR = 2;
@@ -822,6 +823,18 @@ public abstract class CLICommand implements PostConstruct {
         } else
             return false;
     }
+    
+    private Class<? extends Annotation> getScope(Class<?> onMe) {
+    	if (onMe == null) return null;
+    	
+    	for (Annotation anno : onMe.getAnnotations()) {
+    		if (anno.annotationType().isAnnotationPresent(Scope.class)) {
+    			return anno.annotationType();
+    		}
+    	}
+    	
+    	return null;
+    }
 
     /**
      * The prevalidate method supplies missing options from
@@ -840,10 +853,10 @@ public abstract class CLICommand implements PostConstruct {
          * Remote commands are checked on the server.
          */
         if (!(this instanceof RemoteCommand) && !(this instanceof RemoteCLICommand)) {
-            Scoped scoped = this.getClass().getAnnotation(Scoped.class);
-            if (scoped == null) {
+        	Class<? extends Annotation> myScope = getScope(this.getClass());
+            if (myScope == null) {
                 throw new CommandException(strings.get("NoScope", name));
-            } else if (scoped.value() == Singleton.class) {
+            } else if (Singleton.class.equals(myScope)) {
                 // check that there are no parameters for this command
                 if (commandModel.getParameters().size() > 0) {
                     throw new CommandException(strings.get("HasParams", name));

@@ -56,7 +56,7 @@ import javax.inject.Provider;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Supplemental command to stop the virtual machine when instances are stopped.
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service
 @Supplemental(value = "stop-instance", on= Supplemental.Timing.After )
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class SupplementalStopInstance implements AdminCommand {
 

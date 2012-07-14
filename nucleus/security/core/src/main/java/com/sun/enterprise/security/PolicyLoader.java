@@ -47,6 +47,7 @@ import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 //V3:Commented import com.sun.enterprise.config.serverbeans.ElementProperty;
 //V3:Commented import com.sun.enterprise.config.ConfigContext;
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -57,7 +58,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * Loads the Default Policy File into the system.
@@ -67,14 +68,14 @@ import org.jvnet.hk2.component.Singleton;
  *
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class PolicyLoader{
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService securityService;
     
     @Inject
-    private JaccProvider[] jaccProviders;
+    private IterableProvider<JaccProvider> jaccProviders;
      
     private static Logger _logger = null;
     static {
@@ -226,9 +227,9 @@ public class PolicyLoader{
            return null;    
        }
 
-       for (int i=0; i < jaccProviders.length; i++) {
-           if (jaccProviders[i].getName().equals(name)) {
-               return jaccProviders[i];
+       for (JaccProvider jaccProvider : jaccProviders) {
+           if (jaccProvider.getName().equals(name)) {
+               return jaccProvider;
            }
        }
        return null;

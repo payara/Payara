@@ -40,23 +40,20 @@
 
 package com.sun.enterprise.admin.cli.optional;
 
-import java.io.*;
+import java.io.File;
 
-import org.glassfish.api.admin.*;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.admin.cli.remote.DASUtils;
-
-import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.backup.BackupException;
-import com.sun.enterprise.backup.RestoreManager;
 import com.sun.enterprise.backup.BackupRequest;
 import com.sun.enterprise.backup.BackupWarningException;
-
+import com.sun.enterprise.backup.RestoreManager;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-
-import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
+import com.sun.enterprise.util.ObjectAnalyzer;
 
 /**
  * This is a local command for restoring domains.
@@ -70,7 +67,7 @@ import org.jvnet.hk2.component.*;
  *  </ul>
  */
 @Service(name = "restore-domain")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class RestoreDomainCommand extends BackupCommands {
 
     @Param(name = "filename", optional = true)

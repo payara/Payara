@@ -53,7 +53,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Collection;
 import java.util.logging.Level;
@@ -67,7 +67,7 @@ import javax.inject.Inject;
  */
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
 @Service(name="list-connector-connection-pools")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @I18n("list.connector.connection.pools")

@@ -62,7 +62,7 @@ import java.util.List;
  *
  * <p>The implementations of this interface must retain any pertinent information necessary
  * to undo the command within its instance context. Therefore all UndoableCommand implementations
- * must have a {@link org.jvnet.hk2.component.PerLookup} scope otherwise the system will flag it
+ * must have a {@link org.glassfish.hk2.api.PerLookup} scope otherwise the system will flag it
  * as an error and will refuse to execute the command.
  *
  * <p>An undo-able command has a slightly more complicated set of phases execution as compared

@@ -60,7 +60,7 @@ import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
@@ -72,7 +72,7 @@ import com.sun.logging.LogDomains;
  * @author Harpreet Singh
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
 
     private static Logger _logger = null;

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-ee-api</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Java EE dependent public APIs of Glassfish V3</name>
 
     <developers>
@@ -68,7 +68,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

@@ -47,7 +47,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import javax.enterprise.deploy.shared.ModuleType;
 
 import java.util.Enumeration;
@@ -60,7 +60,7 @@ import java.io.IOException;
  * @author Mitesh Meswani
  */
 @Service(name="jpa")
-@Scoped(Singleton.class)
+@Singleton
 public class JPASniffer  extends GenericSniffer {
 
     private static final String[] containers = { "org.glassfish.persistence.jpa.JPAContainer" };

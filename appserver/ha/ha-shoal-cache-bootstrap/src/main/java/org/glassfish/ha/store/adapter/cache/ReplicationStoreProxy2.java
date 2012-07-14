@@ -49,7 +49,7 @@ import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;

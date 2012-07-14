@@ -136,7 +136,7 @@ public class ClientCertificateLoginModule implements LoginModule {
 
 	// initialize any configured options
 	debug = "true".equalsIgnoreCase((String)options.get("debug"));
-        sslUtils = Globals.getDefaultHabitat().byType(SSLUtils.class).get();
+        sslUtils = Globals.getDefaultHabitat().getService(SSLUtils.class);
     }
 
 

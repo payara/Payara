@@ -42,9 +42,10 @@ package com.sun.enterprise.registration.glassfish;
 
 import java.util.logging.Level;
 
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import java.util.logging.Logger;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -60,14 +61,11 @@ import com.sun.appserv.server.util.Version;
 
 
 @Service(name = "PingService")
-@PostStartupRunLevel
+@RunLevel(PostStartupRunLevel.VAL)
 public class PingService implements PostConstruct {
 
     @Inject
     Logger logger;
-
-    @Inject
-    Version version;
 
     //@Inject
     //private ModulesRegistry modulesRegistry;
@@ -116,7 +114,7 @@ public class PingService implements PostConstruct {
                 try {
                     HashMap<String,String> map = new HashMap<String,String>();
 
-                    map.put("product", version.getProductName().replace(";", ":"));
+                    map.put("product", Version.getProductName().replace(";", ":"));
                     map.put("version", getVersionNumber());
                     map.put("context", CONTEXT);
                     // Disable module status usage tracking.
@@ -208,23 +206,23 @@ public class PingService implements PostConstruct {
     private String getVersionNumber() {
         StringBuilder versionNumber = new StringBuilder();
 
-        if (version.getMajorVersion() != null)
-            versionNumber.append(version.getMajorVersion()).append(".");
+        if (Version.getMajorVersion() != null)
+            versionNumber.append(Version.getMajorVersion()).append(".");
         else
             versionNumber.append("0.");
 
-        if (version.getMinorVersion() != null)
-            versionNumber.append(version.getMinorVersion()).append(".");
+        if (Version.getMinorVersion() != null)
+            versionNumber.append(Version.getMinorVersion()).append(".");
         else
             versionNumber.append("0.");
 
-        if (version.getUpdateVersion() != null)
-            versionNumber.append(version.getUpdateVersion()).append("-");
+        if (Version.getUpdateVersion() != null)
+            versionNumber.append(Version.getUpdateVersion()).append("-");
         else
             versionNumber.append("0-");
 
-        if (version.getBuildVersion() != null)
-            versionNumber.append(version.getBuildVersion());
+        if (Version.getBuildVersion() != null)
+            versionNumber.append(Version.getBuildVersion());
         else
             versionNumber.append("0");
 

@@ -69,7 +69,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
 
     @Before
     public void setup() {
-        habitat = Utils.getNewHabitat(this);
+        habitat = Utils.instance.getHabitat(this);
     }
 
     @Test

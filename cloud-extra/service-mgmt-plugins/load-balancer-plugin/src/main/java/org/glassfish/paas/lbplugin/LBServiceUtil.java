@@ -41,17 +41,16 @@
 package org.glassfish.paas.lbplugin;
 
 import java.util.Collection;
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.orchestrator.config.Services;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceUtil;
 import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+import javax.inject.Singleton;
 
 @org.jvnet.hk2.annotations.Service
-@Scoped(Singleton.class)
+@Singleton
 public class LBServiceUtil {
 
     @Inject

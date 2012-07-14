@@ -43,7 +43,7 @@ package com.sun.enterprise.deployment.deploy.shared;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  * @author Jerome Dochez
  */
 @Service(name="jar")
-@Scoped(PerLookup.class)
+@PerLookup
 public class OutputJarArchive extends JarArchive implements WritableArchive {
 
     // the path

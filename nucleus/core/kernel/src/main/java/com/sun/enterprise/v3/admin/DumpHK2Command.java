@@ -56,7 +56,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Dumps the currently configured HK2 modules and their contents.
@@ -66,7 +66,7 @@ import org.jvnet.hk2.component.PerLookup;
  *
  * @author Kohsuke Kawaguchi
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @Service(name="_dump-hk2")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

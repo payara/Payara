@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>load-balancer-admin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Load-Balancer admin Localization</name>
 
     <build>

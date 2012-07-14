@@ -52,7 +52,7 @@ import org.glassfish.server.ServerEnvironmentImpl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  *
@@ -67,7 +67,7 @@ import org.jvnet.hk2.component.Singleton;
  *
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class InserverCommandRunnerHelper {
 
     public final static Logger logger = LogDomains.getLogger(ServerEnvironmentImpl.class, LogDomains.ADMIN_LOGGER);

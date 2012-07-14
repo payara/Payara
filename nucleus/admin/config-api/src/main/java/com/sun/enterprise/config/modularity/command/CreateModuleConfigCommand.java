@@ -61,7 +61,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -77,7 +77,7 @@ import java.util.logging.Logger;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "create-module-config")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.module.config")
 public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
     private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());

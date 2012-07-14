@@ -40,15 +40,18 @@
 
 package org.glassfish.paas.gfplugin;
 
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.jvnet.hk2.component.Habitat;
-
-import java.util.Properties;
 
 /**
  * @author bhavanishankar@java.net
@@ -70,19 +73,25 @@ public class StaticClientRuntime extends GlassFishRuntime {
     @Override
     public GlassFish newGlassFish(GlassFishProperties glassFishProperties)
             throws GlassFishException {
-        ModulesRegistry registry;
+        
         System.out.println("serverHabitat = [ " + habitat + "]");
-        if (habitat == null) {
-            ClassLoader ecl = getClass().getClassLoader();
-            Thread.currentThread().setContextClassLoader(ecl);
-            registry = new StaticModulesRegistry(ecl);
-        } else {
-            registry = habitat.getComponent(ModulesRegistry.class);
-        }
 
+        ClassLoader ecl = getClass().getClassLoader();
+        Thread.currentThread().setContextClassLoader(ecl);
+        
         String habitatName = glassFishProperties.getProperties().getProperty("host")
                 + ":" + glassFishProperties.getProperties().getProperty("port");
-        Habitat habitat = registry.createHabitat(habitatName);
+        
+        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create(habitatName);
+        
+        try {
+			HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(ecl));
+		} catch (IOException e) {
+			throw new GlassFishException(e);
+		}
+        
+        Habitat habitat = new Habitat(this.habitat, habitatName); 
+        
         System.out.println("Habitat = [ " + habitat + "]");
         Properties cloned = new Properties();
         cloned.putAll(glassFishProperties.getProperties());

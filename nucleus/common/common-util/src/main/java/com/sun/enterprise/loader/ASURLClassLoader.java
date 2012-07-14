@@ -84,7 +84,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import java.util.zip.ZipEntry;
 
 import org.glassfish.api.deployment.InstrumentableClassLoader;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 
 /**
  * Class loader used by the ejbs of an application or stand alone module.

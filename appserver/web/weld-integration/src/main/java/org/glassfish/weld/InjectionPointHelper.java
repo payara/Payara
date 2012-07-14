@@ -59,8 +59,8 @@ public class InjectionPointHelper {
     public InjectionPointHelper(Habitat h) {
         services = h;
 
-        compEnvManager = services.forContract(ComponentEnvManager.class).get();
-        namingManager = services.forContract(GlassfishNamingManager.class).get();
+        compEnvManager = services.getService(ComponentEnvManager.class);
+        namingManager = services.getService(GlassfishNamingManager.class);
 
     }
 

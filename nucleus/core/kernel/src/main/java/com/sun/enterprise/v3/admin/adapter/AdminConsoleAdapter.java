@@ -61,7 +61,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -137,8 +137,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     Events events;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config serverConfig;
-    @Inject
-    Version version;
+    
     AdminEndpointDecider epd;
     private static final Logger logger = LogDomains.getLogger(AdminConsoleAdapter.class, LogDomains.CORE_LOGGER);
     private String statusHtml;

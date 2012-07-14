@@ -55,7 +55,7 @@ import org.glassfish.gms.bootstrap.HealthHistory;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,7 +75,7 @@ import org.glassfish.api.admin.*;
  */
 @Service(name="get-health")
 @I18n("get.health.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,

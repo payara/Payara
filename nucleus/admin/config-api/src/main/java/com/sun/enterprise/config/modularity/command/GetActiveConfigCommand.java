@@ -62,7 +62,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
@@ -79,7 +79,7 @@ import java.util.logging.Logger;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "get-active-config")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("get.active.config")
 public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
 

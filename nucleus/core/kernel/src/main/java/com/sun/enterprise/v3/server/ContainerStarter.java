@@ -44,10 +44,14 @@ import com.sun.enterprise.module.Module;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -70,6 +74,9 @@ import java.util.logging.Logger;
 @Service
 public class ContainerStarter {
 
+	@Inject
+	ServiceLocator serviceLocator;
+	
     @Inject
     Habitat habitat;
 
@@ -106,7 +113,7 @@ public class ContainerStarter {
         // first the right container from that module.
         Map<String, EngineInfo> containers = new HashMap<String, EngineInfo>();
         for (String name : sniffer.getContainersNames()) {
-            Inhabitant<? extends Container> provider = habitat.getInhabitant(Container.class, name);
+            ServiceHandle<Container> provider = serviceLocator.getServiceHandle(Container.class, name);
             if (provider == null) {
                 logger.severe("Cannot find Container named " + name + ", so unable to start " + sniffer.getModuleType() + " container");
                 return null;

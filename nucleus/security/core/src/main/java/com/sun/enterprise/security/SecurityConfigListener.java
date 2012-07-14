@@ -44,7 +44,7 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
@@ -65,14 +65,14 @@ import java.util.logging.Logger;
 import javax.inject.Named;
 import javax.security.auth.login.Configuration;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  *
  * @author kumar.jayanti
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class SecurityConfigListener implements ConfigListener, PostConstruct {
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

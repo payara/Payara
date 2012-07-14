@@ -52,7 +52,6 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>libvirt</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>IaaS Plugin libvirt</name>
 
     <properties>

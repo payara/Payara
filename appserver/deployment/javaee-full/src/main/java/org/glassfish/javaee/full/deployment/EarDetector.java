@@ -41,20 +41,21 @@
 
 package org.glassfish.javaee.full.deployment;
 
-import com.sun.enterprise.deployment.EarType;
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Singleton;
 
-import java.io.IOException;
-import java.util.logging.Logger;
+import com.sun.enterprise.deployment.EarType;
 
 /**
  * Detects ear type archives.
@@ -64,14 +65,14 @@ import java.util.logging.Logger;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = EarDetector.ARCHIVE_TYPE)
-@Scoped(Singleton.class)
+@Singleton
 public class EarDetector implements ArchiveDetector {
 
     public static final String EAR_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
     public static final int DEFAULT_EAR_DETECTOR_RANK = 100;
     public static final String ARCHIVE_TYPE = EarType.ARCHIVE_TYPE;
 
-    @Inject private Habitat services;
+    @Inject private ServiceLocator serviceLocator;
     @Inject private EarSniffer sniffer;
     @Inject private EarType archiveType;
     private ArchiveHandler archiveHandler;
@@ -97,7 +98,7 @@ public class EarDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
                 }
-                archiveHandler = services.forContract(ArchiveHandler.class).named(ARCHIVE_TYPE).get();
+                archiveHandler = serviceLocator.getService(ArchiveHandler.class,ARCHIVE_TYPE);
             }
             return archiveHandler;
         }

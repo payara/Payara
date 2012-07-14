@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Scoped;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import org.glassfish.api.monitoring.ContainerMonitoring;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
@@ -64,7 +64,7 @@ import javax.inject.Inject;
  * @author Byron Nevins (3.1+)
  */
 @Service(name="disable-monitoring")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("disable.monitoring")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})

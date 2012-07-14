@@ -58,7 +58,7 @@ import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import org.glassfish.internal.api.SharedSecureRandom;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.IORInfo;
 /**
@@ -66,7 +66,7 @@ import org.omg.PortableInterceptor.IORInfo;
  * @author Kumar
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class IIOPSSLUtilImpl implements IIOPSSLUtil {
     @Inject
     private SSLUtils sslUtils;

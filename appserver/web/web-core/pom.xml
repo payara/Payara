@@ -51,7 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-core</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Core Servlet Container</name>
 
     <developers>

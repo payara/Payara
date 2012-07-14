@@ -40,10 +40,8 @@
 
 package org.glassfish.virtualization.virtmgt.impl;
 
-import org.glassfish.hk2.inject.Injector;
-import org.glassfish.virtualization.spi.VirtualCluster;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.spi.*;
-import org.glassfish.virtualization.spi.EventSource;
 import org.glassfish.virtualization.virtmgt.GroupAccess;
 
 /**
@@ -55,7 +53,7 @@ public class LocalGroupAccess implements GroupAccess {
 
     final ServerPool group;
 
-    static LocalGroupAccess from(Injector injector, ServerPool group) {
+    static LocalGroupAccess from(ServiceLocator injector, ServerPool group) {
         LocalGroupAccess instance = new LocalGroupAccess(group);
         injector.inject(instance);
         return instance;

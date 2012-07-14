@@ -50,7 +50,9 @@ import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -70,7 +72,9 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.utilities.BuilderHelper;
 
 /**
  * Dumps a sorted list of all registered Contract's in the Habitat
@@ -80,7 +84,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Byron Nevins
  */
 @Service(name = "_get-habitat-info")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
@@ -130,21 +134,16 @@ public class GetHabitatInfo implements AdminCommand {
         // user-called command...
 
         sb.append("\n*********** Sorted List of all Registered Contracts in the Habitat **************\n");
-        Iterator<String> it = habitat.getAllContracts();
-
-        if (it == null)  //PP (paranoid programmer)
-            return;
-
-        SortedSet<String> contracts = new TreeSet<String>();
-
-        while (it.hasNext()) {
-            contracts.add(it.next());
+        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        
+        SortedSet<String> allContracts = new TreeSet<String>();
+        for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
+            allContracts.addAll(aDescriptor.getAdvertisedContracts());
         }
 
         // now the contracts are sorted...
 
-        it = contracts.iterator();
-
+        Iterator<String> it = allContracts.iterator();
         for (int i = 1; it.hasNext(); i++) {
             sb.append("Contract-" + i + ": " + it.next() + "\n");
         }
@@ -152,14 +151,20 @@ public class GetHabitatInfo implements AdminCommand {
 
     private void dumpInhabitantsImplementingContractPattern(String pattern, StringBuilder sb) {
         sb.append("\n*********** List of all services for contract named like " + contract + " **************\n");
-        Iterator<String> it = habitat.getAllContracts();
+        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        HashSet<String> allContracts = new HashSet<String>();
+        for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
+            allContracts.addAll(aDescriptor.getAdvertisedContracts());
+        }
+        
+        Iterator<String> it = allContracts.iterator();
         while (it.hasNext()) {
             String cn = it.next();
             if (cn.toLowerCase(Locale.ENGLISH).indexOf(pattern.toLowerCase(Locale.ENGLISH)) < 0)
                 continue;
             sb.append("\n-----------------------------\n");
             for (Inhabitant i : habitat.getInhabitantsByContract(cn)) {
-                sb.append("Inhabitant-Metadata: " + i.metadata().toCommaSeparatedString());
+                sb.append("Inhabitant-Metadata: " + i.metadata());
                 sb.append("\n");
                 boolean isStarted = Boolean.parseBoolean(started);
                 if (isStarted) {
@@ -171,7 +176,13 @@ public class GetHabitatInfo implements AdminCommand {
 
     private void dumpTypes(StringBuilder sb) {
         sb.append("\n\n*********** Sorted List of all Types in the Habitat **************\n\n");
-        Iterator<String> it = habitat.getAllTypes();
+        List<ActiveDescriptor<?>> allDescriptors = habitat.getDescriptors(BuilderHelper.allFilter());
+        HashSet<String> allTypes = new HashSet<String>();
+        for (ActiveDescriptor<?> aDescriptor : allDescriptors) {
+            allTypes.add(aDescriptor.getImplementation());
+        }
+        
+        Iterator<String> it = allTypes.iterator();
 
         if (it == null)  //PP (paranoid programmer)
             return;

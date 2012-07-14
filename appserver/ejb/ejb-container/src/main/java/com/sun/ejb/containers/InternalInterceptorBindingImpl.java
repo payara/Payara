@@ -61,7 +61,7 @@ public class InternalInterceptorBindingImpl  {
 
     public void registerInterceptor(Object systemInterceptor) {
 
-        InvocationManager invManager = services.forContract(InvocationManager.class).get();
+        InvocationManager invManager = services.getService(InvocationManager.class);
 
         ComponentInvocation currentInv = invManager.getCurrentInvocation();
 
@@ -74,7 +74,7 @@ public class InternalInterceptorBindingImpl  {
                          ".  This operation is only available from a web app context");
         }
 
-        ComponentEnvManager compEnvManager = services.forContract(ComponentEnvManager.class).get();
+        ComponentEnvManager compEnvManager = services.getService(ComponentEnvManager.class);
 
         JndiNameEnvironment env = compEnvManager.getCurrentJndiNameEnvironment();
 
@@ -103,8 +103,8 @@ public class InternalInterceptorBindingImpl  {
 
         // Register interceptor for any managed beans
         // TODO Handle 299-enabled case
-        ManagedBeanManager managedBeanManager = services.forContract(ManagedBeanManager.class).
-                named("ManagedBeanManagerImpl").get();
+        ManagedBeanManager managedBeanManager = services.getService(ManagedBeanManager.class,
+                "ManagedBeanManagerImpl");
         managedBeanManager.registerRuntimeInterceptor(systemInterceptor, webBundle);
     }
 }

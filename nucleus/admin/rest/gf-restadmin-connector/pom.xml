@@ -52,7 +52,7 @@
     
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-restadmin-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connector for GlassFish Admin REST Service</name>
 
     <dependencies>

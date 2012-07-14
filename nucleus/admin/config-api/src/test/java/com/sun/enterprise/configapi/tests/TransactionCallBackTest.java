@@ -42,6 +42,7 @@ package com.sun.enterprise.configapi.tests;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
@@ -62,7 +63,7 @@ import java.util.Map;
  */
 public class TransactionCallBackTest extends ConfigPersistence {
 
-    BaseServiceLocator habitat = Utils.getNewHabitat(this);
+    Habitat habitat = Utils.instance.getHabitat(this);
 
     /**
      * Returns the file name without the .xml extension to load the test configuration
@@ -75,7 +76,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
     }
 
     @Override
-    public BaseServiceLocator getBaseServiceLocator() {
+    public ServiceLocator getBaseServiceLocator() {
         return habitat;
     }
     

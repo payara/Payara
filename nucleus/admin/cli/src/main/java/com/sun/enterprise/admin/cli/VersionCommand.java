@@ -44,6 +44,8 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -63,7 +65,7 @@ import java.util.logging.Level;
  * @author Bill Shannon
  */
 @Service(name = "version")
-@Scoped(PerLookup.class)
+@PerLookup
 public class VersionCommand extends CLICommand {
 
     @Param(optional = true, shortName = "v")

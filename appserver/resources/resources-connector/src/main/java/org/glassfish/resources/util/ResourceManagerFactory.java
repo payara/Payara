@@ -40,72 +40,79 @@
 
 package org.glassfish.resources.util;
 
-import org.glassfish.hk2.scopes.Singleton;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 /**
  * @author Jagadish Ramu
  */
-@Scoped(Singleton.class)
+@Singleton
 @Service
 public class ResourceManagerFactory {
+    public final static String METADATA_KEY = "ResourceImpl";
 
     @Inject
-    private Habitat habitat;
+    private ServiceLocator locator;
 
     public ResourceDeployer getResourceDeployer(Object resource){
-        Inhabitant deployerInhabitant = null;
-        for (Inhabitant<?> inhabitant : habitat.getInhabitants(ResourceDeployerInfo.class)) {
-            org.glassfish.hk2.Descriptor desc = inhabitant.getDescriptor();
-            if(desc != null){
-                if( desc.getNames() != null){
-                    if(Proxy.isProxyClass(resource.getClass())){
-                        if(resource.getClass().getInterfaces() != null){
-                            for(Class clz : resource.getClass().getInterfaces()){
-                                if(desc.getNames().contains(clz.getName())){
-                                    deployerInhabitant = inhabitant;
-                                    break;
-                                }
-                            }
-                            if(deployerInhabitant != null){
-                                break;
-                            }
-                        }
-                    }
-                    if(desc.getNames().contains(resource.getClass().getName())){
-                        deployerInhabitant = inhabitant;
+        ServiceHandle<?> deployerHandle = null;
+        for (ServiceHandle<?> handle : locator.getAllServiceHandles(ResourceDeployerInfo.class)) {
+            ActiveDescriptor<?> desc = handle.getActiveDescriptor();
+            if (desc == null) continue;
+            
+            List<String> resourceImpls = desc.getMetadata().get(METADATA_KEY);
+            if (resourceImpls == null || resourceImpls.isEmpty()) continue;
+            String resourceImpl = resourceImpls.get(0);
+            
+            if(Proxy.isProxyClass(resource.getClass())){
+                for(Class<?> clz : resource.getClass().getInterfaces()){
+                    if(resourceImpl.equals(clz.getName())){
+                        deployerHandle = handle;
                         break;
                     }
-                    if(resource.getClass().getInterfaces() != null){
-                        //hack : for JdbcConnectionPool impl used by DataSourceDefinition.
-                        //check whether the interfaces implemented by the class matches
-                        for(Class clz : resource.getClass().getInterfaces()){
-                            if(desc.getNames().contains(clz.getName())){
-                                deployerInhabitant = inhabitant;
-                                break;
-                            }
-                        }
-                        if(deployerInhabitant != null){
-                            break;
-                        }
-                    }
+                }
+                        
+                if(deployerHandle != null){
+                    break;
                 }
             }
-        }
-        if(deployerInhabitant != null){
-            Object deployer = deployerInhabitant.get();
-            if(deployer != null && deployer instanceof ResourceDeployer){
-                return (ResourceDeployer)deployer;
+                
+            if(resourceImpl.equals(resource.getClass().getName())){
+                deployerHandle = handle;
+                break;
+            }
+                
+            //hack : for JdbcConnectionPool impl used by DataSourceDefinition.
+            //check whether the interfaces implemented by the class matches
+            for(Class<?> clz : resource.getClass().getInterfaces()){
+                if(resourceImpl.equals(clz.getName())){
+                    deployerHandle = handle;
+                    break;
+                }
+            }
+                    
+            if(deployerHandle != null){
+                break;
             }
         }
+        
+        if (deployerHandle != null){
+            Object deployer = deployerHandle.getService();
+            if(deployer != null && deployer instanceof ResourceDeployer){
+                return (ResourceDeployer) deployer;
+            }
+        }
+        
         return null;
     }
 

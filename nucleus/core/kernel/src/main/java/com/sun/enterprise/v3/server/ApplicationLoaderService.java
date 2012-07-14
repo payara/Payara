@@ -40,37 +40,48 @@
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.ApplicationRef;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.SystemApplications;
-import com.sun.enterprise.config.serverbeans.Engine;
-import com.sun.enterprise.config.serverbeans.Module;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.common.HTMLActionReporter;
-import com.sun.logging.LogDomains;
-import com.sun.hk2.component.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.event.EventListener.Event;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
-import org.glassfish.api.event.EventListener.Event;
+import org.glassfish.deployment.common.ApplicationConfigInfo;
+import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ContainerRegistry;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.internal.deployment.DeploymentTracing;
@@ -78,26 +89,20 @@ import org.glassfish.internal.api.*;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
-import org.jvnet.hk2.annotations.Priority;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.deployment.common.ApplicationConfigInfo;
-import org.glassfish.deployment.common.InstalledLibrariesResolver;
-import org.glassfish.deployment.common.DeploymentContextImpl;
-import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.ServerTags;
+import com.sun.enterprise.config.serverbeans.SystemApplications;
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.common.HTMLActionReporter;
+import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -108,9 +113,9 @@ import javax.inject.Provider;
  *
  * @author Jerome Dochez
  */
-@Priority(8) // low priority , should be started last
+//@Priority(8) // low priority , should be started last
 @Service(name="ApplicationLoaderService")
-public class ApplicationLoaderService implements Startup, PreDestroy, PostConstruct {
+public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
     final Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
 

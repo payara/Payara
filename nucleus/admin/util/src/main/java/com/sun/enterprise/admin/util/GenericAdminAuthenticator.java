@@ -71,6 +71,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
 import org.jvnet.hk2.annotations.ContractProvided;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -89,7 +90,7 @@ import java.security.Principal;
 import java.util.*;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.Group;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 /** Implementation of {@link AdminAccessController} that delegates to LoginContextDriver.
  *  @author Kedar Mhaswade (km@dev.java.net)
@@ -106,7 +107,7 @@ import org.jvnet.hk2.component.PostConstruct;
  *  @since GlassFish v3
  */
 @Service
-@ContractProvided(JMXAuthenticator.class)
+@ContractsProvided({JMXAuthenticator.class, AdminAccessController.class})
 public class GenericAdminAuthenticator implements AdminAccessController, JMXAuthenticator, PostConstruct {
     
     @LoggerInfo(subsystem="ADMSEC", description="Admin security ")

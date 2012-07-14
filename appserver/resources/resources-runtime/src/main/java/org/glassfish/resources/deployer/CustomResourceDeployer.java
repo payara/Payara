@@ -52,10 +52,10 @@ import org.glassfish.resources.util.BindableResourcesHelper;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -85,7 +85,7 @@ import java.util.logging.Logger;
  */
 @Service
 @ResourceDeployerInfo(CustomResource.class)
-@Scoped(Singleton.class)
+@Singleton
 public class CustomResourceDeployer implements ResourceDeployer {
 
 

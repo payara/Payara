@@ -57,7 +57,7 @@ import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.admin.ProcessEnvironment;
 
 /**
@@ -75,7 +75,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
  * @author tjquinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class AppClientServerApplication implements 
         ApplicationContainer<ApplicationClientDescriptor> {
 

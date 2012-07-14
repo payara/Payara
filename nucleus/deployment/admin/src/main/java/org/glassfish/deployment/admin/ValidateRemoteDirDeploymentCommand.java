@@ -67,7 +67,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Makes sure that, if a deployment is a directory deployment to a non-DAS
@@ -81,7 +81,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name="_validateRemoteDirDeployment")
 @Supplemental(value="deploy", on=Supplemental.Timing.Before, ifFailure=FailurePolicy.Error)
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

@@ -79,7 +79,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -95,7 +95,7 @@ import org.jvnet.hk2.config.types.Property;
  * @author tjquinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class JavaWebStartInfo implements ConfigListener {
 
     private final static String GLASSFISH_DIRECTORY_PREFIX = "glassfish/";

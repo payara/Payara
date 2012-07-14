@@ -42,7 +42,9 @@ package com.sun.enterprise.configapi.tests;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import com.sun.hk2.component.ConstructorWomb;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -75,17 +77,15 @@ public class ParentConfigListenerTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        habitat = Utils.getNewHabitat(this);
+        habitat = Utils.instance.getHabitat(this);
     }
+    
+    
 
 
     @Test
     public void addHttpListenerTest() throws TransactionFailure {
-
-
-        ConstructorWomb<NetworkListenersContainer> womb = new ConstructorWomb<NetworkListenersContainer>(
-            NetworkListenersContainer.class, habitat, null);
-        NetworkListenersContainer container = womb.get(null);
+        NetworkListenersContainer container = habitat.getService(NetworkListenersContainer.class);
 
         ConfigSupport.apply(new SingleConfigCode<NetworkListeners>() {
 

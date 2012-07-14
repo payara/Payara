@@ -64,7 +64,7 @@ import java.util.Collection;
 import java.util.Set;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
@@ -75,7 +75,7 @@ import javax.inject.Inject;
  * @author Mohit Gupta
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class EndpointInfoCollector {
 
     @Inject

@@ -44,6 +44,8 @@ import java.io.IOException;
 import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
@@ -57,7 +59,7 @@ import com.sun.enterprise.util.HostAndPort;
  * This is a local command that lists the domains.
  */
 @Service(name = "list-domains")
-@Scoped(PerLookup.class)
+@PerLookup
 public final class ListDomainsCommand extends LocalDomainCommand {
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(ListDomainsCommand.class);

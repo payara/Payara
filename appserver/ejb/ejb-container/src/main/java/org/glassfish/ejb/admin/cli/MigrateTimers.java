@@ -72,10 +72,10 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 @Service(name = "migrate-timers")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("migrate.timers")
 @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE})

@@ -52,7 +52,7 @@ import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -78,7 +78,7 @@ import org.jvnet.hk2.component.Habitat;
  *
  */
 @Service(name="create-iiop-listener")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.iiop.listener")
 @ExecuteOn(value={RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType(value={CommandTarget.CLUSTER,CommandTarget.CONFIG,
@@ -129,7 +129,7 @@ public class CreateIiopListener implements AdminCommand {
 
     @Override
     public void execute(AdminCommandContext context) {
-        final Target targetUtil = services.byType(Target.class ).get() ;
+        final Target targetUtil = services.getService(Target.class ) ;
         final Config config = targetUtil.getConfig(target ) ;
         final ActionReport report = context.getActionReport();
 

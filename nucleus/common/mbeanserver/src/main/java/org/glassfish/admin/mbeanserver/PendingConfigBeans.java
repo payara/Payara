@@ -46,7 +46,7 @@ import java.util.concurrent.CountDownLatch;
 import org.glassfish.config.support.ConfigBeanListener;
 import org.glassfish.hk2.Provider;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;

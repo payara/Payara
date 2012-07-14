@@ -46,8 +46,8 @@ import org.glassfish.api.web.TldProvider;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
  */
 
 @Service(name="librariesTld")
-@Scoped(Singleton.class)
+@Singleton
 public class LibrariesTldProvider implements TldProvider, PostConstruct {
 
     @Inject

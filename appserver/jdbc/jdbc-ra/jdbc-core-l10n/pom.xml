@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>jdbc-core-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Core JDBC Resource Adapter classes Localization</name>
 
     <build>

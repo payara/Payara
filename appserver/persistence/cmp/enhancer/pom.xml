@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-enhancer</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>enhancer module for cmp</name>
 
     <developers>

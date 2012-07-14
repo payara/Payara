@@ -54,7 +54,7 @@ import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Map;
 import java.util.Properties;
@@ -75,7 +75,7 @@ endpointname <endpointname>]]]
  * @author Jitendra Kotamraju
  */
 @Service(name = "__list-webservices")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

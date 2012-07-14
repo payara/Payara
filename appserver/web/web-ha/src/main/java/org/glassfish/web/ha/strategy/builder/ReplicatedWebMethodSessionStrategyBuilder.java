@@ -54,7 +54,7 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +64,7 @@ import java.util.Map;
  */
 
 @Service(name="replicated")
-@Scoped(PerLookup.class)
+@PerLookup
 public class ReplicatedWebMethodSessionStrategyBuilder extends BasePersistenceStrategyBuilder {
     @Inject
     private ReplicationWebEventPersistentManager rwepMgr;

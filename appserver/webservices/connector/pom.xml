@@ -51,13 +51,24 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>webservices-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connector for GlassFish Web Services Container</name>
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>buildClasspath</id>
+                        <configuration>
+                          <silent>true</silent>
+                          <outputFile>${project.build.directory}/classpath.txt</outputFile>
+                        </configuration>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                    </execution>
+
                     <execution>
                         <phase>process-resources</phase>
                         <goals>
@@ -76,19 +87,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-<plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <compilerArguments>
-                        <!-- also adding the classes.jar in the bootclasspath as rt.jar is not available on Mac -->
-                        <bootclasspath>${project.build.directory}/endorsed/webservices-api-osgi-${webservices.version}.jar${path.separator}${java.home}/../Classes/classes.jar${path.separator}${java.home}/lib/rt.jar</bootclasspath>
-                    </compilerArguments>
-                    <fork>true</fork>
-                </configuration>
-            </plugin>
-
         </plugins>
     </build> 
 
@@ -104,7 +102,7 @@
         </dependency>
         <dependency> 
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

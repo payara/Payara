@@ -50,7 +50,7 @@ import org.glassfish.web.WarType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ import java.util.List;
  * @author Jerome Dochez
  */
 @Service(name="web")
-@Scoped(Singleton.class)
+@Singleton
 public class WebSniffer  extends GenericSniffer {
 
     @Inject WarType warType;
@@ -156,7 +156,7 @@ public class WebSniffer  extends GenericSniffer {
         }
         return false;
     }
-
+    
     // TODO(Sahoo): Ideally we should have separate sniffer for JSP, but since WebSniffer is already
     // handling JSPs, we must make sure that all JSP related modules get installed by WebSniffer as well.
     // javax.el is needed because org.apache.jasper.runtime.JspApplicationContextImpl.getExpressionFactory
@@ -171,4 +171,5 @@ public class WebSniffer  extends GenericSniffer {
     protected String[] getContainerModuleNames() {
         return containerModuleNames;
     }
+
 }

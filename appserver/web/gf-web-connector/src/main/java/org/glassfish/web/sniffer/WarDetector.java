@@ -51,7 +51,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -64,7 +64,7 @@ import java.util.logging.Logger;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service(name = WarDetector.ARCHIVE_TYPE)
-@Scoped(Singleton.class)
+@Singleton
 public class WarDetector implements ArchiveDetector {
     public static final String WAR_DETECTOR_RANK_PROP = "glassfish.war.detector.rank";
     public static final int DEFAULT_WAR_DETECTOR_RANK = 200;
@@ -92,7 +92,7 @@ public class WarDetector implements ArchiveDetector {
             if (archiveHandler == null) {
                 try {
                     sniffer.setup(null, logger);
-                    archiveHandler = services.forContract(ArchiveHandler.class).named(ARCHIVE_TYPE).get();
+                    archiveHandler = services.getService(ArchiveHandler.class, ARCHIVE_TYPE);
                 } catch (IOException e) {
                     throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
                 }

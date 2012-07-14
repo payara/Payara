@@ -50,6 +50,7 @@ import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.web.deployment.io.WebFragmentDeploymentDescriptorFile;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -70,7 +71,7 @@ import java.util.Collections;
  */
 class WebFragmentArchivist extends Archivist<WebFragmentDescriptor> {
 
-    WebFragmentArchivist (WebArchivist webArchivist, BaseServiceLocator habitat) {
+    WebFragmentArchivist (WebArchivist webArchivist, Habitat habitat) {
         this.habitat = habitat;
         initializeContext(webArchivist);
     }

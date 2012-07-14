@@ -54,14 +54,14 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Creates a new virtual machine on a target machine
  * @author Jerome Dochez
  */
 @Service(name="create-vm")
-@Scoped(PerLookup.class)
+@PerLookup
 public class CreateVirtualMachine implements AdminCommand {
 
     @Param(name="template")

@@ -51,7 +51,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import static com.sun.enterprise.util.StringUtils.ok;
 /**
  * Remote AdminCommand to create a DCOM node
@@ -59,7 +59,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
  * @author Byron Nevins
  */
 @Service(name = "create-node-dcom")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({

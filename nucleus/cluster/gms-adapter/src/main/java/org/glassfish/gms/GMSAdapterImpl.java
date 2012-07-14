@@ -61,8 +61,8 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 
@@ -81,7 +81,7 @@ import java.util.logging.Logger;
 /**
  * @author Sheetal.Vartak@Sun.COM
  */
-@Scoped(PerLookup.class)
+@PerLookup
 @Service()
 public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
 

@@ -56,7 +56,7 @@ import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.types.Property;
 
 import java.net.InetAddress;
@@ -73,7 +73,7 @@ import org.glassfish.api.admin.RuntimeType;
  * @author Jerome Dochez
  */
 @Service(name="register-startup")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({

@@ -46,6 +46,7 @@ import javax.inject.Named;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.management.MBeanServer;
@@ -53,7 +54,7 @@ import javax.management.ObjectName;
 
 import org.glassfish.external.amx.BootAMXMBean;
 
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.List;
@@ -79,6 +80,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.PostStartupRunLevel;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -90,7 +92,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  * which will initialize (boot) AMX when a connection arrives.
  */
 @Service
-@PostStartupRunLevel
+@RunLevel(PostStartupRunLevel.VAL)
 public final class JMXStartupService implements PostConstruct {
 
     private static void debug(final String s) {
@@ -108,11 +110,11 @@ public final class JMXStartupService implements PostConstruct {
     private BaseServiceLocator mHabitat;
     @Inject
     Events mEvents;
-    @Inject
-    volatile static BaseServiceLocator habitat;
+     
+    static BaseServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
     
     @Inject
-    private static ServerEnvironment serverEnv;
+    private ServerEnvironment serverEnv;
     
     private volatile BootAMX mBootAMX;
     private volatile JMXConnectorsStarterThread mConnectorsStarterThread;

@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-support-ejb</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>support ejb module for cmp</name>
 
     <developers>

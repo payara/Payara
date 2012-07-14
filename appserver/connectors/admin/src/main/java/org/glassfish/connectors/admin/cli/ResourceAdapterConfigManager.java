@@ -56,7 +56,7 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -79,7 +79,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.THREAD_POOL_ID
  * @author Jennifer Chou
  */
 @Service (name=ServerTags.RESOURCE_ADAPTER_CONFIG)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.resource.adapter.config")
 public class ResourceAdapterConfigManager implements ResourceManager {
 

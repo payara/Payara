@@ -47,6 +47,7 @@ import org.junit.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.glassfish.tests.utils.*;
+
 import com.sun.enterprise.config.serverbeans.*;
 
 import java.beans.*;
@@ -68,7 +69,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
 
     @Before
     public void setup() {
-        habitat = Utils.getNewHabitat(this);
+        habitat = Utils.instance.getHabitat(this);
     }
 
     @Test

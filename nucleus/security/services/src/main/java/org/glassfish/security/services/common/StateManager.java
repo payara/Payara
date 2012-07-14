@@ -41,12 +41,16 @@ package org.glassfish.security.services.common;
 
 import javax.inject.Singleton;
 
+import org.jvnet.hk2.annotations.Service;
+
 /**
  * The StateManager determines the security service instance selection.
  */
+@Service
 @Singleton
 public class StateManager {
-    private String current;
+    // private String current;
+    private String current = "default";
     
     public void setCurrent(String current) {
         this.current = current;

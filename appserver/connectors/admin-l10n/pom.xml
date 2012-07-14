@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>connectors-admin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connectors admin Localization</name>
 
     <developers>

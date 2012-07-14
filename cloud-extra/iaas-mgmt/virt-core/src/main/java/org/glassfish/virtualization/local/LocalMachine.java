@@ -46,7 +46,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
-import org.glassfish.hk2.inject.Injector;
+
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.MachineConfig;
 import org.glassfish.virtualization.config.VirtualMachineConfig;
 import org.glassfish.virtualization.config.Virtualizations;
@@ -56,7 +58,6 @@ import org.glassfish.virtualization.spi.*;
 import org.glassfish.virtualization.util.ListenableFutureImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.component.PostConstruct;
 
 /**
  * Abstraction for a local machine to create cluster of instances in native mode
@@ -76,8 +77,11 @@ public class LocalMachine extends AbstractMachine implements PostConstruct {
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domainConfig;
     
-    public static LocalMachine from(Injector injector,  LocalServerPool group, MachineConfig config) {
-        return injector.inject(new LocalMachine(group, config));
+    public static LocalMachine from(ServiceLocator injector,  LocalServerPool group, MachineConfig config) {
+        LocalMachine localMachine = new LocalMachine(group, config);
+		injector.inject(localMachine);
+		
+		return localMachine;
     }
 
     protected  LocalMachine(LocalServerPool group, MachineConfig config) {

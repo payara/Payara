@@ -63,7 +63,7 @@ import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Various utility methods which support secure admin operations.
@@ -71,7 +71,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Tim Quinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class SecureAdminHelperImpl implements SecureAdminHelper {
 
     private static final char[] emptyPassword = new char[0];

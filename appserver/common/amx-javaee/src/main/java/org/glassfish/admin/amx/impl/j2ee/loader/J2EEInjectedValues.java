@@ -64,7 +64,7 @@ public final class J2EEInjectedValues extends InjectedValues
 
     public static synchronized J2EEInjectedValues getInstance()
     {
-        return getDefaultServices().byType(J2EEInjectedValues.class).get();
+        return getDefaultServices().getService(J2EEInjectedValues.class);
     }
     
     public J2EEInjectedValues()

@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-jts-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console JTS Plugin Localization</name>
     <description>Transaction Service plugin bundle for GlassFish V3 Admin Console Localization</description>
 

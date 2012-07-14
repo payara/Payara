@@ -63,7 +63,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -82,7 +82,7 @@ import org.xml.sax.SAXException;
  * @author tjquinn
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class DeveloperContentHandler {
 
     @Inject

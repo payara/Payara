@@ -51,7 +51,7 @@
   </parent>
 
     <artifactId>installroot-builder</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish UberJar InstallRoot Builder Module</name>
 
     <build>

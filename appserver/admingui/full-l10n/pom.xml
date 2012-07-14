@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common-full-plugin-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Full distribution plugin Localization</name>
     <description>Plugin bundle for GlassFish v3 Admin Console common-full package Localization</description>
 

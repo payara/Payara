@@ -44,7 +44,7 @@ import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
 import java.io.IOException;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import sun.security.util.ObjectIdentifier;
 
 /**
@@ -52,7 +52,7 @@ import sun.security.util.ObjectIdentifier;
  * @author Kumar
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class GSSUtilsService implements GSSUtilsContract {
 
     public String dumpHex(byte[] octets) {

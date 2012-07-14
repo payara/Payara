@@ -64,7 +64,7 @@ import java.security.AccessController;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
 * This  class that extends AbstractSecurityContext that gets 
@@ -83,7 +83,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Harpreet Singh
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class SecurityContext extends AbstractSecurityContext  {
    
     private static Logger _logger=null;

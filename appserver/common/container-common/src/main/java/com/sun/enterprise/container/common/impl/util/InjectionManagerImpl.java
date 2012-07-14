@@ -73,7 +73,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 
 import org.jvnet.hk2.component.BaseServiceLocator;
 
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  * Implementation of InjectionManager.

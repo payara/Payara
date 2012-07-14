@@ -47,12 +47,14 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ReadableArchiveFactory;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -71,11 +73,11 @@ import java.util.logging.Logger;
  * @author Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ArchiveFactory implements ContractProvider {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     final static Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
@@ -125,7 +127,7 @@ public class ArchiveFactory implements ContractProvider {
     
     public WritableArchive createArchive(String protocol, URI path) throws IOException {
         try {
-            WritableArchive archive = habitat.getComponent(WritableArchive.class, protocol);
+            WritableArchive archive = habitat.getService(WritableArchive.class, protocol);
             if (archive==null) {
                 logger.log(Level.SEVERE, "Cannot find an archive implementation for " + protocol);
                 throw new MalformedURLException("Protocol not supported : " + protocol);
@@ -154,7 +156,7 @@ public class ArchiveFactory implements ContractProvider {
         } catch (URISyntaxException e) {
             return null;
         }
-        for (ReadableArchiveFactory fac : habitat.getAllByContract(ReadableArchiveFactory.class)) {
+        for (ReadableArchiveFactory fac : habitat.<ReadableArchiveFactory>getAllServices(ReadableArchiveFactory.class)) {
             //get the first ReadableArchive and move
             ReadableArchive archive=null;
             try{
@@ -188,7 +190,7 @@ public class ArchiveFactory implements ContractProvider {
             }
         }
         try {
-            ReadableArchive archive = habitat.getComponent(ReadableArchive.class, provider);
+            ReadableArchive archive = habitat.getService(ReadableArchive.class, provider);
             if (archive==null) {
                 logger.log(Level.SEVERE, "Cannot find an archive implementation for " + provider);
                 throw new MalformedURLException("Protocol not supported : " + provider);

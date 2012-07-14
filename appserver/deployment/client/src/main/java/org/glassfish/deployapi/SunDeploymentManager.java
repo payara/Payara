@@ -62,6 +62,11 @@ import org.glassfish.api.deployment.archive.Archive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.MemoryMappedArchive;
 import org.glassfish.deployment.client.DFDeploymentProperties;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.io.File;
@@ -1315,10 +1320,16 @@ public class SunDeploymentManager implements DeploymentManager {
     }
     
     private void prepareHabitat() {
-        // Bootstrap a hk2 environment.
-        ModulesRegistry registry = new StaticModulesRegistry(getClass().getClassLoader());
-        habitat = registry.createHabitat("default");
+        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
 
+        habitat = new Habitat();
+        
+        try {
+        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(getClass().getClassLoader()));
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
+        
         StartupContext startupContext = new StartupContext();
         ((Habitat) habitat).add(new ExistingSingletonInhabitant(startupContext));
 

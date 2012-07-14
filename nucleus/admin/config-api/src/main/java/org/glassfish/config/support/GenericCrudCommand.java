@@ -41,21 +41,27 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.InhabitantsFile;
 import com.sun.hk2.component.InjectionResolver;
-import com.sun.hk2.component.LazyInhabitant;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
 import org.glassfish.common.util.admin.ParamTokenizer;
-import org.jvnet.hk2.annotations.Inject;
-import org.jvnet.hk2.annotations.Multiple;
 import org.jvnet.hk2.component.ComponentException;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.InjectionManager;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.GenerateServiceFromMethod;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.HK2Loader;
+import org.glassfish.hk2.api.MultiException;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.Self;
 import org.jvnet.tiger_types.Types;
 
 import java.beans.BeanInfo;
@@ -63,13 +69,20 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 import org.glassfish.api.admin.AdminCommandSecurity;
-import org.jvnet.hk2.annotations.InhabitantAnnotation;
-import org.jvnet.hk2.component.*;
+
 
 /**
  * services pertinent to generic CRUD command implementations
@@ -81,22 +94,23 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     
     private InjectionResolver<Param> injector;
 
-    @Inject
-    LazyInhabitant<?> myself;
+    @Inject @Self
+    private ActiveDescriptor<?> myself;
 
     final protected static Logger logger = LogDomains.getLogger(GenericCrudCommand.class, LogDomains.ADMIN_LOGGER);
     final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
-    String commandName;
-    Class parentType=null;
-    Class targetType=null;
-    Method targetMethod;
+    protected String commandName;
+    protected Class parentType=null;
+    protected Class targetType=null;
+    protected Method targetMethod;
+    
     // default level of noise, useful for just swithching these classes in debugging.
     protected final Level level = Level.FINE;
     
-    @javax.inject.Inject
-    BaseServiceLocator habitat;
-    
+    @Inject
+    Habitat habitat;
+   
     InjectionManager manager;
     CrudResolver resolver;
     InjectionResolver paramResolver;
@@ -112,53 +126,34 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
 
         manager.inject(resolver, paramResolver);
     }
-    
+
     @Override
     public boolean preAuthorization(AdminCommandContext adminCommandContext) {
         prepareInjection(adminCommandContext);
         return true;
     }
+    
+    private static String getOne(String key, Map<String, List<String>> metadata) {
+    	if (key == null || metadata == null) return null;
+    	
+    	List<String> findInMe = metadata.get(key);
+    	if (findInMe == null) return null;
+    	
+    	return findInMe.get(0);
+    }
 
     public void postConstruct() {
-        List<String> indexes = myself.metadata().get(InhabitantsFile.INDEX_KEY);
-        if (indexes.size()!=1) {
-            StringBuffer sb = new StringBuffer();
-            for (String index : indexes) {
-                sb.append(index).append(" ");
-            }
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericCrudCommand.too_many_indexes",
-                    "The metadata for this generic implementation has more than one index {0}",
-                    sb.toString());
-            Object[] params = new Object[] { sb.toString()};
-            logger.log(Level.SEVERE, "GenericCrudCommand.too_many_indexes", params);
-            throw new ComponentException(msg);
-        }
-        String index = indexes.get(0);
-        if (index.indexOf(":")==-1) {
-            String msg = localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericCrudCommand.unamed_service",
-                    "The service {0} is un-named, for generic command, the service name is the command name and must be provided",
-                    index);
-            Object[] params = new Object[] { index};
-            logger.log(Level.SEVERE, "GenericCrudCommand.unamed_service", params);
-            throw new ComponentException(msg);            
-        }
-        commandName = index.substring(index.indexOf(":")+1);
-        String parentTypeName = myself.metadata().getOne(InhabitantsFile.TARGET_TYPE);
-        String decoratedTypeName = myself.metadata().getOne(InhabitantsFile.DECORATED_TYPE);
+        commandName = myself.getName();
+        
+        String parentTypeName = getOne(GenerateServiceFromMethod.PARENT_CONFIGURED, myself.getMetadata());
         if (logger.isLoggable(level)) {
             logger.log(level,"Generic method parent targeted type is " + parentTypeName);
         }
 
         try {
-            if (decoratedTypeName==null) {
-                parentType = loadClass(parentTypeName);
-            } else {
-                parentType = loadClass(decoratedTypeName);
-                targetType = loadClass(parentTypeName);
-            }
-        } catch(ClassNotFoundException e) {
+            parentType = loadClass(parentTypeName);
+        }
+        catch(ClassNotFoundException e) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
@@ -169,7 +164,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         }
 
         // find now the accessor method.
-        String methodName = myself.metadata().get("method-name").get(0);
+        String methodName = getOne(GenerateServiceFromMethod.METHOD_NAME, myself.getMetadata());
         targetMethod=null;
         methodlookup:
         for (Method m : parentType.getMethods()) {
@@ -179,7 +174,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                 // This makes sure that we have found the method we are looking for
                 // in case there is a like-named method that is not annotated.
                 for (Annotation a : m.getAnnotations()) {
-                    if (a.annotationType().getAnnotation(InhabitantAnnotation.class) != null) {
+                    if (a.annotationType().getAnnotation(GenerateServiceFromMethod.class) != null) {
                         targetMethod=m;
                         break methodlookup;
                     }
@@ -196,71 +191,33 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
             logger.log(Level.SEVERE,"GenericCrudCommand.configbean_not_found", params);
             throw new ComponentException(msg);
         }
-
-        if (targetType==null) {
-            if (targetMethod.getParameterTypes().length==0) {
-                if (targetMethod.getGenericReturnType() instanceof ParameterizedType) {
-                    targetType = Types.erasure(Types.getTypeArgument(
-                                targetMethod.getGenericReturnType(),0));
-                } else {
-                    targetType =targetMethod.getReturnType();
-                }
-
-            } else {
-                targetType = targetMethod.getParameterTypes()[0];
-            }
+        
+        String targetTypeName = getOne(GenerateServiceFromMethod.METHOD_ACTUAL, myself.getMetadata());
+        try {
+            targetType = loadClass(targetTypeName);
+        }
+        catch(ClassNotFoundException e) {
+            String msg = localStrings.getLocalString(GenericCrudCommand.class,
+                    "GenericCrudCommand.configbean_not_found",
+                    "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
+                    targetTypeName, e.getMessage());
+            Object[] params = new Object[] { targetTypeName, e.getMessage()};
+            logger.log(Level.SEVERE, "GenericCrudCommand.configbean_not_found",params);
+            throw new ComponentException(msg, e);
         }
     }
 
     protected <T extends Annotation> T getAnnotation(Method target, Class<T> type) {
-
-
         T annotation = targetMethod.getAnnotation(type);
-        if (annotation==null) {
-            // we need to check for any annotation that has the @Multiple annotation
-            for (Annotation a : targetMethod.getAnnotations()) {
-                Multiple multiple = a.annotationType().getAnnotation(Multiple.class);
-                if (multiple!=null) {
-                    try {
-                        Method m = a.getClass().getMethod("value");
-                        Annotation[] potentials = (Annotation[]) m.invoke(a);
-                        if (potentials!=null) {
-                            for (Annotation potential : potentials) {
-                                if (potential.annotationType().equals(type)) {
-                                    m = potential.getClass().getMethod("value");
-                                    String value = (String) m.invoke(potential);
-                                    if (value.equals(commandName)) {
-                                        return type.cast(potential);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        // ignore
-                    }
-                }
-            }
-            // still not found, it may have been placed on the target type using a @Decorate.
-            String decoratedTypeName = myself.metadata().getOne(InhabitantsFile.TARGET_TYPE);
-            try {
-                if (decoratedTypeName!=null) {
-                    Class decoratedType = myself.getClassLoader().loadClass(decoratedTypeName);
-                    annotation = (T) decoratedType.getAnnotation(type);
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-
-            if (annotation!=null) {
-                return annotation;
-            }
-
+        if (annotation == null) {
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericCrudCommand.annotation_not_found",
                     "Cannot find annotation {0} with value {1} on method {2}",
                     type.getName(), commandName, targetMethod.toString());
             throw new RuntimeException(msg);
+            
         }
+            
         return annotation;
     }
 
@@ -435,9 +392,26 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
         
     }
 
-    protected Class loadClass(String type) throws ClassNotFoundException {
-        // by default I use the inhabitant class loader
-        return myself.getClassLoader().loadClass(type);
+    protected Class<?> loadClass(String type) throws ClassNotFoundException {
+        HK2Loader loader = myself.getLoader();
+        
+        if (loader == null) {
+            return getClass().getClassLoader().loadClass(type);
+        }
+        
+        try {
+            return loader.loadClass(type);
+        }
+        catch (MultiException me) {
+            for (Throwable th : me.getErrors()) {
+                if (th instanceof ClassNotFoundException) {
+                    throw (ClassNotFoundException) th;
+                }
+            }
+            
+            throw new ClassNotFoundException(me.getMessage());
+        }
+        
     }    
 
     /**

@@ -76,8 +76,8 @@ public class ResourceInjectorImpl implements ResourceInjector {
             throw new IllegalStateException(
                     _rb.getString("resource.injector.noservercontext"));
         }
-        this.injectionMgr = serverContext.getDefaultServices().forContract(
-            InjectionManager.class).get();
+        this.injectionMgr = serverContext.getDefaultServices().getService(
+            InjectionManager.class);
     }
 
     /**

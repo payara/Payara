@@ -55,7 +55,7 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
@@ -69,7 +69,7 @@ import java.util.List;
 @TargetType(value={CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @Service(name="delete-resource-ref")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.resource.ref")
 public class DeleteResourceRef implements AdminCommand {
     

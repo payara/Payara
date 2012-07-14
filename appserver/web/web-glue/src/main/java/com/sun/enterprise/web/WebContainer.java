@@ -42,18 +42,22 @@ package com.sun.enterprise.web;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Configs;
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.runtime.web.ManagerProperties;
-import com.sun.enterprise.deployment.runtime.web.SessionManager;
-import com.sun.enterprise.deployment.runtime.web.StoreProperties;
-import com.sun.enterprise.deployment.runtime.web.*;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.util.WebValidatorWithoutCL;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.util.Result;
@@ -70,10 +74,17 @@ import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import com.sun.hk2.component.ConstructorCreator;
 import com.sun.logging.LogDomains;
-import org.apache.catalina.*;
+
+import org.apache.catalina.Connector;
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
+import org.apache.catalina.Deployer;
 import org.apache.catalina.Engine;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.Loader;
+import org.apache.catalina.Realm;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardEngine;
@@ -94,21 +105,29 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.grizzly.ContextMapper;
-import org.glassfish.web.admin.monitor.*;
-import org.glassfish.web.config.serverbeans.*;
+import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
+import org.glassfish.web.admin.monitor.JspProbeProvider;
+import org.glassfish.web.admin.monitor.RequestProbeProvider;
+import org.glassfish.web.admin.monitor.ServletProbeProvider;
+import org.glassfish.web.admin.monitor.SessionProbeProvider;
+import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
+import org.glassfish.web.admin.monitor.WebStatsProviderBootstrap;
 import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.valve.GlassFishValve;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Named;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.ObservableBean;
@@ -126,13 +145,23 @@ import java.lang.ClassLoader;
 import java.net.BindException;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.DataChunk;
-import org.glassfish.grizzly.http.util.MessageBytes;
 
 /**
  * Web container service
@@ -143,7 +172,7 @@ import org.glassfish.grizzly.http.util.MessageBytes;
  */
 @SuppressWarnings({"StringContatenationInLoop"})
 @Service(name = "com.sun.enterprise.web.WebContainer")
-@Scoped(Singleton.class)
+@Singleton
 public class WebContainer implements org.glassfish.api.container.Container, PostConstruct, PreDestroy, EventListener {
 
     // -------------------------------------------------- Constants
@@ -381,6 +410,19 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             useDOLforDeployment = Boolean.valueOf(System.getProperty(DOL_DEPLOYMENT));
         }
     }
+    
+    private WebConfigListener addAndGetWebConfigListener() {
+    	ServiceLocator locator = (ServiceLocator) habitat;
+    	
+    	DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+    	DynamicConfiguration config = dcs.createDynamicConfiguration();
+    	
+    	config.addActiveDescriptor(WebConfigListener.class);
+    	
+    	config.commit();
+    	
+    	return locator.getService(WebConfigListener.class);
+    }
 
     public void postConstruct() {
 
@@ -514,12 +556,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         initInstanceSessionProperties();
 
-        ConstructorCreator<WebConfigListener> womb =
-                new ConstructorCreator<WebConfigListener>(
-                        WebConfigListener.class,
-                        (Habitat) habitat,
-                        null);
-        configListener = womb.get(null);
+        configListener = addAndGetWebConfigListener();
 
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(
                 serverConfig.getHttpService());

@@ -2023,7 +2023,7 @@ public class VirtualServer extends StandardHost
 
         try {
             if (factory==null)
-                factory = services.byType(ArchiveFactory.class).get();
+                factory = services.getService(ArchiveFactory.class);
 
             ContextFacade facade = (ContextFacade) context;
             File docRoot = facade.getDocRoot();
@@ -2033,7 +2033,7 @@ public class VirtualServer extends StandardHost
             if (report==null)
                 report = new PlainTextActionReporter();
 
-            ServerEnvironment env = services.forContract(ServerEnvironment.class).get();
+            ServerEnvironment env = services.getService(ServerEnvironment.class);
 
             DeployCommandParameters params = new DeployCommandParameters();
             params.contextroot = contextRoot;
@@ -2046,7 +2046,7 @@ public class VirtualServer extends StandardHost
                     new DeploymentContextImpl(report, _logger, archive, params, env);
 
             if (deployment==null)
-                deployment = services.forContract(Deployment.class).get();
+                deployment = services.getService(Deployment.class);
 
             ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive);
             if (archiveHandler==null) {
@@ -2200,8 +2200,8 @@ public class VirtualServer extends StandardHost
      * <tt>VirtualServer</tt>.
      */
     public void removeContext(Context context) throws GlassFishException {
-        ActionReport report = services.forContract(ActionReport.class).named("plain").get();
-        Deployment deployment = services.forContract(Deployment.class).get();
+        ActionReport report = services.getService(ActionReport.class, "plain");
+        Deployment deployment = services.getService(Deployment.class);
         String name;
         if (context instanceof ContextFacade) {
             name = ((ContextFacade)context).getAppName();
@@ -2287,8 +2287,8 @@ public class VirtualServer extends StandardHost
         
         this.config = config;
         configureSingleSignOn(config.isSsoEnabled(), 
-                Globals.getDefaultHabitat().byType(
-                PEWebContainerFeatureFactoryImpl.class).get(),
+                Globals.getDefaultHabitat().<PEWebContainerFeatureFactoryImpl>getService(
+                PEWebContainerFeatureFactoryImpl.class),
                 false);
         if (config.isAccessLoggingEnabled()) {
             enableAccessLogging();

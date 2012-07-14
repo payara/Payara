@@ -48,13 +48,12 @@ import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -71,7 +70,7 @@ import java.util.logging.Level;
  * @author Shing Wai Chan
  */
 @Service(name="war")
-@Scoped(PerLookup.class)
+@PerLookup
 public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     protected boolean scanOtherLibraries = false;
 

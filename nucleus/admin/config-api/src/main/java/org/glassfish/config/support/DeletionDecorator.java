@@ -43,7 +43,7 @@ package org.glassfish.config.support;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 
@@ -57,7 +57,7 @@ import java.beans.PropertyVetoException;
  *
  * @author Jerome Dochez
  */
-@Scoped(PerLookup.class)
+@PerLookup
 public interface DeletionDecorator<T extends ConfigBeanProxy, U extends ConfigBeanProxy> {
 
     /**

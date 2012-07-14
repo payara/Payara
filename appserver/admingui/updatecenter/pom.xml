@@ -51,7 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-updatecenter-plugin</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Update Center Plugin</name>
     <description>Update Center plugin bundle for GlassFish V3 Admin Console</description>
 
@@ -61,6 +61,19 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>apt-maven-plugin</artifactId>
+                <version>1.0-alpha-4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>

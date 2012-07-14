@@ -40,26 +40,39 @@
 
 package org.glassfish.web.embed.impl;
 
-import com.sun.hk2.component.InhabitantsParser;
-import com.sun.hk2.component.InhabitantsParserDecorator;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.web.deployment.archivist.WebArchivist;
-import org.kohsuke.MetaInfServices;
 
 /**
  * @author Jerome Dochez
  */
-@MetaInfServices
-public class EmbeddedDecorator implements InhabitantsParserDecorator {
+public class EmbeddedDecorator implements PopulatorPostProcessor {
 
     public String getName() {
         return "Embedded";
     }
 
-    public void decorate(InhabitantsParser inhabitantsParser) {
-        inhabitantsParser.replace(WebArchivist.class, EmbeddedWebArchivist.class);
+//    public void decorate(InhabitantsParser inhabitantsParser) {
+//        inhabitantsParser.replace(WebArchivist.class, EmbeddedWebArchivist.class);
+//
+//        // use the fully qualified string class name for WebEntityResolver to avoid dependency on web-glue.
+//        inhabitantsParser.replace("org.glassfish.web.WebEntityResolver", EmbeddedWebEntityResolver.class);
+//        // inhabitantsParser.replace(WebEntityResolver.class, EmbeddedWebEntityResolver.class);
+//    }
 
-        // use the fully qualified string class name for WebEntityResolver to avoid dependency on web-glue.
-        inhabitantsParser.replace("org.glassfish.web.WebEntityResolver", EmbeddedWebEntityResolver.class);
-        // inhabitantsParser.replace(WebEntityResolver.class, EmbeddedWebEntityResolver.class);
-    }
+	@Override
+	public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+		
+		if (WebArchivist.class.getCanonicalName().equals(descriptorImpl.getImplementation())) {
+			descriptorImpl.setImplementation(EmbeddedWebArchivist.class.getCanonicalName());
+			// use the fully qualified string class name for WebEntityResolver to avoid dependency on web-glue:	
+		} else if ("org.glassfish.web.WebEntityResolver".equals(descriptorImpl.getImplementation())) {
+			descriptorImpl.setImplementation(EmbeddedWebEntityResolver.class.getCanonicalName());
+		}
+		
+	
+		
+		return descriptorImpl;
+	}
 }

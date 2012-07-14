@@ -63,7 +63,7 @@ import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigModel;
 
 /**
@@ -292,10 +292,10 @@ public class Util {
      * @param data The set of changes to be applied
      * @return ActionReporter containing result of "set" execution
      */
-    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, BaseServiceLocator habitat) {
+    public static RestActionReporter applyChanges(Map<String, String> data, UriInfo uriInfo, ServiceLocator habitat) {
         return applyChanges(data, getBasePathFromUri(uriInfo), habitat);
     }
-    public static RestActionReporter applyChanges(Map<String, String> data, String basePath, BaseServiceLocator habitat) {
+    public static RestActionReporter applyChanges(Map<String, String> data, String basePath, ServiceLocator habitat) {
         ParameterMap parameters = new ParameterMap();
         Map<String, String> currentValues = getCurrentValues(basePath, habitat);
 
@@ -338,7 +338,7 @@ public class Util {
         return sb.toString();
     }
 
-    public static Map<String, String> getCurrentValues(String basePath, BaseServiceLocator habitat) {
+    public static Map<String, String> getCurrentValues(String basePath, ServiceLocator habitat) {
         Map<String, String> values = new HashMap<String, String>();
         final String path = (basePath.endsWith(".")) ? basePath.substring(0, basePath.length()-1) : basePath;
         RestActionReporter gr = ResourceUtil.runCommand("get", new ParameterMap() {{

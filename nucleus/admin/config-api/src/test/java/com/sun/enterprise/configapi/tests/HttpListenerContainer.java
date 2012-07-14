@@ -43,6 +43,8 @@ package com.sun.enterprise.configapi.tests;
 import java.beans.PropertyChangeEvent;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.PerLookup;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.jvnet.hk2.annotations.Service;
@@ -57,7 +59,7 @@ import javax.inject.Named;
  *
  * @author Jerome Dochez
  */
-@Service
+@Service @PerLookup
 public class HttpListenerContainer implements ConfigListener {
 
     @Inject

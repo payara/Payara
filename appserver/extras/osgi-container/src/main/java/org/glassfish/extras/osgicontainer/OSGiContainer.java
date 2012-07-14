@@ -45,7 +45,7 @@ import org.glassfish.api.deployment.Deployer;
 import org.glassfish.internal.deployment.GenericDeployer;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -60,7 +60,7 @@ import com.sun.enterprise.module.Module;
  * @author Jerome Dochez
  */
 @Service(name = OSGiSniffer.CONTAINER_NAME)
-@Scoped(Singleton.class)
+@Singleton
 public class OSGiContainer implements Container {
 
     public Class<? extends Deployer> getDeployer() {

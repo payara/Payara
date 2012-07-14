@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,21 +38,11 @@
  * holder.
  */
 
-package org.glassfish.config.support;
+package org.glassfish.main.core.apiexporter;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import org.jvnet.hk2.annotations.Multiple;
+import org.jvnet.hk2.annotations.Service;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+@Service
+public class APIExporterImpl implements APIExporter {
 
-/**
- * Annotation to define multiple Delete annotations on a single method declaration
- */
-@Retention(RUNTIME)
-@Target(ElementType.METHOD)
-@Multiple
-public @interface Deletes {
-    Delete[] value();
 }

@@ -51,7 +51,6 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>virt-api</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>IaaS Management API and Config</name>
     <dependencies>
         <dependency>

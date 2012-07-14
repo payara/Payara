@@ -41,6 +41,8 @@
 package com.sun.enterprise.deployment.io.runtime;
 
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
@@ -48,9 +50,7 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.runtime.application.wls.WeblogicApplicationNode;
 import com.sun.enterprise.deployment.EarType;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 import java.util.Map;
 
 /**
@@ -59,7 +59,7 @@ import java.util.Map;
  *
  */
 @ConfigurationDeploymentDescriptorFileFor(EarType.ARCHIVE_TYPE)
-@Scoped(PerLookup.class)
+@PerLookup
 @Service
 public class WLSApplicationRuntimeDDFile extends 
         ConfigurationDeploymentDescriptorFile {  

@@ -50,7 +50,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
@@ -58,7 +58,7 @@ import org.jvnet.hk2.component.PerLookup;
  */
 @Service(name="list-web-env-entry")
 @I18n("listWebEnvEntry.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,

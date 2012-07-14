@@ -55,10 +55,9 @@ import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.jasper.servlet.JspServlet;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
@@ -66,7 +65,6 @@ import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.TransactionManager;
 import java.security.*;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
@@ -126,13 +124,13 @@ public final class J2EEInstanceListener implements InstanceListener {
             msg = MessageFormat.format(msg, wm.getName());
             throw new IllegalStateException(msg);
         }
-        Habitat services = serverContext.getDefaultServices();
-        im = services.forContract(InvocationManager.class).get();
+        ServiceLocator services = serverContext.getDefaultServices();
+        im = services.getService(InvocationManager.class);
         tm = getJavaEETransactionManager(services);
-        injectionMgr = services.forContract(InjectionManager.class).get();
+        injectionMgr = services.getService(InjectionManager.class);
         initialized = true;
 
-        securityContext = serverContext.getDefaultServices().forContract(AppServSecurityContext.class).get();
+        securityContext = serverContext.getDefaultServices().getService(AppServSecurityContext.class);
         if (securityContext != null) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Obtained securityContext implementation class " + securityContext);
@@ -396,11 +394,11 @@ public final class J2EEInstanceListener implements InstanceListener {
         }
     }
 
-    private JavaEETransactionManager getJavaEETransactionManager(Habitat services) {
+    private JavaEETransactionManager getJavaEETransactionManager(ServiceLocator services) {
         JavaEETransactionManager tm = null;
-        Inhabitant<TransactionManager> inhabitant = services.getInhabitantByType(TransactionManager.class);
+        ServiceHandle<JavaEETransactionManager> inhabitant = services.getServiceHandle(JavaEETransactionManager.class);
         if (inhabitant != null && inhabitant.isActive()) {
-            tm = (JavaEETransactionManager)inhabitant.get();
+            tm = inhabitant.getService();
         }
         
         return tm;

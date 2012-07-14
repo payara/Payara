@@ -51,7 +51,6 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.main.jdbc</groupId>
     <artifactId>jdbc-config</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>JDBC Config Module</name>
 
     <dependencies>

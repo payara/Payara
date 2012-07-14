@@ -51,7 +51,6 @@
     </parent>
 
     <artifactId>elastic-metrics</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>GlassFish Elasticity Metrics</name>
     
     <developers>

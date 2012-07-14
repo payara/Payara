@@ -49,7 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client-module</artifactId>
-    <packaging>hk2-jar</packaging> <!-- the main artifact is the OSGi module JAR -->
+     <!-- the main artifact is the OSGi module JAR -->
     <name>Client OSGi module (including ACC)</name>
     
     <!--
@@ -166,8 +166,8 @@
                   </executions>
             </plugin>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                     <configuration>
 
                             <archive>
@@ -193,7 +193,7 @@
     <dependencies>
         <dependency>
                 <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2</artifactId>
+                <artifactId>core</artifactId>
         </dependency>
         
         <!--

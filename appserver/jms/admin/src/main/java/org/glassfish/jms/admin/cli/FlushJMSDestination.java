@@ -63,7 +63,7 @@ import javax.management.MalformedObjectNameException;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;
@@ -79,7 +79,7 @@ import org.glassfish.config.support.TargetType;
  * 
  */
 @Service(name="flush-jmsdest")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("flush.jms.dest")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})

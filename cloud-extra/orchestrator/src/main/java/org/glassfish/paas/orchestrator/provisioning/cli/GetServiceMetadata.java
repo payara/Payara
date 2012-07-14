@@ -56,7 +56,7 @@ import org.glassfish.paas.orchestrator.service.metadata.ServiceMetadata;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
@@ -76,7 +76,7 @@ import java.util.*;
  * @author Jagadish Ramu
  */
 @Service(name = "_get-service-metadata")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value={CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)

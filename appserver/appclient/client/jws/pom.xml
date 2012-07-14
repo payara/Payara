@@ -52,7 +52,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-jws</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>App Client Container Java Web Start support</name>
 
     <developers>
@@ -81,7 +81,7 @@
     <dependencies>
         <dependency>
                 <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2</artifactId>
+                <artifactId>core</artifactId>
         </dependency>
 	    <dependency>
             <groupId>org.glassfish.main.common</groupId>

@@ -56,8 +56,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -70,7 +70,7 @@ import java.util.logging.Logger;
  */
 
 @Service(name="com.sun.enterprise.web.EmbeddedWebContainer")
-@Scoped(Singleton.class)
+@Singleton
 public final class EmbeddedWebContainer extends Embedded implements PostConstruct {
     
     @Inject

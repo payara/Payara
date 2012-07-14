@@ -45,6 +45,8 @@ import org.jvnet.hk2.annotations.*;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
@@ -53,7 +55,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * @author Bill Shannon
  */
 @Service(name = "unset")
-@Scoped(PerLookup.class)
+@PerLookup
 public class UnsetCommand extends CLICommand {
 
     @Param(name = "environment-variable", primary = true, multiple = true)

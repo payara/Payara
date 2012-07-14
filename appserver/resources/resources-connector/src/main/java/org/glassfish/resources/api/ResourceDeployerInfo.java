@@ -40,12 +40,14 @@
 
 package org.glassfish.resources.api;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Index;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
+
+import org.glassfish.hk2.api.Metadata;
+import org.glassfish.resources.util.ResourceManagerFactory;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -53,9 +55,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Jagadish Ramu
  */
-@Contract
+@Qualifier
 @Retention(RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ResourceDeployerInfo {
-    @Index Class value();
+    @Metadata(ResourceManagerFactory.METADATA_KEY)
+    Class<?> value();
 }

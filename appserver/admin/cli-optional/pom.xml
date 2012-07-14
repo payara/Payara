@@ -51,7 +51,7 @@
     </parent>
     
     <artifactId>cli-optional</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>admin-cli-optional</name>
     
     <developers>
@@ -100,12 +100,12 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifestEntries>
-                               <Class-Path>../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar ../../modules/grizzly-config.jar cli-optional-l10n.jar</Class-Path>
+                               <Class-Path>../../modules/common-util.jar ../../modules/glassfish-api.jar ../../modules/config-api.jar ../../modules/internal-api.jar ../../modules/config-types.jar ../../modules/grizzly-config.jar cli-optional-l10n.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -190,7 +190,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>    
             <groupId>org.glassfish.main.admin</groupId>

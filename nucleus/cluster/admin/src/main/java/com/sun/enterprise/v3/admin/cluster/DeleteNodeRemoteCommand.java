@@ -54,6 +54,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
@@ -71,7 +72,7 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     @Inject
     protected BaseServiceLocator habitat;
     @Inject
-    Node[] nodeList;
+    IterableProvider<Node> nodeList;
     @Inject
     Nodes nodes;
     @Inject

@@ -52,7 +52,7 @@ import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -67,7 +67,7 @@ import javax.inject.Inject;
  * Update Connector Work Security Map command
  */
 @Service(name = "update-connector-work-security-map")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("update.connector.work.security.map")
 @RestEndpoints({
     @RestEndpoint(configBean=WorkSecurityMap.class,

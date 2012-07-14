@@ -49,6 +49,7 @@ import java.beans.PropertyVetoException;
 
 import org.glassfish.elasticity.api.ElasticEngine;
 import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -69,7 +70,7 @@ import org.glassfish.api.admin.CommandRunner.CommandInvocation;
  */
 @Service(name = "_create-elastic-service")
 @I18n("create.ealastic.service")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.ALL})
 @TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateElasticServiceCommand implements AdminCommand  {

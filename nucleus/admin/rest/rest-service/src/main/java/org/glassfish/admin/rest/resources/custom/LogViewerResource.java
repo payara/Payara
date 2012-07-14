@@ -68,7 +68,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.admin.rest.logviewer.CharSpool;
 import org.glassfish.admin.rest.logviewer.LineEndNormalizingWriter;
 import org.glassfish.admin.rest.logviewer.WriterOutputStream;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Dom;
@@ -88,7 +89,7 @@ import org.jvnet.hk2.config.Dom;
 public class LogViewerResource {
 
     @Context
-    protected Injector injector;
+    protected ServiceLocator injector;
     @Context
     protected UriInfo ui;
 
@@ -117,7 +118,7 @@ public class LogViewerResource {
 
     @Path("details/")
     public StructuredLogViewerResource getDomainUptimeResource() {
-        StructuredLogViewerResource resource = injector.inject(StructuredLogViewerResource.class);
+        StructuredLogViewerResource resource = injector.createAndInitialize(StructuredLogViewerResource.class);
         return resource;
     }
 

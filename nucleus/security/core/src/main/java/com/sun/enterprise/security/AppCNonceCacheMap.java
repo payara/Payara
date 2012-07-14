@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 
 
@@ -55,7 +55,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author vbkumarjayanti
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class AppCNonceCacheMap extends HashMap<String,CNonceCache> {
     
 }

@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>monitoring-core-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>admin-monitoring Localization</name>
     <build>
         <plugins>

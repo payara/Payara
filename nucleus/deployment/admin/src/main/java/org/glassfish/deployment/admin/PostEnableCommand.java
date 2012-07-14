@@ -43,7 +43,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
-import org.glassfish.hk2.scopes.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
@@ -53,7 +53,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name="_postenable")
 @Supplemental(value="enable", ifFailure=FailurePolicy.Warn, on= Supplemental.Timing.AfterReplication)
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
 
 public class PostEnableCommand extends PostStateCommand  {

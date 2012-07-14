@@ -43,18 +43,14 @@ package com.sun.enterprise.transaction;
 import org.glassfish.api.naming.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
-import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.NamingException;
-
-import java.util.concurrent.ExecutorService;
-import java.util.logging.Logger;
 
 /**
  * Proxy for creating JTA instances that get registered in the naming manager.
@@ -72,15 +68,11 @@ public class TransactionNamingProxy
         implements NamedNamingObjectProxy {
 
     @Inject
-    private BaseServiceLocator habitat;
-
-    @Inject
-    private ExecutorService es;
+    private ServiceLocator habitat;
     
+    @SuppressWarnings("unused")
     @Inject
-    private org.glassfish.api.admin.ProcessEnvironment processEnv;
-
-    private static Logger logger = LogDomains.getLogger(TransactionNamingProxy.class, LogDomains.JTA_LOGGER);
+    private org.glassfish.api.admin.ProcessEnvironment processEnv;  // Here for ordering
 
     static final String USER_TX = "java:comp/UserTransaction";
     static final String USER_TX_NO_JAVA_COMP = "UserTransaction";
@@ -101,18 +93,18 @@ public class TransactionNamingProxy
 
         if (USER_TX.equals(name)) {
             checkUserTransactionLookupAllowed();
-            return habitat.getComponent(UserTransactionImpl.class);
+            return habitat.getService(UserTransactionImpl.class);
         } else if (TRANSACTION_SYNC_REGISTRY.equals(name) || APPSERVER_TRANSACTION_SYNC_REGISTRY.equals(name)) {
-            return habitat.getComponent(TransactionSynchronizationRegistryImpl.class);
+            return habitat.getService(TransactionSynchronizationRegistryImpl.class);
         } else if (APPSERVER_TRANSACTION_MGR.equals(name)) {
-            return habitat.getComponent(TransactionManagerHelper.class);
+            return habitat.getService(TransactionManagerHelper.class);
         }
 
         return null;
     }
 
     private void checkUserTransactionLookupAllowed() throws NamingException {
-        InvocationManager iv = habitat.getByContract(InvocationManager.class);
+        InvocationManager iv = habitat.getService(InvocationManager.class);
         if (iv != null) {
             ComponentInvocation inv = iv.getCurrentInvocation();
             if (inv != null) {

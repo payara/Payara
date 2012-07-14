@@ -55,7 +55,7 @@ import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -93,7 +93,7 @@ import javax.inject.Inject;
 
 @Service
 @ResourceDeployerInfo(JdbcConnectionPool.class)
-@Scoped(Singleton.class)
+@Singleton
 public class JdbcConnectionPoolDeployer implements ResourceDeployer {
 
     @Inject

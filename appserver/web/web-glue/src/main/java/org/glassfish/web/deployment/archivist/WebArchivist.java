@@ -61,12 +61,11 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.WarType;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PerLookup;
 import org.xml.sax.SAXParseException;
 
 import java.io.IOException;
@@ -88,8 +87,7 @@ import java.net.URL;
  * @author  Jerome Dochez
  * @version
  */
-@Service
-@Scoped(PerLookup.class)
+@Service @PerLookup
 @ArchivistFor(WarType.ARCHIVE_TYPE)
 public class WebArchivist extends Archivist<WebBundleDescriptor> {
 

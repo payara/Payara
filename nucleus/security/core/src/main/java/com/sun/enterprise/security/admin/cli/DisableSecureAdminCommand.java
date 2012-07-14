@@ -49,7 +49,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Adjusts the DAS configuration to turn off secure admin, as if by
@@ -69,7 +69,7 @@ asadmin -s delete-protocol pu-protocol
  * @author Tim Quinn
  */
 @Service(name = "disable-secure-admin")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("disable.secure.admin.command")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @RestEndpoints({

@@ -51,8 +51,8 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 import javax.naming.InitialContext;
 import java.io.File;
@@ -64,7 +64,7 @@ import java.util.Map;
  * @author Jerome Dochez
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ServerContextImpl implements ServerContext, PostConstruct {
 
     @Inject
@@ -113,29 +113,29 @@ public class ServerContextImpl implements ServerContext, PostConstruct {
     }
 
     public com.sun.enterprise.config.serverbeans.Server getConfigBean() {
-        return services.forContract(com.sun.enterprise.config.serverbeans.Server.class).get();
+        return services.getByContract(com.sun.enterprise.config.serverbeans.Server.class);
     }
 
     public InitialContext getInitialContext() {
         GlassfishNamingManager gfNamingManager = 
-            services.forContract(GlassfishNamingManager.class).get();
+            services.getByContract(GlassfishNamingManager.class);
         return (InitialContext)gfNamingManager.getInitialContext();
     }
 
     public ClassLoader getCommonClassLoader() {
-        return services.byType(CommonClassLoaderServiceImpl.class).get().getCommonClassLoader();
+        return services.getByType(CommonClassLoaderServiceImpl.class).getCommonClassLoader();
     }
 
     public ClassLoader getSharedClassLoader() {
-        return services.forContract(ClassLoaderHierarchy.class).get().getConnectorClassLoader(null);
+        return services.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
     public ClassLoader getLifecycleParentClassLoader() {
-        return services.forContract(ClassLoaderHierarchy.class).get().getConnectorClassLoader(null);
+        return services.getByContract(ClassLoaderHierarchy.class).getConnectorClassLoader(null);
     }
 
     public InvocationManager getInvocationManager() {
-        return services.forContract(InvocationManager.class).get();
+        return services.getByContract(InvocationManager.class);
     }
 
     public String getDefaultDomainName() {

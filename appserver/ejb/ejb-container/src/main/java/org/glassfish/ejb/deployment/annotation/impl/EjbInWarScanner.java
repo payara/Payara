@@ -44,12 +44,12 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class EjbInWarScanner extends EjbJarScanner {
 
     @Override

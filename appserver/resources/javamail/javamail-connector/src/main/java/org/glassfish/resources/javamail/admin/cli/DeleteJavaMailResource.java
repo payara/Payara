@@ -56,7 +56,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -73,7 +73,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.ALL})
 @Service(name = "delete-javamail-resource")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.javamail.resource")
 public class DeleteJavaMailResource implements AdminCommand {
 

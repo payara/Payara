@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.*;
 
 /**

@@ -45,8 +45,8 @@ import java.util.logging.Logger;
 
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
@@ -62,7 +62,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 
 /**
@@ -71,7 +71,7 @@ import org.jvnet.hk2.config.ConfigListener;
  * @author  Shing Wai Chan
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     
     @Inject

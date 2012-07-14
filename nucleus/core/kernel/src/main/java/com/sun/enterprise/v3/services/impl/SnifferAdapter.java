@@ -58,7 +58,7 @@ import org.glassfish.internal.data.EngineInfo;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * These adapters are temporarily registered to the mapper to handle static
@@ -70,7 +70,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Jeanfrancois Arcand
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class SnifferAdapter extends HttpHandler {
 
     @Inject

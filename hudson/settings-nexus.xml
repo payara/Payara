@@ -1,0 +1,20 @@
+<settings>
+  <mirrors>
+    <mirror>
+      <id>internal-glassfish-nexus</id>
+      <url>http://gf-maven.us.oracle.com/nexus/content/groups/internal-gf-nexus/</url>
+      <mirrorOf>*</mirrorOf>
+    </mirror>
+  </mirrors>
+  <proxies>
+   <proxy>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>adc-proxy.oracle.com</host>
+      <port>80</port>
+      <nonProxyHosts>adc2170275|*.oracle.com|*.oracleads.com|*.us.oracle.com|
+                       *.uk.oracle.com|*.ca.oracle.com|*.oraclecorp.com|
+                       *.oracleportal.com</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>

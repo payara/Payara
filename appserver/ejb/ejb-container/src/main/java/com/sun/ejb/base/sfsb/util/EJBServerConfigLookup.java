@@ -55,16 +55,16 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.ejb.config.EjbContainerAvailability;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
 
 /**
  * @author lwhite
  * @author Mahesh Kannan
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public final class EJBServerConfigLookup {
    
     /**

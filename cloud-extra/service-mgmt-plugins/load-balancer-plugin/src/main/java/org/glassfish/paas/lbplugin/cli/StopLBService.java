@@ -55,7 +55,7 @@ import org.glassfish.paas.orchestrator.service.ServiceStatus;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
@@ -65,7 +65,7 @@ import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
  * @author Jagadish Ramu
  */
 @Service(name = "_stop-lb-service")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 public class StopLBService extends BaseLBService implements AdminCommand {
 

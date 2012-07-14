@@ -46,8 +46,8 @@ import org.glassfish.internal.deployment.GenericHandler;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.io.File;
@@ -71,7 +71,7 @@ import javax.inject.Inject;
  * @author Jerome Dochez
  */
 @Service(name=OSGiArchiveDetector.OSGI_ARCHIVE_TYPE)
-@Scoped(Singleton.class)
+@Singleton
 public class OSGiArchiveHandler extends GenericHandler implements CompositeHandler {
 
     @Inject

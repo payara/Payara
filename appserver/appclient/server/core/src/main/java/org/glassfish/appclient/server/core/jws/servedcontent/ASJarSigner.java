@@ -48,8 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import javax.inject.Singleton;
 
 /**
  * Signs a specified JAR file.
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author tjquinn
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ASJarSigner implements PostConstruct {
     
     /** property name optionally set by the admin in domain.xml to select an alias for signing */

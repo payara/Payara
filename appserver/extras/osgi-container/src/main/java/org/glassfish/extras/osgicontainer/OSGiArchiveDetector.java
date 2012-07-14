@@ -48,7 +48,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  * @author sanjeeb.sahoo@oracle.com
  */
 @Service(name = OSGiArchiveDetector.OSGI_ARCHIVE_TYPE)
-@Scoped(Singleton.class)
+@Singleton
 public class OSGiArchiveDetector implements ArchiveDetector {
     public static final String OSGI_ARCHIVE_DETECTOR_RANK_PROP = "glassfish.ear.detector.rank";
     public static final int DEFAULT_OSGI_ARCHIVE_DETECTOR_RANK = Integer.MAX_VALUE; // the last one to be tried.
@@ -101,7 +101,7 @@ public class OSGiArchiveDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                archiveHandler = services.forContract(ArchiveHandler.class).named(OSGI_ARCHIVE_TYPE).get();
+                archiveHandler = services.getService(ArchiveHandler.class, OSGI_ARCHIVE_TYPE);
             }
             return archiveHandler;
         }

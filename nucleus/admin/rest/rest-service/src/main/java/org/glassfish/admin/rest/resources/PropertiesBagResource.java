@@ -65,7 +65,8 @@ import org.glassfish.admin.rest.results.GetResultList;
 import org.glassfish.admin.rest.results.OptionsResult;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
@@ -82,9 +83,7 @@ public class PropertiesBagResource {
     @Context
     protected UriInfo uriInfo;
     @Context
-    protected Injector injector;
-    @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
     
     protected List<Dom> entity;
     protected Dom parent;
@@ -99,7 +98,7 @@ public class PropertiesBagResource {
     }
     @Path("{Name}/")
     public PropertyResource getProperty(@PathParam("Name") String id) {
-        PropertyResource resource = injector.inject(PropertyResource.class);
+        PropertyResource resource = habitat.createAndInitialize(PropertyResource.class);
         resource.setBeanByKey(getEntity(), id, tagName);
         return resource;
     }

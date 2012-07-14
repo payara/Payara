@@ -53,7 +53,7 @@ import javax.inject.Provider;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  * @author Srikanth P
@@ -61,7 +61,7 @@ import org.jvnet.hk2.component.Singleton;
 
 @Service
 @ResourceDeployerInfo(ResourceAdapterConfig.class)
-@Scoped(Singleton.class)
+@Singleton
 public class ResourceAdapterConfigDeployer extends AbstractConnectorResourceDeployer implements ResourceDeployer {
 
     @Inject

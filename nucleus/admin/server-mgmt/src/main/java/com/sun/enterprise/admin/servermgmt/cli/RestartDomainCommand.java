@@ -49,6 +49,8 @@ import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
@@ -71,7 +73,7 @@ import javax.inject.Inject;
  * @author Bill Shannon
  */
 @Service(name = "restart-domain")
-@Scoped(PerLookup.class)
+@PerLookup
 public class RestartDomainCommand extends StopDomainCommand {
 
     @Param(name = "debug", optional = true)

@@ -75,7 +75,7 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 import org.xml.sax.SAXParseException;
 
 import javax.enterprise.deploy.shared.ModuleType;

@@ -72,9 +72,9 @@ import java.util.PropertyPermission;
 import javax.net.ssl.SSLSocketFactory;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 /**
  *  Handy class containing static functions.
@@ -83,7 +83,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author Shing Wai Chan
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public final class SSLUtils implements PostConstruct {
     private static final String DEFAULT_OUTBOUND_KEY_ALIAS = "s1as";
     public static final String HTTPS_OUTBOUND_KEY_ALIAS = "com.sun.enterprise.security.httpsOutboundKeyAlias";

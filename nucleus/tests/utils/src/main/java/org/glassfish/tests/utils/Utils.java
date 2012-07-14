@@ -40,22 +40,36 @@
 
 package org.glassfish.tests.utils;
 
-import com.sun.enterprise.module.bootstrap.Populator;
-import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.single.StaticModulesRegistry;
+// import com.sun.enterprise.module.bootstrap.Populator;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.sun.hk2.component.ExistingSingletonInhabitant;
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.bootstrap.StartupContext;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.hk2.bootstrap.HK2Populator;
+import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
+import org.glassfish.hk2.internal.ConstantActiveDescriptor;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.DescriptorBuilder;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
 
-import java.net.URL;
-import java.util.logging.Logger;
-import java.io.File;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Properties;
+import com.sun.enterprise.module.bootstrap.DefaultErrorService;
+import com.sun.enterprise.module.single.SingleModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 /**
  * Utilities to create a configured Habitat and cache them
@@ -67,7 +81,7 @@ public class Utils {
     final static String habitatName = "default";
     final static String inhabitantPath = "META-INF/inhabitants";
 
-    Map<String, Habitat> habitats = new HashMap<String, Habitat>();
+    private static Map<String, Habitat> habitats = new HashMap<String, Habitat>();
     public static final Utils instance = new Utils();
 
     public synchronized Habitat getHabitat(ConfigApiTest test) {
@@ -84,47 +98,59 @@ public class Utils {
         return habitat;
     }
 
-    public static synchronized Habitat getNewHabitat(final ConfigApiTest test) {
+    private static synchronized Habitat getNewHabitat(final ConfigApiTest test) {
 
-        final Habitat habitat = getNewHabitat();
+        String name = test.getFileName();
+        final ServiceLocator sl = getNewHabitat(name);
+        Habitat habitat = new Habitat(null, name);
 
         final String fileName = test.getFileName();
-
-
         ConfigParser configParser = new ConfigParser(habitat);
 
-        (new Populator() {
-
-            public void run(ConfigParser parser) {
-                long now = System.currentTimeMillis();
-                URL url = getClass().getClassLoader().getResource(fileName + ".xml");
-                if (url != null) {
-                    try {
-                        DomDocument document = parser.parse(url,  test.getDocument(habitat));
-                        habitat.addComponent(document);
-                        test.decorate(habitat);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                    Logger.getAnonymousLogger().fine("time to parse domain.xml : " + String.valueOf(System.currentTimeMillis() - now));
-                }
-            }
-            
-        }).run(configParser);
+		long now = System.currentTimeMillis();
+		URL url = Utils.class.getClassLoader().getResource(fileName + ".xml");
+		if (url != null) {
+			try {
+				DomDocument document = configParser.parse(url,
+						test.getDocument(habitat));
+				habitat.addComponent(document);
+				test.decorate(habitat);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Logger.getAnonymousLogger().fine(
+					"time to parse domain.xml : "
+							+ String.valueOf(System.currentTimeMillis() - now));
+		}
+        
         return habitat;
     }
 
-    public static Habitat getNewHabitat() {
+    public static ServiceLocator getNewHabitat() {
     	final String root =  Utils.class.getResource("/").getPath();
         return getNewHabitat(root);
     }
 
-    public static Habitat getNewHabitat(String root) {
+    public static ServiceLocator getNewHabitat(String root) {
 
         Properties p = new Properties();
         p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTALL_ROOT_PROP_NAME, root);
         p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_PROP_NAME, root);
         ModulesRegistry registry = new StaticModulesRegistry(Utils.class.getClassLoader(), new StartupContext(p));
-        return registry.createHabitat("default");
+        return registry.createServiceLocator(root);
     }
+
+	public void shutdownServiceLocator(
+			final ConfigApiTest test) {
+        final String fileName = test.getFileName();
+        // we cache the habitat per xml file
+
+        if (ServiceLocatorFactory.getInstance().find(fileName) != null) {
+        	ServiceLocatorFactory.getInstance().destroy(fileName);
+        }
+        
+        if (habitats.containsKey(fileName))  {
+        	habitats.remove(fileName);
+        }
+	}
 }

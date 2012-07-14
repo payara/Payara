@@ -48,14 +48,14 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class ResourcesApplication implements ApplicationContainer{
 
     private static final Logger _logger = LogDomains.getLogger(ResourcesApplication.class, LogDomains.RSR_LOGGER);

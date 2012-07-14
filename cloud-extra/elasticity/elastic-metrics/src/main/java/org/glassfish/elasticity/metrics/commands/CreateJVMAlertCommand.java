@@ -51,7 +51,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.hk2.Services;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.paas.tenantmanager.api.TenantManager;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.RestEndpoints;
  */
 @Service(name = "create-jvm-alert")
 @I18n("create.jvm.alert")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({ @RestEndpoint(configBean = AlertConfig.class, opType = OpType.POST, path = "create-jvm-alert", description = "Create JVM alert") })
 public class CreateJVMAlertCommand implements AdminCommand{
@@ -84,7 +84,7 @@ public class CreateJVMAlertCommand implements AdminCommand{
   ElasticEngine elasticEngine;
 
    @Inject
-   Services services;
+   Habitat services;
 
   @Param(name="name", primary = true)
    String name;

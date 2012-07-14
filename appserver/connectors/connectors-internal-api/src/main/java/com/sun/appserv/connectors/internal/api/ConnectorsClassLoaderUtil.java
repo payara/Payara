@@ -48,7 +48,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -75,7 +75,7 @@ import javax.inject.Inject;
  * @author Jagadish Ramu
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorsClassLoaderUtil {
 
     @Inject

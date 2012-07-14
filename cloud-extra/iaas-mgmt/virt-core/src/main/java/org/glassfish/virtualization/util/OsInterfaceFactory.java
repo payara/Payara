@@ -39,12 +39,11 @@
  */
 package org.glassfish.virtualization.util;
 
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.virtualization.os.OsInterfaceProvider;
 import org.glassfish.virtualization.spi.OsInterface;
-import org.jvnet.hk2.annotations.FactoryFor;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.Factory;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 
@@ -54,23 +53,24 @@ import java.util.logging.Level;
  * HK2 should do this for me.
  */
 @Service
-@FactoryFor(OsInterface.class)
-public class OsInterfaceFactory implements Factory {
+public class OsInterfaceFactory implements Factory<OsInterface> {
 
     @Inject
     Habitat habitat;
 
     @Override
-    public Object get() throws ComponentException {
-        Inhabitant<OsInterface> inh = habitat.getInhabitant(OsInterface.class, System.getProperty("os.name").replaceAll(" ", "_"));
+	public OsInterface provide() {
+        Inhabitant<OsInterfaceProvider> inh = habitat.getInhabitant(OsInterfaceProvider.class, System.getProperty("os.name").replaceAll(" ", "_"));
         if (inh==null) {
-            inh = habitat.getInhabitant(OsInterface.class, "ubuntu");
+            inh = habitat.getInhabitant(OsInterfaceProvider.class, "ubuntu");
         }
         if (inh!=null) {
-            OsInterface os = null;
+            OsInterfaceProvider provider = null;
             try {
-                os = inh.type().newInstance();
-                return habitat.inject(os);
+                provider = inh.type().newInstance();
+                OsInterface result = provider.provideOsInterface();
+                habitat.inject(result);
+                return result;
             } catch (InstantiationException e) {
                 RuntimeContext.logger.log(Level.SEVERE, "Cannot instantiate OsInterface implementation", e);
             } catch (IllegalAccessException e) {
@@ -79,4 +79,9 @@ public class OsInterfaceFactory implements Factory {
         }
         return null;
     }
+
+	@Override
+	public void dispose(OsInterface instance) {
+		
+	}
 }

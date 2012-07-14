@@ -54,6 +54,7 @@ import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import org.glassfish.api.Param;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * The asadmin login command.
@@ -63,7 +64,7 @@ import org.glassfish.api.Param;
  * @author Bill Shannon
  */
 @Service(name = "login")
-@Scoped(PerLookup.class)
+@PerLookup
 public class LoginCommand extends CLICommand {
 
     private String adminUser = null;

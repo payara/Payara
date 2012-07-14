@@ -47,12 +47,14 @@ import java.util.List;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import org.glassfish.config.support.GlassFishConfigBean;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.junit.After;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -75,17 +77,17 @@ public class TranslatedViewCreationTest extends ConfigApiTest {
 
     HttpService httpService = null;
     List<PropertyChangeEvent> events;
-    BaseServiceLocator habitat;
+    Habitat habitat;
 
     @Before
     public void setup() {
         System.setProperty(propName, "/foo/bar/docroot");
-        habitat = Utils.getNewHabitat(this);
+        habitat = Utils.instance.getHabitat(this);
 
     }
 
     @Override
-    public BaseServiceLocator getBaseServiceLocator() {
+    public ServiceLocator getBaseServiceLocator() {
         return habitat;
     }
 

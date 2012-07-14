@@ -47,7 +47,7 @@ import org.glassfish.elasticity.metric.MetricNode;
 import org.glassfish.elasticity.metrics.util.CollectMetricData;
 import org.glassfish.elasticity.util.TabularMetricHolder;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.lang.management.MemoryMXBean;
 import java.util.*;

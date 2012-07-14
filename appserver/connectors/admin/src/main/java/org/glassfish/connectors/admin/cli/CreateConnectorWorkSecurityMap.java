@@ -55,7 +55,7 @@ import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -77,7 +77,7 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.WSM.*;
  */
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="create-connector-work-security-map")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.connector.work.security.map")
 public class CreateConnectorWorkSecurityMap implements AdminCommand {
 

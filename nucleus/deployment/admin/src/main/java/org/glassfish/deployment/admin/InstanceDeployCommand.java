@@ -69,7 +69,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Transaction;
 
 import com.sun.enterprise.util.io.FileUtils;
@@ -90,7 +90,7 @@ import org.glassfish.api.admin.RestEndpoints;
  * @author tjquinn
  */
 @Service(name="_deploy")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(value={RuntimeType.INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

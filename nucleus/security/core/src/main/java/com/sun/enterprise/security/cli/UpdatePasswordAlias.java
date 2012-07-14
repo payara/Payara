@@ -48,7 +48,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.api.admin.*;
@@ -80,7 +80,7 @@ import javax.inject.Named;
  */
 
 @Service(name="update-password-alias")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("update.password.alias")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.DAS,CommandTarget.DOMAIN})

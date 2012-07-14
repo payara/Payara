@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>jspcaching-connector</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>JSP caching taglib connector module</name>
 
     <developers>
@@ -77,7 +77,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>hk2</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>

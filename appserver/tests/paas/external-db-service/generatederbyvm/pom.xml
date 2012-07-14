@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>generatederbyvm</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GenerateDerbyVM</name>
     <build>
         <plugins>

@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>backup-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Backup Restore classes Localization</name>
     <description>Backup Restore Localization</description>
     <build>

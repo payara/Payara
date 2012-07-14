@@ -41,7 +41,7 @@ package org.glassfish.virtualization.virtualbox;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
-import org.glassfish.hk2.inject.Injector;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.virtualization.config.*;
 import org.glassfish.virtualization.spi.PhysicalServerPool;
 
@@ -68,8 +68,10 @@ class VBoxMachine extends VBoxLocalMachine {
     @Inject
     SSHLauncher sshLauncher;
 
-    public static VBoxMachine from(Injector injector, VBoxGroup group, MachineConfig config, String ipAddress) {
-        return injector.inject(new VBoxMachine(group, config, ipAddress));
+    public static VBoxMachine from(ServiceLocator injector, VBoxGroup group, MachineConfig config, String ipAddress) {
+        VBoxMachine vboxMachine = new VBoxMachine(group, config, ipAddress);
+	    injector.inject(vboxMachine);
+	    return vboxMachine;
     }
 
     protected  VBoxMachine(VBoxGroup group, MachineConfig config, String ipAddress) {

@@ -132,8 +132,8 @@ public class StaticRmiStubGenerator {
             }
         }
 
-        JavaConfig jc = services.forContract(JavaConfig.class)
-                .named(ServerEnvironment.DEFAULT_INSTANCE_NAME).get();
+        JavaConfig jc = services.getService(JavaConfig.class,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME);
         String rmicOptions = jc.getRmicOptions();
 
         rmicOptionsList = new ArrayList<String>();

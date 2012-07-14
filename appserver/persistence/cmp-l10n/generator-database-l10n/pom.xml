@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>cmp-generator-database-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Database Generator module for cmp Localization</name>
 
     <build>

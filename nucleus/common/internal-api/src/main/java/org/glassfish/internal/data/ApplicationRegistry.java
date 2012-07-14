@@ -42,7 +42,7 @@ package org.glassfish.internal.data;
 
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +57,7 @@ import java.util.Set;
  * objects attachment.
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class ApplicationRegistry {
 
     private Map<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();

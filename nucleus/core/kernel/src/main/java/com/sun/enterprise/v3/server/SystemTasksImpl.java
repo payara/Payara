@@ -49,6 +49,8 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.InitRunLevel;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -59,7 +61,7 @@ import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.universal.io.SmartFile;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -80,7 +82,6 @@ import java.util.logging.Level;
  */
 // TODO: eventually use CageBuilder so that this gets triggered when JavaConfig enters Habitat.
 @Service
-@InitRunLevel
 public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
     // in embedded environment, JavaConfig is pointless, so make this optional

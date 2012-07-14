@@ -53,12 +53,12 @@ import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import javax.inject.Inject;
 
 @Service(name="webSecurityCIH")
-@Scoped(Singleton.class)
+@Singleton
 public class WebSecurityComponentInvocationHandler implements RegisteredComponentInvocationHandler {
 
     private static Logger _logger = null;

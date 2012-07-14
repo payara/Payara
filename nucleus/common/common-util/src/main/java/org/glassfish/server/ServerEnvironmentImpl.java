@@ -49,7 +49,7 @@ import java.util.*;
 
 import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import javax.inject.Inject;

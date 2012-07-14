@@ -40,12 +40,14 @@
 
 package org.glassfish.api.admin;
 
-import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.InhabitantAnnotation;
-import org.jvnet.hk2.annotations.InhabitantMetadata;
+import org.glassfish.hk2.api.Metadata;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 /**
  * Annotation to define a supplemental command
@@ -127,8 +129,8 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Contract
-@InhabitantAnnotation("default")
+@Target(ElementType.TYPE)
+@Qualifier
 public @interface Supplemental {
 
     /**
@@ -144,7 +146,7 @@ public @interface Supplemental {
      * 
      * @return habitat registration name for the command
      */
-    @InhabitantMetadata("target")
+    @Metadata("target")
     public String value();
 
     public Class<? extends ParameterBridge> bridge() default ParameterBridge.NoMapper.class;

@@ -43,7 +43,7 @@ package org.glassfish.elasticity.engine.container;
 import org.glassfish.elasticity.api.ElasticEngine;
 import org.glassfish.elasticity.api.ElasticEnvironment;
 import org.glassfish.elasticity.engine.util.EngineUtil;
-import org.glassfish.hk2.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Inject;
 
 import org.glassfish.paas.orchestrator.service.spi.ServiceChangeEvent;

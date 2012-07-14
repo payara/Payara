@@ -51,7 +51,7 @@
     </parent>
 
     <artifactId>weld-integration</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Weld integration for glassfish</name>
     
     <developers>

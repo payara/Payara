@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-autodeploy-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>AutoDeploy Classes Localization</name>
     <build>
         <plugins>

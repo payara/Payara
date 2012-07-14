@@ -50,7 +50,7 @@ import javax.inject.Inject;
 import java.util.logging.Logger;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**

@@ -41,7 +41,6 @@
 package org.glassfish.paas.gfplugin.customizer;
 
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.hk2.scopes.Singleton;
 import org.glassfish.paas.gfplugin.GlassFishPluginConstants;
 import org.glassfish.paas.gfplugin.GlassFishProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
@@ -49,16 +48,16 @@ import org.glassfish.virtualization.runtime.VirtualClusters;
 import org.glassfish.virtualization.spi.VirtualCluster;
 import org.glassfish.virtualization.spi.VirtualMachine;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Bhavanishankar S
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class LocalInstanceProvisioner implements GlassFishPluginConstants {
 
     @Inject @Optional

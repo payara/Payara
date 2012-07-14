@@ -56,7 +56,7 @@ import org.glassfish.config.support.TargetType;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;
 import java.util.*;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.*;
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "list-log-attributes")
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("list.log.attributes")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,

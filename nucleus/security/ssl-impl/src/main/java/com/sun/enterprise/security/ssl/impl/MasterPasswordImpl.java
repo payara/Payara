@@ -49,8 +49,8 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PreDestroy;
-import org.jvnet.hk2.component.Singleton;
+import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Singleton;
 
 /**
  * A contract to pass the Glassfish master password between the admin module and
@@ -59,7 +59,7 @@ import org.jvnet.hk2.component.Singleton;
  * @author Sudarsan Sridhar
  */
 @Service(name="Security SSL Password Provider Service")
-@Scoped(Singleton.class)
+@Singleton
 public class MasterPasswordImpl implements MasterPassword, PreDestroy {
 
     private char[] _masterPassword;

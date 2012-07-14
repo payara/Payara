@@ -54,7 +54,7 @@ import static org.glassfish.config.support.Constants.*;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
@@ -344,7 +344,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class Decorator implements CreationDecorator<Node> {
         @Param(name = "nodedir", optional = true)
         String nodedir = null;
@@ -453,7 +453,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
     }
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class DeleteDecorator implements DeletionDecorator<Nodes, Node> {
         @Inject
         private Domain domain;

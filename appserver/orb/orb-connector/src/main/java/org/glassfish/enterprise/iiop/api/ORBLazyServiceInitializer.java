@@ -44,7 +44,7 @@ import org.glassfish.internal.grizzly.LazyServiceInitializer;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import org.omg.CORBA.ORB;
 

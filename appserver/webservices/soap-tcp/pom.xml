@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>soap-tcp</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>SOAP/TCP integration code</name>
 
     <developers>

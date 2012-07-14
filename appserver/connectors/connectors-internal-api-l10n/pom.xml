@@ -50,7 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-internal-api-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Connectors Private APIs for GlassFish Containers Localization</name>
 
     <developers>

@@ -62,7 +62,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  *
@@ -70,7 +70,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Shing Wai Chan
  */
 @Service
-@Scoped(PerLookup.class)
+@PerLookup
 public class HASSOFactory implements SSOFactory {
     private static final String STORE_NAME = "SSOStore";
 
@@ -99,13 +99,13 @@ public class HASSOFactory implements SSOFactory {
             String persistenceType, String storeName, Habitat services) {
 
         if (ssoEntryMetadataBackingStore == null) {
-            BackingStoreFactory factory = services.forContract(BackingStoreFactory.class).named(persistenceType).get();
+            BackingStoreFactory factory = services.getService(BackingStoreFactory.class, persistenceType);
             BackingStoreConfiguration<String, HASingleSignOnEntryMetadata> conf =
                     new BackingStoreConfiguration<String, HASingleSignOnEntryMetadata>();
 
             String clusterName = "";
             String instanceName = "";
-            GMSAdapterService gmsAdapterService = services.byType(GMSAdapterService.class).get();
+            GMSAdapterService gmsAdapterService = services.getService(GMSAdapterService.class);
             if(gmsAdapterService.isGmsEnabled()) {
                 clusterName = gmsAdapterService.getGMSAdapter().getClusterName();
                 instanceName = gmsAdapterService.getGMSAdapter().getModule().getInstanceName();

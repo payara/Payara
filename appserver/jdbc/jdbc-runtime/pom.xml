@@ -49,14 +49,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jdbc-runtime</artifactId>
-    <packaging>hk2-jar</packaging>
     <name>JDBC Runtime Module</name>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
 		        <manifestEntries>

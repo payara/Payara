@@ -217,7 +217,7 @@ public class EJBTimerService {
     private static synchronized void initEJBTimerService(String target, boolean force) {
         if (_timerService == null) {
             PersistentTimerService persistentTS = 
-                    EjbContainerUtilImpl.getInstance().getServices().byType(PersistentTimerService.class).get();
+                    EjbContainerUtilImpl.getInstance().getServices().getService(PersistentTimerService.class);
             if (persistentTS == null) {
                 try {
                     _timerService = new EJBTimerService();
@@ -275,7 +275,7 @@ public class EJBTimerService {
                 rescheduleFailedTimer = Boolean.valueOf(ejbt.getPropertyValue(RESCHEDULE_FAILED_TIMER));
 
                 // Load confing listener
-                ejbContainerUtil.getServices().byType(EJBTimerServiceConfigListener.class).get();
+                ejbContainerUtil.getServices().getService(EJBTimerServiceConfigListener.class);
             }
 
         } catch(Exception e) {

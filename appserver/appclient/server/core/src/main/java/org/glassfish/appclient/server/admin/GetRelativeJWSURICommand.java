@@ -52,7 +52,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.appclient.server.core.AppClientDeployer;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 /**
  * Returns the path part (not host or port) of the URI for launching
@@ -64,7 +64,7 @@ import org.jvnet.hk2.component.PerLookup;
  * @author Tim Quinn
  */
 @Service(name="_get-relative-jws-uri")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
 @RestEndpoints({

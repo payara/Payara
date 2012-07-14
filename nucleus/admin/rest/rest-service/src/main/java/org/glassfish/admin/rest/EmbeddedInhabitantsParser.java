@@ -40,11 +40,11 @@
 
 package org.glassfish.admin.rest;
 
-import com.sun.hk2.component.InhabitantsParser;
-import com.sun.hk2.component.InhabitantsParserDecorator;
 import org.glassfish.admin.restconnector.ProxyRestCommandAdapter;
 import org.glassfish.admin.restconnector.ProxyRestManagementAdapter;
 import org.glassfish.admin.restconnector.ProxyRestMonitoringAdapter;
+import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
+import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.kohsuke.MetaInfServices;
 
 
@@ -54,17 +54,33 @@ import org.kohsuke.MetaInfServices;
  * @author Jerome Dochez
  */
 @MetaInfServices
-public class EmbeddedInhabitantsParser implements InhabitantsParserDecorator {
-    @Override
+public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
     public String getName() {
         return "Embedded";
     }
 
-    @Override
-    public void decorate(InhabitantsParser inhabitantsParser) {
-        inhabitantsParser.drop(RestService.class);
-        inhabitantsParser.drop(ProxyRestManagementAdapter.class);
-        inhabitantsParser.drop(ProxyRestMonitoringAdapter.class);
-        inhabitantsParser.drop(ProxyRestCommandAdapter.class);
-    }
+//    public void decorate(InhabitantsParser inhabitantsParser) {
+//        inhabitantsParser.drop(RestService.class);
+//        inhabitantsParser.drop(ProxyRestManagementAdapter.class);
+//        inhabitantsParser.drop(ProxyRestMonitoringAdapter.class);
+//        inhabitantsParser.drop(ProxyRestAdminAdapter.class);
+//    }
+
+        @Override
+        public DescriptorImpl process(DescriptorImpl descriptorImpl) {
+                
+                boolean skip = RestService.class.getCanonicalName().equals(descriptorImpl.getImplementation()) ||
+                                ProxyRestManagementAdapter.class.getCanonicalName().equals(descriptorImpl.getImplementation()) ||
+                                ProxyRestMonitoringAdapter.class.getCanonicalName().equals(descriptorImpl.getImplementation()) ||
+                                ProxyRestCommandAdapter.class.getCanonicalName().equals(descriptorImpl.getImplementation());
+                
+                if (!skip) {
+                        return descriptorImpl;
+            }
+                                
+                return null;
+
+        }
 }
+
+

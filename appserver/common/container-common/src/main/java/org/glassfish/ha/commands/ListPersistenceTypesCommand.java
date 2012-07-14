@@ -50,7 +50,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.validation.constraints.Pattern;
 import java.util.logging.Level;
@@ -65,7 +65,7 @@ import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 @Service(name="list-persistence-types")
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.persistence.types.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 

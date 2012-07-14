@@ -47,6 +47,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.common.util.admin.GenericCommandModel;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
@@ -71,7 +72,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
  *
  * @author Jerome Dochez
  */
-@Scoped(PerLookup.class)
+@PerLookup
 public class GenericCreateCommand extends GenericCrudCommand implements AdminCommand, 
     AdminCommandSecurity.AccessCheckProvider {
 

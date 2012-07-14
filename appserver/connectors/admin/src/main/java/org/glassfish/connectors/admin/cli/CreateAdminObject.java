@@ -57,7 +57,7 @@ import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -80,7 +80,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 @TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(RuntimeType.ALL)
 @Service(name=AOR_CREATE_COMMAND_NAME)
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("create.admin.object")
 public class CreateAdminObject implements AdminCommand {
     

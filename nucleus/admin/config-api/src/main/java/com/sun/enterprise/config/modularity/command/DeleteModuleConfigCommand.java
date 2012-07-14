@@ -63,7 +63,7 @@ import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -85,7 +85,7 @@ import java.util.logging.Logger;
 @TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "delete-module-config")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("delete.module.config")
 public final class DeleteModuleConfigCommand implements AdminCommand {
     private final Logger LOG = Logger.getLogger(DeleteModuleConfigCommand.class.getName());

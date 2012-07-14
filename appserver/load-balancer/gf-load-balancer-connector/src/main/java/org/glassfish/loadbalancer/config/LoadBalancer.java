@@ -53,7 +53,7 @@ import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -190,7 +190,7 @@ public interface LoadBalancer extends ConfigBeanProxy, Injectable, PropertyBag {
     List<Property> getProperty();
 
     @Service
-    @Scoped(PerLookup.class)
+    @PerLookup
     class DeleteDecorator implements DeletionDecorator<LoadBalancers, LoadBalancer> {
         @Inject
         private Domain domain;

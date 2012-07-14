@@ -75,7 +75,7 @@ public class ProxyServicesImpl implements ProxyServices {
     ClassLoaderHierarchy clh;
     
     public ProxyServicesImpl(Habitat services) {
-        clh = services.forContract(ClassLoaderHierarchy.class).get();
+        clh = services.getService(ClassLoaderHierarchy.class);
     }
 
     

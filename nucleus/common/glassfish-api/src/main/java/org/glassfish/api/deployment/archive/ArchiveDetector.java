@@ -42,7 +42,7 @@ package org.glassfish.api.deployment.archive;
 
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 
@@ -60,7 +60,7 @@ import java.io.IOException;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Contract
-@Scoped(Singleton.class)
+@Singleton
 public interface ArchiveDetector {
     // TODO(Sahoo): Should we merge handle & getArchiveHandler methods into one method?
 

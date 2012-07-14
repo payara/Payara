@@ -55,7 +55,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.resources.api.ResourceStatus;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -76,7 +76,7 @@ import javax.inject.Inject;
 @TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(RuntimeType.ALL)
 @Service(name="add-resources")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("add.resources")
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,

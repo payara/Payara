@@ -60,7 +60,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.deployment.common.DeploymentUtils;
 
@@ -70,7 +70,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 @Service(name="list-application-refs")
 @I18n("list.application.refs")
 @ExecuteOn(value={RuntimeType.DAS})
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({

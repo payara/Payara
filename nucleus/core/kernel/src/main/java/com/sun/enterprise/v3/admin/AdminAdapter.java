@@ -58,8 +58,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.util.CookieSerializerUtils;
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -155,7 +154,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private volatile Server server;
     
-    @Inject 
+    @Inject
     AdminAccessController authenticator;
    
     final Class<? extends Privacy> privacyClass;
@@ -229,7 +228,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage("V3 cannot process this command at this time, please wait");            
             } else {
-                final Subject s = authenticator.loginAsAdmin(req);
+                
+                final Subject s = (authenticator == null) ? null : authenticator.loginAsAdmin(req);
                 if (s == null) {
                     reportAuthFailure(res, report, "adapter.auth.userpassword",
                         "Invalid user name or password",
@@ -416,6 +416,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
 
     private boolean checkAccess(Subject subject, String originHost, ActionReport report, Response res)
             throws Exception {
+        
+        if (authenticator == null) return true;
         
         AdminAccessController.Access access = authenticator.chooseAccess(subject, originHost);
         /*

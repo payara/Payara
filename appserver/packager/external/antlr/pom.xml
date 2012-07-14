@@ -50,8 +50,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>antlr-repackaged</artifactId>
-    <!-- Don't use bundle packaging. There are issues in using
-         maven-bundle-plugin and hk2-maven-plugin together -->
     <packaging>jar</packaging>
     <name>antlr.all version ${antlr.version} repackaged as a module</name>
 

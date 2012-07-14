@@ -51,7 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-core-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Admin Console Core Jar Localization</name>
 
     <build>

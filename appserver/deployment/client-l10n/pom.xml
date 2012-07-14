@@ -50,7 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>deployment-client-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>Deployment Client Classes and Interfaces Localization</name>
 
     <developers>

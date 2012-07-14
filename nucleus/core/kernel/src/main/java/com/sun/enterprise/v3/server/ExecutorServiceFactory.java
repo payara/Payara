@@ -40,10 +40,8 @@
 
 package com.sun.enterprise.v3.server;
 
+import org.glassfish.hk2.api.Factory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.FactoryFor;
-import org.jvnet.hk2.component.Factory;
-import org.jvnet.hk2.component.ComponentException;
 import java.util.concurrent.ThreadFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -55,10 +53,13 @@ import java.util.concurrent.Executors;
  * @author Jerome Dochez
  */
 @Service
-@FactoryFor(ExecutorService.class)
-public class ExecutorServiceFactory implements Factory {
+public class ExecutorServiceFactory implements Factory<ExecutorService> {
 
-    public Object get() throws ComponentException {
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#provide()
+     */
+    @Override
+    public ExecutorService provide() {
         return Executors.newCachedThreadPool(new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -67,5 +68,14 @@ public class ExecutorServiceFactory implements Factory {
             }
         }
         );
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#dispose(java.lang.Object)
+     */
+    @Override
+    public void dispose(ExecutorService instance) {
+        // TODO Auto-generated method stub
+        
     }
 }

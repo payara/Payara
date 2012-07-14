@@ -67,7 +67,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class UnprocessedEventsTest  extends ConfigApiTest
         implements ConfigListener, TransactionListener {
 
-    BaseServiceLocator habitat = Utils.getNewHabitat(this);
+    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
     UnprocessedChangeEvents unprocessed = null;
 
     /**

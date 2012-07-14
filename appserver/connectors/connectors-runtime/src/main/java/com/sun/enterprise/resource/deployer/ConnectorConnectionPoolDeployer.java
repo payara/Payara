@@ -49,7 +49,7 @@ import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
@@ -74,7 +74,7 @@ import javax.inject.Inject;
 
 @Service
 @ResourceDeployerInfo(org.glassfish.connectors.config.ConnectorConnectionPool.class)
-@Scoped(Singleton.class)
+@Singleton
 public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDeployer
         implements ResourceDeployer {
 

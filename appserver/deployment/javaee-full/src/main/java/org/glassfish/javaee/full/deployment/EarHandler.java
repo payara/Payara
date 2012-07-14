@@ -60,7 +60,7 @@ import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.sniffer.WarDetector;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PreDestroy;
+import org.glassfish.hk2.api.PreDestroy;
 import org.xml.sax.SAXParseException;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;

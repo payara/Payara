@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>orb-connector-l10n</artifactId>
-    <packaging>hk2-jar</packaging>
+    
     <name>GlassFish ORB connector implementation Localization</name>
 
     <build>

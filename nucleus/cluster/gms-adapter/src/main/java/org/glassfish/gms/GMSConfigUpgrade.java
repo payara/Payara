@@ -46,7 +46,7 @@ import com.sun.enterprise.util.EarlyLogger;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;

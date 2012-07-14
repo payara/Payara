@@ -54,7 +54,7 @@ import org.glassfish.paas.orchestrator.config.PaasApplication;
 import org.glassfish.paas.orchestrator.config.PaasApplications;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Scoped;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +63,7 @@ import java.io.IOException;
  * @author Jagadish Ramu
  */
 @org.jvnet.hk2.annotations.Service(name = "paas-undeploy")
-@Scoped(PerLookup.class)
+@PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS})
 @CommandLock(CommandLock.LockType.NONE)

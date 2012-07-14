@@ -40,10 +40,9 @@
 
 package org.glassfish.admin.mbeanserver;
 
-import org.jvnet.hk2.annotations.FactoryFor;
+import org.glassfish.hk2.api.Factory;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Factory;
-import org.jvnet.hk2.component.ComponentException;
 
 import javax.management.MBeanServer;
 
@@ -54,9 +53,8 @@ import org.glassfish.internal.api.PostStartupRunLevel;
     for modules doing @Inject MBeanServer.
  */
 @Service
-@FactoryFor(MBeanServer.class)
-@PostStartupRunLevel
-public final class MBeanServerFactory implements Factory {
+@RunLevel(PostStartupRunLevel.VAL)
+public final class MBeanServerFactory implements Factory<MBeanServer> {
     private static void debug( final String s ) { System.out.println(s); }
     
     private final MBeanServer     mMBeanServer;
@@ -70,22 +68,21 @@ public final class MBeanServerFactory implements Factory {
     public void postConstruct()
     {
     }
-    
-    /**
-     * The system calls this method to obtain a reference
-     * to the component.
-     *
-     * @return null is a valid return value. This is useful
-     *         when a factory primarily does a look-up and it fails
-     *         to find the specified component, yet you don't want that
-     *         by itself to be an error. If the injection wants
-     *         a non-null value (i.e., <tt>@Inject(optional=false)</tt>).
-     * @throws org.jvnet.hk2.component.ComponentException
-     *          If the factory failed to get/create an instance
-     *          and would like to propagate the error to the caller.
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#provide()
      */
-    public Object get() throws ComponentException {
+    @Override
+    public MBeanServer provide() {
         return mMBeanServer;
+    }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Factory#dispose(java.lang.Object)
+     */
+    @Override
+    public void dispose(MBeanServer instance) {
+        
     }
     
 }

@@ -58,7 +58,7 @@ import com.sun.xml.ws.policy.PolicyMapKey;
 import com.sun.xml.wss.provider.wsit.PipeConstants;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Singleton;
+import javax.inject.Singleton;
 
 
 /**
@@ -67,7 +67,7 @@ import org.jvnet.hk2.component.Singleton;
  *  TangoPipeAssembler
  */
 @Service
-@Scoped(Singleton.class)
+@Singleton
 public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCreator {
     
     private static final String SECURITY_POLICY_NAMESPACE_URI_SUBMISSION = 

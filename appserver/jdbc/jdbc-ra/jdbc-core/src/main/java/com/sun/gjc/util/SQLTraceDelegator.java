@@ -54,7 +54,7 @@ import org.glassfish.api.jdbc.SQLTraceRecord;
  * 
  * @author Shalini M
  */
-//@Scoped(Singleton.class)
+//@Singleton
 public class SQLTraceDelegator implements SQLTraceListener {
     
     //List of listeners 

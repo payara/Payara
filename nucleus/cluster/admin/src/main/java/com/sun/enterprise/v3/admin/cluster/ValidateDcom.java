@@ -67,7 +67,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.cluster.ssh.util.DcomUtils;
 
 /**
@@ -76,7 +76,7 @@ import org.glassfish.cluster.ssh.util.DcomUtils;
  * @author Byron Nevins
  */
 @Service(name = "validate-dcom")
-@Scoped(PerLookup.class)
+@PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({

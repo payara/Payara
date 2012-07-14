@@ -59,7 +59,7 @@
 
     <artifactId>jmx-remote-common</artifactId>
 
-    <packaging>hk2-jar</packaging>
+    
 
     <name>JMX Remote Service Commons</name>
 

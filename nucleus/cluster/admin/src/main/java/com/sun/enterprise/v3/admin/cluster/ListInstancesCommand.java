@@ -55,6 +55,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.glassfish.api.admin.config.ReferenceContainer;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
@@ -72,7 +73,7 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 @Service(name = "list-instances")
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.instances.command")
-@Scoped(PerLookup.class)
+@PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
         opType=RestEndpoint.OpType.GET, 

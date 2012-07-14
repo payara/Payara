@@ -55,7 +55,7 @@ import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.glassfish.flashlight.transformer.ProbeProviderClassFileTransformer;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PostConstruct;
+import org.glassfish.hk2.api.PostConstruct;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.reflect.ReflectUtils;

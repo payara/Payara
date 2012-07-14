@@ -58,12 +58,12 @@ import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.PerLookup;
+import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
 
 @Service(name = "flush-connection-pool")
-@Scoped(PerLookup.class)
+@PerLookup
 @I18n("flush.connection.pool")
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
