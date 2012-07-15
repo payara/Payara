@@ -48,7 +48,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;

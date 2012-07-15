@@ -53,7 +53,7 @@ import java.net.URL;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

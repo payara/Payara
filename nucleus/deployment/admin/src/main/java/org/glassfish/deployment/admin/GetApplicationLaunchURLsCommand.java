@@ -51,7 +51,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.config.support.PropertyResolver;

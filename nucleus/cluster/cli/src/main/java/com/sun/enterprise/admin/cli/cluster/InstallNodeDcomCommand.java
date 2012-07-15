@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

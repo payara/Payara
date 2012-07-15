@@ -47,7 +47,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Injectable;

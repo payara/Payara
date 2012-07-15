@@ -41,7 +41,7 @@
 package org.glassfish.api.deployment.archive;
 
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Scoped;
+
 
 /**
  * ArchiveType is an extension over ModuleType defined in jsr88 API.

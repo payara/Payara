@@ -56,7 +56,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

@@ -45,7 +45,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 
 @Service

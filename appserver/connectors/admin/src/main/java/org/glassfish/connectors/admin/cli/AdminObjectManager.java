@@ -52,7 +52,7 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.admin.cli.ResourceUtil;
 import org.glassfish.resources.api.ResourceStatus;
 import org.glassfish.resources.util.BindableResourcesHelper;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;

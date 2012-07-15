@@ -61,7 +61,7 @@ import org.glassfish.webservices.Ejb2RuntimeEndpointInfo;
 import org.glassfish.webservices.EjbRuntimeEndpointInfo;
 import org.glassfish.webservices.SecurityService;
 import org.glassfish.webservices.WebServiceContextImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

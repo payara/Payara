@@ -53,7 +53,7 @@ import java.util.Collection;
 
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;
 

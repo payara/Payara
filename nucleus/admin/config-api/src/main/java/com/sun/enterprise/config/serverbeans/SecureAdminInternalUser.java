@@ -44,7 +44,7 @@ import java.beans.PropertyVetoException;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.config.support.CreationDecorator;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;

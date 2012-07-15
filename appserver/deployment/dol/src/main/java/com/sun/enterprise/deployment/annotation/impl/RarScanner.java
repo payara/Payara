@@ -49,7 +49,7 @@ import java.util.logging.Level;
 
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 

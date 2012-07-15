@@ -47,7 +47,7 @@ import javax.inject.Inject;
 import com.sun.enterprise.v3.admin.RestartServer;
 import com.sun.enterprise.v3.admin.RestartServer;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

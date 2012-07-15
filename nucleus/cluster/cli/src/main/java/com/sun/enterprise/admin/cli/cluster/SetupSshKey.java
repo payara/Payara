@@ -45,7 +45,7 @@ import java.util.logging.Level;
 
 import javax.inject.Inject;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;

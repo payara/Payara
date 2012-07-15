@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.admingui.plugins.annotations.NavNodes;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Singleton;

@@ -50,7 +50,7 @@ import org.glassfish.api.ActionReport;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;

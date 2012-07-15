@@ -50,7 +50,7 @@ import java.net.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;

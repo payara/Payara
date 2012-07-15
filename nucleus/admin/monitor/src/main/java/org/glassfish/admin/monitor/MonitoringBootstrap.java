@@ -62,7 +62,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;

@@ -45,7 +45,7 @@ import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import javax.enterprise.deploy.shared.ModuleType;

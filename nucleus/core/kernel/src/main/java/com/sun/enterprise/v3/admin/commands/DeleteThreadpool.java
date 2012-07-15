@@ -53,7 +53,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 

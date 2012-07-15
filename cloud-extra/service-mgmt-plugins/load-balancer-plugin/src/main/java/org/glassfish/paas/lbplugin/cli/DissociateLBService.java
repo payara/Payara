@@ -50,7 +50,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.paas.lbplugin.LBProvisionerFactory;
 import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;

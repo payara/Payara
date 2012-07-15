@@ -49,7 +49,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;

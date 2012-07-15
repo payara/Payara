@@ -47,7 +47,7 @@ import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 import java.io.*;

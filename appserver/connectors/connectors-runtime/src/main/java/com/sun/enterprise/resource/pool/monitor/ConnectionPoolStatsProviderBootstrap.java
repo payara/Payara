@@ -62,7 +62,7 @@ import javax.inject.Singleton;
 
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.external.probe.provider.PluginPoint;

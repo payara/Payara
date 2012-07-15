@@ -58,7 +58,7 @@ import org.glassfish.paas.orchestrator.service.spi.ConfiguredService;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import javax.inject.Singleton;

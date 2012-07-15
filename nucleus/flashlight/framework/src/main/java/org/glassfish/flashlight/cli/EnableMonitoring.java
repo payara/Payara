@@ -51,7 +51,7 @@ import org.glassfish.config.support.*;
 import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.File;

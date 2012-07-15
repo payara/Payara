@@ -41,7 +41,7 @@
 package org.glassfish.jta.admin.cli;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.api.I18n;

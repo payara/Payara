@@ -50,7 +50,7 @@ import org.glassfish.elasticity.engine.container.ElasticEnvironmentContainer;
 import org.glassfish.elasticity.engine.util.EngineUtil;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;

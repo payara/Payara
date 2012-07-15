@@ -59,7 +59,7 @@ import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.cluster.ssh.util.HostVerifier;
 import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;

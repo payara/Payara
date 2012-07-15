@@ -41,7 +41,7 @@
 package com.sun.enterprise.container.common.spi.util;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;

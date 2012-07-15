@@ -43,7 +43,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import static com.sun.enterprise.util.StringUtils.ok;
 import java.util.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.IOException;

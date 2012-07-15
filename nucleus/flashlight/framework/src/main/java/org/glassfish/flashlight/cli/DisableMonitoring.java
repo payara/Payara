@@ -51,7 +51,7 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.*;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import org.glassfish.api.monitoring.ContainerMonitoring;

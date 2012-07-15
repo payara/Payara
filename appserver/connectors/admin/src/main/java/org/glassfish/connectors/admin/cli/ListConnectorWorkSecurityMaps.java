@@ -49,7 +49,7 @@ import org.glassfish.api.Param;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.GroupMap;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

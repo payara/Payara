@@ -41,7 +41,7 @@ package org.glassfish.api.deployment.archive;
 
 
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 import java.io.IOException;

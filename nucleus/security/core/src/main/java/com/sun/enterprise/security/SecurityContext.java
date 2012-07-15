@@ -62,7 +62,7 @@ import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.logging.*;
 import java.security.AccessController;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

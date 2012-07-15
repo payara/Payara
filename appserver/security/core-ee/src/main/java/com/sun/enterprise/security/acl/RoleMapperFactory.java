@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

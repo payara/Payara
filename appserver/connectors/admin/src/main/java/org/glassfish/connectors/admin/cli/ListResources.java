@@ -51,7 +51,7 @@ import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.resources.util.BindableResourcesHelper;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

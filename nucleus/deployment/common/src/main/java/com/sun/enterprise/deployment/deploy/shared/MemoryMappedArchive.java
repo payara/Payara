@@ -50,7 +50,7 @@ import com.sun.enterprise.util.shared.ArchivistUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 
 import java.io.*;
 import java.net.URI;

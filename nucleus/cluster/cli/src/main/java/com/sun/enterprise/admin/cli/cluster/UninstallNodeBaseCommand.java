@@ -42,7 +42,7 @@ package com.sun.enterprise.admin.cli.cluster;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.component.BaseServiceLocator;

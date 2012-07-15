@@ -86,7 +86,7 @@ import org.glassfish.resources.listener.ResourceManager;
 import org.glassfish.resources.naming.ResourceNamingService;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;

@@ -60,7 +60,7 @@ import org.w3c.dom.Node;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.internal.api.Globals;
 
 import javax.xml.namespace.QName;

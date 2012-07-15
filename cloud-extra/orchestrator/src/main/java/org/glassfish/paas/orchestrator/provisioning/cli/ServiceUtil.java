@@ -57,7 +57,7 @@ import org.glassfish.paas.orchestrator.service.spi.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;

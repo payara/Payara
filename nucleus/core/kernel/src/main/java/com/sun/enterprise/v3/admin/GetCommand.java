@@ -51,7 +51,7 @@ import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;

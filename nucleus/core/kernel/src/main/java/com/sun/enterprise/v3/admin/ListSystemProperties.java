@@ -59,7 +59,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 

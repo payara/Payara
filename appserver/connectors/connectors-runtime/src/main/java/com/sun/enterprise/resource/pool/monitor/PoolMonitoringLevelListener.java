@@ -42,7 +42,7 @@ package com.sun.enterprise.resource.pool.monitor;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;

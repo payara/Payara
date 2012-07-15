@@ -50,7 +50,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.web.config.serverbeans.WebContainer;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;

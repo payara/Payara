@@ -48,7 +48,7 @@ import org.glassfish.paas.lbplugin.logger.LBPluginLogger;
 import org.glassfish.paas.orchestrator.provisioning.cli.ServiceType.*;
 import org.glassfish.virtualization.runtime.VirtualMachineLifecycle;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

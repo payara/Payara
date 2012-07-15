@@ -50,7 +50,7 @@ import org.glassfish.paas.tenantmanager.api.TenantScoped;
 import org.glassfish.paas.tenantmanager.entity.Tenant;
 import org.glassfish.paas.tenantmanager.entity.TenantServices;
 import org.glassfish.paas.tenantmanager.impl.TenantManagerEx;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;

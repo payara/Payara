@@ -43,7 +43,7 @@ package com.sun.enterprise.naming.util;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

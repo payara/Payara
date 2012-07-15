@@ -45,7 +45,7 @@ import java.io.Console;
 import java.util.*;
 import javax.inject.Inject;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;

@@ -57,7 +57,7 @@ import org.glassfish.external.statistics.Stats;
 import org.glassfish.external.statistics.impl.StatisticImpl;
 import org.glassfish.internal.api.*;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;

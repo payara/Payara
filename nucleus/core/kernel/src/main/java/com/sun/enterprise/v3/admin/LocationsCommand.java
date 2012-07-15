@@ -50,7 +50,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;

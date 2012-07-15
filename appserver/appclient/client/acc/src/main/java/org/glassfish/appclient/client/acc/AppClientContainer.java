@@ -84,7 +84,7 @@ import org.glassfish.appclient.client.acc.config.TargetServer;
 import org.glassfish.persistence.jpa.PersistenceUnitLoader;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;

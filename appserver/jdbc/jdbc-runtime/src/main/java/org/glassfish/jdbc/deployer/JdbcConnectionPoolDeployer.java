@@ -53,7 +53,7 @@ import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Optional;
 import javax.inject.Singleton;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;

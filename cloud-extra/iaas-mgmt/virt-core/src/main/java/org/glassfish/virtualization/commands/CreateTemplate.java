@@ -52,7 +52,7 @@ import org.glassfish.virtualization.config.Virtualizations;
 import org.glassfish.virtualization.spi.TemplateRepository;
 import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;

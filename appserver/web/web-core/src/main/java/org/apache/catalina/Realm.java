@@ -60,7 +60,7 @@ package org.apache.catalina;
 
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.servlet.http.HttpServletRequest;

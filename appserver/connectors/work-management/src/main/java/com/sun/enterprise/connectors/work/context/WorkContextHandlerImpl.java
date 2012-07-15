@@ -50,7 +50,7 @@ import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;

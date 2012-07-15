@@ -43,7 +43,7 @@ import com.sun.enterprise.util.OS;
 import com.sun.logging.LogDomains;
 import org.glassfish.paas.dbspecommon.DatabaseSPEBase;
 import org.glassfish.virtualization.spi.VirtualMachine;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import java.io.File;

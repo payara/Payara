@@ -67,7 +67,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;

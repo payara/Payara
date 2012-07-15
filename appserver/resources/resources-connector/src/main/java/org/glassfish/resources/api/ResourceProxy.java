@@ -45,7 +45,7 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.resources.naming.ResourceNamingService;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;

@@ -42,7 +42,7 @@
 package com.sun.enterprise.deployment;
 
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 
 /**

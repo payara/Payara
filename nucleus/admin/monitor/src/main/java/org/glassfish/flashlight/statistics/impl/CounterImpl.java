@@ -47,7 +47,7 @@ package org.glassfish.flashlight.statistics.impl;
 import org.glassfish.flashlight.statistics.*;
 import java.util.concurrent.atomic.AtomicLong;
 import org.glassfish.flashlight.datatree.impl.AbstractTreeNode;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

@@ -56,7 +56,7 @@ import javax.net.ssl.X509KeyManager;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
 import org.glassfish.internal.api.SharedSecureRandom;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.omg.IOP.TaggedComponent;

@@ -41,7 +41,7 @@
 package org.glassfish.api.admin;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 /**

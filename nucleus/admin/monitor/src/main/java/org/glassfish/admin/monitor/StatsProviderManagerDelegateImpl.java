@@ -78,7 +78,7 @@ import java.text.MessageFormat;
 
 import org.glassfish.flashlight.client.ProbeClientMediator;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;

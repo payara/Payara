@@ -44,7 +44,7 @@ import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 
 /**

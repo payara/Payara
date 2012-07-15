@@ -56,7 +56,7 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 import com.sun.enterprise.util.LocalStringManagerImpl;

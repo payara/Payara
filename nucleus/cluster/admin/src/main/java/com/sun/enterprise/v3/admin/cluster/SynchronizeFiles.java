@@ -48,7 +48,7 @@ import com.sun.enterprise.admin.util.InstanceStateService;
 import org.glassfish.api.admin.*;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 

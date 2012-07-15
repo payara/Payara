@@ -59,7 +59,7 @@ import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 import java.util.Properties;
 import java.util.Collection;
 import java.util.ArrayList;

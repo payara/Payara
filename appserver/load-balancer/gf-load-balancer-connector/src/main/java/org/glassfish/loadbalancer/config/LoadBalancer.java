@@ -50,7 +50,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.config.support.DeletionDecorator;
 import org.glassfish.quality.ToDo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;

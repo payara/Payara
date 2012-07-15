@@ -63,7 +63,7 @@ import java.util.logging.Level;
 import java.util.Collection;
 import java.util.Set;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;

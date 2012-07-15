@@ -48,7 +48,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;

@@ -49,7 +49,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.paas.orchestrator.config.*;
 import org.glassfish.paas.orchestrator.provisioning.ServiceInfo;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import java.util.*;

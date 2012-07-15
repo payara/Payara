@@ -58,7 +58,7 @@ import org.glassfish.resources.api.ResourcesBinder;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;

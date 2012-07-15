@@ -67,7 +67,7 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogRecord;
 import org.glassfish.paas.orchestrator.service.spi.ServiceLogType;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.BufferedWriter;

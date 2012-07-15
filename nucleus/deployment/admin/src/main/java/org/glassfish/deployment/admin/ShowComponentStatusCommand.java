@@ -66,7 +66,7 @@ import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.deployment.versioning.VersioningException;
 import org.glassfish.deployment.versioning.VersioningService;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 

@@ -62,7 +62,7 @@ import org.glassfish.ejb.EjbType;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
 import org.glassfish.ejb.deployment.util.EjbBundleValidator;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

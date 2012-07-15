@@ -43,7 +43,7 @@ package org.glassfish.loadbalancer.admin.cli;
 import java.util.logging.Logger;
 import java.util.List;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;

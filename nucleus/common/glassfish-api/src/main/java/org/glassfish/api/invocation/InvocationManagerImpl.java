@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

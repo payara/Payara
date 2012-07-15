@@ -50,7 +50,7 @@ import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.elasticity.config.serverbeans.Alerts;
 import org.glassfish.elasticity.config.serverbeans.ElasticServiceConfig;
 import org.glassfish.elasticity.config.serverbeans.ElasticServices;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

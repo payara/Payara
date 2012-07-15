@@ -46,7 +46,7 @@ import com.sun.enterprise.connectors.util.DriverLoader;
 import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

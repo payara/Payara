@@ -61,7 +61,7 @@ import org.glassfish.appclient.client.acc.config.ClientCredential;
 import org.glassfish.appclient.client.acc.config.MessageSecurityConfig;
 import org.glassfish.appclient.client.acc.config.TargetServer;
 //import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

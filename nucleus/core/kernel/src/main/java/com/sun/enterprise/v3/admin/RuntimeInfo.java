@@ -67,7 +67,7 @@ import org.glassfish.api.admin.CommandLock;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 

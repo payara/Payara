@@ -54,7 +54,7 @@ import org.glassfish.resources.naming.ResourceNamingService;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.glassfish.resources.util.BindableResourcesHelper;
 import org.glassfish.resources.util.ResourceUtil;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;

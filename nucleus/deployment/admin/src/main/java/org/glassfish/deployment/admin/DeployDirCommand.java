@@ -51,7 +51,7 @@ import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 
 
 /**

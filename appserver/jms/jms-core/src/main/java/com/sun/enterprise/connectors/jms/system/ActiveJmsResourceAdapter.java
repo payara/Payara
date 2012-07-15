@@ -111,7 +111,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;

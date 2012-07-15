@@ -78,7 +78,7 @@ import org.glassfish.internal.api.*;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.component.*;
 import com.sun.hk2.component.InjectionResolver;
 

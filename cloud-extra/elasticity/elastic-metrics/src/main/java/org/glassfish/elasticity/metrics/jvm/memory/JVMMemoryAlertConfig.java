@@ -42,7 +42,7 @@ package org.glassfish.elasticity.metrics.jvm.memory;
 import org.glassfish.elasticity.config.serverbeans.AlertActions;
 import org.glassfish.elasticity.config.serverbeans.AlertConfig;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;

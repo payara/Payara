@@ -54,7 +54,7 @@ import org.glassfish.virtualization.spi.VirtualMachine;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;

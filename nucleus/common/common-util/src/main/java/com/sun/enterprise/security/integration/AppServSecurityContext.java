@@ -43,7 +43,7 @@ package com.sun.enterprise.security.integration;
 import java.security.Principal;
 import javax.security.auth.Subject;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 /**

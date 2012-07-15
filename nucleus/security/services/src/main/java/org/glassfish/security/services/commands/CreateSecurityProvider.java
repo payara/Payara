@@ -44,7 +44,7 @@ import java.beans.PropertyVetoException;
 import javax.inject.Inject;
 
 import org.glassfish.security.services.config.SecurityConfiguration;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;

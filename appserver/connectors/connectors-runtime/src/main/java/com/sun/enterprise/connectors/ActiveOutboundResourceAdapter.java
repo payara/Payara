@@ -45,7 +45,7 @@ import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
 import com.sun.enterprise.connectors.util.SetMethodAction;

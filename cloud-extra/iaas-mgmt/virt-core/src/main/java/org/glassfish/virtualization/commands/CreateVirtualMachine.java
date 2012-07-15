@@ -51,7 +51,7 @@ import org.glassfish.virtualization.runtime.TemplateInstanceImpl;
 import org.glassfish.virtualization.util.EventSourceImpl;
 import org.glassfish.virtualization.util.RuntimeContext;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;

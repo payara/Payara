@@ -48,7 +48,7 @@ import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;

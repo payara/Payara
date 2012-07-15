@@ -43,7 +43,7 @@ package org.glassfish.paas.orchestrator.provisioning.util;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

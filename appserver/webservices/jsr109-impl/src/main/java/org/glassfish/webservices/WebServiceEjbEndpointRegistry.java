@@ -52,7 +52,7 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.ejb.api.EjbEndpointFacade;

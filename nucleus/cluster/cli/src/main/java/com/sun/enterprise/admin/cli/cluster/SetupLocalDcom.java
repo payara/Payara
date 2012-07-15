@@ -46,7 +46,7 @@ import java.util.*;
 import org.glassfish.api.Param;
 import static com.sun.enterprise.universal.process.ProcessUtils.getExe;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;

@@ -50,7 +50,7 @@ import org.glassfish.api.admin.ProcessEnvironment;
 
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

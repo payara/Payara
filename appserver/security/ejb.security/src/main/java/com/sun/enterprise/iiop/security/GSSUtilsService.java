@@ -42,7 +42,7 @@ package com.sun.enterprise.iiop.security;
 
 import com.sun.enterprise.common.iiop.security.GSSUtilsContract;
 import java.io.IOException;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import sun.security.util.ObjectIdentifier;

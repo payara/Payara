@@ -112,7 +112,7 @@ import com.sun.enterprise.webservice.monitoring.AuthenticationListener;
  */
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
 import com.sun.enterprise.security.auth.login.DigestCredentials;

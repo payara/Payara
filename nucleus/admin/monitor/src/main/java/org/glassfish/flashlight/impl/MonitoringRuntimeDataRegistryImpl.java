@@ -49,7 +49,7 @@ import org.glassfish.flashlight.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.glassfish.flashlight.datatree.TreeNode;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

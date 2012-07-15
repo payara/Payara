@@ -41,7 +41,7 @@
 package com.sun.enterprise.deployment.annotation.introspection;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 import java.util.Set;

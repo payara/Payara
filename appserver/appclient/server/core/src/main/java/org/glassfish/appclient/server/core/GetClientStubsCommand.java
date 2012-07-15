@@ -53,7 +53,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.deployment.admin.DeployCommand;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

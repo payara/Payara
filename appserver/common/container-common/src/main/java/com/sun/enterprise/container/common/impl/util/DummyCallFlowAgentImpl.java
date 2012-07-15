@@ -41,7 +41,7 @@
 package com.sun.enterprise.container.common.impl.util;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.container.common.spi.util.EntityManagerMethod;

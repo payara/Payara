@@ -46,7 +46,7 @@ import com.sun.appserv.connectors.internal.api.WorkManagerFactory;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 import javax.inject.Inject;

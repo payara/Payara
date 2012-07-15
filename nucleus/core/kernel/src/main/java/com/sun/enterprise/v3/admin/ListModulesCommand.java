@@ -43,7 +43,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;

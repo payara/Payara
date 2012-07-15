@@ -42,7 +42,7 @@ package com.sun.appserv.connectors.internal.api;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;

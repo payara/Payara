@@ -44,7 +44,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.virtualization.ShellExecutor;
 import org.glassfish.virtualization.spi.Disk;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

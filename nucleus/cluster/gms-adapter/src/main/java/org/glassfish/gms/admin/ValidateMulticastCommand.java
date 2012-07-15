@@ -44,7 +44,7 @@ import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.gms.tools.MulticastTester;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

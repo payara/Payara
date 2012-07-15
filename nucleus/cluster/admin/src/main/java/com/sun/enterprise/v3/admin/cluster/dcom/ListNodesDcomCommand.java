@@ -49,7 +49,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import java.util.logging.Logger;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

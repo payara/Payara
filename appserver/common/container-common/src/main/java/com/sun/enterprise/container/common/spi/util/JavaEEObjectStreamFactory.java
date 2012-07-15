@@ -42,7 +42,7 @@ package com.sun.enterprise.container.common.spi.util;
 
 import com.sun.logging.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Singleton;

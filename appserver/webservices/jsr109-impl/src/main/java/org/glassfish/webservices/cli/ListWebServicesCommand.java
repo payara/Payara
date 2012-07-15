@@ -52,7 +52,7 @@ import org.glassfish.webservices.WebServicesContainer;
 import org.glassfish.webservices.deployment.DeployedEndpointData;
 import org.glassfish.webservices.deployment.WebServicesDeploymentMBean;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

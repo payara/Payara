@@ -48,7 +48,7 @@ import com.sun.enterprise.deployment.util.DefaultDOLVisitor;
 import com.sun.logging.LogDomains;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Singleton;
 
 /**

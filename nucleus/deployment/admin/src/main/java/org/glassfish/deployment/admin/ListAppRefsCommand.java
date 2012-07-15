@@ -55,7 +55,7 @@ import com.sun.enterprise.config.serverbeans.Module;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import java.util.List;

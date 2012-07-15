@@ -44,7 +44,7 @@ import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 

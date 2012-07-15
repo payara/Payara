@@ -52,7 +52,7 @@ import org.apache.catalina.startup.Embedded;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.internal.api.ServerContext;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;

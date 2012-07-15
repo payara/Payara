@@ -45,7 +45,7 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.regex.*;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;

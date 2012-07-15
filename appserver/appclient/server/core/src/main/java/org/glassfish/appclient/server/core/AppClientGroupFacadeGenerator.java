@@ -64,7 +64,7 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.appclient.server.connector.CarType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 

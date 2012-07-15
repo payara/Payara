@@ -41,7 +41,7 @@
 package org.glassfish.internal.data;
 
 import org.glassfish.api.container.Sniffer;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import org.jvnet.hk2.component.BaseServiceLocator;

@@ -49,7 +49,7 @@ import org.glassfish.api.admin.Payload;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFishException;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;

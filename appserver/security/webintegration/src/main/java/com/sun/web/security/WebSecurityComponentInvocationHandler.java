@@ -51,7 +51,7 @@ import org.glassfish.api.invocation.ComponentInvocationHandler;
 import org.glassfish.api.invocation.RegisteredComponentInvocationHandler;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 

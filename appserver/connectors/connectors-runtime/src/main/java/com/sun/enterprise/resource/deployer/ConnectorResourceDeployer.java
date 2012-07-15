@@ -51,7 +51,7 @@ import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceDeployerInfo;
 import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;

@@ -47,7 +47,7 @@ import org.glassfish.common.util.admin.ParamTokenizer;
 import org.glassfish.config.support.ConfigurationAccess;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import javax.inject.Inject;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.IndentingXMLStreamWriter;

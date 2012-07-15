@@ -46,7 +46,7 @@ import static org.glassfish.admingui.plugins.NavigationNode.*;
 import org.glassfish.admingui.plugins.annotations.ConsolePlugin;
 import org.glassfish.admingui.plugins.annotations.NavNodes;
 import org.glassfish.admingui.plugins.annotations.ViewFragment;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Singleton;
 

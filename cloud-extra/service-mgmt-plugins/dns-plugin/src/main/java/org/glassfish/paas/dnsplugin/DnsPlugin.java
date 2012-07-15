@@ -63,7 +63,7 @@ import org.glassfish.paas.orchestrator.service.spi.ProvisionedService;
 import org.glassfish.paas.orchestrator.service.spi.ServicePlugin;
 import org.glassfish.virtualization.spi.AllocationStrategy;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 
 import org.glassfish.paas.dnsplugin.logger.DnsPluginLogger;

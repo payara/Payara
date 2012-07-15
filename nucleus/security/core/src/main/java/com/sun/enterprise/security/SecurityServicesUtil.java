@@ -54,7 +54,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.internal.api.Globals;

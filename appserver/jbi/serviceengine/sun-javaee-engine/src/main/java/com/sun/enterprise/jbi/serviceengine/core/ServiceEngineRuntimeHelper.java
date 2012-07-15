@@ -45,7 +45,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.ContractProvider;
 import org.glassfish.api.invocation.InvocationManager;
 import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;

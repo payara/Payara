@@ -47,7 +47,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.resources.api.ResourceStatus;
 import org.glassfish.resources.config.ExternalJndiResource;
 import org.glassfish.resources.util.BindableResourcesHelper;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;

@@ -51,7 +51,7 @@ import org.glassfish.api.admin.InstanceCommand;
 import org.glassfish.api.admin.InstanceCommandResult;
 import org.glassfish.api.admin.InstanceState;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;

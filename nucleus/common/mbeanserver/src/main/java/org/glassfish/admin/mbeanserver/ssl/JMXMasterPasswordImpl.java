@@ -41,7 +41,7 @@ package org.glassfish.admin.mbeanserver.ssl;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.security.common.MasterPassword;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PreDestroy;
 import javax.inject.Singleton;

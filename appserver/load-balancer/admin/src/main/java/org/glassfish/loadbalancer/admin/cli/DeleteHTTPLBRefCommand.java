@@ -45,7 +45,7 @@ import java.util.List;
 
 import java.beans.PropertyVetoException;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;

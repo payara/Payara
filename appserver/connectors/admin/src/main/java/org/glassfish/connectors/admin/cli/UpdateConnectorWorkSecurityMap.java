@@ -50,7 +50,7 @@ import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.connectors.config.GroupMap;
 import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;

@@ -51,7 +51,7 @@ import com.sun.hk2.component.InhabitantsParser;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.enterprise.deploy.shared.ModuleType;

@@ -41,7 +41,7 @@
 package org.glassfish.web.admin.monitor.statistics;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.Scoped;
+
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
