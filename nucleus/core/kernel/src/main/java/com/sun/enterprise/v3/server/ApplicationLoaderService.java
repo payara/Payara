@@ -58,6 +58,7 @@ import javax.inject.Provider;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Startup;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -75,6 +76,7 @@ import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -115,7 +117,9 @@ import javax.inject.Provider;
  */
 //@Priority(8) // low priority , should be started last
 @Service(name="ApplicationLoaderService")
-public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
+@RunLevel( value=StartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
+//public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
     final Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
 

@@ -54,7 +54,7 @@ import org.glassfish.internal.data.EngineInfo;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-
+import org.jvnet.hk2.annotations.Scoped;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
@@ -210,9 +210,12 @@ public class WebContainerStarter
                     logger.severe("core.unable_start_container_no_exception");
                 }
             } catch (Exception e) {
-                String msg = MessageFormat.format(
-                        rb.getString("core.unable_start_container"),
-                        webSniffer.getContainersNames()[0]);
+                String msg;
+                if ( rb != null ) {
+                    msg = MessageFormat.format( rb.getString("core.unable_start_container"), webSniffer.getContainersNames()[0]);
+                } else {
+                    msg = "Unable to start Web Container: " + webSniffer.getContainersNames()[0];
+                }
                 logger.log(Level.SEVERE, msg, e);
             }
         }

@@ -51,6 +51,7 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
 import javax.inject.Inject;
 
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -70,7 +71,10 @@ import java.util.logging.Logger;
  * This is also responsible for binding (non java:comp) UserTransaction in naming tree.
  */
 @Service
-public class TransactionLifecycleService implements Startup, PostConstruct, PreDestroy {
+//todo: change value=10 to a public constant
+@RunLevel( value=10 )
+public class TransactionLifecycleService implements PostConstruct, PreDestroy {
+//  public class TransactionLifecycleService implements Startup, PostConstruct, PreDestroy {
 
     @Inject
     BaseServiceLocator habitat;

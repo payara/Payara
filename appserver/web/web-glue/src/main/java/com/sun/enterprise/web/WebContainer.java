@@ -59,6 +59,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.util.WebValidatorWithoutCL;
+import com.sun.enterprise.glassfish.bootstrap.AppServer;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.StringUtils;
@@ -172,7 +173,8 @@ import org.glassfish.grizzly.http.util.DataChunk;
  */
 @SuppressWarnings({"StringContatenationInLoop"})
 @Service(name = "com.sun.enterprise.web.WebContainer")
-@Singleton
+//@Singleton
+@AppServer
 public class WebContainer implements org.glassfish.api.container.Container, PostConstruct, PreDestroy, EventListener {
 
     // -------------------------------------------------- Constants

@@ -82,6 +82,7 @@ import java.util.logging.Level;
  */
 // TODO: eventually use CageBuilder so that this gets triggered when JavaConfig enters Habitat.
 @Service
+@RunLevel( value=InitRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
     // in embedded environment, JavaConfig is pointless, so make this optional
