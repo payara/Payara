@@ -41,28 +41,24 @@
 
 -->
 
-<project name="nucleus jersey package creation" default="create.package" basedir=".">
-       <import file="${basedir}/../common-targets.xml"/>
+<project name="nucleus-jersey package creation" default="create.package" basedir=".">
+    <import file="${basedir}/../common-targets.xml"/>
 
-	<target name="create.package">
-		<echo message="Staging files"/>
-	
-	<unzip src="target/tmp/jersey-gfv4_0-core-project.zip"
-           dest="target/stage/${install.dir.name}">
-        </unzip>
+    <target name="create.package">
+        <property name="package.name" value="nucleus-jersey"/>
+        <property name="previous.package.name" value="nucleus-hk2" />
 
-        <move todir="target/stage/${install.dir.name}" failonerror="false">
-            <fileset dir="target/stage/${install.dir.name}/glassfish"/>
-        </move>
+        <antcall target="filter-module-artifacts"/>
 
-        <if test="${compression}">
+       <stage-module-jars/>
+       <stage-distribution-fragments/>
+
+       <if test="${compression}">
 	       <antcall target="pack.compression" />
-	</if>
-           		   
-	<zip file="target/nucleus-jersey.zip" basedir="target/stage" excludes="**/jersey-core_proto.py, **/LICENSE.txt, **/third-party-license-readme.txt">
-       </zip>
+       </if>
 
-       <attachArtifact file="target/nucleus-jersey.zip"/> 
+       <antcall target="create-zip-artifact"/>	
+       <antcall target="create-list-artifact"/>
    </target>
 </project>
 

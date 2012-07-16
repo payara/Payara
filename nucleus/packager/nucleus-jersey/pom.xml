@@ -78,12 +78,22 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/tmp/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/artifacts</outputDirectory>
+                            <useSubDirectoryPerType>true</useSubDirectoryPerType>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeTransitive>true</excludeTransitive>
                             <includeScope>compile</includeScope>
                             <includeScope>runtime</includeScope>
+                            <excludeArtifactIds>${packager.artifact.excludes}</excludeArtifactIds>
+                            <includeGroupIds>
+                                org.glassfish.jersey.core,
+                               ,org.glassfish.jersey.containers,
+                               ,org.glassfish.jersey.containers.glassfish,
+                               ,org.glassfish.jersey.media,
+                               ,javax.ws.rs,
+                               ,com.googlecode.guava-osgi,
+                               ,org.codehaus.jackson,
+                               ,org.codehaus.jettison</includeGroupIds> 
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
@@ -93,14 +103,45 @@
     </build>
 
     <dependencies>
-       <dependency>	  
-	    <groupId>org.glassfish.jersey.bundles.glassfish.v4_0</groupId>
-	    <artifactId>jersey-gfv4_0-core</artifactId>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
             <version>${jersey.version}</version>
-            <type>zip</type>
-            <classifier>project</classifier>
-            <optional>true</optional>
-       </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+       <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+         <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-sse</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+         <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <!-- previous package - required for dependency graph calculation -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+	    <artifactId>nucleus-hk2</artifactId>
+	    <version>${project.version}</version>
+	    <classifier>artifacts</classifier>
+	    <type>properties</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>
