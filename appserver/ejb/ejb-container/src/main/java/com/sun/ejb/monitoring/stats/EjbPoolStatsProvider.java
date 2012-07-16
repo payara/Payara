@@ -77,8 +77,7 @@ public class EjbPoolStatsProvider {
     private BoundedRangeStatisticImpl beansInPool;
     private BoundedRangeStatisticImpl threadsWaiting;
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private String appName = null;
     private String moduleName = null;

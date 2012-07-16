@@ -66,8 +66,7 @@ import com.sun.enterprise.util.Utility;
 public final class EJBLocalObjectInvocationHandler 
     extends EJBLocalObjectImpl implements InvocationHandler {
 
-    private static final Logger logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger logger = EjbContainerUtilImpl.getLogger();
 
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(EJBLocalObjectInvocationHandler.class);

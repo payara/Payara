@@ -78,7 +78,7 @@ public abstract class EjbMonitoringStatsProvider {
     private CountStatisticImpl removeStat = new CountStatisticImpl("RemoveCount", 
             "count", "Number of times EJB remove method is called");
 
-    static final Logger _logger = EjbContainerUtilImpl.getInstance().getLogger();
+    static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     public EjbMonitoringStatsProvider(long beanId, String appName, String moduleName,
             String beanName) {

@@ -75,8 +75,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  */
 public class EJBContainerTransactionManager {
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EJBContainerTransactionManager.class);

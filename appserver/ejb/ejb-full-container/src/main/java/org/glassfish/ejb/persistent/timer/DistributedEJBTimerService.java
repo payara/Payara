@@ -42,6 +42,7 @@ package org.glassfish.ejb.persistent.timer;
 
 import com.sun.ejb.PersistentTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
 import com.sun.enterprise.transaction.spi.RecoveryEventListener;
@@ -63,6 +64,8 @@ import java.util.logging.Level;
 @Service
 public class DistributedEJBTimerService
     implements PersistentTimerService, RecoveryEventListener, PostConstruct, CallBack {
+
+    private static Logger logger = EjbContainerUtilImpl.getLogger();
 
     @Inject
     private EjbContainerUtil ejbContainerUtil;
@@ -97,7 +100,6 @@ public class DistributedEJBTimerService
 
     @Override
     public void processNotification(Signal signal) {
-        Logger logger = ejbContainerUtil.getLogger();
         if (signal instanceof PlannedShutdownSignal) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "[DistributedEJBTimerService] planned shutdown signal: " + signal);
@@ -122,7 +124,6 @@ public class DistributedEJBTimerService
             return; // nothing to do
         }
 
-        Logger logger = ejbContainerUtil.getLogger();
         if (logger.isLoggable(Level.INFO)) {
                 logger.log(Level.INFO, "[DistributedEJBTimerService] afterRecovery event for instance " + instance);
         }
@@ -142,7 +143,6 @@ public class DistributedEJBTimerService
      *--------------------------------------------------------------
      */
     private int migrateTimers( String serverId ) {
-        Logger logger = ejbContainerUtil.getLogger();
         if (logger.isLoggable(Level.INFO)) {
             logger.log(Level.INFO, "[DistributedEJBTimerService] migrating timers from " + serverId);
         }

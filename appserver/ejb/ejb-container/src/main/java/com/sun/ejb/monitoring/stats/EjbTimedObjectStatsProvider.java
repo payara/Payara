@@ -70,8 +70,7 @@ public class EjbTimedObjectStatsProvider {
     private CountStatisticImpl timerDeliveredStat = new CountStatisticImpl("NumTimersDelivered",
             "count", "Number of timers delivered by the system");
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private String appName = null;
     private String moduleName = null;

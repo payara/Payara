@@ -75,8 +75,7 @@ public abstract class AbstractPool
     implements Pool
 {
 
-    protected static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     protected ArrayList	     list;
     protected ObjectFactory  factory = null;

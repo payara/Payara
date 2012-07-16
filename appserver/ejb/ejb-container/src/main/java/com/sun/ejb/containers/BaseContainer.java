@@ -180,8 +180,7 @@ public abstract class BaseContainer
         STATELESS, STATEFUL, SINGLETON, MESSAGE_DRIVEN, ENTITY, READ_ONLY
     };
 
-    protected static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
     
     protected static final Class[] NO_PARAMS = new Class[] {};
     

@@ -60,8 +60,7 @@ import java.util.logging.Logger;
 public abstract class StatsImpl
     implements Stats
 {
-    protected static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private GenericStatsImpl	    genericStatsDelegate;
     protected boolean		    monitorOn = false;

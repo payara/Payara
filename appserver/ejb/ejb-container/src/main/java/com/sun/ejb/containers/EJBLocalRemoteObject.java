@@ -57,8 +57,7 @@ public abstract class EJBLocalRemoteObject
     protected static final boolean debug = false;
 
 
-    transient protected static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    transient protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
     
     transient protected BaseContainer container;
     transient protected Object primaryKey;

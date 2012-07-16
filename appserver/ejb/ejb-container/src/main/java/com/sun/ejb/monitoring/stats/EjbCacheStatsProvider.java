@@ -88,8 +88,7 @@ public class EjbCacheStatsProvider {
     private BoundedRangeStatisticImpl cacheMisses;
     private BoundedRangeStatisticImpl numBeans;
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     private long beanId;
     private String appName = null;

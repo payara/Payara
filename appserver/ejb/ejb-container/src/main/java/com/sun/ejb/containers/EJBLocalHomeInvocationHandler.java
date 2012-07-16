@@ -66,8 +66,7 @@ import java.util.logging.Logger;
 public class EJBLocalHomeInvocationHandler 
     extends EJBLocalHomeImpl implements InvocationHandler {
 
-    private static final Logger logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger logger = EjbContainerUtilImpl.getLogger();
 
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(EJBLocalHomeInvocationHandler.class);

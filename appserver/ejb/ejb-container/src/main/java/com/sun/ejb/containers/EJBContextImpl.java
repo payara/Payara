@@ -74,8 +74,7 @@ import java.util.logging.Logger;
 public abstract class EJBContextImpl
     implements EJBContext, ComponentContext, java.io.Serializable
 {
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     public enum BeanState {CREATED, POOLED, READY, INVOKING, INCOMPLETE_TX,
         IN_PASSIVATE, PASSIVATED, IN_ACTIVATE, ACTIVATED, IN_REMOVE, DESTROYED}

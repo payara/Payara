@@ -58,8 +58,7 @@ import org.glassfish.external.statistics.impl.*;
  */
 public class EjbMonitoringUtils {
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
     static final String NODE = "/";
     static final String SEP = "-";

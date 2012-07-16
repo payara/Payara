@@ -62,13 +62,12 @@ public class EjbEndpointFacadeImpl implements EjbEndpointFacade {
 
     private BaseContainer container_;
     private InvocationManager invManager_;
-    private Logger logger_;
+    private static Logger logger_ = EjbContainerUtilImpl.getLogger();
 
 
     public EjbEndpointFacadeImpl(BaseContainer container, EjbContainerUtil util) {
         container_ = container;
         invManager_ = util.getInvocationManager();
-        logger_ = util.getLogger();
     }
 
 

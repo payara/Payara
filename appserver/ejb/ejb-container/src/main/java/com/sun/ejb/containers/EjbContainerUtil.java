@@ -92,8 +92,6 @@ public interface EjbContainerUtil {
     
     public Habitat getServices();
 
-    public  Logger getLogger();
-
     public  EjbTimerService getEjbTimerService(String target);
 
     public  void registerContainer(BaseContainer container);

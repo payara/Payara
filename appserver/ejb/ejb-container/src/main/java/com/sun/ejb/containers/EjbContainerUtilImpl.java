@@ -109,7 +109,7 @@ import org.glassfish.ejb.config.EjbTimerService;
 public class EjbContainerUtilImpl
     implements PostConstruct, PreDestroy, EjbContainerUtil {
 
-    private Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
+    private static Logger _logger = LogDomains.getLogger(EjbContainerUtilImpl.class, LogDomains.EJB_LOGGER);
 
     private ThreadPoolExecutor defaultThreadPoolExecutor;
     
@@ -247,16 +247,16 @@ public class EjbContainerUtilImpl
             // and the stack trace to know how did we get here.
 
             // Create the instance first to access the logger.
+            _logger.log(Level.WARNING, 
+                    "Internal error: EJBContainerUtilImpl is null, creating ...",
+                    new Throwable());
             _me = Globals.getDefaultHabitat().getService(
                     EjbContainerUtilImpl.class);
-            _me.getLogger().log(Level.WARNING, 
-                    "Internal error: EJBContainerUtilImpl was null",
-                    new Throwable());
         }
         return _me;
     }
 
-    public  Logger getLogger() {
+    public  static Logger getLogger() {
         return _logger;
     }
 

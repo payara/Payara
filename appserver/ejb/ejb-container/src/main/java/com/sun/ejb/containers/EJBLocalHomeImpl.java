@@ -66,8 +66,7 @@ public abstract class EJBLocalHomeImpl
 {
     protected BaseContainer container;
 
-    private static final Logger _logger =
-            EjbContainerUtilImpl.getInstance().getLogger();
+    private static final Logger _logger = EjbContainerUtilImpl.getLogger();
     
     /**
      * Called from BaseContainer only.
