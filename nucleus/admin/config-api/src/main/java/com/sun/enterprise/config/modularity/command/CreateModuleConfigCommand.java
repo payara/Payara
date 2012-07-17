@@ -232,7 +232,8 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             List<ConfigBeanDefaultValue> defaults = ConfigModularityUtils.getDefaultConfigurations(configBeanType);
             StringBuilder builder = new StringBuilder();
             for (ConfigBeanDefaultValue value : defaults) {
-                builder.append("At location: ");
+                builder.append(localStrings.getLocalString("at.location",
+                        "At Location:"));
                 builder.append(replaceExpressionsWithValues(value.getLocation()));
                 builder.append(System.getProperty("line.separator"));
                 String substituted = replacePropertiesWithDefaultValues(value.getCustomizationTokens(),

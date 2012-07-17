@@ -574,8 +574,7 @@ public final class ConfigModularityUtils {
         if(expression.startsWith("$")){
             String name = expression.substring(1, expression.length());
             if(name.equalsIgnoreCase("CURRENT_INSTANCE_CONFIG_NAME"))
-//TODO P1: find out how these placeholders are being resolved
-//                expression= ServerEnvironment.DEFAULT_INSTANCE_NAME;
+            //TODO P1: find out how these placeholders are being resolved
                 expression= "server-config";
         }
         return expression;

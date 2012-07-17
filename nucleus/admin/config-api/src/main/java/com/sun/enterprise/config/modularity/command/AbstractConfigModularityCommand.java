@@ -53,9 +53,9 @@ public abstract class AbstractConfigModularityCommand {
             StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
             while (tokenizer.hasMoreElements()) {
                 String level = tokenizer.nextToken();
-                if (level.contains("${")) {
-                    String expr = location.substring(location.indexOf("${"), location.indexOf("}")+1);
-                    String value = ConfigModularityUtils.resolveExpression(location.substring(location.indexOf("${"), location.indexOf("}") + 1));
+                if (level.contains("[$")) {
+                    String expr = location.substring(location.indexOf("$"), location.indexOf("]")) ;
+                    String value = ConfigModularityUtils.resolveExpression(expr);
                     location =location.replace(expr,value);
                 }
             }

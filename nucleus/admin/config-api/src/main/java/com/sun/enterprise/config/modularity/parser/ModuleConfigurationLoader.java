@@ -82,11 +82,11 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
             if (configExtensionType.getAnnotation(HasNoDefaultConfiguration.class) != null) {
                 return null;
             }
-            final Class<U> parentElem = configExtensionType;
+            final Class<U> childElement = configExtensionType;
             ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                 @Override
                 public Object run(ConfigBeanProxy parent) throws PropertyVetoException, TransactionFailure {
-                    U child = parent.createChild(parentElem);
+                    U child = parent.createChild(childElement);
                     Dom.unwrap(child).addDefaultChildren();
                     getExtensions(parent).add(child);
                     return child;

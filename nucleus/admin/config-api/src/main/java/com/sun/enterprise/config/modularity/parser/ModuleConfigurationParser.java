@@ -162,6 +162,4 @@ public class ModuleConfigurationParser {
         }
             return value;
     }
-
-
 }

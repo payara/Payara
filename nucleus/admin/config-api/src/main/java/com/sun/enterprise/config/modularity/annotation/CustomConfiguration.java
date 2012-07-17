@@ -57,7 +57,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Qualifier()
+@Qualifier
 public @interface CustomConfiguration {
     String defaultConfigFileName() default "module-configuration.xml";
     String dasConfigFileName() default "module-configuration.xml";

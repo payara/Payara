@@ -41,10 +41,10 @@
 package com.sun.enterprise.config.modularity.parser;
 
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
-// import com.sun.enterprise.module.bootstrap.Populator;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -56,13 +56,15 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// import com.sun.enterprise.module.bootstrap.Populator;
+
 /**
  * populate the a DomDocument from the given configuration snippet file containing a config bean configuration.
  *
  * @author Bhakti Mehta
  * @author Masoud Kalali
  */
-public class ConfigurationPopulator /* implements Populator */ {
+public class ConfigurationPopulator {
 
     private final static Logger LOG = Logger.getLogger(ConfigurationPopulator.class.getName());
     private final DomDocument doc;
@@ -75,7 +77,7 @@ public class ConfigurationPopulator /* implements Populator */ {
         this.loader = loader;
     }
 
-    public void run(org.jvnet.hk2.config.ConfigParser parser) {
+    public void run(ConfigParser parser) {
         try {
             InputStream is = new ByteArrayInputStream(xmlContent.getBytes());
             XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
