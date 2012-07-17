@@ -63,7 +63,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author Alexey Stashok
  */
 @Service(name = "ajp")
-@ContractsProvided(AddOn.class)
+@ContractsProvided({AjpAddOnProvider.class, AddOn.class})
 public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Http> {
 
     protected static final Logger _logger = LogDomains.getLogger(

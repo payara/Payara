@@ -51,7 +51,7 @@ import java.util.Scanner;
  * @author Jerome Dochez
  */
 @Service(name="Mac_OS_X")
-@ContractsProvided(OsInterfaceProvider.class)
+@ContractsProvided({Darwin.class, OsInterfaceProvider.class})
 public class Darwin extends Ubuntu {
 
     @Override

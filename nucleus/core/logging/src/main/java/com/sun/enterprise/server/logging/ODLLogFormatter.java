@@ -66,7 +66,7 @@ import java.util.logging.Formatter;
  * @author Naman Mehta
  */
 @Service()
-@ContractsProvided(Formatter.class)
+@ContractsProvided({ODLLogFormatter.class, Formatter.class})
 @PerLookup
 public class ODLLogFormatter extends Formatter {
 

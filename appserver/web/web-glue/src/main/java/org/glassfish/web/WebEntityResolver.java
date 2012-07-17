@@ -68,7 +68,7 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 @Service(name="web")
-@ContractsProvided(EntityResolver.class)
+@ContractsProvided({WebEntityResolver.class, EntityResolver.class})
 public class WebEntityResolver implements EntityResolver, PostConstruct {
     @Inject
     ServerContext serverContext;

@@ -54,7 +54,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Sudarsan Sridhar
  */
 @Service(name="com.sun.enterprise.security.ssl.GlassfishSSLImpl")
-@ContractsProvided(SSLImplementation.class)
+@ContractsProvided({GlassfishSSLImpl.class, SSLImplementation.class})
 public class GlassfishSSLImpl extends SSLImplementation {
     public GlassfishSSLImpl() {
     }

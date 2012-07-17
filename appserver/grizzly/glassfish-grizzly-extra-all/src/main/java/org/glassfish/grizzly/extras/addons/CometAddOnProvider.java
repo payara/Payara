@@ -51,6 +51,6 @@ import org.jvnet.hk2.annotations.Service;
  * @author Alexey Stashok
  */
 @Service(name="comet")
-@ContractsProvided(AddOn.class)
+@ContractsProvided({CometAddOnProvider.class, AddOn.class})
 public class CometAddOnProvider extends CometAddOn {
 }

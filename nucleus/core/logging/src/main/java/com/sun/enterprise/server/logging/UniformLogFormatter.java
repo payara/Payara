@@ -75,7 +75,7 @@ import java.util.logging.Formatter;
  *         distinguish key values with the message argument.
  */
 @Service()
-@ContractsProvided(Formatter.class)
+@ContractsProvided({UniformLogFormatter.class, Formatter.class})
 @PerLookup
 public class UniformLogFormatter extends Formatter {
     // loggerResourceBundleTable caches references to all the ResourceBundle

@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jeanfrancois Arcand
  */
 @Service
-@ContractsProvided(Mapper.class)
+@ContractsProvided({V3Mapper.class, Mapper.class})
 public class V3Mapper extends ContextMapper {
 
     private static final String ADMIN_LISTENER = "admin-listener";

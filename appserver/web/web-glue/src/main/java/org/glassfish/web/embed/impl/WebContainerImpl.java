@@ -104,7 +104,7 @@ import org.glassfish.api.admin.ServerEnvironment;
  * @author Amy Roh
  */
 @Service
-@ContractsProvided(WebContainer.class)
+@ContractsProvided({WebContainerImpl.class, WebContainer.class})
 public class WebContainerImpl implements WebContainer {
 
 

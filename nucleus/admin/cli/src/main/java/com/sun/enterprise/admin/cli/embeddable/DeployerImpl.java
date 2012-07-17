@@ -80,7 +80,7 @@ import java.util.logging.Logger;
 
 @Service()
 @PerLookup
-@ContractsProvided(Deployer.class) // bcos Deployer interface can't depend on HK2, we need ContractProvided here.
+@ContractsProvided({DeployerImpl.class, Deployer.class}) // bcos Deployer interface can't depend on HK2, we need ContractProvided here.
 public class DeployerImpl implements Deployer {
 
     private static final Logger logger =

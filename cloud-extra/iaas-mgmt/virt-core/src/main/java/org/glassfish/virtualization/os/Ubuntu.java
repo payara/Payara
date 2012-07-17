@@ -63,7 +63,7 @@ import java.util.Scanner;
  * @author Jerome Dochez
  */
 @Service(name="ubuntu")
-@ContractsProvided(OsInterfaceProvider.class)
+@ContractsProvided({Ubuntu.class, OsInterfaceProvider.class})
 public class Ubuntu implements OsInterface, OsInterfaceProvider {
 
     @Inject

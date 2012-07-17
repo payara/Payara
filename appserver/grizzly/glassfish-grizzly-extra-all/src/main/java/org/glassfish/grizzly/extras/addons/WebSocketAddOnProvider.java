@@ -51,6 +51,6 @@ import org.jvnet.hk2.annotations.Service;
  * @author Alexey Stashok
  */
 @Service(name="websocket")
-@ContractsProvided(AddOn.class)
+@ContractsProvided({WebSocketAddOnProvider.class, AddOn.class})
 public class WebSocketAddOnProvider extends WebSocketAddOn {
 }

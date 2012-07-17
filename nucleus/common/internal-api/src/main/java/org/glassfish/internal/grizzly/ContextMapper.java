@@ -55,7 +55,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jeanfrancois Arcand
  */
 @Service
-@ContractsProvided(Mapper.class)
+@ContractsProvided({ContextMapper.class, Mapper.class})
 public class ContextMapper extends Mapper {
     protected final Logger logger;
     protected HttpHandler adapter;

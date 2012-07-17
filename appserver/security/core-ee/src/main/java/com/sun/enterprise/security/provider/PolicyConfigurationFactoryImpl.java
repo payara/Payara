@@ -66,7 +66,7 @@ import org.jvnet.hk2.annotations.ContractsProvided;
  * @version
  */
 @Service
-@ContractsProvided(PolicyConfigurationFactory.class)
+@ContractsProvided({PolicyConfigurationFactoryImpl.class, PolicyConfigurationFactory.class})
 public class PolicyConfigurationFactoryImpl extends PolicyConfigurationFactory {
 
     private static LocalStringManagerImpl localStrings =

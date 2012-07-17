@@ -65,7 +65,7 @@ import java.util.logging.*;
  */
 @Service
 @Singleton
-@ContractsProvided(java.util.logging.Handler.class)
+@ContractsProvided({SyslogHandler.class, java.util.logging.Handler.class})
 public class SyslogHandler extends Handler implements PostConstruct, PreDestroy {
 
     @Inject
