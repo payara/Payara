@@ -70,7 +70,7 @@
                         <!-- embed all provided scope dependencies -->
                         <Embed-Dependency>*;inline=*.wsdl</Embed-Dependency>
                         <Export-Package>org.virtualbox_4_1.*</Export-Package>
-                        <Import-Package>com.sun.xml.ws.developer,com.sun.xml.ws, com.sun.xml.ws.api.message,*</Import-Package>
+                        <Import-Package>org.glassfish.virtualization.config,org.jvnet.hk2.annotations,javax.inject,org.jvnet.hk2.config,com.sun.xml.ws.developer,com.sun.xml.ws, com.sun.xml.ws.api.message,*</Import-Package>
                     </instructions>
                     <!-- Maven uses the output directory (target/classes)
                     rather than the final bundle, when compiling against
