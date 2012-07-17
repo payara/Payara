@@ -41,12 +41,12 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
-import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
@@ -56,20 +56,21 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.TargetType;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -82,12 +83,13 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-@TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
+                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "delete-module-config")
 @PerLookup
 @I18n("delete.module.config")
-public final class DeleteModuleConfigCommand implements AdminCommand {
+public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand {
     private final Logger LOG = Logger.getLogger(DeleteModuleConfigCommand.class.getName());
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
@@ -101,8 +103,12 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     private
     Habitat habitat;
 
-    @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_CONFIG, name = "target")
-    private String target;
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
     @Param(name = "serviceName", primary = true)
     private String serviceName;
@@ -110,9 +116,12 @@ public final class DeleteModuleConfigCommand implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         report = context.getActionReport();
-        Config config = domain.getConfigNamed(target);
         if (target != null) {
-            if (domain.getConfigNamed(target) == null) {
+            Config newConfig = getConfigForName(target, habitat, domain);
+            if (newConfig != null) {
+                config = newConfig;
+            }
+            if (config == null) {
                 report.setMessage(localStrings.getLocalString("delete.module.config.target.name.invalid",
                         "The target name you specified is invalid. Please double check the target name and try again"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

@@ -41,6 +41,12 @@
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import org.glassfish.config.support.CommandTarget;
+import org.jvnet.hk2.component.Habitat;
 
 import java.util.StringTokenizer;
 
@@ -50,15 +56,34 @@ import java.util.StringTokenizer;
 public abstract class AbstractConfigModularityCommand {
 
     protected String replaceExpressionsWithValues(String location) {
-            StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
-            while (tokenizer.hasMoreElements()) {
-                String level = tokenizer.nextToken();
-                if (level.contains("[$")) {
-                    String expr = location.substring(location.indexOf("$"), location.indexOf("]")) ;
-                    String value = ConfigModularityUtils.resolveExpression(expr);
-                    location =location.replace(expr,value);
-                }
+        StringTokenizer tokenizer = new StringTokenizer(location, "/", false);
+        while (tokenizer.hasMoreElements()) {
+            String level = tokenizer.nextToken();
+            if (level.contains("[$")) {
+                String expr = location.substring(location.indexOf("$"), location.indexOf("]"));
+                String value = ConfigModularityUtils.resolveExpression(expr);
+                location = location.replace(expr, value);
             }
-            return location;
         }
+        return location;
+    }
+
+    protected Config getConfigForName(String targetName, Habitat habitat, Domain domain) {
+
+        if (CommandTarget.CONFIG.isValid(habitat, targetName)) {
+            return domain.getConfigNamed(targetName);
+        }
+        if (CommandTarget.DAS.isValid(habitat, targetName) ||
+                CommandTarget.STANDALONE_INSTANCE.isValid(habitat, targetName)) {
+            Server s = domain.getServerNamed(targetName);
+            return s == null ? null : domain.getConfigNamed(s.getConfigRef());
+        }
+
+        if (CommandTarget.CLUSTER.isValid(habitat, targetName)) {
+            Cluster cl = domain.getClusterNamed(targetName);
+            return cl == null ? null : domain.getConfigNamed(cl.getConfigRef());
+
+        }
+        return null;
+    }
 }

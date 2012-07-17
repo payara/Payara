@@ -55,6 +55,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -64,6 +65,7 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +76,8 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-@TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
+                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "create-module-config")
 @PerLookup
@@ -97,8 +100,12 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     @Param(optional = true, defaultValue = "false", name = "all")
     private Boolean isAll;
 
-    @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_CONFIG, name = "target")
-    private String target;
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
     @Param(optional = true, name = "serviceName", primary = true)
     private String serviceName;
@@ -109,7 +116,11 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
         final ActionReport report = context.getActionReport();
         String defaultConfigurationElements;
         if (target != null) {
-            if (domain.getConfigNamed(target) == null) {
+            Config newConfig = getConfigForName(target, habitat, domain);
+            if (newConfig != null) {
+                config = newConfig;
+            }
+            if (config == null) {
                 report.setMessage(localStrings.getLocalString("create.module.config.target.name.invalid",
                         "The target name you specified is invalid. Please double check the target name and try again"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -209,11 +220,10 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     private boolean createMissingElementFor(Class configBeanType, String serviceName, String target, ActionReport report) throws Exception {
         boolean defaultConfigCreated = false;
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config c = domain.getConfigNamed(target);
-            if (c.checkIfExtensionExists(configBeanType)) {
+            if (config.checkIfExtensionExists(configBeanType)) {
                 report.setMessage(localStrings.getLocalString("create.module.config.already.exists", DEFAULT_FORMAT, serviceName));
             }
-            c.getExtensionByType(configBeanType);
+            config.getExtensionByType(configBeanType);
             defaultConfigCreated = true;
         } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
             if (domain.checkIfExtensionExists(configBeanType)) {

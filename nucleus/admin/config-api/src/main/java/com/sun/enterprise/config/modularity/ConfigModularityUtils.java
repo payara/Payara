@@ -587,7 +587,6 @@ public final class ConfigModularityUtils {
 
     private static ConfigBeanProxy getConfigBeanInstanceFor(Class configBeanType, Habitat habitat) {
         return (ConfigBeanProxy) habitat.getComponent(configBeanType);
-
     }
 
     public static String serializeConfigBean(ConfigBeanProxy configBean) {

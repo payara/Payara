@@ -56,16 +56,17 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
@@ -76,7 +77,8 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-@TargetType(value = {CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
+                     CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "get-active-config")
 @PerLookup
@@ -97,8 +99,11 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
     private
     Habitat habitat;
 
-    @Param(optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_CONFIG, name = "target")
-    private String target;
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
     @Param(name = "serviceName", primary = true, optional = false)
     private String serviceName;
@@ -113,7 +118,11 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             return;
         }
         if (target != null) {
-            if (domain.getConfigNamed(target) == null) {
+            Config newConfig =getConfigForName(target,habitat,domain);
+            if (newConfig!=null){
+                config= newConfig;
+            }
+            if (config == null) {
                 report.setMessage(localStrings.getLocalString("get.active.config.target.name.invalid",
                         "The target name you specified is invalid. Please double check the target name and try again"));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -156,9 +165,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         }
 
         if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config targetConfig = domain.getConfigNamed(target);
-            if (targetConfig.checkIfExtensionExists(configBeanType)) {
-                return ConfigModularityUtils.serializeConfigBean(targetConfig.getExtensionByType(configBeanType));
+            if (config.checkIfExtensionExists(configBeanType)) {
+                return ConfigModularityUtils.serializeConfigBean(config.getExtensionByType(configBeanType));
             } else {
                 return ConfigModularityUtils.serializeConfigBeanByType(configBeanType, habitat);
             }
@@ -176,7 +184,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         StringBuilder builder = new StringBuilder();
         for (ConfigBeanDefaultValue value : defaults) {
             builder.append(localStrings.getLocalString("at.location",
-                                  "At Location:"));
+                    "At Location:"));
             builder.append(replaceExpressionsWithValues(value.getLocation()));
             builder.append(System.getProperty("line.separator"));
             String substituted = replacePropertiesWithCurrentValue(
@@ -218,15 +226,10 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         ConfigBeanProxy parent = finalConfigBean.getParent();
         while (!(parent instanceof SystemPropertyBag)) {
             parent = parent.getParent();
-            if(parent==null) return null;
+            if (parent == null) return null;
         }
-            if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
-                return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
-            }
-
-        else return token.getDefaultValue();
+        if (((SystemPropertyBag) parent).getSystemProperty(token.getKey()) != null) {
+            return ((SystemPropertyBag) parent).getSystemProperty(token.getKey()).getValue();
+        } else return token.getDefaultValue();
     }
-
-
-
 }
