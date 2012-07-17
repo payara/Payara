@@ -917,8 +917,7 @@ public class RemoteCLICommand extends CLICommand {
     private static synchronized Habitat getManHabitat() {
         if (manHabitat != null)
             return manHabitat;
-        ModulesRegistry registry =
-                new StaticModulesRegistry(getModuleClassLoader());
+        // ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
         manHabitat = new Habitat(); // Gets the ServiceLocator with name "default"
         return manHabitat;
     }
