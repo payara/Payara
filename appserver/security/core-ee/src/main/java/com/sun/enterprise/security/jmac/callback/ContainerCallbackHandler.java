@@ -64,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author  Shing Wai Chan
  */
 @Service
-@ContractsProvided(CallbackHandler.class)
+@ContractsProvided({ContainerCallbackHandler.class, CallbackHandler.class})
 public final class ContainerCallbackHandler 
         implements CallbackHandler, CallbackHandlerConfig {
     private CallbackHandler handler = null;
