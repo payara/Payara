@@ -43,14 +43,9 @@ package org.glassfish.security.services.api.authorization;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import org.junit.runner.RunWith;
 import org.jvnet.hk2.testing.junit.HK2Runner;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.glassfish.security.services.spi.AuthorizationProvider;
 
@@ -61,19 +56,17 @@ import org.glassfish.security.services.impl.authorization.AzEnvironmentImpl;
 
 public class SimpleAtzProviderTest extends HK2Runner {
     
-    @Inject @Named("simpleAuthorization")
     private AuthorizationProvider simpleAtzPrv = null;
     
     @Before
     public void before() {
         super.before();
         
-        simpleAtzPrv = testLocator.getService(AuthorizationProvider.class, "Simple Authorization Provider");
+        simpleAtzPrv = testLocator.getService(AuthorizationProvider.class, "simpleAuthorization");
         Assert.assertNotNull(simpleAtzPrv);
     }
     
-    // JRW JRW
-    @Test @Ignore
+    @Test
     public void testService() {
         
         Assert.assertNotNull(simpleAtzPrv);
