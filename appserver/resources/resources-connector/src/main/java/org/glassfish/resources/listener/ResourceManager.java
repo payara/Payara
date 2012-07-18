@@ -78,7 +78,7 @@ import java.util.logging.Logger;
  *
  * @author Jagadish Ramu
  */
-@RunLevel( value= PostStartupRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@RunLevel( value= 2, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 @Service(name="ResourceManager") // this name is used in ApplicationLoaderService
 public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 
