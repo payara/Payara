@@ -91,6 +91,8 @@ import org.glassfish.internal.api.*;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
+import org.glassfish.security.services.impl.AuthenticationServiceImpl;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
@@ -122,6 +124,17 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 //public class ApplicationLoaderService implements Startup, org.glassfish.hk2.api.PreDestroy, org.glassfish.hk2.api.PostConstruct {
 
     final Logger logger = LogDomains.getLogger(AppServerStartup.class, LogDomains.CORE_LOGGER);
+
+    // During the authentication service's PostConstruct the javax.security.auth.login.Configuration class is constructed.
+    // During the Configuration initialization a static variable is set to the current thread's context class loader.
+    // When applications are loaded via this (ApplicationLoaderService) the current thread's context class loader
+    // is temporarily set.  When an application is loaded it will access the authentication service.  If the
+    // authentication service gets initialized at this time then the Configuration construction will happen and its
+    // static variable will be set to the thread's temporarily set context class loader.  Therefore by making
+    // a reference to the authentication service here we guarantee that it will be created before this
+    // (ApplicationLoaderService) service is created.
+    @Inject @Optional
+    private AuthenticationServiceImpl authenticationService;
 
     @Inject
     Deployment deployment;
