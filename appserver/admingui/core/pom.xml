@@ -63,7 +63,6 @@
              <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>apt-maven-plugin</artifactId>
-                <version>1.0-alpha-4</version>
                 <executions>
                     <execution>
                         <goals>
