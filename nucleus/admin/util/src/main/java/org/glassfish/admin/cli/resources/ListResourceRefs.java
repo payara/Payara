@@ -95,6 +95,9 @@ public class ListResourceRefs implements AdminCommand {
 
     @Inject
     private Clusters clusters;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -106,7 +109,7 @@ public class ListResourceRefs implements AdminCommand {
         final ActionReport report = context.getActionReport();
         
         try {
-            Server targetServer = ConfigBeansUtilities.getServerNamed(target);
+            Server targetServer = configBeansUtilities.getServerNamed(target);
             if(targetServer != null){
                 List<ResourceRef> resourceRefs = targetServer.getResourceRef();
                 processResourceRefs(report, resourceRefs);

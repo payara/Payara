@@ -51,6 +51,8 @@ import org.glassfish.hk2.api.PreDestroy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 
 @Service(name = "org.glassfish.resources.module.ResourcesContainer")
 public class ResourcesContainer implements Container, PostConstruct, PreDestroy {

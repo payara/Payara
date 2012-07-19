@@ -76,6 +76,7 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.connectors.config.AdminObjectResource;
@@ -85,6 +86,8 @@ import org.glassfish.connectors.config.ConnectorService;
 import org.glassfish.connectors.config.ResourceAdapterConfig;
 import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.resources.api.GenericResourceInfo;
 import org.glassfish.resources.api.PoolInfo;
@@ -164,20 +167,35 @@ public class ConnectorsUtil {
 
         return j2eeModuleDirName;
     }
+    
+    private static ConfigBeansUtilities getConfigBeansUtilities() {
+    	ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");
+    	if (locator == null) return null;
+    	
+    	return locator.getService(ConfigBeansUtilities.class);
+    }
+    
+    private static String internalGetLocation(String moduleName) {
+    	ConfigBeansUtilities cbu = getConfigBeansUtilities();
+    	if (cbu == null) return null;
+    	
+    	return cbu.getLocation(moduleName);
+    	
+    }
 
     public static String getLocation(String moduleName) throws ConnectorRuntimeException {
         String location = null;
         if(ConnectorsUtil.belongsToSystemRA(moduleName)){
             location = ConnectorsUtil.getSystemModuleLocation(moduleName);
         }else{
-            location = ConfigBeansUtilities.getLocation(moduleName);
+            location = internalGetLocation(moduleName);
             if(location == null){
                 //check whether its embedded RAR
                 String rarName = getRarNameFromApplication(moduleName);
                 String appName = getApplicationNameOfEmbeddedRar(moduleName);
 
                 if(appName != null && rarName != null){
-                    location = ConfigBeansUtilities.getLocation(appName);
+                    location = internalGetLocation(appName);
                     if(location != null){
                         location = location + File.separator + rarName + "_rar";
                     }else{
@@ -708,7 +726,12 @@ public class ConnectorsUtil {
     }
 
     public static boolean isStandAloneRA(String moduleName){
-        return ConfigBeansUtilities.getModule(moduleName)!= null;
+    	ConfigBeansUtilities cbu = getConfigBeansUtilities();
+    	ApplicationName an = null;
+    	if (cbu != null) {
+    		an = cbu.getModule(moduleName);
+    	}
+        return (an != null);
     }
 
     public static Collection<String> getSystemRARs() {

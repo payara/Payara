@@ -107,6 +107,9 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
     @Inject
     @Named("ApplicationLoaderService")
     private Provider<Startup> startupProvider;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     private ResourcesUtil resourcesUtil = null;
     
@@ -468,7 +471,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
             if (ConnectorsUtil.belongsToSystemRA(rarModuleName)) {
                 moduleDir = ConnectorsUtil.getSystemModuleLocation(rarModuleName);
             }else{
-                moduleDir = ConfigBeansUtilities.getLocation(rarModuleName);
+                moduleDir = configBeansUtilities.getLocation(rarModuleName);
             }
             ClassLoader loader = cr.createConnectorClassLoader(moduleDir, null, rarModuleName);
             cr.createActiveResourceAdapter(moduleDir, rarModuleName, loader);

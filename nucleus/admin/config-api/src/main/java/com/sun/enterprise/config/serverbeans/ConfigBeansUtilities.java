@@ -60,9 +60,9 @@ import javax.inject.Singleton;
 @Service @Singleton
 public final class ConfigBeansUtilities {
 
-    private static Applications apps;
+    private final Applications apps;
 
-    private static Domain domain;
+    private final Domain domain;
     
     // dochez : this class needs to be killed but I have no time to do it now
     // I am making it a singleton, will force its initialization early enough so
@@ -136,7 +136,7 @@ public final class ConfigBeansUtilities {
      * @param sn the string denoting name of the server
      * @return List of system-applications for that server, an empty list in case there is none
      */
-    public static List<Application> getSystemApplicationsReferencedFrom(String sn) {
+    public List<Application> getSystemApplicationsReferencedFrom(String sn) {
         if (domain == null || sn == null)
             throw new IllegalArgumentException("Null argument");
         List<Application> allApps = getAllDefinedSystemApplications();
@@ -157,7 +157,7 @@ public final class ConfigBeansUtilities {
         return referencedApps;
     }
     
-    public static Application getSystemApplicationReferencedFrom(String sn, String appName) {
+    public Application getSystemApplicationReferencedFrom(String sn, String appName) {
         //returns null in case there is none
         List<Application> allApps = getSystemApplicationsReferencedFrom(sn);
         for (Application app : allApps) {
@@ -167,7 +167,7 @@ public final class ConfigBeansUtilities {
         }
         return null;
     }
-    public static boolean isNamedSystemApplicationReferencedFrom(String appName, String serverName) {
+    public boolean isNamedSystemApplicationReferencedFrom(String appName, String serverName) {
         List <Application> referencedApps = getSystemApplicationsReferencedFrom(serverName);
         for (Application app : referencedApps) {
             if (app.getName().equals(appName))
@@ -176,13 +176,13 @@ public final class ConfigBeansUtilities {
         return false;
     }
     
-    public static List<Server> getServers() {
+    public List<Server> getServers() {
         if (domain == null || domain.getServers() == null )
             throw new IllegalArgumentException ("Either domain is null or no <servers> element");
         return domain.getServers().getServer();
     }
 
-    public static Server getServerNamed(String name) {
+    public Server getServerNamed(String name) {
         if (domain == null || domain.getServers() == null || name == null)
             throw new IllegalArgumentException ("Either domain is null or no <servers> element");
         List<Server> servers = domain.getServers().getServer();
@@ -194,7 +194,7 @@ public final class ConfigBeansUtilities {
         return null;
     }
     
-    public static List<Application> getAllDefinedSystemApplications() {
+    public List<Application> getAllDefinedSystemApplications() {
         List<Application> allSysApps = new ArrayList<Application>();
         SystemApplications sa = domain.getSystemApplications();
         if (sa != null) {
@@ -211,7 +211,7 @@ public final class ConfigBeansUtilities {
     * @param sn server name
     * @return List of ApplicationRef for non-system apps assigned to the specified server
     */
-   public static List<ApplicationRef> getApplicationRefsInServer(String sn) {
+   public List<ApplicationRef> getApplicationRefsInServer(String sn) {
        return getApplicationRefsInServer(sn, true);
    }
 
@@ -222,7 +222,7 @@ public final class ConfigBeansUtilities {
     * @param excludeSystemApps whether system apps should be excluded
     * @return List of ApplicationRef for apps assigned to the specified server
     */
-   public static List<ApplicationRef> getApplicationRefsInServer(String sn, boolean excludeSystemApps) {
+   public List<ApplicationRef> getApplicationRefsInServer(String sn, boolean excludeSystemApps) {
 
         Servers ss = domain.getServers();
         List<Server> list = ss.getServer();
@@ -257,7 +257,7 @@ public final class ConfigBeansUtilities {
     }
 
 
-    public static ApplicationRef getApplicationRefInServer(String sn, String name) {
+    public ApplicationRef getApplicationRefInServer(String sn, String name) {
         Servers ss = domain.getServers();
         List<Server> list = ss.getServer();
         Server theServer = null;
@@ -280,7 +280,7 @@ public final class ConfigBeansUtilities {
         return aref;
     }
 
-    public static ApplicationName getModule(String moduleID) {
+    public ApplicationName getModule(String moduleID) {
         for (ApplicationName module : apps.getModules()) {
             if (module.getName().equals(moduleID)) {
                 return module;
@@ -289,7 +289,7 @@ public final class ConfigBeansUtilities {
         return null;
     }
 
-    public static String getEnabled(String sn, String moduleID) {
+    public String getEnabled(String sn, String moduleID) {
         ApplicationRef appRef = getApplicationRefInServer(sn, moduleID);
         if (appRef != null) { 
             return appRef.getEnabled();
@@ -298,7 +298,7 @@ public final class ConfigBeansUtilities {
         }
     }
 
-    public static String getVirtualServers(String sn, String moduleID) {
+    public String getVirtualServers(String sn, String moduleID) {
         ApplicationRef appRef = getApplicationRefInServer(sn, moduleID);
         if (appRef != null) { 
             return appRef.getVirtualServers();
@@ -307,7 +307,7 @@ public final class ConfigBeansUtilities {
         }
     }
 
-   public static String getContextRoot(String moduleID) {
+   public String getContextRoot(String moduleID) {
         ApplicationName module = getModule(moduleID);
         if (module == null) {
             return null;
@@ -320,7 +320,7 @@ public final class ConfigBeansUtilities {
         }
     }
 
-    public static String getLibraries(String moduleID) {
+    public String getLibraries(String moduleID) {
         ApplicationName module = getModule(moduleID);
         if (module == null) {
             return null;
@@ -333,7 +333,7 @@ public final class ConfigBeansUtilities {
         }
     }
 
-    public static String getLocation(String moduleID) {
+    public String getLocation(String moduleID) {
         ApplicationName module = getModule(moduleID);
         if (module == null) {
             return null;
@@ -355,7 +355,7 @@ public final class ConfigBeansUtilities {
         }            
     }
 
-    public static String getDirectoryDeployed(String moduleID) {
+    public String getDirectoryDeployed(String moduleID) {
         ApplicationName module = getModule(moduleID);
         if (module == null) {
             return null;
@@ -386,7 +386,7 @@ public final class ConfigBeansUtilities {
         return writer.toString();
     }
 
-   public static Domain getDomain() {
+   public Domain getDomain() {
         return domain;
    }
 }

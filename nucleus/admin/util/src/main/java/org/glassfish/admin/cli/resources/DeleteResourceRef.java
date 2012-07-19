@@ -90,6 +90,9 @@ public class DeleteResourceRef implements AdminCommand {
 
     @Inject
     private Domain domain;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -101,7 +104,7 @@ public class DeleteResourceRef implements AdminCommand {
         final ActionReport report = context.getActionReport();
         
         try {
-            Server server = ConfigBeansUtilities.getServerNamed(target);
+            Server server = configBeansUtilities.getServerNamed(target);
             if (server != null) {
                 if (server.isResourceRefExists(refName)) {
                     // delete ResourceRef as a child of Server

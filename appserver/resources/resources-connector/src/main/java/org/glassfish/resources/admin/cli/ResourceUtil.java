@@ -66,6 +66,9 @@ public class ResourceUtil {
 
     @Inject
     private Domain domain;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     //to initialize config-bean-utils in mvn test mode.
     @Inject
@@ -81,7 +84,7 @@ public class ResourceUtil {
             return;
         }
         
-        Server server = ConfigBeansUtilities.getServerNamed(target);
+        Server server = configBeansUtilities.getServerNamed(target);
         if (server != null) {
             if (!server.isResourceRefExists(jndiName)) {
                 // create new ResourceRef as a child of Server
@@ -183,7 +186,7 @@ public class ResourceUtil {
             return;
         }
 
-        Server server = ConfigBeansUtilities.getServerNamed(target);
+        Server server = configBeansUtilities.getServerNamed(target);
         if (server != null) {
             if (server.isResourceRefExists(jndiName)) {
                 // delete ResourceRef for Server

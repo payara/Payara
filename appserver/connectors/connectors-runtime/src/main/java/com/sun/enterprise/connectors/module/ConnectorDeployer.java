@@ -116,6 +116,9 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
 
     @Inject
     private Events events;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     private static Logger _logger = LogDomains.getLogger(ConnectorDeployer.class, LogDomains.RSR_LOGGER);
     private static StringManager localStrings = StringManager.getManager(ConnectorRuntime.class);
@@ -412,7 +415,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
             return ;
         }
 
-        Server server = ConfigBeansUtilities.getServerNamed(target);
+        Server server = configBeansUtilities.getServerNamed(target);
         if (server != null) {
             if (server.isResourceRefExists(jndiName)) {
                 // delete ResourceRef for Server

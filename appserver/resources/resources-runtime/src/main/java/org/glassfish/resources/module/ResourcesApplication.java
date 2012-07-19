@@ -71,6 +71,9 @@ public class ResourcesApplication implements ApplicationContainer{
 
     @Inject
     private ApplicationScopedResourcesManager asrManager;
+    
+    @Inject
+    private ResourcesDeployer resourcesDeployer;
 
     public ResourcesApplication(){
     }
@@ -93,7 +96,7 @@ public class ResourcesApplication implements ApplicationContainer{
         final DeployCommandParameters deployParams = dc.getCommandParameters(DeployCommandParameters.class);
         //during app. deployment, create resources config and load resources
         if(deployParams.origin == OpsParams.Origin.deploy || deployParams.origin == OpsParams.Origin.deploy_instance){
-            ResourcesDeployer.deployResources(applicationName, true);
+            resourcesDeployer.deployResources(applicationName, true);
         }else if (deployParams.origin == OpsParams.Origin.load ||
                 deployParams.origin == OpsParams.Origin.create_application_ref) {
             //<application> and its <resources>, <modules> are already available.

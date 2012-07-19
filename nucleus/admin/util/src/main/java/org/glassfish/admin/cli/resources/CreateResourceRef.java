@@ -41,7 +41,6 @@
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.admin.*;
@@ -92,6 +91,9 @@ public class CreateResourceRef implements AdminCommand {
 
     @Inject
     private BaseServiceLocator habitat;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -112,7 +114,7 @@ public class CreateResourceRef implements AdminCommand {
 
         try {
 
-            Server server = ConfigBeansUtilities.getServerNamed(target);
+            Server server = configBeansUtilities.getServerNamed(target);
             if (server != null) {
                 if (server.isResourceRefExists(refName)) {
                     report.setMessage(localStrings.getLocalString("create.resource.ref.existsAlready",

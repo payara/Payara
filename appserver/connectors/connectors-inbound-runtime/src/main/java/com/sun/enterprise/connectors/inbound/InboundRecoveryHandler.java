@@ -93,6 +93,9 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
     
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
+    
 
     private static Logger _logger = LogDomains.getLogger(InboundRecoveryHandler.class, LogDomains.RSR_LOGGER);
 
@@ -321,7 +324,7 @@ public class InboundRecoveryHandler implements RecoveryResourceHandler {
             if (ConnectorsUtil.belongsToSystemRA(rarModuleName)) {
                 moduleDir = ConnectorsUtil.getSystemModuleLocation(rarModuleName);
             }else{
-                moduleDir = ConfigBeansUtilities.getLocation(rarModuleName);
+                moduleDir = configBeansUtilities.getLocation(rarModuleName);
             }
             ClassLoader loader = cr.createConnectorClassLoader(moduleDir, null, rarModuleName);
             cr.createActiveResourceAdapter(moduleDir, rarModuleName, loader);

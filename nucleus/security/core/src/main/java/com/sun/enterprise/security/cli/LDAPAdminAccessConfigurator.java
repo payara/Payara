@@ -102,6 +102,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     
     @Inject
     Target targetService;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     //TODO: not sure what to do with --target here
     @Param(name = "target", optional = true, defaultValue =
@@ -168,7 +171,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand {
     }
 
     private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException {
-        Server s = ConfigBeansUtilities.getServerNamed(ADMIN_SERVER);
+        Server s = configBeansUtilities.getServerNamed(ADMIN_SERVER);
         String ac = s.getConfigRef();
         Config asc = targetService.getConfig(ac);
 

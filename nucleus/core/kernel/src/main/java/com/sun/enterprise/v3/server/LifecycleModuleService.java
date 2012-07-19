@@ -94,6 +94,9 @@ public class LifecycleModuleService implements Startup, PreDestroy, PostConstruc
 
     @Inject @Named( ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Server server;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     /**
      * The set of registered LifecycleListeners for event notifications.
@@ -210,7 +213,7 @@ public class LifecycleModuleService implements Startup, PreDestroy, PostConstruc
 
         // true if enabled in both lifecyle module and in the ref
         return (Boolean.valueOf(enabled) && 
-            Boolean.valueOf(ConfigBeansUtilities.getEnabled(
+            Boolean.valueOf(configBeansUtilities.getEnabled(
                 server.getName(), name)));
     }
 

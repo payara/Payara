@@ -110,6 +110,8 @@ import org.glassfish.grizzly.http.HttpResponsePacket;
 import org.glassfish.grizzly.http.TransferEncoding;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 
@@ -520,6 +522,12 @@ public class VirtualServer extends StandardHost
             vsPipeline.removeValve(valve);
         }
     }
+    
+    private static ConfigBeansUtilities getConfigBeansUtilities() {
+    	ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");
+    	if (locator == null) return null;
+    	return locator.getService(ConfigBeansUtilities.class);
+    }
 
     // ------------------------------------------------------ Protected Methods
 
@@ -555,7 +563,13 @@ public class VirtualServer extends StandardHost
             WebModuleConfig wmInfo = findWebModuleInJ2eeApp(appsBean, wmID,
                                                             appRegistry);
             if (wmInfo == null) {
-                contextRoot = ConfigBeansUtilities.getContextRoot(wmID);
+            	ConfigBeansUtilities cbu = getConfigBeansUtilities();
+            	if (cbu == null) {
+            		contextRoot = null;
+            	}
+            	else {
+                    contextRoot = cbu.getContextRoot(wmID);
+            	}
             } else {
                 contextRoot = wmInfo.getContextPath();
             }
@@ -582,8 +596,14 @@ public class VirtualServer extends StandardHost
             Applications appsBean = domain.getApplications();
             wmInfo = findWebModuleInJ2eeApp(appsBean, wmID, appRegistry);
             if (wmInfo == null) {
-                String contextRoot = ConfigBeansUtilities.getContextRoot(wmID);
-                String location = ConfigBeansUtilities.getLocation(wmID);
+            	ConfigBeansUtilities cbu = getConfigBeansUtilities();
+            	String contextRoot = null;
+            	String location = null;
+            	if (cbu != null) {
+            		contextRoot = cbu.getContextRoot(wmID);
+            		location = cbu.getLocation(wmID);
+            	}
+            	
                 if (contextRoot!=null && location != null) {
                     File docroot = new File(location);
                     WebBundleDescriptor wbd = webArchivist.getDefaultWebXmlBundleDescriptor();

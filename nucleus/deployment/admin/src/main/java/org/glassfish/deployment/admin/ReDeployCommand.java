@@ -90,6 +90,9 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
 
     @Param(primary=true, optional=true)
     File path = null;
+    
+    @Inject
+    private ConfigBeansUtilities configBeansUtilities;
 
     //define this variable to skip parameter valadation.
     //Param validation will be done when referening deploy command.
@@ -149,7 +152,7 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
              * is not directory deployed then throw an exception since we don't
              * want to undeploy and then deploy from the domain_root.
              */
-            if (!Boolean.parseBoolean(ConfigBeansUtilities.getDirectoryDeployed(name))) {
+            if (!Boolean.parseBoolean(configBeansUtilities.getDirectoryDeployed(name))) {
                 report.setMessage(localStrings.getLocalString("redeploy.command.cannot.redeploy","Cannot redeploy this app {0} without specify the operand.", name));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return false;
@@ -157,7 +160,7 @@ public class ReDeployCommand extends DeployCommandParameters implements AdminCom
         }
 
         //if path not specified on the command line then get it from domain.xml
-        super.path = (path==null)?new File(ConfigBeansUtilities.getLocation(name)):path;
+        super.path = (path==null)?new File(configBeansUtilities.getLocation(name)):path;
         if (!super.path.exists()) {
                 //if unable to get path from domain.xml then return error.
             report.setMessage(localStrings.getLocalString("redeploy.command.invalid.path", "Cannot determine the path of application."));

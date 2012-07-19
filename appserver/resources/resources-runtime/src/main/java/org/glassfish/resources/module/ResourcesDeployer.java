@@ -104,11 +104,11 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     @Inject
     private Provider<ResourcesApplication> resourcesApplicationProvider;
 
-    private static ApplicationRegistry appRegistry;
+    private final ApplicationRegistry appRegistry;
 
-    private static Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
+    private final Provider<ResourceManagerFactory> resourceManagerFactoryProvider;
 
-    private static ResourcesBinder resourcesBinder;
+    private final ResourcesBinder resourcesBinder;
 
     @Inject
     private ConfigSupport configSupport;
@@ -336,7 +336,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * constructing connector-classloader for the application.
      * @param dc DeploymentContext
      */
-    public static void populateResourceConfigInAppInfo(DeploymentContext dc){
+    public void populateResourceConfigInAppInfo(DeploymentContext dc){
         String appName = getAppNameFromDeployCmdParams(dc);
         Application application = applications.getApplication(appName);
         ApplicationInfo appInfo = appRegistry.get(appName);
@@ -359,7 +359,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    public static void createResources(DeploymentContext dc, boolean embedded, boolean deployResources) throws ResourceException {
+    public void createResources(DeploymentContext dc, boolean embedded, boolean deployResources) throws ResourceException {
         String appName = getAppNameFromDeployCmdParams(dc);
         Application app = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
         Map<String, Map<String, List>> resourcesList =
@@ -502,7 +502,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     }
 
 
-    private static void createAppScopedResources(Application app, List<org.glassfish.resources.api.Resource> resources,
+    private void createAppScopedResources(Application app, List<org.glassfish.resources.api.Resource> resources,
                                                  DeploymentContext dc, boolean embedded)
             throws ResourceException {
         try {
@@ -547,7 +547,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
                             
-    private static void createModuleScopedResources(Application app, Module module,
+    private void createModuleScopedResources(Application app, Module module,
                                                     List<org.glassfish.resources.api.Resource> resources,
                                                     DeploymentContext dc, boolean embedded)
             throws ResourceException {
@@ -574,7 +574,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    public static void  deployResourcesFromConfiguration(String appName, boolean embedded) throws Exception {
+    public void  deployResourcesFromConfiguration(String appName, boolean embedded) throws Exception {
         Application application = applications.getApplication(appName);
         ApplicationInfo appInfo = appRegistry.get(appName);
         if(application != null && appInfo != null){
@@ -596,7 +596,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    public static void  deployResources(String applicationName, boolean postDeployPhase) throws Exception {
+    public void  deployResources(String applicationName, boolean postDeployPhase) throws Exception {
         Map<String, Resources> allResources = ResourcesRegistry.getResources(applicationName);
         if(allResources != null){
             for(Map.Entry<String, Resources> entry : allResources.entrySet()){
@@ -610,7 +610,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             }
         }
     }
-    public static void deployResources(String applicationName, String moduleName,
+    public void deployResources(String applicationName, String moduleName,
                                 Collection<com.sun.enterprise.config.serverbeans.Resource> resources,
                                 boolean postDeployPhase) throws Exception {
         for(Resource resource : resources){
@@ -691,7 +691,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @param resource resource instance
      * @return ResourceDeployer
      */
-    private static ResourceDeployer getResourceDeployer(Object resource){
+    private ResourceDeployer getResourceDeployer(Object resource){
         return resourceManagerFactoryProvider.get().getResourceDeployer(resource);
     }
 

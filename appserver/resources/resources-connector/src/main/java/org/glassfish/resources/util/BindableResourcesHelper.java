@@ -67,7 +67,7 @@ public class BindableResourcesHelper {
     private ServerEnvironment environment;
 
     @Inject
-    private ConfigBeansUtilities configBeanUtilities;
+    private ConfigBeansUtilities configBeansUtilities;
 
     @Inject
     private org.glassfish.resources.admin.cli.ResourceUtil resourceUtil;
@@ -88,8 +88,8 @@ public class BindableResourcesHelper {
             //if target is "domain", as long as the resource is present in "resources" section,
             //it is valid.
             exists = true;
-        }else if(ConfigBeansUtilities.getServerNamed(target) != null){
-            Server server = configBeanUtilities.getServerNamed(target);
+        }else if(configBeansUtilities.getServerNamed(target) != null){
+            Server server = configBeansUtilities.getServerNamed(target);
             exists = server.isResourceRefExists(jndiName);
         }else if (domain.getClusterNamed(target) != null){
             Cluster cluster = domain.getClusterNamed(target);
