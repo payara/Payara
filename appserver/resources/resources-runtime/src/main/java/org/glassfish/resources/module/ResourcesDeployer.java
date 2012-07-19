@@ -93,7 +93,7 @@ import static org.glassfish.resources.api.ResourceConstants.*;
 @Service
 public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, ResourcesApplication>
         implements PostConstruct, PreDestroy, EventListener {
-    private static org.glassfish.resources.admin.cli.ResourceFactory resourceFactory;
+    private final org.glassfish.resources.admin.cli.ResourceFactory resourceFactory;
 
     @Inject
     private Domain domain;
@@ -116,7 +116,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     @Inject
     private Events events;
 
-    private static Applications applications;
+    private final Applications applications;
 
     private static Map<String, Application> preservedApps = new HashMap<String, Application>();
 
@@ -402,7 +402,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    private static Collection<Resource>
+    private Collection<Resource>
     createConfig(Resources resources, Collection<org.glassfish.resources.api.Resource> resourcesToRegister,
                  boolean embedded)
     throws ResourceException {
