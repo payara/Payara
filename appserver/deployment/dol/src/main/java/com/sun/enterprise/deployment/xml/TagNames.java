@@ -116,15 +116,6 @@ public interface TagNames {
     public static final String DATA_SOURCE_PROPERTY_NAME = "name";
     public static final String DATA_SOURCE_PROPERTY_VALUE = "value";
 
-    public static final String CONNECTOR_RESOURCE = "connector-resource";
-    public static final String CONNECTOR_RESOURCE_DESCRIPTION = "description";
-    public static final String CONNECTOR_RESOURCE_NAME = "name";
-    public static final String CONNECTOR_RESOURCE_CLASS_NAME = "class-name";
-    public static final String CONNECTOR_RESOURCE_ADAPTER_NAME = "resource-adapter-name";
-    public static final String CONNECTOR_RESOURCE_PROPERTY = "property";
-    public static final String CONNECTOR_RESOURCE_PROPERTY_NAME = "name";
-    public static final String CONNECTOR_RESOURCE_PROPERTY_VALUE = "value";
-
     public static final String PERSISTENCE_CONTEXT_REF = "persistence-context-ref";
     public static final String PERSISTENCE_CONTEXT_REF_NAME = "persistence-context-ref-name";
 

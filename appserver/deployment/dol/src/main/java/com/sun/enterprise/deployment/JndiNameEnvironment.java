@@ -165,13 +165,6 @@ public interface JndiNameEnvironment {
     public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors();    
 
     /**
-     * Return a set of connector-resource-definition descriptors.
-     *
-     * @return java.util.Set of connector-resource-definition objects
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors();    
-
-    /**
      * Return the pre-destroy descriptor corresponding to
      * the given name.
      *

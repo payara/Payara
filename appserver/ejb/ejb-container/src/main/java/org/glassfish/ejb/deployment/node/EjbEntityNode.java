@@ -197,9 +197,6 @@ public class EjbEntityNode  extends InterfaceBasedEjbNode<EjbEntityDescriptor> {
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
 
-        // connecto-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
-
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());
         

@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
 import com.sun.enterprise.deployment.node.MethodNode;
@@ -319,9 +318,6 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
-
-        // connecto-resource-definition*
-        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
         // post-activate-method
         writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());

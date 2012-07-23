@@ -58,7 +58,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
@@ -245,10 +244,6 @@ public abstract class EjbDescriptor extends Descriptor
 
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
-
-    private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
-            new HashSet<ConnectorResourceDefinitionDescriptor>();
-
 
     /**
      * returns the extra iAS specific info (not in the RI DID) in the iAS DTD.
@@ -1816,11 +1811,14 @@ public abstract class EjbDescriptor extends Descriptor
             env.addDataSourceDefinitionDescriptor(reference);
             return;
         }
-        if(getDataSourceDefinitionDescriptors().contains(reference)){
-            throw new IllegalStateException(
-                    localStrings.getLocalString("exceptionejbduplicatedatasourcedefinition",
-                            "This ejb [{0}] cannot have datasource definitions of same name : [{1}]",
-                            getName(), reference.getName()));
+        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
+            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
+            if(desc.getName().equals(reference.getName())){
+                throw new IllegalStateException(
+                        localStrings.getLocalString("exceptionejbduplicatedatasourcedefinition",
+                                "This ejb [{0}] cannot have datasource definitions of same name : [{1}]",
+                                getName(), reference.getName()));
+            }
         }
         getDataSourceDefinitionDescriptors().add(reference);
     }
@@ -1832,49 +1830,6 @@ public abstract class EjbDescriptor extends Descriptor
             env.removeDataSourceDefinitionDescriptor(reference);
         else
             this.getDataSourceDefinitionDescriptors().remove(reference);
-    }
-
-    /**
-     * get all connector-resource definition descriptors
-     * @return connector-resource definition descriptors
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
-        if (env != null){
-        	return env.getConnectorResourceDefinitionDescriptors();
-        }
-        else{
-            return connectorResourceDefinitionDescs;
-        }
-    }
-
-    /**
-     * Adds the specified connector-resource definition to the receiver.
-     * @param reference ConnectorResourceDefinitionDescriptor to add.
-     */
-    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        if(env != null){
-            env.addConnectorResourceDefinitionDescriptor(reference);
-            return;
-        }
-    	if(connectorResourceDefinitionDescs.contains(reference)){
-            throw new IllegalStateException(
-                    localStrings.getLocalString("enterprise.deployment.exceptionejbduplicateconnectorresourcedefinition",
-                            "This ejb [{0}] cannot have connector resource definitions of same name : [{1}]",
-                            getName(), reference.getName()));
-    	}
-    	connectorResourceDefinitionDescs.add(reference);
-    }
-
-    /**
-     * Removes the specified connector-resource definition from the receiver.
-     * @param reference ConnectorResourceDefinitionDescriptor to remove.
-     */
-    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        if(env != null){
-            env.removeConnectorResourceDefinitionDescriptor(reference);
-        }else{
-            getConnectorResourceDefinitionDescriptors().remove(reference);
-        }
     }
 
     @Override

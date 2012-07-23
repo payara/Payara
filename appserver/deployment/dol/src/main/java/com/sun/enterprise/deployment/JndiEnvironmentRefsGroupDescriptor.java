@@ -85,9 +85,6 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
 
-    private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
-            new HashSet<ConnectorResourceDefinitionDescriptor>();
-
     public void setBundleDescriptor(BundleDescriptor desc) {
         bundleDescriptor = desc;
     }
@@ -175,13 +172,16 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
      * @param reference DataSourceDefinitionDescriptor to add.
      */
     public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        if(datasourceDefinitionDescs.contains(reference)){
-            throw new IllegalStateException(
-                    localStrings.getLocalString("exceptionduplicatedatasourcedefinition",
-                            "This descriptor/class cannot have datasource definitions of same name : [{0}]",
-                            getName(), reference.getName()));
+        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
+            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
+            if(desc.getName().equals(reference.getName())){
+                throw new IllegalStateException(
+                        localStrings.getLocalString("exceptionduplicatedatasourcedefinition",
+                                "This descriptor/class cannot have datasource definitions of same name : [{0}]",
+                                getName(), reference.getName()));
+            }
         }
-        datasourceDefinitionDescs.add(reference);
+        getDataSourceDefinitionDescriptors().add(reference);
     }
 
     /**
@@ -191,37 +191,6 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
     public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
         this.getDataSourceDefinitionDescriptors().remove(reference);
     }
-    
-    /**
-     * get all connector-resource definition descriptors
-     * @return connector-resource definition descriptors
-     */
-    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
-        return connectorResourceDefinitionDescs;
-    }
-
-    /**
-     * Adds the specified connector-resource definition to the receiver.
-     * @param reference ConnectorResourceDefinitionDescriptor to add.
-     */
-    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        if(connectorResourceDefinitionDescs.contains(reference)){
-            throw new IllegalStateException(
-                    localStrings.getLocalString("enterprise.deployment.exceptionduplicateconnectorresourcedefinition",
-                            "This descriptor/class cannot have connector resource definitions of same name : [{0}]",
-                            getName(), reference.getName()));
-        }
-        connectorResourceDefinitionDescs.add(reference);
-    }
-
-    /**
-     * Removes the specified connector-resource definition from the receiver.
-     * @param reference ConnectorResourceDefinitionDescriptor to remove.
-     */
-    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
-        getConnectorResourceDefinitionDescriptors().remove(reference);
-    }
-
     // ejb ref
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
 	    this.getEjbReferenceDescriptors().add(ejbReference);
