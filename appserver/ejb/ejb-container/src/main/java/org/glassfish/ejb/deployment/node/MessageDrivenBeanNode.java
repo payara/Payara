@@ -48,6 +48,7 @@ import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.w3c.dom.Node;
 
+import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
 import com.sun.enterprise.deployment.node.MethodNode;
@@ -195,6 +196,9 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
         
+        // connecto-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
+
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());
 

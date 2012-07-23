@@ -432,6 +432,26 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return getDataSourceDefinitionContainer().getDataSourceDefinitionDescriptors();
     }
 
+    protected WritableJndiNameEnvironment getConnectorResourceDefinitionContainer(){
+        return (WritableJndiNameEnvironment)descriptor;
+    }
+
+    /**
+     * get all connector-resource-definition descriptors
+     * @return connector-resource-definition descriptors
+     */
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return getConnectorResourceDefinitionContainer().getConnectorResourceDefinitionDescriptors();
+    }
+
+    /**
+     * Adds the specified connector-resource-definition to the receiver.
+     * @param desc ConnectorResourceDefinitionDescriptor to add.
+     */
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc) {
+        getConnectorResourceDefinitionContainer().addConnectorResourceDefinitionDescriptor(desc);
+    }
+
     protected WritableJndiNameEnvironment getPreDestroyContainer() {
         return (WritableJndiNameEnvironment)descriptor;
     }

@@ -198,5 +198,17 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      */
     public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors();
 
+    /**
+     * get all connector-resource-definition descriptors
+     * @return connector-resource-definition descriptors
+     */
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors();
+
+    /**
+     * Adds the specified connector-resource-definition to the receiver.
+     * @param desc ConnectorResourceDefinitionDescriptor to add.
+     */
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc);
+
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc);
 }

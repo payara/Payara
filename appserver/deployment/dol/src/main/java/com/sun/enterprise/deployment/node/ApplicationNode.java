@@ -168,6 +168,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
                                MessageDestinationNode.class,
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
@@ -310,6 +311,8 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(appNode, application.getDataSourceDefinitionDescriptors().iterator());
 
+        // connector-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(appNode, application.getConnectorResourceDefinitionDescriptors().iterator());
         return appNode;
     }
         

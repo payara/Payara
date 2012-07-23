@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
+import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
@@ -93,6 +94,8 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
+
         registerElementHandler(new XMLElement(EjbTagNames.SECURITY_IDENTITY),
                                                             SecurityIdentityNode.class);             
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 

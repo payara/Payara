@@ -117,6 +117,9 @@ public class WebBundleDescriptor extends BundleDescriptor
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
 
+    private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
+            new HashSet<ConnectorResourceDefinitionDescriptor>();
+
     private Boolean isDistributable;
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
@@ -152,6 +155,7 @@ public class WebBundleDescriptor extends BundleDescriptor
     // conflict resolution checking
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
+    protected boolean conflictConnectorResourceDefinition = false;
     protected boolean conflictEnvironmentEntry = false;
     protected boolean conflictEjbReference = false;
     protected boolean conflictServiceReference = false;
@@ -609,8 +613,7 @@ public class WebBundleDescriptor extends BundleDescriptor
     }
 
     public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        DataSourceDefinitionDescriptor ddDesc = getDataSourceDefinitionDescriptor(reference.getName());
-        if (ddDesc != null) {
+        if (datasourceDefinitionDescs.contains(reference)) {
             throw new IllegalStateException(
                     localStrings.getLocalString("exceptionwebduplicatedatasourcedefinition",
                             "This web app [{0}] cannot have datasource definitions of same name : [{1}]",
@@ -643,6 +646,74 @@ public class WebBundleDescriptor extends BundleDescriptor
                                 "There are more than one datasource definitions defined in web fragments with the same name, but not overrided in web.xml"));
                     } else {
                         getDataSourceDefinitionDescriptors().add(ddd);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * get all connector-resource definition descriptors
+     * @return connector-resource definition descriptors
+     */
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return connectorResourceDefinitionDescs;
+    }
+
+    protected ConnectorResourceDefinitionDescriptor getConnectorResourceDefinitionDescriptor(String name) {
+        ConnectorResourceDefinitionDescriptor crdDesc = null;
+        for (ConnectorResourceDefinitionDescriptor desc : this.getConnectorResourceDefinitionDescriptors()) {
+            if (desc.getName().equals(name)) {
+                crdDesc = desc;
+                break;
+            }
+        }
+
+        return crdDesc;
+    }
+
+    /**
+     * Adds the specified connector-resource definition to the receiver.
+     * @param reference ConnectorResourceDefinitionDescriptor to add.
+     */
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        if(connectorResourceDefinitionDescs.contains(reference)){
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.enterprise.deployment.exceptionwebduplicateconnectorresourcedefinition",
+                            "This web app [{0}] cannot have connector resource definitions of same name : [{1}]",
+                            getName(), reference.getName()));
+        }
+        connectorResourceDefinitionDescs.add(reference);
+    }
+
+    /**
+     * Removes the specified connector-resource definition from the receiver.
+     * @param reference ConnectorResourceDefinitionDescriptor to remove.
+     */
+    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        getConnectorResourceDefinitionDescriptors().remove(reference);
+    }
+
+    protected void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env) {
+        boolean isFromXml = false;
+        for (ConnectorResourceDefinitionDescriptor desc : env.getConnectorResourceDefinitionDescriptors()) {
+            isFromXml = (desc.getMetadataSource() == MetadataSource.XML);
+            if (isFromXml) {
+                break;
+            }
+        }
+
+        if (isFromXml) {
+            for (ConnectorResourceDefinitionDescriptor desc: env.getConnectorResourceDefinitionDescriptors()) {
+                ConnectorResourceDefinitionDescriptor crDesc = getConnectorResourceDefinitionDescriptor(desc.getName());
+                if (crDesc == null) {
+                    if (env instanceof WebBundleDescriptor &&
+                            ((WebBundleDescriptor)env).conflictConnectorResourceDefinition) {
+                        throw new IllegalArgumentException(localStrings.getLocalString(
+                                "enterprise.deployment.exceptionconflictconnectorresourcedefinition",
+                                "There are more than one connector resource definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                    } else {
+                        getConnectorResourceDefinitionDescriptors().add(desc);
                     }
                 }
             }

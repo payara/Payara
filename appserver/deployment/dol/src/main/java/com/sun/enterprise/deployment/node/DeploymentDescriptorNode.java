@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
+import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
@@ -974,6 +975,26 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         for(;dsDefinitionDescIterator.hasNext();){
             DataSourceDefinitionDescriptor next = dsDefinitionDescIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.DATA_SOURCE, next);
+        }
+    }
+
+    /**
+     * write a list of connector-resource-definition descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param descIterator the iterator over the descriptors to write
+     */
+    protected void writeConnectorResourceDefinitionDescriptors(Node parentNode,
+                              Iterator<ConnectorResourceDefinitionDescriptor>  descIterator) {
+        if(descIterator == null || !descIterator.hasNext()){
+            return;
+        }
+
+        //Only create one CRD node?
+        ConnectorResourceDefinitionNode subNode = new ConnectorResourceDefinitionNode();
+        for(;descIterator.hasNext();){
+            ConnectorResourceDefinitionDescriptor next = descIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
         }
     }
 

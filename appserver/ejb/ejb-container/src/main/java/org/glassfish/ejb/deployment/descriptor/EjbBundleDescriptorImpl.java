@@ -55,6 +55,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
@@ -158,6 +159,8 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
 
+    private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
+            new HashSet<ConnectorResourceDefinitionDescriptor>();
     /**
      * True if EJB version is 2.x.  This is the default
      * for any new modules.
@@ -1172,16 +1175,13 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
 
     @Override
     public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        for(Iterator itr = getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionapplicationduplicatedatasourcedefinition",
-                                "This application [{0}] cannot have datasource definitions of same name : [{1}]",
-                                getName(), reference.getName()));
-            }
+        if(datasourceDefinitionDescs.contains(reference)){
+            throw new IllegalStateException(
+                    localStrings.getLocalString("exceptionapplicationduplicatedatasourcedefinition",
+                            "This application [{0}] cannot have datasource definitions of same name : [{1}]",
+                            getName(), reference.getName()));
         }
-        getDataSourceDefinitionDescriptors().add(reference);
+        datasourceDefinitionDescs.add(reference);
     }
 
     @Override
@@ -1189,8 +1189,38 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         getDataSourceDefinitionDescriptors().remove(reference);
     }
 
-     @Override
-    public List<InjectionCapable> getInjectableResourcesByClass(String className) {
+    /**
+     * get all connector-resource definition descriptors
+     * @return connector-resource definition descriptors
+     */
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return connectorResourceDefinitionDescs;
+    }
+
+    /**
+     * Adds the specified connector-resource definition to the receiver.
+     * @param reference ConnectorResourceDefinitionDescriptor to add.
+     */
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        if(connectorResourceDefinitionDescs.contains(reference)){
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.exceptionejbbundleduplicateconnectorresourcedefinition",
+                            "This ejb bundle [{0}] cannot have connector resource definitions of same name : [{1}]",
+                            getName(), reference.getName()));
+        }
+        connectorResourceDefinitionDescs.add(reference);
+    }
+
+    /**
+     * Removes the specified connector-resource definition from the receiver.
+     * @param reference ConnectorResourceDefinitionDescriptor to remove.
+     */
+    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        getConnectorResourceDefinitionDescriptors().remove(reference);
+    }
+
+    @Override
+     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         return (getInjectableResourcesByClass(className, this));
     }
 

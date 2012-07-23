@@ -203,5 +203,23 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     public void removeDataSourceDefinitionDescriptor(
 				DataSourceDefinitionDescriptor reference);
 
+    /**  
+     * Adds the specified connector-resource-definition to the receiver.
+     *   
+     * @param reference ConnectorResourceDefinitionDescriptor to add.
+     *
+     */
+    public void addConnectorResourceDefinitionDescriptor(
+    		ConnectorResourceDefinitionDescriptor reference);
+
+    /**  
+     * Removes the specified connector-resource-definition from the receiver.
+     *   
+     * @param reference ConnectorResourceDefinitionDescriptor to remove.
+     *
+     */
+    public void removeConnectorResourceDefinitionDescriptor(
+    		ConnectorResourceDefinitionDescriptor reference);
+
 }
 
