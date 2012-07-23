@@ -59,8 +59,9 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
+
 import org.glassfish.hk2.api.PerLookup;
 import org.objectweb.asm.ClassReader;
 
@@ -80,7 +81,7 @@ public class GenerateDomainSchema implements AdminCommand {
     @Inject
     private Domain domain;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Param(name = "format", defaultValue = "html", optional = true)
     private String format;
     File docDir;
@@ -106,7 +107,7 @@ public class GenerateDomainSchema implements AdminCommand {
     }
 
     private SchemaOutputFormat getFormat() {
-        return habitat.getComponent(SchemaOutputFormat.class, format);
+        return habitat.getService(SchemaOutputFormat.class, format);
     }
 
     private List<JarFile> locateJarFiles(String modulesDir) throws IOException {

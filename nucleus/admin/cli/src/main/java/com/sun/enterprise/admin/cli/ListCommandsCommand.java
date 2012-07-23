@@ -46,6 +46,7 @@ import java.util.logging.*;
 import java.util.regex.*;
 
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
@@ -68,7 +69,7 @@ import static com.sun.enterprise.admin.cli.CLIConstants.EOL;
 @PerLookup
 public class ListCommandsCommand extends CLICommand {
     @Inject
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     private String[] remoteCommands;
     private String[] localCommands;

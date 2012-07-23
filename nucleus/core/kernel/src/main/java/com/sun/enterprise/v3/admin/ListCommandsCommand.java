@@ -49,11 +49,14 @@ import java.util.List;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import javax.inject.Inject;
+
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Inhabitants;
+import com.sun.hk2.component.Inhabitants;
 import javax.inject.Singleton;
 
 /**
@@ -75,7 +78,7 @@ public class ListCommandsCommand implements AdminCommand {
 
     private static final String DEBUG_PAIR = "mode=debug";
     @Inject
-    Habitat habitat;
+    ServiceLocator habitat;
 
 
     /**
@@ -103,13 +106,14 @@ public class ListCommandsCommand implements AdminCommand {
     private List<String> sortedAdminCommands() {
         String scope = getScope();
         List<String> names = new ArrayList<String>();
-        for (Inhabitant<?> command : habitat.getInhabitantsByContract(AdminCommand.class.getName())) {
-            for (String name : Inhabitants.getNamesFor(command, AdminCommand.class.getName())) {
+        for (ServiceHandle<?> command : habitat.getAllServiceHandles(AdminCommand.class)) {
+            String name = command.getActiveDescriptor().getName() ;
                 //see 6161 -- I thought we should ensure that a command found in habitat should
                 //return a valid Command Object, but it was decided that we don't need to instantiate
                 //each object satisfying AdminCommand contract to get a list of all commands
                 
                 // limit list to commands for current scope
+            if (name != null) {
                 int ci = name.indexOf("/");
                 if (ci != -1) {
                     String cmdScope = name.substring(0, ci + 1);
@@ -117,9 +121,9 @@ public class ListCommandsCommand implements AdminCommand {
                     name = name.substring(ci + 1);
                 } else {
                     if (scope != null) continue;
-                }
-                
-                if (debugCommand(command)) { //it's a debug command, add only if debug is set
+                   }
+
+               if (debugCommand(command) ) { //it's a debug command, add only if debug is set
                     if (debugSet())
                         names.add(name);
                 } else { //always add non-debug commands     \
@@ -129,10 +133,11 @@ public class ListCommandsCommand implements AdminCommand {
         }
         Collections.sort(names);
         return (names);
+
     }
     
-    private static boolean debugCommand(Inhabitant command) {
-        return !Inhabitants.getNamesFor(command, "mode").isEmpty();
+    private static boolean debugCommand(ServiceHandle<?> command) {
+        return false;//;!Inhabitants.getNamesFor(command, "mode").isEmpty();
     }
     
     private static boolean metadataContains(String md, String nev) {

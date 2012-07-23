@@ -43,6 +43,9 @@ package com.sun.enterprise.admin.cli;
 import java.io.*;
 import java.util.*;
 import java.text.*;
+
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
@@ -207,14 +210,16 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getLocalCommands(Habitat habitat) {
+    public static String[] getLocalCommands(ServiceLocator habitat) {
         List<String> names = new ArrayList<String>();
 
         String cname = CLICommand.class.getName();
-        for (Inhabitant<?> command : habitat.getInhabitantsByContract(cname)) {
-        	for (String name : Inhabitants.getNamesFor(command, cname)) {
-        		names.add(name);
-        	}
+        for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class)) {
+
+        	String name = command.getActiveDescriptor().getName();
+            if (name != null)
+                names.add(name);
+
         }
         
         String[] localCommands = names.toArray(new String[names.size()]);
@@ -227,7 +232,7 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getRemoteCommands(Habitat habitat,
+    public static String[] getRemoteCommands(ServiceLocator habitat,
             ProgramOptions po, Environment env)
             throws CommandException, CommandValidationException {
         /*
@@ -238,9 +243,9 @@ public class CLIUtil {
          */
         Set<String> localnames = new HashSet<String>();
         String cname = CLICommand.class.getName();
-        for (Inhabitant<?> command : habitat.getInhabitantsByContract(cname)) {
-            for (String name : Inhabitants.getNamesFor(command, cname))
-                localnames.add(name);
+        for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class))  {
+            String name = command.getActiveDescriptor().getName();
+            localnames.add(name);
         }
 
         /*
