@@ -39,16 +39,12 @@
  */
 package org.glassfish.admin.rest.utils;
 
-import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.v3.admin.AdminAdapter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,19 +67,19 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.generator.CommandResourceMetaData;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.provider.ParameterMetaData;
 import org.glassfish.admin.rest.provider.ProviderUtil;
 import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
 import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.RestConfig;
-import org.glassfish.admin.rest.Constants;
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 import static org.glassfish.admin.rest.utils.Util.getHtml;
 import static org.glassfish.admin.rest.utils.Util.localStrings;
 import static org.glassfish.admin.rest.utils.Util.methodNameFromDtdName;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -91,19 +87,17 @@ import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
-import org.glassfish.internal.api.Globals;
 
 /**
  * Resource utilities class. Used by resource templates,
@@ -113,13 +107,12 @@ import org.glassfish.internal.api.Globals;
  * @author Rajeshwar Patil
  */
 public class ResourceUtil {
-
     private static final String DAS_LOOK_FOR_CERT_PROPERTY_NAME = "org.glassfish.admin.DASCheckAdminCert";
     private static final String MESSAGE_PARAMETERS = "messageParameters";
     private static RestConfig restConfig = null;
-    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, need to make
-    // sure that the method convertName is refactored into smaller methods such that trimming of prefixes stops. We will need a
-    // promotion of HK2 for this.
+    // TODO: this is copied from org.jvnet.hk2.config.Dom. If we are not able to encapsulate the conversion in Dom, 
+    // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
+    // stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
 
     static {
