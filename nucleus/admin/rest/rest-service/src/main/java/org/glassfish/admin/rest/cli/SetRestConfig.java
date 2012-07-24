@@ -42,7 +42,9 @@ package org.glassfish.admin.rest.cli;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.beans.PropertyVetoException;
-import org.glassfish.admin.rest.RestConfig;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -53,16 +55,12 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
-
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
-import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * Remote asadmin command: set-rest-config
@@ -122,10 +120,7 @@ public class SetRestConfig implements AdminCommand {
 
                     @Override
                     public Object run(Config parent) throws TransactionFailure {
-
                         RestConfig child = parent.createChild(RestConfig.class);
-
-
                         parent.getContainers().add(child);
                         return child;
                     }

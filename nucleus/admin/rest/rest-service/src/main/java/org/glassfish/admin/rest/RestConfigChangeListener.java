@@ -39,13 +39,12 @@
  */
 package org.glassfish.admin.rest;
 
-import org.glassfish.admin.rest.utils.ResourceUtil;
 import java.beans.PropertyChangeEvent;
-
 import org.glassfish.admin.rest.adapter.Reloader;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;

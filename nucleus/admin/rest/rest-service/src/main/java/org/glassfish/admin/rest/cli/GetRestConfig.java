@@ -40,21 +40,16 @@
 
 package org.glassfish.admin.rest.cli;
 
-import org.glassfish.api.ActionReport;
-
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-
-import org.jvnet.hk2.annotations.Service;
-
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
-import org.glassfish.admin.rest.RestConfig;
-import org.glassfish.api.admin.*;
-
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.admin.restconnector.RestConfig;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Remote asadmin command: get-rest-config

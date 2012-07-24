@@ -39,3 +39,5 @@
 #
 
 -exportcontents: org.glassfish.admin.restconnector.*
+
+DynamicImport-Package:  org.glassfish.api.admin.config

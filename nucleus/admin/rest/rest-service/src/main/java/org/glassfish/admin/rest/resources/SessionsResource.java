@@ -40,12 +40,9 @@
 
 package org.glassfish.admin.rest.resources;
 
-
-
-import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.results.ActionReportResult;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-
+import java.util.HashMap;
+import javax.inject.Inject;
+import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -55,22 +52,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import javax.ws.rs.core.UriInfo;
+import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.admin.restconnector.RestConfig;
+import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.AdminAccessController;
-
-import java.util.HashMap;
-
-import javax.inject.Inject;
-import javax.security.auth.Subject;
 import org.glassfish.jersey.internal.util.collection.Ref;
-
-import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
-import org.glassfish.admin.rest.RestConfig;
-import org.glassfish.common.util.admin.RestSessionManager;
-//import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.component.Habitat;
 
 /**

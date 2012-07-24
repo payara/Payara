@@ -95,7 +95,12 @@ public class JsonPojoProvider<T extends RestModel> implements MessageBodyReader<
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return mediaType.equals(MediaType.APPLICATION_JSON_TYPE) && RestModel.class.isAssignableFrom(type);
+        String submittedType = mediaType.toString();
+        int index = submittedType.indexOf(";");
+        if (index > -1) {
+            submittedType = submittedType.substring(0, index);
+        }
+        return submittedType.equals(MediaType.APPLICATION_JSON) && RestModel.class.isAssignableFrom(type);
     }
 
     private void setValue (Object model, String key, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {

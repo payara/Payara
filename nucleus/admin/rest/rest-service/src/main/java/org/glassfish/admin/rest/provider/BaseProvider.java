@@ -39,39 +39,39 @@
  */
 package org.glassfish.admin.rest.provider;
 
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.Constants;
-import org.glassfish.admin.rest.composite.RestModel;
-import org.glassfish.admin.rest.RestConfig;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
-
-import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.utils.DomConfigurator;
-import org.glassfish.admin.rest.utils.ConfigModelComparator;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.config.Dom;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import org.glassfish.hk2.Factory;
-import org.glassfish.hk2.api.ServiceLocator;
-
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.composite.RestModel;
 import static org.glassfish.admin.rest.provider.ProviderUtil.*;
+import org.glassfish.admin.rest.utils.ConfigModelComparator;
+import org.glassfish.admin.rest.utils.DomConfigurator;
+import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.restconnector.RestConfig;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.config.ConfigModel;
+import org.jvnet.hk2.config.Dom;
 
 /**
  * @author Jason Lee
@@ -136,7 +136,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
     public abstract String getContent(T proxy);
 
     protected Object getJsonObject(Object object) throws JSONException {
-        Object result = null;
+        Object result;
         if (object instanceof Collection) {
             result = processCollection((Collection)object);
         } else if (object instanceof Map) {
