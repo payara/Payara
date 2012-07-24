@@ -292,7 +292,7 @@ public class PropertiesBagTest extends RestTestBase {
 
     protected void createProperties(String endpoint, List<Map<String, String>> properties) {
         final String payload = buildPayload(properties);
-        Response response = client.target(getAddress(endpoint))
+        Response response = getClient().target(getAddress(endpoint))
             .request(RESPONSE_TYPE)
             .post(Entity.entity(payload, REQUEST_FORMAT), Response.class);
         checkStatusForSuccess(response);
@@ -313,7 +313,7 @@ public class PropertiesBagTest extends RestTestBase {
             put("name", PROP_DOMAIN_NAME);
             put("value", "domain1");
         }};
-        Response response = client.target(getAddress(URL_DOMAIN_PROPERTIES))
+        Response response = getClient().target(getAddress(URL_DOMAIN_PROPERTIES))
                 .request(RESPONSE_TYPE)
                 .put(Entity.entity(buildPayload(new ArrayList<Map<String, String>>() {{ add(domainProps); }}), REQUEST_FORMAT), Response.class);
         checkStatusForSuccess(response);

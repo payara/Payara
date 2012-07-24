@@ -64,7 +64,7 @@ public class NoCLICommandResourceCreationTest extends RestTestBase {
         Map<String, String> param = new HashMap<String, String>();
         param.put("name", propertyKey);
         param.put("value",propertyValue);
-        Response response = client.target(getAddress(URL_SERVER_PROPERTY))
+        Response response = getClient().target(getAddress(URL_SERVER_PROPERTY))
                 .request(RESPONSE_TYPE)
                 .post(Entity.entity(MarshallingUtils.getXmlForProperties(param), MediaType.APPLICATION_XML), Response.class);
         assertTrue(isSuccess(response));
@@ -80,7 +80,7 @@ public class NoCLICommandResourceCreationTest extends RestTestBase {
         // Verify property update
         propertyValue = generateRandomString();
         param.put("value", propertyValue);
-        response = client.target(getAddress(URL_SERVER_PROPERTY))
+        response = getClient().target(getAddress(URL_SERVER_PROPERTY))
                 .request(RESPONSE_TYPE)
                 .put(Entity.entity(MarshallingUtils.getXmlForProperties(param), MediaType.APPLICATION_XML), Response.class);
         assertTrue(isSuccess(response));

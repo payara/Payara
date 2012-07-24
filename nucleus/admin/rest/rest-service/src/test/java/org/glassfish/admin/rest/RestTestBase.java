@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest;
 
 import java.io.BufferedWriter;
@@ -83,43 +82,52 @@ public class RestTestBase {
     protected static final String AUTH_PASSWORD = "dummypass";
     protected static final String CONTEXT_ROOT_MANAGEMENT = "management";
     private static final HttpBasicAuthFilter basicAuthFilter = new HttpBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
-
-    protected Client client;
     protected static String adminHost;
     protected static String adminPort;
     protected static String instancePort;
-
     private static String currentTestClass = "";
+    private Client client;
 
-    @BeforeClass(groups="online")
+    @BeforeClass(groups = "online")
     public static void initialize() {
         adminPort = getParameter("admin.port", "4848");
         instancePort = getParameter("instance.port", "8080");
-        adminHost  = getParameter("instance.host", "localhost");
-        baseUrl =  "http://" + adminHost + ':'  + adminPort + '/';
+        adminHost = getParameter("instance.host", "localhost");
+        baseUrl = "http://" + adminHost + ':' + adminPort + '/';
 
         final RestTestBase rtb = new RestTestBase();
-        rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-        rtb.client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
+        rtb.client = JerseyClientFactory.clientBuilder().
+                modules(new MultiPartClientModule()).
+                build();
+        rtb.client.configuration().
+                register(new CsrfProtectionFilter()).
+                register(new JsonJaxbFeature());
         rtb.get("/domain/rotate-log");
     }
 
-    @AfterClass(groups="online")
+    @AfterClass(groups = "online")
     public static void captureLog() {
         try {
 
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
-                rtb.client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-                rtb.client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
-                Response cr = rtb.client.target(rtb.getAddress("/domain/view-log")).request().get(Response.class);
+                rtb.client = JerseyClientFactory.clientBuilder().
+                        modules(new MultiPartClientModule()).
+                        build();
+                rtb.client.configuration().
+                        register(new CsrfProtectionFilter()).
+                        register(new JsonJaxbFeature());
+                Response cr = rtb.getClient().target(rtb.getAddress("/domain/view-log")).
+                        request().
+                        get(Response.class);
 
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("target/surefire-reports/" + currentTestClass + "-server.log")));
                 out.write(cr.readEntity(String.class));
                 out.close();
             }
         } catch (Exception ex) {
-            Logger.getLogger(RestTestBase.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(RestTestBase.class.getName()).
+                    log(Level.INFO, null, ex);
         }
     }
 
@@ -131,9 +139,10 @@ public class RestTestBase {
         return CONTEXT_ROOT_MANAGEMENT;
     }
 
-    @BeforeMethod(alwaysRun=true)
+    @BeforeMethod(alwaysRun = true)
     public void setup() {
-        currentTestClass = this.getClass().getName();
+        currentTestClass = this.getClass().
+                getName();
     }
 
     protected String getAddress(String address) {
@@ -144,12 +153,17 @@ public class RestTestBase {
         return baseUrl + getContextRoot() + address;
     }
 
-    @BeforeMethod(groups="online")
-    protected void getClient() {
+    @BeforeMethod(groups = "online", alwaysRun = true)
+    protected Client getClient() {
         if (client == null) {
-            client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
-            client.configuration().register(new CsrfProtectionFilter()).register(new JsonJaxbFeature());
+            client = JerseyClientFactory.clientBuilder().
+                    modules(new MultiPartClientModule()).
+                    build();
+            client.configuration().
+                    register(new CsrfProtectionFilter()).
+                    register(new JsonJaxbFeature());
         }
+        return client;
     }
 
     protected void resetClient() {
@@ -158,7 +172,8 @@ public class RestTestBase {
     }
 
     protected void authenticate() {
-        client.configuration().register(basicAuthFilter);
+        getClient().configuration().
+                register(basicAuthFilter);
     }
 
     protected <T> T getTestClass(Class<T> clazz) {
@@ -196,8 +211,8 @@ public class RestTestBase {
         int status = cr.getStatus();
         if ((status < 200) || (status > 299)) {
             String message = getErrorMessage(cr);
-            fail("Expected a status between 200 and 299 (inclusive).  Found " + status +
-                    ((message != null) ? ":  " + message : ""));
+            fail("Expected a status between 200 and 299 (inclusive).  Found " + status
+                    + ((message != null) ? ":  " + message : ""));
         }
     }
 
@@ -213,41 +228,55 @@ public class RestTestBase {
     }
 
     protected Response get(String address, Map<String, String> payload) {
-        return client.target(getAddress(address)).queryParams(buildMultivaluedMap(payload)).request(RESPONSE_TYPE).get(Response.class);
+        return getClient().target(getAddress(address)).
+                queryParams(buildMultivaluedMap(payload)).
+                request(RESPONSE_TYPE).
+                get(Response.class);
     }
 
     protected Response options(String address) {
-        return client.target(getAddress(address)).request(RESPONSE_TYPE).options(Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                options(Response.class);
     }
 
     protected Response post(String address, Map<String, String> payload) {
-        return client.target(getAddress(address)).request(RESPONSE_TYPE).post(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                post(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response post(String address) {
-        return client.target(getAddress(address)).request(RESPONSE_TYPE).post(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                post(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response put(String address, Map<String, String> payload) {
-        return client.target(getAddress(address)).request(RESPONSE_TYPE).put(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                put(Entity.entity(buildMultivaluedMap(payload), MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response put(String address) {
-        return client.target(getAddress(address)).request(RESPONSE_TYPE).put(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                put(Entity.entity(null, MediaType.APPLICATION_FORM_URLENCODED), Response.class);
     }
 
     protected Response postWithUpload(String address, Map<String, Object> payload) {
         FormDataMultiPart form = new FormDataMultiPart();
         for (Map.Entry<String, Object> entry : payload.entrySet()) {
             if ((entry.getValue() instanceof File)) {
-                form.getBodyParts().add((new FileDataBodyPart(entry.getKey(), (File)entry.getValue())));
+                form.getBodyParts().
+                        add((new FileDataBodyPart(entry.getKey(), (File) entry.getValue())));
             } else {
                 form.field(entry.getKey(), entry.getValue(), MediaType.TEXT_PLAIN_TYPE);
             }
         }
-        return client.target(getAddress(address))
-                .request(RESPONSE_TYPE)
-                .post(Entity.entity(form, MediaType.MULTIPART_FORM_DATA), Response.class);
+        return getClient().target(getAddress(address)).
+                request(RESPONSE_TYPE).
+                post(Entity.entity(form, MediaType.MULTIPART_FORM_DATA), Response.class);
     }
 
     protected Response delete(String address) {
@@ -255,14 +284,15 @@ public class RestTestBase {
     }
 
     protected Response delete(String address, Map<String, String> payload) {
-        return client.target(getAddress(address))
-                .queryParams(buildMultivaluedMap(payload))
-                .request(RESPONSE_TYPE)
-                .delete(Response.class);
+        return getClient().target(getAddress(address)).
+                queryParams(buildMultivaluedMap(payload)).
+                request(RESPONSE_TYPE).
+                delete(Response.class);
     }
 
     /**
-     * This method will parse the provided XML document and return a map of the attributes and values on the root element
+     * This method will parse the provided XML document and return a map of the attributes and values on the root
+     * element
      *
      * @param response
      * @return
@@ -274,7 +304,7 @@ public class RestTestBase {
         Map responseMap = MarshallingUtils.buildMapFromDocument(xml);
         Object obj = responseMap.get("extraProperties");
         if (obj != null) {
-            return (Map)((Map) obj).get("entity");
+            return (Map) ((Map) obj).get("entity");
         } else {
             return map;
         }
@@ -284,16 +314,16 @@ public class RestTestBase {
         String document = response.readEntity(String.class);
         List<String> results = new ArrayList<String>();
         Map map = MarshallingUtils.buildMapFromDocument(document);
-        String message = (String)map.get("message");
+        String message = (String) map.get("message");
         if (message != null && !"".equals(message)) {
             results.add(message);
         }
 
         Object children = map.get("children");
         if (children instanceof List) {
-            for (Object child : (List)children) {
+            for (Object child : (List) children) {
                 Map childMap = (Map) child;
-                message = (String)childMap.get("message");
+                message = (String) childMap.get("message");
                 if (message != null) {
                     results.add(message);
                 }
@@ -305,7 +335,7 @@ public class RestTestBase {
 
     protected Map<String, String> getChildResources(Response response) {
         Map responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
-        Map<String, Map> extraProperties = (Map<String, Map>)responseMap.get("extraProperties");
+        Map<String, Map> extraProperties = (Map<String, Map>) responseMap.get("extraProperties");
         if (extraProperties != null) {
             return (Map<String, String>) extraProperties.get("childResources");
         }
@@ -326,16 +356,16 @@ public class RestTestBase {
 
     public List<Map<String, String>> getProperties(Response response) {
         Map responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
-        Map extraProperties = (Map)responseMap.get("extraProperties");
+        Map extraProperties = (Map) responseMap.get("extraProperties");
         if (extraProperties != null) {
-            return (List)extraProperties.get("properties");
+            return (List) extraProperties.get("properties");
         }
         return new ArrayList<Map<String, String>>();
     }
 
     private MultivaluedMap buildMultivaluedMap(Map<String, String> payload) {
         if (payload instanceof MultivaluedMap) {
-            return (MultivaluedMap)payload;
+            return (MultivaluedMap) payload;
         }
         MultivaluedMap formData = new MultivaluedHashMap();
         if (payload != null) {
@@ -350,7 +380,7 @@ public class RestTestBase {
         String message = null;
         Map map = MarshallingUtils.buildMapFromDocument(cr.readEntity(String.class));
         if (map != null) {
-            message = (String)map.get("message");
+            message = (String) map.get("message");
         }
 
         return message;

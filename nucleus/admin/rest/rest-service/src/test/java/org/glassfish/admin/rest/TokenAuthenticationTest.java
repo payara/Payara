@@ -65,11 +65,11 @@ public class TokenAuthenticationTest extends RestTestBase {
         String token = getSessionToken();
 
         // Verify we can use the session token.
-        Response response = client.target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
+        Response response = getClient().target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
         assertTrue(isSuccess(response));
 
         //Delete the token
-        response = client.target(getAddress(URL_DOMAIN_SESSIONS) + "/" + token).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(Response.class);
+        response = getClient().target(getAddress(URL_DOMAIN_SESSIONS) + "/" + token).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(Response.class);
         delete(URL_DOMAIN_SESSIONS);
         assertTrue(isSuccess(response));
     }
@@ -106,12 +106,12 @@ public class TokenAuthenticationTest extends RestTestBase {
             resetClient();
 
             // Build this request manually so we can pass the cookie
-            response = client.target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
+            response = getClient().target(getAddress("/domain")).request().cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).get(Response.class);
             assertTrue(isSuccess(response));
             resetClient();
 
             // Request again w/o the cookie.  This should fail.
-            response = client.target(getAddress("/domain")).request().get(Response.class);
+            response = getClient().target(getAddress("/domain")).request().get(Response.class);
             assertFalse(isSuccess(response));
             authenticate();
         } finally {
@@ -131,7 +131,7 @@ public class TokenAuthenticationTest extends RestTestBase {
     private void deleteUserAuthTestUser(String token) {
         if (token != null) {
             final String address = getAddress(URL_DELETE_USER);
-            Response response = client.target(address).queryParam("id", AUTH_USER_NAME).request()
+            Response response = getClient().target(address).queryParam("id", AUTH_USER_NAME).request()
                     .cookie(new Cookie(GF_REST_TOKEN_COOKIE_NAME, token)).delete(Response.class);
             assertTrue(isSuccess(response));
             resetClient();
