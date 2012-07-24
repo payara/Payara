@@ -82,7 +82,7 @@ public final class DeploymentFactoryManager {
     private Vector deploymentFactories = null;
     
     // Singleton instance
-    private static DeploymentFactoryManager deploymentFactoryManager = null;
+    private static DeploymentFactoryManager deploymentFactoryManager = new DeploymentFactoryManager();
     
     /** Creates new RIDeploymentFactoryManager */
     private DeploymentFactoryManager() {
@@ -94,9 +94,6 @@ public final class DeploymentFactoryManager {
      *
      */
     public static DeploymentFactoryManager getInstance() {
-        if(deploymentFactoryManager == null){
-            deploymentFactoryManager = new DeploymentFactoryManager();
-        }
         return deploymentFactoryManager;
     }
        
