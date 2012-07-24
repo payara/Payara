@@ -155,7 +155,8 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptor>
                 props = new Properties();
             }
 
-            container.unloadWebModule(getDescriptor().getContextRoot(), null,
+            container.unloadWebModule(getDescriptor().getContextRoot(),
+                                      getDescriptor().getApplication().getRegistrationName(),
                                       wmInfo.getVirtualServers(), props);
 
             if (keepSessions) {

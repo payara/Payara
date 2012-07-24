@@ -2204,7 +2204,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             if (unloadFromAll || hostList.contains(host.getName())
                     || verifyAlias(hostList, host)) {
                 context = (WebModule) host.findChild(contextRoot);
-                if (context != null) {
+                if (context != null && 
+                        context.getWebBundleDescriptor().getApplication().getRegistrationName().equals(appName)) {
                     context.saveSessions(props);
                     host.removeChild(context);
 
@@ -2722,8 +2723,12 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 }
                 Container[] webModules = virtualServer.findChildren();
                 for (Container webModule : webModules) {
+                    String appName = webModule.getName();
+                    if (webModule instanceof WebModule) {
+                        appName = ((WebModule)webModule).getWebBundleDescriptor().getApplication().getRegistrationName();
+                    }
                     unloadWebModule(webModule.getName(),
-                            webModule.getName(),
+                            appName,
                             virtualServer.getID(),
                             null);
                 }
