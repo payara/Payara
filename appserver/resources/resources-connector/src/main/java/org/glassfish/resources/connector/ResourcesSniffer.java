@@ -71,10 +71,9 @@ public class ResourcesSniffer extends GenericSniffer {
      * instance.
      *
      * @param archive the file or directory to explore
-     * @param loader class loader for this application
      * @return true if this sniffer handles this application type
      */
-    public boolean handles(ReadableArchive archive, ClassLoader loader) {
+    public boolean handles(ReadableArchive archive) {
         return DeploymentUtils.hasResourcesXML(archive)
                 && archive.getParentArchive() == null;
     }

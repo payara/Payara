@@ -76,11 +76,10 @@ public interface Sniffer {
      * Returns true if the passed file or directory is recognized by this
      * sniffer.
      * @param source the file or directory abstracted as an archive
-     * @param loader if the class loader capable of loading classes and
      * resources from the source archive.
      * @return true if the location is recognized by this sniffer
      */
-    public boolean handles(ReadableArchive source, ClassLoader loader);
+    public boolean handles(ReadableArchive source);
 
     /**
      * Returns the array of patterns to apply against the request URL

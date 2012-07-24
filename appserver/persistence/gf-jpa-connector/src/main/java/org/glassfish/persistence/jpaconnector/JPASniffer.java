@@ -86,7 +86,8 @@ public class JPASniffer  extends GenericSniffer {
      * .war (the resource can be present in WEB-INF/classes or WEB-INF/lib/pu.jar),
      * ejb.jar (the resource can be present in root of the jar),
      */
-    public boolean handles(ReadableArchive location, ClassLoader loader) {
+    @Override
+    public boolean handles(ReadableArchive location) {
             boolean isJPAArchive = false;
 
             // scan for persistence.xml in expected locations. If at least one is found, this is

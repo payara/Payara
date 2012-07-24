@@ -88,10 +88,9 @@ public class SecuritySniffer extends GenericSniffer {
      * instance.
      *
      * @param location the file or directory to explore
-     * @param loader class loader for this application
      * @return true if this sniffer handles this application type
      */
-    public boolean handles(ReadableArchive location, ClassLoader loader) {
+    public boolean handles(ReadableArchive location) {
         return (DeploymentUtils.isWebArchive(location) || DeploymentUtils.isEAR(location) ||
                 isJar(location));
     }

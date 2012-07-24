@@ -228,7 +228,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return deploy(null, context);
     }
 
-    public ApplicationInfo deploy(Collection<Sniffer> sniffers, final ExtendedDeploymentContext context) {
+    public ApplicationInfo deploy(Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context) {
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
@@ -344,6 +344,17 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
             }
 
+            // containers that are started are not stopped even if 
+            // the deployment fail, the main reason
+            // is that some container do not support to be restarted.
+            if (sniffers!=null && logger.isLoggable(Level.FINE)) {
+                for (Sniffer sniffer : sniffers) {
+                    logger.fine("Before Sorting" + sniffer.getModuleType());
+                }
+            }
+ 
+            sniffers = getSniffers(handler, sniffers, context);
+
             ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
@@ -359,13 +370,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 Thread.currentThread().setContextClassLoader(cloader);
                 
-                // containers that are started are not stopped even if the deployment fail, the main reason
-                // is that some container do not support to be restarted.
-                if (sniffers!=null && logger.isLoggable(Level.FINE)) {
-                    for (Sniffer sniffer : sniffers) {
-                        logger.fine("Before Sorting" + sniffer.getModuleType());
-                    }
-                }
                 List<EngineInfo> sortedEngineInfos =
                     setupContainerInfos(handler, sniffers, context);
                 if (tracing!=null) {
@@ -645,6 +649,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         }
         context.addTransientAppMetaData(DeploymentProperties.SNIFFERS, sniffers);
+        snifferManager.validateSniffers(sniffers, context);
+
         return sniffers;
     }
 
@@ -654,10 +660,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
              throws Exception {
 
         final ActionReport report = context.getActionReport();
-        sniffers = getSniffers(handler, sniffers, context);
 
         DeploymentTracing tracing = context.getModuleMetaData(DeploymentTracing.class);
-        snifferManager.validateSniffers(sniffers, context);
 
         Map<Deployer, EngineInfo> containerInfosByDeployers = new LinkedHashMap<Deployer, EngineInfo>();
 

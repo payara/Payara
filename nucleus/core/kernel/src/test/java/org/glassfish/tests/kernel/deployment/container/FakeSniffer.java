@@ -63,7 +63,7 @@ import com.sun.enterprise.module.Module;
 @Service
 public class FakeSniffer implements Sniffer {
 
-    public boolean handles(ReadableArchive source, ClassLoader loader) {
+    public boolean handles(ReadableArchive source) {
         // I handle everything
         return true;
     }

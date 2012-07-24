@@ -187,7 +187,7 @@ public interface Deployment {
         ProgressTracker tracker) throws Exception;
 
     public ApplicationInfo deploy(final ExtendedDeploymentContext context);
-    public ApplicationInfo deploy(final Collection<Sniffer> sniffers, final ExtendedDeploymentContext context);
+    public ApplicationInfo deploy(final Collection<? extends Sniffer> sniffers, final ExtendedDeploymentContext context);
 
     public void undeploy(String appName, ExtendedDeploymentContext context);
 

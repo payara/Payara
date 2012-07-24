@@ -75,7 +75,7 @@ public class WebServicesSniffer extends GenericSniffer {
      * Returns true if the archive contains webservices.xml either in WEB-INF or META-INF directories
      */
     @Override
-    public boolean handles(ReadableArchive location, ClassLoader loader) {
+    public boolean handles(ReadableArchive location) {
         return isEntryPresent(location, "WEB-INF/webservices.xml") ||
                 isEntryPresent(location, "META-INF/webservices.xml");
     }

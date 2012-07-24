@@ -71,7 +71,7 @@ public class WeldSniffer extends GenericSniffer implements Sniffer {
      * Returns true if the archive contains beans.xml as defined by packaging rules of Weld 
      */
     @Override
-    public boolean handles(ReadableArchive archive, ClassLoader loader) {
+    public boolean handles(ReadableArchive archive) {
         boolean isWeldArchive = false;
         // scan for beans.xml in expected locations. If at least one is found, this is
         // a Weld archive

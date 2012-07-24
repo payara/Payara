@@ -72,7 +72,7 @@ public class OSGiSniffer extends GenericSniffer  {
     }
 
     @Override
-    public boolean handles(ReadableArchive location, ClassLoader loader) {
+    public boolean handles(ReadableArchive location) {
         // I always return false, unless --type is used to specifically request OSGi
         // bundle installation.
         return false;
