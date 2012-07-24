@@ -45,7 +45,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +64,6 @@ import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -83,6 +81,7 @@ import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.PUTFIELD;
 import static org.objectweb.asm.Opcodes.RETURN;
 import static org.objectweb.asm.Opcodes.V1_6;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -103,18 +102,13 @@ public class CompositeUtil {
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
-    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass, Class<?>[] extensions) {
+    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass) {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
-            // TODO: This will be replace by HK2 code, once the HK2 integration is completed
-//            Class<?>[] interfaces = new Class<?>[]{
-//                clazz,
-//                ClusterExtension.class
-//            };
             Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
 
-            Set<Class<?>> interfaces = (extensions != null) ? 
-                                       new HashSet<Class<?>>(Arrays.asList(extensions)) :
+            Set<Class<?>> interfaces = //(extensions != null) ?
+                                       //new HashSet<Class<?>>(Arrays.asList(extensions)) :
                                        new HashSet<Class<?>>();
             interfaces.add(modelIface);
 
@@ -231,7 +225,7 @@ public class CompositeUtil {
 
     public static <T> T hydrateClass(Class<T> modelClass, JSONObject json) {
         try {
-            T model = CompositeUtil.getModel(modelClass, modelClass, new Class[]{});
+            T model = CompositeUtil.getModel(modelClass, modelClass);
             for (Method setter : getSetters(modelClass)) {
                 String name = setter.getName();
                 String attribute = name.substring(3, 4).toLowerCase() + name.substring(4);
