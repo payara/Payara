@@ -106,9 +106,10 @@ public class GlassFishMainActivator implements BundleActivator {
 
     private static final String[] DEFAULT_START_LOCATIONS_RELATIVE = new String[]{
             // Order is important. endorsed must be ahead of others
+            // osgi-resource-locator must come ahead of osgi-adapter
             "modules/endorsed/",
-            "modules/osgi-adapter.jar",
             "modules/osgi-resource-locator.jar",
+            "modules/osgi-adapter.jar",
             "modules/org.apache.felix.configadmin.jar",
             "modules/org.apache.felix.fileinstall.jar",
             "modules/autostart/"
