@@ -1830,7 +1830,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                  * loaded
                  */
                 unloadWebModule(wmContextPath,
-                        ctx.getJ2EEApplication(),
+                        ctx.getWebBundleDescriptor().getApplication().getRegistrationName(),
                         vs.getName(),
                         true,
                         null);
@@ -2595,7 +2595,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             String id,
             VirtualServer vs,
             String ctxtRoot,
-            String appName) {
+            String j2eeApplication) {
 
         AdHocWebModule wm = new AdHocWebModule();
         wm.setID(id);
@@ -2612,7 +2612,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         //}
 
         wm.setContextRoot(ctxtRoot);
-        wm.setJ2EEApplication(appName);
+        wm.setJ2EEApplication(j2eeApplication);
         wm.setName(ctxtRoot);
         wm.setDocBase(vs.getAppBase());
         wm.setEngineName(vs.getParent().getName());
@@ -2643,7 +2643,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         if (ctx != null
                 && Constants.DEFAULT_WEB_MODULE_NAME.equals(
                 ctx.getModuleName())) {
-            unloadWebModule("", ctx.getJ2EEApplication(),
+            unloadWebModule("", ctx.getWebBundleDescriptor().getApplication().getRegistrationName(),
                     vs.getName(), true, null);
         }
     }
