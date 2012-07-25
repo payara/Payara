@@ -66,7 +66,7 @@ public interface Sniffer {
 
     /**
      * Returns true if the passed file or directory is recognized by this
-     * composite sniffer.
+     * sniffer.
      * @param context deployment context
      * @return true if the location is recognized by this sniffer
      */
