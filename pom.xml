@@ -387,6 +387,26 @@
                     <artifactId>apt-maven-plugin</artifactId>
                     <version>1.0-alpha-5</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.glassfish.hk2</groupId>
+                    <artifactId>config-generator</artifactId>
+                    <version>${hk2.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.7</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <version>2.9</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -454,7 +474,6 @@
              <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -471,7 +490,6 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
-                <version>${hk2.plugin.version}</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -499,7 +517,6 @@
             <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>build-helper-maven-plugin</artifactId>
-              <version>1.7</version>
               <executions>
                 <execution>
                   <id>add-source</id>
@@ -557,7 +574,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-eclipse-plugin</artifactId>
-        <version>2.9</version>
         <configuration>
           <downloadSources>true</downloadSources>
           <downloadJavadocs>true</downloadJavadocs>
@@ -1513,11 +1529,6 @@
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <version>${logging-annotation-processor.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>2.4</version>
           </dependency>
         </dependencies>
     </dependencyManagement>
