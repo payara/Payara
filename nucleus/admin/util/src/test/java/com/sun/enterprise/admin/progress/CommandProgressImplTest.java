@@ -37,48 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.progress;
+package com.sun.enterprise.admin.progress;
 
-import java.util.*;
-import org.glassfish.api.admin.CommandProgress;
-import org.glassfish.api.admin.CommandProgressRegistry;
-import org.jvnet.hk2.annotations.Service;
+import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.api.admin.progress.ProgressStatusImpl;
+import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-/** Basic implementation of registry
+/**
  *
  * @author mmares
  */
-//TODO: This is under construction
-@Service
-public class CommandProgressRegistryImpl implements CommandProgressRegistry {
+public class CommandProgressImplTest {
     
-    private static final int MAX_SIZE = 5;
-    
-    private Map<String, CommandProgress> map = new HashMap<String, CommandProgress>();
-    private List<String> ids = new ArrayList<String>(MAX_SIZE);
-    
-    @Override
-    public synchronized String registr(CommandProgress cp) {
-        if (cp == null) {
-            return null;
-        }
-        if (ids.size() >= MAX_SIZE) {
-            String rid = ids.remove(0);
-            map.remove(rid);
-        }
-        map.put(cp.getId(), cp);
-        ids.add(cp.getId());
-        return cp.getId();
+    public CommandProgressImplTest() {
     }
-    
-    @Override
-    public synchronized Collection<CommandProgress> list() {
-        return new ArrayList<CommandProgress>(map.values());  //Copy because need time snapshot
-    }
-    
-    @Override
-    public synchronized CommandProgress get(String id) {
-        return map.get(id);
+
+//    @BeforeClass
+//    public static void setUpClass() throws Exception {
+//    }
+//
+//    @AfterClass
+//    public static void tearDownClass() throws Exception {
+//    }
+
+
+    @Test
+    public void testCreateMirroringChild() {
+        CommandProgressImpl cp = new CommandProgressImpl("first", "a");
+        cp.setTotalStepCount(2);
+        ProgressStatusMirroringImpl ch1 = cp.createMirroringChild(1);
+        assertNotNull(ch1);
+        ProgressStatus ch2 = cp.createChild(1);
+        assertNotNull(ch1);
+        assertTrue(ch2 instanceof ProgressStatusImpl);
     }
     
 }

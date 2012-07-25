@@ -40,9 +40,12 @@
 
 package com.sun.enterprise.admin.remote;
 
+import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.RestPayloadImpl.Inbound;
-import com.sun.enterprise.admin.remote.reader.ActionReportJsonReader;
-import com.sun.enterprise.admin.remote.reader.CliActionReport;
+import com.sun.enterprise.admin.remote.reader.*;
+import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
+import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverReader;
+import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
 import com.sun.enterprise.admin.remote.writer.ParameterMapFormWriter;
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
 import com.sun.enterprise.admin.util.AsadminTrustManager;
@@ -89,6 +92,7 @@ import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartClientModule;
+import org.glassfish.jersey.media.sse.EventChannel;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -120,7 +124,7 @@ import org.w3c.dom.Node;
  * directory.  The setFileOutputDirectory method can be used to control
  * where returned files are saved.
  */
-public class RemoteRestAdminCommand {
+public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInboundEvent> {
 
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(RemoteAdminCommand.class);
@@ -143,15 +147,22 @@ public class RemoteRestAdminCommand {
     //JAX-RS Client related attributes
     private static final Client client;
     static {
+        Metrix.event("Initialize jersey client - start");
         client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
         // client = ClientFactory.newClient(); - Move to this standard initialisation when people from Jersey will produce Multipart as a Feature not just module.
         client.configuration()
-                .register(CsrfProtectionFilter.class)
-                .register(ActionReportJsonReader.class)
-                .register(ParameterMapFormWriter.class)
-                .register(PayloadPartProvider.class);
+                .register(new CsrfProtectionFilter("CLI"))
+                //.register(new ActionReportJsonReader())
+                .register(new ActionReportJson2Reader())
+                .register(new ParameterMapFormWriter())
+                .register(new PayloadPartProvider())
+                .register(new AdminCommandStateJsonReader())
+                .register(new ProgressStatusDTOJsonReader())
+                .register(new ProgressStatusEventJsonReader())
+                .register(GfSseEventReceiverReader.class); //Must be managed (it uses injection)
 //                .register(MultiPartReaderClientSide.class)
 //                .register(MultiPartWriter.class);
+        Metrix.event("Initialize jersey client - done");
     }
 //    private Target target;
 
@@ -195,10 +206,13 @@ public class RemoteRestAdminCommand {
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
     
+    private boolean closeSse = false;
+    
     /*
      * Set a default read timeout for URL connections.
      */
     static {
+        Metrix.event("Initialize system properties");
         String rt = System.getProperty(READ_TIMEOUT);
         if (rt == null) {
             rt = System.getenv(READ_TIMEOUT);
@@ -289,6 +303,7 @@ public class RemoteRestAdminCommand {
             final String authToken,
             final boolean prohibitDirectoryUploads)
             throws CommandException {
+        Metrix.event("RemoteAdminCommand constructed");
         this.name = name;
         this.host = host;
         this.port = port;
@@ -315,6 +330,10 @@ public class RemoteRestAdminCommand {
             throw new CommandException("Illegal command name: " + name);
             //todo: XXX - I18N
         }
+    }
+    
+    public void closeSse() {
+        this.closeSse = true;
     }
     
 //    private Target getTarget() {
@@ -412,6 +431,7 @@ public class RemoteRestAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
+        Metrix.event("getCommandModel() - start");
         if (commandModel == null) {
             long startNanos = System.nanoTime();
             try {
@@ -435,21 +455,26 @@ public class RemoteRestAdminCommand {
         if (commandModel == null) {
             fetchCommandModel();
         }
+        Metrix.event("getCommandModel() - done");
         return commandModel;
     }
     
     private CommandModel getCommandModelFromCahce() {
+        Metrix.event("getCommandModelFromCahce() - start");
         String cachedModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), String.class);
         if (cachedModel == null) {
+            Metrix.event("getCommandModelFromCahce() - done");
             return null;
         }
         cachedModel = cachedModel.trim();
         int ind = cachedModel.indexOf('\n');
         if (ind < 0) {
+            Metrix.event("getCommandModelFromCahce() - done");
             return null;
         }
         String eTag = cachedModel.substring(0, ind);
         if (!eTag.startsWith("ETag:")) {
+            Metrix.event("getCommandModelFromCahce() - done");
             return null;
         }
         eTag = eTag.substring(5).trim();
@@ -457,7 +482,9 @@ public class RemoteRestAdminCommand {
             logger.log(Level.FINEST, "Cached command model ETag is {0}", eTag);
         }
         String content = cachedModel.substring(ind + 1).trim();
-        return parseMetadata(content, eTag);
+        CachedCommandModel result = parseMetadata(content, eTag);
+        Metrix.event("getCommandModelFromCahce() - done");
+        return result;
     }
     
     /** If command model was load from local cache.
@@ -482,14 +509,19 @@ public class RemoteRestAdminCommand {
     }
     
     public String executeCommand(ParameterMap opts) throws CommandException {
+        Metrix.event("executeCommand() - start");
         //Just to be sure. Cover get help
         if (opts != null && opts.size() == 1 && opts.containsKey("help")) {
+            Metrix.event("executeCommand() - done");
             return getManPage();
         }
         //execute
         ParameterMap preparedParams = processParams(opts);
-        Response response = doRestCommand(preparedParams, null, "POST", false, 
-                MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT);
+        MediaType[] acceptMediaTypes = new MediaType[] {MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT};
+        if (getCommandModel().supportsProgress() || "_attach".equals(name)) {
+            acceptMediaTypes = new MediaType[] {EventChannel.SERVER_SENT_EVENTS_TYPE};
+        }
+        Response response = doRestCommand(preparedParams, null, "POST", false, acceptMediaTypes);
         MediaType resultMediaType = response.getMediaType();
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Result type is {0}", resultMediaType);
@@ -524,6 +556,43 @@ public class RemoteRestAdminCommand {
             } catch (Exception ex) {
                 throw new CommandException(ex.getMessage(), ex);
             }
+        } else if (EventChannel.SERVER_SENT_EVENTS_TYPE.isCompatible(resultMediaType)) {
+            try {
+                logger.log(Level.FINEST, "Response is SSE - about to read events");
+                closeSse = false;
+                GfSseEventReceiver eventReceiver = response.readEntity(GfSseEventReceiver.class);
+                GfSseInboundEvent event;
+                String instanceId = null; //TODO: Use ID to reconnect in case of connection lost
+                do {
+                    event = eventReceiver.readEvent();
+                    fireEvent(event.getName(), event);
+                    if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
+                        AdminCommandState acs = event.getData(AdminCommandState.class, MediaType.APPLICATION_JSON_TYPE);
+                        if (acs.getId() != null) {
+                            instanceId = acs.getId();
+                            if (logger.isLoggable(Level.FINEST)) {
+                                logger.log(Level.FINEST, "Command instance ID: {0}", instanceId);
+                            }
+                        }
+                        if (acs.getState() == AdminCommandState.State.COMPLETED ||
+                                acs.getState() == AdminCommandState.State.RECORDED) {
+                            if (acs.getActionReport() != null) {
+                                setActionReport(acs.getActionReport());
+                            }
+                            closeSse();
+                            if (!acs.isOutboudPayloadEmpty()) {
+                                logger.log(Level.FINEST, "Romote command holds data. Must load it");
+                                //TODO: Retrieve remote outbound data
+                            }
+                        }
+                    }
+                } while (event != null && !eventReceiver.isClosed() && !closeSse);
+                if (closeSse) {
+                    try { eventReceiver.close(); } catch (Exception exc) {}
+                }
+            } catch (Exception ex) {
+                throw new CommandException(ex.getMessage(), ex);
+            }
         } else {
             throw new CommandException(strings.get("unknownResponse", resultMediaType));
         }
@@ -536,6 +605,7 @@ public class RemoteRestAdminCommand {
             this.output = null;
             throw new CommandException(strings.get("emptyResponse"));
         }
+        Metrix.event("executeCommand() - done");
         return output;
     }
     
@@ -844,6 +914,7 @@ public class RemoteRestAdminCommand {
     private Response doRestCommand(ParameterMap options, String pathSufix,
             String method, boolean isForMetadata,
             MediaType... acceptedResponseTypes) throws CommandException {
+        Metrix.event("doRestCommand() - start");
         /*
          * There are various reasons we might retry the command - an authentication
          * challenges from the DAS, shifting from an insecure connection to
@@ -886,7 +957,9 @@ public class RemoteRestAdminCommand {
         URI uri = createURI(shouldUseSecure, pathSufix);
         
         do {
+            Metrix.event("doRestCommand() - about to create target");
             WebTarget target = client.target(uri);
+            Metrix.event("doRestCommand() - about to configure security");
             target.configuration()
                     .setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(host))
                     .setProperty(ClientProperties.SSL_CONTEXT, getSslContext());
@@ -902,10 +975,12 @@ public class RemoteRestAdminCommand {
                 }
                 final AuthenticationInfo authInfo = authenticationInfo();
                 if (authInfo != null && shouldSendCredentials) {
-                    target.configuration().register(
-                            new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword()));
+                    HttpBasicAuthFilter besicAuth = new HttpBasicAuthFilter(authInfo.getUser(), authInfo.getPassword());
+                    target.configuration().register(besicAuth);
                 }
+                Metrix.event("doRestCommand() - about to prepare request builder");
                 Builder request = target.request(acceptedResponseTypes);
+                Metrix.event("doRestCommand() - about to add headers");
                 if (authToken != null) {
                     /*
                      * If this request is for metadata then we expect to reuse
@@ -932,6 +1007,7 @@ public class RemoteRestAdminCommand {
                 }
                 //Make invocation
                 Invocation invoc = null;
+                Metrix.event("doRestCommand() - about to prepare invocation");
                 if ("POST".equals(method)) {
                     if (outboundPayload != null && outboundPayload.size() > 0) {
                         FormDataMultiPart mp = new FormDataMultiPart();
@@ -959,7 +1035,9 @@ public class RemoteRestAdminCommand {
 //                    urlConnection.setConnectTimeout(connectTimeout);
                 
                 //Invoke
+                Metrix.event("doRestCommand() - about to invoke");
                 Response response = invoc.invoke();
+                Metrix.event("doRestCommand() - after invoke");
                 /*
                  * We must handle redirection from http to https explicitly
                  * because, even if the HttpURLConnection's followRedirect is
@@ -1192,6 +1270,7 @@ public class RemoteRestAdminCommand {
     
     protected SSLContext getSslContext() {
         try {
+            Metrix.event("getSslContext() - start");
             String protocol = "TLSv1";
             SSLContext cntxt = SSLContext.getInstance(protocol);
             /*
@@ -1202,6 +1281,7 @@ public class RemoteRestAdminCommand {
             AsadminTrustManager atm = new AsadminTrustManager();
             atm.setInteractive(interactive);
             cntxt.init(null, new TrustManager[] {atm}, null);
+            Metrix.event("getSslContext() - done");
             return cntxt;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1433,6 +1513,7 @@ public class RemoteRestAdminCommand {
     }
     
     protected void fetchCommandModel() throws CommandException {
+        Metrix.event("fetchCommandModel() - start");
         logger.log(Level.FINEST, "fetchCommandModel()");
         long startNanos = System.nanoTime();
         Response res = doRestCommand(new ParameterMap(), null, "GET", true, MediaType.APPLICATION_JSON_TYPE);
@@ -1460,14 +1541,17 @@ public class RemoteRestAdminCommand {
                     }
                 }
             } else {
+                Metrix.event("fetchCommandModel() - done");
                 throw new InvalidCommandException(strings.get("unknownError"));
             }
         } else {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "Fatch command model result is {0}", res.getStatus());
             }
+            Metrix.event("fetchCommandModel() - done");
             throw new InvalidCommandException(strings.get("unknownError"));
         }
+        Metrix.event("fetchCommandModel() - done");
     }
 
     //TODO: Remove
@@ -1586,6 +1670,7 @@ public class RemoteRestAdminCommand {
      * @return the set of ValidOptions
      */
     private CachedCommandModel parseMetadata(String str, String etag) {
+        Metrix.event("parseMetadata() = parse command model - start");
         if (logger.isLoggable(Level.FINER)) { // XXX - assume "debug" == "FINER"
             logger.finer("------- RAW METADATA RESPONSE ---------");
             logger.log(Level.FINER, "ETag: {0}", etag);
@@ -1593,6 +1678,7 @@ public class RemoteRestAdminCommand {
             logger.finer("------- RAW METADATA RESPONSE ---------");
         }
         if (str == null) {
+            Metrix.event("parseMetadata() = parse command model - done");
             return null;
         }
         try {
@@ -1651,9 +1737,11 @@ public class RemoteRestAdminCommand {
                 cm.setAddedUploadOption(true);
             }
             this.usage = cm.getUsage();
+            Metrix.event("parseMetadata() = parse command model - done");
             return cm;
         } catch (JSONException ex) {
             logger.log(Level.FINER, "Can not parse command metadata", ex);
+            Metrix.event("parseMetadata() = parse command model - done");
             return null;
         }
     }

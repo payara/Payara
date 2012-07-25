@@ -194,6 +194,15 @@ public interface CommandRunner {
          */
         CommandInvocation subject(Subject subject);
         
+        /** 
+         * Register new event listener.
+         * 
+         * @param nameRegexp
+         * @param listener
+         * @return itself
+         */
+        public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener);
+        
         /**
          * Executes the command and populate the report with the command
          * execution result. Parameters must have been set before invoking

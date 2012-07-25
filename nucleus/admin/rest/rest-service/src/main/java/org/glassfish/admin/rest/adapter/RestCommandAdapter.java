@@ -40,15 +40,20 @@
 package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.admin.remote.writer.PayloadPartProvider;
+import com.sun.logging.LogDomains;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.core.MediaType;
 import org.glassfish.admin.rest.provider.*;
 import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
+import org.glassfish.jersey.media.sse.EventChannel;
+import org.glassfish.jersey.media.sse.OutboundEventWriter;
 import org.jvnet.hk2.annotations.Service;
 
 /** Adapter for {@code asadmin} and {@code cadmin} communication.
@@ -60,9 +65,16 @@ public class RestCommandAdapter extends RestAdapter {
     
     public static final String CONTEXT_ROOT = "command";
     
+    private static final Logger logger = LogDomains.getLogger(RestCommandAdapter.class, LogDomains.ADMIN_LOGGER);
+    
     @Override
     public String getContextRoot() {
         return "/" + CONTEXT_ROOT;
+    }
+    
+    @Override
+    protected boolean enableModifAccessToInstances() {
+        return true;
     }
     
     @Override
@@ -75,11 +87,10 @@ public class RestCommandAdapter extends RestAdapter {
     @Override
     public Map<String, MediaType> getMimeMappings() {
         return new HashMap<String, MediaType>() {{
-            put("xml", MediaType.APPLICATION_XML_TYPE);
             put("json", MediaType.APPLICATION_JSON_TYPE);
-            put("html", MediaType.TEXT_HTML_TYPE);
             put("txt", MediaType.TEXT_PLAIN_TYPE);
             put("multi", new MediaType("multipart", null));
+            put("sse", new MediaType("text", "event-stream"));
         }};
     }
     
@@ -88,18 +99,25 @@ public class RestCommandAdapter extends RestAdapter {
         final Set<Class<?>> r = new HashSet<Class<?>>();
         r.add(CommandResource.class);
         //ActionReport - providers
-        r.add(ActionReportXmlProvider.class);
+//        r.add(ActionReportXmlProvider.class);
         r.add(ActionReportJsonProvider.class);
 //        r.add(ActionReportDtoStaxProvider.class);
-        r.add(ActionReportDtoJsonProvider.class);
+//        r.add(ActionReportDtoJsonProvider.class);
+        r.add(ActionReportDtoJson2Provider.class);
         //CommandModel - providers
-        r.add(CommandModelHtmlProvider.class);
-        r.add(CommandModelTxtProvider.class);
+//        r.add(CommandModelHtmlProvider.class);
+//        r.add(CommandModelTxtProvider.class);
         r.add(CommandModelStaxProvider.class);
         //Parameters
         r.add(ParameterMapFormReader.class);
         r.add(JsonParameterMapProvider.class);
         r.add(PayloadPartProvider.class);
+        //SSE data
+        r.add(OutboundEventWriter.class);
+        r.add(AdminCommandStateJsonProvider.class);
+        //ProgressStatus
+        r.add(ProgressStatusJsonProvider.class);
+        r.add(ProgressStatusEventJsonProvider.class);
 //        //Debuging filters
 //        r.add(LoggingFilter.class);
         return r;

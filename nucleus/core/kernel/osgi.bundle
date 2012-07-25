@@ -42,7 +42,6 @@
                         com.sun.enterprise.v3.admin; \
                         com.sun.enterprise.v3.admin.adapter; \
                         com.sun.enterprise.v3.admin.commands; \
-                        com.sun.enterprise.v3.admin.progress; \
                         com.sun.enterprise.v3.bootstrap; \
                         com.sun.enterprise.v3.common; \
                         com.sun.enterprise.v3.server; \
