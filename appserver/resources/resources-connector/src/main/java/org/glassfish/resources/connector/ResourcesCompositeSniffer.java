@@ -73,10 +73,10 @@ public class ResourcesCompositeSniffer extends GenericCompositeSniffer {
      * instance.
      *
      * @param archive the file or directory to explore
-     * @param loader class loader for this application
      * @return true if this sniffer handles this application type
      */
-    public boolean handles(ReadableArchive archive, ClassLoader loader) {
+    @Override
+    public boolean handles(ReadableArchive archive) {
         return DeploymentUtils.hasResourcesXML(archive);
     }
 

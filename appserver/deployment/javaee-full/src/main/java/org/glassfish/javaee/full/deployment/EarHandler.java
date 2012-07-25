@@ -450,6 +450,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
     }
 
+    // do any necessary meta data initialization for composite handler
+    public void initCompositeMetaData(DeploymentContext context) {
+        // populate ear level metadata
+        getApplicationHolder(context.getSource(), context, true);
+    }
+
     private ApplicationHolder getApplicationHolder(ReadableArchive source,
         DeploymentContext context, boolean isDirectory) {
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);

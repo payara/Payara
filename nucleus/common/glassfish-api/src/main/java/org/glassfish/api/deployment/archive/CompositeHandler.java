@@ -41,6 +41,7 @@
 package org.glassfish.api.deployment.archive;
 
 import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.deployment.DeploymentContext;
 
 /**
  * Composite handlers are just like any other ArchiveHandler except they
@@ -62,5 +63,6 @@ import org.jvnet.hk2.annotations.Contract;
 public interface CompositeHandler extends ArchiveHandler {
 
     public boolean accept(ReadableArchive source, String entryName);
-    
+ 
+    public void initCompositeMetaData(DeploymentContext context);
 }

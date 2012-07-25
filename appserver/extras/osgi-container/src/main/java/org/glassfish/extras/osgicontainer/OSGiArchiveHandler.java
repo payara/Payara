@@ -86,6 +86,10 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
         return false;
     }
 
+    public void initCompositeMetaData(DeploymentContext context) {
+        // nothing to initialize
+    }
+
     public boolean handles(ReadableArchive archive) throws IOException {
         return detector.handles(archive);
     }
