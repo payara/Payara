@@ -432,6 +432,30 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return getDataSourceDefinitionContainer().getDataSourceDefinitionDescriptors();
     }
 
+
+    protected WritableJndiNameEnvironment getMailSessionContainer() {
+        return (WritableJndiNameEnvironment) descriptor;
+    }
+
+    /**
+     * Adds the specified data-source-definition to the receiver.
+     *
+     * @param desc MailSessionDescriptor to add.
+     */
+    public void addMailSessionDescriptor(MailSessionDescriptor desc) {
+        getMailSessionContainer().addMailSessionDescriptor(desc);
+    }
+
+    /**
+     * get all mail-session-definition descriptors
+     *
+     * @return mail-session-definition descriptors
+     */
+    public Set<MailSessionDescriptor> getMailSessionDescriptors() {
+        return getMailSessionContainer().getMailSessionDescriptors();
+    }
+
+
     protected WritableJndiNameEnvironment getPreDestroyContainer() {
         return (WritableJndiNameEnvironment)descriptor;
     }

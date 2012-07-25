@@ -40,23 +40,23 @@
 
 package com.sun.enterprise.deployment;
 
-import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.EjbReferenceContainer;
 import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
 import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.deployment.common.Descriptor;
 
 import java.util.*;
 import java.util.logging.Logger;
+
+import static com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 /**
  * Contains information about jndiEnvironmentRefsGroup.
  */ 
 
-public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
+public abstract class JndiEnvironmentRefsGroupDescriptor extends CommonResourceDescriptor
         implements EjbReferenceContainer, ResourceReferenceContainer,
         MessageDestinationReferenceContainer, WritableJndiNameEnvironment
 {
@@ -81,9 +81,6 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
         entityManagerFactoryReferences;
     protected Set<EntityManagerReferenceDescriptor> 
         entityManagerReferences;
-
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
 
     public void setBundleDescriptor(BundleDescriptor desc) {
         bundleDescriptor = desc;
@@ -159,38 +156,6 @@ public abstract class JndiEnvironmentRefsGroupDescriptor extends Descriptor
         return getCallbackDescriptors(CallbackType.PRE_DESTROY);
     }
 
-    /**
-     * get all datasource-definition descriptors
-     * @return datasource-definition descriptors
-     */
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return datasourceDefinitionDescs;
-    }
-
-    /**
-     * Adds the specified data-source-definition to the receiver.
-     * @param reference DataSourceDefinitionDescriptor to add.
-     */
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionduplicatedatasourcedefinition",
-                                "This descriptor/class cannot have datasource definitions of same name : [{0}]",
-                                getName(), reference.getName()));
-            }
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    /**
-     * Removes the specified data-source-definition from the receiver.
-     * @param reference DataSourceDefinitionDescriptor to remove.
-     */
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        this.getDataSourceDefinitionDescriptors().remove(reference);
-    }
     // ejb ref
     public void addEjbReferenceDescriptor(EjbReference ejbReference) {
 	    this.getEjbReferenceDescriptors().add(ejbReference);

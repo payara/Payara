@@ -42,24 +42,20 @@ package org.glassfish.ejb.deployment.node;
 
 import java.util.Map;
 
+import com.sun.enterprise.deployment.node.*;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.w3c.dom.Node;
 
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
-import com.sun.enterprise.deployment.node.MethodNode;
-import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
-import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 
 /**
  * This class handles message-driven related xml information
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
 
@@ -81,7 +77,10 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
 
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
 
-        registerElementHandler(new XMLElement(EjbTagNames.TIMEOUT_METHOD), MethodNode.class, "setEjbTimeoutMethod");      
+        registerElementHandler(new XMLElement(EjbTagNames.TIMEOUT_METHOD), MethodNode.class, "setEjbTimeoutMethod");
+
+
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ROLE_REFERENCE), SecurityRoleRefNode.class, "addRoleReference");
     }
@@ -195,6 +194,9 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
         
+        //mail-seesion*
+        writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
+
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());
 

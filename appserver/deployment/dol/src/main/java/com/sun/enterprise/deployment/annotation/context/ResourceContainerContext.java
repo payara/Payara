@@ -198,5 +198,20 @@ public interface ResourceContainerContext extends ServiceReferenceContainerConte
      */
     public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors();
 
+    /**
+     * Adds the specified mail-session-definition to the receiver.
+     *
+     * @param desc DataSourceDefinitionDescriptor to add.
+     */
+    public void addMailSessionDescriptor(MailSessionDescriptor desc);
+
+    /**
+     * get all mail-session-definition descriptors
+     *
+     * @return mail-session-definition descriptors
+     */
+    public Set<MailSessionDescriptor> getMailSessionDescriptors();
+
+
     public void addManagedBean(ManagedBeanDescriptor managedBeanDesc);
 }

@@ -41,24 +41,23 @@
 package org.glassfish.resources.javamail.deployer;
 
 
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.deployment.MailConfiguration;
 import com.sun.enterprise.repository.ResourceProperty;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resources.api.*;
 import org.glassfish.resources.javamail.config.MailResource;
 import org.glassfish.resources.javamail.naming.MailNamingObjectFactory;
 import org.glassfish.resources.naming.SerializableObjectRefAddr;
 import org.glassfish.resources.util.ResourceUtil;
-
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.NamingException;
 import java.util.Collection;
 import java.util.List;
@@ -86,12 +85,6 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
     @Inject
     private org.glassfish.resources.naming.ResourceNamingService namingService;
-
-    @Inject
-    private Domain domain;
-
-    @Inject
-    private ServerEnvironment serverEnvironment;
 
     // StringManager for this deployer
     private static final StringManager localStrings =
@@ -185,30 +178,6 @@ public class MailResourceDeployer extends GlobalResourceDeployer
             mgr.unregisterJavaMailResource(mailRes.getJndiName());
         */
 
-    }
-
-    private boolean isEnabled(MailResource mailResource, ResourceInfo resourceInfo) {
-        return Boolean.valueOf(mailResource.getEnabled()) && isRefEnabled(resourceInfo);
-    }
-
-    private boolean isRefEnabled(ResourceInfo resourceInfo) {
-
-        boolean enabled = false;
-        Server server = null;
-        if (server == null) {
-            server = domain.getServerNamed(serverEnvironment.getInstanceName());
-        }
-
-        ResourceRef ref = server.getResourceRef(resourceInfo.getName());
-        if (ref != null) {
-            enabled = Boolean.valueOf(ref.getEnabled());
-        } else {
-            if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("ResourcesUtil :: isResourceReferenceEnabled null ref");
-            }
-        }
-
-        return enabled;
     }
 
     /**

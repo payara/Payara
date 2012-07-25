@@ -53,10 +53,15 @@
     <property name="dm-jdbcra.classpath.additions" value="../lib/install/applications/__dm_jdbc_ra/__dm_jdbc_ra.jar"/>
     <property name="derby.jar.classpath.additions" value="../../javadb/lib/derby.jar ../../javadb/lib/derbyclient.jar ../../javadb/lib/derbynet.jar ../../javadb/lib/derbytools.jar ../../javadb/lib/derbyrun.jar"/>
     <property name="jaxr-ra.classpath.additions" value="../lib/install/applications/jaxr-ra/jaxr-ra.jar"/>
+    <property name="resources-runtime.classpath.additions" value="../modules/resources-runtime.jar"/>
+    <property name="javamail-connector.classpath.additions" value="../modules/javamail-connector.jar"/>
+    <property name="javamail-runtime.classpath.additions" value="../modules/javamail-runtime.jar"/>
+    <property name="jdbc-runtime.classpath.additions" value="../modules/jdbc-runtime.jar"/>
+    <property name="jdbc-config.classpath.additions" value="../modules/jdbc-config.jar"/>
     <property name="aix.additions" value="../modules/aixporting-repackaged.jar"/>
     <property name="entitybean-container.additions" value="../modules/entitybean-container.jar"/>
     
-    <property name="classpath.additions" value="${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions}"/>
+    <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions}"/>
     <property name="classpath.conditional.additions" value="${aix.additions}"/>
     <target name="fixup.library">
         <unzip src="${output.dir}/${output.file}" dest="${stage.dir}">

@@ -43,16 +43,11 @@
 import com.sun.enterprise.deployment.node.appclient.AppClientNode;
 import com.sun.enterprise.deployment.runtime.JavaWebStartAccessDescriptor;
 import com.sun.enterprise.deployment.types.*;
-import com.sun.enterprise.deployment.util.AppClientVisitor;
-import com.sun.enterprise.deployment.util.AppClientTracerVisitor;
-import com.sun.enterprise.deployment.util.AppClientValidator;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.api.deployment.archive.ArchiveType;
+import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
 
 import java.util.*;
     /**
@@ -60,7 +55,7 @@ import java.util.*;
     * an application client [{0}].
     * @author Danny Coward */
 
-public class ApplicationClientDescriptor extends BundleDescriptor 
+public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
             implements WritableJndiNameEnvironment, 
                        ResourceReferenceContainer,
                        EjbReferenceContainer,
@@ -84,8 +79,6 @@ public class ApplicationClientDescriptor extends BundleDescriptor
         new HashSet<LifecycleCallbackDescriptor>();
     private Set<LifecycleCallbackDescriptor> preDestroyDescs =
         new HashSet<LifecycleCallbackDescriptor>();
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
     private String mainClassName=null;
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ApplicationClientDescriptor.class);
@@ -478,28 +471,6 @@ public class ApplicationClientDescriptor extends BundleDescriptor
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerReferenceDescriptors().add(reference);
 
-    }
-
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return datasourceDefinitionDescs;
-    }
-
-
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionappclientduplicatedatasourcedefinition",
-                                "The application client [{0}] cannot have datasource definitions of same name : [{1}]",
-                                getName(), reference.getName()));    
-            }
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        this.getDataSourceDefinitionDescriptors().remove(reference);
     }
 
     public List<InjectionCapable> 

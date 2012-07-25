@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,35 +38,30 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment;
+package javax.annotation.mail;
 
-import java.util.Set;
-
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import java.lang.annotation.Target;
+import java.lang.annotation.Retention;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * I represent all the configurable deployment information contained in
- * an EJB JAR.
- *
- * @author Danny Coward
+ * Created by IntelliJ IDEA.
+ * User: naman mehta
+ * Date: 17/4/12
+ * Time: 5:11 PM
+ * To change this template use File | Settings | File Templates.
  */
 
-public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment, EjbReferenceContainer,
-               ResourceEnvReferenceContainer, ResourceReferenceContainer,
-               ServiceReferenceContainer, MessageDestinationReferenceContainer {
- 
-    public abstract Set<EjbInterceptor> getInterceptors();
-    public abstract EjbInterceptor getInterceptorByClassName(String className);
-    public abstract EjbDescriptor getEjbByName(String name);
-    public abstract boolean hasEjbByName(String name);
-    public abstract Set<? extends EjbDescriptor> getEjbs();
-    public abstract EjbDescriptor[] getEjbByClassName(String className);
-    public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
-    public abstract EjbDescriptor[] getEjbBySEIName(String className);
+/**
+ * Declares one or more <code>MailSessionDefinition</code> annotations.
+ *
+ * @see javax.annotation.mail.MailSessionDefinition
+ * @since Common Annotations 1.1
+ */
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MailSessionDefinitions {
+    MailSessionDefinition[] value();
 
 }

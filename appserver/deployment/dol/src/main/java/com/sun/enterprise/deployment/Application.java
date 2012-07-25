@@ -98,7 +98,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author Danny Coward
  */
 
-public class Application extends BundleDescriptor
+public class Application extends CommonResourceBundleDescriptor
         implements RoleMappingContainer, WritableJndiNameEnvironment, 
             EjbReferenceContainer, ResourceEnvReferenceContainer,
             ResourceReferenceContainer, ServiceReferenceContainer,
@@ -220,11 +220,6 @@ public class Application extends BundleDescriptor
     private List<SecurityRoleAssignment> wlRoleAssignments = new ArrayList<SecurityRoleAssignment>();
 
     private boolean loadedFromApplicationXml = true;
-
-    //private List<Resource> resourceList = null;
-    
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
 
     private Set<String> resourceAdapters = new HashSet<String>();
 
@@ -575,28 +570,6 @@ public class Application extends BundleDescriptor
             (EntityManagerReferenceDescriptor reference) {
         reference.setReferringBundleDescriptor(this);
         this.getEntityManagerReferenceDescriptors().add(reference);
-    }
-
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return datasourceDefinitionDescs;
-    }
-
-
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionapplicationduplicatedatasourcedefinition",
-                                "This application [{0}] cannot have datasource definitions of same name : [{1}]",
-                                getName(), reference.getName()));
-            }
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        this.getDataSourceDefinitionDescriptors().remove(reference);
     }
 
     public Set<LifecycleCallbackDescriptor>
@@ -1654,7 +1627,7 @@ public class Application extends BundleDescriptor
 
     @Override
     public boolean getKeepState() {
-        // for standalone module, get the keep-state value specified in 
+        // for standalone module, get the keep-state value specified in
         // module glassfish-*.xml
         if (isVirtual()) {
             BundleDescriptor bundleDesc = getStandaloneBundleDescriptor();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,33 +40,53 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Set;
+import java.util.Vector;
 
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import org.glassfish.deployment.common.Descriptor;
 
 /**
- * I represent all the configurable deployment information contained in
- * an EJB JAR.
- *
- * @author Danny Coward
+ * Created by IntelliJ IDEA.
+ * User: naman
+ * Date: 24/5/12
+ * Time: 11:23 AM
+ * To change this template use File | Settings | File Templates.
  */
+public class CommonResourceValidator {
 
-public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment, EjbReferenceContainer,
-               ResourceEnvReferenceContainer, ResourceReferenceContainer,
-               ServiceReferenceContainer, MessageDestinationReferenceContainer {
- 
-    public abstract Set<EjbInterceptor> getInterceptors();
-    public abstract EjbInterceptor getInterceptorByClassName(String className);
-    public abstract EjbDescriptor getEjbByName(String name);
-    public abstract boolean hasEjbByName(String name);
-    public abstract Set<? extends EjbDescriptor> getEjbs();
-    public abstract EjbDescriptor[] getEjbByClassName(String className);
-    public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
-    public abstract EjbDescriptor[] getEjbBySEIName(String className);
+    private Descriptor descriptor;
 
+    private String jndiName;
+
+    private Vector scope;
+
+
+    public CommonResourceValidator(Descriptor descriptor,String jndiName, Vector scope) {
+        this.setDescriptor(descriptor);
+        this.setJndiName(jndiName);
+        this.setScope(scope);
+    }
+
+    public Descriptor getDescriptor() {
+        return descriptor;
+    }
+
+    public void setDescriptor(Descriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    public String getJndiName() {
+        return jndiName;
+    }
+
+    public void setJndiName(String jndiName) {
+        this.jndiName = jndiName;
+    }
+
+    public Vector getScope() {
+        return scope;
+    }
+
+    public void setScope(Vector scope) {
+        this.scope = scope;
+    }
 }

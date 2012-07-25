@@ -145,6 +145,20 @@ public interface TagNames {
     public static final String XML_NAMESPACE_PREFIX = "xml:";
     public static final String LANG = "lang";
 
+    public static final String MAIL_SESSION = "mail-session";
+    public static final String MAIL_SESSION_PROPERTY = "property";
+    public static final String MAIL_SESSION_PROPERTY_NAME = "name";
+    public static final String MAIL_SESSION_PROPERTY_VALUE = "value";
+    public static final String MAIL_SESSION_NAME = "name";
+    public static final String MAIL_SESSION_STORE_PROTOCOL = "store-protocol";
+    public static final String MAIL_SESSION_STORE_PROTOCOL_CLASS = "store-protocol-class";
+    public static final String MAIL_SESSION_TRANSPORT_PROTOCOL = "transport-protocol";
+    public static final String MAIL_SESSION_TRANSPORT_PROTOCOL_CLASS = "transport-protocol-class";
+    public static final String MAIL_SESSION_HOST = "host";
+    public static final String MAIL_SESSION_USER = "user";
+    public static final String MAIL_SESSION_PASSWORD = "password";
+    public static final String MAIL_SESSION_FROM = "from";
+
     public static final String NAME_VALUE_PAIR_NAME = "name";
     public static final String NAME_VALUE_PAIR_VALUE = "value";
 

@@ -54,16 +54,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -974,6 +966,26 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         for(;dsDefinitionDescIterator.hasNext();){
             DataSourceDefinitionDescriptor next = dsDefinitionDescIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.DATA_SOURCE, next);
+        }
+    }
+
+    /**
+     * write a list of mail-session definition descriptors to a DOM Tree
+     *
+     * @param parentNode                    parent node for the DOM tree
+     * @param mailSessionDescriptorIterator the iterator over the descriptors to write
+     */
+    protected void writeMailSessionDescriptors(Node parentNode,
+                                               Iterator<MailSessionDescriptor>
+                                                       mailSessionDescriptorIterator) {
+        if (mailSessionDescriptorIterator == null || !mailSessionDescriptorIterator.hasNext()) {
+            return;
+        }
+
+        MailSessionNode subNode = new MailSessionNode();
+        for (; mailSessionDescriptorIterator.hasNext(); ) {
+            MailSessionDescriptor next = mailSessionDescriptorIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
         }
     }
 

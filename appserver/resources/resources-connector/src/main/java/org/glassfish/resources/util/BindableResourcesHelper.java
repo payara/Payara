@@ -40,6 +40,11 @@
 
 package org.glassfish.resources.util;
 
+import javax.inject.Inject;
+import java.lang.reflect.Proxy;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -47,12 +52,9 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.resources.api.ResourceConstants;
 import org.glassfish.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
-import java.lang.reflect.Proxy;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
 
 /**
  * @author Jagadish Ramu
@@ -61,16 +63,10 @@ import javax.inject.Inject;
 public class BindableResourcesHelper {
 
     @Inject
-    private Domain domain;
+    Habitat habitat;
 
     @Inject
     private ServerEnvironment environment;
-
-    @Inject
-    private ConfigBeansUtilities configBeansUtilities;
-
-    @Inject
-    private org.glassfish.resources.admin.cli.ResourceUtil resourceUtil;
 
     private final static String DOMAIN = "domain";
 
@@ -84,12 +80,13 @@ public class BindableResourcesHelper {
 
     public boolean resourceExists(String jndiName, String target) {
         boolean exists = false;
+        Domain domain = habitat.getComponent(Domain.class);
        if(target.equals(DOMAIN)){
             //if target is "domain", as long as the resource is present in "resources" section,
             //it is valid.
             exists = true;
-        }else if(configBeansUtilities.getServerNamed(target) != null){
-            Server server = configBeansUtilities.getServerNamed(target);
+        }else if(habitat.getComponent(ConfigBeansUtilities.class).getServerNamed(target) != null){
+            Server server = habitat.getComponent(ConfigBeansUtilities.class).getServerNamed(target);
             exists = server.isResourceRefExists(jndiName);
         }else if (domain.getClusterNamed(target) != null){
             Cluster cluster = domain.getClusterNamed(target);
@@ -129,7 +126,7 @@ public class BindableResourcesHelper {
                 if(target.equals("domain")){
                     msg = localStrings.getLocalString("duplicate.resource.found",
                             "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
-                }else if(resourceUtil.getTargetsReferringResourceRef(jndiName).contains(target)){
+                } else if (habitat.getComponent(org.glassfish.resources.admin.cli.ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
                     msg = localStrings.getLocalString("duplicate.resource.found.in.target",
                             "A {0} by name {1} already exists with resource-ref in target {2}.",
                             getResourceTypeName(duplicateResource), jndiName, target);
@@ -191,7 +188,7 @@ public class BindableResourcesHelper {
     }
 
     //TODO duplicate code in com.sun.enterprise.connectors.util.ResourcesUtil.java
-    public boolean isNonConnectorBindableResourceEnabled(BindableResource br, ResourceInfo resourceInfo){
+    /*public boolean isNonConnectorBindableResourceEnabled(BindableResource br, ResourceInfo resourceInfo){
         boolean enabled = false;
         //this cannot happen? need to remove later?
         if (br == null) {
@@ -200,7 +197,7 @@ public class BindableResourcesHelper {
         boolean resourceEnabled = Boolean.valueOf(br.getEnabled());
 
         //TODO can we also check whether the application in which it is defined is enabled (app and app-ref) ?
-        if(resourceInfo.getName().contains(ResourceConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX)){
+        if (resourceInfo.getName().contains(ResourceConstants.JAVA_SCOPE_PREFIX)) {
             return resourceEnabled;
         }
 
@@ -211,7 +208,7 @@ public class BindableResourcesHelper {
         }
         return enabled;
 
-    }
+    }*/
 
     /**
      *
@@ -222,7 +219,7 @@ public class BindableResourcesHelper {
      * @param resourceInfo resourceInfo ResourceInfo
      * @return boolean indicating whether the resource-ref/application-ref is enabled.
      */
-    public boolean isResourceReferenceEnabled(ResourceInfo resourceInfo) {
+    /*public boolean isResourceReferenceEnabled(ResourceInfo resourceInfo) {
         String enabled = "false";
         if (ResourceUtil.isModuleScopedResource(resourceInfo) ||
                 ResourceUtil.isApplicationScopedResource(resourceInfo)) {
@@ -253,11 +250,11 @@ public class BindableResourcesHelper {
         }
 
         return Boolean.valueOf(enabled);
-    }
+    }*/
 
     private Server getServer(){
         if(server == null){
-            server = domain.getServerNamed(environment.getInstanceName());
+            server = habitat.getComponent(Domain.class).getServerNamed(environment.getInstanceName());
         }
         return server;
     }

@@ -44,9 +44,9 @@ import com.sun.appserv.connectors.internal.api.*;
 import com.sun.appserv.connectors.internal.spi.ConnectorNamingEventListener;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.authentication.AuthenticationService;
+import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.connectors.deployment.util.ConnectorArchivist;
 import com.sun.enterprise.connectors.module.ConnectorApplication;
-import com.sun.enterprise.connectors.connector.module.RarType;
 import com.sun.enterprise.connectors.naming.ConnectorNamingEventNotifier;
 import com.sun.enterprise.connectors.service.*;
 import com.sun.enterprise.connectors.util.*;
@@ -185,6 +185,9 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     @Inject
     private Provider<WorkContextHandler> workContextHandlerProvider;
+
+    @Inject
+    private Provider<com.sun.enterprise.resource.deployer.MailSessionDeployer> mailSessionDeployerProvider;
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -969,17 +972,18 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      */
     public void cleanUpResourcesAndShutdownAllActiveRAs(){
 
-        Collection<ConnectorRuntimeExtension> extensions =
-                habitat.getAllByContract(ConnectorRuntimeExtension.class);
-        for(ConnectorRuntimeExtension extension : extensions) {
-            Collection<Resource> resources = extension.getAllSystemRAResourcesAndPools();
-            resourceManagerProvider.get().undeployResources(resources);
-        }
-
         Domain domain = domainProvider.get();
-        if(domain != null){
+        if (domain != null) {
             Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
             resourceManagerProvider.get().undeployResources(resources);
+
+            resources = null;
+            Collection<ConnectorRuntimeExtension> extensions =
+                habitat.getAllByContract(ConnectorRuntimeExtension.class);
+            for(ConnectorRuntimeExtension extension : extensions) {
+                    resources = extension.getAllSystemRAResourcesAndPools();
+                resourceManagerProvider.get().undeployResources(resources);
+            }
         }
         poolManager.killFreeConnectionsInPools();
         resourceAdapterAdmService.stopAllActiveResourceAdapters();
@@ -1369,6 +1373,20 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         for(ConnectorRuntimeExtension extension : extensions) {
             extension.unRegisterDataSourceDefinitions(application);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void registerMailSessions(com.sun.enterprise.deployment.Application application) {
+        mailSessionDeployerProvider.get().registerMailSessions(application);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void unRegisterMailSessions(com.sun.enterprise.deployment.Application application) {
+        mailSessionDeployerProvider.get().unRegisterMailSessions(application);
     }
 
     /**

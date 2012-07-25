@@ -122,6 +122,7 @@ public interface ResourceConstants {
      */
     public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX="__datasource_definition/";
 
+    public static final String JAVA_SCOPE_PREFIX = "java:";
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";
     public static final String JAVA_COMP_SCOPE_PREFIX = "java:comp/";
     public static final String JAVA_MODULE_SCOPE_PREFIX = "java:module/";

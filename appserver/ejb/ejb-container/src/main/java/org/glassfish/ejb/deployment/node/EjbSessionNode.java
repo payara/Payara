@@ -46,19 +46,14 @@ import java.util.Map;
 
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
 import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.ConcurrentMethodDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
-import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import org.glassfish.ejb.deployment.descriptor.*;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor.ConcurrencyManagementType;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
-import org.glassfish.ejb.deployment.descriptor.TimeoutValueDescriptor;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
@@ -66,7 +61,7 @@ import org.xml.sax.Attributes;
  * This class handles all information pertinent to session beans
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor> {
 
@@ -88,6 +83,8 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
        registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");       
 
        registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+
+        registerElementHandler(new XMLElement(EjbTagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
 
        registerElementHandler(new XMLElement(EjbTagNames.POST_ACTIVATE_METHOD), LifecycleCallbackNode.class, "addPostActivateDescriptor");       
 
@@ -318,6 +315,9 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(ejbNode, ejbDesc.getDataSourceDefinitionDescriptors().iterator());
+
+        // mail-session definition
+        writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
 
         // post-activate-method
         writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,35 +38,56 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment;
+package com.sun.enterprise.deployment.node;
 
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import com.sun.enterprise.deployment.MailSessionDescriptor;
+import com.sun.enterprise.deployment.MailSessionPropertyDescriptor;
+import com.sun.enterprise.deployment.xml.TagNames;
+import org.w3c.dom.Node;
 
 /**
- * I represent all the configurable deployment information contained in
- * an EJB JAR.
- *
- * @author Danny Coward
+ * Created by IntelliJ IDEA.
+ * User: naman
+ * Date: 17/4/12
+ * Time: 11:02 AM
+ * To change this template use File | Settings | File Templates.
  */
+public class MailSessionPropertyNode extends DeploymentDescriptorNode<MailSessionPropertyDescriptor> {
+    private MailSessionPropertyDescriptor descriptor = null;
 
-public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment, EjbReferenceContainer,
-               ResourceEnvReferenceContainer, ResourceReferenceContainer,
-               ServiceReferenceContainer, MessageDestinationReferenceContainer {
- 
-    public abstract Set<EjbInterceptor> getInterceptors();
-    public abstract EjbInterceptor getInterceptorByClassName(String className);
-    public abstract EjbDescriptor getEjbByName(String name);
-    public abstract boolean hasEjbByName(String name);
-    public abstract Set<? extends EjbDescriptor> getEjbs();
-    public abstract EjbDescriptor[] getEjbByClassName(String className);
-    public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
-    public abstract EjbDescriptor[] getEjbBySEIName(String className);
+    protected Map getDispatchTable() {
+        // no need to be synchronized for now
+        Map table = super.getDispatchTable();
+        table.put(TagNames.MAIL_SESSION_PROPERTY_NAME, "setName");
+        table.put(TagNames.MAIL_SESSION_PROPERTY_VALUE, "setValue");
+        return table;
+    }
 
+    public Node writeDescriptor(Node node, MailSessionDescriptor mailSessionDesc) {
+
+        Properties properties = mailSessionDesc.getProperties();
+
+        Set keys = properties.keySet();
+
+        for (Object key : keys) {
+            String name = (String) key;
+            String value = (String) properties.get(name);
+            Node propertyNode = appendChild(node, TagNames.MAIL_SESSION_PROPERTY);
+            appendTextChild(propertyNode, TagNames.MAIL_SESSION_PROPERTY_NAME, name);
+            appendTextChild(propertyNode, TagNames.MAIL_SESSION_PROPERTY_VALUE, value);
+        }
+        return node;
+    }
+
+
+    public MailSessionPropertyDescriptor getDescriptor() {
+        if (descriptor == null) {
+            descriptor = new MailSessionPropertyDescriptor();
+        }
+        return descriptor;
+    }
 }

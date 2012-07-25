@@ -66,7 +66,7 @@ import org.glassfish.apf.AnnotationInfo;
  * @author Tony Ng
  * @author Qingqing Ouyang
  */
-public class ConnectorDescriptor extends BundleDescriptor {
+public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
 
     private String  displayName = "";
     private String  connectorDescription = "";

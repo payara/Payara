@@ -40,22 +40,17 @@
 
 package com.sun.enterprise.deployment;
 
-import org.glassfish.api.event.EventTypes;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.*;
-import com.sun.enterprise.deployment.util.WebBundleVisitor;
-import com.sun.enterprise.deployment.util.WebBundleTracerVisitor;
-import com.sun.enterprise.deployment.util.WebBundleValidator;
-import com.sun.enterprise.deployment.util.ComponentVisitor;
-import com.sun.enterprise.deployment.util.ComponentPostVisitor;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import org.glassfish.deployment.common.DescriptorVisitor;
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.api.deployment.archive.ArchiveType;
+import com.sun.enterprise.deployment.util.*;
 import com.sun.enterprise.deployment.web.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.security.common.Role;
 
 import java.util.*;
@@ -67,7 +62,7 @@ import java.util.*;
  * @author Danny Coward
  */
 
-public class WebBundleDescriptor extends BundleDescriptor
+public class WebBundleDescriptor extends CommonResourceBundleDescriptor
         implements WritableJndiNameEnvironment,
         ResourceReferenceContainer,
         ResourceEnvReferenceContainer,
@@ -114,9 +109,6 @@ public class WebBundleDescriptor extends BundleDescriptor
             entityManagerReferences =
             new HashSet<EntityManagerReferenceDescriptor>();
 
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
-
     private Boolean isDistributable;
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
@@ -152,6 +144,7 @@ public class WebBundleDescriptor extends BundleDescriptor
     // conflict resolution checking
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
+    protected boolean conflictMailSessionDefinition = false;
     protected boolean conflictEnvironmentEntry = false;
     protected boolean conflictEjbReference = false;
     protected boolean conflictServiceReference = false;
@@ -296,6 +289,7 @@ public class WebBundleDescriptor extends BundleDescriptor
         combineEntityManagerReferenceDescriptors(env);
         // persistence-unit-ref
         combineEntityManagerFactoryReferenceDescriptors(env);
+        combineMailSessionDescriptors(env);
     }
 
     public boolean isEmpty() {
@@ -590,37 +584,6 @@ public class WebBundleDescriptor extends BundleDescriptor
 
             }
         }
-    }
-
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return datasourceDefinitionDescs;
-    }
-
-    protected DataSourceDefinitionDescriptor getDataSourceDefinitionDescriptor(String name) {
-        DataSourceDefinitionDescriptor ddDesc = null;
-        for (DataSourceDefinitionDescriptor ddd : this.getDataSourceDefinitionDescriptors()) {
-            if (ddd.getName().equals(name)) {
-                ddDesc = ddd;
-                break;
-            }
-        }
-
-        return ddDesc;
-    }
-
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        DataSourceDefinitionDescriptor ddDesc = getDataSourceDefinitionDescriptor(reference.getName());
-        if (ddDesc != null) {
-            throw new IllegalStateException(
-                    localStrings.getLocalString("exceptionwebduplicatedatasourcedefinition",
-                            "This web app [{0}] cannot have datasource definitions of same name : [{1}]",
-                            getName(), reference.getName()));
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        this.getDataSourceDefinitionDescriptors().remove(reference);
     }
 
     protected void combineDataSourceDefinitionDescriptors(JndiNameEnvironment env) {
@@ -2234,6 +2197,32 @@ public class WebBundleDescriptor extends BundleDescriptor
         private ServletFilterMapping servletFilterMapping;
         private boolean hasMapping = false;
         private boolean hasDispatcher = false;
+    }
+
+    protected void combineMailSessionDescriptors(JndiNameEnvironment env) {
+        boolean isFromXml = false;
+        for (MailSessionDescriptor ddd : env.getMailSessionDescriptors()) {
+            isFromXml = (ddd.getMetadataSource() == MetadataSource.XML);
+            if (isFromXml) {
+                break;
+            }
+        }
+
+        if (isFromXml) {
+            for (MailSessionDescriptor ddd : env.getMailSessionDescriptors()) {
+                MailSessionDescriptor ddDesc = getMailSessionDescriptor(ddd.getName());
+                if (ddDesc == null) {
+                    if (env instanceof WebBundleDescriptor &&
+                            ((WebBundleDescriptor) env).conflictMailSessionDefinition) {
+                        throw new IllegalArgumentException(localStrings.getLocalString(
+                                "enterprise.deployment.exceptionconflictmailsessiondefinition",
+                                "There are more than one mail-session definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                    } else {
+                        getMailSessionDescriptors().add(ddd);
+                    }
+                }
+            }
+        }
     }
 
     /*******************************************************************************************

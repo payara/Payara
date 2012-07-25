@@ -69,7 +69,7 @@ import org.w3c.dom.Node;
  * This class is responsible for loading and saving XML elements
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 @Service
 public class ApplicationNode extends AbstractBundleNode<Application> {
@@ -88,8 +88,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     public final static String SCHEMA_ID_14 = "application_1_4.xsd";
 
     public final static String SCHEMA_ID_15 = "application_5.xsd";
-    public final static String SCHEMA_ID = "application_6.xsd";
-    public final static String SPEC_VERSION = "6";
+    public final static String SCHEMA_ID_16 = "application_6.xsd";
+    public final static String SCHEMA_ID = "application_7.xsd";
+    public final static String SPEC_VERSION = "7";
     private final static List<String> systemIDs = initSystemIDs();
      
     // The XML tag associated with this Node
@@ -100,6 +101,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         systemIDs.add(SCHEMA_ID);
         systemIDs.add(SCHEMA_ID_14);
         systemIDs.add(SCHEMA_ID_15);
+        systemIDs.add(SCHEMA_ID_16);
         return Collections.unmodifiableList(systemIDs);
     }
     
@@ -145,7 +147,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     }
     
     /** Creates new ApplicationNode */
-    public ApplicationNode() {     
+    public ApplicationNode() {
         super();	
         registerElementHandler(new XMLElement(ApplicationTagNames.MODULE), ModuleNode.class, "addModule");    
         registerElementHandler(new XMLElement(ApplicationTagNames.ROLE), SecurityRoleNode.class, "addAppRole");            
@@ -168,6 +170,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
                                MessageDestinationNode.class,
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
@@ -309,6 +312,9 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(appNode, application.getDataSourceDefinitionDescriptors().iterator());
+
+        // mail-session*
+        writeMailSessionDescriptors(appNode, application.getMailSessionDescriptors().iterator());
 
         return appNode;
     }

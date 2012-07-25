@@ -47,18 +47,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.InjectionCapable;
-import com.sun.enterprise.deployment.ManagedBeanDescriptor;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.util.*;
+import java.util.logging.Level;
+
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.ModuleDescriptor;
@@ -74,12 +71,41 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="application_deploy")
 public class ApplicationValidator extends ComponentValidator 
     implements ApplicationVisitor, ManagedBeanVisitor {
+
+
+    // Used to store all descriptor details for validation purpose
+    private HashMap<String, CommonResourceValidator> allResourceDescriptors = new HashMap<String, CommonResourceValidator>();
+
+    // Used to store keys and descriptor names for validation purpose
+    private HashMap<String, Vector> validNameSpaceDetails = new HashMap<String, Vector>();
+
+    private final String APPCLIENT_KEYS = "APPCLIENT_KEYS";
+    private final String EJBBUNDLE_KEYS = "EJBBUNDLE_KEYS";
+    private final String APP_KEYS = "APP_KEYS";
+    private final String WEBBUNDLE_KEYS = "WEBBUNDLE_KEYS";
+    private final String EJB_KEYS = "EJB_KEYS";
+    private final String CONNECTOR_KEYS = "CONNECTOR_KEYS";
+
+
+    private boolean allUniqueResource = true;
+
+    
+    private static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(ApplicationValidator.class);
     
     @Override
     public void accept (BundleDescriptor descriptor) {
         if (descriptor instanceof Application) {
             Application application = (Application)descriptor;
             accept(application);
+
+            if (!validateResourceDescriptor(application)) {
+                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.fail",
+                        new Object[] { application.getAppName() });
+                throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.util.application.fail",
+                        "Application validation fails for given application {0}",application.getAppName()));
+            }
 
             for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
@@ -105,7 +131,7 @@ public class ApplicationValidator extends ComponentValidator
             }
 
             // Visit all injectables first.  In some cases, basic type
-            // information has to be derived from target inject method or 
+            // information has to be derived from target inject method or
             // inject field.
             for(InjectionCapable injectable : application.getInjectableResources(application)) {
                 accept(injectable);
@@ -250,5 +276,385 @@ public class ApplicationValidator extends ComponentValidator
             return ((BundleDescriptor)subDescriptor).getBundleVisitor();
         }
         return super.getSubDescriptorVisitor(subDescriptor);
+    }
+
+    /**
+     * Method to read complete application and all defined descriptor for given app. Method is used to identify
+     * scope and validation for all defined jndi names at different namespace.
+     * @param application
+     * @return
+     */
+    public boolean validateResourceDescriptor(Application application) {
+
+        // Reads MSD and DSD at application level
+        CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
+        Vector appLevel = new Vector();
+        if (commonResourceBundleDescriptor != null) {
+            appLevel.add(commonResourceBundleDescriptor.getName());
+            Set<MailSessionDescriptor> mailSessionDescriptors = commonResourceBundleDescriptor.getMailSessionDescriptors();
+            if (isExistingMailSession(mailSessionDescriptors, commonResourceBundleDescriptor.getName())) {
+                return false;
+            }
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = commonResourceBundleDescriptor.getDataSourceDefinitionDescriptors();
+            if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, commonResourceBundleDescriptor.getName())) {
+                return false;
+            }
+            validNameSpaceDetails.put(APP_KEYS, appLevel);
+        }
+
+        // Reads MSD and DSD at application-client level
+        Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
+        Vector appClientLevel = new Vector();
+        for (ApplicationClientDescriptor acd : appClientDescs) {
+            appClientLevel.add(acd.getName());
+            Set<MailSessionDescriptor> mailSessionDescriptors = acd.getMailSessionDescriptors();
+            if (isExistingMailSession(mailSessionDescriptors, acd.getName())) {
+                return false;
+            }
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = acd.getDataSourceDefinitionDescriptors();
+            if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, acd.getName())) {
+                return false;
+            }
+        }
+        validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
+
+        // Reads MSD and DSD at connector level
+        Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
+        Vector cdLevel = new Vector();
+        for (ConnectorDescriptor cd : connectorDescs) {
+            cdLevel.add(cd.getName());
+            Set<MailSessionDescriptor> mailSessionDescriptors = cd.getMailSessionDescriptors();
+            if (isExistingMailSession(mailSessionDescriptors, cd.getName())) {
+                return false;
+            }
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = cd.getDataSourceDefinitionDescriptors();
+            if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, cd.getName())) {
+                return false;
+            }
+        }
+        validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
+
+        // Reads MSD and DSD at ejb-bundle level
+        Set<EjbBundleDescriptor> ejbBundleDescs = application.getBundleDescriptors(EjbBundleDescriptor.class);
+        Vector ebdLevel = new Vector();
+        Vector edLevel = new Vector();
+        for (EjbBundleDescriptor ebd : ejbBundleDescs) {
+            ebdLevel.add(ebd.getName());
+            Set<MailSessionDescriptor> mailSessionDescriptors = ebd.getMailSessionDescriptors();
+            if (isExistingMailSession(mailSessionDescriptors, ebd.getName())) {
+                return false;
+            }
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = ebd.getDataSourceDefinitionDescriptors();
+            if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, ebd.getName())) {
+                return false;
+            }
+
+            // Reads MSD and DSD at ejb level
+            Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
+            for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
+                EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+                edLevel.add(ebd.getName() + "#" + ejbDescriptor.getName());
+                mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
+                if (isExistingMailSession(mailSessionDescriptors, ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
+                if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+            }
+        }
+        validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
+        validNameSpaceDetails.put(EJB_KEYS, edLevel);
+
+
+        // Reads MSD and DSD at web-bundle level
+        Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
+        Vector wbdLevel = new Vector();
+        for (WebBundleDescriptor wbd : webBundleDescs) {
+            wbdLevel.add(wbd.getName());
+            Set<MailSessionDescriptor> mailSessionDescriptors = wbd.getMailSessionDescriptors();
+            if (isExistingMailSession(mailSessionDescriptors, wbd.getName())) {
+                return false;
+            }
+            Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = wbd.getDataSourceDefinitionDescriptors();
+            if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, wbd.getName())) {
+                return false;
+            }
+        }
+        validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
+
+        // if all resources names are unique then validate each descriptor is unique or not
+        if (allUniqueResource) {
+            return compareDescriptors();
+        }
+
+        return allUniqueResource;
+    }
+
+    /**
+     * * Method to validate MSD is unique or not
+     * @param mailSessionDescriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingMailSession(Set<MailSessionDescriptor> mailSessionDescriptors, String scope) {
+        for (Iterator itr = mailSessionDescriptors.iterator(); itr.hasNext(); ) {
+            MailSessionDescriptor mailSessionDescriptor = (MailSessionDescriptor) itr.next();
+            if (isExistsDescriptor(mailSessionDescriptor.getName(), mailSessionDescriptor, scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Method to validate DSD is unique or not
+     * @param dataSourceDefinitionDescriptors
+     * @param scope
+     * @return
+     */
+    private boolean isExistingDataSourceDefinition(Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors, String scope) {
+        for (Iterator itr = dataSourceDefinitionDescriptors.iterator(); itr.hasNext(); ) {
+            DataSourceDefinitionDescriptor dataSourceDefinitionDescriptor = (DataSourceDefinitionDescriptor) itr.next();
+            if (isExistsDescriptor(dataSourceDefinitionDescriptor.getName(), dataSourceDefinitionDescriptor, scope)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Method to compare existing descriptor with other descriptors. If both descriptor is equal then deployment
+     * should be failed. scope is nothing but app level,connector level, ejb level etc., which is used later to
+     * compare same jndi name is defined at different scope or not.
+     * @param name
+     * @param descriptor
+     * @param scope
+     * @return
+     */
+    private boolean isExistsDescriptor(String name, Descriptor descriptor, String scope) {
+
+        if (descriptor != null) {
+
+            CommonResourceValidator commonResourceValidator = allResourceDescriptors.get(name);
+            if (commonResourceValidator != null) {
+                Descriptor existingDescriptor = commonResourceValidator.getDescriptor();
+                if (descriptor instanceof MailSessionDescriptor && existingDescriptor instanceof MailSessionDescriptor) {
+                    if (!descriptor.equals(existingDescriptor)) {
+                        allUniqueResource = false;
+                        return true;
+                    } else {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                                new Object[] { descriptor.getName() });
+
+                    }
+                } else if (descriptor instanceof DataSourceDefinitionDescriptor && existingDescriptor instanceof DataSourceDefinitionDescriptor) {
+                    if (!descriptor.equals(existingDescriptor)) {
+                        allUniqueResource = false;
+                        return true;
+                    } else {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                                new Object[] { descriptor.getName() });
+
+                    }
+                }
+
+                Vector vectorScope = commonResourceValidator.getScope();
+                if (vectorScope != null) {
+                    vectorScope.add(scope);
+                }
+                commonResourceValidator.setScope(vectorScope);
+                allResourceDescriptors.put(name, commonResourceValidator);
+            } else {
+                Vector<String> vectorScope = new Vector<String>();
+                vectorScope.add(scope);
+                allResourceDescriptors.put(name, new CommonResourceValidator(descriptor, name, vectorScope));
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Compare descriptor at given scope is valid and unique.
+     * @return
+     */
+    private boolean compareDescriptors() {
+
+        final String JNDI_COMP = "java:comp";
+        final String JNDI_MODULE = "java:module";
+        final String JNDI_APP = "java:app";
+
+        Vector appVectorName = validNameSpaceDetails.get(APP_KEYS);
+        Vector ebdVectorName = validNameSpaceDetails.get(EJBBUNDLE_KEYS);
+
+        for (String key : allResourceDescriptors.keySet()) {
+            CommonResourceValidator commonResourceValidator = allResourceDescriptors.get(key);
+            Vector scopeVector = commonResourceValidator.getScope();
+            String jndiName = commonResourceValidator.getJndiName();
+
+            if (jndiName.contains(JNDI_COMP)) {
+                for (int i = 0; i < scopeVector.size(); i++) {
+                    String scope = (String) scopeVector.get(i);
+                    for (int j = 0; j < appVectorName.size(); j++) {
+                        if (scope.equals(appVectorName.get(j))) {
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                                new Object[] { jndiName });
+                            return false;
+                        }
+                    }
+                    for (int j = 0; j < ebdVectorName.size(); j++) {
+                        if (scope.equals(ebdVectorName.get(j))) {
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                                new Object[] { jndiName });
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (jndiName.contains(JNDI_MODULE)) {
+                for (int i = 0; i < scopeVector.size(); i++) {
+                    String scope = (String) scopeVector.get(i);
+                    for (int j = 0; j < appVectorName.size(); j++) {
+                        if (scope.equals(appVectorName.get(j))) {
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                                new Object[] { jndiName });
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (scopeVector.size() > 1) {
+
+                if (jndiName.contains(JNDI_COMP)) {
+                    if (!compareVectorForComp(scopeVector,jndiName)) {
+                        return false;
+                    }
+                } else if (jndiName.contains(JNDI_MODULE)) {
+                    if (!compareVectorForModule(scopeVector,jndiName)) {
+                        return false;
+                    }
+                } else if (jndiName.contains(JNDI_APP)) {
+                    if (!compareVectorForApp(scopeVector,jndiName)) {
+                        return false;
+                    }
+                } else {
+                    try {
+                        InitialContext ic = new InitialContext();
+                        Object lookup = ic.lookup(jndiName);
+                        if (lookup != null) {
+                            return false;
+                        }
+                    } catch (NamingException e) {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.lookup",
+                                new Object[] { jndiName });
+                    }
+
+                }
+
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Method to validate jndi name for app namespace
+     * @param myVector
+     * @return
+     */
+    private boolean compareVectorForApp(Vector myVector,String jndiName) {
+
+        for (int j = 0; j < myVector.size(); j++) {
+            String firstElement = (String) myVector.get(j);
+            if (firstElement.contains("#")) {
+                firstElement = firstElement.substring(0, firstElement.indexOf("#"));
+            }
+            for (int i = j; i < myVector.size(); i++) {
+                String otherElements = (String) myVector.get(i);
+                if (otherElements.contains("#")) {
+                    otherElements = otherElements.substring(0, otherElements.indexOf("#"));
+                }
+                if (!firstElement.equals(otherElements)) {
+                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
+                        new Object[] { jndiName, application.getAppName() });
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Method to validate jndi name for module namespace
+     * @param myVector
+     * @return
+     */
+    private boolean compareVectorForModule(Vector myVector,String jndiName) {
+
+        if (!compareVectorForApp(myVector,jndiName)) {
+            return false;
+        }
+
+        for (int j = 0; j < myVector.size(); j++) {
+            String firstElement = (String) myVector.firstElement();
+            if (firstElement.contains("#")) {
+                firstElement = firstElement.substring(firstElement.indexOf("#") + 1, firstElement.length());
+            }
+            if (firstElement.contains("#")) {
+                firstElement = firstElement.substring(0, firstElement.indexOf("#"));
+            }
+            for (int i = j; i < myVector.size(); i++) {
+                String otherElements = (String) myVector.get(i);
+                if (otherElements.contains("#")) {
+                    otherElements = otherElements.substring(otherElements.indexOf("#") + 1, otherElements.length());
+                }
+                if (otherElements.contains("#")) {
+                    otherElements = otherElements.substring(0, otherElements.indexOf("#"));
+                }
+                if (!firstElement.equals(otherElements)) {
+                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
+                        new Object[] { jndiName, application.getAppName() });
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Method to validate jndi name for comp namespace
+     * @param myVector
+     * @return
+     */
+    private boolean compareVectorForComp(Vector myVector,String jndiName) {
+
+        if (!compareVectorForModule(myVector,jndiName)) {
+            return false;
+        }
+
+        for (int j = 0; j < myVector.size(); j++) {
+            String firstElement = (String) myVector.firstElement();
+            if (firstElement.contains("#")) {
+                firstElement = firstElement.substring(firstElement.lastIndexOf("#") + 1, firstElement.length());
+            }
+            if (firstElement.contains("#")) {
+                firstElement = firstElement.substring(firstElement.lastIndexOf("#") + 1, firstElement.length());
+            }
+            for (int i = j; i < myVector.size(); i++) {
+                String otherElements = (String) myVector.get(i);
+                if (otherElements.contains("#")) {
+                    otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
+                }
+                if (otherElements.contains("#")) {
+                    otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
+                }
+                if (!firstElement.equals(otherElements)) {
+                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
+                        new Object[] { jndiName, application.getAppName() });
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

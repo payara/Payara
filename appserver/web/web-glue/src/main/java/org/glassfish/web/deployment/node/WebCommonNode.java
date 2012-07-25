@@ -57,7 +57,7 @@ import java.util.*;
  * This node is responsible for handling the web-common xml tree
  *
  * @author  Shing Wai Chan
- * @version 
+ * @version
  */
 public abstract class WebCommonNode<T extends WebBundleDescriptor> extends AbstractBundleNode<T> {
     public final static String SPEC_VERSION = "3.0";
@@ -116,6 +116,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
     }
     
     /**
@@ -401,6 +402,9 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         writeLifeCycleCallbackDescriptors(jarNode, TagNames.PRE_DESTROY, webBundleDesc.getPreDestroyDescriptors());
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(jarNode, webBundleDesc.getDataSourceDefinitionDescriptors().iterator());
+
+        // mail-session*
+        writeMailSessionDescriptors(jarNode, webBundleDesc.getMailSessionDescriptors().iterator());
 
          // message-destination*
        writeMessageDestinations

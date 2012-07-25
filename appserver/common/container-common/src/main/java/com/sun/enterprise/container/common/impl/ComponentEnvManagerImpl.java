@@ -303,6 +303,21 @@ public class ComponentEnvManagerImpl
         desc.setResourceId(resourceId);
 
     }
+
+    private void setResourceId(JndiNameEnvironment env, MailSessionDescriptor desc){
+
+        String resourceId = "";
+        if(dependencyAppliesToScope(desc, ScopeType.COMPONENT)){
+            resourceId = getApplicationName(env) +    "/" + getModuleName(env) + "/" +
+                    getComponentEnvId(env) ;
+        } else if(dependencyAppliesToScope(desc, ScopeType.MODULE)){
+            resourceId = getApplicationName(env) +    "/" + getModuleName(env) ;
+        } else if(dependencyAppliesToScope(desc, ScopeType.APP)){
+            resourceId = getApplicationName(env)  ;
+        }
+        desc.setResourceId(resourceId);
+    }
+
     private void addDataSourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
 
         for (DataSourceDefinitionDescriptor dsd : env.getDataSourceDefinitionDescriptors()) {
@@ -328,6 +343,30 @@ public class ComponentEnvManagerImpl
         }
     }
 
+    private void addMailSessionBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+
+        for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
+
+            if (!dependencyAppliesToScope(msd, scope)) {
+                continue;
+            }
+
+            //the DSD would have been deployed already for JPA's requirements.
+            if (msd.isDeployed()) {
+                continue;
+            }
+
+            setResourceId(env, msd);
+
+            org.glassfish.javaee.services.MailSessionProxy proxy = habitat.getComponent(org.glassfish.javaee.services.MailSessionProxy.class);
+            proxy.setDescriptor(msd);
+
+            String logicalJndiName = descriptorToLogicalJndiName(msd);
+            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
+            jndiBindings.add(envBinding);
+        }
+    }
+
     private ResourceDeployer getResourceDeployer(Object resource) {
         return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
@@ -339,6 +378,9 @@ public class ComponentEnvManagerImpl
         //undeploy data-sources as they hold physical connections to database.
         undeployDataSourceDefinitions(env);
 
+        //undelploy mail-sessions
+        undeployMailSessions(env);
+
         // Unpublish any global entries exported by this environment
         Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
         addJNDIBindings(env, ScopeType.GLOBAL, globalBindings);
@@ -349,10 +391,11 @@ public class ComponentEnvManagerImpl
 
         Application app = getApplicationFromEnv(env);
 
-        //undeploy data-sources exposed by app-client descriptors.
+        //undeploy data-sources & mail-sessions exposed by app-client descriptors.
         Set<ApplicationClientDescriptor> appClientDescs = app.getBundleDescriptors(ApplicationClientDescriptor.class);
         for(ApplicationClientDescriptor acd : appClientDescs){
             undeployDataSourceDefinitions(acd);
+            undeployMailSessions(acd);
         }
 
         if( !(env instanceof ApplicationClientDescriptor ) &&
@@ -391,6 +434,21 @@ public class ComponentEnvManagerImpl
                 }
             }catch(Exception e){
                 _logger.log(Level.WARNING, "unable to undeploy DataSourceDefinition [ " + dsd.getName() + " ] ", e);
+            }
+        }
+    }
+
+    private void undeployMailSessions(JndiNameEnvironment env) {
+
+        for (MailSessionDescriptor msd : env.getMailSessionDescriptors()) {
+            try{
+                if(msd.isDeployed()){
+                    ResourceDeployer deployer = getResourceDeployer(msd);
+                    deployer.undeployResource(msd);
+                    msd.setDeployed(false);
+                }
+            }catch(Exception e){
+                _logger.log(Level.WARNING, "unable to undeploy MailSessions [ " + msd.getName() + " ] ", e);
             }
         }
     }
@@ -502,6 +560,7 @@ public class ComponentEnvManagerImpl
         }
 
         addDataSourceBindings(env, scope, jndiBindings); 
+        addMailSessionBindings(env, scope, jndiBindings);
 
         for (Iterator itr = env.getEjbReferenceDescriptors().iterator();
              itr.hasNext();) {

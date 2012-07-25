@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,33 +40,58 @@
 
 package com.sun.enterprise.deployment;
 
+
 import java.util.Set;
 
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
-
 /**
- * I represent all the configurable deployment information contained in
- * an EJB JAR.
- *
- * @author Danny Coward
+ * Created by IntelliJ IDEA.
+ * User: naman
+ * Date: 24/5/12
+ * Time: 11:24 AM
+ * To change this template use File | Settings | File Templates.
  */
+public abstract class CommonResourceBundleDescriptor  extends BundleDescriptor {
 
-public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment, EjbReferenceContainer,
-               ResourceEnvReferenceContainer, ResourceReferenceContainer,
-               ServiceReferenceContainer, MessageDestinationReferenceContainer {
- 
-    public abstract Set<EjbInterceptor> getInterceptors();
-    public abstract EjbInterceptor getInterceptorByClassName(String className);
-    public abstract EjbDescriptor getEjbByName(String name);
-    public abstract boolean hasEjbByName(String name);
-    public abstract Set<? extends EjbDescriptor> getEjbs();
-    public abstract EjbDescriptor[] getEjbByClassName(String className);
-    public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
-    public abstract EjbDescriptor[] getEjbBySEIName(String className);
+    CommonResourceFunctionality commonResourceFunctionality = new CommonResourceFunctionality();
 
+    public CommonResourceBundleDescriptor() {
+        super();
+    }
+
+    public CommonResourceBundleDescriptor(String name, String description) {
+        super(name, description);
+    }
+
+    public Set<MailSessionDescriptor> getMailSessionDescriptors() {
+        return commonResourceFunctionality.getMailSessionDescriptors();
+    }
+
+    protected MailSessionDescriptor getMailSessionDescriptor(String name) {
+        return commonResourceFunctionality.getMailSessionDescriptor(name);
+    }
+
+    public void addMailSessionDescriptor(MailSessionDescriptor reference) {
+        commonResourceFunctionality.addMailSessionDescriptor(reference);
+    }
+
+    public void removeMailSessionDescriptor(MailSessionDescriptor reference) {
+        commonResourceFunctionality.removeMailSessionDescriptor(reference);
+    }
+
+    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
+        return commonResourceFunctionality.getDataSourceDefinitionDescriptors();
+    }
+
+    protected DataSourceDefinitionDescriptor getDataSourceDefinitionDescriptor(String name) {
+        return commonResourceFunctionality.getDataSourceDefinitionDescriptor(name);
+    }
+
+    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
+        commonResourceFunctionality.addDataSourceDefinitionDescriptor(reference);
+    }
+
+    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
+        commonResourceFunctionality.removeDataSourceDefinitionDescriptor(reference);
+    }
 }
+

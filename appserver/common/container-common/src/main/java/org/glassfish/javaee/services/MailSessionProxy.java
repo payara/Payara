@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,61 +40,57 @@
 
 package org.glassfish.javaee.services;
 
+import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import java.io.Serializable;
+
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.deployment.MailSessionDescriptor;
 import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-
-import java.io.Serializable;
-import java.util.Collection;
+import org.jvnet.hk2.component.Habitat;
 
 /**
- * This resource proxy will not bind the actual object upon first lookup unlike
- * org.glassfish.resources.api.ResourceProxy. <br><br>
- * It holds the information required to get the actual object upon requests.<br>
- *
- * This is used for @DataSourceDefinition<br>
- * Upon first lookup, the datasource is created, deployed and the internal jndi-name is given to the
- * proxy, using the internal jndi-name actual resource is returned.<br>
- * On further lookups, internal jndi-name is used to get the actual resource.<br>
- *
+ * Created by IntelliJ IDEA.
+ * User: naman mehta
+ * Date: 23/4/12
+ * Time: 2:24 PM
+ * To change this template use File | Settings | File Templates.
  */
+
 @Service
 @PerLookup
-public class DataSourceDefinitionProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
+public class MailSessionProxy implements NamingObjectProxy.InitializationNamingObjectProxy, Serializable {
+
     @Inject
-    private transient BaseServiceLocator habitat;
-    private DataSourceDefinitionDescriptor desc;
+    private transient Habitat habitat;
+    private MailSessionDescriptor desc;
     private String actualResourceName;
 
+    @Override
     public synchronized Object create(Context ic) throws NamingException {
-        if(actualResourceName == null){
-            
+        if (actualResourceName == null) {
+
             actualResourceName = ConnectorsUtil.deriveDataSourceDefinitionResourceName
                     (desc.getResourceId(), desc.getName());
+            desc.setName(actualResourceName);
 
-            try{
-                if(habitat == null){
+            try {
+                if (habitat == null) {
                     habitat = Globals.getDefaultHabitat();
-                    if(habitat == null){
+                    if (habitat == null) {
                         throw new NamingException("Unable to create resource " +
-                                "["+ desc.getName() +" ] as habitat is null");
+                                "[" + desc.getName() + " ] as habitat is null");
                     }
                 }
                 getResourceDeployer(desc).deployResource(desc);
-            }catch(Exception e){
-                NamingException ne = new NamingException("Unable to create resource ["+ desc.getName() +" ]");
+            } catch (Exception e) {
+                NamingException ne = new NamingException("Unable to create resource [" + desc.getName() + " ]");
                 ne.initCause(e);
                 throw ne;
             }
@@ -102,7 +98,7 @@ public class DataSourceDefinitionProxy implements NamingObjectProxy.Initializati
         return ic.lookup(actualResourceName);
     }
 
-    public void setDescriptor(DataSourceDefinitionDescriptor desc){
+    public void setDescriptor(MailSessionDescriptor desc) {
         this.desc = desc;
     }
 

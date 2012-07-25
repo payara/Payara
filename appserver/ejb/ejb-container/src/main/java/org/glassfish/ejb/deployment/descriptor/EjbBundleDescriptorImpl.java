@@ -55,7 +55,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.EjbReferenceDescriptor;
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
@@ -155,8 +154,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     private Set<EntityManagerReferenceDescriptor>
               entityManagerReferences =
               new HashSet<EntityManagerReferenceDescriptor>();
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
 
     /**
      * True if EJB version is 2.x.  This is the default
@@ -1165,31 +1162,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     }
 
     @Override
-    public Set<DataSourceDefinitionDescriptor> getDataSourceDefinitionDescriptors() {
-        return datasourceDefinitionDescs;
-    }
-
-
-    @Override
-    public void addDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        for(Iterator itr = getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionapplicationduplicatedatasourcedefinition",
-                                "This application [{0}] cannot have datasource definitions of same name : [{1}]",
-                                getName(), reference.getName()));
-            }
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    @Override
-    public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
-        getDataSourceDefinitionDescriptors().remove(reference);
-    }
-
-     @Override
     public List<InjectionCapable> getInjectableResourcesByClass(String className) {
         return (getInjectableResourcesByClass(className, this));
     }

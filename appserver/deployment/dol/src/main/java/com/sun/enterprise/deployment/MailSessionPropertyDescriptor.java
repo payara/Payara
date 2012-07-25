@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,33 +40,56 @@
 
 package com.sun.enterprise.deployment;
 
-import java.util.Set;
-
-import com.sun.enterprise.deployment.types.EjbReferenceContainer;
-import com.sun.enterprise.deployment.types.MessageDestinationReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceEnvReferenceContainer;
-import com.sun.enterprise.deployment.types.ResourceReferenceContainer;
-import com.sun.enterprise.deployment.types.ServiceReferenceContainer;
+import org.glassfish.deployment.common.Descriptor;
 
 /**
- * I represent all the configurable deployment information contained in
- * an EJB JAR.
- *
- * @author Danny Coward
+ * Created by IntelliJ IDEA.
+ * User: naman mehta
+ * Date: 18/4/12
+ * Time: 3:47 PM
+ * To change this template use File | Settings | File Templates.
  */
+public class MailSessionPropertyDescriptor  extends Descriptor {
 
-public abstract class EjbBundleDescriptor extends CommonResourceBundleDescriptor
-    implements WritableJndiNameEnvironment, EjbReferenceContainer,
-               ResourceEnvReferenceContainer, ResourceReferenceContainer,
-               ServiceReferenceContainer, MessageDestinationReferenceContainer {
- 
-    public abstract Set<EjbInterceptor> getInterceptors();
-    public abstract EjbInterceptor getInterceptorByClassName(String className);
-    public abstract EjbDescriptor getEjbByName(String name);
-    public abstract boolean hasEjbByName(String name);
-    public abstract Set<? extends EjbDescriptor> getEjbs();
-    public abstract EjbDescriptor[] getEjbByClassName(String className);
-    public abstract Set<ServiceReferenceDescriptor> getEjbServiceReferenceDescriptors();
-    public abstract EjbDescriptor[] getEjbBySEIName(String className);
+    private String name;
+    private String value;
 
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public void setValue(String value){
+        this.value = value;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getValue(){
+        return value;
+    }
+
+    public boolean equals(Object o){
+        if(this == o){
+            return true;
+        }
+        if(o instanceof MailSessionPropertyDescriptor){
+            MailSessionPropertyDescriptor propertyDesc = (MailSessionPropertyDescriptor)o;
+            String propertyDescName = propertyDesc.getName() ;
+            if(propertyDescName!= null && name != null && name.equals(propertyDescName)){
+                String propertyDescValue = propertyDesc.getValue();
+                if(propertyDescValue != null && value != null && value.equals(propertyDescName)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        int result = 17;
+        result = 37*result + getName().hashCode();
+        return result;
+    }
 }

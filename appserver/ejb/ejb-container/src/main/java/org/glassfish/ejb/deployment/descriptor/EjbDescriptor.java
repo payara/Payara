@@ -42,46 +42,12 @@ package org.glassfish.ejb.deployment.descriptor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
-import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.EjbInterceptor;
-import com.sun.enterprise.deployment.EjbReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
-import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.InjectionCapable;
-import com.sun.enterprise.deployment.InjectionInfo;
-import com.sun.enterprise.deployment.InjectionTarget;
-import com.sun.enterprise.deployment.InterceptorDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
-import com.sun.enterprise.deployment.OrderedSet;
-import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
-import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
-import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WritableJndiNameEnvironment;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -102,7 +68,7 @@ import org.glassfish.security.common.Role;
  * @author Sanjeev Krishnan
  */
 
-public abstract class EjbDescriptor extends Descriptor
+public abstract class EjbDescriptor extends CommonResourceDescriptor
         implements com.sun.enterprise.deployment.EjbDescriptor {
 
     private String homeClassName;
@@ -242,9 +208,6 @@ public abstract class EjbDescriptor extends Descriptor
 
     private IASEjbExtraDescriptors iASEjbExtraDescriptors = new IASEjbExtraDescriptors();  // Ludo 12/10/2001 extra DTD info only for iAS
 
-    private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
-            new HashSet<DataSourceDefinitionDescriptor>();
-
     /**
      * returns the extra iAS specific info (not in the RI DID) in the iAS DTD.
      * no setter. You have to modify some fields of the returned object to change it.
@@ -300,6 +263,12 @@ public abstract class EjbDescriptor extends Descriptor
 		    this.addDataSourceDefinitionDescriptor(desc);
 		}
 	    }
+            Set<MailSessionDescriptor> mailSessionDescriptors = other.getMailSessionDescriptors();
+            if (mailSessionDescriptors.size() > 0) {
+                for (MailSessionDescriptor desc : mailSessionDescriptors) {
+                    this.addMailSessionDescriptor(desc);
+                }
+            }
             this.getEntityManagerFactoryReferenceDescriptors().addAll(other.getEntityManagerFactoryReferenceDescriptors());
             this.getEntityManagerReferenceDescriptors().addAll(other.getEntityManagerReferenceDescriptors());
 	}
@@ -1796,43 +1765,6 @@ public abstract class EjbDescriptor extends Descriptor
     }
 
     @Override
-    public Set<DataSourceDefinitionDescriptor>
-            getDataSourceDefinitionDescriptors() {
-        if (env != null)
-            return env.getDataSourceDefinitionDescriptors();
-        else
-            return datasourceDefinitionDescs;
-    }
-
-    @Override
-    public void addDataSourceDefinitionDescriptor(
-                                    DataSourceDefinitionDescriptor reference) {
-        if (env != null) {
-            env.addDataSourceDefinitionDescriptor(reference);
-            return;
-        }
-        for(Iterator itr = this.getDataSourceDefinitionDescriptors().iterator(); itr.hasNext();){
-            DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor)itr.next();
-            if(desc.getName().equals(reference.getName())){
-                throw new IllegalStateException(
-                        localStrings.getLocalString("exceptionejbduplicatedatasourcedefinition",
-                                "This ejb [{0}] cannot have datasource definitions of same name : [{1}]",
-                                getName(), reference.getName()));
-            }
-        }
-        getDataSourceDefinitionDescriptors().add(reference);
-    }
-
-    @Override
-    public void removeDataSourceDefinitionDescriptor(
-                                    DataSourceDefinitionDescriptor reference) {
-        if (env != null)
-            env.removeDataSourceDefinitionDescriptor(reference);
-        else
-            this.getDataSourceDefinitionDescriptors().remove(reference);
-    }
-
-    @Override
     public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if (env != null)
             return env.getServiceReferenceDescriptors();
@@ -2427,7 +2359,6 @@ public abstract class EjbDescriptor extends Descriptor
         messageDestReferences.clear();
         resourceReferences.clear();
         serviceReferences.clear();
-        datasourceDefinitionDescs.clear();
         entityManagerFactoryReferences.clear();
         entityManagerReferences.clear();
         // switch to the web bundle as the source of JNDI entries

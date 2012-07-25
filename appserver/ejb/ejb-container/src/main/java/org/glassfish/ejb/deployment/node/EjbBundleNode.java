@@ -40,34 +40,17 @@
 
 package org.glassfish.ejb.deployment.node;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.MethodPermission;
 import com.sun.enterprise.deployment.MethodPermissionDescriptor;
-import com.sun.enterprise.deployment.node.AbstractBundleNode;
-import com.sun.enterprise.deployment.node.MessageDestinationNode;
-import com.sun.enterprise.deployment.node.SaxParserHandler;
-import com.sun.enterprise.deployment.node.SecurityRoleNode;
-import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
+import org.glassfish.ejb.deployment.descriptor.*;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
 import org.glassfish.ejb.deployment.node.runtime.GFEjbBundleRuntimeNode;
 import org.glassfish.security.common.Role;
@@ -78,7 +61,7 @@ import org.w3c.dom.Node;
  * This class handles ejb bundle xml files
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 @Service
 public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
@@ -88,12 +71,13 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
     public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN";
     
     /** The system ID of an ejb-jar document.*/
-    public final static String SYSTEM_ID = "http://java.sun.com/dtd/ejb-jar_2_0.dtd";    
+    public final static String SYSTEM_ID = "http://java.sun.com/dtd/ejb-jar_2_0.dtd";
     public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/ejb-jar_1_1.dtd";
     public final static String SCHEMA_ID_21 = "ejb-jar_2_1.xsd";
     public final static String SCHEMA_ID_30 = "ejb-jar_3_0.xsd";
-    public final static String SCHEMA_ID = "ejb-jar_3_1.xsd";
-    public final static String SPEC_VERSION = "3.1";
+    public final static String SCHEMA_ID_31 = "ejb-jar_3_1.xsd";
+    public final static String SCHEMA_ID = "ejb-jar_3_2.xsd";
+    public final static String SPEC_VERSION = "3.2";
     private final static List<String> systemIDs = initSystemIDs();
 
    /**
@@ -120,6 +104,7 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
     private static List<String> initSystemIDs() {
         ArrayList<String> systemIDs = new ArrayList<String>(3);
         systemIDs.add(SCHEMA_ID);
+        systemIDs.add(SCHEMA_ID_31);
         systemIDs.add(SCHEMA_ID_30);
         systemIDs.add(SCHEMA_ID_21);
         return Collections.unmodifiableList(systemIDs);
@@ -139,7 +124,7 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
                                                             MessageDrivenBeanNode.class);          
        registerElementHandler(new XMLElement(EjbTagNames.METHOD_PERMISSION), 
                                                             MethodPermissionNode.class);                  
-       registerElementHandler(new XMLElement(TagNames.ROLE), 
+       registerElementHandler(new XMLElement(TagNames.ROLE),
                                                             SecurityRoleNode.class, "addRole");       
        registerElementHandler(new XMLElement(EjbTagNames.CONTAINER_TRANSACTION), 
                                                             ContainerTransactionNode.class);       

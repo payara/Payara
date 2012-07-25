@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
 import com.sun.enterprise.deployment.node.EjbReferenceNode;
@@ -75,7 +76,7 @@ import org.w3c.dom.Node;
  * shared by all types of enterprise beans (MDB, session, entity)
  *
  * @author  Jerome Dochez
- * @version 
+ * @version
  */
 public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableComponentNode<S> {
 
@@ -93,6 +94,7 @@ public abstract class EjbNode<S extends EjbDescriptor> extends DisplayableCompon
         registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
         registerElementHandler(new XMLElement(EjbTagNames.SECURITY_IDENTITY),
                                                             SecurityIdentityNode.class);             
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 

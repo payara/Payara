@@ -47,20 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
-import com.sun.enterprise.deployment.node.AbstractBundleNode;
-import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
-import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
-import com.sun.enterprise.deployment.node.EjbReferenceNode;
-import com.sun.enterprise.deployment.node.EntityManagerFactoryReferenceNode;
-import com.sun.enterprise.deployment.node.EnvEntryNode;
-import com.sun.enterprise.deployment.node.JndiEnvRefNode;
-import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
-import com.sun.enterprise.deployment.node.MessageDestinationNode;
-import com.sun.enterprise.deployment.node.MessageDestinationRefNode;
-import com.sun.enterprise.deployment.node.ResourceEnvRefNode;
-import com.sun.enterprise.deployment.node.ResourceRefNode;
-import com.sun.enterprise.deployment.node.SaxParserHandler;
-import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.node.runtime.AppClientRuntimeNode;
 import com.sun.enterprise.deployment.node.runtime.GFAppClientRuntimeNode;
 import com.sun.enterprise.deployment.types.EjbReference;
@@ -75,7 +62,7 @@ import org.w3c.dom.Node;
  * This class is responsible for handling app clients
  *
  * @author  Sheetal Vartak
- * @version 
+ * @version
  */
 
 @Service
@@ -92,8 +79,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     public final static String SCHEMA_ID_14 = "application-client_1_4.xsd";
     
     public final static String SCHEMA_ID_15 = "application-client_5.xsd";
-    public final static String SCHEMA_ID = "application-client_6.xsd";
-    public final static String SPEC_VERSION = "6";
+    public final static String SCHEMA_ID_16 = "application-client_6.xsd";
+    public final static String SCHEMA_ID = "application-client_7.xsd";
+    public final static String SPEC_VERSION = "7";
     private final static List<String> systemIDs = initSystemIDs();
  
     public final static XMLElement tag = new XMLElement(ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
@@ -115,7 +103,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE),
                                                              ResourceRefNode.class, "addResourceReferenceDescriptor");   
 	    registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE), 
                                                             ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
@@ -127,6 +115,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationClientTagNames.APPLICATION_CLIENT_TAG);
     }
@@ -240,6 +229,9 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         // datasource-definition*
         writeDataSourceDefinitionDescriptors(appclientNode, appclientDesc.getDataSourceDefinitionDescriptors().iterator());
         
+        // mail-session*
+        writeMailSessionDescriptors(appclientNode, appclientDesc.getMailSessionDescriptors().iterator());
+
         appendTextChild(appclientNode, ApplicationClientTagNames.CALLBACK_HANDLER, appclientDesc.getCallbackHandler());
 
          // message-destination*

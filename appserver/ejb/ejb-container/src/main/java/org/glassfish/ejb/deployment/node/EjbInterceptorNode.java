@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.EjbLocalReferenceNode;
 import com.sun.enterprise.deployment.node.EjbReferenceNode;
@@ -83,16 +84,17 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(TagNames.POST_CONSTRUCT), LifecycleCallbackNode.class, "addPostConstructDescriptor");       
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                EnvEntryNode.class, "addEnvironmentProperty");
-        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
-        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
+        registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);
+        registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);
         JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF), serviceRefNode.getClass(),"addServiceReferenceDescriptor");
         }
-        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE), 
+        registerElementHandler(new XMLElement(TagNames.RESOURCE_REFERENCE),
                ResourceRefNode.class, "addResourceReferenceDescriptor");   
         registerElementHandler(new XMLElement(TagNames.RESOURCE_ENV_REFERENCE),
                ResourceEnvRefNode.class, "addResourceEnvReferenceDescriptor");               
@@ -159,7 +161,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
                 descriptor.getAroundTimeoutDescriptors().iterator());
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.POST_CONSTRUCT)) {
-            writeLifeCycleCallbackDescriptors(interceptorNode, TagNames.POST_CONSTRUCT, 
+            writeLifeCycleCallbackDescriptors(interceptorNode, TagNames.POST_CONSTRUCT,
                 descriptor.getCallbackDescriptors(CallbackType.POST_CONSTRUCT));
         }
         if (descriptor.hasCallbackDescriptor(CallbackType.PRE_DESTROY)) {
@@ -179,6 +181,8 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
        // datasource-definition*
        writeDataSourceDefinitionDescriptors(interceptorNode, descriptor.getDataSourceDefinitionDescriptors().iterator());
 
+        // mail-session*
+        writeMailSessionDescriptors(interceptorNode, descriptor.getMailSessionDescriptors().iterator());
 
         return interceptorNode;
     }

@@ -203,5 +203,11 @@ public interface WritableJndiNameEnvironment extends JndiNameEnvironment {
     public void removeDataSourceDefinitionDescriptor(
 				DataSourceDefinitionDescriptor reference);
 
+    public void addMailSessionDescriptor(
+            com.sun.enterprise.deployment.MailSessionDescriptor reference);
+
+    public void removeMailSessionDescriptor(
+            com.sun.enterprise.deployment.MailSessionDescriptor reference);
+
 }
 
