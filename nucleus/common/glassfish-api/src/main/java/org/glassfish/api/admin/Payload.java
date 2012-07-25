@@ -131,10 +131,6 @@ public interface Payload {
      * Public API for outbound Payloads.
      */
     public static interface Outbound {
-        
-        /** Count of attached parts
-         */
-        public int size();
 
         /**
          * Adds a part of the specified content type, name, and String content

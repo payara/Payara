@@ -66,7 +66,6 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
-import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -701,7 +700,6 @@ public class RemoteCommand extends CLICommand {
         }
         final Map<String,String> racAttrs = rac.getAttributes();
         String returnVal = racAttrs != null ? racAttrs.get("exit-code") : null;
-        //logger.log(Level.INFO, Metrix.getInstance().toString());
         if(returnVal != null && "WARNING".equals(returnVal))
             return WARNING;
         return SUCCESS;

@@ -43,13 +43,10 @@
                         com.sun.enterprise.admin.remote; \
                         com.sun.enterprise.admin.util; \
                         com.sun.enterprise.admin.commands; \
-                        com.sun.enterprise.admin.progress; \
                         com.sun.enterprise.admin.util.jmx; \
                         com.sun.enterprise.admin.util.proxy; \
                         com.sun.enterprise.admin.remote.reader; \
                         com.sun.enterprise.admin.remote.writer; \
-                        com.sun.enterprise.admin.remote.sse; \
-                        com.sun.enterprise.admin.event;\
                         com.sun.enterprise.admin.util.test; version=${project.osgi.version}
 DynamicImport-Package: \
                         com.sun.enterprise.security.ssl

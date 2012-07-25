@@ -40,6 +40,7 @@
 package org.glassfish.api.admin.progress;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.glassfish.api.admin.ProgressStatus;
 
@@ -53,7 +54,7 @@ import org.glassfish.api.admin.ProgressStatus;
 //TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
 public class ProgressStatusMirroringImpl extends ProgressStatusBase {
     
-    //private Collection<ProgressStatusBase> mirroreds = new ArrayList<ProgressStatusBase>();
+    private Collection<ProgressStatusBase> mirroreds = new ArrayList<ProgressStatusBase>();
     
     public ProgressStatusMirroringImpl(String name, ProgressStatusBase parent, String id) {
         super(name, -1, parent, id);
@@ -61,7 +62,7 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
 
     @Override
     protected ProgressStatusBase doCreateChild(String name, int totalStepCount) {
-        String childId = (id == null ? "" : id) + "." + (children.size() + 1);
+        String childId = (id == null ? "" : id) + "." + (childs.size() + 1);
         return new ProgressStatusImpl(name, totalStepCount, this, childId);
     }
     
@@ -86,7 +87,7 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
     public synchronized ProgressStatus createChild(String name, 
             int allocatedSteps, int totalStepCount) {
         ProgressStatusBase result = doCreateChild(name, totalStepCount);
-        children.add(new ChildProgressStatus(allocatedSteps, result));
+        mirroreds.add(result);
         fireEvent(new ProgressStatusEvent(result, 0));
         return result;
     }
@@ -101,8 +102,7 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
         int newTotalStepCount = 0;
         boolean unknown = false;
         int newCurrentStepCount = 0;
-        for (ChildProgressStatus child : children) {
-            ProgressStatusBase mirr = child.getProgressStatus();
+        for (ProgressStatusBase mirr : mirroreds) {
             if (!unknown) {
                 int tsc = mirr.getTotalStepCount();
                 if (tsc < 0) {
@@ -129,15 +129,10 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
         }
     }
     
-//    @Override
-//    public synchronized Collection<ProgressStatusBase> getChildren() {
-//        return new ArrayList<ProgressStatusBase>(mirroreds);
-//    }
-//    
-//    @Override
-//    public Set<ChildProgressStatus> getChildProgressStatuses() {
-//        return children;
-//    }
+    @Override
+    public synchronized Collection<ProgressStatusBase> getChildren() {
+        return new ArrayList<ProgressStatusBase>(mirroreds);
+    }
     
     @Override
     protected synchronized float computeCompleteSteps() {
@@ -145,7 +140,7 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
     }
     
     @Override
-    public synchronized float computeCompletePortion() {
+    protected synchronized float computeCompletePortion() {
         if (totalStepCount < 0) {
             return -1;
         }

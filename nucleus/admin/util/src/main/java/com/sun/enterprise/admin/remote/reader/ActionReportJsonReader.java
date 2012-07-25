@@ -59,7 +59,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.api.ActionReport;
 
 /** JAX-WS reader for ActionReport in JSON format. This is reader of format 
- * created by {@code ActionReportDtoJsonProvider}.
+ * created by {@code ActionReportDtoStaxProvider}.
  *
  * @author mmares
  */

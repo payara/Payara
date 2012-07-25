@@ -175,10 +175,5 @@
             <artifactId>jersey-media-json</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-sse</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 </project>

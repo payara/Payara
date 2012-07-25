@@ -39,8 +39,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.admin.progress.CommandProgressImpl;
-import java.util.UUID;
+import com.sun.enterprise.v3.admin.progress.CommandProgressImpl;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
@@ -62,7 +61,9 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
 class CommandRunnerProgressHelper {
     
     //From constructor
+    private AdminCommand command;
     private Progress progressAnnotation;
+    private CommandProgressRegistry registry;
     private CommandProgressImpl commandProgress;
     private int replicationCount = 0;
 
@@ -70,24 +71,18 @@ class CommandRunnerProgressHelper {
     private ProgressStatus progressForMainCommand = null;
     private ProgressStatusMirroringImpl progressMirroring = null;
     
-    public CommandRunnerProgressHelper(AdminCommand command, String name, AdminCommandInstance commandInstance) {
+    public CommandRunnerProgressHelper(AdminCommand command, String name, CommandProgressRegistry registry) {
+        this.command = command;
+        this.registry = registry;
         progressAnnotation = command.getClass().getAnnotation(Progress.class);
         if (progressAnnotation != null) {
             if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
-                commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(commandInstance));
+                commandProgress = new CommandProgressImpl(name);
             } else {
-                commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(commandInstance));
+                commandProgress = new CommandProgressImpl(progressAnnotation.name());
             }
-            commandInstance.setCommandProgress(commandProgress);
+            registry.registr(commandProgress);
         }
-    }
-    
-    private String createIdForCommandProgress(AdminCommandInstance commandInstance) {
-        String cid = commandInstance == null ? null : commandInstance.getId();
-        if (cid == null || cid.isEmpty()) {
-            cid = UUID.randomUUID().toString();
-        }
-        return cid;
     }
 
     public int getReplicationCount() {
@@ -134,6 +129,12 @@ class CommandRunnerProgressHelper {
             return new AdminCommandContextForInstance(context, progressForMainCommand);
         }
         return context;
+    }
+    
+    public void complete(AdminCommandContext context) {
+        if (commandProgress != null) {
+            commandProgress.complete(context.getActionReport(), context.getOutboundPayload());
+        }
     }
     
 }

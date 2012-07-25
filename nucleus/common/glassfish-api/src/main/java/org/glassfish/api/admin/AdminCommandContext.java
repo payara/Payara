@@ -41,10 +41,11 @@
 package org.glassfish.api.admin;
 
 
-import java.util.logging.Logger;
-import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ExecutionContext;
+import java.util.logging.Logger;
+import javax.security.auth.Subject;
+import java.util.logging.Logger;
 
 /**
  * Useful services for administrative commands implementation
@@ -107,10 +108,5 @@ public interface AdminCommandContext extends ExecutionContext {
      * implementation.
      */
     public ProgressStatus getProgressStatus();
-    
-    /** Simple event broker for inter command communication mostly
-     * from server to client. (Command to caller).
-     */
-    public AdminCommandEventBroker getEventBroker();
 
 }

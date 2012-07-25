@@ -60,21 +60,18 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
     private final Payload.Outbound outboundPayload;
     private Subject subject;
     private ProgressStatus dummyProgressStatus; //This implementation provides only unconnected ProgressStatus
-    private final AdminCommandEventBroker eventBroker;
 
     public AdminCommandContextImpl(Logger logger, ActionReport report) {
-        this(logger, report, null, null, null);
+        this(logger, report, null, null);
     }
     
     public AdminCommandContextImpl(Logger logger, ActionReport report,
                                    final Payload.Inbound inboundPayload,
-                                   final Payload.Outbound outboundPayload,
-                                   final AdminCommandEventBroker eventBroker) {
+                                   final Payload.Outbound outboundPayload) {
         this.logger = logger;
         this.report = report;
         this.inboundPayload = inboundPayload;
         this.outboundPayload = outboundPayload;
-        this.eventBroker = eventBroker;
     }
     
     @Override
@@ -118,11 +115,6 @@ public class AdminCommandContextImpl implements  AdminCommandContext {
             dummyProgressStatus = new ProgressStatusImpl();
         }
         return dummyProgressStatus;
-    }
-
-    @Override
-    public AdminCommandEventBroker getEventBroker() {
-        return this.eventBroker;
     }
 
 }

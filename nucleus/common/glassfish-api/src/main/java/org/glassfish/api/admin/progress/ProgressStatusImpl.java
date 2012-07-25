@@ -44,7 +44,7 @@ package org.glassfish.api.admin.progress;
  *
  * @author mmares
  */
-//TODO: Move to admin-utils if possible. It is now in API only because ProgressStatusImpl is here, too
+//TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
 public class ProgressStatusImpl extends ProgressStatusBase {
     
     /** Constructor for instancing dummy (without propagation) instance.
@@ -89,8 +89,8 @@ public class ProgressStatusImpl extends ProgressStatusBase {
 
     @Override
     protected ProgressStatusBase doCreateChild(String name, int totalStepCount) {
-        String childId = (id == null ? "" : id) + "." + (children.size() + 1);
+        String childId = (id == null ? "" : id) + "." + (childs.size() + 1);
         return new ProgressStatusImpl(name, totalStepCount, this, childId);
-    }  
+    }
     
 }

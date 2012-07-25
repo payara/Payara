@@ -78,6 +78,10 @@ public class RestPayloadImpl extends PayloadImpl {
             }
         }
         
+        public int size() {
+            return getParts().size();
+        }
+
         @Override
         public String getComplexContentType() {
             return complexType;

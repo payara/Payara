@@ -37,72 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
+package com.sun.enterprise.v3.admin.progress;
 
-import java.util.Date;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.api.admin.progress.ProgressStatusImpl;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
+import org.junit.AfterClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
-/** Base interface of progress status implementation. Provides information
- * about overall progress.
+/**
  *
  * @author mmares
  */
-public interface CommandProgress extends ProgressStatus {
+public class CommandProgressImplTest {
     
-    public class CommandResult {
-        
-        private ActionReport actionReport;
-        private Payload.Outbound payload;
-
-        public CommandResult(ActionReport actionReport, Payload.Outbound payload) {
-            this.actionReport = actionReport;
-            this.payload = payload;
-        }
-
-        public ActionReport getActionReport() {
-            return actionReport;
-        }
-
-        public Payload.Outbound getPayload() {
-            return payload;
-        }
-
+    public CommandProgressImplTest() {
     }
-    
-    /** Completes whole progress and records result
-     * 
-     * @param actionReport result message
-     * @param payload result data
-     */
-    public void complete(ActionReport actionReport, Payload.Outbound payload);
-    
-    /** If progress was completed result data will be returned else {@code null}
-     * 
-     * @return 
-     */
-    public CommandResult getCommandResult();
-    
-    /** Timestamp of command complete event or {@code null} for running command
-     */ 
-    public Date getEndTime();
-    
-    /** Timestamp of command creation
-     */
-    public Date getStartTime();
-    
-    /** Creates child for mirroring (supplemental commands)
-     */
-    public ProgressStatusMirroringImpl createMirroringChild(int allocatedSteps);
-    
-    /** Unique id of this command
-     */
-    public String getId();
-    
-    public String getName();
-    
-    public float computeCompletePortion();
-    
-    public String getLastMessage();
+
+//    @BeforeClass
+//    public static void setUpClass() throws Exception {
+//    }
+//
+//    @AfterClass
+//    public static void tearDownClass() throws Exception {
+//    }
+
+
+    @Test
+    public void testCreateMirroringChild() {
+        CommandProgressImpl cp = new CommandProgressImpl("first");
+        cp.setTotalStepCount(2);
+        ProgressStatusMirroringImpl ch1 = cp.createMirroringChild(1);
+        assertNotNull(ch1);
+        ProgressStatus ch2 = cp.createChild(1);
+        assertNotNull(ch1);
+        assertTrue(ch2 instanceof ProgressStatusImpl);
+    }
     
 }

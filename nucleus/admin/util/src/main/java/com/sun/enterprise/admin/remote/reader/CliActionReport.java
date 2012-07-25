@@ -307,12 +307,10 @@ public class CliActionReport extends ActionReport {
                 r.append(']').append(EOL);
             }
         }
-        if (ar.getExtraProperties() != null) {
-            for (Map.Entry<Object, Object> entry : ar.getExtraProperties().entrySet()) {
-                addIndent(indentLevel, r);
-                r.append(" >").append(entry.getKey()).append(" = ").append(entry.getValue());
-                r.append(EOL);
-            }
+        for (Map.Entry<Object, Object> entry : ar.getExtraProperties().entrySet()) {
+            addIndent(indentLevel, r);
+            r.append(" >").append(entry.getKey()).append(" = ").append(entry.getValue());
+            r.append(EOL);
         }
         messageToString(indentLevel + 1, id + ".M0", ar.getTopMessagePart(), r);
         r.append(EOL);

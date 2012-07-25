@@ -96,7 +96,6 @@ import javax.inject.Named;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 import javax.validation.*;
-import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.SupplementalCommandExecutor.SupplementalCommand;
 import org.jvnet.hk2.config.MessageInterpolatorImpl;
@@ -136,7 +135,7 @@ public class CommandRunnerImpl implements CommandRunner {
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
     @Inject
-    AdminCommandInstanceRegistry commandInstanceRegistry;
+    CommandProgressRegistry progressRegistry;
     
     //private final Map<Class<? extends AdminCommand>, String> commandModelEtagMap = new WeakHashMap<Class<? extends AdminCommand>, String>();
     private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
@@ -152,10 +151,9 @@ public class CommandRunnerImpl implements CommandRunner {
      * Returns an initialized ActionReport instance for the passed type or
      * null if it cannot be found.
      *
-     * @param name action report type name
+     * @param name actiopn report type name
      * @return uninitialized action report or null
      */
-    @Override
     public ActionReport getActionReport(String name) {
         return habitat.getComponent(ActionReport.class, name);
     }
@@ -183,7 +181,7 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     @Override
     public CommandModel getModel(String scope, String commandName, Logger logger) {
-        AdminCommand command;
+        AdminCommand command = null;
         try {
             String commandServiceName = (scope != null) ? scope + commandName : commandName;
             command = habitat.getComponent(AdminCommand.class, commandServiceName);
@@ -254,7 +252,6 @@ public class CommandRunnerImpl implements CommandRunner {
      * @param logger logger to log
      * @return command registered under commandName or null if not found
      */
-    @Override
     public AdminCommand getCommand(String scope, String commandName, 
             ActionReport report, Logger logger) {
 
@@ -346,7 +343,6 @@ public class CommandRunnerImpl implements CommandRunner {
      * @param report where to place the status of the command execution
      * @return a new command invocation for that command name
      */
-    @Override
     public CommandInvocation getCommandInvocation(String scope, String name,
             ActionReport report) {
         return new ExecutionContext(scope, name, report);
@@ -1064,8 +1060,7 @@ public class CommandRunnerImpl implements CommandRunner {
     /**
      * Called from ExecutionContext.execute.
      */
-    private void doCommand(ExecutionContext inv, AdminCommand command, 
-            final Subject subject, final AdminCommandInstance commandInstance) {
+    private void doCommand(ExecutionContext inv, AdminCommand command, final Subject subject) {
 
         if (command == null) {
             command = getCommand(inv.scope(), inv.name(), inv.report(), logger);
@@ -1086,7 +1081,7 @@ public class CommandRunnerImpl implements CommandRunner {
         ParameterMap parameters;
         final AdminCommandContext context = new AdminCommandContextImpl(
                 LogDomains.getLogger(command.getClass(), LogDomains.ADMIN_LOGGER),
-                report, inv.inboundPayload(), inv.outboundPayload(), commandInstance.getEventBroker());
+                report, inv.inboundPayload(), inv.outboundPayload());
         context.setSubject(subject);
         List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
         FailurePolicy fp = null;
@@ -1094,7 +1089,7 @@ public class CommandRunnerImpl implements CommandRunner {
         ActionReport.ExitCode preSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         ActionReport.ExitCode postSupplementalReturn = ActionReport.ExitCode.SUCCESS;
         CommandRunnerProgressHelper progressHelper = 
-                new CommandRunnerProgressHelper(command, model.getCommandName(), commandInstance); 
+                new CommandRunnerProgressHelper(command, model.getCommandName(), progressRegistry); 
                 
 
         // If this glassfish installation does not have stand alone instances / clusters at all, then
@@ -1128,6 +1123,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         //TODO: MMar - it must be registered ProgressStatusRegistry here in this case (non standard flow)
                         inv.setReport(doCommand(model, command, context, progressHelper));
                     }
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -1148,6 +1144,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                 AdminCommandResponse.GENERATED_HELP, "true");
                         getHelp(command, report);
                     }
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -1173,6 +1170,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     ActionReport.MessagePart childPart =
                             report.getTopMessagePart().addChild();
                     childPart.setMessage(getUsageText(command, model));
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -1182,6 +1180,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         ufm.optionNameToFileMap());
                 injectionMgr.setContext(context);
                 if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                    progressHelper.complete(context);
                     return;
                 }
 
@@ -1208,12 +1207,14 @@ public class CommandRunnerImpl implements CommandRunner {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(adminStrings.getLocalString("commandrunner.noauth",
                             "User is not authorized for this command"));
+                    progressHelper.complete(context);
                     return;
                 } catch (Exception ex) {
                     report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(adminStrings.getLocalString("commandrunner.errAuth",
                             "Error during authorization"));
+                    progressHelper.complete(context);
                     return;
                 }
                     
@@ -1232,7 +1233,9 @@ public class CommandRunnerImpl implements CommandRunner {
                         runtimeTypes.add(RuntimeType.DAS);
                         runtimeTypes.add(RuntimeType.INSTANCE);
                     } else {
-                        runtimeTypes.addAll(Arrays.asList(clAnnotation.value()));
+                        for (RuntimeType t : clAnnotation.value()) {
+                            runtimeTypes.add(t);
+                        }
                     }
                     if (clAnnotation.ifFailure() == null) {
                         fp = FailurePolicy.Error;
@@ -1251,6 +1254,7 @@ public class CommandRunnerImpl implements CommandRunner {
                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.targettype.unallowed",
                                "Target type is not allowed on single instance command {0}  ,"
                                        , model.getCommandName()));
+                       progressHelper.complete(context);
                        return;
                    }
                    //Do not replicate the command when there is
@@ -1289,7 +1293,9 @@ public class CommandRunnerImpl implements CommandRunner {
                     //TODO : See is @TargetType can also be moved to the CommandModel
 
                     if (tgtTypeAnnotation != null) {
-                        targetTypesAllowed.addAll(Arrays.asList(tgtTypeAnnotation.value()));
+                        for (CommandTarget c : tgtTypeAnnotation.value()) {
+                            targetTypesAllowed.add(c);
+                        }
                     }
                     //If not @TargetType, default it
                     if (targetTypesAllowed.isEmpty()) {
@@ -1323,6 +1329,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtarget",
                                 "Unable to find a valid target with name {0}", targetName));
+                        progressHelper.complete(context);
                         return;
                     }
                     //Does this command allow this target type
@@ -1344,6 +1351,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtargettype",
                                 "Target {0} is not a supported type. Command {1} supports these types of targets only : {2}",
                                 targetName, model.getCommandName(), validTypes.toString()));
+                        progressHelper.complete(context);
                         return;
                     }
                     //If target is a clustered instance and the allowed types does not allow operations on clustered
@@ -1355,6 +1363,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.instanceopnotallowed",
                                 "The {0} command is not allowed on instance {1} because it is part of cluster {2}",
                                 model.getCommandName(), targetName, c.getName()));
+                        progressHelper.complete(context);
                         return;
                     }
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.replicationvalidationdone",
@@ -1387,6 +1396,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             report.setMessage(adminStrings.getLocalString("commandrunner.executor.errorinprepare",
                                     "The command {0} cannot be completed because the preparation for the command failed "
                                     + "indicating potential issues : {1}", model.getCommandName(), report.getMessage()));
+                            progressHelper.complete(context);
                             return;
                         }
                     }
@@ -1402,6 +1412,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setActionExitCode(preSupplementalReturn);
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                 "A supplemental command failed; cannot proceed further"));
+                        progressHelper.complete(context);
                         return;
                     }
                     //Run main command if it is applicable for this instance type
@@ -1429,6 +1440,7 @@ public class CommandRunnerImpl implements CommandRunner {
                             report.setActionExitCode(postSupplementalReturn);
                             report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                     "A supplemental command failed; cannot proceed further"));
+                            progressHelper.complete(context);
                             return;
                         }
                     }
@@ -1488,6 +1500,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 ActionReport.MessagePart childPart =
                         report.getTopMessagePart().addChild();
                 childPart.setMessage(getUsageText(command, model));
+                progressHelper.complete(context);
                 return;
             }
             /*
@@ -1500,6 +1513,7 @@ public class CommandRunnerImpl implements CommandRunner {
              */
 
             if (processEnv.getProcessType().isEmbedded()) {
+                progressHelper.complete(context);
                 return;
             }
             if (preSupplementalReturn == ActionReport.ExitCode.WARNING
@@ -1541,6 +1555,7 @@ public class CommandRunnerImpl implements CommandRunner {
                                 report.setActionExitCode(afterReplicationSupplementalReturn);
                                 report.setMessage(adminStrings.getLocalString("commandrunner.executor.supplementalcmdfailed",
                                         "A supplemental command failed; cannot proceed further"));
+                                progressHelper.complete(context);
                                 return;
                             }
                         }
@@ -1569,6 +1584,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 ufm.close();
             }
         }
+        progressHelper.complete(context);
     }
     
     private Map<String,Object> buildEnvMap(final ParameterMap params) {
@@ -1591,18 +1607,6 @@ public class CommandRunnerImpl implements CommandRunner {
      * name of the command to execute, the parameters of the command, etc.
      */
     class ExecutionContext implements CommandInvocation {
-        
-        private class NameListerPair {
-            
-            private String nameRegexp;
-            private AdminCommandEventBroker.AdminCommandListener listener;
-
-            public NameListerPair(String nameRegexp, AdminCommandListener listener) {
-                this.nameRegexp = nameRegexp;
-                this.listener = listener;
-            }
-            
-        }
 
         protected final String scope;
         protected final String name;
@@ -1612,7 +1616,6 @@ public class CommandRunnerImpl implements CommandRunner {
         protected Payload.Inbound inbound;
         protected Payload.Outbound outbound;
         protected Subject subject;
-        private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>(); 
 
         private ExecutionContext(String scope, String name, ActionReport report) {
             this.scope = scope;
@@ -1649,12 +1652,7 @@ public class CommandRunnerImpl implements CommandRunner {
             this.subject = subject;
             return this;
         }
-        
-        @Override
-        public CommandInvocation listener(String nameRegexp, AdminCommandEventBroker.AdminCommandListener listener) {
-            nameListerPairs.add(new NameListerPair(nameRegexp, listener));
-            return this;
-        }
+
         
         @Override
         public void execute() {
@@ -1680,7 +1678,7 @@ public class CommandRunnerImpl implements CommandRunner {
         ActionReport report() {
             return report;
         }
-        
+
         private void setReport(ActionReport ar) {
             report = ar;
         }
@@ -1695,13 +1693,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
         @Override
         public void execute(AdminCommand command) {
-            AdminCommandInstance commandInstance = commandInstanceRegistry.createCommandInstance();
-            for (NameListerPair nameListerPair : nameListerPairs) {
-                commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);
-            }
-            commandInstanceRegistry.register(commandInstance);
-            CommandRunnerImpl.this.doCommand(this, command, subject, commandInstance);
-            commandInstance.complete(report(), outboundPayload());
+            CommandRunnerImpl.this.doCommand(this, command, subject);
         }
     }
 

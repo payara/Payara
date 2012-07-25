@@ -63,10 +63,6 @@ public class PayloadImpl implements Payload {
          * Partial implementation of the Outbound Payload.
          */
         private final ArrayList<Payload.Part> parts = new ArrayList<Payload.Part>();
-        
-        public int size() {
-            return getParts().size();
-        }
 
         @Override
         public void addPart(

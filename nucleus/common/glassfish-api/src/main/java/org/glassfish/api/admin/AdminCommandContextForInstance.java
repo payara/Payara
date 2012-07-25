@@ -109,10 +109,5 @@ public class AdminCommandContextForInstance implements AdminCommandContext {
         }
     }
 
-    @Override
-    public AdminCommandEventBroker getEventBroker() {
-        return wrapped.getEventBroker();
-    }
-
     
 }

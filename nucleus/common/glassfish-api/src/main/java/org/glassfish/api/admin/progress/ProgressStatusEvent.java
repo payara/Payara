@@ -43,64 +43,33 @@ package org.glassfish.api.admin.progress;
  *
  * @author mmares
  */
-//TODO: Move to AdminUtil if possible. It is now in API only because ProgressStatusImpl is here, too
+//TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
 public class ProgressStatusEvent {
     
     public enum Changed {
         NEW_CHILD, STEPS, TOTAL_STEPS, COMPLETED;
     }
     
-    private final ProgressStatusDTO source;
-    private final String parentSourceId;
-    private final Changed[] changed;
-    private final String message;
-    private final int allocatedSteps; //For new child only
+    private ProgressStatusBase source;
+    private Changed[] changed;
+    private String message;
+    private int allocatedSteps = 0; //For new child only
 
-    private ProgressStatusEvent(ProgressStatusBase source, String message, int allocatedSteps, Changed... changed) {
-        this.source = base2DTO(source);
+    ProgressStatusEvent(ProgressStatusBase source, String message, Changed... changed) {
+        this.source = source;
         if (changed == null) {
             changed = new Changed[0];
         }
         this.changed = changed;
         this.message = message;
-        this.allocatedSteps = allocatedSteps;
-        ProgressStatusBase parrent = source.getParrent();
-        if (parrent != null) {
-            this.parentSourceId = source.getParrent().getId();
-        } else {
-            this.parentSourceId = null;
-        }
-    }
-    
-    public ProgressStatusEvent(ProgressStatusBase source, String message, Changed... changed) {
-        this(source, message, 0, changed);
     }
 
     /** Constructor only for {@code Changed.NEW_CHILD}
      */
     public ProgressStatusEvent(ProgressStatusBase source, int allocatedSteps) {
-        this(source, null, allocatedSteps, new Changed[] {Changed.NEW_CHILD});
-    }
-
-    public ProgressStatusEvent(ProgressStatusDTO source, String parentSourceId, String message, int allocatedSteps, Changed... changed) {
         this.source = source;
-        this.parentSourceId = parentSourceId;
-        this.changed = changed;
-        this.message = message;
+        this.changed = new Changed[] {Changed.NEW_CHILD};
         this.allocatedSteps = allocatedSteps;
-    }
-    
-    private static ProgressStatusDTO base2DTO(ProgressStatusBase source) {
-        if (source == null) {
-            return null;
-        }
-        ProgressStatusDTO result = new ProgressStatusDTO();
-        result.setId(source.getId());
-        result.setName(source.getName());
-        result.setTotalStepCount(source.getTotalStepCount());
-        result.setCurrentStepCount(source.getCurrentStepCount());
-        result.setCompleted(source.isComplete());
-        return result;
     }
 
     public int getAllocatedSteps() {
@@ -115,12 +84,8 @@ public class ProgressStatusEvent {
         return message;
     }
 
-    public ProgressStatusDTO getSource() {
+    public ProgressStatusBase getSource() {
         return source;
-    }
-
-    public String getParentSourceId() {
-        return parentSourceId;
     }
     
 }

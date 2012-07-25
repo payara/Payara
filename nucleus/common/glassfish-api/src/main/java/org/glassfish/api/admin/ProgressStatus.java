@@ -315,9 +315,4 @@ public interface ProgressStatus {
      */
     public ProgressStatus createChild(int allocatedSteps);
     
-    /** Id is unique for any ProgressStatuses. It is mainly used for remote
-     * communication. 
-     */
-    public String getId();
-    
 }
