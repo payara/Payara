@@ -484,7 +484,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static void addIndex(Config c, Habitat habitat, String name) {
             habitat.addIndex(new ExistingSingletonInhabitant<Config>(c),
-                    Config.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                    Config.class.getName(), name);
 
             // directly referenced objects
             ConfigBeanProxy dirref[] = {
@@ -503,7 +503,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
                 if (cbp != null) {
                     habitat.addIndex(new ExistingSingletonInhabitant<ConfigBeanProxy>(cbp),
                             ConfigSupport.getImpl(cbp).getProxyType().getName(),
-                            ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                            name);
                 }
             }
 
@@ -511,7 +511,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             for (Container extension : c.getContainers()) {
                 habitat.addIndex(new ExistingSingletonInhabitant<Container>(extension),
                         ConfigSupport.getImpl(extension).getProxyType().getName(),
-                        ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                        name);
             }
         }
 
