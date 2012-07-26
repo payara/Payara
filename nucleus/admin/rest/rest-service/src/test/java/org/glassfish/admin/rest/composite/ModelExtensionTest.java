@@ -37,14 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
+package org.glassfish.admin.rest.composite;
 
-import org.glassfish.admin.rest.composite.RestModel;
+import java.util.ArrayList;
+import java.util.List;
+import org.glassfish.admin.rest.model.BaseModel;
+import org.glassfish.admin.rest.model.ModelExt1;
+import org.glassfish.admin.rest.model.ModelExt2;
+import org.glassfish.admin.rest.model.RelatedModel;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-public interface RelatedModel {
-    public String getId();
-    public void setId(String id);
+/**
+ *
+ * @author jdlee
+ */
+public class ModelExtensionTest {
+    @Test(groups = "offline")
+    public void testNestedModels() {
+        BaseModel model = CompositeUtil.getModel(BaseModel.class, getClass());
+        List<RelatedModel> related = model.getRelated();
+        Assert.assertNull(related);
 
-    public String getDescription();
-    public void setDescription(String desc);
+        RelatedModel rm = CompositeUtil.getModel(RelatedModel.class, getClass());
+        rm.setId("1");
+        rm.setDescription("test");
+        related = new ArrayList<RelatedModel>();
+        related.add(rm);
+        model.setRelated(related);
+
+        related = model.getRelated();
+        Assert.assertEquals(related.size(), 1);
+    }
+
+    @Test(groups = "offline")
+    public void testModelExtension() {
+        BaseModel model = CompositeUtil.getModel(BaseModel.class, getClass());
+        Assert.assertTrue(ModelExt1.class.isAssignableFrom(model.getClass()));
+        Assert.assertTrue(ModelExt2.class.isAssignableFrom(model.getClass()));
+    }
 }

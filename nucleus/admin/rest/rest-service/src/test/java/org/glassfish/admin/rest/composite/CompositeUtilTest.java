@@ -37,14 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
 
-import org.glassfish.admin.rest.composite.RestModel;
+package org.glassfish.admin.rest.composite;
 
-public interface RelatedModel {
-    public String getId();
-    public void setId(String id);
+import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeUtil;
+import org.glassfish.admin.rest.model.BaseModel;
+import static org.testng.AssertJUnit.*;
+import org.testng.annotations.Test;
 
-    public String getDescription();
-    public void setDescription(String desc);
+/**
+ *
+ * @author jdlee
+ */
+public class CompositeUtilTest {
+    private static String json =
+            "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
+
+    @Test(groups="offline")
+    public void readInJson() throws Exception {
+        JSONObject o = new JSONObject(json);
+        BaseModel model = CompositeUtil.unmarshallClass(BaseModel.class, o);
+
+        assertEquals("testModel", model.getName());
+        assertEquals(2, model.getRelated().size());
+        assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
+    }
 }

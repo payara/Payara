@@ -1,0 +1,2 @@
+org.glassfish.admin.rest.model.BaseModel:org.glassfish.admin.rest.model.ModelExt1
+org.glassfish.admin.rest.model.BaseModel:org.glassfish.admin.rest.model.ModelExt2

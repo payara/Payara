@@ -39,12 +39,14 @@
  */
 package org.glassfish.admin.rest.model;
 
-import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.composite.RestModelExtension;
 
-public interface RelatedModel {
-    public String getId();
-    public void setId(String id);
-
-    public String getDescription();
-    public void setDescription(String desc);
+/**
+ *
+ * @author jdlee
+ */
+@RestModelExtension(parent="org.glassfish.admin.rest.model.BaseModel")
+public interface ModelExt1 {
+    String getExt1();
+    void setExt1(String ext1);
 }

@@ -39,11 +39,9 @@
  */
 package org.glassfish.admin.rest.model;
 
-import org.glassfish.admin.rest.composite.RestModel;
-
 import java.util.List;
 
-public interface BaseModel extends RestModel {
+public interface BaseModel {
     public String getName();
     public void setName(String name);
 

@@ -37,30 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.admin.rest.model;
 
-package org.glassfish.admin.rest;
-
-import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.CompositeUtil;
-import org.glassfish.admin.rest.model.BaseModel;
-import static org.testng.AssertJUnit.*;
-import org.testng.annotations.Test;
+import org.glassfish.admin.rest.composite.RestModelExtension;
 
 /**
  *
  * @author jdlee
  */
-public class CompositeUtilTest {
-    private static String json =
-            "{\"name\":\"testModel\",\"count\":123, \"related\":[{\"id\":\"rel1\", \"description\":\"description 1\"},{\"id\":\"rel2\", \"description\":\"description 2\"}]}";
-
-    @Test(groups="offline")
-    public void readInJson() throws Exception {
-        JSONObject o = new JSONObject(json);
-        BaseModel model = CompositeUtil.hydrateClass(BaseModel.class, o);
-
-        assertEquals("testModel", model.getName());
-        assertEquals(2, model.getRelated().size());
-        assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
-    }
+@RestModelExtension(parent="org.glassfish.admin.rest.model.BaseModel")
+public interface ModelExt2 {
+    String getExt2();
+    void setExt2(String ext2);
 }

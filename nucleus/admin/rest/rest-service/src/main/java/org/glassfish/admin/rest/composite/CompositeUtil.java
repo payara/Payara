@@ -40,11 +40,16 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +60,6 @@ import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
@@ -64,6 +68,7 @@ import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -81,7 +86,6 @@ import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.PUTFIELD;
 import static org.objectweb.asm.Opcodes.RETURN;
 import static org.objectweb.asm.Opcodes.V1_6;
-import org.glassfish.internal.api.Globals;
 
 /**
  *
@@ -89,16 +93,17 @@ import org.glassfish.internal.api.Globals;
  */
 public class CompositeUtil {
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
+    private static final Map<String, List<String>> modelExtensions = new HashMap<String, List<String>>();
+    private static boolean extensionsLoaded = false;
 
     /**
      * This method will return a generated concrete class that implements the interface requested, as well as any
-     * interfaces intended to extend the base model interface. The intent to extend the model is shown via annotations
-     * yet to be developed. Currently, this API requires the caller to specify all the desired interfaces, though this
-     * requirement will be removed with the full integration of HK2 2.x into GlassFish.
+     * interfaces intended to extend the base model interface.  Model extensions must be annotated with
+     * @RestModelExtension, and must be compiled with rest-annotation-processor library on the compile classpath
+     * for metadata generation.
      *
      * @param modelIface The base interface for the desired data model
-     * @param similarClass the Class for the calling code, used to load the generated class into the Classloader
-     * @param extensions An array of the interfaces, excluding the base interface, to implement
+     * @param similarClass the Class for the calling code, used to load the generated class into the ClassLoader
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
@@ -107,9 +112,7 @@ public class CompositeUtil {
         if (!generatedClasses.containsKey(className)) {
             Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
 
-            Set<Class<?>> interfaces = //(extensions != null) ?
-                                       //new HashSet<Class<?>>(Arrays.asList(extensions)) :
-                                       new HashSet<Class<?>>();
+            Set<Class<?>> interfaces = getModelExtensions(similarClass, modelIface);
             interfaces.add(modelIface);
 
             for (Class<?> iface : interfaces) {
@@ -196,10 +199,23 @@ public class CompositeUtil {
         return parameters;
     }
 
+    /**
+     * Execute an <code>AdminCommand</code> with no parameters
+     * @param command
+     * @return
+     */
     public static ActionReporter executeCommand(String command) {
         return executeCommand(command, new ParameterMap());
     }
-    
+
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters. This is a convenience method for those not
+     * wishing to create a <code>ParameterMap</code> instance.
+     * @param command
+     * @param params An array of parameters. Odd-numbered items are the parameter names, with even-numbered being the 
+     * values.  The array must have an even number of entries.
+     * @return 
+     */
     public static ActionReporter executeCommand(String command, String... params) {
         if (params.length % 2 != 0) {
             throw new IllegalArgumentException("There must be an even number of parameters passed to CompositeUtil.executeCommand(String, Object...);");
@@ -212,6 +228,12 @@ public class CompositeUtil {
         return executeCommand(command, pm);
     }
 
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
     public static ActionReporter executeCommand(String command, ParameterMap parameters) {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
                 Globals.getDefaultHabitat(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
@@ -223,7 +245,13 @@ public class CompositeUtil {
         return ar;
     }
 
-    public static <T> T hydrateClass(Class<T> modelClass, JSONObject json) {
+    /**
+     * Convert the given <code>RestModel</code> encoded as JSON to a live Java Object.
+     * @param modelClass The target <code>RestModel</code> type
+     * @param json The json encoding of the object
+     * @return
+     */
+    public static <T> T unmarshallClass(Class<T> modelClass, JSONObject json) {
         try {
             T model = CompositeUtil.getModel(modelClass, modelClass);
             for (Method setter : getSetters(modelClass)) {
@@ -243,14 +271,14 @@ public class CompositeUtil {
                         for (int i = 0; i < array.length(); i++) {
                             Object element = array.get(i);
                             if (JSONObject.class.isAssignableFrom(element.getClass())) {
-                                values.add(hydrateClass((Class) type, (JSONObject) element));
+                                values.add(unmarshallClass((Class) type, (JSONObject) element));
                             } else {
                                 values.add(element);
                             }
                         }
                         setter.invoke(model, values);
                     } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
-                        setter.invoke(model, hydrateClass(param0.getClass(), (JSONObject) o));
+                        setter.invoke(model, unmarshallClass(param0.getClass(), (JSONObject) o));
                     } else {
 
                         setter.invoke(model, o);
@@ -262,6 +290,73 @@ public class CompositeUtil {
             throw new RuntimeException(e);
         }
 
+    }
+
+    /**
+     * Find and return all <code>interface</code>s that extend <code>baseModel</code>
+     * @param similarClass
+     * @param baseModel
+     * @return
+     */
+    private static Set<Class<?>> getModelExtensions (Class similarClass, Class<?> baseModel) {
+        Set<Class<?>> exts = new HashSet<Class<?>>();
+
+        if (!extensionsLoaded) {
+            synchronized(modelExtensions) {
+                if (!extensionsLoaded) {
+                    loadModelExtensionMetadata(similarClass);
+                }
+            }
+        }
+
+        List<String> list = modelExtensions.get(baseModel.getName());
+        if (list != null) {
+            for (String className : list) {
+                try {
+                    Class<?> c = Class.forName(className, true, similarClass.getClassLoader());
+                    exts.add(c);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+        return exts;
+    }
+
+    /**
+     * Locate and process all <code>RestModelExtension</code> metadata files
+     * @param similarClass
+     */
+    private static void loadModelExtensionMetadata(Class similarClass) {
+        try {
+            Enumeration<URL> urls = similarClass.getClassLoader().getResources("META-INF/restmodelextensions");
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                while (reader.ready()) {
+                    final String line = reader.readLine();
+                    if (line.charAt(0) != '#') {
+                        if (!line.contains(":")) {
+                            Logger.getLogger(CompositeUtil.class.getName()).log(Level.INFO,
+                                "Incorrectly formatted entry in {0}: {1}",
+                                new String[] {"META-INF/restmodelextensions", line}); // TODO: i18n
+                        }
+                        String[] entry = line.split(":");
+                        String base = entry[0];
+                        String ext = entry[1];
+                        List<String> list = modelExtensions.get(base);
+                        if (list == null) {
+                            list = new ArrayList<String>();
+                            modelExtensions.put(base, list);
+                        }
+                        list.add(ext);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private static List<Method> getSetters(Class<?> clazz) {
@@ -531,17 +626,5 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    public static boolean compare(RestModel one, Object o) {
-        if ((one == null) || (o == null)) {
-            throw new IllegalArgumentException("Null parameter passed"); // i18n
-        }
-        if (!RestModel.class.isAssignableFrom(o.getClass())) {
-            throw new IllegalArgumentException(o.getClass().getName());
-        }
-        RestModel two = (RestModel)o;
-
-        return false;  //To change body of created methods use File | Settings | File Templates.
     }
 }
