@@ -789,6 +789,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (deployer.getMetaData()!=null) {
                 for (Class dependency : deployer.getMetaData().requires()) {
                     if (!typeByDeployer.containsKey(dependency) && !typeByProvider.containsKey(dependency)) {
+
                         Service s = deployer.getClass().getAnnotation(Service.class);
                         String serviceName;
                         if (s!=null && s.name()!=null && s.name().length()>0) {

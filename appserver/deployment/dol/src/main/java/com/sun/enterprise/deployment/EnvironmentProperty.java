@@ -420,7 +420,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
         return null;
     }
 
-    boolean isConflict(EnvironmentProperty other) {
+    public boolean isConflict(EnvironmentProperty other) {
         return (getName().equals(other.getName())) &&
             (!(
                 DOLUtils.equals(getType(), other.getType()) &&

@@ -67,6 +67,7 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.weld.services.EjbServicesImpl;
 import org.glassfish.weld.services.InjectionServicesImpl;
 import org.glassfish.weld.services.ProxyServicesImpl;
@@ -88,7 +89,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
 
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;

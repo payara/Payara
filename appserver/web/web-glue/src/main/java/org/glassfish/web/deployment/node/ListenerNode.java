@@ -40,9 +40,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.HashMap;
@@ -54,7 +54,20 @@ import java.util.Map;
  * @author Jerome Dochez
  */
 public class ListenerNode extends DisplayableComponentNode<AppListenerDescriptorImpl> {
-    
+
+    protected AppListenerDescriptorImpl descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public AppListenerDescriptorImpl getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new AppListenerDescriptorImpl();
+        }
+        return descriptor;
+    }
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 

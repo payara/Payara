@@ -79,6 +79,7 @@ import org.glassfish.security.common.Role;
 import org.glassfish.web.admin.monitor.ServletProbeProvider;
 import org.glassfish.web.admin.monitor.SessionProbeProvider;
 import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
+import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.component.Habitat;
@@ -482,7 +483,7 @@ public class WebModule extends PwcWebModule implements Context {
         Map<String, String> webFragmentMap = Collections.emptyMap();
         if (webBundleDescriptor != null) {
             AbsoluteOrderingDescriptor aod =
-                    webBundleDescriptor.getAbsoluteOrderingDescriptor();
+                    ((WebBundleDescriptorImpl)webBundleDescriptor).getAbsoluteOrderingDescriptor();
             if (aod != null) {
                 orderingList = aod.getOrdering();
                 hasOthers = aod.hasOthers();
@@ -2352,7 +2353,7 @@ class DynamicWebServletRegistrationImpl
              * security subsystem, which uses the WebBundleDescriptor as its
              * input.
              */
-            wcd = new WebComponentDescriptor();
+            wcd = new WebComponentDescriptorImpl();
             wcd.setName(wrapper.getName());
             wcd.setCanonicalName(wrapper.getName());
             wbd.addWebComponentDescriptor(wcd);

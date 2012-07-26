@@ -41,17 +41,15 @@
 package org.glassfish.web.deployment.node;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebResourceCollectionImpl;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
+import org.glassfish.web.deployment.descriptor.WebResourceCollectionImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -73,7 +71,7 @@ public class WebResourceCollectionNode extends DeploymentDescriptorNode<WebResou
     @Override
     public WebResourceCollectionImpl getDescriptor() {
         if (descriptor==null) {
-            descriptor = (WebResourceCollectionImpl) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new WebResourceCollectionImpl();
         }
         return descriptor;
     }

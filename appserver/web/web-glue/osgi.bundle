@@ -65,8 +65,11 @@
                         com.sun.web.server;version=${project.osgi.version}, \
                         org.glassfish.web;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.archivist;version=${project.osgi.version}, \
+                        org.glassfish.web.deployment.descriptor;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.io;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.io.runtime;version=${project.osgi.version}, \
+                        org.glassfish.web.deployment.util;version=${project.osgi.version}, \
+                        org.glassfish.web.deployment.xml;version=${project.osgi.version}, \
                         org.glassfish.web.deployment.node.runtime.wls;version=${project.osgi.version} \
                         
                         version=${project.osgi.version}

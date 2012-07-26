@@ -130,6 +130,15 @@ public class ModuleInfo {
         return c.cast(metaData.get(c));
     }
 
+    public Object getMetaData(String className) {
+        for (Class c : metaData.keySet()) {
+            if (c.getName().equals(className)) {
+                return metaData.get(c);
+            }
+        }
+        return null;
+    }
+
     public String getName() {
         return name;
     }

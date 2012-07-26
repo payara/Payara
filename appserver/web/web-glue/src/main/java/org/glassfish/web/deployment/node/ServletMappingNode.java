@@ -40,14 +40,16 @@
 
 package org.glassfish.web.deployment.node;
 
+import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.XMLNode;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
+import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 
 import java.util.logging.Level;
 
@@ -64,6 +66,16 @@ public class ServletMappingNode extends DeploymentDescriptorNode {
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ServletMappingNode.class);
+
+    //protected WebComponentDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public Object getDescriptor() {
+        return null;
+    }
 
     /**
      * receives notiification of the value for a particular tag
@@ -125,12 +137,5 @@ public class ServletMappingNode extends DeploymentDescriptorNode {
 
         } 
     }
-    
-        
-   /**
-    * @return the descriptor instance to associate with this XMLNode
-    */    
-    public Object getDescriptor() {
-        return null;
-    }
+
 }

@@ -50,6 +50,7 @@ import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardWrapper;
+import org.glassfish.web.deployment.descriptor.*;
 
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
@@ -177,7 +178,7 @@ public class TomcatDeploymentConfig {
                                       WebBundleDescriptor wmd) {
             
         Enumeration<ErrorPageDescriptor> e =
-            wmd.getErrorPageDescriptors();
+            ((WebBundleDescriptorImpl)wmd).getErrorPageDescriptors();
         while (e.hasMoreElements()){
             webModule.addErrorPage(new ErrorPageDecorator(e.nextElement()));
         }                                     
@@ -245,9 +246,9 @@ public class TomcatDeploymentConfig {
      */
     protected static void configureJspConfig(WebModule webModule,
                                              WebBundleDescriptor wmd) {
-        webModule.setJspConfigDescriptor(wmd.getJspConfigDescriptor());
+        webModule.setJspConfigDescriptor(((WebBundleDescriptorImpl)wmd).getJspConfigDescriptor());
 
-        JspConfigDescriptor jspConfig = wmd.getJspConfigDescriptor();
+        JspConfigDescriptor jspConfig = ((WebBundleDescriptorImpl)wmd).getJspConfigDescriptor();
         if (jspConfig != null) {
             for (JspPropertyGroupDescriptor jspGroup :
                     jspConfig.getJspPropertyGroups()) {

@@ -40,10 +40,10 @@
 
 package org.glassfish.web.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.MultipartConfigDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
+import org.glassfish.web.deployment.descriptor.MultipartConfigDescriptor;
 import org.glassfish.apf.*;
 import org.jvnet.hk2.annotations.Service;
 

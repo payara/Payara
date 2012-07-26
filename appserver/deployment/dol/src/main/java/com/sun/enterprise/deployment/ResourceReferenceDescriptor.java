@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -536,7 +536,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
     }
     // END OF IASRI 4718559, 4729298
 
-    boolean isConflict(ResourceReferenceDescriptor other) {
+    public boolean isConflict(ResourceReferenceDescriptor other) {
         return (getName().equals(other.getName())) &&
             (!(DOLUtils.equals(getType(), other.getType()) &&
                 getAuthorization().equals(other.getAuthorization()) &&

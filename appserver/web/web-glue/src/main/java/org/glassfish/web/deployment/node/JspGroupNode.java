@@ -40,12 +40,12 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.JspGroupDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.LocalizedInfoNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.JspGroupDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Enumeration;
@@ -62,7 +62,7 @@ public class JspGroupNode  extends DeploymentDescriptorNode<JspGroupDescriptor> 
         super();
         registerElementHandler(new XMLElement(WebTagNames.NAME), LocalizedInfoNode.class);   
     }
-    
+
     /**
      * all sub-implementation of this class can use a dispatch table to map 
      * xml element to
@@ -99,7 +99,7 @@ public class JspGroupNode  extends DeploymentDescriptorNode<JspGroupDescriptor> 
     @Override
     public JspGroupDescriptor getDescriptor() {
         if (descriptor == null) {
-            descriptor = (JspGroupDescriptor)super.getDescriptor();
+            descriptor = new JspGroupDescriptor();
         }
         return descriptor;
     }

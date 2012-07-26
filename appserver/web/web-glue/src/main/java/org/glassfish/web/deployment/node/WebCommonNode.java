@@ -48,7 +48,8 @@ import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.SessionConfig;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.*;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -140,19 +141,18 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
             // for backward compatibility with 2.2 and 2.3 specs, we need to be able 
             // to read tag lib under web-app. Starting with 2.4, the tag moved under jsp-config
             DOLUtils.getDefaultLogger().fine("Adding taglib component " + newDescriptor);
-            if (descriptor.getJspConfigDescriptor()==null) {
-                descriptor.setJspConfigDescriptor(new JspConfigDescriptor());
+            if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor()==null) {
+                ((WebBundleDescriptorImpl)descriptor).setJspConfigDescriptor(new JspConfigDescriptor());
             }
- 
-            descriptor.getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);    
+            ((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);
         } else if (newDescriptor instanceof JspConfigDescriptor) {
             DOLUtils.getDefaultLogger().fine("Adding JSP Config Descriptor" 
                 + newDescriptor);
-            if (descriptor.getJspConfigDescriptor()!=null) {
+            if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor()!=null) {
                 throw new RuntimeException(
                     "Has more than one jsp-config element!");
             }
-            descriptor.setJspConfigDescriptor(
+            ((WebBundleDescriptorImpl)descriptor).setJspConfigDescriptor(
                 (JspConfigDescriptor)newDescriptor);
         } else if (newDescriptor instanceof LoginConfiguration) {
             DOLUtils.getDefaultLogger().fine("Adding Login Config Descriptor"
@@ -306,7 +306,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
                         }                    
                     }
                     appendTextChild(mappingNode, WebTagNames.URL_PATTERN, pattern);
-		}                
+                }
             }
         }
         
@@ -328,7 +328,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         }
         
         // error-page*
-        Enumeration errorPages = webBundleDesc.getErrorPageDescriptors();
+        Enumeration errorPages = ((WebBundleDescriptorImpl)webBundleDesc).getErrorPageDescriptors();
         if (errorPages.hasMoreElements()) {
             ErrorPageNode errorPageNode = new ErrorPageNode();
             while (errorPages.hasMoreElements()) {
@@ -338,7 +338,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         }
         
         // jsp-config *
-	JspConfigDescriptor jspConf = webBundleDesc.getJspConfigDescriptor();
+	JspConfigDescriptor jspConf = ((WebBundleDescriptorImpl)webBundleDesc).getJspConfigDescriptor();
 	if(jspConf != null) {
 	    JspConfigNode ln = new JspConfigNode();
 	    ln.writeDescriptor(jarNode, 

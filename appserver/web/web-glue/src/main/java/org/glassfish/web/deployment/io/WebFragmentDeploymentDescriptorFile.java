@@ -40,11 +40,11 @@
 
 package org.glassfish.web.deployment.io;
 
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.web.deployment.node.WebFragmentNode;
+import org.glassfish.web.deployment.descriptor.WebFragmentDescriptor;
 
 /**
  * This class is responsible for handling WebFragment DeploymentDescriptor files

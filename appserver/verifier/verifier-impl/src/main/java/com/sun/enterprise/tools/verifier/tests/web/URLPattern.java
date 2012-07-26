@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,6 @@ import java.util.Iterator;
 import javax.servlet.descriptor.*;
 
 import org.glassfish.deployment.common.Descriptor;
-import com.sun.enterprise.deployment.JspConfigDescriptor;
-import com.sun.enterprise.deployment.JspGroupDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
@@ -55,6 +53,8 @@ import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import org.glassfish.web.deployment.descriptor.JspConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 /**
  * The content of the url-pattern element follows the rules specified in 
@@ -133,7 +133,7 @@ public abstract class URLPattern extends WebTest implements WebCheck {
 
     //This method checks for url-patterns appearing in jsp-config element in an web-app.
     private void checkJspGroupProperties(WebBundleDescriptor descriptor, Result result, ComponentNameConstructor compName){
-        JspConfigDescriptor jspC=descriptor.getJspConfigDescriptor();
+        JspConfigDescriptor jspC=((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor();
         if (jspC==null) return;
         for (JspPropertyGroupDescriptor desc : jspC.getJspPropertyGroups()) {
             for (String urlPattern : desc.getUrlPatterns()) {

@@ -41,9 +41,7 @@
 package org.glassfish.web.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.OrderingDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -63,7 +61,9 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.WarType;
+import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.io.WebDeploymentDescriptorFile;
+import org.glassfish.web.deployment.util.*;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import org.xml.sax.SAXParseException;
@@ -153,7 +153,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      */
     @Override
     public WebBundleDescriptor getDefaultBundleDescriptor() {
-        return new WebBundleDescriptor();
+        return new WebBundleDescriptorImpl();
     }
 
     /**
@@ -196,7 +196,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
      * @return a non-validated WebBundleDescriptor corresponding to default-web.xml
      */
     private WebBundleDescriptor getPlainDefaultWebXmlBundleDescriptor() {
-        WebBundleDescriptor defaultWebBundleDesc = new WebBundleDescriptor();
+        WebBundleDescriptor defaultWebBundleDesc = new WebBundleDescriptorImpl();
         InputStream fis = null;
 
         try {
@@ -402,8 +402,8 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
             }
 
-            if (descriptor.getAbsoluteOrderingDescriptor() != null) {
-                wfList = descriptor.getAbsoluteOrderingDescriptor().order(wfList);
+            if (((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor() != null) {
+                wfList = ((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor().order(wfList);
             } else {
                 OrderingDescriptor.sort(wfList);
             }

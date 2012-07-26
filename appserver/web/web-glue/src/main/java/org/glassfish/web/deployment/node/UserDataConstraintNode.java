@@ -40,9 +40,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.UserDataConstraintImpl;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.UserDataConstraintImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -55,6 +55,18 @@ import java.util.Map;
  */
 public class UserDataConstraintNode  extends DeploymentDescriptorNode<UserDataConstraintImpl> {
 
+    protected UserDataConstraintImpl descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public UserDataConstraintImpl getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new UserDataConstraintImpl();
+        }
+        return descriptor;
+    }
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 

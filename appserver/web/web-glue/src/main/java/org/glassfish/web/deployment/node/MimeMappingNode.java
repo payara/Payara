@@ -40,9 +40,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.MimeMappingDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.MimeMappingDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.HashMap;
@@ -55,6 +55,19 @@ import java.util.Map;
  * @version 
  */
 public class MimeMappingNode extends DeploymentDescriptorNode<MimeMappingDescriptor> {
+
+    protected MimeMappingDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public MimeMappingDescriptor getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new MimeMappingDescriptor();
+        }
+        return descriptor;
+    }
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

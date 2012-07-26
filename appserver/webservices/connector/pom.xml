@@ -114,5 +114,10 @@
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

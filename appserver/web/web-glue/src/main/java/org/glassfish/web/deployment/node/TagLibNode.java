@@ -40,9 +40,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.TagLibConfigurationDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -53,6 +53,19 @@ import java.util.Map;
  * @version 
  */
 public class TagLibNode  extends DeploymentDescriptorNode<TagLibConfigurationDescriptor> {
+
+    protected TagLibConfigurationDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public TagLibConfigurationDescriptor getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new TagLibConfigurationDescriptor();
+        }
+        return descriptor;
+    }
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

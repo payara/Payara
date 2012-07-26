@@ -40,20 +40,17 @@
 
 package org.glassfish.web.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
 import org.glassfish.apf.*;
 import org.glassfish.security.common.Role;
-import com.sun.enterprise.deployment.SecurityConstraintImpl;
-import com.sun.enterprise.deployment.UserDataConstraintImpl;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebResourceCollectionImpl;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.web.deployment.descriptor.*;
 
 import javax.servlet.annotation.HttpConstraint;
 import javax.servlet.annotation.HttpMethodConstraint;

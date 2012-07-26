@@ -70,6 +70,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import javax.xml.namespace.QName;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.glassfish.webservices.node.WebServicesDescriptorNode;
 import org.jvnet.hk2.annotations.Service;
 
@@ -281,7 +282,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
 
                 // if servlet is not known, we should add it now
                 if (webComponent == null) {
-                    webComponent = new WebComponentDescriptor();
+                    webComponent = new WebComponentDescriptorImpl();
                     webComponent.setServlet(true);                
                     webComponent.setWebComponentImplementation(((Class) annElem).getCanonicalName());
                     webComponent.setName(endpoint.getEndpointName());

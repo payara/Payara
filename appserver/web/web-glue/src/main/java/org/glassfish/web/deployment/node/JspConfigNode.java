@@ -40,15 +40,14 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.JspConfigDescriptor;
-import com.sun.enterprise.deployment.JspGroupDescriptor;
-import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.JspConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.JspGroupDescriptor;
+import org.glassfish.web.deployment.descriptor.TagLibConfigurationDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import java.util.Enumeration;
 import javax.servlet.descriptor.*;
 
 /**
@@ -59,6 +58,19 @@ public class JspConfigNode extends DeploymentDescriptorNode {
 	super();
 	registerElementHandler(new XMLElement(WebTagNames.TAGLIB), TagLibNode.class, "addTagLib");
 	registerElementHandler(new XMLElement(WebTagNames.JSP_GROUP), JspGroupNode.class, "addJspGroup");
+    }
+
+    protected JspConfigDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public JspConfigDescriptor getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new JspConfigDescriptor();
+        }
+        return descriptor;
     }
     
     /**

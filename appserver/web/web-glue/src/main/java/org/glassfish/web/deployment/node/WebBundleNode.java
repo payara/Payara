@@ -45,8 +45,9 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.node.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 import org.glassfish.web.WarType;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.*;
@@ -150,7 +151,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
     */
     public WebBundleDescriptor getDescriptor() {
         if (descriptor==null) {
-            descriptor = (WebBundleDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new WebBundleDescriptorImpl();
         }
         return descriptor;
     }  
@@ -194,10 +195,10 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
         WebBundleDescriptor webBundleDesc) {
 
         Node jarNode = super.writeDescriptor(parent, webBundleDesc);
-        if (webBundleDesc.getAbsoluteOrderingDescriptor() != null) {
+        if (((WebBundleDescriptorImpl)webBundleDesc).getAbsoluteOrderingDescriptor() != null) {
             AbsoluteOrderingNode absOrderingNode = new AbsoluteOrderingNode();
             absOrderingNode.writeDescriptor(jarNode, WebTagNames.ABSOLUTE_ORDERING,
-                    webBundleDesc.getAbsoluteOrderingDescriptor());
+                    ((WebBundleDescriptorImpl)webBundleDesc).getAbsoluteOrderingDescriptor());
         }
         return jarNode;
     }

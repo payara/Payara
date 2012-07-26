@@ -147,7 +147,7 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
         properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
-    boolean isConflict(ConnectorResourceDefinitionDescriptor other) {
+    public boolean isConflict(ConnectorResourceDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
                 DOLUtils.equals(getClassName(), other.getClassName()) &&

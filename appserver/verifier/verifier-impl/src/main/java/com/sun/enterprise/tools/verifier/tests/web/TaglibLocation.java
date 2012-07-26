@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.tools.verifier.tests.web;
 
-import java.util.*;
 import javax.servlet.descriptor.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 
 /**
@@ -68,8 +68,8 @@ public class TaglibLocation extends Taglib implements WebCheck {
         boolean passed = true;
         String taglibLocation;  
         Iterable<TaglibDescriptor> taglibConfig = null;
-        if (descriptor.getJspConfigDescriptor() != null) {
-            taglibConfig = descriptor.getJspConfigDescriptor().getTaglibs();
+        if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor() != null) {
+            taglibConfig = ((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor().getTaglibs();
         }
 
         if (taglibConfig != null) {

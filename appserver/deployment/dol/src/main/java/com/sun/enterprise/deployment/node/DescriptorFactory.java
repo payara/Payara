@@ -44,53 +44,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import com.sun.enterprise.deployment.AbsoluteOrderingDescriptor;
 import com.sun.enterprise.deployment.AdminObject;
-import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
 import com.sun.enterprise.deployment.AuthMechanism;
-import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
-import com.sun.enterprise.deployment.CookieConfigDescriptor;
 import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
 import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
 import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.ErrorPageDescriptor;
 import com.sun.enterprise.deployment.InboundResourceAdapter;
-import com.sun.enterprise.deployment.JspConfigDescriptor;
-import com.sun.enterprise.deployment.JspGroupDescriptor;
 import com.sun.enterprise.deployment.LicenseDescriptor;
-import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
-import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
-import com.sun.enterprise.deployment.LoginConfigurationImpl;
 import com.sun.enterprise.deployment.MessageListener;
-import com.sun.enterprise.deployment.MimeMappingDescriptor;
-import com.sun.enterprise.deployment.MultipartConfigDescriptor;
 import com.sun.enterprise.deployment.NameValuePairDescriptor;
-import com.sun.enterprise.deployment.OrderingDescriptor;
-import com.sun.enterprise.deployment.OrderingOrderingDescriptor;
 import com.sun.enterprise.deployment.OutboundResourceAdapter;
 import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
-import com.sun.enterprise.deployment.SecurityConstraintImpl;
 import com.sun.enterprise.deployment.SecurityPermission;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.ServletFilterDescriptor;
-import com.sun.enterprise.deployment.ServletFilterMappingDescriptor;
-import com.sun.enterprise.deployment.SessionConfigDescriptor;
-import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
-import com.sun.enterprise.deployment.UserDataConstraintImpl;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
-import com.sun.enterprise.deployment.WebResourceCollectionImpl;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.ConnectorTagNames;
 import com.sun.enterprise.deployment.xml.PersistenceTagNames;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 
 /**
  * This class is responsible for instantiating  Descriptor classes
@@ -126,35 +101,6 @@ public class DescriptorFactory {
 	register(new XMLElement(ConnectorTagNames.ACTIVATION_SPEC),MessageListener.class);
 	register(new XMLElement(ConnectorTagNames.ADMIN_OBJECT), AdminObject.class);
 	register(new XMLElement(ConnectorTagNames.CONNECTION_DEFINITION), ConnectionDefDescriptor.class);
-
-	//web stuff
-        register(new XMLElement(WebTagNames.WEB_BUNDLE), WebBundleDescriptor.class);
-        register(new XMLElement(WebTagNames.WEB_FRAGMENT), WebFragmentDescriptor.class);
-        register(new XMLElement(WebTagNames.SERVLET), WebComponentDescriptor.class);
-        register(new XMLElement(WebTagNames.INIT_PARAM), EnvironmentProperty.class);        
-        register(new XMLElement(WebTagNames.MIME_MAPPING), MimeMappingDescriptor.class);
-        register(new XMLElement(WebTagNames.CONTEXT_PARAM), EnvironmentProperty.class);                
-        register(new XMLElement(WebTagNames.SESSION_CONFIG), SessionConfigDescriptor.class);                
-        register(new XMLElement(WebTagNames.COOKIE_CONFIG), CookieConfigDescriptor.class);                
-        register(new XMLElement(WebTagNames.SECURITY_CONSTRAINT), SecurityConstraintImpl.class);
-        register(new XMLElement(WebTagNames.USERDATA_CONSTRAINT), UserDataConstraintImpl.class);     
-        register(new XMLElement(WebTagNames.AUTH_CONSTRAINT), AuthorizationConstraintImpl.class);
-        register(new XMLElement(WebTagNames.WEB_RESOURCE_COLLECTION), WebResourceCollectionImpl.class);
-        register(new XMLElement(WebTagNames.LISTENER), AppListenerDescriptorImpl.class);    
-        register(new XMLElement(WebTagNames.FILTER), ServletFilterDescriptor.class);            
-        register(new XMLElement(WebTagNames.FILTER_MAPPING), ServletFilterMappingDescriptor.class);    
-        register(new XMLElement(WebTagNames.ERROR_PAGE), ErrorPageDescriptor.class);            
-        register(new XMLElement(WebTagNames.LOGIN_CONFIG), LoginConfigurationImpl.class);
-        register(new XMLElement(WebTagNames.TAGLIB), TagLibConfigurationDescriptor.class);            
-        register(new XMLElement(WebTagNames.JSPCONFIG), JspConfigDescriptor.class);            
-        register(new XMLElement(WebTagNames.JSP_GROUP), JspGroupDescriptor.class);            
-        register(new XMLElement(WebTagNames.LOCALE_ENCODING_MAPPING_LIST), LocaleEncodingMappingListDescriptor.class);            
-        register(new XMLElement(WebTagNames.LOCALE_ENCODING_MAPPING), LocaleEncodingMappingDescriptor.class);                         
-        register(new XMLElement(WebTagNames.ABSOLUTE_ORDERING), AbsoluteOrderingDescriptor.class);                         
-        register(new XMLElement(WebTagNames.ORDERING), OrderingDescriptor.class);                         
-        register(new XMLElement(WebTagNames.AFTER), OrderingOrderingDescriptor.class);                         
-        register(new XMLElement(WebTagNames.BEFORE), OrderingOrderingDescriptor.class);                         
-        register(new XMLElement(WebTagNames.MULTIPART_CONFIG), MultipartConfigDescriptor.class);                         
 
         // JSR 109 integration
         register(new XMLElement(WebServicesTagNames.SERVICE_REF),ServiceReferenceDescriptor.class);

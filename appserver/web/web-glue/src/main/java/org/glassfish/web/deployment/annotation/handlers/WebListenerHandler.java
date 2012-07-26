@@ -40,7 +40,6 @@
 
 package org.glassfish.web.deployment.annotation.handlers;
 
-import com.sun.enterprise.deployment.AppListenerDescriptorImpl;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
@@ -49,6 +48,7 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.servlet.ServletContextListener;

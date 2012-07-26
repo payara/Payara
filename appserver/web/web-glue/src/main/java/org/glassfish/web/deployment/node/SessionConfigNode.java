@@ -40,11 +40,11 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.CookieConfigDescriptor;
-import com.sun.enterprise.deployment.SessionConfigDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.CookieConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.SessionConfigDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 
 import org.w3c.dom.Node;
 
@@ -65,9 +65,10 @@ public class SessionConfigNode extends DeploymentDescriptorNode {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */
-    public Object getDescriptor() {
+   @Override
+    public SessionConfigDescriptor getDescriptor() {
         if (descriptor == null) {
-            descriptor = (SessionConfigDescriptor)super.getDescriptor();
+            descriptor = new SessionConfigDescriptor();
         }
         return descriptor;
     }

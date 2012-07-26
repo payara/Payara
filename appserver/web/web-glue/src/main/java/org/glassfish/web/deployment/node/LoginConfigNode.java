@@ -46,9 +46,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.LoginConfigurationImpl;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.LoginConfigurationImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -60,6 +60,19 @@ import java.util.Map;
  * @version 
  */
 public class LoginConfigNode extends DeploymentDescriptorNode<LoginConfigurationImpl> {
+
+    protected LoginConfigurationImpl descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public LoginConfigurationImpl getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new LoginConfigurationImpl();
+        }
+        return descriptor;
+    }
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

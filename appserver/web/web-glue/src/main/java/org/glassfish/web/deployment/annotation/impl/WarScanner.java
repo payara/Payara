@@ -41,7 +41,6 @@
 package org.glassfish.web.deployment.annotation.impl;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
@@ -52,6 +51,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.web.deployment.descriptor.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 

@@ -40,9 +40,9 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.node.*;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.WebFragmentDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
 
@@ -145,9 +145,9 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
     public WebFragmentDescriptor getDescriptor() {
         // no default bundle for web-fragment
         if (descriptor==null) {
-            descriptor = (WebFragmentDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new WebFragmentDescriptor();
         }
-        return (WebFragmentDescriptor)descriptor;
+        return descriptor;
     }
 
     /**

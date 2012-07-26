@@ -41,13 +41,13 @@
 package org.glassfish.web.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebFragmentDescriptor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.web.deployment.descriptor.WebFragmentDescriptor;
 import org.glassfish.web.deployment.io.WebFragmentDeploymentDescriptorFile;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;

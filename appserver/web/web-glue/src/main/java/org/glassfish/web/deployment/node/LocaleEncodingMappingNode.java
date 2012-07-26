@@ -42,7 +42,7 @@ package org.glassfish.web.deployment.node;
 
 import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -50,7 +50,20 @@ import java.util.Map;
 /**
  */
 public class LocaleEncodingMappingNode extends DeploymentDescriptorNode<LocaleEncodingMappingDescriptor> {
-    
+
+    protected LocaleEncodingMappingDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public LocaleEncodingMappingDescriptor getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new LocaleEncodingMappingDescriptor();
+        }
+        return descriptor;
+    }
+
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 

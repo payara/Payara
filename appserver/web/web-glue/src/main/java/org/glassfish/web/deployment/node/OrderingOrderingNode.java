@@ -42,11 +42,11 @@ package org.glassfish.web.deployment.node;
 
 import java.util.Map;
 
-import com.sun.enterprise.deployment.OrderingOrderingDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.DescriptorFactory;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.OrderingOrderingDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
@@ -64,9 +64,10 @@ public class OrderingOrderingNode extends DeploymentDescriptorNode<OrderingOrder
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
+    @Override
     public OrderingOrderingDescriptor getDescriptor() {
         if (descriptor==null) {
-            descriptor = (OrderingOrderingDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new OrderingOrderingDescriptor();
         }
         return descriptor;
     }  

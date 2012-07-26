@@ -40,7 +40,6 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.MultipartConfigDescriptor;
 import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
@@ -49,7 +48,9 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.deployment.web.MultipartConfig;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.MultipartConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Enumeration;
@@ -95,7 +96,7 @@ public class ServletNode extends DisplayableComponentNode<WebComponentDescriptor
     public WebComponentDescriptor getDescriptor() {
         
         if (descriptor==null) {
-            descriptor = (WebComponentDescriptor) DescriptorFactory.getDescriptor(getXMLPath());
+            descriptor = new WebComponentDescriptorImpl();
         }
         return descriptor;
     }     

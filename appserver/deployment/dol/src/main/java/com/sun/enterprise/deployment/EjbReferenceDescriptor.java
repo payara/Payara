@@ -457,7 +457,7 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	return false;
     }
 
-    boolean isConflict(EjbReferenceDescriptor other) {
+    public boolean isConflict(EjbReferenceDescriptor other) {
         return (getName().equals(other.getName())) &&
             (!(
                 DOLUtils.equals(getType(), other.getType()) &&

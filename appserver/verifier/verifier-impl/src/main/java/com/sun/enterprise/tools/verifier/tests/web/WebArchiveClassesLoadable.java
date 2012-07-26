@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package com.sun.enterprise.tools.verifier.tests.web;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.ErrorPageDescriptor;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import com.sun.enterprise.deployment.web.AppListenerDescriptor;
 import com.sun.enterprise.tools.verifier.Result;
@@ -51,6 +50,8 @@ import com.sun.enterprise.tools.verifier.apiscan.classfile.ClosureCompilerImpl;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.util.WebArchiveLoadableHelper;
 import com.sun.enterprise.deploy.shared.FileArchive;
+import org.glassfish.web.deployment.descriptor.ErrorPageDescriptor;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import java.util.*;
 import java.io.File;
@@ -145,7 +146,7 @@ public class WebArchiveClassesLoadable extends WebTest implements WebCheck {
         
         results.addAll(getVerifierContext().getFacesConfigDescriptor().getManagedBeanClasses());
         
-        Enumeration en = descriptor.getErrorPageDescriptors();
+        Enumeration en = ((WebBundleDescriptorImpl)descriptor).getErrorPageDescriptors();
         while (en.hasMoreElements()) {
             ErrorPageDescriptor errorPageDescriptor = (ErrorPageDescriptor) en.nextElement();
             String exceptionType = errorPageDescriptor.getExceptionType();

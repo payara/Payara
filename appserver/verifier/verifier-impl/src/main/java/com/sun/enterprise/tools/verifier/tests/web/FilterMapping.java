@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,12 +52,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.enterprise.deployment.ServletFilterDescriptor;
-import com.sun.enterprise.deployment.ServletFilterMappingDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
+import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
+import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 
 /**
  * Check that all the mappings for the declated filters are correct.

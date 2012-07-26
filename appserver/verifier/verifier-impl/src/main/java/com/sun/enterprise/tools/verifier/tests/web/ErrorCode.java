@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,8 @@ import java.util.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
+import org.glassfish.web.deployment.descriptor.ErrorPageDescriptor;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 
 /** Error code element contains an HTTP error code within web application test.
@@ -121,13 +123,13 @@ public class ErrorCode extends WebTest implements WebCheck {
 	Result result = getInitializedResult();
 	ComponentNameConstructor compName = getVerifierContext().getComponentNameConstructor();
 
-	if (descriptor.getErrorPageDescriptors().hasMoreElements()) {
+	if (((WebBundleDescriptorImpl)descriptor).getErrorPageDescriptors().hasMoreElements()) {
 	    boolean oneFailed = false;
 	    boolean foundIt = false;
             int oneErrorCode = 0;
             int oneNA = 0;
 	    // get the errorpage's in this .war
-	    for (Enumeration e = descriptor.getErrorPageDescriptors() ; e.hasMoreElements() ;) {
+	    for (Enumeration e = ((WebBundleDescriptorImpl)descriptor).getErrorPageDescriptors() ; e.hasMoreElements() ;) {
 		foundIt = false;
                 oneErrorCode++;
 		ErrorPageDescriptor errorpage = (ErrorPageDescriptor) e.nextElement();

@@ -139,7 +139,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         }
     }
 
-    void addBundleDescriptor(BundleDescriptor bundleDescriptor) {
+    public void addBundleDescriptor(BundleDescriptor bundleDescriptor) {
         getRoles().addAll(bundleDescriptor.getRoles());
         for (MessageDestinationDescriptor mdDesc: bundleDescriptor.getMessageDestinations()) {
             addMessageDestination(mdDesc);

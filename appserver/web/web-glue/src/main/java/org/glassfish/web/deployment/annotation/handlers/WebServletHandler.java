@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.annotation.context.WebBundleContext;
 import com.sun.enterprise.deployment.annotation.context.WebComponentContext;
 import com.sun.enterprise.util.net.URLPattern;
 import org.glassfish.apf.*;
+import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.servlet.annotation.WebInitParam;
@@ -100,7 +101,7 @@ public class WebServletHandler extends AbstractWebHandler {
         WebComponentDescriptor webCompDesc =
             webBundleContext.getDescriptor().getWebComponentByCanonicalName(servletName);
         if (webCompDesc == null) {
-            webCompDesc = new WebComponentDescriptor();
+            webCompDesc = new WebComponentDescriptorImpl();
             webCompDesc.setName(servletName);
             webCompDesc.setCanonicalName(servletName);
         }

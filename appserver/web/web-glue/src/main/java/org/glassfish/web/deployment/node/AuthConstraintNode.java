@@ -46,10 +46,10 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
 import com.sun.enterprise.deployment.SecurityRoleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.AuthorizationConstraintImpl;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Enumeration;
@@ -62,6 +62,19 @@ import java.util.Map;
  * @version 
  */
 public class AuthConstraintNode  extends DeploymentDescriptorNode<AuthorizationConstraintImpl> {
+
+    protected AuthorizationConstraintImpl descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public AuthorizationConstraintImpl getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new AuthorizationConstraintImpl();
+        }
+        return descriptor;
+    }
 
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to

@@ -145,7 +145,7 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
         return (getRefType().equals(CDI_BEAN_MANAGER_TYPE));
     }
 
-    boolean isConflict(ResourceReferenceDescriptor other) {
+    public boolean isConflict(ResourceReferenceDescriptor other) {
         return (getName().equals(other.getName())) &&
             (!DOLUtils.equals(getType(), other.getType())
             || isConflictResourceGroup(other));

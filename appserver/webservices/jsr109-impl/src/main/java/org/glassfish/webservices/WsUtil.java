@@ -49,8 +49,6 @@ import com.sun.xml.ws.api.WSBinding;
 import com.sun.xml.ws.api.BindingID;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.util.WebServerInfo;
-import com.sun.enterprise.deployment.util.VirtualServerInfo;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
@@ -94,6 +92,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.servlet.http.HttpServletResponse;
 
+import org.glassfish.web.deployment.util.WebServerInfo;
+import org.glassfish.web.deployment.util.VirtualServerInfo;
 import org.glassfish.web.util.HtmlEntityEncoder;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.*;

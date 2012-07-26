@@ -129,7 +129,9 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 if (moduleInfo instanceof ApplicationInfo) {
                     return;
                 }
-                WebBundleDescriptor webBD = (WebBundleDescriptor) moduleInfo.getMetaData(WebBundleDescriptor.class);
+                WebBundleDescriptor webBD =
+                        (WebBundleDescriptor) moduleInfo.getMetaData(
+                                "org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl");
                 loadPolicy(webBD, false);
             } else if (Deployment.APPLICATION_LOADED.equals(event.type())) {
                 ApplicationInfo appInfo = (ApplicationInfo) event.hook();

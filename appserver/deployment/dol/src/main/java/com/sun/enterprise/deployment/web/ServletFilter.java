@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ public interface ServletFilter {
     public void setClassName(String name);
     public String getClassName();
 
-    public void setInitializationParameters(Collection c);
+    public void setInitializationParameters(Collection<InitializationParameter> c);
     public Vector getInitializationParameters();
     public void addInitializationParameter(InitializationParameter ref);
     public void removeInitializationParameter(InitializationParameter ref);

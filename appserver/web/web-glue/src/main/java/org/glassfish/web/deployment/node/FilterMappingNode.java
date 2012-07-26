@@ -46,19 +46,17 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.ServletFilterMappingDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.xml.WebTagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.URLPattern;
+import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
@@ -83,7 +81,7 @@ public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMap
     public ServletFilterMappingDescriptor getDescriptor() {
         
        if (descriptor==null) {
-            descriptor = (ServletFilterMappingDescriptor) super.getDescriptor();
+            descriptor = new ServletFilterMappingDescriptor();
         }
         return descriptor;
     }    

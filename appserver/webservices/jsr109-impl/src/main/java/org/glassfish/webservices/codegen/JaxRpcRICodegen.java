@@ -66,10 +66,8 @@ import com.sun.enterprise.deployment.io.JaxrpcMappingDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.JaxrpcMappingDescriptor.Mapping;
 import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.AppClientVisitor;
-import com.sun.enterprise.deployment.util.WebBundleVisitor;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.deployment.util.ModuleContentLinker;
-import com.sun.enterprise.deployment.util.WebServerInfo;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.common.ClientArtifactsManager;
@@ -84,6 +82,9 @@ import javax.xml.rpc.Stub;
 // web service impl imports
 import org.glassfish.webservices.WsUtil;
 import org.glassfish.webservices.WsCompile;
+
+import org.glassfish.web.deployment.util.WebBundleVisitor;
+import org.glassfish.web.deployment.util.WebServerInfo;
 
 //JAX-RPC SPI
 import com.sun.xml.rpc.spi.JaxRpcObjectFactory;

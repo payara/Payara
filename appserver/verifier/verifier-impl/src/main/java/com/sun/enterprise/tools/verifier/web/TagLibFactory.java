@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -64,7 +63,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.sun.enterprise.deployment.TagLibConfigurationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.enterprise.tools.verifier.util.LogDomains;
@@ -76,6 +74,7 @@ import com.sun.enterprise.tools.verifier.TagLibDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.deploy.shared.FileArchive;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 /** This is the factory class used for obtainig the TagLibDescriptor objects for
  * the tag libraries defined in the war archive.
@@ -119,8 +118,8 @@ public class TagLibFactory {
         ArrayList<TagLibDescriptor> tmp = new ArrayList<TagLibDescriptor>();
         Iterable<TaglibDescriptor> taglibConfig = null;
 
-        if (descriptor.getJspConfigDescriptor() != null) {
-            taglibConfig = descriptor.getJspConfigDescriptor().getTaglibs();
+        if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor() != null) {
+            taglibConfig = ((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor().getTaglibs();
         } else {
             return null;
         }

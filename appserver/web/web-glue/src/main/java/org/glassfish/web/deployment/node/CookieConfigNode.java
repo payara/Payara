@@ -42,10 +42,10 @@ package org.glassfish.web.deployment.node;
 
 import java.util.Map;
 
-import com.sun.enterprise.deployment.CookieConfigDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.CookieConfigDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 
 import org.w3c.dom.Node;
 
@@ -67,7 +67,7 @@ public class CookieConfigNode extends DeploymentDescriptorNode<CookieConfigDescr
     @Override
     public CookieConfigDescriptor getDescriptor() {
         if (descriptor == null) {
-            descriptor = (CookieConfigDescriptor)super.getDescriptor();
+            descriptor = new CookieConfigDescriptor();
         }
         return descriptor;
     }

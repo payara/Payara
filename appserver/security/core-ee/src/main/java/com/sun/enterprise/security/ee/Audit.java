@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,8 +57,8 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.SecurityConstraintImpl;
-import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
+import com.sun.enterprise.deployment.web.SecurityConstraint;
+import com.sun.enterprise.deployment.web.AuthorizationConstraint;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.UserDataConstraint;
 import com.sun.enterprise.deployment.web.SecurityRole;
@@ -668,8 +668,8 @@ public class Audit extends AuditModule
             Enumeration scEnum = wbd.getSecurityConstraints();
             while (scEnum.hasMoreElements()) {
 
-                SecurityConstraintImpl sc =
-                    (SecurityConstraintImpl)scEnum.nextElement();
+                SecurityConstraint sc =
+                    (SecurityConstraint)scEnum.nextElement();
 
                 for (WebResourceCollection wrc: sc.getWebResourceCollections()) {
                     // show list of methods for this collection
@@ -687,8 +687,8 @@ public class Audit extends AuditModule
                 } // end res.collection iterator
 
                 // show roles which apply to above set of collections
-                AuthorizationConstraintImpl authCons =
-                 (AuthorizationConstraintImpl)sc.getAuthorizationConstraint();
+                AuthorizationConstraint authCons =
+                        sc.getAuthorizationConstraint();
                 Enumeration rolesEnum = authCons.getSecurityRoles();
                 StringBuffer rsb = new StringBuffer();
                 rsb.append("     Accessible by roles: ");

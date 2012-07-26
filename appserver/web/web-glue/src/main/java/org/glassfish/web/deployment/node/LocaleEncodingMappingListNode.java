@@ -44,7 +44,7 @@ import com.sun.enterprise.deployment.LocaleEncodingMappingDescriptor;
 import com.sun.enterprise.deployment.LocaleEncodingMappingListDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Enumeration;
@@ -55,6 +55,19 @@ public class LocaleEncodingMappingListNode extends DeploymentDescriptorNode {
     public LocaleEncodingMappingListNode() {
 	super();
 	registerElementHandler(new XMLElement(WebTagNames.LOCALE_ENCODING_MAPPING), LocaleEncodingMappingNode.class, "addLocaleEncodingMapping");
+    }
+
+    protected LocaleEncodingMappingListDescriptor descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public LocaleEncodingMappingListDescriptor getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new LocaleEncodingMappingListDescriptor();
+        }
+        return descriptor;
     }
     
     /**

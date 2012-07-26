@@ -46,14 +46,11 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.AuthorizationConstraintImpl;
-import com.sun.enterprise.deployment.SecurityConstraintImpl;
-import com.sun.enterprise.deployment.UserDataConstraintImpl;
-import com.sun.enterprise.deployment.WebResourceCollectionImpl;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.*;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Enumeration;
@@ -76,7 +73,20 @@ public class SecurityConstraintNode extends DeploymentDescriptorNode<SecurityCon
         registerElementHandler(new XMLElement(WebTagNames.WEB_RESOURCE_COLLECTION),         
                     WebResourceCollectionNode.class, "addWebResourceCollection");        
     }
-    
+
+    protected SecurityConstraintImpl descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public SecurityConstraintImpl getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new SecurityConstraintImpl();
+        }
+        return descriptor;
+    }
+
     /**
      * all sub-implementation of this class can use a dispatch table to map 
      * xml element to

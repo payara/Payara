@@ -44,7 +44,6 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-import com.sun.enterprise.deployment.util.WebServerInfo;
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -54,6 +53,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.container.EndpointRegistrationException;
+
+import org.glassfish.web.deployment.util.WebServerInfo;
 
 import java.util.Set;
 import java.util.ArrayList;

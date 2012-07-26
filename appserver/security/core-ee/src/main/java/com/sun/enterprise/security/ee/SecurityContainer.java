@@ -40,14 +40,10 @@
 
 package com.sun.enterprise.security.ee;
 
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.PolicyLoader;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import com.sun.enterprise.deployment.interfaces.SecurityRoleMapperFactoryMgr;
-import com.sun.enterprise.security.util.IASSecurityException;
-import com.sun.enterprise.security.web.integration.WebSecurityManager;
 import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.container.Container;
@@ -103,6 +99,7 @@ public class SecurityContainer implements Container, PostConstruct{
     }
 
     public void postConstruct() {
+        /* This is handled by SecurityDeployer
         //Generate Policy for the Dummy Module
         WebBundleDescriptor wbd = new WebBundleDescriptor();
         Application application = Application.createApplication();
@@ -110,8 +107,9 @@ public class SecurityContainer implements Container, PostConstruct{
         application.setName(DEFAULT_WEB_MODULE_NAME);
         application.setRegistrationName(DEFAULT_WEB_MODULE_NAME);
         wbd.setApplication(application);
-        generatePolicy(wbd);
+        generatePolicy(wbd);     */
     }
+    /*
     private void generatePolicy(WebBundleDescriptor wbd) {
         String name = null;
         ClassLoader oldTcc = Thread.currentThread().getContextClassLoader();
@@ -140,7 +138,7 @@ public class SecurityContainer implements Container, PostConstruct{
         } finally {
             Thread.currentThread().setContextClassLoader(oldTcc);
         }
-    }
+    }*/
     
     private static void initRoleMapperFactory() //throws Exception
     {

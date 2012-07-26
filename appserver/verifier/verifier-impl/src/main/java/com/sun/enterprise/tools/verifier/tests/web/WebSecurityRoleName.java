@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.web;
 
-import com.sun.enterprise.tools.verifier.tests.web.WebTest;
 import java.util.*;
-import java.io.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
+import org.glassfish.web.deployment.descriptor.AuthorizationConstraintImpl;
+import org.glassfish.web.deployment.descriptor.SecurityConstraintImpl;
 
 
 /** 

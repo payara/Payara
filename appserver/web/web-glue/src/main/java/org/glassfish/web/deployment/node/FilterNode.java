@@ -40,10 +40,10 @@
 
 package org.glassfish.web.deployment.node;
 
-import com.sun.enterprise.deployment.ServletFilterDescriptor;
 import com.sun.enterprise.deployment.node.DisplayableComponentNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.xml.WebTagNames;
+import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
+import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -69,10 +69,11 @@ public class FilterNode extends DisplayableComponentNode<ServletFilterDescriptor
    /**
     * @return the descriptor instance to associate with this XMLNode
     */
+    @Override
     public ServletFilterDescriptor getDescriptor() {
 
         if (descriptor==null) {
-            descriptor = (ServletFilterDescriptor) super.getDescriptor();
+            descriptor = new ServletFilterDescriptor();
         }
         return descriptor;
     }
