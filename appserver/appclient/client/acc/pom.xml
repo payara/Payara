@@ -396,6 +396,12 @@
          <artifactId>jaxb-osgi</artifactId>
      </dependency>
 
+     <dependency>
+         <scope>runtime</scope>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-extra-osgi</artifactId>
+     </dependency>
+
      <!-- endorsed: webservices-api-osgi.jar -->
      <dependency>
         <groupId>org.glassfish.metro</groupId>
