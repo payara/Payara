@@ -93,4 +93,22 @@ public abstract class CommonResourceDescriptor extends Descriptor {
     public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
         commonResourceFunctionality.removeDataSourceDefinitionDescriptor(reference);
     }
+    
+    // for connector-resource-definition
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return commonResourceFunctionality.getConnectorResourceDefinitionDescriptors();
+    }
+
+    protected ConnectorResourceDefinitionDescriptor getConnectorResourceDefinitionDescriptor(String name) {
+        return commonResourceFunctionality.getConnectorResourceDefinitionDescriptor(name);
+    }
+
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        commonResourceFunctionality.addConnectorResourceDefinitionDescriptor(reference);
+    }
+
+    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        commonResourceFunctionality.removeConnectorResourceDefinitionDescriptor(reference);
+    }
+
 }

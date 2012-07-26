@@ -40,17 +40,22 @@
 
 package com.sun.enterprise.deployment;
 
+import org.glassfish.api.event.EventTypes;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.*;
-import com.sun.enterprise.deployment.util.*;
-import com.sun.enterprise.deployment.web.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.deployment.common.Descriptor;
+import com.sun.enterprise.deployment.util.WebBundleVisitor;
+import com.sun.enterprise.deployment.util.WebBundleTracerVisitor;
+import com.sun.enterprise.deployment.util.WebBundleValidator;
+import com.sun.enterprise.deployment.util.ComponentVisitor;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.api.deployment.archive.ArchiveType;
+import com.sun.enterprise.deployment.web.*;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.security.common.Role;
 
 import java.util.*;
@@ -145,6 +150,7 @@ public class WebBundleDescriptor extends CommonResourceBundleDescriptor
     protected boolean conflictLoginConfig = false;
     protected boolean conflictDataSourceDefinition = false;
     protected boolean conflictMailSessionDefinition = false;
+    protected boolean conflictConnectorResourceDefinition = false;
     protected boolean conflictEnvironmentEntry = false;
     protected boolean conflictEjbReference = false;
     protected boolean conflictServiceReference = false;
@@ -290,6 +296,7 @@ public class WebBundleDescriptor extends CommonResourceBundleDescriptor
         // persistence-unit-ref
         combineEntityManagerFactoryReferenceDescriptors(env);
         combineMailSessionDescriptors(env);
+        combineConnectorResourceDefinitionDescriptors(env);
     }
 
     public boolean isEmpty() {
@@ -606,6 +613,33 @@ public class WebBundleDescriptor extends CommonResourceBundleDescriptor
                                 "There are more than one datasource definitions defined in web fragments with the same name, but not overrided in web.xml"));
                     } else {
                         getDataSourceDefinitionDescriptors().add(ddd);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env) {
+        boolean isFromXml = false;
+        for (ConnectorResourceDefinitionDescriptor desc : env.getConnectorResourceDefinitionDescriptors()) {
+            isFromXml = (desc.getMetadataSource() == MetadataSource.XML);
+            if (isFromXml) {
+                break;
+            }
+        }
+
+        if (isFromXml) {
+            for (ConnectorResourceDefinitionDescriptor desc: env.getConnectorResourceDefinitionDescriptors()) {
+                ConnectorResourceDefinitionDescriptor crdDesc = getConnectorResourceDefinitionDescriptor(desc.getName());
+                if (crdDesc == null) {
+                    if (env instanceof WebBundleDescriptor &&
+                            ((WebBundleDescriptor)env).conflictConnectorResourceDefinition) {
+                        throw new IllegalArgumentException(localStrings.getLocalString(
+                                "enterprise.deployment.exceptionconflictconnectorresourcedefinition",
+                                "There are more than one connector resource definitions defined in web fragments with the same name, but not overrided in web.xml"));
+                    } else {
+                        getConnectorResourceDefinitionDescriptors().add(desc);
+                        
                     }
                 }
             }

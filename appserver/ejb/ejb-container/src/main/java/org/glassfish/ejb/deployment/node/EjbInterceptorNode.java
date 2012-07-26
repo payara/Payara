@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbInterceptor;
 import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.node.ConnectorResourceDefinitionNode;
 import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
 import com.sun.enterprise.deployment.node.MailSessionNode;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
@@ -85,6 +86,7 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
         registerElementHandler(new XMLElement(TagNames.PRE_DESTROY), LifecycleCallbackNode.class, "addPreDestroyDescriptor");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
 
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), 
                EnvEntryNode.class, "addEnvironmentProperty");
@@ -183,6 +185,9 @@ public class EjbInterceptorNode extends DeploymentDescriptorNode<EjbInterceptor>
 
         // mail-session*
         writeMailSessionDescriptors(interceptorNode, descriptor.getMailSessionDescriptors().iterator());
+
+       // connecto-resource-definition*
+       writeConnectorResourceDefinitionDescriptors(interceptorNode, descriptor.getConnectorResourceDefinitionDescriptors().iterator());
 
         return interceptorNode;
     }

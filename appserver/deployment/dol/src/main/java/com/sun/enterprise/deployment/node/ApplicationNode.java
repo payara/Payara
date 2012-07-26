@@ -171,6 +171,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
                                "addMessageDestination");
         registerElementHandler(new XMLElement(TagNames.DATA_SOURCE), DataSourceDefinitionNode.class, "addDataSourceDefinitionDescriptor");
         registerElementHandler(new XMLElement(TagNames.MAIL_SESSION), MailSessionNode.class, "addMailSessionDescriptor");
+        registerElementHandler(new XMLElement(TagNames.CONNECTOR_RESOURCE), ConnectorResourceDefinitionNode.class, "addConnectorResourceDefinitionDescriptor");
 
         SaxParserHandler.registerBundleNode(this, ApplicationTagNames.APPLICATION);
     }
@@ -316,6 +317,8 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
         // mail-session*
         writeMailSessionDescriptors(appNode, application.getMailSessionDescriptors().iterator());
 
+        // connector-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(appNode, application.getConnectorResourceDefinitionDescriptors().iterator());
         return appNode;
     }
         

@@ -52,8 +52,14 @@ import com.sun.enterprise.deployment.node.MethodNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import org.glassfish.ejb.deployment.EjbTagNames;
-import org.glassfish.ejb.deployment.descriptor.*;
+import org.glassfish.ejb.deployment.descriptor.ConcurrentMethodDescriptor;
+import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbRemovalInfo;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor.ConcurrencyManagementType;
+import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import org.glassfish.ejb.deployment.descriptor.TimeoutValueDescriptor;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
@@ -318,6 +324,9 @@ public class EjbSessionNode  extends InterfaceBasedEjbNode<EjbSessionDescriptor>
 
         // mail-session definition
         writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
+
+        // connecto-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
         // post-activate-method
         writeLifeCycleCallbackDescriptors(ejbNode, EjbTagNames.POST_ACTIVATE_METHOD, ejbDesc.getPostActivateDescriptors());

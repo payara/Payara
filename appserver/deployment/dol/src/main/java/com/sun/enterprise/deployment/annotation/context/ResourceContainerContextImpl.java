@@ -438,7 +438,7 @@ public class ResourceContainerContextImpl extends AnnotationContext
     }
 
     /**
-     * Adds the specified data-source-definition to the receiver.
+     * Adds the specified mail-session-definition to the receiver.
      *
      * @param desc MailSessionDescriptor to add.
      */
@@ -455,6 +455,25 @@ public class ResourceContainerContextImpl extends AnnotationContext
         return getMailSessionContainer().getMailSessionDescriptors();
     }
 
+    protected WritableJndiNameEnvironment getConnectorResourceDefinitionContainer(){
+        return (WritableJndiNameEnvironment)descriptor;
+    }
+
+    /**
+     * get all connector-resource-definition descriptors
+     * @return connector-resource-definition descriptors
+     */
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return getConnectorResourceDefinitionContainer().getConnectorResourceDefinitionDescriptors();
+    }
+
+    /**
+     * Adds the specified connector-resource-definition to the receiver.
+     * @param desc ConnectorResourceDefinitionDescriptor to add.
+     */
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor desc) {
+        getConnectorResourceDefinitionContainer().addConnectorResourceDefinitionDescriptor(desc);
+    }
 
     protected WritableJndiNameEnvironment getPreDestroyContainer() {
         return (WritableJndiNameEnvironment)descriptor;

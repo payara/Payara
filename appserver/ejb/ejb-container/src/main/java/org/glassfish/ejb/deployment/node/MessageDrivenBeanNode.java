@@ -42,13 +42,18 @@ package org.glassfish.ejb.deployment.node;
 
 import java.util.Map;
 
-import com.sun.enterprise.deployment.node.*;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.w3c.dom.Node;
 
+import com.sun.enterprise.deployment.node.DataSourceDefinitionNode;
+import com.sun.enterprise.deployment.node.LifecycleCallbackNode;
+import com.sun.enterprise.deployment.node.MailSessionNode;
+import com.sun.enterprise.deployment.node.MethodNode;
+import com.sun.enterprise.deployment.node.SecurityRoleRefNode;
+import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 
 /**
@@ -196,6 +201,9 @@ public class MessageDrivenBeanNode extends EjbNode<EjbMessageBeanDescriptor> {
         
         //mail-seesion*
         writeMailSessionDescriptors(ejbNode, ejbDesc.getMailSessionDescriptors().iterator());
+        
+        // connecto-resource-definition*
+        writeConnectorResourceDefinitionDescriptors(ejbNode, ejbDesc.getConnectorResourceDefinitionDescriptors().iterator());
 
         // security-role-ref*
         writeRoleReferenceDescriptors(ejbNode, ejbDesc.getRoleReferences().iterator());

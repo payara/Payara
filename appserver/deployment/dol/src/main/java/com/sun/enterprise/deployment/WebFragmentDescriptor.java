@@ -315,6 +315,20 @@ public class WebFragmentDescriptor extends WebBundleDescriptor
         }
     }
 
+    @Override
+    protected void combineConnectorResourceDefinitionDescriptors(JndiNameEnvironment env) {
+        for (ConnectorResourceDefinitionDescriptor crdd: env.getConnectorResourceDefinitionDescriptors()) {
+            ConnectorResourceDefinitionDescriptor desc = getConnectorResourceDefinitionDescriptor(crdd.getName());
+            if (desc != null) {
+                if (desc.isConflict(crdd)) {
+                    conflictConnectorResourceDefinition = true;
+                }
+            } else {
+                addConnectorResourceDefinitionDescriptor(desc);
+            }
+        }
+    }
+
     /**
      * Return a formatted version as a String.
      */

@@ -42,12 +42,49 @@ package org.glassfish.ejb.deployment.descriptor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.CommonResourceDescriptor;
+import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.EjbReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.InjectionCapable;
+import com.sun.enterprise.deployment.InjectionInfo;
+import com.sun.enterprise.deployment.InjectionTarget;
+import com.sun.enterprise.deployment.InterceptorDescriptor;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
+import com.sun.enterprise.deployment.MailSessionDescriptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.MethodPermission;
+import com.sun.enterprise.deployment.OrderedSet;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.RoleReference;
+import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WritableJndiNameEnvironment;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -247,31 +284,38 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         this.transactionType = other.transactionType;
         this.methodContainerTransactions = new Hashtable(other.getMethodContainerTransactions());
         this.permissionedMethodsByPermission = new Hashtable(other.getPermissionedMethodsByPermission());
-	if (other.env == null) {
-	    // only add this information if it's contained in
-	    // the other EjbDescriptor
-	    this.getEnvironmentProperties().addAll(other.getEnvironmentProperties());
-	    this.getEjbReferenceDescriptors().addAll(other.getEjbReferenceDescriptors());
-	    this.getResourceEnvReferenceDescriptors().addAll(other.getResourceEnvReferenceDescriptors());
-	    this.getMessageDestinationReferenceDescriptors().addAll(other.getMessageDestinationReferenceDescriptors());
-	    this.getResourceReferenceDescriptors().addAll(other.getResourceReferenceDescriptors());
-	    this.getServiceReferenceDescriptors().addAll(other.getServiceReferenceDescriptors());
-	    // XXX - why not addAll?
-	    Set<DataSourceDefinitionDescriptor> dataSourceDescriptors = other.getDataSourceDefinitionDescriptors();
-	    if(dataSourceDescriptors.size() > 0){
-		for(DataSourceDefinitionDescriptor desc : dataSourceDescriptors){
-		    this.addDataSourceDefinitionDescriptor(desc);
-		}
-	    }
+        if (other.env == null) {
+            // only add this information if it's contained in
+            // the other EjbDescriptor
+            this.getEnvironmentProperties().addAll(other.getEnvironmentProperties());
+            this.getEjbReferenceDescriptors().addAll(other.getEjbReferenceDescriptors());
+            this.getResourceEnvReferenceDescriptors().addAll(other.getResourceEnvReferenceDescriptors());
+            this.getMessageDestinationReferenceDescriptors().addAll(other.getMessageDestinationReferenceDescriptors());
+            this.getResourceReferenceDescriptors().addAll(other.getResourceReferenceDescriptors());
+            this.getServiceReferenceDescriptors().addAll(other.getServiceReferenceDescriptors());
+            // XXX - why not addAll?
+            Set<DataSourceDefinitionDescriptor> dataSourceDescriptors = other.getDataSourceDefinitionDescriptors();
+            if(dataSourceDescriptors.size() > 0){
+                for(DataSourceDefinitionDescriptor desc : dataSourceDescriptors){
+                    this.addDataSourceDefinitionDescriptor(desc);
+                }
+            }
             Set<MailSessionDescriptor> mailSessionDescriptors = other.getMailSessionDescriptors();
             if (mailSessionDescriptors.size() > 0) {
                 for (MailSessionDescriptor desc : mailSessionDescriptors) {
                     this.addMailSessionDescriptor(desc);
                 }
             }
+            
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDescriptors = other.getConnectorResourceDefinitionDescriptors();
+            if (connectorResourceDescriptors.size() > 0) {
+                for (ConnectorResourceDefinitionDescriptor desc : connectorResourceDescriptors) {
+                    this.addConnectorResourceDefinitionDescriptor(desc);
+                }
+            }
             this.getEntityManagerFactoryReferenceDescriptors().addAll(other.getEntityManagerFactoryReferenceDescriptors());
             this.getEntityManagerReferenceDescriptors().addAll(other.getEntityManagerReferenceDescriptors());
-	}
+        }
         this.getRoleReferences().addAll(other.getRoleReferences());
         this.getIORConfigurationDescriptors().addAll(other.getIORConfigurationDescriptors());
         this.transactionType = other.transactionType;

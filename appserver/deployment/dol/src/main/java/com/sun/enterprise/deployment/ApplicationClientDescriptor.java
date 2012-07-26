@@ -672,4 +672,28 @@ public class ApplicationClientDescriptor extends CommonResourceBundleDescriptor
     public Collection<? extends PersistenceUnitDescriptor> findReferencedPUs() {
         return findReferencedPUsViaPURefs(this);
     }
+
+	@Override
+	public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+		throw new UnsupportedOperationException(localStrings.getLocalString(
+			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+			    "The application client [{0}] do not support connector resource definitions", 
+		            new Object[] {getName()}));
+	}
+
+	@Override
+	public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference) {
+		throw new UnsupportedOperationException(localStrings.getLocalString(
+			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+			    "The application client [{0}] do not support connector resource definitions", 
+		            new Object[] {getName()}));
+	}
+
+	@Override
+	public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference) {
+		throw new UnsupportedOperationException(localStrings.getLocalString(
+			    "enterprise.deployment.exceptionappclientnotsupportconnectorresourcedefinition",
+			    "The application client [{0}] do not support connector resource definitions", 
+		            new Object[] {getName()}));
+	}
 }

@@ -65,6 +65,9 @@ public class CommonResourceFunctionality implements Serializable {
     private Set<DataSourceDefinitionDescriptor> datasourceDefinitionDescs =
             new HashSet<DataSourceDefinitionDescriptor>();
 
+    private Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescs =
+            new HashSet<ConnectorResourceDefinitionDescriptor>();
+
     private Set<Descriptor> allResourceDescriptors = new HashSet<Descriptor>();
 
     public Set<Descriptor> getAllResourcesDescriptors() {
@@ -154,6 +157,37 @@ public class CommonResourceFunctionality implements Serializable {
 
     public void removeDataSourceDefinitionDescriptor(DataSourceDefinitionDescriptor reference) {
         this.getDataSourceDefinitionDescriptors().remove(reference);
+        allResourceDescriptors.remove(reference);
+    }
+
+    public Set<ConnectorResourceDefinitionDescriptor> getConnectorResourceDefinitionDescriptors() {
+        return connectorResourceDefinitionDescs;
+    }
+
+    protected ConnectorResourceDefinitionDescriptor getConnectorResourceDefinitionDescriptor(String name) {
+        ConnectorResourceDefinitionDescriptor crdDesc = null;
+        for (ConnectorResourceDefinitionDescriptor crd : this.getConnectorResourceDefinitionDescriptors()) {
+            if (crd.getName().equals(name)) {
+                crdDesc = crd;
+                break;
+            }
+        }
+        return crdDesc;
+    }
+
+    public void addConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        if(foundDescriptor(reference)){
+            throw new IllegalStateException(
+                    localStrings.getLocalString("enterprise.deployment.exceptionapplicationduplicateconnectorresourcedefinition",
+                            "This application cannot have connector resource definitions of same name : [{0}]",
+                            reference.getName()));
+        }
+        connectorResourceDefinitionDescs.add(reference);
+        allResourceDescriptors.add(reference);
+    }
+
+    public void removeConnectorResourceDefinitionDescriptor(ConnectorResourceDefinitionDescriptor reference){
+        connectorResourceDefinitionDescs.remove(reference);
         allResourceDescriptors.remove(reference);
     }
 

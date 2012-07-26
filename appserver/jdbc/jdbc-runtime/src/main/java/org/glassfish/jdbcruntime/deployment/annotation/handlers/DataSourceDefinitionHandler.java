@@ -102,34 +102,6 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
         return getDefaultProcessedResult();
     }
 
-    private boolean isAEjbComponentClass(Annotation[] annotations) {
-        boolean ejbClass = false;
-        Class ejbAnnotations[] = getEjbAnnotationTypes();
-        for(Annotation annotation : annotations){
-            for(Class ejbAnnotation : ejbAnnotations){
-                if(ejbAnnotation.equals(annotation.annotationType())){
-                    ejbClass = true;
-                    break;
-                }
-            }
-        }
-        return ejbClass;
-    }
-
-    private boolean isAWebComponentClass(Annotation[] annotations) {
-        boolean warClass = false;
-        Class webAnnotations[] = getWebAnnotationTypes();
-        for(Annotation annotation : annotations){
-            for(Class webAnnotation : webAnnotations){
-                if(webAnnotation.equals(annotation.annotationType())){
-                    warClass = true;
-                    break;
-                }
-            }
-        }
-        return warClass;
-    }
-
     /**
      * To take care of the case where an ejb is provided in a .war and
      * annotation processor will process this class twice (once for ejb and

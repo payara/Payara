@@ -54,8 +54,18 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
+import com.sun.enterprise.deployment.ConnectorResourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.EntityManagerFactoryReferenceDescriptor;
+import com.sun.enterprise.deployment.EntityManagerReferenceDescriptor;
+import com.sun.enterprise.deployment.EnvironmentProperty;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.MailSessionDescriptor;
+import com.sun.enterprise.deployment.MessageDestinationReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -986,6 +996,27 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
         for (; mailSessionDescriptorIterator.hasNext(); ) {
             MailSessionDescriptor next = mailSessionDescriptorIterator.next();
             subNode.writeDescriptor(parentNode, TagNames.MAIL_SESSION, next);
+        }
+    }
+
+
+    /**
+     * write a list of connector-resource-definition descriptors to a DOM Tree
+     *
+     * @param parentNode parent node for the DOM tree
+     * @param descIterator the iterator over the descriptors to write
+     */
+    protected void writeConnectorResourceDefinitionDescriptors(Node parentNode,
+                              Iterator<ConnectorResourceDefinitionDescriptor>  descIterator) {
+        if(descIterator == null || !descIterator.hasNext()){
+            return;
+        }
+
+        //Only create one CRD node?
+        ConnectorResourceDefinitionNode subNode = new ConnectorResourceDefinitionNode();
+        for(;descIterator.hasNext();){
+            ConnectorResourceDefinitionDescriptor next = descIterator.next();
+            subNode.writeDescriptor(parentNode, TagNames.CONNECTOR_RESOURCE, next);
         }
     }
 
