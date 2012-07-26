@@ -46,10 +46,13 @@ import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnota
 import com.sun.enterprise.deployment.annotation.introspection.ResourceAdapterAnnotationScanner;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.IOException;
@@ -74,6 +77,7 @@ public class ConnectorSniffer extends GenericSniffer {
     private Logger logger;
 
     @Inject RarType rarType;
+    @Inject BaseServiceLocator locator;
 
     private static final Class[]  connectorAnnotations = new Class[] {
             javax.resource.spi.Connector.class };
@@ -151,6 +155,21 @@ public class ConnectorSniffer extends GenericSniffer {
      */
     public String[] getIncompatibleSnifferTypes() {
         return new String[] {"ejb", "web"};
+    }
+
+    /**
+     * Returns true if the passed file or directory is recognized by this
+     * sniffer.
+     * @param context deployment context
+     * @return true if the location is recognized by this sniffer
+     */
+    @Override
+    public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
+        return DeploymentUtils.isArchiveOfType(context.getSource(), rarType, context, locator);
     }
 
     /**

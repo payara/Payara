@@ -41,6 +41,8 @@
 package org.glassfish.javaee.full.deployment;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.internal.deployment.GenericCompositeSniffer;
@@ -60,6 +62,7 @@ import java.util.ArrayList;
 public class EarSniffer extends GenericCompositeSniffer {
 
     @Inject EarType earType;
+    @Inject BaseServiceLocator locator;
 
     public EarSniffer() {
         super("ear", "META-INF/application.xml", null);
@@ -68,6 +71,22 @@ public class EarSniffer extends GenericCompositeSniffer {
     public String[] getContainersNames() {
         return new String[] { "org.glassfish.javaee.full.deployment.EarContainer"};
     }                                                                              
+
+    /**
+     * Returns true if the passed file or directory is recognized by this
+     * composite sniffer.
+     * @param context deployment context
+     * @return true if the location is recognized by this sniffer
+     */
+    @Override
+    public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
+        return DeploymentUtils.isArchiveOfType(context.getSource(), earType, context, locator);
+    }
+
     /**
      * Returns true if the passed file or directory is recognized by this
      * instance.
@@ -77,7 +96,7 @@ public class EarSniffer extends GenericCompositeSniffer {
      */
     @Override
     public boolean handles(ReadableArchive location) {
-        return DeploymentUtils.isEAR(location);
+        return DeploymentUtils.isArchiveOfType(location, earType, locator);
     }
 
     /**

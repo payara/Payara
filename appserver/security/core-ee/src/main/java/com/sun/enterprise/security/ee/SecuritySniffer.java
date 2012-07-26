@@ -44,10 +44,12 @@ import com.sun.enterprise.security.SecurityLifecycle;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.enterprise.deploy.shared.ModuleType;
 
@@ -70,6 +72,9 @@ public class SecuritySniffer extends GenericSniffer {
     @Inject
     private ServiceLocator habitat;
     
+    @Inject
+    private BaseServiceLocator locator;
+
     private ServiceHandle<SecurityLifecycle> lifecycle;
     
     @SuppressWarnings("unchecked")
@@ -91,8 +96,7 @@ public class SecuritySniffer extends GenericSniffer {
      * @return true if this sniffer handles this application type
      */
     public boolean handles(ReadableArchive location) {
-        return (DeploymentUtils.isWebArchive(location) || DeploymentUtils.isEAR(location) ||
-                isJar(location));
+        return (DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), locator) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), locator) || isJar(location));
     }
 
     /**

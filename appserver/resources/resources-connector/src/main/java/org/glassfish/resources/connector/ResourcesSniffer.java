@@ -44,10 +44,13 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.glassfish.resources.util.ResourceUtil;
 import org.glassfish.resources.api.ResourceConstants;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +64,7 @@ public class ResourcesSniffer extends GenericSniffer {
 //TODO ASR package name change ?
 
     final String[] containerNames = {"org.glassfish.resources.module.ResourcesContainer"};
+    @Inject BaseServiceLocator locator;
 
     public ResourcesSniffer() {
         super(ResourceConstants.GF_RESOURCES_MODULE, ResourceConstants.GF_RESOURCES_LOCATION, null);
@@ -74,7 +78,7 @@ public class ResourcesSniffer extends GenericSniffer {
      * @return true if this sniffer handles this application type
      */
     public boolean handles(ReadableArchive archive) {
-        return DeploymentUtils.hasResourcesXML(archive)
+        return ResourceUtil.hasResourcesXML(archive, locator)
                 && archive.getParentArchive() == null;
     }
 

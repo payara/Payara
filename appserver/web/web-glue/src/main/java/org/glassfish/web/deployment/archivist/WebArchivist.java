@@ -281,7 +281,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptor> {
     @Override
     protected boolean postHandles(ReadableArchive abstractArchive)
             throws IOException {
-        return DeploymentUtils.isWebArchive(abstractArchive);
+        return DeploymentUtils.isArchiveOfType(abstractArchive, getModuleType(), locator);
     }
 
     @Override

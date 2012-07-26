@@ -42,13 +42,19 @@ package org.glassfish.resources.util;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.logging.LogDomains;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceConstants;
 import org.glassfish.resources.api.ResourceInfo;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.IOException;
 
 /**
  * @author Jagadish Ramu
@@ -56,6 +62,9 @@ import java.util.logging.Logger;
 public class ResourceUtil {
 
     private static Logger _logger= LogDomains.getLogger(ResourceUtil.class, LogDomains.RSR_LOGGER);
+
+    private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
+    private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
 
     public static BindableResource getBindableResourceByName(Resources resources, String name) {
         Collection<BindableResource> typedResources = resources.getResources(BindableResource.class);
@@ -179,5 +188,43 @@ public class ResourceUtil {
     public static boolean isModuleScopedResource(org.glassfish.resources.api.GenericResourceInfo resourceInfo){
         return resourceInfo != null && resourceInfo.getApplicationName() != null && resourceInfo.getModuleName() != null &&
                 resourceInfo.getName() != null && resourceInfo.getName().startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX);
+    }
+
+    public static boolean hasResourcesXML(ReadableArchive archive, BaseServiceLocator locator){
+        boolean hasResourcesXML = false;
+        try{
+            if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
+                //handle top-level META-INF/glassfish-resources.xml
+                if(archive.exists(RESOURCES_XML_META_INF)){
+                    return true;
+                }
+
+                //check sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
+                Enumeration<String> entries = archive.entries();
+                while(entries.hasMoreElements()){
+                    String element = entries.nextElement();
+                    if(element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
+                            element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")){
+                        ReadableArchive subArchive = archive.getSubArchive(element);
+                        boolean answer = (subArchive != null && hasResourcesXML(subArchive, locator));
+                        if (subArchive != null) {
+                            subArchive.close();
+                        }
+                        if (answer) {
+                            return true;
+                        }
+                   }
+                }
+            }else{
+                if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
+                    return archive.exists(RESOURCES_XML_WEB_INF);
+                }else {
+                    return archive.exists(RESOURCES_XML_META_INF);
+                }
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return hasResourcesXML;
     }
 }

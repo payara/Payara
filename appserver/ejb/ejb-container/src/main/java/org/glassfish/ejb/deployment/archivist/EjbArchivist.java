@@ -178,7 +178,7 @@ public class EjbArchivist extends Archivist<EjbBundleDescriptorImpl> {
             throws IOException {
         AnnotationDetector detector =
                     new AnnotationDetector(new EjbComponentAnnotationScanner());
-        return (!DeploymentUtils.isWebArchive(abstractArchive)) &&
+        return (!DeploymentUtils.isArchiveOfType(abstractArchive, DOLUtils.warType(), locator)) &&
                 detector.hasAnnotationInArchiveWithNoScanning(abstractArchive);
     }
 }

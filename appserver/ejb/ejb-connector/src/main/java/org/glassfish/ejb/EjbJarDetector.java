@@ -46,6 +46,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.GenericAnnotationDetector;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
@@ -79,6 +80,9 @@ public class EjbJarDetector implements ArchiveDetector {
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
+    private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
+    private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
+    private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
     @Override
     public int rank() {
         return Integer.getInteger(EJB_JAR_DETECTOR_RANK_PROP, DEFAULT_EJB_JAR_DETECTOR_RANK);
@@ -86,8 +90,21 @@ public class EjbJarDetector implements ArchiveDetector {
 
     @Override
     public boolean handles(ReadableArchive archive) {
-        // We should really move the logic from DeploymentUtils.isEjbJar to here and let that method utilize this class.
-        return DeploymentUtils.isEjbJar(archive, baseServiceLocator);
+        try {
+            if (archive.exists(EJB_JAR_XML) ||
+                archive.exists(SUN_EJB_JAR_XML) ||
+                archive.exists(GF_EJB_JAR_XML)) {
+                return true;
+            }
+
+            GenericAnnotationDetector detector =
+                new GenericAnnotationDetector(sniffer.getAnnotationTypes());
+
+            return detector.hasAnnotationInArchive(archive);
+        }catch(IOException ioe){
+            //ignore
+        }
+        return false;
     }
 
     @Override

@@ -43,6 +43,8 @@ package org.glassfish.appclient.server.connector;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -79,6 +81,10 @@ public class CarDetector implements ArchiveDetector {
 
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
+    private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+    private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
+    private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
+
     @Override
     public int rank() {
         return Integer.getInteger(CAR_DETECTOR_RANK_PROP, DEFAULT_CAR_DETECTOR_RANK);
@@ -86,7 +92,23 @@ public class CarDetector implements ArchiveDetector {
 
     @Override
     public boolean handles(ReadableArchive archive) throws IOException {
-        return DeploymentUtils.isCAR(archive); // logic should be moved from DeploymentUtils to here
+        try {
+            if (archive.exists(APPLICATION_CLIENT_XML) ||
+                archive.exists(SUN_APPLICATION_CLIENT_XML) ||
+                archive.exists(GF_APPLICATION_CLIENT_XML)) {
+                return true;
+            }
+
+            Manifest manifest = archive.getManifest();
+            if (manifest != null &&
+                manifest.getMainAttributes().containsKey(
+                Attributes.Name.MAIN_CLASS)) {
+                return true;
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return false;
     }
 
     @Override

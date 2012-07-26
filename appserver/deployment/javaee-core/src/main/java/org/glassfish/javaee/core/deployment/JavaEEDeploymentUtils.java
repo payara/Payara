@@ -41,7 +41,9 @@
 package org.glassfish.javaee.core.deployment;
 
 import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
@@ -58,11 +60,17 @@ public class JavaEEDeploymentUtils {
      * @return whether the archive is a JavaEE archive
      */
     public static boolean isJavaEE(ReadableArchive archive, BaseServiceLocator habitat) {
-        if (DeploymentUtils.isEAR(archive) || 
-            DeploymentUtils.isWebArchive(archive) || 
-            DeploymentUtils.isCAR(archive) ||
-            DeploymentUtils.isRAR(archive, habitat) || 
-            DeploymentUtils.isEjbJar(archive, habitat)) {
+        return isJavaEE(archive, null, habitat);
+    }
+    /**
+     * check whether the archive is a JavaEE archive
+     * @param archive archive to be tested
+     * @param context deployment context
+     * @param habitat
+     * @return whether the archive is a JavaEE archive
+     */
+    public static boolean isJavaEE(ReadableArchive archive, DeploymentContext context, BaseServiceLocator habitat) {
+        if (DeploymentUtils.isArchiveOfType(archive,DOLUtils.earType(), context, habitat) || DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), context, habitat) || DeploymentUtils.isArchiveOfType(archive, DOLUtils.carType(), context, habitat) || DeploymentUtils.isArchiveOfType(archive, DOLUtils.rarType(), context, habitat) || DeploymentUtils.isArchiveOfType(archive, DOLUtils.ejbType(), context, habitat)) {
             return true;
         }
         return false;

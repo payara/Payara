@@ -56,6 +56,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.deployment.EarType;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 
 /**
  * Detects ear type archives.
@@ -77,6 +78,15 @@ public class EarDetector implements ArchiveDetector {
     @Inject private EarType archiveType;
     private ArchiveHandler archiveHandler;
 
+    private static final String APPLICATION_XML = "META-INF/application.xml";
+    private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";
+    private static final String GF_APPLICATION_XML = "META-INF/glassfish-application.xml";
+    private static final String EAR_EXTENSION = ".ear";
+    private static final String EXPANDED_WAR_SUFFIX = "_war";
+    private static final String EXPANDED_RAR_SUFFIX = "_rar";
+    private static final String EXPANDED_JAR_SUFFIX = "_jar";
+
+
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
     @Override
@@ -86,7 +96,23 @@ public class EarDetector implements ArchiveDetector {
 
     @Override
     public boolean handles(ReadableArchive archive) throws IOException {
-        return DeploymentUtils.isEAR(archive); // logic should be moved from DeploymentUtils to here
+        boolean isEar = false;
+        try{
+            if (Util.getURIName(archive.getURI()).endsWith(EAR_EXTENSION)) {
+                return true;
+            }
+
+            isEar = archive.exists(APPLICATION_XML) ||
+                    archive.exists(SUN_APPLICATION_XML) ||
+                    archive.exists(GF_APPLICATION_XML);
+
+            if (!isEar) {
+                isEar = isEARFromIntrospecting(archive);
+            }
+        }catch(IOException ioe){
+            //ignore
+        }
+        return isEar;
     }
 
     @Override
@@ -108,4 +134,21 @@ public class EarDetector implements ArchiveDetector {
     public ArchiveType getArchiveType() {
         return archiveType;
     }
+
+    // introspecting the sub archives to see if any of them
+    // ended with expected suffix
+    private static boolean isEARFromIntrospecting(ReadableArchive archive)
+        throws IOException {
+        for (String entryName : archive.getDirectories()) {
+            // we don't have other choices but to look if any of
+            // the subdirectories is ended with expected suffix
+            if ( entryName.endsWith(EXPANDED_WAR_SUFFIX) ||
+                 entryName.endsWith(EXPANDED_RAR_SUFFIX) ||
+                 entryName.endsWith(EXPANDED_JAR_SUFFIX) ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+

@@ -48,9 +48,9 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
+import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.ServerEnvironment;
-import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -71,7 +71,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.jar.Manifest;
-import java.util.jar.Attributes;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -91,27 +90,6 @@ public class DeploymentUtils {
 
     private static final String V2_COMPATIBILITY = "v2";
 
-    private static final String WEB_INF = "WEB-INF";
-    private static final String JSP_SUFFIX = ".jsp";
-    private static final String RA_XML = "META-INF/ra.xml";
-    private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
-    private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
-    private static final String APPLICATION_XML = "META-INF/application.xml";
-    private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";    
-    private static final String GF_APPLICATION_XML = "META-INF/glassfish-application.xml";    
-    private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
-    private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
-    private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
-   private static final String EJB_JAR_XML = "META-INF/ejb-jar.xml";
-    private static final String SUN_EJB_JAR_XML = "META-INF/sun-ejb-jar.xml";
-    private static final String GF_EJB_JAR_XML = "META-INF/glassfish-ejb-jar.xml";
-    private static final String EAR_EXTENSION = ".ear";
-    private static final String WAR_EXTENSION = ".war";
-    private static final String RAR_EXTENSION = ".rar";
-    private static final String EXPANDED_WAR_SUFFIX = "_war";
-    private static final String EXPANDED_RAR_SUFFIX = "_rar";
-    private static final String EXPANDED_JAR_SUFFIX = "_jar";
-    
     private static final String INSTANCE_ROOT_URI_PROPERTY_NAME = "com.sun.aas.instanceRootURI";
 
     public final static String DAS_TARGET_NAME = "server";
@@ -208,28 +186,30 @@ public class DeploymentUtils {
         }
     }
 
-    // checking whether the archive is a web archive
-    public static boolean isWebArchive(ReadableArchive archive) {
-        try {
-            if (Util.getURIName(archive.getURI()).endsWith(WAR_EXTENSION)) {
-                return true;
-            }
-
-            if (archive.exists(WEB_INF)) { 
-                return true;
-            } 
-            Enumeration<String> entries = archive.entries();
-            while (entries.hasMoreElements()) {
-                String entryName = entries.nextElement();
-                if (entryName.endsWith(JSP_SUFFIX)) { 
-                    return true;
-                }
-            }
+    // check if the archive matches the specified archive type
+    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, DeploymentContext context, BaseServiceLocator locator) {
+        if (archive == null || archiveType == null) { 
             return false;
-        } catch (IOException ioe) {
-            // ignore
         }
-        return false;
+        String type = archiveType.toString();
+        if (context != null && context.getArchiveHandler() != null) {
+            // first check the current context for the current archive type
+            return type.equals(context.getArchiveHandler().getArchiveType());
+        }
+        try {
+            ArchiveDetector detector = locator.getComponent(ArchiveDetector.class, type); 
+            if (detector == null) {
+                return false;
+            }
+            return detector.handles(archive); 
+        } catch (IOException ioe) {
+            _logger.log(Level.WARNING, ioe.getMessage(), ioe);
+            return false;
+        }
+    }
+
+    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, BaseServiceLocator locator) {
+        return isArchiveOfType(archive, archiveType, null, locator);
     }
 
    /**
@@ -258,188 +238,6 @@ public class DeploymentUtils {
         } else {
             return pathName;
         }
-    }
-
-    public static boolean hasResourcesXML(ReadableArchive archive){
-        boolean hasResourcesXML = false;
-        try{
-
-            if(isEAR(archive)){
-                //handle top-level META-INF/glassfish-resources.xml
-                if(archive.exists(RESOURCES_XML_META_INF)){
-                    return true;
-                }
-
-                //check sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
-                Enumeration<String> entries = archive.entries();
-                while(entries.hasMoreElements()){
-                    String element = entries.nextElement();
-                    if(element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
-                            element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")){
-                        ReadableArchive subArchive = archive.getSubArchive(element);
-                        boolean answer = (subArchive != null && hasResourcesXML(subArchive));
-                        if (subArchive != null) {
-                            subArchive.close();
-                        }
-                        if (answer) {
-                            return true;
-                        }
-                    }
-                }
-            }else{
-                if(isWebArchive(archive)){
-                    return archive.exists(RESOURCES_XML_WEB_INF);
-                }else {
-                    return archive.exists(RESOURCES_XML_META_INF);
-                }
-            }
-        }catch(IOException ioe){
-            //ignore
-        }
-        return hasResourcesXML;
-    }
-    /**
-     * check whether the archive is a .rar
-     * @param archive archive to be tested
-     * @return status of .rar or not
-     */
-    public static boolean isRAR(ReadableArchive archive){
-        boolean isRar = false;
-        try{
-            if (Util.getURIName(archive.getURI()).endsWith(RAR_EXTENSION)) {
-                return true;
-            }
-
-            isRar = archive.exists(RA_XML);
-        }catch(IOException ioe){
-            //ignore
-        }
-        return isRar;
-    }
-
-    /**
-     * check whether the archive is a .rar, it also scans annotations
-     * @param archive archive to be tested
-     * @param habitat
-     * @return status of .rar or not
-     */
-    public static boolean isRAR(ReadableArchive archive, BaseServiceLocator habitat) {
-        if (isRAR(archive)) {
-            return true;
-        }
-        if (archive instanceof FileArchive) {
-            Sniffer sniffer = habitat.getComponent(Sniffer.class,
-                "connector");
-            if (sniffer != null) {
-                GenericAnnotationDetector detector = new GenericAnnotationDetector(sniffer.getAnnotationTypes());
-                return detector.hasAnnotationInArchive(archive);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * check whether the archive is an appclient archive
-     * @param archive archive to be tested
-     * @return whether the archive is an appclient archive or not
-     */
-    public static boolean isCAR(ReadableArchive archive) {
-        try {
-            if (archive.exists(APPLICATION_CLIENT_XML) ||
-                archive.exists(SUN_APPLICATION_CLIENT_XML) ||
-                archive.exists(GF_APPLICATION_CLIENT_XML)) {
-                return true;
-            }
-
-            Manifest manifest = archive.getManifest();
-            if (manifest != null &&
-                manifest.getMainAttributes().containsKey(
-                Attributes.Name.MAIN_CLASS)) {
-                return true;
-            }
-        }catch(IOException ioe){
-            //ignore
-        }
-        return false;
-    }
-
-    /**
-     * check whether the archive is an ejb archive
-     * @param archive archive to be tested
-     * @param habitat
-     * @return whether the archive is an ejb archive or not
-     */
-    public static boolean isEjbJar(ReadableArchive archive, BaseServiceLocator habitat) {
-        try {
-            if (archive.exists(EJB_JAR_XML) ||
-                archive.exists(SUN_EJB_JAR_XML) ||
-                archive.exists(GF_EJB_JAR_XML)) {
-                return true;
-            }
-
-            Sniffer sniffer = habitat.getComponent(Sniffer.class, "Ejb");
-            if (sniffer != null) {
-                GenericAnnotationDetector detector =
-                    new GenericAnnotationDetector(sniffer.getAnnotationTypes());
-                return detector.hasAnnotationInArchive(archive);
-            }
-        }catch(IOException ioe){
-            //ignore
-        }
-        return false;
-    }
-
-    /**
-     * check whether the archive is a .ear
-     * @param archive archive to be tested
-     * @return status of .ear or not
-     */
-    public static boolean isEAR(ReadableArchive archive){
-        boolean isEar = false;
-
-        try{
-            if (Util.getURIName(archive.getURI()).endsWith(EAR_EXTENSION)) {
-                return true;
-            }
-
-            isEar = archive.exists(APPLICATION_XML) || 
-                    archive.exists(SUN_APPLICATION_XML) || 
-                    archive.exists(GF_APPLICATION_XML);
-
-            if (!isEar) {
-                isEar = isEARFromIntrospecting(archive);
-            } 
-        }catch(IOException ioe){
-            //ignore
-        }
-        return isEar;
-    }
-
-    // introspecting the sub archives to see if any of them 
-    // ended with expected suffix
-    private static boolean isEARFromIntrospecting(ReadableArchive archive) 
-        throws IOException {
-        for (String entryName : archive.getDirectories()) {
-            // we don't have other choices but to look if any of
-            // the subdirectories is ended with expected suffix
-            if ( entryName.endsWith(EXPANDED_WAR_SUFFIX) || 
-                 entryName.endsWith(EXPANDED_RAR_SUFFIX) || 
-                 entryName.endsWith(EXPANDED_JAR_SUFFIX) ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Return true the current module (aka archive) being deployed is of given module type, else false.
-     *
-     * @param ah current archive
-     * @param moduleType
-     * @return true if the current module being deployed is of given module type, else false.
-     */
-    public static boolean isArchiveOfType(ArchiveHandler ah, ArchiveType moduleType) {
-        return moduleType.toString().equals(ah.getArchiveType());
     }
 
     /**

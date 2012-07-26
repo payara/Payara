@@ -46,6 +46,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
@@ -55,6 +56,7 @@ import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.Enumeration;
 
 /**
  * Detects war type archives.
@@ -76,6 +78,10 @@ public class WarDetector implements ArchiveDetector {
     private ArchiveHandler archiveHandler;
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
+    private static final String WEB_INF = "WEB-INF";
+    private static final String JSP_SUFFIX = ".jsp";
+    private static final String WAR_EXTENSION = ".war";
+
     @Override
     public int rank() {
         return Integer.getInteger(WAR_DETECTOR_RANK_PROP, DEFAULT_WAR_DETECTOR_RANK);
@@ -83,7 +89,26 @@ public class WarDetector implements ArchiveDetector {
 
     @Override
     public boolean handles(ReadableArchive archive) {
-        return DeploymentUtils.isWebArchive(archive); // logic should be moved from DeploymentUtils to here
+        try {
+            if (Util.getURIName(archive.getURI()).endsWith(WAR_EXTENSION)) {
+                return true;
+            }
+
+            if (archive.exists(WEB_INF)) {
+                return true;
+            }
+            Enumeration<String> entries = archive.entries();
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement();
+                if (entryName.endsWith(JSP_SUFFIX)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IOException ioe) {
+            // ignore
+        }
+        return false;
     }
 
     @Override

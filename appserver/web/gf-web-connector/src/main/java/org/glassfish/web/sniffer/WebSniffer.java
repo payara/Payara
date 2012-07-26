@@ -44,12 +44,14 @@ import com.sun.enterprise.module.ModulesRegistry;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ import java.util.List;
 public class WebSniffer  extends GenericSniffer {
 
     @Inject WarType warType;
+    @Inject BaseServiceLocator locator;
 
     public WebSniffer() {
         super("web", "WEB-INF/web.xml", null);
@@ -80,13 +83,29 @@ public class WebSniffer  extends GenericSniffer {
 
     /**
      * Returns true if the passed file or directory is recognized by this
+     * sniffer.
+     * @param context deployment context
+     * @return true if the location is recognized by this sniffer
+     */
+    @Override
+    public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
+        return DeploymentUtils.isArchiveOfType(context.getSource(), warType, context, locator);
+    }
+
+    /**
+     * Returns true if the passed file or directory is recognized by this
      * instance.
      *
      * @param location the file or directory to explore 
      * @return true if this sniffer handles this application type
      */
+    @Override
     public boolean handles(ReadableArchive location) {
-        return DeploymentUtils.isWebArchive(location);
+        return DeploymentUtils.isArchiveOfType(location, warType, locator);
     }
 
     private static final String[] containers = { "com.sun.enterprise.web.WebContainer" };

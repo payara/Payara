@@ -45,9 +45,12 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.GenericCompositeSniffer;
 import org.glassfish.resources.api.ResourceConstants;
+import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +67,8 @@ public class ResourcesCompositeSniffer extends GenericCompositeSniffer {
     
     final String[] containerNames = {"org.glassfish.resources.module.ResourcesContainer"};
 
+    @Inject BaseServiceLocator locator;
+
     public ResourcesCompositeSniffer() {
         super(ResourceConstants.GF_RESOURCES_MODULE_EAR, ResourceConstants.GF_RESOURCES_LOCATION, null);
     }
@@ -77,7 +82,7 @@ public class ResourcesCompositeSniffer extends GenericCompositeSniffer {
      */
     @Override
     public boolean handles(ReadableArchive archive) {
-        return DeploymentUtils.hasResourcesXML(archive);
+        return ResourceUtil.hasResourcesXML(archive, locator);
     }
 
     /**

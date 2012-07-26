@@ -103,6 +103,7 @@ public class EjbSniffer  extends GenericSniffer {
      * @param location the file or directory to explore
      * @return true if this sniffer handles this application type
      */
+    @Override
     public boolean handles(ReadableArchive location) {
         boolean result = super.handles(location);    //Check ejb-jar.xml
 

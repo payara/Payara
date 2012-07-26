@@ -47,6 +47,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
 
 import org.jvnet.hk2.annotations.Service;
@@ -84,6 +85,8 @@ public class RarDetector implements ArchiveDetector {
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
+    private static final String RA_XML = "META-INF/ra.xml";
+    private static final String RAR_EXTENSION = ".rar";
     @Override
     public int rank() {
         return Integer.getInteger(RAR_DETECTOR_RANK_PROP, DEFAULT_RAR_DETECTOR_RANK);
@@ -113,7 +116,16 @@ public class RarDetector implements ArchiveDetector {
      * {@inheritDoc}
      */
     public boolean handles(ReadableArchive archive) throws IOException {
-        boolean handles = DeploymentUtils.isRAR(archive);
+        boolean handles = false;
+        try{
+            if (Util.getURIName(archive.getURI()).endsWith(RAR_EXTENSION)) {
+                return true;
+            }
+
+            handles = archive.exists(RA_XML);
+        }catch(IOException ioe){
+            //ignore
+        }
         if (!handles && (archive instanceof FileArchive)) {
             GenericAnnotationDetector detector =
                     new GenericAnnotationDetector(connectorAnnotations);
@@ -121,5 +133,4 @@ public class RarDetector implements ArchiveDetector {
         }
         return handles;
     }
-
 }

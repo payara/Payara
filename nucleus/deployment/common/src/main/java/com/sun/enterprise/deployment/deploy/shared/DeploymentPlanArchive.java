@@ -43,7 +43,10 @@ package com.sun.enterprise.deployment.deploy.shared;
 import com.sun.enterprise.util.io.FileUtils;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.internal.api.Globals;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +77,8 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
     Vector elements=null;
     
     String subArchiveUri=null;
+
+    private final static BaseServiceLocator locator = Globals.getDefaultHabitat();
     
     /** Creates a new instance of DeploymentPlanArchive 
      * package private
@@ -176,14 +181,14 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             
             String mangledName = entryName;
             String prefix = "META-INF/";
+            ArchiveType warType = locator.getComponent(ArchiveType.class, "war");
+            boolean isWar = DeploymentUtils.isArchiveOfType(getParentArchive(), warType, locator);
             if (entryName.indexOf("sun-web.xml")!=-1 || 
                 entryName.indexOf("glassfish-web.xml")!=-1) {
                 prefix = "WEB-INF/";
-            } else if (entryName.indexOf("glassfish-resources.xml")!=-1 &&
-                DeploymentUtils.isWebArchive(getParentArchive())) {
+            } else if (entryName.indexOf("glassfish-resources.xml")!=-1 && isWar) {
                 prefix = "WEB-INF/";
-            } else if (entryName.indexOf("glassfish-services.xml")!=-1 &&
-                DeploymentUtils.isWebArchive(getParentArchive())) {
+            } else if (entryName.indexOf("glassfish-services.xml")!=-1 && isWar) {
                 prefix = "WEB-INF/";
             }
             if (subArchiveUri != null && entryName.startsWith(subArchiveUri)) {
