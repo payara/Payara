@@ -160,7 +160,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     protected void generateArtifacts(DeploymentContext dc)
             throws DeploymentException {
         OpsParams params = dc.getCommandParameters(OpsParams.class);
-        if (params.origin != OpsParams.Origin.deploy) {
+        if (params.origin.isArtifactsPresent()) {
             return;
         }
         String appName = params.name();
@@ -328,8 +328,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     private void removePolicy(DeploymentContext dc)
             throws DeploymentException {
         OpsParams params = dc.getCommandParameters(OpsParams.class);
-        if (params.origin != OpsParams.Origin.undeploy
-                && params.origin != OpsParams.Origin.deploy) {
+        if (!params.origin.needsCleanArtifacts()) {
             return;
         }
         String appName = params.name();

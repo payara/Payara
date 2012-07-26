@@ -1235,6 +1235,78 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
     }
 
+    public void registerTenantWithAppInDomainXML(
+            final String appName,
+            final ExtendedDeploymentContext context) throws TransactionFailure {
+
+        final Transaction t = new Transaction();
+        try {
+            final DeployCommandParameters commandParams =
+                    context.getCommandParameters(DeployCommandParameters.class);
+            final AppTenant appTenant_w = writeableTenantForApp(
+                    appName,
+                    t);
+            appTenant_w.setContextRoot(context.getAppProps().getProperty(ServerTags.CONTEXT_ROOT));
+            appTenant_w.setTenant(context.getTenant());
+
+            t.commit();
+        } catch (TransactionFailure ex) {
+            t.rollback();
+            throw ex;
+        } catch (Throwable ex) {
+            t.rollback();
+            throw new TransactionFailure(ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    public void unregisterTenantWithAppInDomainXML(
+            final String appName,
+            final String tenantName
+            ) throws TransactionFailure, RetryableException {
+        final com.sun.enterprise.config.serverbeans.Application app =
+                applications.getApplication(appName);
+        if (app == null) {
+            throw new IllegalArgumentException("Application " + appName + " not found");
+        }
+        final AppTenants appTenants = app.getAppTenants();
+        final AppTenant appTenant = appTenants.getAppTenant(tenantName);
+        if (appTenant == null) {
+            throw new IllegalArgumentException("Tenant " + tenantName + " not provisioned for application " + appName);
+        }
+        Transaction t = new Transaction();
+        final AppTenants appTenants_w = t.enroll(appTenants);
+        appTenants_w.getAppTenant().remove(appTenant);
+        t.commit();
+    }
+
+    private AppTenant writeableTenantForApp(
+            final String appName,
+            final Transaction t) throws TransactionFailure, PropertyVetoException {
+        final com.sun.enterprise.config.serverbeans.Application app =
+                applications.getApplication(appName);
+        if (app == null) {
+            throw new IllegalArgumentException("Application " + appName + " not found");
+        }
+
+        /*
+         * The app-tenants subelement might or might not already be there.
+         */
+        AppTenants appTenants = app.getAppTenants();
+        AppTenants appTenants_w;
+        if (appTenants == null) {
+            com.sun.enterprise.config.serverbeans.Application app_w =
+                    t.enroll(app);
+            appTenants_w = app_w.createChild(AppTenants.class);
+            app_w.setAppTenants(appTenants_w);
+        } else {
+            appTenants_w = t.enroll(appTenants);
+       }
+
+        final List<AppTenant> appTenantList = appTenants_w.getAppTenant();
+        AppTenant appTenant_w = appTenants_w.createChild(AppTenant.class);
+        appTenantList.add(appTenant_w);
+        return appTenant_w;
+    }
 
     // application attributes that are set in the beginning of the deployment
     // that will not be changed in the course of the deployment

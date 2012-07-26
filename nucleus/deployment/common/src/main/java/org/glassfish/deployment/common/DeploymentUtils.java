@@ -47,6 +47,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.container.Sniffer;
@@ -61,6 +62,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedInputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.net.URI;
@@ -71,6 +73,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.jar.Manifest;
+import java.util.jar.JarFile;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -306,6 +309,46 @@ public class DeploymentUtils {
             throw new IllegalArgumentException(localStrings.getLocalString("illegal_char_in_name", "Illegal character [{0}] in the name [{1}].", ";", name)); 
         }
         return;
+    }
+
+    /**
+     * Expand an archive to a directory
+     *
+     * @param source of the expanding
+     * @param target of the expanding
+     * @throws IOException when the archive is corrupted
+     */
+    public static void expand(ReadableArchive source, WritableArchive target)
+        throws IOException {
+
+        Enumeration<String> e = source.entries();
+        while (e.hasMoreElements()) {
+            String entryName = e.nextElement();
+            InputStream is = new BufferedInputStream(source.getEntry(entryName));
+            OutputStream os = null;
+            try {
+                os = target.putNextEntry(entryName);
+                FileUtils.copy(is, os, source.getEntrySize(entryName));
+            } finally {
+                if (os!=null) {
+                    target.closeEntry();
+                }
+                is.close();
+            }
+        }
+
+        // last is manifest is existing.
+        Manifest m = source.getManifest();
+        if (m!=null) {
+            OutputStream os  = target.putNextEntry(JarFile.MANIFEST_NAME);
+            m.write(os);
+            target.closeEntry();
+        }
+    }
+
+    public static String getInternalNameForTenant(String appname,
+        String tenantname) {
+        return appname + "___" + tenantname;
     }
 
     public static String propertiesValue(final Properties props, final char sep) {

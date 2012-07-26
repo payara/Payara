@@ -60,9 +60,11 @@ public abstract class OpsParams implements CommandParameters {
      * unload when a loaded application is stopped
      * undeploy when a deployed application is removed from the system.
      * create_application_ref when an application reference is being created
+     * mt_provision when provisioning an application to tenant
+     * mt_unprovision when unprovisioning an application from tenant
      */
     public enum Origin { 
-        load, deploy, deploy_instance, unload, undeploy, create_application_ref;
+        load, deploy, deploy_instance, unload, undeploy, create_application_ref,        mt_provision, mt_unprovision;
 
         // whether it's part of the deployment, on DAS or on instance
         public boolean isDeploy() {
@@ -100,7 +102,8 @@ public abstract class OpsParams implements CommandParameters {
         // we need to do this for undeployment and deployment failure 
         // clean up
         public boolean needsCleanArtifacts() {
-            if (this == Origin.undeploy || this == Origin.deploy) {
+            if (this == Origin.undeploy || this == Origin.deploy 
+                || this == Origin.mt_unprovision) {
                 return true;
             }
             else {

@@ -178,6 +178,29 @@ public interface ExtendedDeploymentContext extends DeploymentContext {
     public File getAppInternalDir();
 
     /**
+     * Returns the tenant, if one is valid for this DeploymentContext.
+     * @return tenant name if applicable, null if no tenant is set for this DC
+     */
+    public String getTenant();
+
+    /**
+     * Sets the tenant to which this deployment context applies. Also initializes
+     * the tenant directory.
+     *
+     * @param tenantName the name of the tenant
+     * @param appName the name of the application
+     */
+    public void setTenant(String tenant, String appName);
+
+    /**
+     * Returns the directory containing the expanded tenant customization archive,
+     * if this DC is for a tenant and if a customization archive was specified
+     * when the tenant was provisioned.
+     * @return directory containing the expanded customization archive; null if none
+     */
+    public File getTenantDir();
+
+    /**
      * Performs any clean-up of the deployment context after deployment has
      * finished.
      * <p>

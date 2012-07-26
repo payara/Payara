@@ -576,6 +576,16 @@ public class VersioningUtilsTest {
         }
 
         @Override
+        public AppTenants getAppTenants() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setAppTenants(AppTenants appTenants) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public void setName(String value) throws PropertyVetoException{
             throw new UnsupportedOperationException("Not supported yet.");
         }

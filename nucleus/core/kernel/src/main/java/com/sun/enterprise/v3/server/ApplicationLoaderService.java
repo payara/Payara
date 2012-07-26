@@ -97,6 +97,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 
 import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.AppTenant;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -413,6 +414,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     new ApplicationConfigInfo(app).store(depContext.getAppProps());
 
                     deployment.deploy(deployment.getSniffersFromApp(app), depContext);
+                    loadApplicationForTenants(app, appRef, report, logger);
                     if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                         if (tracing!=null) {
                             tracing.print(System.out);
@@ -489,7 +491,97 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             } catch (Exception e) {
                 logger.log(Level.SEVERE, e.getMessage(), e);
             }
+            unloadApplicationForTenants(app, dummy, logger);
             appRegistry.remove(appInfo.getName());
+        }
+    }
+
+    private void unloadApplicationForTenants(Application app, ActionReport report, Logger logger) {
+        if (app.getAppTenants() == null) {
+            return;
+        }
+
+        for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
+            UndeployCommandParameters parameters = new UndeployCommandParameters();
+            parameters.name = DeploymentUtils.getInternalNameForTenant(app.getName(), tenant.getTenant());
+            parameters.origin = UndeployCommandParameters.Origin.unload;
+            parameters.target = server.getName();
+            ApplicationInfo appInfo = deployment.get(parameters.name);
+            if (appInfo == null) {
+                continue;
+            }
+
+            ActionReport subReport = report.addSubActionsReport();
+
+            try {
+                ExtendedDeploymentContext deploymentContext = deployment.getBuilder(logger, parameters, subReport).source(appInfo.getSource()).build();
+
+                deploymentContext.getAppProps().putAll(
+                    app.getDeployProperties());
+                deploymentContext.getAppProps().putAll(
+                    tenant.getDeployProperties());
+                deploymentContext.setModulePropsMap(
+                    app.getModulePropertiesMap());
+
+                deploymentContext.setTenant(tenant.getTenant(), app.getName());
+
+                deployment.unload(appInfo, deploymentContext);
+
+            } catch(Throwable e) {
+               subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+               subReport.setMessage(e.getMessage());
+               subReport.setFailureCause(e);
+            }
+            appRegistry.remove(appInfo.getName());
+        }
+    }
+
+    private void loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report, Logger logger) {
+        if (app.getAppTenants() == null) {
+            return;
+        }
+        for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
+            DeployCommandParameters commandParams = app.getDeployParameters(appRef);
+            commandParams.contextroot = tenant.getContextRoot();
+            commandParams.target = server.getName();
+            commandParams.name = DeploymentUtils.getInternalNameForTenant(app.getName(), tenant.getTenant());
+            commandParams.enabled = Boolean.TRUE;
+            commandParams.origin = DeployCommandParameters.Origin.load;
+
+            ActionReport subReport = report.addSubActionsReport();
+            ReadableArchive archive = null;
+
+            try {
+                URI uri = new URI(app.getLocation());
+                File file = new File(uri);
+
+                if (file.exists()) {
+                    archive = archiveFactoryProvider.get().openArchive(file);
+
+                    ExtendedDeploymentContext deploymentContext =
+                        deployment.getBuilder(logger, commandParams, subReport).source(archive).build();
+
+                    deploymentContext.getAppProps().putAll(app.getDeployProperties());
+                    deploymentContext.getAppProps().putAll(tenant.getDeployProperties());
+                    deploymentContext.setModulePropsMap(app.getModulePropertiesMap());
+                    deploymentContext.setTenant(tenant.getTenant(), app.getName());
+                    deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
+                } else {
+                    logger.log(Level.SEVERE, "not.found.in.original.location" + new Object[] {app.getLocation()});
+                }
+            } catch(Throwable e) {
+               subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+               subReport.setMessage(e.getMessage());
+               subReport.setFailureCause(e);
+            } finally {
+                try {
+                    if (archive != null) {
+                        archive.close();
+                    }
+                } catch(IOException e) {
+                    // ignore
+                }
+            }
         }
     }
 

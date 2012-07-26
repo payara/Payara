@@ -56,6 +56,7 @@ import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.data.ProgressTracker;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -211,6 +212,12 @@ public interface Deployment {
         final String target, boolean appRefOnly)
         throws TransactionFailure;
 
+    public void registerTenantWithAppInDomainXML(final String appName, final ExtendedDeploymentContext context)
+            throws TransactionFailure;
+
+    public void unregisterTenantWithAppInDomainXML(final String appName, final String tenantName)
+            throws TransactionFailure, RetryableException;
+
     public void updateAppEnabledAttributeInDomainXML(final String appName,
         final String target, final boolean enabled) throws TransactionFailure;
 
@@ -268,4 +275,5 @@ public interface Deployment {
 
     // gets the default target when no target is specified for non-paas case
     public String getDefaultTarget(Boolean isClassicStyle);
+
 }

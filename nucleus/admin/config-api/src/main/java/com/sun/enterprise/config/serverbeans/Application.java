@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -266,6 +266,11 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
     Resources getResources();
 
     void setResources(Resources resources) throws PropertyVetoException;
+
+    @Element
+    AppTenants getAppTenants();
+
+    void setAppTenants(AppTenants appTenants);
 
     @Element("*")
     List<ApplicationExtension> getExtensions();

@@ -77,6 +77,7 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDestroy {
 
     private static final String INTERNAL_DIR_NAME = "__internal";
+    private static final String APP_TENANTS_SUBDIR_NAME = "__app-tenants";
 
     ReadableArchive source;
     ReadableArchive originalSource;
@@ -97,6 +98,9 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     Map<String, ExtendedDeploymentContext> moduleDeploymentContexts = new HashMap<String, ExtendedDeploymentContext>();
     ExtendedDeploymentContext parentContext = null;
     String moduleUri = null;
+    private String tenant = null;
+    private String originalAppName = null;
+    private File tenantDir = null;
 
     /** Creates a new instance of DeploymentContext */
     public DeploymentContextImpl(Deployment.DeploymentContextBuilder builder, ServerEnvironment env) {
@@ -255,10 +259,22 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
      */
     public File getScratchDir(String subDirName) {
         File rootScratchDir = env.getApplicationStubPath();
-        if (subDirName != null )
-            rootScratchDir = new File(rootScratchDir, subDirName);
-        String appDirName = VersioningUtils.getRepositoryName(parameters.name());
-        return new File(rootScratchDir, appDirName);
+        if (tenant != null && originalAppName != null) {
+            // multi-tenant case
+            rootScratchDir = getRootScratchTenantDirForApp(originalAppName);
+            rootScratchDir = new File(rootScratchDir, tenant);
+            if (subDirName != null ) {
+                rootScratchDir = new File(rootScratchDir, subDirName);
+            }
+            return rootScratchDir;
+        } else {
+            // regular case
+            if (subDirName != null ) {
+                rootScratchDir = new File(rootScratchDir, subDirName);
+            }
+            String appDirName = VersioningUtils.getRepositoryName(parameters.name());
+            return new File(rootScratchDir, appDirName);
+        }
     }
 
     /**
@@ -448,10 +464,26 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         // recursively delete...
         FileUtils.whack(generatedJspRoot);
 
-        // remove the internal archive directory which holds the original
-        // archive (and possibly deployment plan) that cluster sync can use
-        FileUtils.whack(getAppInternalDir());
+        if (parameters.origin == OpsParams.Origin.undeploy ||
+            parameters.origin == OpsParams.Origin.deploy ) {
+            // for undeploy or deploy failure roll back
+            // remove the internal archive directory which holds the original
+            // archive (and possibly deployment plan) that cluster sync can use
+            FileUtils.whack(getAppInternalDir());
 
+             // remove the root tenant dir for this application
+            FileUtils.whack(getRootTenantDirForApp(parameters.name()));
+
+            // remove the root tenant generated dir root for this application
+            FileUtils.whack(getRootScratchTenantDirForApp(parameters.name()));
+        } else if (parameters.origin == OpsParams.Origin.mt_unprovision) {
+            // for unprovision application, remove the tenant dir
+            FileUtils.whack(tenantDir);
+
+            // and remove the generated dir
+            File generatedRoot = getScratchDir(null);
+            FileUtils.whack(generatedRoot);
+        }
     }
 
     public ArchiveHandler getArchiveHandler() {
@@ -552,6 +584,42 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     public File getAppInternalDir() {
         final File internalDir = new File(env.getApplicationRepositoryPath(), INTERNAL_DIR_NAME);
         return new File(internalDir, VersioningUtils.getRepositoryName(parameters.name()));
+    }
+
+    public void setTenant(final String tenant, final String appName) {
+        this.tenant = tenant;
+        this.originalAppName = appName;
+        tenantDir = initTenantDir();
+    }
+
+    private File initTenantDir() {
+        if (tenant == null || originalAppName == null) {
+            return null;
+        }
+        File f = getRootTenantDirForApp(originalAppName);
+        f = new File(f, tenant);
+        f.mkdirs();
+        return f;
+    }
+
+    private File getRootTenantDirForApp(String appName) {
+        File rootTenantDir = new File(env.getApplicationRepositoryPath(), APP_TENANTS_SUBDIR_NAME);
+        File rootTenantDirForApp = new File(rootTenantDir, appName);
+        return rootTenantDirForApp;
+    }
+
+    private File getRootScratchTenantDirForApp(String appName) {
+        File rootScratchTenantDir = new File(env.getApplicationStubPath(), APP_TENANTS_SUBDIR_NAME);
+        File rootScratchTenantDirForApp = new File(rootScratchTenantDir, appName);
+        return rootScratchTenantDirForApp;
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public File getTenantDir() {
+        return tenantDir;
     }
 
     @Override
