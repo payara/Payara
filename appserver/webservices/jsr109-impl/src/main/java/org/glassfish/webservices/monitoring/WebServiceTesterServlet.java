@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,7 +108,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         } catch(Exception e) {
             try {     
                 PrintWriter out = response.getWriter();
-                out.print("<HTML><HEAD><TITLE>"+
+                out.print("<HTML lang=" + Locale.getDefault().getLanguage() + "><HEAD><TITLE>"+
                         localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.methodInvocationException",
                            "Method invocation exception")+"</TITLE></HEAD>");
@@ -169,7 +169,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         initializePort(req,res);
         Class clientSEI = gsiClasses.get(requestURL);
         
-        out.print("<HTML><HEAD><TITLE>"+
+        out.print("<HTML lang=" + Locale.getDefault().getLanguage() + "><HEAD><TITLE>"+
                             myEndpoint.getDescriptor().getServiceName().getLocalPart()+" "+
                             localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.title",
@@ -193,8 +193,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         out.print("<br>");
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.line1",
-                           "This form will allow you to test your web service implementation (<A HREF=\"{0}\">WSDL File</A>)", 
-                           new Object[] {sb.toString()}));
+                           "This form will allow you to test your web service implementation (<A HREF=\"{0}\" title=\"WSDL file describing {1} web service\">WSDL File</A>)",
+                           sb.toString(), myEndpoint.getDescriptor().getServiceName().getLocalPart()));
         out.print("<hr>");
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.line2",
@@ -209,13 +209,18 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
             out.print("<FORM METHOD=\"POST\">");
             out.print(m.toString());
             out.print("<BR>");
-            out.print("<INPUT TYPE=SUBMIT NAME=action value="+m.getName()+">");        
+            out.print(localStrings.getLocalString(
+                        "enterprise.webservice.monitoring.formSubmit",
+                        "<INPUT TYPE=SUBMIT NAME=action title=\"Invoke {0} operation\" value={0}>",
+                        m.getName()));
 
             out.print(" (");
             Class[] parameters = m.getParameterTypes();
             for (int i=0;i<parameters.length;i++) {
-                out.print("<INPUT TYPE=TEXT NAME=PARAM"+
-                        m.getName()+i+">");
+                out.print(localStrings.getLocalString(
+		    	   "enterprise.webservice.monitoring.formInput",
+                           "<INPUT TYPE=TEXT NAME=PARAM{0}{1} title=\"{0} parameter of type {2}\">",
+                           m.getName(), i, parameters[i].getName()));
                 if (i!=parameters.length-1)
                     out.print(",");
             }
@@ -237,7 +242,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.postTitle",
-                           "<HTML><HEAD><TITLE>Method invocation trace</TITLE></HEAD>"));
+                           "<HTML lang={0}><HEAD><TITLE>Method invocation trace</TITLE></HEAD>",
+                            Locale.getDefault().getLanguage()));
                 
         String operationName = req.getParameter("action");
 
@@ -437,7 +443,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.CNFTitle",
-                           "<HTML><HEAD><TITLE>Method invocation exception</TITLE></HEAD>"));
+                           "<HTML lang={0}><HEAD><TITLE>Method invocation exception</TITLE></HEAD>",
+                            Locale.getDefault().getLanguage()));
         if (cl==null) {
             out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.CNFServerError",
@@ -457,7 +464,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.TesterNSTitle",
-                           "<HTML><HEAD><TITLE>Tester feature not supported</TITLE></HEAD>"));
+                           "<HTML lang={0}><HEAD><TITLE>Tester feature not supported</TITLE></HEAD>",
+                            Locale.getDefault().getLanguage()));
         out.print("<BODY>");
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.TesterNSerror2",
@@ -476,7 +484,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
 
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.WsImportError",
-                           "<HTML><HEAD><TITLE>WsImport error for the the following wsdl</TITLE></HEAD>"));
+                           "<HTML lang={0}><HEAD><TITLE>WsImport error for the the following wsdl</TITLE></HEAD>",
+                            Locale.getDefault().getLanguage()));
         out.print("<BODY>");
         out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.WsImportError2",
