@@ -187,19 +187,15 @@ public class MapperListener implements NotificationListener, NotificationFilter{
                 Container host = engine.findChild(vs.getId());
                 if (host instanceof StandardHost) {
                     registerHost((StandardHost)host);
-                }  else {
-
-                }
-                for (Container context: host.findChildren()) {
-                    if (context instanceof StandardContext) {
-                        registerContext((StandardContext)context);
-                        for (Container wrapper : context.findChildren()) {
-                            if (wrapper instanceof StandardWrapper) {
-                                registerWrapper((StandardWrapper)wrapper);
+                    for (Container context: host.findChildren()) {
+                        if (context instanceof StandardContext) {
+                            registerContext((StandardContext)context);
+                            for (Container wrapper : context.findChildren()) {
+                                if (wrapper instanceof StandardWrapper) {
+                                    registerWrapper((StandardWrapper)wrapper);
+                                }
                             }
                         }
-                    } else {
-
                     }
                 }
             }
