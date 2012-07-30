@@ -119,7 +119,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     private Events events;
 
     @Inject
-    private static BaseServiceLocator locator; 
+    private BaseServiceLocator locator; 
 
     private final Applications applications;
 
@@ -183,7 +183,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @param nonConnectorResources Non connector resources will be added to this list.
      * @param resourceXmlParsers Resource xml parsers corresponding to both connector and non connector resources will be stored in this.
      */
-    public static void getResources(ReadableArchive archive, String appName,
+    public void getResources(ReadableArchive archive, String appName,
                                              List<org.glassfish.resources.api.Resource> connectorResources,
                                              List<org.glassfish.resources.api.Resource> nonConnectorResources,
                                              Map<org.glassfish.resources.api.Resource, ResourcesXMLParser> resourceXmlParsers) {
@@ -313,7 +313,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      * @param allResources all resources (app scoped, module scoped) of old application
      * @throws Exception when unable to retain old resource configuration.
      */
-    public static void retainResourceConfig(DeploymentContext dc, Map<String, Resources> allResources) throws Exception {
+    public void retainResourceConfig(DeploymentContext dc, Map<String, Resources> allResources) throws Exception {
         String appName = getAppNameFromDeployCmdParams(dc);
         Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
         Resources appScopedResources = allResources.get(appName);
@@ -638,7 +638,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         return commandParams.name();
     }
 
-    public static void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
+    public void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
                                          String actualArchiveName) throws IOException {
 
         if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
@@ -671,7 +671,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         }
     }
 
-    private static void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
+    private void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
                                                  String actualArchiveName) {
         if(ResourceUtil.hasResourcesXML(archive, locator)){
             String archivePath = archive.getURI().getPath();
