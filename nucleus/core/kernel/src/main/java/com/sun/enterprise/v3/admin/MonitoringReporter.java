@@ -72,7 +72,6 @@ import static com.sun.enterprise.util.SystemPropertyConstants.MONDOT;
 import static com.sun.enterprise.util.SystemPropertyConstants.SLASH;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
-import org.glassfish.api.ActionReport.MessagePart;
 
 
 /**
@@ -117,7 +116,8 @@ public class MonitoringReporter extends V2DottedNameSupport {
     ////////////////////////  The API Methods  ///////////////////////////
     ///////////////////////////////////////////////////////////////////////
 
-    public void prepareGet(AdminCommandContext c, String arg) {
+    public void prepareGet(AdminCommandContext c, String arg, Boolean data) {
+        aggregateDataOnly = data;
         prepare(c, arg, OutputType.GET);
     }
 
@@ -156,8 +156,18 @@ public class MonitoringReporter extends V2DottedNameSupport {
 
     private void runAggregate() {
         List<String> list = getOutputLines();
-        ActionReport aggregateReporter = reporter.addSubActionsReport();
+        ActionReport aggregateReporter = null;
+        if (aggregateDataOnly) {
+            plainReporter = new PlainTextActionReporter();
+            aggregateReporter = plainReporter.addSubActionsReport();
+        }
+        else
+            aggregateReporter = reporter.addSubActionsReport();
         setClusterInfo(aggregateReporter, list);
+        if (aggregateDataOnly) {
+            reporter = plainReporter;
+            context.setActionReport(plainReporter);
+        }
     }
 
     private List<String> getOutputLines() {
@@ -844,6 +854,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     private final StringBuilder cliOutput = new StringBuilder();
     private boolean targetIsMultiInstanceCluster = false;
     private String targetName;
+    private Boolean aggregateDataOnly;
 
     private static class NameValue {
         String name;

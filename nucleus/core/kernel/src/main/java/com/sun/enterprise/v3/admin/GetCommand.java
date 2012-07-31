@@ -87,6 +87,8 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     private BaseServiceLocator habitat;
     @Param(optional = true, defaultValue = "false", shortName = "m")
     private Boolean monitor;
+    @Param(optional = true, defaultValue = "false", shortName = "c")
+    private Boolean aggregateDataOnly;
     @Param(primary = true)
     private String pattern;
     @Inject @Optional
@@ -205,7 +207,7 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand {
     }
 
     private void getMonitorAttributes(AdminCommandContext ctxt) {
-        mr.prepareGet(ctxt, pattern);
+        mr.prepareGet(ctxt, pattern, aggregateDataOnly);
 
         String s = "Get Command: " + mr.toString();
 
