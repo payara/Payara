@@ -54,7 +54,6 @@
     <property name="http.proxyHost" value=""/>
     <property name="http.proxyPort" value=""/>
 
-    <property name="env.MAVEN_HOME" value="${user.home}/.m2"/>
     <property name="DOMAIN" value="domain1"/>
     <property name="env.ADMIN_PORT" value="4848"/>
     <property name="env.INSTANCE_PORT" value="8080"/>
@@ -150,15 +149,21 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <artifact:mvn pom="pom.xml" mavenHome="${env.MAVEN_HOME}" fork="true" failonerror="false" resultproperty="test.result">
+                <exec executable="${env.MAVEN_HOME}/bin/mvn" resultproperty="test.result">
+                <!--
+                <artifact:mvn pom="pom.xml" failonerror="false" resultproperty="test.result">
+                -->
                     <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
-                    <arg value="-DlocalRepository=m2"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <!--<arg value="-Dmaven.repo.local=../m2"/>-->
                     <arg value="-Prest-devtest"/>
                     <arg value="test"/>
+                </exec>
+                <!--
                 </artifact:mvn>
+                -->
             </try>
             <finally>
                 <antcall target="shutdown-server"/>
