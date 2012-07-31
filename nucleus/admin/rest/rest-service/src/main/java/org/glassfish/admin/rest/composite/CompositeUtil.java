@@ -336,6 +336,9 @@ public class CompositeUtil {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                 while (reader.ready()) {
                     final String line = reader.readLine();
+                    if (line.isEmpty()) {
+                        continue;
+                    }
                     if (line.charAt(0) != '#') {
                         if (!line.contains(":")) {
                             Logger.getLogger(CompositeUtil.class.getName()).log(Level.INFO,
