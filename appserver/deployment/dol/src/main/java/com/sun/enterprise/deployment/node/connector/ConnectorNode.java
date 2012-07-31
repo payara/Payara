@@ -114,7 +114,7 @@ public class ConnectorNode extends AbstractBundleNode<ConnectorDescriptor> {
    }
     
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, final Map<String, List<Class>> versionUpgrades) {
         final Map<String,Class> result = new HashMap<String,Class>();
         result.put(com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.registerBundle(publicIDToDTD),
                 com.sun.enterprise.deployment.node.runtime.connector.ConnectorNode.class);

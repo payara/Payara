@@ -100,13 +100,13 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
     }
     
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+     public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
         final Map<String,Class> result = new HashMap<String,Class>();
         for (ConfigurationDeploymentDescriptorFile wddFile :
                 DOLUtils.getConfigurationDeploymentDescriptorFiles(
                         habitat, WarType.ARCHIVE_TYPE)) {
 
-            wddFile.registerBundle(result, publicIDToDTD);
+            wddFile.registerBundle(result, publicIDToDTD, versionUpgrades);
         }
 
         return result;

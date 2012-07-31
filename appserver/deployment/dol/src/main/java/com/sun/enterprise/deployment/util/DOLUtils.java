@@ -566,4 +566,13 @@ public class DOLUtils {
     ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_ORACLE);
     return ns;
   }
+
+  /*
+   * Returns a list of the proprietary dtd system IDs
+   */
+  public static List<String> getProprietaryDTDStart() {
+    ArrayList<String> ns = new ArrayList<String>();
+    ns.add(DescriptorConstants.WLS_DTD_SYSTEM_ID_BEA);
+    return ns;
+  }
 }

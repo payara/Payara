@@ -84,7 +84,7 @@ public class WebFragmentNode extends WebCommonNode<WebFragmentDescriptor> {
 
 
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
         return Collections.emptyMap();
     }
     

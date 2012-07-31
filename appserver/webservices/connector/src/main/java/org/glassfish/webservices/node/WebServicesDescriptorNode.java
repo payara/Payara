@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.List;
 import java.util.Map;
 import org.glassfish.deployment.common.Descriptor;
 import org.jvnet.hk2.annotations.Service;
@@ -100,7 +101,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     }
     
     @Override
-    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, Map<String, List<Class>> versionUpgrades) {
         return Collections.EMPTY_MAP;
     }
 

@@ -38,40 +38,45 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io;
+package com.sun.enterprise.deployment.node;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
- * This class is responsible for handling the XML configuration information
- * for the J2EE Reference Implementation runtime descriptors.
+ * This interface defines the processing used to upgrade
+ * start-mdbs-with-application to the latest version
  *
- * @author Jerome Dochez
+ * @author  Gerald Ingalls
+ * @version 
  */
-@Contract
-public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDescriptorFile {
-
-    /**
-     * Register the root node for this runtime deployment descriptor file
-     * in the root nodes map, and also in the dtd map which will be used for 
-     * dtd validation.
-     *
-     * @param rootNodesMap the map for storing all the root nodes
-     * @param publicIDToDTDMap the map for storing public id to dtd mapping
-     * @param versionUpgrades The list of upgrades from older versions
-     */
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {}
-
-  /**
-   * Return whether this configuration file can be validated.
-   * @return whether this configuration file can be validated.
-   */
-  public boolean isValidating() {
+public class StartMdbsWithApplicationVersionUpgrade implements VersionUpgrade {
+  private static String START_MDBS_WITH_APPLICATION =
+    "weblogic-application/ejb/start-mdbs-with-application";
+  private Map<String,String> matches;
+  public StartMdbsWithApplicationVersionUpgrade() {
+    matches = new HashMap<String,String>();
+    init();
+  }
+  public UpgradeType getUpgradeType() {
+    return UpgradeType.REMOVE_ELEMENT;
+  }
+  public void init() {
+    matches.put(START_MDBS_WITH_APPLICATION, null);
+  }
+  public Map<String,String> getMatchXPath() {
+    return matches;
+  }
+  public String getReplacementElementName() {
+    return START_MDBS_WITH_APPLICATION;
+  }
+  public String getReplacementElementValue() {
+    return null;
+  }
+  public Map<String,String> getElementAttributes() {
+    return null;
+  }
+  public boolean isValid() {
     return false;
   }
 }

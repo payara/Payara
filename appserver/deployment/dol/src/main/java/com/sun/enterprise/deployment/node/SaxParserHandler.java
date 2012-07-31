@@ -81,7 +81,7 @@ public class SaxParserHandler extends DefaultHandler {
 
     private static final String TRUE_STR = "true";
     private static final String FALSE_STR = "false";
-    
+
     private static final class MappingStuff {
         public final ConcurrentMap<String, Boolean> mBundleRegistrationStatus = new ConcurrentHashMap<String, Boolean>();
         public final ConcurrentMap<String,String> mMapping = new ConcurrentHashMap<String,String>();
@@ -94,6 +94,8 @@ public class SaxParserHandler extends DefaultHandler {
 
         private final CopyOnWriteArraySet<String> mElementsPreservingWhiteSpaceMutable;
         public final Collection<String>           mElementsPreservingWhiteSpace;
+        private final Map<String, List<Class>> mVersionUpgradeClasses;
+        private final Map<String, List<VersionUpgrade>> mVersionUpgrades;
         
         MappingStuff() {
             mRootNodesMutable  = new ConcurrentHashMap<String,Class>();
@@ -104,6 +106,8 @@ public class SaxParserHandler extends DefaultHandler {
 
             mElementsPreservingWhiteSpaceMutable = new CopyOnWriteArraySet<String>();
             mElementsPreservingWhiteSpace = Collections.unmodifiableSet(mElementsPreservingWhiteSpaceMutable);
+            mVersionUpgradeClasses = new ConcurrentHashMap<String, List<Class>>();
+            mVersionUpgrades = new ConcurrentHashMap<String, List<VersionUpgrade>>();
         }
     }
     
@@ -120,11 +124,35 @@ public class SaxParserHandler extends DefaultHandler {
     private boolean pushedNamespaceContext=false;
     private NamespaceSupport namespaces = new NamespaceSupport();
 
+    private Stack elementStack = new Stack();
+
     private static final LocalStringManagerImpl localStrings=
 	    new LocalStringManagerImpl(SaxParserHandler.class);    
     
     protected static Map<String,String> getMapping() {
         return _mappingStuff.mMapping;
+    }
+
+    protected static List<VersionUpgrade> getVersionUpgrades(String key) {
+      List<VersionUpgrade> versionUpgradeList = _mappingStuff.mVersionUpgrades.get(key);
+      if (versionUpgradeList != null)
+        return versionUpgradeList;
+      List<Class> classList = _mappingStuff.mVersionUpgradeClasses.get(key);
+      if (classList == null)
+        return null;
+      versionUpgradeList = new ArrayList<VersionUpgrade>();
+      for (int n = 0; n < classList.size(); ++n) {
+        VersionUpgrade versionUpgrade = null;
+        try {
+          versionUpgrade = (VersionUpgrade)classList.get(n).newInstance();
+        } catch (Exception ex) {
+        }
+        if (versionUpgrade != null) {
+          versionUpgradeList.add(versionUpgrade);
+        }
+      }
+      _mappingStuff.mVersionUpgrades.put(key, versionUpgradeList);
+      return versionUpgradeList;
     }
     
     protected static Collection<String> getElementsAllowingEmptyValues() {
@@ -134,6 +162,12 @@ public class SaxParserHandler extends DefaultHandler {
     protected static Collection<String> getElementsPreservingWhiteSpace() {
         return _mappingStuff.mElementsPreservingWhiteSpace;
     }
+
+    private String rootElement = null;
+
+    private List<VersionUpgrade> versionUpgradeList = null;
+
+    private boolean doDelete = false;
 
     public static void registerBundleNode(BundleNode bn, String bundleTagName) {
         /*
@@ -147,6 +181,7 @@ public class SaxParserHandler extends DefaultHandler {
         }
 
         final HashMap<String, String> dtdMapping = new HashMap<String, String>();
+        final Map<String, List<Class>> versionUpgrades = new HashMap<String, List<Class>>();
 
         String rootNodeKey = bn.registerBundle(dtdMapping);
         _mappingStuff.mRootNodesMutable.putIfAbsent(rootNodeKey, bn.getClass());
@@ -157,13 +192,19 @@ public class SaxParserHandler extends DefaultHandler {
         * updates the publicID-to-DTD map and returns a map of tags to
         * runtime node classes.
         */
-        _mappingStuff.mRootNodesMutable.putAll(bn.registerRuntimeBundle(dtdMapping));
+        _mappingStuff.mRootNodesMutable.putAll(bn.registerRuntimeBundle(dtdMapping, versionUpgrades));
+
+        _mappingStuff.mVersionUpgradeClasses.putAll(versionUpgrades);
 
         // let's remove the URL from the DTD so we use local copies...
         for (Map.Entry<String, String> entry : dtdMapping.entrySet()) {
             final String publicID = entry.getKey();
             final String dtd = entry.getValue();
-            _mappingStuff.mMapping.put(publicID, dtd.substring(dtd.lastIndexOf('/') + 1));
+            String systemIDResolution = resolvePublicID(publicID, dtd);
+            if (systemIDResolution == null)
+              _mappingStuff.mMapping.put(publicID, dtd.substring(dtd.lastIndexOf('/') + 1));
+            else
+              _mappingStuff.mMapping.put(publicID, systemIDResolution);
         }
 
         /*
@@ -207,7 +248,7 @@ public class SaxParserHandler extends DefaultHandler {
                         fileName = systemID;
                     }
                     if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
-                        DOLUtils.getDefaultLogger().fine("Resolved to " + fileName);
+                      DOLUtils.getDefaultLogger().fine("Resolved to " + fileName);;
                     }
                     return new InputSource(fileName);
             }
@@ -253,7 +294,7 @@ public class SaxParserHandler extends DefaultHandler {
      * @return the input stream for a DTD public ID
      */
      protected InputStream getDTDUrlFor(String dtdFileName) {
-	 
+
         String dtdLoc = DTDRegistry.DTD_LOCATION.replace('/', File.separatorChar);
         File f = new File(dtdLoc +File.separatorChar+ dtdFileName);
 
@@ -302,7 +343,7 @@ public class SaxParserHandler extends DefaultHandler {
      * Determine whether the syatemID starts with a known namespace.
      * If so, strip off that namespace and return the rest.
      * Otherwise, return null
-     * @param systemID The sytemID to examine
+     * @param systemID The systemID to examine
      * @return the part if the namespace to find in the file system
      * or null if the systemID does not start with a known namespace
      */
@@ -312,6 +353,25 @@ public class SaxParserHandler extends DefaultHandler {
         String namespace = namespaces.get(n);
         if (systemID.startsWith(namespace)) {
           return systemID.substring(namespace.length());
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Determine whether the publicID starts with a known proprietary value.
+     * If so, strip off that value and return the rest.
+     * Otherwise, return null
+     * @param publicID The publicID to examine
+     * @return the part if the namespace to find in the file system
+     * or null if the publicID does not start with a known namespace
+     */
+    public static String resolvePublicID(String publicID, String dtd) {
+      List<String> dtdStarts = DOLUtils.getProprietaryDTDStart();
+      for (int n = 0; n < dtdStarts.size(); ++n) {
+        String dtdStart = dtdStarts.get(n);
+        if (dtd.startsWith(dtdStart)) {
+          return dtd.substring(dtdStart.length());
         }
       }
       return null;
@@ -357,6 +417,47 @@ public class SaxParserHandler extends DefaultHandler {
         // OR another startElement.
         pushedNamespaceContext = false;
 
+        doDelete = false;
+        String lastElement = null;
+        try {
+          lastElement = (String)elementStack.pop();
+        } catch (EmptyStackException ex) {
+        }
+        if (lastElement == null) {
+          rootElement = localName;
+          versionUpgradeList = getVersionUpgrades(rootElement);
+          if (versionUpgradeList != null) {
+            for (int n = 0; n < versionUpgradeList.size(); ++n) {
+              VersionUpgrade versionUpgrade = versionUpgradeList.get(n);
+              versionUpgrade.init();
+            }
+          }
+          elementStack.push(localName);
+        } else {
+          lastElement += "/" + localName;
+          elementStack.push(lastElement);
+        }
+
+        if (versionUpgradeList != null) {
+          for (int n = 0; n < versionUpgradeList.size(); ++n) {
+            VersionUpgrade versionUpgrade = versionUpgradeList.get(n);
+            if (VersionUpgrade.UpgradeType.REMOVE_ELEMENT == versionUpgrade.getUpgradeType()) {
+              Map<String,String> matchXPath = versionUpgrade.getMatchXPath();
+              int entriesMatched = 0;
+              for (Map.Entry<String, String> entry : matchXPath.entrySet()) {
+                if (entry.getKey().equals(lastElement)) {
+                  entry.setValue(elementData.toString());
+                  ++entriesMatched;
+                }
+              }
+              if (entriesMatched == matchXPath.size()) {
+                doDelete = true;
+                break;
+              }
+            }
+          }
+        }
+
         if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {        
             DOLUtils.getDefaultLogger().finer("start of element " + uri + " with local name "+ localName + " and " + qName);
         }
@@ -395,14 +496,12 @@ public class SaxParserHandler extends DefaultHandler {
         } else {
             node = nodes.get(nodes.size()-1);
         }
-        
         if (node!=null) {
             XMLElement element = new XMLElement(qName, namespaces);
             if (node.handlesElement(element)) {
 		node.startElement(element, attributes);
             } else {
-                if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {                
-                    DOLUtils.getDefaultLogger().fine("Asking for new handler for " + element + " to " + node);
+                if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {                           DOLUtils.getDefaultLogger().fine("Asking for new handler for " + element + " to " + node);
                 }
                 XMLNode newNode = node.getHandlerFor(element);
                 if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {                
@@ -416,6 +515,12 @@ public class SaxParserHandler extends DefaultHandler {
     }
     
     public void endElement(String uri, String localName, String qName) {
+
+        String lastElement = null;
+        try {
+          lastElement = (String)elementStack.peek();
+        } catch (EmptyStackException ex) {
+        }
 
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
             DOLUtils.getDefaultLogger().finer("End of element " + uri + " local name "+ localName + " and " + qName + " value " + elementData);
@@ -431,7 +536,47 @@ public class SaxParserHandler extends DefaultHandler {
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
                 DOLUtils.getDefaultLogger().finer("For element " + element.getQName() + " And value " + elementData);
             }
-            if (getElementsPreservingWhiteSpace().contains(element.getQName())) {
+            boolean doReplace = false;
+            String replacementName = null;
+            String replacementValue = null;
+            if (versionUpgradeList != null) {
+              for (int n = 0; n < versionUpgradeList.size(); ++n) {
+                VersionUpgrade versionUpgrade = versionUpgradeList.get(n);
+                if (VersionUpgrade.UpgradeType.REPLACE_ELEMENT == versionUpgrade.getUpgradeType()) {
+                  Map<String,String> matchXPath = versionUpgrade.getMatchXPath();
+                  int entriesMatched = 0;
+                  for (Map.Entry<String, String> entry : matchXPath.entrySet()) {
+                    if (entry.getKey().equals(lastElement)) {
+                      entry.setValue(elementData.toString());
+                      ++entriesMatched;
+                    }
+                  }
+                  if (entriesMatched == matchXPath.size()) {
+                    if (versionUpgrade.isValid()) {
+                      doReplace = true;
+                      replacementName = versionUpgrade.getReplacementElementName();
+                      replacementValue = versionUpgrade.getReplacementElementValue();
+                    } else {
+                      String errorString = "Invalid upgrade from <";
+                      for (Map.Entry<String, String> entry : matchXPath.entrySet()) {
+                        errorString += entry.getKey() + "  " + entry.getValue() + " >";
+                      }
+                      DOLUtils.getDefaultLogger().log(Level.SEVERE, errorString);
+                      // Since the elements are not replaced,
+                      // there should be a parsing error
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+            if (doReplace) {
+              element = new XMLElement(replacementName, namespaces);
+              topNode.setElementValue(element,
+                                      replacementValue);
+            } else if (doDelete) {
+              // don't set a value so that the element is not written out
+            } else if (getElementsPreservingWhiteSpace().contains(element.getQName())) {
                 topNode.setElementValue(element, elementData.toString());
             } else if (element.getQName().equals(
                 TagNames.ENVIRONMENT_PROPERTY_VALUE)) {
@@ -470,7 +615,7 @@ public class SaxParserHandler extends DefaultHandler {
               }
             }
             elementData=null;
-        }        
+        }
         if (topNode.endElement(element)) {
             if (DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {        
                 DOLUtils.getDefaultLogger().fine("Removing top node " + topNode);
@@ -480,6 +625,17 @@ public class SaxParserHandler extends DefaultHandler {
 
         namespaces.popContext();
         pushedNamespaceContext=false;
+
+        try {
+          lastElement = (String)elementStack.pop();
+        } catch (EmptyStackException ex) {
+        }
+        if (lastElement != null) {
+          if (lastElement.lastIndexOf("/") >= 0) {
+            lastElement = lastElement.substring(0, lastElement.lastIndexOf("/"));
+            elementStack.push(lastElement);
+          }
+        }
     }
     
     public void characters(char[] ch, int start, int stop) {

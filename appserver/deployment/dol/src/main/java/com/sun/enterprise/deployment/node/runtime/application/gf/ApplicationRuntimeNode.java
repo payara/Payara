@@ -107,7 +107,8 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
     */
-   public static String registerBundle(Map publicIDToDTD) {    
+  public static String registerBundle(Map publicIDToDTD,
+                                      Map<String, List<Class>> versionUpgrades) {    
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_130_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_130_DTD_SYSTEM_ID);
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_140_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_140_DTD_SYSTEM_ID);       
        publicIDToDTD.put(DTDRegistry.SUN_APPLICATION_141_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_141_DTD_SYSTEM_ID);       

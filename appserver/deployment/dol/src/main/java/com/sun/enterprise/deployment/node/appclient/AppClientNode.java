@@ -134,7 +134,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
     }
     
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, final Map<String, List<Class>> versionUpgrades) {
         final Map<String,Class> result = new HashMap<String,Class>();
         result.put(AppClientRuntimeNode.registerBundle(publicIDToDTD), AppClientRuntimeNode.class);
         result.put(GFAppClientRuntimeNode.registerBundle(publicIDToDTD), GFAppClientRuntimeNode.class);

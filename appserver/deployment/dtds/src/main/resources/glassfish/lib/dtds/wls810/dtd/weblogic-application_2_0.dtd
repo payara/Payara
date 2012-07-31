@@ -1,0 +1,1151 @@
+
+
+<!--
+The root element of the WebLogic application deployment descriptor.
+The WebLogic application deployment descriptor is named
+weblogic-application.xml and must be located inside the META-INF
+directory of an ear file.
+-->
+<!ELEMENT weblogic-application (
+    ejb?, 
+    xml?, 
+    jdbc-connection-pool*, 
+    security?, 
+    application-param*,
+    classloader-structure?,
+    listener*,startup*,shutdown*)
+>
+
+
+<!--
+The ejb element contains information that is specific to the EJB
+modules that are part of a WebLogic application.  Currently, one can
+use the ejb element to specify one or more application level caches
+that can be used by the application's entity beans.
+
+Used in: weblogic-application
+-->
+<!ELEMENT ejb (entity-cache*, start-mdbs-with-application?)>
+
+<!--
+The entity-cache element is used to define a named application level
+cache that will be used to cache entity EJB instances at runtime.
+Individual entity beans refer to the application level cache that they
+want to use using the cache's name.  There is no restriction on the
+number of different entity beans that may reference an individual
+cache.
+
+Application level caching is used by default whenever an entity bean
+doesn't specify its own cache in the weblogic-ejb-jar.xml descriptor.
+Two default caches with names, 'ExclusiveCache' and 'MultiVersionCache'
+are used for this purpose.  An application may explicitly define these
+default caches if it wants to specify non-default values for
+their settings.  Note, however, that the caching-strategy cannot be 
+changed for the default caches.
+
+By default, a cache uses max-beans-in-cache with a value of 1000 to 
+specify its maximum size.
+
+Used in: ejb
+
+Example:
+    <entity-cache>
+      <entity-cache-name>ExclusiveCache</entity-cache-name>
+      <max-cache-size>
+        <megabytes>50</megabytes>
+      </max-cache-size>
+    </entity-cache>
+-->
+<!ELEMENT entity-cache (    
+    entity-cache-name,
+    (max-beans-in-cache | max-cache-size)?,
+    caching-strategy?)
+>
+
+<!-- 
+The caching-strategy element specifies the general strategy that the
+EJB container uses to manage entity bean instances in a particular
+application level cache.  A cache buffers entity bean instances in
+memory and associates them with their primary key value.
+
+The caching-strategy element can have one of the following values:
+
+  - Exclusive: An 'Exclusive' cache caches a single bean instance in
+               memory for each primary key value.  This unique
+               instance is typically locked using the EJB container's
+               exclusive locking when it is in use, so that only one
+               transaction can use the instance at a time.
+
+  - MultiVersion: A 'MultiVersion' cache caches multiple bean
+                  instances in memory for a given primary key value.
+                  Each instance can be used by a different transaction
+                  concurrently.
+
+Used in: entity-cache
+
+Default value: MultiVersion
+
+Example:
+    <caching-strategy>Exclusive</caching-strategy>
+-->
+<!ELEMENT caching-strategy (#PCDATA)>
+
+
+<!--
+The entity-cache-name element specifies a unique name for an entity
+bean cache.  The name must be unique within an ear file and may not
+be the empty string.
+
+Used in: entity-cache
+
+Example:
+    <entity-cache-name>ExclusiveCache</entity-cache-name>
+-->
+<!ELEMENT entity-cache-name (#PCDATA)>
+
+
+<!--
+Maximum number of entity beans that are allowed in the cache.  If the
+limit is reached, beans may be passivated. This mechanism does not take into 
+account the actual ammount of memory that different entity beans require.
+
+Used in: entity-cache
+
+Default value: 1000
+-->
+<!ELEMENT max-beans-in-cache (#PCDATA)>
+
+
+<!--
+The max-cache-size element is used to specify a limit on the size of
+an entity cache in terms of memory size, expressed either in terms of
+bytes or megabytes.  A bean provider should provide an estimate of the
+average size of a bean in the weblogic-ejb-jar.xml descriptor if the
+bean uses a cache that specifies its maximum size using the
+max-cache-size element.  By default, a bean is assumed to have an 
+average size of 100 bytes.
+
+Used in: entity-cache
+-->
+<!ELEMENT max-cache-size (bytes|megabytes)>
+
+
+<!--
+The bytes element is used to specify the maximum size of an 
+application level entity cache in bytes.  
+
+Used in: max-cache-size 
+
+Example:
+   <bytes>15000000</bytes>
+-->
+<!ELEMENT bytes (#PCDATA)>
+
+
+<!--
+The megabytes element is used to specify the maximum size of an entity
+bean cache in megabytes.
+
+Used in: max-cache-size
+-->
+<!ELEMENT megabytes (#PCDATA)>
+
+<!-- 
+xml element contains information about parsers, and entity mappings
+for xml processing that is specific to this application.
+-->
+<!ELEMENT xml (
+    parser-factory?,
+    entity-mapping*)
+>
+
+<!--
+  The parser-factory element is used to configure factory classes 
+  for both SAX and DOM style parsing and for XSLT transformations 
+  for the enterprise application
+
+  Example
+  <parser-factory>
+    <saxparser-factory>
+      weblogic.xml.babel.jaxp.SAXParserFactoryImpl
+    </saxparser-factory>
+    <document-builder-factory>
+      org.apache.xerces.jaxp.DocumentBuilderFactoryImpl
+    </document-builder-factory>
+    <transformer-factory>
+      org.apache.xalan.processor.TransformerFactoryImpl
+    </transformer-factory>
+  </parser-factory>
+
+  -->
+<!ELEMENT parser-factory (
+    saxparser-factory?,
+    document-builder-factory?, 
+    transformer-factory?)
+>
+
+<!--
+This allows user to configure ejb container to start mdbs with
+application.  If set to "true", container starts mdbs as part of
+application.  If set to "false" container keeps mdbs in a queue and
+server will start them as soon as it started listening on ports.
+
+Example:
+  <start-mdbs-with-application>true</start-mdbs-with-application>
+
+-->
+<!ELEMENT start-mdbs-with-application (#PCDATA)>
+
+
+<!--
+This element allows the user to set the SAXParser Factory for the xml
+parsing required in this application only.  This element determines
+what factory to be used for SAX style parsing.  If this element is not
+specified then, the one configured in the Server XMLRegistry will take
+into effect.
+
+Default value: Server XML Registry setting.
+-->
+<!ELEMENT saxparser-factory (#PCDATA)>
+
+
+<!--
+This element allows the user to set the Document Builder Factory for
+the xml parsing required in this application only.  This element
+determines what factory to be used for DOM style parsing.  If this
+element is not specified then, the one configured in the Server
+XMLRegistry will take into effect.
+
+Default value: Server XML Registry setting.
+-->
+<!ELEMENT document-builder-factory (#PCDATA)>
+
+
+<!--
+This element allows the user to set the Transformer Engine for the
+style sheet processing required in this application only.  If this
+element is not specified then, the one configured in the Server
+XMLRegistry will take into effect.
+
+Default value: Server XML Registry setting.
+-->
+<!ELEMENT transformer-factory (#PCDATA)>
+
+
+<!--
+This element is used to specify entity mapping.  This mapping
+determines alternative entityuri for given public / system id.
+Default place to look for these entityuri is "lib/xml/registry"
+directory.
+-->
+<!ELEMENT entity-mapping (
+    entity-mapping-name,
+    public-id?,
+    system-id?,
+    entity-uri?,
+    when-to-cache?,
+    cache-timeout-interval?)
+>
+
+
+<!--
+This element specifies the name for this entity mapping.
+-->
+<!ELEMENT entity-mapping-name (#PCDATA)>
+
+
+<!--
+This element specifies the public id of the mapped entity.
+-->
+<!ELEMENT public-id (#PCDATA)>
+	
+
+<!--
+This element specifies the system id of the mapped entity.
+-->
+<!ELEMENT system-id (#PCDATA)>
+	
+
+<!--
+This element specifies the entityuri for the mapped entity.
+-->
+<!ELEMENT entity-uri (#PCDATA)>
+
+
+<!--
+This element specifies the  when-to-cache for the mapped entity.
+-->
+<!ELEMENT when-to-cache (#PCDATA)>
+
+
+<!--
+This element specifies cache time out interval  for the mapped entity.
+-->
+<!ELEMENT cache-timeout-interval (#PCDATA)>
+	
+
+<!-- 
+  The jdbc-connection-pool element is the root element for an 
+  application scoped JDBC pool declaration.
+-->
+<!ELEMENT jdbc-connection-pool (
+    data-source-name, 
+    connection-factory, 
+    pool-params?, 
+    driver-params?, 
+    acl-name?)
+>
+
+
+<!-- 
+Defines initialization parameters for a connection factory which is
+used to construct connection pools.
+-->
+<!ELEMENT connection-factory (factory-name?, connection-properties?)>
+
+
+<!-- 
+The name of a JDBCDataSourceFactoryMBean in config.xml 
+-->
+<!ELEMENT factory-name (#PCDATA)>
+
+
+<!-- 
+The connection params define overrides for default connection factory
+settings
+-->
+<!ELEMENT connection-properties (
+    user-name?, 
+    password?,
+    url?, 
+    driver-class-name?, 
+    connection-params*)
+>
+
+<!--
+  The connection-params element is used to set parameters which will be 
+  passed to the driver when making a connection.
+
+  Example:
+   <connection-params>
+    <parameter>
+     <param-name>foo</param-name>
+     <param-value>xyz</param-value>
+    </parameter>
+
+  -->
+<!ELEMENT connection-params (parameter*)>
+<!ELEMENT parameter (description?, param-name, param-value)>
+
+<!-- 
+user-name is an optional element which is used to override UserName in
+the JDBCDataSourceFactoryMBean.
+-->
+<!ELEMENT user-name (#PCDATA)>
+
+
+<!-- 
+password is an optional element which is used to override Password in
+the JDBCDataSourceFactoryMBean.
+-->
+<!ELEMENT password (#PCDATA)>
+
+
+<!-- 
+url is an optional element which is used to override URL in the
+JDBCDataSourceFactoryMBean.
+-->
+<!ELEMENT url (#PCDATA)>
+
+
+<!-- 
+driver-class-name is an optional element which is used to override
+DriverName in the JDBCDataSourceFactoryMBean
+-->
+<!ELEMENT driver-class-name (#PCDATA)>
+
+
+<!-- 
+The pool-params element defines parameters that affect the behavior of
+the pool
+-->
+<!ELEMENT pool-params (
+    size-params?, 
+    xa-params?, 
+    login-delay-seconds?,
+    secs-to-trust-an-idle-pool-con?,
+    leak-profiling-enabled?,
+    connection-check-params?,
+    jdbcxa-debug-level?,
+    remove-infected-connections-enabled?)
+>
+
+
+<!-- 
+the driver params are used to set behavior on weblogic drivers 
+-->
+<!ELEMENT driver-params (
+    statement?, 
+    prepared-statement?, 
+    row-prefetch-enabled?, 
+    row-prefetch-size?, 
+    stream-chunk-size?)
+>
+
+
+<!--
+The size-params element defines parameters that affect the number of
+connections in the pool
+-->
+<!ELEMENT size-params (
+    initial-capacity?, 
+    max-capacity?, 
+    capacity-increment?, 
+    shrinking-enabled?, 
+    shrink-period-minutes?,
+    shrink-frequency-seconds?,
+    highest-num-waiters?,
+    highest-num-unavailable?)
+>
+
+
+<!-- A JNDI name in the application specific JNDI tree -->
+<!ELEMENT data-source-name (#PCDATA)>
+
+
+<!-- params for XA data sources -->
+<!ELEMENT xa-params (
+    debug-level?, 
+    keep-conn-until-tx-complete-enabled?, 
+    end-only-once-enabled?, 
+    recover-only-once-enabled?, 
+    tx-context-on-close-needed?,
+    new-conn-for-commit-enabled?, 
+    prepared-statement-cache-size?, 
+    keep-logical-conn-open-on-release?,
+    local-transaction-supported?, 
+    resource-health-monitoring-enabled?,
+    xa-set-transaction-timeout?,
+    xa-transaction-timeout?,
+    rollback-localtx-upon-connclose?,
+    xa-retry-duration-seconds?,
+    xa-retry-interval-seconds?)
+>
+
+
+<!-- These are all translated from JDBCConnectionPoolMBean -->
+
+
+<!--
+
+  Sets the Debug Level for XA Drivers
+
+  Default value: 0
+
+  Used in: xa-params
+
+  Example: 
+     <debug-level>3</debug-level>
+
+  Since: WLS 7.0
+
+-->
+<!ELEMENT debug-level (#PCDATA)>
+
+<!--
+
+  Determines whether the XA connection pool associates the same XA
+  connection with the distributed transaction until the transaction
+  completes.  This property applies to XA connection pools only, and
+  is ignored for non-XA driver.  Its intention is to workaround
+  specific problems with third party vendor's XA driver.
+
+  Default value: false
+  Used in: xa-params
+  Example:
+    <keep-conn-until-tx-complete-enabled>
+     true
+    </keep-conn-until-tx-complete-enabled>
+  Since: WLS 7.0
+-->
+<!ELEMENT keep-conn-until-tx-complete-enabled (#PCDATA)>
+
+<!--
+
+  Determines whether XAResource.end() will be called only once for
+  each pending XAResource.start().  e.g. the XA driver will not be
+  called XAResource.end(TMSUSPEND), XAResource.end(TMSUCCESS)
+  successively.
+
+  This property applies to XA connection pools only, and is ignored
+  for non-XA driver.  Its intention is to workaround specific
+  problems with third party vendor's XA driver.
+
+  Default value: false
+  Used in: xa-params
+  Example:
+    <end-only-once-enabled>
+      true
+    </end-only-once-enabled>
+
+  Since: WLS 7.0
+
+-->
+<!ELEMENT end-only-once-enabled (#PCDATA)>
+
+<!--
+
+  Declares whether JTA TM should call recover on the resource once
+  only.
+ 
+  This property applies to XA connection pools only, and is ignored
+  for non-XA driver.  Its intention is to workaround specific problems
+  with third party vendor's XA driver.
+
+  Default value: false
+  Used in: xa-params
+  Example:
+    <recover-only-once-enabled>
+      true
+    </recover-only-once-enabled>
+
+  Since: WLS 7.0
+
+-->
+<!ELEMENT recover-only-once-enabled (#PCDATA)>
+
+<!--
+
+  Defines whether the XA driver requires a distributed transaction
+  context when closing various JDBC objects, e.g. result sets,
+  statements, connections etc.  If it is specified to true, SQL
+  exceptions that are thrown while closing the JDBC objects in no
+  transaction context will be swallowed.  This property applies to XA
+  connection pools only, and is ignored for non-XA driver.  Its
+  intention is to workaround specific problems with third party
+  vendor's XA driver.
+
+  Default value: false
+  Used in: xa-params
+  Example:
+    <tx-context-on-close-needed>
+      true
+    </tx-context-on-close-needed> 
+  Since: WLS 7.0
+
+-->
+<!ELEMENT tx-context-on-close-needed (#PCDATA)>
+
+<!--
+
+  Defines whether a dedicated XA connection is used for
+  commit/rollback processing of a particular distributed transaction.
+   
+  This property applies to XA connection pools only, and is ignored
+  for non-XA driver.  Its intention is to workaround specific
+  problems with third party vendor's XA driver.
+  
+
+  Default value: false
+  Used in: xa-params
+  Example:
+    <tx-context-on-close-needed>
+      true
+    </tx-context-on-close-needed>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT new-conn-for-commit-enabled (#PCDATA)>
+
+<!--
+  DEPRECATED: The prepared-statement-cache-size element is DEPRECATED.
+  Use the cache-size tag in driver-params/prepared-statement instead. 
+  For example:
+  <driver-params>
+    <prepared-statement>
+     <cache-size>10</cache-size>
+    </prepared-statement>
+  </driver-params>
+
+  
+  The maximum number of prepared statements cached by this particular
+  XA connection pool.  If the value is 0, caching is turned off.
+
+  This property applies to XA connection pools only, and is ignored
+  for non-XA driver.  
+
+  Default value: 0
+  Used in: xa-params
+  Example:
+    <prepared-statement-cache-size>
+      3
+    </prepared-statement-cache-size>
+
+  Since: WLS 7.0
+
+-->
+<!ELEMENT prepared-statement-cache-size (#PCDATA)>
+
+<!--
+  Default value: 
+  Used in: xa-params
+  Example:
+    <keep-logical-conn-open-on-release>
+      true
+    </keep-logical-conn-open-on-release>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT keep-logical-conn-open-on-release (#PCDATA)>
+
+<!--
+  Default value: 
+  Used in: xa-params
+  Example: 
+     <local-transaction-supported>
+       true
+     </local-transaction-supported>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT local-transaction-supported (#PCDATA)>
+
+<!--
+  Default value: 
+  Used in: xa-params
+  Example:
+     <resource-health-monitoring-enabled>
+       true
+     </resource-health-monitoring-enabled>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT resource-health-monitoring-enabled (#PCDATA)>
+
+<!--
+  Default value: 
+  Used in: xa-params
+  Example:
+     <xa-set-transaction-timeout>
+       true
+     </xa-set-transaction-timeout>
+  Since: WLS 8.1
+
+-->
+<!ELEMENT xa-set-transaction-timeout (#PCDATA)>
+
+<!--
+  When the xa-set-transaction-timeout value is set to true,
+  the TM will invoke setTransactionTimeout on the resource before
+  calling XAResource.start.  The TM will pass the global transaction
+  timeout value.  If this attribute is set to a value greater than 0,
+  then this value will be used in place of the global transaction timeout.
+
+  Default value: 0
+  Used in: xa-params
+  Example:
+     <xa-transaction-timeout>
+       30
+     </xa-transaction-timeout>
+  Since: WLS 8.1
+
+-->
+<!ELEMENT xa-transaction-timeout (#PCDATA)>
+
+<!--
+  When the rollback-localtx-upon-connclose element is true,
+  WLS connection pool will call rollback() on the connection
+  before putting it back in the pool.
+
+  Default value: false
+  Used in: xa-params
+  Example:
+     <rollback-localtx-upon-connclose>
+       true
+     </rollback-localtx-upon-connclose>
+  Since: WLS 8.1
+
+-->
+<!ELEMENT rollback-localtx-upon-connclose (#PCDATA)>
+
+<!--
+  When the xa-retry-duration-seconds element is set to a positive value,
+  the transaction manager will retry recover operations for a period
+  of time approximately equal to the assigned value.
+
+  Default value: 0
+  Used in: xa-params
+  Example:
+     <xa-retry-duration-seconds>
+       120
+     </xa-retry-duration-seconds>
+  Since: WLS 8.1
+
+-->
+<!ELEMENT xa-retry-duration-seconds (#PCDATA)>
+
+<!--
+  The xa-retry-interval-seconds element defines the frequency for which
+  the transaction manager will retry recovery operations when the 
+  xa-retry-duration-seconds element is set to a positive value.
+
+  Default value: 60
+  Used in: xa-params
+  Example:
+     <xa-retry-interval-seconds>
+       30
+     </xa-retry-interval-seconds>
+  Since: WLS 8.1
+
+-->
+<!ELEMENT xa-retry-interval-seconds (#PCDATA)>
+
+<!--
+  Default value: 
+  Used in: driver-params
+  Example:
+     <statement>
+       <profiling-enabled>true</profiling-enabled>
+     </statement>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT statement (profiling-enabled?)>
+
+<!--
+  Default value: 
+  Used in: driver-params
+  Example:
+     <prepared-statement>
+       <profiling-enabled>true</profiling-enabled>
+       <cache-size>3</cache-size>
+       <parameter-logging-enabled>true</parameter-logging-enabled>
+       <max-parameter-length>10</max-parameter-length>
+     </prepared-statement>
+  Since: WLS 7.0
+
+-->
+<!ELEMENT prepared-statement (
+    profiling-enabled?, 
+    cache-profiling-threshold?, 
+    cache-size?, 
+    parameter-logging-enabled?, 
+    max-parameter-length?,
+    cache-type?)
+>
+
+
+<!-- These are all translated from JDBCConnectionPoolMBean -->
+
+<!--
+   Controls row prefetching between a client and WebLogic
+   Server for each ResultSet.  When an external client accesses
+   a database using JDBC through Weblogic Server, row prefetching improves
+   performance by fetching multiple rows from the server to the
+   client in one server access.  WebLogic Server will ignore
+   this setting and not use row prefetching when the client and
+   WebLogic Server are in the same JVM.
+  -->
+<!ELEMENT row-prefetch-enabled (#PCDATA)>
+
+<!--
+   The number of result set rows to prefetch for a client. The optimal value
+   depends on the particulars of the query.  In general, increasing
+   this number will increase performance, until a particular value
+   is reached.  At that point further increases do not result in any
+   significant performance increase.  Very rarely will increased
+   performance result from exceeding 100 rows.  The default value
+   should be reasonable for most situations.
+   
+   The default for this setting is 48
+   The range for this setting is 2 to 65536
+  -->
+<!ELEMENT row-prefetch-size (#PCDATA)>
+
+<!--
+  Data chunk size for steaming datatypes.  Streaming datatypes (for
+  example resulting from a call to <code>getBinaryStream()</code>)
+  will be pulled in StreamChunkSize sized chunks from WebLogic
+  Server to the client as needed.
+  -->
+<!ELEMENT stream-chunk-size (#PCDATA)>
+
+<!--
+  Defines a login delay for connection requests. This is used to 
+  prevent rapid requests for JDBC connections from overwhelming
+  the DBMS server.
+  -->
+<!ELEMENT login-delay-seconds (#PCDATA)>
+
+<!--
+  Defines how long to trust an idle pool connection without retesting it.
+  -->
+<!ELEMENT secs-to-trust-an-idle-pool-con (#PCDATA)>
+
+<!--
+  If set to true, the system will print exceptions to the log file 
+  when code using a connection pool fails to return the connection
+  to the pool before dereferencing it.
+  -->
+<!ELEMENT leak-profiling-enabled (#PCDATA)>
+
+<!--
+  This is an internal setting
+  -->
+<!ELEMENT jdbcxa-debug-level (#PCDATA)>
+
+<!--
+  If set to true, connection will be removed from pool if application
+  asks for the underlying vendor connection object.
+  -->
+<!ELEMENT remove-infected-connections-enabled (#PCDATA)>
+
+<!-- 
+The connection-check-params define whether, when and how connections
+in a pool will be checked to make sure they are still alive.
+-->
+<!ELEMENT connection-check-params (
+    table-name?, 
+    check-on-reserve-enabled?, 
+    check-on-release-enabled?, 
+    refresh-minutes?,
+    check-on-create-enabled?,
+    connection-reserve-timeout-seconds?,
+    connection-creation-retry-frequency-seconds?,
+    inactive-connection-timeout-seconds?,
+    test-frequency-seconds?,
+    init-sql?)
+>
+
+
+<!-- table-name defines a table in the schema that can be queried -->
+<!ELEMENT table-name (#PCDATA)>
+
+<!-- init-sql defines a sql query that will run when a connection
+is created  -->
+<!ELEMENT init-sql (#PCDATA)>
+
+<!-- 
+If on-reserve is "true", then the connection will be tested each time
+before its handed out to a user.
+-->
+<!ELEMENT check-on-reserve-enabled (#PCDATA)>
+
+
+<!-- 
+If on-release is "true", then the connection will be tested each time
+a user returns a connection to the pool.
+-->
+<!ELEMENT check-on-release-enabled (#PCDATA)>
+
+<!-- 
+If on-create is "true", then the connection will be tested when it is
+created.
+-->
+<!ELEMENT check-on-create-enabled (#PCDATA)>
+
+<!-- 
+Number of seconds after which the call to reserve a connection from the
+pool will timeout.
+-->
+<!ELEMENT connection-reserve-timeout-seconds (#PCDATA)>
+
+<!-- 
+The frequency of retry attempts by the pool to establish connections
+to the database.
+-->
+<!ELEMENT connection-creation-retry-frequency-seconds (#PCDATA)>
+
+<!-- 
+# seconds of inactivity after which reserved connections will forcibly
+be released back into the pool.
+-->
+<!ELEMENT inactive-connection-timeout-seconds (#PCDATA)>
+
+<!-- 
+The number of seconds between database connection tests. After every
+test-frequency-seconds interval, unused database connections are tested
+using table-name. Connections that do not pass the test will be closed
+and reopened to re-establish a valid physical database connection. If
+table-name is not set, the test will not be performed.
+-->
+<!ELEMENT test-frequency-seconds (#PCDATA)>
+
+<!-- 
+If refresh-minutes is defined then a trigger will be fired
+periodically (based on the number of minutes specified). This trigger
+will check each connection in the pool to make sure it is still valid.
+-->
+<!ELEMENT refresh-minutes (#PCDATA)>
+
+<!--
+  An integer value representing the initial size of the pool
+  -->
+<!ELEMENT initial-capacity (#PCDATA)>
+
+<!--
+  An integer value representing the maximum size of the pool
+  -->
+<!ELEMENT max-capacity (#PCDATA)>
+
+<!-- 
+  An integer value representing the number of connections that
+  will be added to a pool when a request is made to a pool
+  that has no available connections. 
+  -->
+<!ELEMENT capacity-increment (#PCDATA)>
+<!--
+  This can be set to true|false. If set to true, then
+  the pool having more than the initial capacity of
+  connections will shrink back towards the initial size
+  when connections become unused.
+-->
+<!ELEMENT shrinking-enabled (#PCDATA)>
+<!ELEMENT shrink-period-minutes (#PCDATA)>
+<!--
+  Number of seconds to wait before shrinking a
+  connection pool that has incrementally increased to meet demand.
+  -->
+<!ELEMENT shrink-frequency-seconds (#PCDATA)>
+<!--
+  defines the maximum number of threads that will wait for a connection
+  before an exception is thrown to the requestor.
+  -->
+<!ELEMENT highest-num-waiters (#PCDATA)>
+<!--
+  defines the maximum number of connections being refreshed
+  -->
+<!ELEMENT highest-num-unavailable (#PCDATA)>
+<!ELEMENT profiling-enabled (#PCDATA)>
+<!ELEMENT cache-profiling-threshold (#PCDATA)>
+<!ELEMENT cache-size (#PCDATA)>
+<!ELEMENT cache-type (#PCDATA)>
+<!ELEMENT parameter-logging-enabled (#PCDATA)>
+<!ELEMENT max-parameter-length (#PCDATA)>
+
+<!--
+  DEPRECATED: The acl-name is deprecated
+ -->
+<!ELEMENT acl-name (#PCDATA)>
+
+
+<!--
+This element specifies security information for the application
+-->
+<!ELEMENT security (realm-name?, security-role-assignment*)>
+
+
+<!-- 
+This element names a security realm that will be used by the
+application. If no specified, then the system default realm will be
+used
+-->
+<!ELEMENT realm-name (#PCDATA)>
+
+
+<!--
+The security-role-assigment declares a mapping between an application wide
+security role and one or more principals in the WebLogic server.
+
+Example:
+   <security-role-assignment>
+     <role-name>
+       PayrollAdmin
+     </role-name>
+     <principal-name>
+       Tanya
+     </principal-name>
+     <principal-name>
+       Fred
+     </principal-name>
+     <principal-name>
+       system
+     </principal-name>
+   </security-role-assignment>
+
+Used in: security
+-->
+<!ELEMENT security-role-assignment (role-name, principal-name+)>
+
+<!--
+The role-name element contains the name of a security role.
+
+Used in: security-role-assignment
+-->
+<!ELEMENT role-name (#PCDATA)>
+
+
+<!--
+The principal-name element contains the name of a principal.
+
+Used in: security-role-assignment
+-->
+<!ELEMENT principal-name (#PCDATA)>
+
+<!--
+  The application-param element is used to specify untyped parameters that affect
+  the behavior of container instances related to the application. Currently, the
+  following parameters are supported:
+
+
+  The following parameters in weblogic-application.xml can determine
+  the default encoding to be used for both request and response.
+
+  webapp.encoding.default - can be set to a string representing an
+      encoding supported by the JDK. If set, this will define the
+      default encoding used to process servlet requests and responses.
+      This setting is ignored if webapp.encoding.usevmdefault is set
+      to true. This value is also overridden for requests streams
+      by the input-charset element of weblogic.xml and for response
+      streams by the contentType header of the request.
+
+  webapp.encoding.usevmdefault - can be set to true or false. If true,
+      the system property file.encoding will be used to define the
+      default encoding.
+
+  The following parameter is used to affect the behavior of web applications
+  that are contained in this application.
+
+  webapp.getrealpath.accept_context_path - this is a compatibility
+      switch which may be set to true or false. If set to true, 
+      then the context path of web applications is allowed in 
+      calls to the servlet api getRealPath.
+
+  Example:
+
+    <application-param>
+      <param-name>webapp.encoding.default</param-name>
+      </param-value>UTF8</param-value>
+    </application-param>
+
+
+ -->
+
+<!ELEMENT application-param (description?, param-name, param-value)>
+
+<!--
+  A classloader-structure element allows you to define the organization
+  of classloaders for this application. The declaration represents a
+  tree structure which represents the classloader hierarchy and associates
+  specific modules with particular nodes. A module's classes will be
+  loaded by the classloader that its associated with in this structure.
+
+  Example:
+   <classloader-structure>
+     <module-ref>
+      <module-uri>ejb1.jar</module-uri>
+      <module-uri>ejb2.jar</module-uri>
+      <classloader-structure>
+        <module-uri>ejb3.jar</module-uri>   
+      </classloader-structure>
+   </classloader-structure>
+
+In this example, the classloader structure would look like the following
+diagram:
+
+    +====================+
+    |root classloader    |
+    | ejb1 classes and   |
+    | ejb2 classes       |
+    |                    |
+    +====================+
+              ^
+              |
+    +====================+
+    |child classloader   |
+    | ejb3 classes       |
+    |                    |
+    +====================+
+ 
+This allows for arbitrary nestings, however, for this version the depth
+is restricted to three levels.
+
+-->
+
+<!ELEMENT classloader-structure (module-ref*, classloader-structure*)>
+<!ELEMENT module-ref (module-uri)>
+<!ELEMENT module-uri (#PCDATA)>
+
+<!--
+  The listener element is used to register user defined application lifecycle
+  listeners. These are classes that extend the abstract base class
+  weblogic.application.ApplicationLifecycleListener. The listener-class
+  element is the name of the users implementation of ApplicationLifecycleListener.
+  The listener-uri is a jar file within the ear which contains the implementation.
+  If the listener-uri is not specified, then its assumed that the class is
+  visible to the application.
+
+  Example:
+    <listener>
+      <listener-class>mypackage.MyClass</listener-class>  
+      <listener-uri>myjar.jar</listener-uri>  
+    </listener>
+
+  -->
+<!ELEMENT listener (listener-class, listener-uri?)>
+<!ELEMENT listener-class (#PCDATA)>
+<!ELEMENT listener-uri (#PCDATA)>
+
+<!--
+  The startup element is used to register user defined startup classes.
+  The startup-class element is used to define the name of the class
+  intended to be run when the application is being deployed. The 
+  startup-uri element is used to define a jar file within the ear which
+  contains the startup-class. If startup-uri is not defined, then 
+  its assumed that the class is visible to the application.
+
+  Example:
+    <startup>
+      <startup-class>mypackage.MyClass</startup-class>  
+      <startup-uri>myjar.jar</startup-uri>  
+    </startup>
+
+  -->
+<!ELEMENT startup (startup-class, startup-uri?)>
+<!ELEMENT startup-class (#PCDATA)>
+<!ELEMENT startup-uri (#PCDATA)>
+
+<!--
+  The shutdown element is used to register user defined shutdown classes.
+  The shutdown-class element is used to define the name of the class
+  intended to be run when the application is being undeployed. The 
+  shutdown-uri element is used to define a jar file within the ear which
+  contains the shutdown-class. If shutdown-uri is not defined, then 
+  its assumed that the class is visible to the application.
+
+  Example:
+    <shutdown>
+      <shutdown-class>mypackage.MyClass</shutdown-class>  
+      <shutdown-uri>myjar.jar</shutdown-uri>  
+    </shutdown>
+
+  -->
+<!ELEMENT shutdown (shutdown-class, shutdown-uri?)>
+<!ELEMENT shutdown-class (#PCDATA)>
+<!ELEMENT shutdown-uri (#PCDATA)>
+
+<!--
+  The param-name is the name of a parameter that is passed to one
+  of the application components. 
+
+  Used in: connection-params/parameter and application-param
+  -->
+<!ELEMENT param-name (#PCDATA)>
+
+<!--
+  The param-name is the value of a parameter that is passed to one
+  of the application components. 
+
+  Used in: connection-params/parameter and application-param
+  -->
+<!ELEMENT param-value (#PCDATA)>
+
+<!--
+  The param-name is the description of a parameter that is passed to one
+  of the application components. 
+
+  Used in: connection-params/parameter and application-param
+  -->
+<!ELEMENT description (#PCDATA)>
+
+

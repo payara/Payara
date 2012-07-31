@@ -40,6 +40,7 @@
 
 package org.glassfish.web.deployment.io.runtime;
 
+import java.util.List;
 import java.util.Map;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
@@ -92,9 +93,11 @@ public class WebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     @Override
     public void registerBundle(final Map<String, Class> rootNodesMap,
-            final Map<String, String> publicIDToDTDMap) {
+                               final Map<String, String> publicIDToDTDMap,
+                               final Map<String, List<Class>> versionUpgrades) {
 
-        rootNodesMap.put(WebBundleRuntimeNode.registerBundle(publicIDToDTDMap),
+        rootNodesMap.put(WebBundleRuntimeNode.registerBundle(publicIDToDTDMap,
+                                                             versionUpgrades),
                 WebBundleRuntimeNode.class);
     }
 }

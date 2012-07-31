@@ -54,6 +54,7 @@ import org.w3c.dom.Element;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
         extends DeploymentDescriptorNode<T> implements RootXMLNode<T> {
@@ -105,7 +106,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      * @return the default spec version level this node complies to
      */
     public String getSpecVersion() {
-        return "1.4";
+        return "1.5";
     }
     
     /**
@@ -185,4 +186,16 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
       }
     }
     
+    /**
+     * all sub-implementation of this class can use a dispatch table to map xml element to
+     * method name on the descriptor class for setting the element value. 
+     *  
+     * @return the map with the element name as a key, the setter method as a value
+     */
+    protected Map<String, String> getDispatchTable() {
+      Map<String,String> dispatchTable = super.getDispatchTable();
+      dispatchTable.put("version", "setSpecVersion");
+      return dispatchTable;
+    }
+
 }

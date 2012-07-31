@@ -51,6 +51,7 @@ import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.runtime.application.wls.WeblogicApplicationNode;
 import com.sun.enterprise.deployment.EarType;
 import org.jvnet.hk2.annotations.Service;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -98,10 +99,12 @@ public class WLSApplicationRuntimeDDFile extends
      *
      * @param rootNodesMap the map for storing all the root nodes
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
+     * @param versionUpgrades The list of upgrades from older versions
      */
     public void registerBundle(final Map<String, Class> rootNodesMap,
-            final Map<String, String> publicIDToDTDMap) {
-        rootNodesMap.put(WeblogicApplicationNode.registerBundle(publicIDToDTDMap), WeblogicApplicationNode.class);
+                               final Map<String, String> publicIDToDTDMap,
+                               final Map<String, List<Class>> versionUpgrades) {
+      rootNodesMap.put(WeblogicApplicationNode.registerBundle(publicIDToDTDMap, versionUpgrades), WeblogicApplicationNode.class);
     }
 
   /**

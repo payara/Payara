@@ -121,10 +121,10 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
     }
 
     @Override
-    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD) {
+    public Map<String,Class> registerRuntimeBundle(final Map<String,String> publicIDToDTD, Map<String, List<Class>> versionUpgrades) {
         final Map<String,Class> result = new HashMap<String,Class>();
         for (ConfigurationDeploymentDescriptorFile confDD : DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, EarType.ARCHIVE_TYPE)) {
-            confDD.registerBundle(result, publicIDToDTD);
+          confDD.registerBundle(result, publicIDToDTD, versionUpgrades);
         }
         return result;
     }

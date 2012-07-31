@@ -51,6 +51,7 @@ import com.sun.enterprise.deployment.node.RootXMLNode;
 import com.sun.enterprise.deployment.node.runtime.application.gf.GFApplicationRuntimeNode;
 import com.sun.enterprise.deployment.EarType;
 import org.jvnet.hk2.annotations.Service;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,9 +91,11 @@ public class GFApplicationRuntimeDDFile extends ConfigurationDeploymentDescripto
      *
      * @param rootNodesMap the map for storing all the root nodes
      * @param publicIDToDTDMap the map for storing public id to dtd mapping
+     * @param versionUpgrades The list of upgrades from older versions
      */
     public void registerBundle(final Map<String, Class> rootNodesMap,
-            final Map<String, String> publicIDToDTDMap) {
+                               final Map<String, String> publicIDToDTDMap,
+                               final Map<String, List<Class>> versionUpgrades) {
         rootNodesMap.put(GFApplicationRuntimeNode.registerBundle(publicIDToDTDMap), GFApplicationRuntimeNode.class);
     }
 }

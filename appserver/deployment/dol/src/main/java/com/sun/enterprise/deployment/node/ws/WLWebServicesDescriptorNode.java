@@ -117,7 +117,7 @@ public class WLWebServicesDescriptorNode extends AbstractBundleNode {
     }
 
     @Override
-    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping) {
+    public Map<String, Class> registerRuntimeBundle(Map<String, String> publicIDToSystemIDMapping, final Map<String, List<Class>> versionUpgrades) {
         return Collections.EMPTY_MAP;
     }
 

@@ -38,40 +38,66 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io;
+package com.sun.enterprise.deployment.node;
 
-import java.util.List;
 import java.util.Map;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
- * This class is responsible for handling the XML configuration information
- * for the J2EE Reference Implementation runtime descriptors.
+ * This interface defines the processing used to upgrade an older
+ * configuration file to the latest version.
  *
- * @author Jerome Dochez
+ * The class should be initialized by the init method, which should
+ * initialize the map returned by getMatchXPath with the keys to
+ * look for in the input configuration file and with values set to null.
+ * For REMOVE_ELEMENT, the map would usually contain one item.
+ * For REPLACE_ELEMENT, the map could contain more that one item.
+ * For REPLACE_ELEMENT, when all elements in the map have been matched, the
+ * isValid method is called.  If it returns true, the
+ * getReplacementElementName and getReplacementElementValue methods
+ * are called and should return the replacement element name and value.
+ * if the input matched items are valid.  Otherwise, these methods should
+ * return null.
+ * @author  Gerald Ingalls
+ * @version 
  */
-@Contract
-public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDescriptorFile {
-
-    /**
-     * Register the root node for this runtime deployment descriptor file
-     * in the root nodes map, and also in the dtd map which will be used for 
-     * dtd validation.
-     *
-     * @param rootNodesMap the map for storing all the root nodes
-     * @param publicIDToDTDMap the map for storing public id to dtd mapping
-     * @param versionUpgrades The list of upgrades from older versions
-     */
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {}
+public interface VersionUpgrade {
+  public enum UpgradeType {
+    REMOVE_ELEMENT,
+    REPLACE_ELEMENT
+  }
 
   /**
-   * Return whether this configuration file can be validated.
-   * @return whether this configuration file can be validated.
+   * Return the kind of processing to do
+   * @return the kind of processing to do
    */
-  public boolean isValidating() {
-    return false;
-  }
+  public UpgradeType getUpgradeType();
+
+  /**
+   * Initialize
+   */
+  public void init();
+
+  /**
+   * Return the map of xml element to match
+   * @return the map of xml element to match
+   */
+  public Map<String,String> getMatchXPath();
+
+  /**
+   * Return the replacement element name
+   * @return the replacement element name
+   */
+  public String getReplacementElementName();
+
+  /**
+   * Return the replacement element value
+   * @return the replacement element value
+   */
+  public String getReplacementElementValue();
+
+  /**
+   * Return whether the matched items are valid.
+   * @return whether the matched items are valid.
+   */
+  public boolean isValid();
 }

@@ -38,40 +38,76 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.io;
+package com.sun.enterprise.deployment.node;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.jvnet.hk2.annotations.Contract;
-
 /**
- * This class is responsible for handling the XML configuration information
- * for the J2EE Reference Implementation runtime descriptors.
+ * This interface defines the processing used to upgrade
+ * data-source-name to the latest version
  *
- * @author Jerome Dochez
+ * One element name is matched:
+ * "weblogic-application/jdbc-connection-pool/data-source-name" is replaced by
+ * "weblogic-application/jdbc-connection-pool/data-source-jndi-name".
+ * @author  Gerald Ingalls
+ * @version 
  */
-@Contract
-public abstract class ConfigurationDeploymentDescriptorFile extends DeploymentDescriptorFile {
-
-    /**
-     * Register the root node for this runtime deployment descriptor file
-     * in the root nodes map, and also in the dtd map which will be used for 
-     * dtd validation.
-     *
-     * @param rootNodesMap the map for storing all the root nodes
-     * @param publicIDToDTDMap the map for storing public id to dtd mapping
-     * @param versionUpgrades The list of upgrades from older versions
-     */
-    public void registerBundle(final Map<String, Class> rootNodesMap,
-                               final Map<String, String> publicIDToDTDMap,
-                               final Map<String, List<Class>> versionUpgrades) {}
+public class DataSourceNameVersionUpgrade implements VersionUpgrade {
+  private static String DATA_SOURCE_NAME =
+    "weblogic-application/jdbc-connection-pool/data-source-name";
+  private static String DATA_SOURCE_JNDI_NAME =
+    "weblogic-application/jdbc-connection-pool/data-source-jndi-name";
+  private Map<String,String> matches;
+  public DataSourceNameVersionUpgrade() {
+    matches = new HashMap<String,String>();
+    init();
+  }
 
   /**
-   * Return whether this configuration file can be validated.
-   * @return whether this configuration file can be validated.
+   * Return the kind of processing to do
+   * @return the kind of processing to do
    */
-  public boolean isValidating() {
-    return false;
+  public UpgradeType getUpgradeType() {
+    return UpgradeType.REPLACE_ELEMENT;
+  }
+
+  /**
+   * Initialize
+   */
+  public void init() {
+    matches.put(DATA_SOURCE_NAME, null);
+  }
+
+  /**
+   * Return the map of xml element to match
+   * @return the map of xml element to match
+   */
+  public Map<String,String> getMatchXPath() {
+    return matches;
+  }
+
+  /**
+   * Return the replacement element name
+   * @return the replacement element name
+   */
+  public String getReplacementElementName() {
+    return DATA_SOURCE_JNDI_NAME;
+  }
+
+  /**
+   * Return the replacement element value
+   * @return the replacement element value
+   */
+  public String getReplacementElementValue() {
+    return matches.get(DATA_SOURCE_NAME);
+  }
+
+  /**
+   * Return whether the matched items are valid.
+   * @return whether the matched items are valid.
+   */
+  public boolean isValid() {
+    return true;
   }
 }

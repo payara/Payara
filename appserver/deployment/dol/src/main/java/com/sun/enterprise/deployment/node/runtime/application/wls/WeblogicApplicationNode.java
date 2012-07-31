@@ -45,6 +45,8 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.node.runtime.RuntimeBundleNode;
+import com.sun.enterprise.deployment.node.DataSourceNameVersionUpgrade;
+import com.sun.enterprise.deployment.node.StartMdbsWithApplicationVersionUpgrade;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -73,6 +75,8 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
         return Collections.unmodifiableList(systemIDs);
     }
 
+    public final static String PUBLIC_DTD_ID_2 = "-//BEA Systems, Inc.//DTD WebLogic Application 8.1.0//EN";
+    public final static String SYSTEM_ID_2 = "http://www.beasys.com/servers/wls810/dtd/weblogic-application_2_0.dtd";
 
     /** Creates new WeblogicApplicationNode */
     public WeblogicApplicationNode(Application descriptor) {
@@ -97,11 +101,19 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     * register this node as a root node capable of loading entire DD files
     *
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+    * @param versionUpgrades The list of upgrades from older versions
     * @return the doctype tag name
     */
-    public static String registerBundle(Map publicIDToDTD) {
+    public static String registerBundle(Map publicIDToDTD,
+                                        Map<String, List<Class>> versionUpgrades) {
         // TODO: fill in all the previously supported DTD versions
         // for backward compatibility
+        publicIDToDTD.put(PUBLIC_DTD_ID_2, SYSTEM_ID_2);
+        List<Class> list = new ArrayList<Class>();
+        list.add(DataSourceNameVersionUpgrade.class);
+        list.add(StartMdbsWithApplicationVersionUpgrade.class);
+        versionUpgrades.put(RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG,
+                            list);
         return RuntimeTagNames.WLS_APPLICATION_RUNTIME_TAG;
     }
 
@@ -163,6 +175,13 @@ public class WeblogicApplicationNode extends RuntimeBundleNode<Application> {
     public Node writeDescriptor(Node parent, String nodeName, Application application) {
         Element root = appendChildNS(parent, getXMLRootTag().getQName(),
                     TagNames.WLS_APPLICATION_NAMESPACE);
+        root.setAttributeNS(TagNames.XMLNS,
+                            TagNames.XMLNS_XSI,
+                            TagNames.W3C_XML_SCHEMA_INSTANCE);    
+        root.setAttributeNS(TagNames.W3C_XML_SCHEMA_INSTANCE,
+                            TagNames.SCHEMA_LOCATION_TAG,
+                            TagNames.WLS_APPLICATION_SCHEMA_LOCATION);
+        root.setAttribute(TagNames.VERSION, getSpecVersion());        
 
         writeSubDescriptors(root, nodeName, application);
 

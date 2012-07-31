@@ -196,17 +196,21 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
     protected void addBundleNodeAttributes(Element bundleNode, RootDeploymentDescriptor descriptor) {
         String schemaLocation;
 
+        /*
         bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", TagNames.JAVAEE_NAMESPACE);    
+        */
         schemaLocation = TagNames.JAVAEE_NAMESPACE + " " + 
           getSchemaURL();
         bundleNode.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", W3C_XML_SCHEMA_INSTANCE);    
 
         // add all custom global namespaces
         addNamespaceDeclaration(bundleNode, descriptor);
+        /*
         String clientSchemaLocation = descriptor.getSchemaLocation();
         if (clientSchemaLocation!=null) {
             schemaLocation = schemaLocation + " " + clientSchemaLocation;
         }
+        */
         bundleNode.setAttributeNS(W3C_XML_SCHEMA_INSTANCE, SCHEMA_LOCATION_TAG, schemaLocation);
         bundleNode.setAttribute(TagNames.VERSION, getSpecVersion());        
 

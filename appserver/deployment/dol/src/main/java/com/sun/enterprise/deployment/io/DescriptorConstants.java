@@ -226,4 +226,7 @@ public interface DescriptorConstants {
     /** Schema Namespaces for WLS */
     String WLS_SCHEMA_NAMESPACE_BEA = "http://www.bea.com/ns/weblogic/";
     String WLS_SCHEMA_NAMESPACE_ORACLE = "http://xmlns.oracle.com/weblogic/";
+
+    /** DTD System IDs for WLS */
+    String WLS_DTD_SYSTEM_ID_BEA = "http://www.beasys.com/servers";
 }
