@@ -59,7 +59,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testAdd() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -69,7 +69,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testGet() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -80,7 +80,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testRemove() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -93,7 +93,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testContainsKey() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -104,7 +104,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testContainsValue() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -114,7 +114,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testClear() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -126,7 +126,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testGetKeySet() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -135,7 +135,7 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testGetValues() throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
 
         rc.put("1", tm);
@@ -144,11 +144,11 @@ public class RestCollectionTest {
 
     @Test(groups="offline")
     public void testEntrySet()  throws Exception {
-        TestModel tm = CompositeUtil.getModel(TestModel.class, getClass());
+        TestModel tm = CompositeUtil.instance().getModel(TestModel.class);
         assertNotNull(tm);
         tm.setName("one");
         rc.put("1", tm);
-        tm = CompositeUtil.getModel(TestModel.class, getClass());
+        tm = CompositeUtil.instance().getModel(TestModel.class);
         tm.setName("two");
         rc.put("2", tm);
 

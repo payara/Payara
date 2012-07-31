@@ -111,7 +111,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
     protected static final String HEADER_AUTHENTICATE = "WWW-Authenticate";
 
-    public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
+    protected final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RestService.class);
 
     @Inject
     protected Habitat habitat;
@@ -180,7 +180,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 AdminAccessController.Access access = null;
                 if (adminAuthenticator != null) {
                     final Subject subject = adminAuthenticator.loginAsAdmin(req);
-                    req.setAttribute("SUBJECT", subject);
+                    req.setAttribute(Constants.REQ_ATTR_SUBJECT, subject);
                     access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
                 

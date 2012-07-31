@@ -69,23 +69,12 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
+import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
 import org.jvnet.hk2.config.Attribute;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ACC_SUPER;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.GETFIELD;
-import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
-import static org.objectweb.asm.Opcodes.NEW;
-import static org.objectweb.asm.Opcodes.PUTFIELD;
-import static org.objectweb.asm.Opcodes.RETURN;
-import static org.objectweb.asm.Opcodes.V1_6;
 
 /**
  *
@@ -94,7 +83,23 @@ import static org.objectweb.asm.Opcodes.V1_6;
 public class CompositeUtil {
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
     private static final Map<String, List<String>> modelExtensions = new HashMap<String, List<String>>();
-    private static boolean extensionsLoaded = false;
+    private boolean extensionsLoaded = false;
+    private static CompositeUtil instance;
+
+    private CompositeUtil() {
+    }
+
+    public static CompositeUtil instance() {
+        if (instance == null) {
+            synchronized(generatedClasses) {
+                if (instance == null) {
+                    instance = new CompositeUtil();
+                }
+            }
+        }
+
+        return instance;
+    }
 
     /**
      * This method will return a generated concrete class that implements the interface requested, as well as any
@@ -107,12 +112,12 @@ public class CompositeUtil {
      * @return An instance of a concrete class implementing the requested interfaces
      * @throws Exception
      */
-    public synchronized static <T> T getModel(Class<T> modelIface, Class similarClass) {
+    public synchronized <T> T getModel(Class<T> modelIface) {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
             Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
 
-            Set<Class<?>> interfaces = getModelExtensions(similarClass, modelIface);
+            Set<Class<?>> interfaces = getModelExtensions(modelIface);
             interfaces.add(modelIface);
 
             for (Class<?> iface : interfaces) {
@@ -133,7 +138,7 @@ public class CompositeUtil {
             classWriter.visitEnd();
             Class<?> newClass;
             try {
-                newClass = defineClass(similarClass, className, classWriter.toByteArray());
+                newClass = defineClass(modelIface, className, classWriter.toByteArray());
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -154,7 +159,7 @@ public class CompositeUtil {
      * @param data
      * @param method
      */
-    public static Object getResourceExtensions(Class<?> baseClass, Object data, String method) {
+    public Object getResourceExtensions(Class<?> baseClass, Object data, String method) {
         List<RestExtension> extensions = new ArrayList<RestExtension>();
 
         for (RestExtension extension : Globals.getDefaultBaseServiceLocator().getAllByContract(RestExtension.class)) {
@@ -172,7 +177,7 @@ public class CompositeUtil {
         return void.class;
     }
 
-    public static ParameterMap addToParameterMap(ParameterMap parameters, String basePath, Class<?> configBean, Object source) {
+    public ParameterMap addToParameterMap(ParameterMap parameters, String basePath, Class<?> configBean, Object source) {
         String name;
         Map<String, String> currentValues = Util.getCurrentValues(basePath, Globals.getDefaultHabitat());
         for (Method cbMethod : configBean.getMethods()) {
@@ -204,7 +209,7 @@ public class CompositeUtil {
      * @param command
      * @return
      */
-    public static ActionReporter executeCommand(String command) {
+    public ActionReporter executeCommand(String command) {
         return executeCommand(command, new ParameterMap());
     }
 
@@ -216,7 +221,7 @@ public class CompositeUtil {
      * values.  The array must have an even number of entries.
      * @return 
      */
-    public static ActionReporter executeCommand(String command, String... params) {
+    public ActionReporter executeCommand(String command, String... params) {
         if (params.length % 2 != 0) {
             throw new IllegalArgumentException("There must be an even number of parameters passed to CompositeUtil.executeCommand(String, Object...);");
         }
@@ -234,7 +239,7 @@ public class CompositeUtil {
      * @param parameters
      * @return
      */
-    public static ActionReporter executeCommand(String command, ParameterMap parameters) {
+    public ActionReporter executeCommand(String command, ParameterMap parameters) {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
                 Globals.getDefaultHabitat(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
@@ -251,9 +256,9 @@ public class CompositeUtil {
      * @param json The json encoding of the object
      * @return
      */
-    public static <T> T unmarshallClass(Class<T> modelClass, JSONObject json) {
+    public <T> T unmarshallClass(Class<T> modelClass, JSONObject json) {
         try {
-            T model = CompositeUtil.getModel(modelClass, modelClass);
+            T model = getModel(modelClass);
             for (Method setter : getSetters(modelClass)) {
                 String name = setter.getName();
                 String attribute = name.substring(3, 4).toLowerCase() + name.substring(4);
@@ -298,13 +303,13 @@ public class CompositeUtil {
      * @param baseModel
      * @return
      */
-    private static Set<Class<?>> getModelExtensions (Class similarClass, Class<?> baseModel) {
+    private Set<Class<?>> getModelExtensions (Class<?> baseModel) {
         Set<Class<?>> exts = new HashSet<Class<?>>();
 
         if (!extensionsLoaded) {
             synchronized(modelExtensions) {
                 if (!extensionsLoaded) {
-                    loadModelExtensionMetadata(similarClass);
+                    loadModelExtensionMetadata(baseModel);
                 }
             }
         }
@@ -313,7 +318,7 @@ public class CompositeUtil {
         if (list != null) {
             for (String className : list) {
                 try {
-                    Class<?> c = Class.forName(className, true, similarClass.getClassLoader());
+                    Class<?> c = Class.forName(className, true, baseModel.getClassLoader());
                     exts.add(c);
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -328,7 +333,7 @@ public class CompositeUtil {
      * Locate and process all <code>RestModelExtension</code> metadata files
      * @param similarClass
      */
-    private static void loadModelExtensionMetadata(Class similarClass) {
+    private void loadModelExtensionMetadata(Class<?> similarClass) {
         try {
             Enumeration<URL> urls = similarClass.getClassLoader().getResources("META-INF/restmodelextensions");
             while (urls.hasMoreElements()) {
@@ -362,7 +367,7 @@ public class CompositeUtil {
         }
     }
 
-    private static List<Method> getSetters(Class<?> clazz) {
+    private List<Method> getSetters(Class<?> clazz) {
         List<Method> methods = new ArrayList<Method>();
 
         for (Method method : clazz.getMethods()) {
@@ -374,7 +379,7 @@ public class CompositeUtil {
         return methods;
     }
 
-    private static void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
+    private void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
         for (Method method : iface.getMethods()) {
             String name = method.getName();
             final boolean isGetter = name.startsWith("get");
@@ -398,13 +403,13 @@ public class CompositeUtil {
         }
     }
 
-    private static void handleGetExtensions(List<RestExtension> extensions, Object data) {
+    private void handleGetExtensions(List<RestExtension> extensions, Object data) {
         for (RestExtension re : extensions) {
             re.get(data);
         }
     }
 
-    private static ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
+    private ParameterMap handlePostExtensions(List<RestExtension> extensions, Object data) {
         ParameterMap parameters = new ParameterMap();
         for (RestExtension re : extensions) {
             parameters.mergeAll(re.post(data));
@@ -419,20 +424,20 @@ public class CompositeUtil {
      * @param type The desired class
      * @return
      */
-    private static String getInternalTypeString(Class<?> type) {
+    private String getInternalTypeString(Class<?> type) {
         return type.isPrimitive()
                ? Primitive.getPrimitive(type.getName()).getInternalType()
                : ("L" + getInternalName(type.getName()) + ";");
     }
 
-    private static String getPropertyName(String name) {
+    private String getPropertyName(String name) {
         return name.substring(0,1).toLowerCase() + name.substring(1);
     }
 
     /**
      * This method starts the class definition, adding the JAX-B annotations to allow for marshalling via JAX-RS
      */
-    private static void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
+    private void visitClass(ClassWriter classWriter, String className, Set<Class<?>> ifaces, Map<String, Map<String, Object>> properties) {
         String[] ifaceNames = new String[ifaces.size()+1];
         int i = 1;
         ifaceNames[0] = getInternalName(RestModel.class.getName());
@@ -458,7 +463,7 @@ public class CompositeUtil {
      * This method creates the default constructor for the class. Default values are set for any @Attribute defined with
      * a defaultValue.
      */
-    private static void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
+    private void createConstructor(ClassWriter cw, String className, Map<String, Map<String, Object>> properties) {
         // Create the ctor
         MethodVisitor method = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         method.visitCode();
@@ -487,7 +492,7 @@ public class CompositeUtil {
      *
      * TODO: it may make sense to treat primitives here as non-String types.
      */
-    private static void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
+    private void setDefaultValue(MethodVisitor method, String className, String fieldName, Class<?> fieldClass, String defaultValue) {
         final String type = getInternalTypeString(fieldClass);
         Object value = defaultValue;
         fieldName = getPropertyName(fieldName);
@@ -540,7 +545,7 @@ public class CompositeUtil {
     /**
      * Add the field to the class, adding the @XmlAttribute annotation for marshalling purposes.
      */
-    private static void createField(ClassWriter cw, String name, Class<?> type) {
+    private void createField(ClassWriter cw, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
         FieldVisitor field = cw.visitField(ACC_PRIVATE, getPropertyName(name), internalType, null, null);
         field.visitAnnotation("Ljavax/xml/bind/annotation/XmlAttribute;", true).visitEnd();
@@ -550,7 +555,7 @@ public class CompositeUtil {
     /**
      * Create getters and setters for the given field
      */
-    private static void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
+    private void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
         String internalType = getInternalTypeString(type);
         className = getInternalName(className);
 
@@ -581,12 +586,12 @@ public class CompositeUtil {
     /**
      * Convert the dotted class name to the "internal" (bytecode) representation
      */
-    private static String getInternalName(String className) {
+    private String getInternalName(String className) {
         return className.replace(".", "/");
     }
 
     // TODO: This is duplicated from the generator class.
-    private static Class<?> defineClass(Class similarClass, String className, byte[] classBytes) throws Exception {
+    private Class<?> defineClass(Class<?> similarClass, String className, byte[] classBytes) throws Exception {
         byte[] byteContent = classBytes;
         ProtectionDomain pd = similarClass.getProtectionDomain();
 
@@ -614,7 +619,9 @@ public class CompositeUtil {
                     });
 
             Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, "Loading bytecode for {0}", className);
-            final ClassLoader classLoader = similarClass.getClassLoader();
+            final ClassLoader classLoader = 
+                    similarClass.getClassLoader();
+                    //Thread.currentThread().getContextClassLoader();
 //                    Thread.currentThread().getContextClassLoader();
             try {
                 Class<?> newClass = (Class<?>) clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);

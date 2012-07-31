@@ -86,7 +86,7 @@ public class JsonPojoProvider<T extends RestModel> implements MessageBodyReader<
             }
 
             JSONObject o = new JSONObject(sb.toString());
-            T model = CompositeUtil.unmarshallClass(type, o);
+            T model = CompositeUtil.instance().unmarshallClass(type, o);
             return (T)model;
         } catch (Exception e) {
             throw new WebApplicationException(e);

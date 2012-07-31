@@ -57,7 +57,7 @@ public class CompositeUtilTest {
     @Test(groups="offline")
     public void readInJson() throws Exception {
         JSONObject o = new JSONObject(json);
-        BaseModel model = CompositeUtil.unmarshallClass(BaseModel.class, o);
+        BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
 
         assertEquals("testModel", model.getName());
         assertEquals(2, model.getRelated().size());
