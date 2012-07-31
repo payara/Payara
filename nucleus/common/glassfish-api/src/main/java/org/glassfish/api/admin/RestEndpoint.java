@@ -85,4 +85,13 @@ public @interface RestEndpoint {
      * @return 
      */
     RestParam[] params() default {};
+    
+    /**
+     * Whether this RestEndpoint should be used for command authorization
+     * decisions automatically.  Setting this to true causes the admin command
+     * framework automatically to use the configBean attribute to compute the resource name
+     * and the OpType to compute the action.
+     * @return 
+     */
+    boolean useForAuthorization() default false;
 }
