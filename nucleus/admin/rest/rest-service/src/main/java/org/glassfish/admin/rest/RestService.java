@@ -40,22 +40,17 @@
 
 package org.glassfish.admin.rest;
 
-import java.util.logging.Logger;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
-
-import org.glassfish.api.Startup;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.api.LocalPassword;
 import org.glassfish.internal.api.RestInterfaceUID;
 import org.glassfish.server.ServerEnvironmentImpl;
-
-import javax.inject.Inject;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 /**
@@ -98,7 +93,6 @@ public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID 
     public void preDestroy() {
     }
 
-
     @Override
     public String getUID() {
         if (_uid == null) {
@@ -107,11 +101,9 @@ public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID 
         return _uid;
     }
 
-
     public static String getRestUID() {
         return _uid;
     }
-
 
     private static String _uid;
 }

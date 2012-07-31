@@ -179,8 +179,9 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
                 AdminAccessController.Access access = null;
                 if (adminAuthenticator != null) {
-                    final Subject s = adminAuthenticator.loginAsAdmin(req);
-                    access = adminAuthenticator.chooseAccess(s, req.getRemoteHost());
+                    final Subject subject = adminAuthenticator.loginAsAdmin(req);
+                    req.setAttribute("SUBJECT", subject);
+                    access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
                 
                 if (access == null || access.isOK()) {
