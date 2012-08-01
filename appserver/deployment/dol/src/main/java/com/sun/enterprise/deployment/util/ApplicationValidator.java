@@ -99,13 +99,13 @@ public class ApplicationValidator extends ComponentValidator
             Application application = (Application)descriptor;
             accept(application);
 
-            if (!validateResourceDescriptor(application)) {
+            /*if (!validateResourceDescriptor(application)) {
                 DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.fail",
                         new Object[] { application.getAppName() });
                 throw new IllegalStateException(
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
                         "Application validation fails for given application {0}",application.getAppName()));
-            }
+            }*/
 
             for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
@@ -290,7 +290,6 @@ public class ApplicationValidator extends ComponentValidator
         CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
         Vector appLevel = new Vector();
         if (commonResourceBundleDescriptor != null) {
-            appLevel.add(commonResourceBundleDescriptor.getName());
             Set<MailSessionDescriptor> mailSessionDescriptors = commonResourceBundleDescriptor.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, commonResourceBundleDescriptor.getName())) {
                 return false;
@@ -299,6 +298,9 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, commonResourceBundleDescriptor.getName())) {
                 return false;
             }
+            if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                appLevel.add(commonResourceBundleDescriptor.getName());
+            }
             validNameSpaceDetails.put(APP_KEYS, appLevel);
         }
 
@@ -306,7 +308,6 @@ public class ApplicationValidator extends ComponentValidator
         Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
         Vector appClientLevel = new Vector();
         for (ApplicationClientDescriptor acd : appClientDescs) {
-            appClientLevel.add(acd.getName());
             Set<MailSessionDescriptor> mailSessionDescriptors = acd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, acd.getName())) {
                 return false;
@@ -315,6 +316,9 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, acd.getName())) {
                 return false;
             }
+            if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                appClientLevel.add(acd.getName());
+            }
         }
         validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
 
@@ -322,7 +326,6 @@ public class ApplicationValidator extends ComponentValidator
         Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
         Vector cdLevel = new Vector();
         for (ConnectorDescriptor cd : connectorDescs) {
-            cdLevel.add(cd.getName());
             Set<MailSessionDescriptor> mailSessionDescriptors = cd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, cd.getName())) {
                 return false;
@@ -330,6 +333,9 @@ public class ApplicationValidator extends ComponentValidator
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = cd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, cd.getName())) {
                 return false;
+            }
+            if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                cdLevel.add(cd.getName());
             }
         }
         validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
@@ -339,7 +345,6 @@ public class ApplicationValidator extends ComponentValidator
         Vector ebdLevel = new Vector();
         Vector edLevel = new Vector();
         for (EjbBundleDescriptor ebd : ejbBundleDescs) {
-            ebdLevel.add(ebd.getName());
             Set<MailSessionDescriptor> mailSessionDescriptors = ebd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, ebd.getName())) {
                 return false;
@@ -348,12 +353,14 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, ebd.getName())) {
                 return false;
             }
+            if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                ebdLevel.add(ebd.getName());
+            }
 
             // Reads MSD and DSD at ejb level
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
             for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
                 EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-                edLevel.add(ebd.getName() + "#" + ejbDescriptor.getName());
                 mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
                 if (isExistingMailSession(mailSessionDescriptors, ebd.getName() + "#" + ejbDescriptor.getName())) {
                     return false;
@@ -361,6 +368,9 @@ public class ApplicationValidator extends ComponentValidator
                 dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
                 if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, ebd.getName() + "#" + ejbDescriptor.getName())) {
                     return false;
+                }
+                if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                    edLevel.add(ebd.getName() + "#" + ejbDescriptor.getName());
                 }
             }
         }
@@ -372,7 +382,6 @@ public class ApplicationValidator extends ComponentValidator
         Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
         Vector wbdLevel = new Vector();
         for (WebBundleDescriptor wbd : webBundleDescs) {
-            wbdLevel.add(wbd.getName());
             Set<MailSessionDescriptor> mailSessionDescriptors = wbd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, wbd.getName())) {
                 return false;
@@ -380,6 +389,9 @@ public class ApplicationValidator extends ComponentValidator
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = wbd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, wbd.getName())) {
                 return false;
+            }
+            if(mailSessionDescriptors.size() > 0 || dataSourceDefinitionDescriptors.size() > 0) {
+                wbdLevel.add(wbd.getName());
             }
         }
         validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
