@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,28 +38,11 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.node.runtime.gf;
+package com.sun.enterprise.deployment.runtime.web;
 
-import org.glassfish.web.deployment.runtime.ManagerProperties;
-
-/**
- * This node is the superclass for all web related runtime nodes
- *
- * @version 
- */
-public class ManagerPropertiesNode extends WebPropertyContainerNode {
-    // tag class
-
-    protected ManagerProperties descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
-    @Override
-    public ManagerProperties getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new ManagerProperties();
-        }
-        return descriptor;
-    }
+public class ClassLoader extends WebPropertyContainer {
+    static public final String EXTRA_CLASS_PATH = "ExtraClassPath";
+    static public final String DELEGATE = "Delegate";
+    static public final String DYNAMIC_RELOAD_INTERVAL =
+        "DynamicReloadInterval";
 }

@@ -40,14 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import org.glassfish.web.deployment.runtime.Cache;
-import org.glassfish.web.deployment.runtime.CacheMapping;
-import org.glassfish.web.deployment.runtime.ConstraintField;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
+import com.sun.enterprise.deployment.runtime.web.*;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -69,7 +67,7 @@ public class ASCacheMappingFieldConstraint extends ASCache implements WebCheck {
         boolean doneAtleastOnce=false;
               
         try{
-        Cache cache = ((SunWebAppImpl)descriptor.getSunDescriptor()).getCache();
+        Cache cache = (descriptor.getSunDescriptor()).getCache();
         CacheMapping[] cacheMapp=null;
         String servletName;
         String urlPattern;

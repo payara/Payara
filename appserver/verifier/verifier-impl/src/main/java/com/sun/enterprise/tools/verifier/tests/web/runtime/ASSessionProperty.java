@@ -40,11 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import org.glassfish.web.deployment.runtime.*;
+import com.sun.enterprise.deployment.runtime.web.*;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -63,7 +64,7 @@ public Result check(WebBundleDescriptor descriptor) {
         boolean oneFailed = false;
         boolean notApp = false;
         try{
-        SessionConfig sessionConfig = ((SunWebAppImpl)descriptor.getSunDescriptor()).getSessionConfig();
+        SessionConfig sessionConfig = (descriptor.getSunDescriptor()).getSessionConfig();
         SessionProperties sessionProp=null;
         WebProperty[] SPwebProps=null;
 

@@ -38,7 +38,9 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.runtime;
+package com.sun.enterprise.deployment.runtime.web;
+
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
 /**
 * this class contains runtime information for the web bundle 
@@ -47,7 +49,53 @@ package org.glassfish.web.deployment.runtime;
 *
 * @author Jerome Dochez
 */
-public class StoreProperties extends WebPropertyContainer
+public class SessionConfig extends RuntimeDescriptor
 {
-    // tag class...
+    
+    static public final String SESSION_MANAGER = "SessionManager";	// NOI18N
+    static public final String SESSION_PROPERTIES = "SessionProperties";	// NOI18N
+    static public final String COOKIE_PROPERTIES = "CookieProperties";	// NOI18N
+    
+    // This attribute is optional
+    public void setSessionManager(SessionManager value)
+    {
+	this.setValue(SESSION_MANAGER, value);
+    }
+    
+    //
+    public SessionManager getSessionManager()
+    {
+	return (SessionManager)this.getValue(SESSION_MANAGER);
+    }
+    
+    // This attribute is optional
+    public void setSessionProperties(SessionProperties value)
+    {
+	this.setValue(SESSION_PROPERTIES, value);
+    }
+    
+    //
+    public SessionProperties getSessionProperties()
+    {
+	return (SessionProperties)this.getValue(SESSION_PROPERTIES);
+    }
+    
+    // This attribute is optional
+    public void setCookieProperties(CookieProperties value)
+    {
+	this.setValue(COOKIE_PROPERTIES, value);
+    }
+    
+    //
+    public CookieProperties getCookieProperties()
+    {
+	return (CookieProperties)this.getValue(COOKIE_PROPERTIES);
+    }
+    
+    // This method verifies that the mandatory properties are set
+    public boolean verify()
+    {
+	return true;
+    }
+    
 }

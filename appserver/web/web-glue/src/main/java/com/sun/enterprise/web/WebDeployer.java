@@ -42,7 +42,6 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.container.RequestDispatcher;
@@ -55,7 +54,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.jsp.JSPCompiler;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -96,20 +94,21 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     public WebDeployer() {
     }
 
+
     /**
      * Returns the meta data assocated with this Deployer
      *
      * @return the meta data for this Deployer
      */
-    @Override
     public MetaData getMetaData() {
-        return new MetaData(false,
-                new Class[] {WebBundleDescriptorImpl.class}, new Class[] {Application.class});
+
+        return new MetaData(false, null,
+                new Class[] { WebBundleDescriptor.class });
     }
 
     public <V> V loadMetaData(Class<V> type, DeploymentContext dc) {
-
-        WebBundleDescriptorImpl wbd = dc.getModuleMetaData(WebBundleDescriptorImpl.class);
+        
+        WebBundleDescriptor wbd = dc.getModuleMetaData(WebBundleDescriptor.class);
 
         if (wbd.isStandalone()) {
             // the context root should be set using the following precedence
@@ -152,7 +151,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
         
         try {
             DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
-            wmInfo.setDescriptor(dc.getModuleMetaData(WebBundleDescriptorImpl.class));
+            wmInfo.setDescriptor(dc.getModuleMetaData(WebBundleDescriptor.class));
             wmInfo.setVirtualServers(params.virtualservers);
             wmInfo.setLocation(dc.getSourceDir());
             wmInfo.setObjectType(dc.getAppProps().getProperty(ServerTags.OBJECT_TYPE));
@@ -180,12 +179,11 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
     @Override
     public WebApplication load(WebContainer container, DeploymentContext dc) {
         super.load(container, dc);
-        WebBundleDescriptorImpl wbd = dc.getModuleMetaData(
-            WebBundleDescriptorImpl.class);
+        WebBundleDescriptor wbd = dc.getModuleMetaData(
+            WebBundleDescriptor.class);
         if (wbd != null) {
             wbd.setClassLoader(dc.getClassLoader());
         }
-
         WebModuleConfig wmInfo = loadWebModuleConfig(dc);
         WebApplication webApp = new WebApplication(container, wmInfo,
                 new ApplicationConfigInfo(dc.getAppProps()));
@@ -205,8 +203,8 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
      * @throws DeploymentException if JSPCompiler is unsuccessful.
      */
     void runJSPC(final DeploymentContext dc) throws DeploymentException {
-        final WebBundleDescriptorImpl wbd = dc.getModuleMetaData(
-            WebBundleDescriptorImpl.class);
+        final WebBundleDescriptor wbd = dc.getModuleMetaData(
+            WebBundleDescriptor.class);
         try {
             final File outDir = dc.getScratchDir(env.kCompileJspDirName);
             final File inDir  = dc.getSourceDir();

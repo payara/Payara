@@ -40,11 +40,11 @@
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
-import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
+import com.sun.enterprise.deployment.runtime.web.LocaleCharsetMap;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.web.deployment.runtime.LocaleCharsetMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 /**
@@ -53,20 +53,7 @@ import org.w3c.dom.Node;
 * @author Jerome Dochez
 */
 public class LocaleCharsetMapNode extends RuntimeDescriptorNode<LocaleCharsetMap> {
-
-    protected LocaleCharsetMap descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
-    @Override
-    public LocaleCharsetMap getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new LocaleCharsetMap();
-        }
-        return descriptor;
-    }
-
+    
     /**
      * receives notification of the value for a particular tag
      * 

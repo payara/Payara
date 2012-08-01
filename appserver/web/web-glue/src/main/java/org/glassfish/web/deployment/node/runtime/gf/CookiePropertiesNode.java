@@ -40,9 +40,6 @@
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import org.glassfish.web.deployment.runtime.CookieProperties;
-
 /**
  * This node is the superclass for all web related runtime nodes
  *
@@ -51,17 +48,4 @@ import org.glassfish.web.deployment.runtime.CookieProperties;
  */
 public class CookiePropertiesNode extends WebPropertyContainerNode {
     // tag class
-
-    protected CookieProperties descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
-    @Override
-    public CookieProperties getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new CookieProperties();
-        }
-        return descriptor;
-    }
 }

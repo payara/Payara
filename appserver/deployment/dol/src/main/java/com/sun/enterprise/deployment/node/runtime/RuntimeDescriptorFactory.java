@@ -49,10 +49,28 @@ import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.runtime.common.DefaultResourcePrincipal;
 import com.sun.enterprise.deployment.runtime.connector.MapElement;
 import com.sun.enterprise.deployment.runtime.connector.Principal;
 import com.sun.enterprise.deployment.runtime.connector.ResourceAdapter;
 import com.sun.enterprise.deployment.runtime.connector.RoleMap;
+import com.sun.enterprise.deployment.runtime.web.Cache;
+import com.sun.enterprise.deployment.runtime.web.CacheHelper;
+import com.sun.enterprise.deployment.runtime.web.CacheMapping;
+import com.sun.enterprise.deployment.runtime.web.ClassLoader;
+import com.sun.enterprise.deployment.runtime.web.ConstraintField;
+import com.sun.enterprise.deployment.runtime.web.CookieProperties;
+import com.sun.enterprise.deployment.runtime.web.DefaultHelper;
+import com.sun.enterprise.deployment.runtime.web.JspConfig;
+import com.sun.enterprise.deployment.runtime.web.LocaleCharsetInfo;
+import com.sun.enterprise.deployment.runtime.web.LocaleCharsetMap;
+import com.sun.enterprise.deployment.runtime.web.ManagerProperties;
+import com.sun.enterprise.deployment.runtime.web.Servlet;
+import com.sun.enterprise.deployment.runtime.web.SessionConfig;
+import com.sun.enterprise.deployment.runtime.web.SessionManager;
+import com.sun.enterprise.deployment.runtime.web.SessionProperties;
+import com.sun.enterprise.deployment.runtime.web.StoreProperties;
+import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
@@ -72,7 +90,29 @@ public class RuntimeDescriptorFactory {
     }
 
     private static void initMapping() {
-        descriptorClasses = new HashMap();
+        descriptorClasses = new HashMap();    
+	// WEB
+        register(new XMLElement(RuntimeTagNames.PROPERTY), WebProperty.class);
+	register(new XMLElement(RuntimeTagNames.COOKIE_PROPERTIES), CookieProperties.class);
+	register(new XMLElement(RuntimeTagNames.LOCALE_CHARSET_MAP), LocaleCharsetMap.class);
+	register(new XMLElement(RuntimeTagNames.LOCALE_CHARSET_INFO), LocaleCharsetInfo.class);
+	register(new XMLElement(RuntimeTagNames.MANAGER_PROPERTIES), ManagerProperties.class);
+	register(new XMLElement(RuntimeTagNames.SERVLET), Servlet.class);
+	register(new XMLElement(RuntimeTagNames.SESSION_CONFIG), SessionConfig.class);	
+	register(new XMLElement(RuntimeTagNames.SESSION_MANAGER), SessionManager.class);
+	register(new XMLElement(RuntimeTagNames.JSP_CONFIG), JspConfig.class);
+	register(new XMLElement(RuntimeTagNames.CACHE_MAPPING), CacheMapping.class);
+	register(new XMLElement(RuntimeTagNames.CACHE_HELPER), CacheHelper.class);
+	register(new XMLElement(RuntimeTagNames.CACHE), Cache.class);
+	register(new XMLElement(RuntimeTagNames.CLASS_LOADER), ClassLoader.class);
+	register(new XMLElement(RuntimeTagNames.STORE_PROPERTIES), StoreProperties.class);	
+	register(new XMLElement(RuntimeTagNames.SESSION_PROPERTIES), SessionProperties.class);
+	register(new XMLElement(RuntimeTagNames.DEFAULT_HELPER), DefaultHelper.class);
+	register(new XMLElement(RuntimeTagNames.EJB_REF), EjbReference.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_REF), ResourceReferenceDescriptor.class);
+        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_REF), ResourceEnvReferenceDescriptor.class);
+        register(new XMLElement(RuntimeTagNames.DEFAULT_RESOURCE_PRINCIPAL), DefaultResourcePrincipal.class);
+        register(new XMLElement(RuntimeTagNames.CONSTRAINT_FIELD), ConstraintField.class);
 
         // weblogic DD
         register(new XMLElement(RuntimeTagNames.RESOURCE_DESCRIPTION), ResourceReferenceDescriptor.class);

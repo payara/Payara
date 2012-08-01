@@ -44,12 +44,10 @@ import com.sun.enterprise.tools.verifier.tests.web.WebCheck;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.deployment.runtime.web.Cache;
+import com.sun.enterprise.deployment.runtime.web.CacheMapping;
+import com.sun.enterprise.deployment.runtime.web.CacheHelper;
 import com.sun.enterprise.tools.verifier.Result;
-import org.glassfish.web.deployment.runtime.Cache;
-import org.glassfish.web.deployment.runtime.CacheMapping;
-import org.glassfish.web.deployment.runtime.CacheHelper;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
-
 import java.util.Set;
 import java.util.Iterator;
 
@@ -72,7 +70,7 @@ public class ASCacheMapping extends ASCache implements WebCheck {
         boolean notApp = false;
         //Cache cache = getCache(descriptor);
         try{
-            Cache cache = ((SunWebAppImpl)descriptor.getSunDescriptor()).getCache();
+            Cache cache = (descriptor.getSunDescriptor()).getCache();
             CacheMapping[] cacheMapp=null;
             String servletName=null;
             String urlPattern=null;

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.runtime;
+package com.sun.enterprise.deployment.runtime.web;
 
 /**
 * this class contains runtime information for the web bundle 
@@ -47,7 +47,7 @@ package org.glassfish.web.deployment.runtime;
 *
 * @author Jerome Dochez
 */
-public class DefaultHelper extends WebPropertyContainer
-{
-    // Tag class...
+public class SessionProperties extends WebPropertyContainer
+{    
+    // Tag class
 }

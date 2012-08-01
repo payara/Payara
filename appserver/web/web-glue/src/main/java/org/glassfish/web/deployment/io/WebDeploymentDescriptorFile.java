@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.RootXMLNode;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.WebBundleNode;
 
 /**
@@ -52,13 +51,12 @@ import org.glassfish.web.deployment.node.WebBundleNode;
  *
  * @author Jerome Dochez
  */
-public class WebDeploymentDescriptorFile extends DeploymentDescriptorFile<WebBundleDescriptorImpl> {
+public class WebDeploymentDescriptorFile extends DeploymentDescriptorFile<WebBundleDescriptor> {
 
     /**
      * @return the location of the DeploymentDescriptor file for a
      * particular type of J2EE Archive
      */
-    @Override
     public String getDeploymentDescriptorPath() {
         return DescriptorConstants.WEB_JAR_ENTRY;        
     }
@@ -69,8 +67,7 @@ public class WebDeploymentDescriptorFile extends DeploymentDescriptorFile<WebBun
      *
      * @param descriptor descriptor for which we need the node
      */
-    @Override
-    public RootXMLNode<WebBundleDescriptorImpl> getRootXMLNode(WebBundleDescriptorImpl descriptor) {
+    public RootXMLNode<WebBundleDescriptor> getRootXMLNode(WebBundleDescriptor descriptor) {
         return new WebBundleNode();
     }
 

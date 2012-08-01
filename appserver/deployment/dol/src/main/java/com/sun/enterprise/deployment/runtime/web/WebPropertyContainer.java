@@ -38,11 +38,86 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.runtime;
+package com.sun.enterprise.deployment.runtime.web;
 
-public class Valve extends WebPropertyContainer {
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
-    static public final String CLASS_NAME = "ClassName";
+/**
+* Interface for all web property containers
+*
+* @author Jerome Dochez
+*/
+public class WebPropertyContainer extends RuntimeDescriptor {
+    
+    static public final String NAME = "Name";	// NOI18N
+    static public final String VALUE = "Value";	// NOI18N
+    static public final String PROPERTY = "WebProperty";	// NOI18N
 
+    // copy constructor
+    public WebPropertyContainer(WebPropertyContainer other) 
+    {
+	super(other);
+    }
+
+    // constructor
+    public WebPropertyContainer() 
+    {
+	super();
+    }
+
+    // This attribute is an array, possibly empty
+    public void setWebProperty(int index, WebProperty value)
+    {
+	this.setValue(PROPERTY, index, value);
+    }
+    
+    //
+    public WebProperty getWebProperty(int index)
+    {
+	return (WebProperty)this.getValue(PROPERTY, index);
+    }
+    
+    // This attribute is an array, possibly empty
+    public void setWebProperty(WebProperty[] value)
+    {
+	this.setValue(PROPERTY, value);
+    }
+    
+    //
+    public WebProperty[] getWebProperty()
+    {
+	WebProperty[] props = (WebProperty[])this.getValues(PROPERTY);
+        if (props==null) {
+            return new WebProperty[0];
+        } else {
+            return props;
+        }
+    }
+    
+    // Return the number of properties
+    public int sizeWebProperty()
+    {
+	return this.size(PROPERTY);
+    }
+    
+    // Add a new element returning its index in the list
+    public int addWebProperty(WebProperty value)
+    {
+	return this.addValue(PROPERTY, value);
+    }
+    
+    //
+    // Remove an element using its reference
+    // Returns the index the element had in the list
+    //
+    public int removeWebProperty(WebProperty value)
+    {
+	return this.removeValue(PROPERTY, value);
+    }
+    
+    // This method verifies that the mandatory properties are set
+    public boolean verify()
+    {
+	return true;
+    }    
 }
-

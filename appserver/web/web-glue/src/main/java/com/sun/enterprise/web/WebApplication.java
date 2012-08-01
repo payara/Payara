@@ -42,6 +42,7 @@ package com.sun.enterprise.web;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.runtime.web.SessionManager;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
@@ -58,9 +59,6 @@ import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.web.config.serverbeans.ContextParam;
 import org.glassfish.web.config.serverbeans.EnvEntry;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-import org.glassfish.web.deployment.runtime.SessionManager;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -68,7 +66,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebApplication implements ApplicationContainer<WebBundleDescriptorImpl> {
+public class WebApplication implements ApplicationContainer<WebBundleDescriptor> {
 
     protected static final Logger logger = LogDomains.getLogger(
             WebApplication.class, LogDomains.WEB_LOGGER);
@@ -222,7 +220,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
      * @return deployment descriptor if they exist or null if not
      */
     @Override
-    public WebBundleDescriptorImpl getDescriptor() {
+    public WebBundleDescriptor getDescriptor() {
         return wmInfo.getDescriptor();
     }
 
@@ -280,7 +278,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
      */
     private void applyApplicationConfig(ApplicationContext appContext) {
 
-        WebBundleDescriptorImpl descriptor = wmInfo.getDescriptor();
+        WebBundleDescriptor descriptor = wmInfo.getDescriptor();
 
         try {
             if (appConfigCustomizations != null) {
@@ -611,7 +609,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
     private void stopCoherenceWeb() {
         if (wmInfo.getDescriptor() != null && 
                 wmInfo.getDescriptor().getSunDescriptor() != null) {
-            SunWebAppImpl sunWebApp = (SunWebAppImpl) wmInfo.getDescriptor().getSunDescriptor();
+            SunWebApp sunWebApp = wmInfo.getDescriptor().getSunDescriptor();
             if (sunWebApp.getSessionConfig() != null &&
                     sunWebApp.getSessionConfig().getSessionManager() != null) {
                 SessionManager sessionManager =

@@ -99,7 +99,6 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
@@ -1940,11 +1939,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         }
 
         // Object containing sun-web.xml information
-        SunWebAppImpl iasBean = null;
+        SunWebApp iasBean = null;
 
         // The default context is the only case when wbd == null
         if (wbd != null) {
-            iasBean = (SunWebAppImpl) wbd.getSunDescriptor();
+            iasBean = wbd.getSunDescriptor();
         }
 
         // set the sun-web config bean

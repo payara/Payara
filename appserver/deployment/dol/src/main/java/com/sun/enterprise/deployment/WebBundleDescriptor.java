@@ -294,7 +294,15 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract void addSecurityConstraint(SecurityConstraint securityConstraint);
 
+    //public abstract void addSecurityConstraint(SecurityConstraintImpl securityConstraint);
+
     public abstract void removeSecurityConstraint(SecurityConstraint securityConstraint);
+
+    /*
+    public abstract JspConfigDescriptor getJspConfigDescriptor();
+
+    public abstract void setJspConfigDescriptor(JspConfigDescriptor jspC);
+    */
 
     public abstract Set<WebComponentDescriptor> getServletDescriptors();
 

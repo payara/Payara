@@ -40,11 +40,12 @@
 
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import org.glassfish.web.deployment.runtime.*;
+import com.sun.enterprise.deployment.runtime.web.*;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -62,7 +63,7 @@ public Result check(WebBundleDescriptor descriptor) {
         boolean notApp = false;
  
         try{
-            JspConfig jspConfig = ((SunWebAppImpl)descriptor.getSunDescriptor()).getJspConfig();
+            JspConfig jspConfig = (descriptor.getSunDescriptor()).getJspConfig();
             WebProperty[] webProps=null;
             if(jspConfig !=null)
                 webProps = jspConfig.getWebProperty();

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.runtime;
+package com.sun.enterprise.deployment.runtime.web;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 

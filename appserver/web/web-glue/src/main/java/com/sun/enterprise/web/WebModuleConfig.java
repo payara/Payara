@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import java.io.File;
 
@@ -97,7 +96,7 @@ public class WebModuleConfig {
     /**
      * Deployment descriptor information about the web application.
      */
-    private WebBundleDescriptorImpl _wbd = null;
+    private WebBundleDescriptor _wbd = null;
 
     /** 
      * keep a list of virtual servers that this webmodule is associated with
@@ -301,7 +300,7 @@ public class WebModuleConfig {
      * Return the object representation of the deployment descriptor specified
      * for the web application.
      */
-    public WebBundleDescriptorImpl getDescriptor() {
+    public WebBundleDescriptor getDescriptor() {
         return _wbd;
     }
 
@@ -311,7 +310,7 @@ public class WebModuleConfig {
      *
      * @param wbd The deployment descriptor object
      */
-    public void setDescriptor(WebBundleDescriptorImpl wbd) {
+    public void setDescriptor(WebBundleDescriptor wbd) {
         _wbd = wbd;
     }
         

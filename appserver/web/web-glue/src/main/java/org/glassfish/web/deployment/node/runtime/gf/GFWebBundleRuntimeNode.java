@@ -44,7 +44,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ import java.util.Map;
 public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
 
     /** Creates new GFWebBundleRuntimeNode */
-    public GFWebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
+    public GFWebBundleRuntimeNode(WebBundleDescriptor descriptor) {
         super(descriptor);
     }
     
@@ -68,7 +67,6 @@ public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
     /**
      * @return the XML tag associated with this XMLNode
      */
-    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.GF_WEB_RUNTIME_TAG);
     }    
@@ -76,7 +74,6 @@ public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
     /** 
      * @return the DOCTYPE that should be written to the XML file
      */
-    @Override
     public String getDocType() {
         return DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
     }
@@ -84,7 +81,6 @@ public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
     /**
      * @return the SystemID of the XML file
      */
-    @Override
     public String getSystemID() {
         return DTDRegistry.GF_WEBAPP_301_DTD_SYSTEM_ID;
     }

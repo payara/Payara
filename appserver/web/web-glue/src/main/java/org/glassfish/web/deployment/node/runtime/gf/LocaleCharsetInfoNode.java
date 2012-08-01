@@ -42,8 +42,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.web.LocaleCharsetInfo;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.web.deployment.runtime.LocaleCharsetInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -62,19 +62,6 @@ public class LocaleCharsetInfoNode extends RuntimeDescriptorNode<LocaleCharsetIn
 	
         registerElementHandler(new XMLElement(RuntimeTagNames.LOCALE_CHARSET_MAP), 
                                LocaleCharsetMapNode.class, "addLocaleCharsetMap");		       
-    }
-
-    protected LocaleCharsetInfo descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
-    @Override
-    public LocaleCharsetInfo getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new LocaleCharsetInfo();
-        }
-        return descriptor;
     }
 
     @Override

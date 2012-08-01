@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.web.deployment.runtime;
+package com.sun.enterprise.deployment.runtime.web;
 
 /**
 * this class contains runtime information for the web bundle 
@@ -47,20 +47,7 @@ package org.glassfish.web.deployment.runtime;
 *
 * @author Jerome Dochez
 */
-public class CacheHelper extends WebPropertyContainer
+public class StoreProperties extends WebPropertyContainer
 {
-    static public final String CLASS_NAME = "ClassName";
-
-    // copy constructor
-    public CacheHelper(CacheHelper other)
-    {
-	super(other);
-    }
-
-    // constructor
-    public CacheHelper()
-    {
-	super();
-    }
-
+    // tag class...
 }

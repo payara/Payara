@@ -53,7 +53,7 @@ import javax.servlet.descriptor.*;
 /**
  * This node represents the <jsp-config> element in a web application.
  */
-public class JspConfigNode extends DeploymentDescriptorNode<JspConfigDescriptor> {
+public class JspConfigNode extends DeploymentDescriptorNode {
     public JspConfigNode() {
 	super();
 	registerElementHandler(new XMLElement(WebTagNames.TAGLIB), TagLibNode.class, "addTagLib");

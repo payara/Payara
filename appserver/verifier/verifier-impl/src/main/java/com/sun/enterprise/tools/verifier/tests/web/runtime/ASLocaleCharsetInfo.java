@@ -41,11 +41,12 @@
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
 
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import org.glassfish.web.deployment.runtime.*;
+import com.sun.enterprise.deployment.runtime.web.*;
 import java.util.*;
 import java.nio.charset.*;
 
@@ -67,7 +68,7 @@ public class ASLocaleCharsetInfo extends WebTest implements WebCheck {
         String formHintField;
         //Nlsinfo nlsInfo = descriptor.getIasWebApp().getNlsinfo();
         try{
-        LocaleCharsetInfo nlsInfo = ((SunWebAppImpl)descriptor.getSunDescriptor()).getLocaleCharsetInfo();
+        LocaleCharsetInfo nlsInfo = (descriptor.getSunDescriptor()).getLocaleCharsetInfo();
         if (nlsInfo != null){
 	    //Test 1: check validity of default-locale
 	    Locale[] locales = Locale.getAvailableLocales();

@@ -45,6 +45,7 @@ import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.web.InitializationParameter;
 import com.sun.enterprise.util.net.JarURIPattern;
 import com.sun.enterprise.web.jsp.JspProbeEmitterImpl;
@@ -53,8 +54,6 @@ import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.web.deployment.runtime.WebProperty;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -230,7 +229,7 @@ final class WebModuleListener
         servletContext.setAttribute(
                 Constants.HABITAT_ATTRIBUTE, defaultServices);
 
-        SunWebAppImpl bean = webModule.getIasWebAppConfigBean();
+        SunWebApp bean = webModule.getIasWebAppConfigBean();
 
         // Find the default jsp servlet
         Wrapper wrapper = (Wrapper) webModule.findChild(

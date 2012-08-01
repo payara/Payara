@@ -57,7 +57,6 @@ import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.security.common.Role;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebBundleVisitor;
 import org.glassfish.web.deployment.util.WebBundleTracerVisitor;
 import org.glassfish.web.deployment.util.WebBundleValidator;
@@ -2180,7 +2179,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      */
     public SunWebApp getSunDescriptor() {
         if (sunWebApp == null) {
-            sunWebApp = new SunWebAppImpl();
+            sunWebApp = new SunWebApp();
         }
         return sunWebApp;
     }

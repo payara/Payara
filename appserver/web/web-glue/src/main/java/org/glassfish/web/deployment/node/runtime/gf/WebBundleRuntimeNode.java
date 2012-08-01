@@ -49,15 +49,14 @@ import com.sun.enterprise.deployment.node.runtime.ResourceRefNode;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
 import com.sun.enterprise.deployment.runtime.common.*;
 import com.sun.enterprise.deployment.runtime.web.*;
+import com.sun.enterprise.deployment.runtime.web.ClassLoader;
 import com.sun.enterprise.deployment.types.EjbReference;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import org.glassfish.deployment.common.SecurityRoleMapper;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.WebBundleNode;
-import org.glassfish.web.deployment.runtime.ClassLoader;
-import org.glassfish.web.deployment.runtime.*;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Element;
@@ -77,10 +76,10 @@ import java.util.Set;
  * @author  Jerome Dochez
  * @version 
  */
-public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorImpl> {
+public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptor> {
 
     /** Creates new WebBundleRuntimeNode */
-    public WebBundleRuntimeNode(WebBundleDescriptorImpl descriptor) {
+    public WebBundleRuntimeNode(WebBundleDescriptor descriptor) {
         super(descriptor);
         //trigger registration in standard node, if it hasn't happened
         habitat.getByType(WebBundleNode.class);
@@ -104,7 +103,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         registerElementHandler(new XMLElement(RuntimeTagNames.SECURITY_ROLE_MAPPING), 
                                SecurityRoleMappingNode.class);
 	registerElementHandler(new XMLElement(RuntimeTagNames.SERVLET),
-			       org.glassfish.web.deployment.node.runtime.gf.ServletNode.class);
+			       com.sun.enterprise.deployment.node.runtime.ServletNode.class);
 	registerElementHandler(new XMLElement(RuntimeTagNames.IDEMPOTENT_URL_PATTERN), IdempotentUrlPatternNode.class);
 	registerElementHandler(new XMLElement(RuntimeTagNames.SESSION_CONFIG),
 			       SessionConfigNode.class);
@@ -124,14 +123,14 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	registerElementHandler(new XMLElement(RuntimeTagNames.CLASS_LOADER), 
                                ClassLoaderNode.class); 
 	
-        registerElementHandler(new XMLElement(RuntimeTagNames.JSP_CONFIG),
-                                JspConfigRuntimeNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.JSP_CONFIG), 
+                               WebPropertyContainerNode.class);   
         
         registerElementHandler(new XMLElement(RuntimeTagNames.LOCALE_CHARSET_INFO), 
                                LocaleCharsetInfoNode.class);   
   	
 	registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
-                               WebPropertyNode.class);
+                               WebPropertyContainerNode.class);   
 			       
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class); 
@@ -147,7 +146,6 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     /**
      * @return the XML tag associated with this XMLNode
      */
-    @Override
     protected XMLElement getXMLRootTag() {
         return new XMLElement(RuntimeTagNames.S1AS_WEB_RUNTIME_TAG);
     }    
@@ -198,9 +196,17 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
     
    /**
     * @return the descriptor instance to associate with this XMLNode
-    */
-    public Object getSunDescriptor() {
-        return descriptor.getSunDescriptor();
+    */    
+    public Object getSunDescriptor() {    
+        
+	return descriptor.getSunDescriptor();                
+    }
+    
+    /**
+     * @return the web bundle descriptor instance to associate with this XMLNode
+     */
+    public WebBundleDescriptor getDescriptor() {    
+        return descriptor;
     }
 
     /**
@@ -209,11 +215,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
      *
      * @param newDescriptor the new descriptor
      */
-    @Override
     public void addDescriptor(Object newDescriptor) {
-
-        SunWebAppImpl sunWebApp = (SunWebAppImpl) descriptor.getSunDescriptor();
-
 	if (newDescriptor instanceof WebComponentDescriptor) {
 	    WebComponentDescriptor servlet = (WebComponentDescriptor) newDescriptor;
             // for backward compatibility with s1as schema2beans generated desc
@@ -222,14 +224,14 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             if (servlet.getRunAsIdentity()!=null) {
                 s1descriptor.setPrincipalName(servlet.getRunAsIdentity().getPrincipal());
             }
-        sunWebApp.addServlet(s1descriptor);
+	    descriptor.getSunDescriptor().addServlet(s1descriptor);
 	} else
         if (newDescriptor instanceof ServiceReferenceDescriptor) {
             descriptor.addServiceReferenceDescriptor((ServiceReferenceDescriptor) newDescriptor);
         } else 
         if (newDescriptor instanceof SecurityRoleMapping) {
             SecurityRoleMapping srm = (SecurityRoleMapping) newDescriptor;
-            sunWebApp.addSecurityRoleMapping(srm);
+            descriptor.getSunDescriptor().addSecurityRoleMapping(srm);
             // store it in the application using pure DOL descriptors...
             Application app = descriptor.getApplication();
             if (app!=null) {
@@ -249,37 +251,36 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
                 }
             }                
         } else if (newDescriptor instanceof IdempotentUrlPattern) {
-            sunWebApp.addIdempotentUrlPattern(
-                    (IdempotentUrlPattern) newDescriptor);
+            descriptor.getSunDescriptor().addIdempotentUrlPattern(
+                (IdempotentUrlPattern)newDescriptor);
         } else if (newDescriptor instanceof SessionConfig) {
-            sunWebApp.setSessionConfig(
-                    (SessionConfig) newDescriptor);
+            descriptor.getSunDescriptor().setSessionConfig(
+                (SessionConfig)newDescriptor);
         } else if (newDescriptor instanceof Cache) {
-            sunWebApp.setCache(
-                    (Cache) newDescriptor);
+            descriptor.getSunDescriptor().setCache(
+                (Cache)newDescriptor);
         } else if (newDescriptor instanceof ClassLoader) {
-            sunWebApp.setClassLoader(
-                    (ClassLoader) newDescriptor);
+            descriptor.getSunDescriptor().setClassLoader(
+                (ClassLoader)newDescriptor);
         } else if (newDescriptor instanceof JspConfig) {
-            sunWebApp.setJspConfig(
-                    (JspConfig) newDescriptor);
+            descriptor.getSunDescriptor().setJspConfig(
+                (JspConfig)newDescriptor);
         } else if (newDescriptor instanceof LocaleCharsetInfo) {
-            sunWebApp.setLocaleCharsetInfo(
-                    (LocaleCharsetInfo) newDescriptor);
+            descriptor.getSunDescriptor().setLocaleCharsetInfo(
+                (LocaleCharsetInfo)newDescriptor);
         } else if (newDescriptor instanceof WebProperty) {
-            sunWebApp.addWebProperty(
-                    (WebProperty) newDescriptor);
+            descriptor.getSunDescriptor().addWebProperty(
+                (WebProperty)newDescriptor);
         } else if (newDescriptor instanceof Valve) {
-            sunWebApp.addValve(
-                    (Valve) newDescriptor);
+            descriptor.getSunDescriptor().addValve(
+                (Valve)newDescriptor);
         }
 	else super.addDescriptor(descriptor);
     }
 
-    @Override
     public void startElement(XMLElement element, Attributes attributes) {
         if (element.getQName().equals(RuntimeTagNames.PARAMETER_ENCODING)) {
-            SunWebAppImpl sunWebApp = (SunWebAppImpl)getSunDescriptor();
+            SunWebApp sunWebApp = (SunWebApp)getSunDescriptor();
             sunWebApp.setParameterEncoding(true);
             for (int i=0; i<attributes.getLength();i++) {
                 if (RuntimeTagNames.DEFAULT_CHARSET.equals(
@@ -301,11 +302,10 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
      * @param attributeName the attribute name
      * @param value the attribute value
      * @return true if the attribute was processed
-     */
-    @Override
+     */ 
     protected boolean setAttributeValue(XMLElement elementName,
         XMLElement attributeName, String value) {
-        SunWebAppImpl sunWebApp = (SunWebAppImpl)getSunDescriptor();
+        SunWebApp sunWebApp = (SunWebApp)getSunDescriptor();
         if (attributeName.getQName().equals(RuntimeTagNames.ERROR_URL)) {
             sunWebApp.setAttributeValue(SunWebApp.ERROR_URL, value);
             return true;
@@ -325,7 +325,6 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
      * @param element the xml element
      * @param value it's associated value
      */
-    @Override
     public void setElementValue(XMLElement element, String value) {
         if (element.getQName().equals(RuntimeTagNames.CONTEXT_ROOT)) {
             // only set the context root for standalone war;
@@ -339,7 +338,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             descriptor.setKeepState(value);
         } else if (element.getQName().equals(RuntimeTagNames.VERSION_IDENTIFIER)) {
         } else
-            super.setElementValue(element, value);
+	super.setElementValue(element, value);
     }
 
     /**
@@ -348,14 +347,15 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
      * @param parent node for the DOM tree
      * @param bundleDescriptor the descriptor to write
      * @return the DOM tree top node
-     */
-    @Override
-    public Node writeDescriptor(Node parent, WebBundleDescriptorImpl bundleDescriptor) {
-        Element web = (Element)super.writeDescriptor(parent, bundleDescriptor);
-        SunWebAppImpl sunWebApp = (SunWebAppImpl) bundleDescriptor.getSunDescriptor();
-
+     */    
+    public Node writeDescriptor(Node parent, WebBundleDescriptor bundleDescriptor) {    
+        Element web = (Element)super.writeDescriptor(parent, bundleDescriptor); 
+	
+	SunWebApp sunWebApp = bundleDescriptor.getSunDescriptor();
+        
         // context-root?
 	appendTextChild(web, RuntimeTagNames.CONTEXT_ROOT, bundleDescriptor.getContextRoot());
+        
 	// security-role-mapping
 	SecurityRoleMapping[] roleMappings = sunWebApp.getSecurityRoleMapping();
 	if (roleMappings!=null && roleMappings.length>0) {
@@ -368,13 +368,14 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	// servlet
 	Set servlets = bundleDescriptor.getServletDescriptors();
 	if (servlets!=null) {
-	    org.glassfish.web.deployment.node.runtime.gf.ServletNode node =
-                new org.glassfish.web.deployment.node.runtime.gf.ServletNode();
+	    com.sun.enterprise.deployment.node.runtime.ServletNode node = 
+                new com.sun.enterprise.deployment.node.runtime.ServletNode();
 	    for (Iterator itr=servlets.iterator();itr.hasNext();) {
                 WebComponentDescriptor servlet = (WebComponentDescriptor) itr.next();
 		node.writeDescriptor(web, RuntimeTagNames.SERVLET, servlet);
 	    }
 	}
+	
         // idempotent-url-pattern
         IdempotentUrlPattern[] patterns = sunWebApp.getIdempotentUrlPatterns();
         if (patterns != null && patterns.length > 0) {
@@ -382,7 +383,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             for (int i = 0;i < patterns.length; i++) {
                 node.writeDescriptor(web, RuntimeTagNames.IDEMPOTENT_URL_PATTERN, patterns[i]);
             }
-        }
+        }      
 
 	// session-config?
 	if (sunWebApp.getSessionConfig()!=null) {

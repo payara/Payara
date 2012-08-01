@@ -79,7 +79,7 @@ public class TomcatDeploymentConfig {
      * Tomcat 5 internal deployment mechanism by re-using the DOL objects.
      */
     public static void configureWebModule(WebModule webModule, 
-        WebBundleDescriptorImpl webModuleDescriptor)
+        WebBundleDescriptor webModuleDescriptor)
             throws LifecycleException { 
 
         // When context root = "/"
@@ -116,7 +116,7 @@ public class TomcatDeploymentConfig {
      * deployment descriptor.
      */
     protected static void configureEjbReference(WebModule webModule,
-                                         WebBundleDescriptorImpl wmd) {
+                                         WebBundleDescriptor wmd) {
         for (EjbReference ejbDescriptor :
                 wmd.getEjbReferenceDescriptors()) {
             if (ejbDescriptor.isLocal()) {
@@ -161,7 +161,7 @@ public class TomcatDeploymentConfig {
      * an <code>&lt;env-entry&gt;</code> element in the deployment descriptor.
      */
     protected static void configureContextEnvironment(WebModule webModule,
-                                                 WebBundleDescriptorImpl wmd) {
+                                                 WebBundleDescriptor wmd) {
         for (ContextParameter envRef : wmd.getContextParametersSet()) {
             webModule.addEnvironment(new ContextEnvironmentDecorator(
                 (EnvironmentProperty) envRef));
@@ -175,10 +175,10 @@ public class TomcatDeploymentConfig {
      * deployment descriptor.
      */
     protected static void configureErrorPage(WebModule webModule,
-                                      WebBundleDescriptorImpl wmd) {
+                                      WebBundleDescriptor wmd) {
             
         Enumeration<ErrorPageDescriptor> e =
-            wmd.getErrorPageDescriptors();
+            ((WebBundleDescriptorImpl)wmd).getErrorPageDescriptors();
         while (e.hasMoreElements()){
             webModule.addErrorPage(new ErrorPageDecorator(e.nextElement()));
         }                                     
@@ -190,7 +190,7 @@ public class TomcatDeploymentConfig {
      * by a <code>&lt;filter&gt;</code> element in the deployment descriptor.
      */
     protected static void configureFilterDef(WebModule webModule,
-                                             WebBundleDescriptorImpl wmd) {
+                                             WebBundleDescriptor wmd) {
                                                         
        Vector vector = wmd.getServletFilters();
        
@@ -213,7 +213,7 @@ public class TomcatDeploymentConfig {
      * a URL pattern or a servlet name.    
      */
     protected static void configureFilterMap(WebModule webModule,
-                                             WebBundleDescriptorImpl wmd) {
+                                             WebBundleDescriptor wmd) {
         Vector vector = wmd.getServletFilterMappingDescriptors();
         for (int i=0; i < vector.size(); i++)  {
             webModule.addFilterMap((ServletFilterMapping)vector.get(i));
@@ -229,7 +229,7 @@ public class TomcatDeploymentConfig {
      * to modify the application deployment descriptor itself.  
      */             
     protected static void configureApplicationListener(
-            WebModule webModule, WebBundleDescriptorImpl wmd) {
+            WebModule webModule, WebBundleDescriptor wmd) {
         
         Vector vector = wmd.getAppListenerDescriptors();
         for (int i=0; i < vector.size() ; i++){
@@ -245,10 +245,10 @@ public class TomcatDeploymentConfig {
      * descriptor
      */
     protected static void configureJspConfig(WebModule webModule,
-                                             WebBundleDescriptorImpl wmd) {
-        webModule.setJspConfigDescriptor(wmd.getJspConfigDescriptor());
+                                             WebBundleDescriptor wmd) {
+        webModule.setJspConfigDescriptor(((WebBundleDescriptorImpl)wmd).getJspConfigDescriptor());
 
-        JspConfigDescriptor jspConfig = wmd.getJspConfigDescriptor();
+        JspConfigDescriptor jspConfig = ((WebBundleDescriptorImpl)wmd).getJspConfigDescriptor();
         if (jspConfig != null) {
             for (JspPropertyGroupDescriptor jspGroup :
                     jspConfig.getJspPropertyGroups()) {
@@ -266,7 +266,7 @@ public class TomcatDeploymentConfig {
      * deployment descriptor.
      */ 
     protected static void configureLoginConfig(WebModule webModule,
-                                               WebBundleDescriptorImpl wmd) {
+                                               WebBundleDescriptor wmd) {
         LoginConfiguration loginConf = wmd.getLoginConfiguration();
         if ( loginConf == null ){
             return;
@@ -281,7 +281,7 @@ public class TomcatDeploymentConfig {
      * Configure mime-mapping defined in the deployment descriptor.
      */
     protected static void configureMimeMapping(WebModule webModule,
-                                               WebBundleDescriptorImpl wmd) {
+                                               WebBundleDescriptor wmd) {
         Enumeration enumeration = wmd.getMimeMappings();
         MimeMapping mimeMapping;
         while (enumeration.hasMoreElements()){
@@ -296,7 +296,7 @@ public class TomcatDeploymentConfig {
      * Configure resource-reference defined in the deployment descriptor.
      */
     protected static void configureResourceRef(WebModule webModule,
-                                               WebBundleDescriptorImpl wmd) {
+                                               WebBundleDescriptor wmd) {
         for (EnvironmentEntry envEntry : wmd.getEnvironmentProperties()) {
             webModule.addResourceEnvRef(envEntry.getName(), 
                                         envEntry.getType());
@@ -308,7 +308,7 @@ public class TomcatDeploymentConfig {
      * Configure context parameter defined in the deployment descriptor.
      */
     protected static void configureContextParam(WebModule webModule,
-                                                WebBundleDescriptorImpl wmd) {
+                                                WebBundleDescriptor wmd) {
         for (ContextParameter ctxParam : wmd.getContextParametersSet()) {
             if ("com.sun.faces.injectionProvider".equals(
                             ctxParam.getName()) && 
@@ -328,7 +328,7 @@ public class TomcatDeploymentConfig {
      * in the deployment descriptor.
      */    
     protected static void configureMessageDestination(
-            WebModule webModule, WebBundleDescriptorImpl wmd) {
+            WebModule webModule, WebBundleDescriptor wmd) {
         for (MessageDestinationDescriptor msgDrd :
                 wmd.getMessageDestinations()) {
             webModule.addMessageDestination(
@@ -343,7 +343,7 @@ public class TomcatDeploymentConfig {
      * in the deployment descriptor.
      */
     protected static void configureMessageDestinationRef(
-            WebModule webModule, WebBundleDescriptorImpl wmd) {
+            WebModule webModule, WebBundleDescriptor wmd) {
         for (MessageDestinationReferenceDescriptor msgDrd :
                 wmd.getMessageDestinationReferenceDescriptors()) {            
             webModule.addMessageDestinationRef(
@@ -358,7 +358,7 @@ public class TomcatDeploymentConfig {
      * deployment descriptor.
      */    
     protected static void configureContextResource(WebModule webModule,
-                                                   WebBundleDescriptorImpl wmd) {
+                                                   WebBundleDescriptor wmd) {
         for (ResourceReferenceDescriptor resRefDesc :
                 wmd.getResourceReferenceDescriptors()) {
             webModule.addResource(new ContextResourceDecorator(resRefDesc)); 
@@ -372,7 +372,7 @@ public class TomcatDeploymentConfig {
      * in the deployment descriptor (Welcome Files, JSP, Servlets etc.)
      */
     protected static void configureStandardContext(WebModule webModule,
-                                                   WebBundleDescriptorImpl wmd) {
+                                                   WebBundleDescriptor wmd) {
         StandardWrapper wrapper;    
         Enumeration enumeration;
         SecurityRoleReference securityRoleReference;
@@ -581,7 +581,7 @@ public class TomcatDeploymentConfig {
      * instance variable to <code>false</code> as well).
      */
     protected static void configureSecurityRoles(WebModule webModule,
-                                                 WebBundleDescriptorImpl wmd) {
+                                                 WebBundleDescriptor wmd) {
 
         Enumeration<SecurityRoleDescriptor> e = wmd.getSecurityRoles();
         if (e != null) {

@@ -89,7 +89,7 @@ import java.net.URL;
  */
 @Service @PerLookup
 @ArchivistFor(WarType.ARCHIVE_TYPE)
-public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
+public class WebArchivist extends Archivist<WebBundleDescriptor> {
 
 
     private static final String DEFAULT_WEB_XML = "default-web.xml";
@@ -97,7 +97,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     @Inject
     private ServerEnvironment env;
 
-    private WebBundleDescriptorImpl defaultWebXmlBundleDescriptor = null;
+    private WebBundleDescriptor defaultWebXmlBundleDescriptor = null;
 
     /**
      * @return the  module type handled by this archivist
@@ -115,9 +115,9 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * for a particular Archivst type
      */
     public void setDescriptor(Application descriptor) {
-        java.util.Set webBundles = descriptor.getBundleDescriptors(WebBundleDescriptorImpl.class);
+        java.util.Set webBundles = descriptor.getBundleDescriptors(WebBundleDescriptor.class);
         if (webBundles.size()>0) {
-            this.descriptor = (WebBundleDescriptorImpl) webBundles.iterator().next();
+            this.descriptor = (WebBundleDescriptor) webBundles.iterator().next();
             if (this.descriptor.getModuleDescriptor().isStandalone())
                 return;
             else
@@ -130,7 +130,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * standard deployment descriptor
      */
     @Override
-    public DeploymentDescriptorFile<WebBundleDescriptorImpl> getStandardDDFile() {
+    public DeploymentDescriptorFile<WebBundleDescriptor> getStandardDDFile() {
         if (standardDD == null) {
             standardDD = new WebDeploymentDescriptorFile();
         }
@@ -141,7 +141,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * @return the list of the DeploymentDescriptorFile responsible for
      *         handling the configuration deployment descriptors
      */
-    @Override
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = DOLUtils.getConfigurationDeploymentDescriptorFiles(habitat, WarType.ARCHIVE_TYPE);
@@ -153,7 +152,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * @return a default BundleDescriptor for this archivist
      */
     @Override
-    public WebBundleDescriptorImpl getDefaultBundleDescriptor() {
+    public WebBundleDescriptor getDefaultBundleDescriptor() {
         return new WebBundleDescriptorImpl();
     }
 
@@ -161,7 +160,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * @return a validated WebBundleDescriptor corresponding to default-web.xml
      *         that can be used in webtier.
      */
-    public synchronized WebBundleDescriptorImpl getDefaultWebXmlBundleDescriptor() {
+    public synchronized WebBundleDescriptor getDefaultWebXmlBundleDescriptor() {
         if (defaultWebXmlBundleDescriptor == null) {
             defaultWebXmlBundleDescriptor = getPlainDefaultWebXmlBundleDescriptor();
             WebBundleValidator validator = new WebBundleValidator();
@@ -178,8 +177,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * @param archive the module archive
      * @param extensions map of extension archivists
      */
-    @Override
-    protected void postStandardDDsRead(WebBundleDescriptorImpl descriptor,
+    protected void postStandardDDsRead(WebBundleDescriptor descriptor,
                 ReadableArchive archive,
                 Map<ExtensionsArchivist, RootDeploymentDescriptor> extensions)
                 throws IOException {
@@ -197,8 +195,8 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     /**
      * @return a non-validated WebBundleDescriptor corresponding to default-web.xml
      */
-    private WebBundleDescriptorImpl getPlainDefaultWebXmlBundleDescriptor() {
-        WebBundleDescriptorImpl defaultWebBundleDesc = new WebBundleDescriptorImpl();
+    private WebBundleDescriptor getPlainDefaultWebXmlBundleDescriptor() {
+        WebBundleDescriptor defaultWebBundleDesc = new WebBundleDescriptorImpl();
         InputStream fis = null;
 
         try {
@@ -250,7 +248,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
      * @param archive the module archive
      */
     @Override
-    protected void postOpen(WebBundleDescriptorImpl descriptor, ReadableArchive archive)
+    protected void postOpen(WebBundleDescriptor descriptor, ReadableArchive archive)
         throws IOException
     {
         super.postOpen(descriptor, archive);
@@ -315,7 +313,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     }
 
     @Override
-    protected void postAnnotationProcess(WebBundleDescriptorImpl descriptor,
+    protected void postAnnotationProcess(WebBundleDescriptor descriptor,
             ReadableArchive archive) throws IOException {
         super.postAnnotationProcess(descriptor, archive);
 
@@ -353,7 +351,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         }
 
         // apply default from default-web.xml to web.xml
-        WebBundleDescriptorImpl defaultWebBundleDescriptor = getPlainDefaultWebXmlBundleDescriptor();
+        WebBundleDescriptor defaultWebBundleDescriptor = getPlainDefaultWebXmlBundleDescriptor();
         if (defaultWebBundleDescriptor != null) {
             descriptor.addDefaultWebBundleDescriptor(defaultWebBundleDescriptor);
         }
@@ -362,7 +360,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     /**
      * This method will return the list of web fragment in the desired order.
      */
-    private List<WebFragmentDescriptor> readStandardFragments(WebBundleDescriptorImpl descriptor,
+    private List<WebFragmentDescriptor> readStandardFragments(WebBundleDescriptor descriptor,
             ReadableArchive archive) throws IOException {
 
         List<WebFragmentDescriptor> wfList = new ArrayList<WebFragmentDescriptor>();

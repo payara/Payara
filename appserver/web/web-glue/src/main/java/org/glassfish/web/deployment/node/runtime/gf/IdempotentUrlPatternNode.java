@@ -54,7 +54,7 @@ import org.w3c.dom.Node;
 */
 public class IdempotentUrlPatternNode extends RuntimeDescriptorNode<IdempotentUrlPattern> {
 
-    protected IdempotentUrlPattern descriptor = null;
+    IdempotentUrlPattern descriptor = null;
 
     /**
     * @return the descriptor instance to associate with this XMLNode

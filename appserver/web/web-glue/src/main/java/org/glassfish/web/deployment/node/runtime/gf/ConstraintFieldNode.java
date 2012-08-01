@@ -42,8 +42,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.web.ConstraintField;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.web.deployment.runtime.ConstraintField;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -56,20 +56,7 @@ import java.util.Map;
 * @author Jerome Dochez
 */
 public class ConstraintFieldNode extends RuntimeDescriptorNode<ConstraintField> {
-
-    protected ConstraintField descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
-    @Override
-    public ConstraintField getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new ConstraintField();
-        }
-        return descriptor;
-    }
-
+        
     /**
      * all sub-implementation of this class can use a dispatch table to map xml element to
      * method name on the descriptor class for setting the element value. 

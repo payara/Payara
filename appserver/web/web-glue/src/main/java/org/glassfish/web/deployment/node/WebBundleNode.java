@@ -58,7 +58,7 @@ import java.util.*;
  * @author  Jerome Dochez
  * @version 
  */
-public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
+public class WebBundleNode extends WebCommonNode<WebBundleDescriptor> {
 
     public final static XMLElement tag = new XMLElement(WebTagNames.WEB_BUNDLE);
 
@@ -92,8 +92,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     * 
     * @param publicIDToDTD is a mapping between xml Public-ID to DTD 
     * @return the doctype tag name
-    */
-    @Override
+    */    
     public String registerBundle(Map<String, String> publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
         publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
@@ -137,7 +136,6 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         SaxParserHandler.registerBundleNode(this, WebTagNames.WEB_BUNDLE);
     }
 
-    @Override
     public void setElementValue(XMLElement element, String value) {
         if (TagNames.MODULE_NAME.equals(element.getQName())) {
             WebBundleDescriptor bundleDesc = getDescriptor();
@@ -151,8 +149,7 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
    /**
     * @return the descriptor instance to associate with this XMLNode
     */
-    @Override
-    public WebBundleDescriptorImpl getDescriptor() {
+    public WebBundleDescriptor getDescriptor() {
         if (descriptor==null) {
             descriptor = new WebBundleDescriptorImpl();
         }
@@ -162,7 +159,6 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
    /**
      * @return the XML tag associated with this XMLNode
      */
-   @Override
    protected XMLElement getXMLRootTag() {
         return tag;
     }       
@@ -170,7 +166,6 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     /**
      * @return the DOCTYPE of the XML file
      */
-    @Override
     public String getDocType() {
         return null;
     }
@@ -178,7 +173,6 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     /**
      * @return the SystemID of the XML file
      */
-    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -186,7 +180,6 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
     /**
      * @return the list of SystemID of the XML schema supported
      */
-    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -197,16 +190,15 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
      * @param parent node for the DOM tree
      * @param the descriptor to write
      * @return the DOM tree top node
-     */
-    @Override
+     */    
     public Node writeDescriptor(Node parent, 
-        WebBundleDescriptorImpl webBundleDesc) {
+        WebBundleDescriptor webBundleDesc) {
 
         Node jarNode = super.writeDescriptor(parent, webBundleDesc);
-        if (webBundleDesc.getAbsoluteOrderingDescriptor() != null) {
+        if (((WebBundleDescriptorImpl)webBundleDesc).getAbsoluteOrderingDescriptor() != null) {
             AbsoluteOrderingNode absOrderingNode = new AbsoluteOrderingNode();
             absOrderingNode.writeDescriptor(jarNode, WebTagNames.ABSOLUTE_ORDERING,
-                    webBundleDesc.getAbsoluteOrderingDescriptor());
+                    ((WebBundleDescriptorImpl)webBundleDesc).getAbsoluteOrderingDescriptor());
         }
         return jarNode;
     }

@@ -42,8 +42,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.runtime.web.Valve;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.web.deployment.runtime.Valve;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -57,18 +57,11 @@ public class ValveNode extends RuntimeDescriptorNode<Valve> {
                 WebPropertyNode.class, "addWebProperty");
     }
 
-    protected Valve descriptor = null;
-
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
     @Override
-    public Valve getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new Valve();
-        }
-        return descriptor;
+    protected Object createDescriptor() {
+        return new Valve();
     }
+
     
     @Override
     protected boolean setAttributeValue(XMLElement elementName,

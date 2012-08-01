@@ -44,17 +44,15 @@
  * Created on March 7, 2002, 2:30 PM
  */
 
-package org.glassfish.web.deployment.node.runtime.gf;
+package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import com.sun.enterprise.deployment.node.runtime.WebServiceEndpointRuntimeNode;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.w3c.dom.Node;
 
 /**
@@ -66,7 +64,7 @@ import org.w3c.dom.Node;
  */
 public class ServletNode extends DeploymentDescriptorNode<WebComponentDescriptor> {
 
-    protected WebComponentDescriptor descriptor;
+    private WebComponentDescriptor descriptor;
 
     public ServletNode() {
         registerElementHandler(new XMLElement
@@ -74,14 +72,8 @@ public class ServletNode extends DeploymentDescriptorNode<WebComponentDescriptor
                                WebServiceEndpointRuntimeNode.class);
     }
 
-    /**
-     * @return the descriptor instance to associate with this XMLNode
-     */
     @Override
     public WebComponentDescriptor getDescriptor() {
-        if (descriptor==null) {
-            descriptor = new WebComponentDescriptorImpl();
-        }
         return descriptor;
     }
     
@@ -115,7 +107,7 @@ public class ServletNode extends DeploymentDescriptorNode<WebComponentDescriptor
      * @return the DOM tree top node
      */
     @Override
-    public Node writeDescriptor(Node parent, String nodeName, WebComponentDescriptor descriptor) {
+    public Node writeDescriptor(Node parent, String nodeName, WebComponentDescriptor descriptor) {        
         WebServicesDescriptor webServices = 
             descriptor.getWebBundleDescriptor().getWebServices();
 
