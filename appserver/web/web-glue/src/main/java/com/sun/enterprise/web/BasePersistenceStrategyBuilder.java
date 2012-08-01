@@ -40,14 +40,14 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.enterprise.deployment.runtime.web.ManagerProperties;
-import com.sun.enterprise.deployment.runtime.web.SessionManager;
-import com.sun.enterprise.deployment.runtime.web.StoreProperties;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
 import org.glassfish.web.config.serverbeans.SessionProperties;
+import org.glassfish.web.deployment.runtime.ManagerProperties;
+import org.glassfish.web.deployment.runtime.SessionManager;
+import org.glassfish.web.deployment.runtime.StoreProperties;
+import org.glassfish.web.deployment.runtime.WebProperty;
 import org.jvnet.hk2.config.types.Property;
 
 import java.io.File;

@@ -114,6 +114,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
@@ -606,7 +607,7 @@ public class VirtualServer extends StandardHost
             	
                 if (contextRoot!=null && location != null) {
                     File docroot = new File(location);
-                    WebBundleDescriptor wbd = webArchivist.getDefaultWebXmlBundleDescriptor();
+                    WebBundleDescriptorImpl wbd = webArchivist.getDefaultWebXmlBundleDescriptor();
                     wmInfo = new WebModuleConfig();
                     wbd.setName(Constants.DEFAULT_WEB_MODULE_NAME);
                     wbd.setContextRoot(contextRoot);
@@ -656,7 +657,7 @@ public class VirtualServer extends StandardHost
         if (getDefaultWebModuleID() == null && findChild("") == null
                 && docroot != null) {
 
-            WebBundleDescriptor wbd =
+            WebBundleDescriptorImpl wbd =
                 webArchivist.getDefaultWebXmlBundleDescriptor();
             wmInfo = new WebModuleConfig();
             wbd.setModuleID(Constants.DEFAULT_WEB_MODULE_NAME);
@@ -749,7 +750,7 @@ public class VirtualServer extends StandardHost
                     return wmInfo;
                 }
 
-                WebBundleDescriptor wbd = app.getModuleByTypeAndUri(WebBundleDescriptor.class, moduleID);
+                WebBundleDescriptorImpl wbd = app.getModuleByTypeAndUri(WebBundleDescriptorImpl.class, moduleID);
                 String webUri = wbd.getModuleDescriptor().getArchiveUri();
                 String contextRoot = wbd.getModuleDescriptor().getContextRoot();
                 if (moduleID.equals(webUri)) {

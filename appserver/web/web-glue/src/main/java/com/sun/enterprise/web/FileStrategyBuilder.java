@@ -40,11 +40,11 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.enterprise.deployment.runtime.web.SessionManager;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.session.FileStore;
 import org.apache.catalina.session.PersistentManager;
+import org.glassfish.web.deployment.runtime.SessionManager;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.logging.Level;

@@ -41,12 +41,11 @@
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
 
-import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.tools.verifier.tests.web.*;
-import com.sun.enterprise.deployment.runtime.web.*;
+import org.glassfish.web.deployment.runtime.*;
 
 //import com.sun.enterprise.tools.common.dd.webapp.*;
 
@@ -71,7 +70,7 @@ public class ASCache extends WebTest implements WebCheck{
         String enabled=null;
         
         try{
-        Cache cache = (descriptor.getSunDescriptor()).getCache();
+        Cache cache = ((SunWebAppImpl)descriptor.getSunDescriptor()).getCache();
     
         if (cache != null)
         {

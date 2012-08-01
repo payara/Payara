@@ -43,8 +43,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.web.deployment.runtime.WebProperty;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -55,6 +55,19 @@ import org.w3c.dom.Node;
 * @author Jerome Dochez
 */
 public class WebPropertyNode extends RuntimeDescriptorNode<WebProperty> {
+
+    protected WebProperty descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public WebProperty getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new WebProperty();
+        }
+        return descriptor;
+    }
 
     /**
      * parsed an attribute of an element

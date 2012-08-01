@@ -45,9 +45,8 @@ import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 
 // BEGIN_NOI18N
 
-public class SunWebApp extends WebPropertyContainer
-{
-    
+public interface SunWebApp {
+
     static public final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
     static public final String SECURITY_ROLE_ASSIGNMENT = "SecurityRoleAssignment";	// NOI18N
     static public final String SERVLET = "Servlet";	// NOI18N
@@ -57,316 +56,55 @@ public class SunWebApp extends WebPropertyContainer
     static public final String JSP_CONFIG = "JspConfig";	// NOI18N
     static public final String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";	// NOI18N
     static public final String PARAMETER_ENCODING = "ParameterEncoding";
-    static public final String FORM_HINT_FIELD = "FormHintField";    
+    static public final String FORM_HINT_FIELD = "FormHintField";
     static public final String DEFAULT_CHARSET = "DefaultCharset";
     public static final String IDEMPOTENT_URL_PATTERN = "IdempotentUrlPattern";
     public static final String ERROR_URL = "ErrorUrl";
     public static final String HTTPSERVLET_SECURITY_PROVIDER = "HttpServletSecurityProvider";
     public static final String VALVE = "Valve";
-    
-    public SunWebApp()
-    {
-	// set default values
-	setAttributeValue(CACHE, "MaxEntries", "4096");
-	setAttributeValue(CACHE, "TimeoutInSeconds", "30");
-	setAttributeValue(CACHE, "Enabled", "false");
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setSecurityRoleMapping(int index, SecurityRoleMapping value)
-    {
-	this.setValue(SECURITY_ROLE_MAPPING, index, value);
-    }
-    
-    //
-    public SecurityRoleMapping getSecurityRoleMapping(int index)
-    {
-	return (SecurityRoleMapping)this.getValue(SECURITY_ROLE_MAPPING, index);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setSecurityRoleMapping(SecurityRoleMapping[] value)
-    {
-	this.setValue(SECURITY_ROLE_MAPPING, value);
-    }
-    
-    //
-    public SecurityRoleMapping[] getSecurityRoleMapping()
-    {
-	return (SecurityRoleMapping[])this.getValues(SECURITY_ROLE_MAPPING);
-    }
-    
-    // Return the number of properties
-    public int sizeSecurityRoleMapping()
-    {
-	return this.size(SECURITY_ROLE_MAPPING);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addSecurityRoleMapping(SecurityRoleMapping value)
-    {
-	return this.addValue(SECURITY_ROLE_MAPPING, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeSecurityRoleMapping(SecurityRoleMapping value)
-    {
-	return this.removeValue(SECURITY_ROLE_MAPPING, value);
-    }
 
-    // This attribute is an array, possibly empty
-    public void setSecurityRoleAssignment(int index, SecurityRoleAssignment value)
-    {
-	this.setValue(SECURITY_ROLE_ASSIGNMENT, index, value);
-    }
+    public void setSecurityRoleMapping(int index, SecurityRoleMapping value);
 
-    //
-    public SecurityRoleAssignment getSecurityRoleAssignment(int index)
-    {
-	return (SecurityRoleAssignment)this.getValue(SECURITY_ROLE_ASSIGNMENT, index);
-    }
+    public SecurityRoleMapping getSecurityRoleMapping(int index);
 
-    // This attribute is an array, possibly empty
-    public void setSecurityRoleAssignments(SecurityRoleAssignment[] value)
-    {
-	this.setValue(SECURITY_ROLE_ASSIGNMENT, value);
-    }
+    public void setSecurityRoleMapping(SecurityRoleMapping[] value);
 
-    //
-    public SecurityRoleAssignment[] getSecurityRoleAssignments()
-    {
-	return (SecurityRoleAssignment[])this.getValues(SECURITY_ROLE_ASSIGNMENT);
-    }
+    public SecurityRoleMapping[] getSecurityRoleMapping();
 
-    // Return the number of properties
-    public int sizeSecurityRoleAssignment()
-    {
-	return this.size(SECURITY_ROLE_ASSIGNMENT);
-    }
+    public int sizeSecurityRoleMapping();
 
-    // Add a new element returning its index in the list
-    public int addSecurityRoleAssignment(SecurityRoleAssignment value)
-    {
-	return this.addValue(SECURITY_ROLE_ASSIGNMENT, value);
-    }
+    public int addSecurityRoleMapping(SecurityRoleMapping value);
 
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeSecurityRoleAssignment(SecurityRoleAssignment value)
-    {
-	return this.removeValue(SECURITY_ROLE_ASSIGNMENT, value);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setServlet(int index, Servlet value)
-    {
-	this.setValue(SERVLET, index, value);
-    }
-    
-    //
-    public Servlet getServlet(int index)
-    {
-	return (Servlet)this.getValue(SERVLET, index);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setServlet(Servlet[] value)
-    {
-	this.setValue(SERVLET, value);
-    }
-    
-    //
-    public Servlet[] getServlet()
-    {
-	return (Servlet[])this.getValues(SERVLET);
-    }
-    
-    // Return the number of properties
-    public int sizeServlet()
-    {
-	return this.size(SERVLET);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addServlet(Servlet value)
-    {
-	return this.addValue(SERVLET, value);
-    }
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeServlet(Servlet value)
-    {
-	return this.removeValue(SERVLET, value);
-    }
-    
-    // This attribute is an array, possibly empty
-    public void setIdempotentUrlPattern(int index, IdempotentUrlPattern value)
-    {
-        this.setValue(IDEMPOTENT_URL_PATTERN, index, value);
-    }
+    public int removeSecurityRoleMapping(SecurityRoleMapping value);
 
-    //
-    public  IdempotentUrlPattern getIdempotentUrlPattern(int index)
-    {
-        return (IdempotentUrlPattern)this.getValue(IDEMPOTENT_URL_PATTERN, index);
-    }
+    public void setSecurityRoleAssignment(int index, SecurityRoleAssignment value);
 
-    // This attribute is an array, possibly empty
-    public void setIdempotentUrlPatterns(IdempotentUrlPattern[] value)
-    {
-        this.setValue(IDEMPOTENT_URL_PATTERN, value);
-    }
+    public SecurityRoleAssignment getSecurityRoleAssignment(int index);
 
-    //
-    public IdempotentUrlPattern[] getIdempotentUrlPatterns()
-    {
-        return (IdempotentUrlPattern[])this.getValues(IDEMPOTENT_URL_PATTERN);
-    }
+    public void setSecurityRoleAssignments(SecurityRoleAssignment[] value);
 
-    // Return the number of properties
-    public int sizeIdempotentUrlPattern()
-    {
-        return this.size(IDEMPOTENT_URL_PATTERN);
-    }
+    public SecurityRoleAssignment[] getSecurityRoleAssignments();
 
-    // Add a new element returning its index in the list
-    public int addIdempotentUrlPattern(IdempotentUrlPattern value)
-    {
-        return this.addValue(IDEMPOTENT_URL_PATTERN, value);
-    }
+    public int sizeSecurityRoleAssignment();
 
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeIdempotentUrlPattern(IdempotentUrlPattern value)
-    {
-        return this.removeValue(IDEMPOTENT_URL_PATTERN, value);
-    }
+    public int addSecurityRoleAssignment(SecurityRoleAssignment value);
 
-    // This attribute is optional
-    public void setSessionConfig(SessionConfig value)
-    {
-	this.setValue(SESSION_CONFIG, value);
-    }
-    
-    //
-    public SessionConfig getSessionConfig()
-    {
-	return (SessionConfig)this.getValue(SESSION_CONFIG);
-    }
+    public int removeSecurityRoleAssignment(SecurityRoleAssignment value);
 
-    // This attribute is optional
-    public void setCache(Cache value)
-    {
-	this.setValue(CACHE, value);
-    }
-    
-    //
-    public Cache getCache()
-    {
-	return (Cache)this.getValue(CACHE);
-    }
-    
-    // This attribute is optional
-    public void setClassLoader(ClassLoader value)
-    {
-        this.setValue(CLASS_LOADER, value);
-    }
+    public void setIdempotentUrlPattern(int index, IdempotentUrlPattern value);
 
-    //
-    public ClassLoader getClassLoader()
-    {
-        return (ClassLoader)this.getValue(CLASS_LOADER);
-    }
+    public  IdempotentUrlPattern getIdempotentUrlPattern(int index);
 
-    
-    // This attribute is optional
-    public void setJspConfig(JspConfig value)
-    {
-	this.setValue(JSP_CONFIG, value);
-    }
-    
-    //
-    public JspConfig getJspConfig()
-    {
-	return (JspConfig)this.getValue(JSP_CONFIG);
-    }
-    
-    // This attribute is optional
-    public void setLocaleCharsetInfo(LocaleCharsetInfo value)
-    {
-	this.setValue(LOCALE_CHARSET_INFO, value);
-    }
-    
-    //
-    public LocaleCharsetInfo getLocaleCharsetInfo()
-    {
-	return (LocaleCharsetInfo)this.getValue(LOCALE_CHARSET_INFO);
-    }
-    
-    // This method verifies that the mandatory properties are set
-    public boolean verify()
-    {
-	return true;
-    }
+    public void setIdempotentUrlPatterns(IdempotentUrlPattern[] value);
 
-    // This attribute is optional
-    public void setParameterEncoding(boolean value)
-    {
-        this.setValue(PARAMETER_ENCODING, Boolean.valueOf(value));
-    }
+    public IdempotentUrlPattern[] getIdempotentUrlPatterns();
 
-    //
-    public boolean isParameterEncoding()
-    {
-        Boolean ret = (Boolean)this.getValue(PARAMETER_ENCODING);
-        if (ret == null) {
-            return false;
-        }
-        return ret.booleanValue();
-    }
+    public int sizeIdempotentUrlPattern();
 
-    // This attribute is a valve to be added at the specified index
-    public void setValve(int index, Valve value) {
-        this.setValue(VALVE, index, value);
-    }
+    public int addIdempotentUrlPattern(IdempotentUrlPattern value);
 
-    // The return value is the valve at the specified index
-    public Valve getValve(int index) {
-        return (Valve)this.getValue(VALVE, index);
-    }
+    public int removeIdempotentUrlPattern(IdempotentUrlPattern value);
 
-    // This attribute is an array, possibly empty
-    public void setValve(Valve[] value) {
-        this.setValue(VALVE, value);
-    }
-
-    // This return value is an array, possibly empty
-    public Valve[] getValve() {
-        return (Valve[])this.getValues(VALVE);
-    }
-
-    // Return the number of valves
-    public int sizeValve() {
-        return this.size(VALVE);
-    }
-
-    // Add a new element returning its index in the list
-    public int addValve(Valve value) {
-        return this.addValue(VALVE, value);
-    }
-
-    // Remove an element using its reference
-    public int removeValve(Valve value) {
-        return this.removeValue(VALVE, value);
-    }
+    public String getAttributeValue(String attributeName);
 
 }

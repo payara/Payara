@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.runtime.web;
+package org.glassfish.web.deployment.runtime;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
@@ -49,74 +49,47 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 *
 * @author Jerome Dochez
 */
-public class LocaleCharsetInfo extends RuntimeDescriptor
+public class SessionConfig extends RuntimeDescriptor
 {
     
-    static public final String LOCALE_CHARSET_MAP = "LocaleCharsetMap";	// NOI18N
-    static public final String PARAMETER_ENCODING = "ParameterEncoding";	// NOI18N
-    static public final String FORM_HINT_FIELD = "FormHintField"; // NOI18N
-    static public final String DEFAULT_LOCALE = "DefaultLocale";  // NOI18N
-    static public final String DEFAULT_CHARSET = "DefaultCharset";
+    static public final String SESSION_MANAGER = "SessionManager";	// NOI18N
+    static public final String SESSION_PROPERTIES = "SessionProperties";	// NOI18N
+    static public final String COOKIE_PROPERTIES = "CookieProperties";	// NOI18N
     
-    // This attribute is an array containing at least one element
-    public void setLocaleCharsetMap(int index, LocaleCharsetMap value)
+    // This attribute is optional
+    public void setSessionManager(SessionManager value)
     {
-	this.setValue(LOCALE_CHARSET_MAP, index, value);
+	this.setValue(SESSION_MANAGER, value);
     }
     
     //
-    public LocaleCharsetMap getLocaleCharsetMap(int index)
+    public SessionManager getSessionManager()
     {
-	return (LocaleCharsetMap)this.getValue(LOCALE_CHARSET_MAP, index);
-    }
-    
-    // This attribute is an array containing at least one element
-    public void setLocaleCharsetMap(LocaleCharsetMap[] value)
-    {
-	this.setValue(LOCALE_CHARSET_MAP, value);
-    }
-    
-    //
-    public LocaleCharsetMap[] getLocaleCharsetMap()
-    {
-	return (LocaleCharsetMap[])this.getValues(LOCALE_CHARSET_MAP);
-    }
-    
-    // Return the number of properties
-    public int sizeLocaleCharsetMap()
-    {
-	return this.size(LOCALE_CHARSET_MAP);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addLocaleCharsetMap(LocaleCharsetMap value)
-    {
-	return this.addValue(LOCALE_CHARSET_MAP, value);
-    }	
-    
-    //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeLocaleCharsetMap(LocaleCharsetMap value)
-    {
-	return this.removeValue(LOCALE_CHARSET_MAP, value);
+	return (SessionManager)this.getValue(SESSION_MANAGER);
     }
     
     // This attribute is optional
-    public void setParameterEncoding(boolean value)
+    public void setSessionProperties(SessionProperties value)
     {
-	this.setValue(PARAMETER_ENCODING, Boolean.valueOf(value));
+	this.setValue(SESSION_PROPERTIES, value);
     }
     
     //
-    public boolean isParameterEncoding()
+    public SessionProperties getSessionProperties()
     {
-	Boolean ret = (Boolean)this.getValue(PARAMETER_ENCODING);
-	if (ret == null) {
-	    return false;
-	}
-	return ret.booleanValue();
+	return (SessionProperties)this.getValue(SESSION_PROPERTIES);
+    }
+    
+    // This attribute is optional
+    public void setCookieProperties(CookieProperties value)
+    {
+	this.setValue(COOKIE_PROPERTIES, value);
+    }
+    
+    //
+    public CookieProperties getCookieProperties()
+    {
+	return (CookieProperties)this.getValue(COOKIE_PROPERTIES);
     }
     
     // This method verifies that the mandatory properties are set
@@ -124,4 +97,5 @@ public class LocaleCharsetInfo extends RuntimeDescriptor
     {
 	return true;
     }
+    
 }

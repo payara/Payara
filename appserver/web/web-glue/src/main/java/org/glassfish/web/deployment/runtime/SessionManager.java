@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.runtime.web;
+package org.glassfish.web.deployment.runtime;
 
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
@@ -49,78 +49,40 @@ import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 *
 * @author Jerome Dochez
 */
-public class ConstraintField extends RuntimeDescriptor
+public class SessionManager extends RuntimeDescriptor
 {
     
-    static public final String VALUE = "Value";	// NOI18N
-    static public final String NAME = "Name";
-    static public final String SCOPE = "Scope";    
-    static public final String MATCH_EXPR = "MatchExpr";
-    static public final String CACHE_ON_MATCH = "CacheOnMatch";
-    static public final String CACHE_ON_MATCH_FAILURE = "CacheOnMatchFailure";
-        
-    public ConstraintField(ConstraintField other)
+    static public final String MANAGER_PROPERTIES = "ManagerProperties";	// NOI18N
+    static public final String STORE_PROPERTIES = "StoreProperties";	// NOI18N
+    static public final String PERSISTENCE_TYPE = "PersistenceType";
+    
+    public SessionManager()
     {
-	super(other);
-    }
-
-    public ConstraintField()
-    {
-	setAttributeValue(SCOPE, "request.parameter");
-	setAttributeValue(CACHE_ON_MATCH, "true");
-	setAttributeValue(CACHE_ON_MATCH_FAILURE, "false");  
+	setAttributeValue(PERSISTENCE_TYPE, "memory");     
     }
     
-    // This attribute is an array, possibly empty
-    public void setValue(int index, String value)
+    // This attribute is optional
+    public void setManagerProperties(ManagerProperties value)
     {
-	this.setValue(VALUE, index, value);
+	this.setValue(MANAGER_PROPERTIES, value);
     }
     
     //
-    public String getValue(int index)
+    public ManagerProperties getManagerProperties()
     {
-	return (String)this.getValue(VALUE, index);
+	return (ManagerProperties)this.getValue(MANAGER_PROPERTIES);
     }
     
-    // This attribute is an array, possibly empty
-    public void setValue(String[] value)
+    // This attribute is optional
+    public void setStoreProperties(StoreProperties value)
     {
-	this.setValue(VALUE, value);
-    }
-    
-    //
-    public String[] getValue()
-    {
-	return (String[])this.getValues(VALUE);
-    }
-    
-    // Return the number of properties
-    public int sizeValue()
-    {
-	return this.size(VALUE);
-    }
-    
-    // Add a new element returning its index in the list
-    public int addValue(String value)
-    {
-	int index = this.addValue(VALUE, value);
-	if (getAttributeValue(VALUE, index, MATCH_EXPR)==null)
-	    setAttributeValue(VALUE, index, MATCH_EXPR, "equals");
-	if (getAttributeValue(VALUE, index, CACHE_ON_MATCH)==null)	    
-	    setAttributeValue(VALUE, index, CACHE_ON_MATCH, "true");
-	if (getAttributeValue(VALUE, index, CACHE_ON_MATCH_FAILURE)==null)	    
-	    setAttributeValue(VALUE, index, CACHE_ON_MATCH_FAILURE, "false");
-	return index;
+	this.setValue(STORE_PROPERTIES, value);
     }
     
     //
-    // Remove an element using its reference
-    // Returns the index the element had in the list
-    //
-    public int removeValue(String value)
+    public StoreProperties getStoreProperties()
     {
-	return this.removeValue(VALUE, value);
+	return (StoreProperties)this.getValue(STORE_PROPERTIES);
     }
     
     // This method verifies that the mandatory properties are set

@@ -42,8 +42,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.web.SessionConfig;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.web.deployment.runtime.SessionConfig;
 import org.w3c.dom.Node;
 
 /**
@@ -53,18 +53,30 @@ import org.w3c.dom.Node;
 */
 
 public class SessionConfigNode extends RuntimeDescriptorNode<SessionConfig> {
-    
+
+    protected SessionConfig descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public SessionConfig getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new SessionConfig();
+        }
+        return descriptor;
+    }
+
     /**
      * Initialize the child handlers
      */
     public SessionConfigNode() {
-	
         registerElementHandler(new XMLElement(RuntimeTagNames.SESSION_MANAGER), 
                                SessionManagerNode.class, "setSessionManager");	
         registerElementHandler(new XMLElement(RuntimeTagNames.SESSION_PROPERTIES), 
-                               WebPropertyContainerNode.class, "setSessionProperties");	
+                               SessionPropertiesNode.class, "setSessionProperties");
         registerElementHandler(new XMLElement(RuntimeTagNames.COOKIE_PROPERTIES), 
-                               WebPropertyContainerNode.class, "setCookieProperties");				       
+                               CookiePropertiesNode.class, "setCookieProperties");
     }
     
     /**

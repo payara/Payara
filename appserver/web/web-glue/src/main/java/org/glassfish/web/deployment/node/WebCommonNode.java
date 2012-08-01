@@ -60,7 +60,7 @@ import java.util.*;
  * @author  Shing Wai Chan
  * @version
  */
-public abstract class WebCommonNode<T extends WebBundleDescriptor> extends AbstractBundleNode<T> {
+public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends AbstractBundleNode<T> {
     public final static String SPEC_VERSION = "3.0";
 
     protected T descriptor;
@@ -69,6 +69,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
     /** Creates new WebBundleNode */
     protected WebCommonNode()  {
         super();
+
         registerElementHandler(new XMLElement(TagNames.ENVIRONMENT_PROPERTY), EnvEntryNode.class);                          
         registerElementHandler(new XMLElement(TagNames.EJB_REFERENCE), EjbReferenceNode.class);     
         registerElementHandler(new XMLElement(TagNames.EJB_LOCAL_REFERENCE), EjbLocalReferenceNode.class);     
@@ -127,7 +128,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
      *
      * @param newDescriptor the new descriptor
      */    
-    public void addDescriptor(Object  newDescriptor) {       
+    public void addDescriptor(Object  newDescriptor) {
         if (newDescriptor instanceof EjbReference) {            
             descriptor.addEjbReferenceDescriptor(
                         (EjbReference) newDescriptor);
@@ -141,18 +142,18 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
             // for backward compatibility with 2.2 and 2.3 specs, we need to be able 
             // to read tag lib under web-app. Starting with 2.4, the tag moved under jsp-config
             DOLUtils.getDefaultLogger().fine("Adding taglib component " + newDescriptor);
-            if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor()==null) {
-                ((WebBundleDescriptorImpl)descriptor).setJspConfigDescriptor(new JspConfigDescriptor());
+            if (descriptor.getJspConfigDescriptor()==null) {
+                descriptor.setJspConfigDescriptor(new JspConfigDescriptor());
             }
-            ((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);
+            descriptor.getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);
         } else if (newDescriptor instanceof JspConfigDescriptor) {
             DOLUtils.getDefaultLogger().fine("Adding JSP Config Descriptor" 
                 + newDescriptor);
-            if (((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor()!=null) {
+            if (descriptor.getJspConfigDescriptor()!=null) {
                 throw new RuntimeException(
                     "Has more than one jsp-config element!");
             }
-            ((WebBundleDescriptorImpl)descriptor).setJspConfigDescriptor(
+            descriptor.setJspConfigDescriptor(
                 (JspConfigDescriptor)newDescriptor);
         } else if (newDescriptor instanceof LoginConfiguration) {
             DOLUtils.getDefaultLogger().fine("Adding Login Config Descriptor"
@@ -328,7 +329,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         }
         
         // error-page*
-        Enumeration errorPages = ((WebBundleDescriptorImpl)webBundleDesc).getErrorPageDescriptors();
+        Enumeration errorPages = webBundleDesc.getErrorPageDescriptors();
         if (errorPages.hasMoreElements()) {
             ErrorPageNode errorPageNode = new ErrorPageNode();
             while (errorPages.hasMoreElements()) {
@@ -338,7 +339,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptor> extends Abstr
         }
         
         // jsp-config *
-	JspConfigDescriptor jspConf = ((WebBundleDescriptorImpl)webBundleDesc).getJspConfigDescriptor();
+	JspConfigDescriptor jspConf = webBundleDesc.getJspConfigDescriptor();
 	if(jspConf != null) {
 	    JspConfigNode ln = new JspConfigNode();
 	    ln.writeDescriptor(jarNode, 

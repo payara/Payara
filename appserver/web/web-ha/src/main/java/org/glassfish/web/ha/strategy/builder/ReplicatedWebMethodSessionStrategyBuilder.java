@@ -42,11 +42,11 @@ package org.glassfish.web.ha.strategy.builder;
 
 import com.sun.enterprise.web.WebModule;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.deployment.runtime.web.SessionManager;
 import com.sun.enterprise.web.BasePersistenceStrategyBuilder;
 import com.sun.enterprise.web.ServerConfigLookup;
 import org.apache.catalina.Context;
 import org.apache.catalina.core.StandardContext;
+import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.web.ha.session.management.*;
