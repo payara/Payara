@@ -354,6 +354,7 @@ final class StandardHostValve
         int statusCode = ((HttpResponse) response).getStatus();
         ErrorPage errorPage = context.findErrorPage(statusCode);
         if (errorPage != null) {
+            setErrorPageContentType(response, errorPage.getLocation(), context);
             dispatchToErrorPage(request, response, errorPage, null, null,
                                 statusCode);
         } else if (statusCode >= 400 && statusCode < 600 &&
@@ -367,6 +368,7 @@ final class StandardHostValve
                                                         statusCode);
             if (errorPage != null) {
                 try {
+                    setErrorPageContentType(response, errorPage.getLocation(), context);
                     handleHostErrorPage(response, errorPage, statusCode);
                 } catch (Exception e) {
                     log("Exception processing " + errorPage, e);
@@ -674,4 +676,16 @@ final class StandardHostValve
             }
         }
     }
+
+    private void setErrorPageContentType(Response response,
+                                         String location, Context context) {
+
+        if (response.getContentType() == null && location != null) {
+            String str = location.substring(location.lastIndexOf('.') + 1);
+            str = context.findMimeMapping(str.toLowerCase());
+            if(str != null)
+                ((ServletResponse) response).setContentType(str);
+        }
+    }
+
 }
