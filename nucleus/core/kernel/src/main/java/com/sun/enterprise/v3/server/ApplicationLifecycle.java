@@ -827,7 +827,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     } else {
                         for (Class<?> provide : metadata.provides()) {
                             if (context.getModuleMetaData(provide)==null) {
-                                context.addModuleMetaData(deployer.loadMetaData(provide, context);
+                                context.addModuleMetaData(deployer.loadMetaData(provide, context));
                             } else {
                                 deployer.loadMetaData(null, context);
                             }
