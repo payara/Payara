@@ -244,7 +244,7 @@ public class CompositeUtil {
                 Globals.getDefaultHabitat(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
         if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
             throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
-                    entity(ar.getCombinedMessage()).
+                    entity(ar.getTopMessagePart().getMessage()).
                     build());
         }
         return ar;
