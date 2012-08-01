@@ -1586,7 +1586,10 @@ public class WebappClassLoader
                     Permission p = perms.next();
                     pc.add(p);
                 }
-                loaderPC.put(codeUrl,pc);
+                PermissionCollection tmpPc = loaderPC.putIfAbsent(codeUrl,pc);
+                if (tmpPc != null) {
+                    pc = tmpPc;
+                }
             }
         }
         return (pc);

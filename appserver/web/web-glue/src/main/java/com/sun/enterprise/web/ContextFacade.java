@@ -311,9 +311,14 @@ public class ContextFacade extends WebModule {
             wrapper.setServletClassName(className);
 
             regis = (DynamicServletRegistrationImpl)
-                    createDynamicServletRegistrationImpl((StandardWrapper) wrapper);
+                    createDynamicServletRegistrationImpl(wrapper);
 
-            servletRegisMap.put(servletName, regis);
+            DynamicServletRegistrationImpl tmpRegis =
+                    (DynamicServletRegistrationImpl)
+                            servletRegisMap.putIfAbsent(servletName, regis);
+            if (tmpRegis != null) {
+                regis = tmpRegis;
+            }
             servlets.put(servletName, className);
         }
 
