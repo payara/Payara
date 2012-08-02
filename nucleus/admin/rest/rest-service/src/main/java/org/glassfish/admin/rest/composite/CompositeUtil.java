@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest.composite;
 
-import com.sun.enterprise.v3.common.ActionReporter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,16 +56,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
-import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
 import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
@@ -84,21 +78,16 @@ public class CompositeUtil {
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
     private static final Map<String, List<String>> modelExtensions = new HashMap<String, List<String>>();
     private boolean extensionsLoaded = false;
-    private static CompositeUtil instance;
 
     private CompositeUtil() {
     }
 
-    public static CompositeUtil instance() {
-        if (instance == null) {
-            synchronized(generatedClasses) {
-                if (instance == null) {
-                    instance = new CompositeUtil();
-                }
-            }
-        }
+    private static class LazyHolder {
+        public static final CompositeUtil INSTANCE = new CompositeUtil();
+    }
 
-        return instance;
+    public static CompositeUtil instance() {
+        return LazyHolder.INSTANCE;
     }
 
     /**
@@ -205,52 +194,6 @@ public class CompositeUtil {
     }
 
     /**
-     * Execute an <code>AdminCommand</code> with no parameters
-     * @param command
-     * @return
-     */
-    public ActionReporter executeCommand(String command) {
-        return executeCommand(command, new ParameterMap());
-    }
-
-    /**
-     * Execute an <code>AdminCommand</code> with the specified parameters. This is a convenience method for those not
-     * wishing to create a <code>ParameterMap</code> instance.
-     * @param command
-     * @param params An array of parameters. Odd-numbered items are the parameter names, with even-numbered being the 
-     * values.  The array must have an even number of entries.
-     * @return 
-     */
-    public ActionReporter executeCommand(String command, String... params) {
-        if (params.length % 2 != 0) {
-            throw new IllegalArgumentException("There must be an even number of parameters passed to CompositeUtil.executeCommand(String, Object...);");
-        }
-        ParameterMap pm = new ParameterMap();
-        for (int i = 0; i < params.length; i += 2) {
-            pm.add(params[i], params[i+1]);
-        }
-        
-        return executeCommand(command, pm);
-    }
-
-    /**
-     * Execute an <code>AdminCommand</code> with the specified parameters.
-     * @param command
-     * @param parameters
-     * @return
-     */
-    public ActionReporter executeCommand(String command, ParameterMap parameters) {
-        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
-                Globals.getDefaultHabitat(), ""); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
-        if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
-            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
-                    entity(ar.getTopMessagePart().getMessage()).
-                    build());
-        }
-        return ar;
-    }
-
-    /**
      * Convert the given <code>RestModel</code> encoded as JSON to a live Java Object.
      * @param modelClass The target <code>RestModel</code> type
      * @param json The json encoding of the object
@@ -297,6 +240,9 @@ public class CompositeUtil {
 
     }
 
+    /*******************************************************************************************************************
+     * Private implement methods
+     ******************************************************************************************************************/
     /**
      * Find and return all <code>interface</code>s that extend <code>baseModel</code>
      * @param similarClass

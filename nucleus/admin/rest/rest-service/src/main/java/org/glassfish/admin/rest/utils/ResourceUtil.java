@@ -212,13 +212,17 @@ public class ResourceUtil {
     /**
      * Executes the specified __asadmin command.
      *
+     * @deprecated
      * @param commandName the command to execute
      * @param parameters the command parameters
      * @param habitat the habitat
      * @return ActionReport object with command execute status details.
      */
-    public static RestActionReporter runCommand(String commandName, Map<String, String> parameters,
-            ServiceLocator habitat, String resultType) {
+    @Deprecated
+    public static RestActionReporter runCommand(String commandName,
+                                                Map<String, String> parameters,
+                                                ServiceLocator habitat,
+                                                String resultType) {
         ParameterMap p = new ParameterMap();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             p.set(entry.getKey(), entry.getValue());
@@ -227,15 +231,25 @@ public class ResourceUtil {
         return runCommand(commandName, p, habitat, resultType);
     }
 
-    public static RestActionReporter runCommand(String commandName, ParameterMap parameters, ServiceLocator habitat, String resultType) {
+    @Deprecated
+    public static RestActionReporter runCommand(String commandName,
+                                                ParameterMap parameters,
+                                                ServiceLocator habitat,
+                                                String resultType) {
+        return runCommand(commandName, parameters, habitat, resultType, null);
+    }
+
+    public static RestActionReporter runCommand(String commandName,
+                                                ParameterMap parameters,
+                                                ServiceLocator habitat,
+                                                String resultType,
+                                                Subject subject) {
         CommandRunner cr = Globals.getDefaultBaseServiceLocator().getComponent(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
 //        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);
 
-        commandInvocation
-//                .outbound(outbound)
-                .parameters(parameters).execute();
+        commandInvocation.subject(subject).parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
 
         /*

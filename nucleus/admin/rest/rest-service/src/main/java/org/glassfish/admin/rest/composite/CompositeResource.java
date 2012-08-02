@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import com.sun.enterprise.v3.common.ActionReporter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -50,7 +51,10 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -58,8 +62,12 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
+import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.security.common.Group;
 import org.jvnet.hk2.component.Habitat;
@@ -69,27 +77,36 @@ import org.jvnet.hk2.component.Habitat;
  * @author jdlee
  */
 public abstract class CompositeResource implements RestResource {
+
     @Context
     protected UriInfo uriInfo;
     @Inject
     protected Ref<Request> requestRef;
     @Inject
     protected Habitat habitat;
-
+    protected Subject subject;
     private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
 
+    protected Subject getSubject() {
+        if (subject == null) {
+            Request req = requestRef.get();
+            subject = (Subject) req.getAttribute(Constants.REQ_ATTR_SUBJECT);
+        }
+        
+        return subject;
+    }
+
     protected String getAuthenticatedUser() {
         if (authenticatedUser == null) {
-            Request req = requestRef.get();
-            Subject subject = (Subject)req.getAttribute(Constants.REQ_ATTR_SUBJECT);
-            if (subject != null) {
-               for (Principal p : subject.getPrincipals()) {
-                   // TODO: This will be replaced with a proper check once the security team delivers the API
-                   if (!(p instanceof Group)) {
-                       authenticatedUser = p.getName();
-                   }
-               }
+            Subject s = getSubject();
+            if (s != null) {
+                for (Principal p : s.getPrincipals()) {
+                    // TODO: This will be replaced with a proper check once the security team delivers the API
+                    if (!(p instanceof Group)) {
+                        authenticatedUser = p.getName();
+                    }
+                }
             }
         }
 
@@ -105,9 +122,9 @@ public abstract class CompositeResource implements RestResource {
                 if (GET.class.isAssignableFrom(a.getClass())) {
                     httpMethod = "GET";
                 } else if (POST.class.isAssignableFrom(a.getClass())) {
-                   httpMethod = "POST";
+                    httpMethod = "POST";
                 } else if (DELETE.class.isAssignableFrom(a.getClass())) {
-                   httpMethod = "DELETE";
+                    httpMethod = "DELETE";
                 }
                 if (httpMethod != null) {
                     info.add(new MethodInfo(method.getName(), httpMethod, method.getReturnType().getSimpleName(), method.getParameterTypes()));
@@ -127,6 +144,7 @@ public abstract class CompositeResource implements RestResource {
     }
 
     private static class MethodInfo {
+
         String name;
         String httpMethod;
         String returnType;
@@ -160,18 +178,42 @@ public abstract class CompositeResource implements RestResource {
 
             return o;
         }
-
     }
 
-        protected int getFormattingIndentLevel() {
+    protected int getFormattingIndentLevel() {
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if (rg == null){
+        if (rg == null) {
             return -1;
-        }
-        else {
+        } else {
             return Integer.parseInt(rg.getIndentLevel());
         }
 
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with no parameters
+     * @param command
+     * @return
+     */
+    protected ActionReporter executeCommand(String command) {
+        return executeCommand(command, new ParameterMap());
+    }
+
+    /**
+     * Execute an <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeCommand(String command, ParameterMap parameters) {
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters,
+                Globals.getDefaultHabitat(), "", getSubject()); //TODO The last parameter is resultType and is not used. Refactor the called method to remove it
+        if (ar.getActionExitCode().equals(ExitCode.FAILURE)) {
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).
+                    entity(ar.getTopMessagePart().getMessage()).
+                    build());
+        }
+        return ar;
     }
 
 }
