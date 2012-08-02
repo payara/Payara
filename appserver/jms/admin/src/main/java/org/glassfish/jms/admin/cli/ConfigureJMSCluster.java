@@ -97,9 +97,9 @@ public class ConfigureJMSCluster implements AdminCommand {
     final private static String JDBC = "jdbc";
     final private static String CONVENTIONAL = "conventional";
     final private static String ENHANCED = "enhanced";
-    final private static String LOCAL = "local";
-    final private static String REMOTE = "remote";
-    final private static String EMBEDDED = "embedded";
+    final private static String LOCAL = "LOCAL";
+    final private static String REMOTE = "REMOTE";
+    final private static String EMBEDDED = "EMBEDDED";
     final private static String PASSWORD_KEY="AS_ADMIN_JMSDBPASSWORD";
     // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
     /*
@@ -223,11 +223,24 @@ public class ConfigureJMSCluster implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
+        String changeIntegrationMode = null;
         if(EMBEDDED.equalsIgnoreCase(integrationMode) && ENHANCED.equalsIgnoreCase(clusterType)) {
-            report.setMessage(localStrings.getLocalString("configure.jms.cluster.noEmbeddedModeForEnhancedClusters",
-                            "EMBEDDED JMS integration mode is not supported for Enhanced clusters. Please use the asadmin.set command to change the JMS integration mode"));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            try {
+                ConfigSupport.apply(new SingleConfigCode<JmsService>() {
+                    public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
+                        param.setType(LOCAL);
+                        return param;
+                    }
+                }, jmsService);
+                changeIntegrationMode = localStrings.getLocalString("configure.jms.cluster.integrationModeChanged",
+                                                                  "WARNING: JMS integration mode has been changed from EMBEDDED to LOCAL automatically.");
+            } catch(TransactionFailure tfe) {
+                report.setMessage(localStrings.getLocalString("configure.jms.cluster.cannotChangeIntegrationMode",
+                                "Unable to change the JMS integration mode to LOCAL for Enhanced cluster {0}.", clusterName) + " " + tfe.getLocalizedMessage());
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setFailureCause(tfe);
+                return;
+            }
         }
         if (MASTER_BROKER.equalsIgnoreCase(configStoreType) && FILE.equals(messageStoreType)){
 
@@ -317,19 +330,20 @@ public class ConfigureJMSCluster implements AdminCommand {
             }*/
 
         } catch(TransactionFailure tfe) {
-            report.setMessage(localStrings.getLocalString("configure.jms.cluster.fail",
+            report.setMessage((changeIntegrationMode == null ? "" : changeIntegrationMode + "\n") +
+                            localStrings.getLocalString("configure.jms.cluster.fail",
                             "Unable to Configure JMS Cluster for cluster {0}.", clusterName) +
                             " " + tfe.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
         }
-        String warning= "";
+        String warning = null;
         if(instances.size() > 0){
             warning=localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
                                     "WARNING: Please ensure that you have followed the instructions specified in the documentation before running this command with this option. Running this command without the required precautions can lead to inconsistent JMS behavior and corruption of configuration and message stores.");
         }
-        report.setMessage(warning + "\n" + localStrings.getLocalString("configure.jms.cluster.success",
-                "JMS Cluster Configuration updated for Cluster {0}.", clusterName));
+        report.setMessage((warning == null ? "" : warning + "\n") + (changeIntegrationMode == null ? "" : changeIntegrationMode + "\n") +
+                localStrings.getLocalString("configure.jms.cluster.success", "JMS Cluster Configuration updated for Cluster {0}.", clusterName));
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
