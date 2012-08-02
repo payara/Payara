@@ -71,6 +71,7 @@ import javax.naming.NamingException;
 import javax.persistence.EntityManagerFactory;
 import javax.security.auth.callback.CallbackHandler;
 import javax.swing.SwingUtilities;
+import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -1072,7 +1073,9 @@ public class AppClientContainer {
                         ((Habitat) habitat).getInhabitantByType(TransactionManager.class);
                 if (inhabitant != null && inhabitant.isActive()) {
                     TransactionManager txmgr = inhabitant.get();
-                    txmgr.rollback();
+                    if (txmgr.getStatus() == Status.STATUS_ACTIVE) {
+                        txmgr.rollback();
+                    }
                 }
             } catch (Throwable t) {
                 logger.log(Level.SEVERE, "cleanupTransactions", t);
