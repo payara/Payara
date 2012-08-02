@@ -66,7 +66,6 @@ import com.sun.enterprise.universal.process.ProcessManagerException;
  *
  * @author Carla Mott
  */
-@Service
 public abstract class DeleteNodeRemoteCommand implements AdminCommand {
     private static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     @Inject

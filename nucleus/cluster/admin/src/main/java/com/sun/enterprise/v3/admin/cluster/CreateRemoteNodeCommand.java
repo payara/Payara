@@ -65,7 +65,6 @@ import org.jvnet.hk2.component.*;
  * @author Carla Mott
  * @author Byron Nevins
  */
-@Service
 public abstract class CreateRemoteNodeCommand implements AdminCommand {
     static final int DEFAULT_TIMEOUT_MSEC = 300000; // 5 minutes
     @Inject

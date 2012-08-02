@@ -62,7 +62,6 @@ import javax.inject.Inject;
  * @author Joe Di Pol
  * @author Byron Nevins
  */
-@Service
 public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
 
     @Inject

@@ -40,15 +40,15 @@
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.module.common_impl.Tokenizer;
 import com.sun.enterprise.universal.collections.ManifestUtils;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -57,8 +57,8 @@ import org.glassfish.api.admin.AdminCommandContext;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Create data structures that describe the command.
@@ -72,7 +72,7 @@ import org.glassfish.hk2.api.PerLookup;
 
 public class ListCommandDescriptorsCommand implements AdminCommand {
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     public void execute(AdminCommandContext context) {
         setAdminCommands();
@@ -173,12 +173,10 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
     }
 
   */  
-    
-    
-    
+     
     private void setAdminCommands() {
         adminCmds = new ArrayList<AdminCommand>();
-        for (AdminCommand command : habitat.getAllByContract(AdminCommand.class)) {
+        for (AdminCommand command : habitat.<AdminCommand>getAllServices(AdminCommand.class)) {
             adminCmds.add(command);
         }
     }
@@ -186,8 +184,12 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
     private void sort() {
         Collections.sort(adminCmds, new Comparator<AdminCommand>() {
             public int compare(AdminCommand c1, AdminCommand c2) {
-                String name1 = c1.getClass().getAnnotation(Service.class).name();
-                String name2 = c2.getClass().getAnnotation(Service.class).name();
+                Service service1 = c1.getClass().getAnnotation(Service.class);
+                Service service2 = c2.getClass().getAnnotation(Service.class);
+                
+                String name1 = (service1 != null) ? service1.name() : "";
+                String name2 = (service2 != null) ? service2.name() : "";
+                
                 return name1.compareTo(name2);
             }
         }
@@ -205,7 +207,8 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
     private static class CLICommand {
         CLICommand(AdminCommand adminCommand) {
             this.adminCommand = adminCommand;
-            name = adminCommand.getClass().getAnnotation(Service.class).name();
+            Service service = adminCommand.getClass().getAnnotation(Service.class);
+            name = (service != null) ? service.name() : "";
         }
 
         @Override

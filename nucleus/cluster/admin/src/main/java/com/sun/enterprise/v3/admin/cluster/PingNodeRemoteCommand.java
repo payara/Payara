@@ -59,7 +59,6 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  * @author Joe Di Pol
  * @author Byron Nevins
  */
-@Service
 public abstract class PingNodeRemoteCommand implements AdminCommand {
     @Inject
     BaseServiceLocator habitat;
