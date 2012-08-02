@@ -283,10 +283,10 @@ public final class DTDRegistry {
     public static final String GF_APPLICATION_601_DTD_SYSTEM_ID =
         "http://glassfish.org/dtds/glassfish-application_6_0-1.dtd";
 
-    public static final String GF_APPCLIENT_601_DTD_PUBLIC_ID =
+    public static final String GF_APPCLIENT_602_DTD_PUBLIC_ID =
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Java EE Application Client 6.0//EN";
-    public static final String GF_APPCLIENT_601_DTD_SYSTEM_ID =
-        "http://glassfish.org/dtds/glassfish-application-client_6_0-1.dtd";
+    public static final String GF_APPCLIENT_602_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/glassfish-application-client_6_0-2.dtd";
 
     public static final String GF_EJBJAR_311_DTD_PUBLIC_ID =
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN";
