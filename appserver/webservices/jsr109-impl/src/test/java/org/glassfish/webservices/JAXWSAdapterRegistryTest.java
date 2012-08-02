@@ -53,13 +53,17 @@ import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.api.server.ServiceDefinition;
 import com.sun.xml.ws.api.server.WSEndpoint;
 import com.sun.xml.ws.policy.PolicyMap;
+import com.sun.xml.ws.wsdl.OperationDispatcher;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import javax.xml.namespace.QName;
+import javax.xml.ws.EndpointReference;
 import org.glassfish.gmbal.ManagedObjectManager;
 import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -223,6 +227,21 @@ public class JAXWSAdapterRegistryTest {
 
         @Override
         public ServerTubeAssemblerContext getAssemblerContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+//        @Override
+        public EndpointReference getEndpointReference(Class clazz, String address, String wsdlAddress, Element... referenceParameters) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+//        @Override
+        public EndpointReference getEndpointReference(Class clazz, String address, String wsdlAddress, List metadata, List referenceParameters) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+//        @Override
+        public OperationDispatcher getOperationDispatcher() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
