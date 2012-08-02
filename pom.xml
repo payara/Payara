@@ -103,7 +103,7 @@
         <jsp-impl.version>2.2.3</jsp-impl.version>
         <el-api.version>2.2.4</el-api.version>
         <el-impl.version>2.2.3</el-impl.version>
-        <jstl-impl.version>1.2.1</jstl-impl.version>
+        <jstl-impl.version>1.2.2</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.0-m04</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
