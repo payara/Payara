@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.runtime.common.DefaultResourcePrincipal;
 import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.*;
@@ -56,6 +55,7 @@ import org.apache.catalina.deploy.ContextResource;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.startup.ContextConfig;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.web.valve.GlassFishValve;
 
@@ -107,7 +107,7 @@ public class WebModuleContextConfig extends ContextConfig {
     /**
      * The DOL object representing the web.xml content.
     */
-    private WebBundleDescriptor webBundleDescriptor;
+    private WebBundleDescriptorImpl webBundleDescriptor;
 
 
     /**
@@ -133,14 +133,14 @@ public class WebModuleContextConfig extends ContextConfig {
     /**
      * Set the DOL object associated with this class.
      */
-    public void setDescriptor(WebBundleDescriptor wbd){
+    public void setDescriptor(WebBundleDescriptorImpl wbd){
         webBundleDescriptor = wbd;
     }
 
     /**
      * Return the WebBundleDescriptor
      */
-    public WebBundleDescriptor getDescriptor() {
+    public WebBundleDescriptorImpl getDescriptor() {
         return webBundleDescriptor;
     }
    

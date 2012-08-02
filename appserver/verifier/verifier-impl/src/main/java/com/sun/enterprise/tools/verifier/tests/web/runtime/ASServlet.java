@@ -47,7 +47,7 @@ import java.util.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.tools.verifier.*;
 import com.sun.enterprise.tools.verifier.tests.*;
-import com.sun.enterprise.deployment.runtime.web.*;
+import org.glassfish.web.deployment.runtime.*;
 
 /*  servlet
  *     servlet-name
@@ -69,7 +69,7 @@ public class ASServlet extends WebTest implements WebCheck {
 
         try{
             Float runtimeSpecVersion = getRuntimeSpecVersion();
-            Servlet[] servlets = (descriptor.getSunDescriptor()).getServlet();
+            Servlet[] servlets = ((SunWebAppImpl)descriptor.getSunDescriptor()).getServlet();
             if (servlets !=null && servlets.length > 0){
 	    for (int rep=0; rep<servlets.length; rep++ ){
                 servletName=servlets[rep].getServletName();//######

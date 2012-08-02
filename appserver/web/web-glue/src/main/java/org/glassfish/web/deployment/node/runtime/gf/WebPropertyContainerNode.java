@@ -43,6 +43,7 @@ package org.glassfish.web.deployment.node.runtime.gf;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.web.deployment.runtime.WebPropertyContainer;
 
 /**
 * superclass node for WebProperty container 
@@ -58,5 +59,18 @@ public class WebPropertyContainerNode extends RuntimeDescriptorNode {
 	
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
                                WebPropertyNode.class, "addWebProperty");		       
+    }
+
+    protected WebPropertyContainer descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public WebPropertyContainer getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new WebPropertyContainer();
+        }
+        return descriptor;
     }
 }

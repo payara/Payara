@@ -42,9 +42,9 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.runtime.web.CacheMapping;
-import com.sun.enterprise.deployment.runtime.web.ConstraintField;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.web.deployment.runtime.CacheMapping;
+import org.glassfish.web.deployment.runtime.ConstraintField;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -62,6 +62,19 @@ public class CacheMappingNode extends RuntimeDescriptorNode<CacheMapping> {
 	
         registerElementHandler(new XMLElement(RuntimeTagNames.CONSTRAINT_FIELD), 
                                ConstraintFieldNode.class, "addNewConstraintField"); 			       
+    }
+
+    protected CacheMapping descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public CacheMapping getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new CacheMapping();
+        }
+        return descriptor;
     }
         
     /**

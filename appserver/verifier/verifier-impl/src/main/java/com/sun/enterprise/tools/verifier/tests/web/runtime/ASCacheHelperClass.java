@@ -41,12 +41,14 @@
 package com.sun.enterprise.tools.verifier.tests.web.runtime;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.runtime.web.Cache;
-import com.sun.enterprise.deployment.runtime.web.CacheHelper;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
+
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
 import com.sun.enterprise.tools.verifier.tests.web.WebCheck;
 import com.sun.enterprise.tools.verifier.Result;
+import org.glassfish.web.deployment.runtime.Cache;
+import org.glassfish.web.deployment.runtime.CacheHelper;
+import org.glassfish.web.deployment.runtime.SunWebAppImpl;
+import org.glassfish.web.deployment.runtime.WebProperty;
 
 //<addition author="irfan@sun.com" [bug/rfe]-id="4711198" >
 /* Changed the result messages to reflect consistency between the result messages generated 
@@ -66,7 +68,7 @@ public class ASCacheHelperClass extends ASCache implements WebCheck {
         boolean presentHelper=false;
 
         try{
-            Cache cache = (descriptor.getSunDescriptor()).getCache();
+            Cache cache = ((SunWebAppImpl)descriptor.getSunDescriptor()).getCache();
             CacheHelper[] helperClasses=null;
             CacheHelper helperClass=null;
             WebProperty[] webProps;

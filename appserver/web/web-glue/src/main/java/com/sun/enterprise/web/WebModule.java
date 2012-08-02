@@ -46,8 +46,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.web.deployment.annotation.handlers.ServletSecurityHandler;
-import com.sun.enterprise.deployment.runtime.web.*;
-import com.sun.enterprise.deployment.runtime.web.SessionConfig;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.*;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.universal.GFBase64Decoder;
@@ -80,6 +79,8 @@ import org.glassfish.web.admin.monitor.ServletProbeProvider;
 import org.glassfish.web.admin.monitor.SessionProbeProvider;
 import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
 import org.glassfish.web.deployment.descriptor.*;
+import org.glassfish.web.deployment.runtime.SessionConfig;
+import org.glassfish.web.deployment.runtime.*;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.valve.GlassFishValve;
 import org.jvnet.hk2.component.Habitat;
@@ -124,7 +125,7 @@ public class WebModule extends PwcWebModule implements Context {
     // ----------------------------------------------------- Instance Variables
 
     // Object containing sun-web.xml information
-    private SunWebApp iasBean = null;
+    private SunWebAppImpl iasBean = null;
 
     //locale-charset-info tag from sun-web.xml
     private LocaleCharsetMap[] _lcMap = null;
@@ -202,14 +203,14 @@ public class WebModule extends PwcWebModule implements Context {
     /**
      * set the sun-web.xml config bean
      */
-    public void setIasWebAppConfigBean(SunWebApp iasBean) {
+    public void setIasWebAppConfigBean(SunWebAppImpl iasBean) {
        this.iasBean = iasBean;
     }
 
     /**
      * gets the sun-web.xml config bean
      */
-    public SunWebApp getIasWebAppConfigBean() {
+    public SunWebAppImpl getIasWebAppConfigBean() {
        return iasBean;
     }
 
@@ -965,8 +966,8 @@ public class WebModule extends PwcWebModule implements Context {
      */
     protected void configureValves(){
         if (iasBean != null && iasBean.getValve() != null && iasBean.sizeValve() > 0) {
-            com.sun.enterprise.deployment.runtime.web.Valve[] valves = iasBean.getValve();
-            for (com.sun.enterprise.deployment.runtime.web.Valve valve: valves) {
+            org.glassfish.web.deployment.runtime.Valve[] valves = iasBean.getValve();
+            for (org.glassfish.web.deployment.runtime.Valve valve: valves) {
                 addValve(valve);
             }
         }
@@ -1045,11 +1046,11 @@ public class WebModule extends PwcWebModule implements Context {
      * @param valveDescriptor the object containing the information to
      * create the valve.
      */
-    protected void addValve(com.sun.enterprise.deployment.runtime.web.Valve valveDescriptor) {
+    protected void addValve(org.glassfish.web.deployment.runtime.Valve valveDescriptor) {
         String valveName = valveDescriptor.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.Valve.NAME);
+                org.glassfish.web.deployment.runtime.Valve.NAME);
         String className = valveDescriptor.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.Valve.CLASS_NAME);
+                org.glassfish.web.deployment.runtime.Valve.CLASS_NAME);
         if (valveName == null) {
             logger.log(Level.WARNING, "webmodule.valve.missingName",
                        getName());
@@ -1312,7 +1313,7 @@ public class WebModule extends PwcWebModule implements Context {
      * persistence settings, this method must be invoked prior to
      * <code>configureSessionSettings</code>.
      */
-    void configureMiscSettings(SunWebApp bean, VirtualServer vs,
+    void configureMiscSettings(SunWebAppImpl bean, VirtualServer vs,
                                String contextPath) {
 
         /*
@@ -1485,14 +1486,14 @@ public class WebModule extends PwcWebModule implements Context {
      */
     Loader configureLoader(SunWebApp bean) {
 
-        com.sun.enterprise.deployment.runtime.web.ClassLoader clBean = null;
+        org.glassfish.web.deployment.runtime.ClassLoader clBean = null;
 
         WebappLoader loader = new V3WebappLoader(wmInfo.getAppClassLoader());
 
         loader.setUseMyFaces(isUseMyFaces());
 
         if (bean != null) {
-            clBean = bean.getClassLoader();
+            clBean = ((SunWebAppImpl)bean).getClassLoader();
         }
         if (clBean != null) {
             configureLoaderAttributes(loader, clBean);
@@ -1659,10 +1660,10 @@ public class WebModule extends PwcWebModule implements Context {
      */
     private void configureLoaderAttributes(
             Loader loader,
-            com.sun.enterprise.deployment.runtime.web.ClassLoader clBean) {
+            org.glassfish.web.deployment.runtime.ClassLoader clBean) {
 
         String value = clBean.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.ClassLoader.DELEGATE);
+                org.glassfish.web.deployment.runtime.ClassLoader.DELEGATE);
 
         /*
          * The DOL will *always* return a value: If 'delegate' has not been
@@ -1681,7 +1682,7 @@ public class WebModule extends PwcWebModule implements Context {
         // Get any extra paths to be added to the class path of this
         // class loader
         value = clBean.getAttributeValue(
-            com.sun.enterprise.deployment.runtime.web.ClassLoader.EXTRA_CLASS_PATH);
+                org.glassfish.web.deployment.runtime.ClassLoader.EXTRA_CLASS_PATH);
         if (value != null) {
             // Parse the extra classpath into its ':' and ';' separated
             // components. Ignore ':' as a separator if it is preceded by
@@ -1726,7 +1727,7 @@ public class WebModule extends PwcWebModule implements Context {
         }
 
         value = clBean.getAttributeValue(
-            com.sun.enterprise.deployment.runtime.web.ClassLoader.DYNAMIC_RELOAD_INTERVAL);
+                org.glassfish.web.deployment.runtime.ClassLoader.DYNAMIC_RELOAD_INTERVAL);
         if (value != null) {
             // Log warning if dynamic-reload-interval is specified
             // in sun-web.xml since it is not supported
@@ -1743,7 +1744,7 @@ public class WebModule extends PwcWebModule implements Context {
      */
     private void configureLoaderProperties(
             Loader loader,
-            com.sun.enterprise.deployment.runtime.web.ClassLoader clBean) {
+            org.glassfish.web.deployment.runtime.ClassLoader clBean) {
 
         String name = null;
         String value = null;

@@ -46,7 +46,8 @@ import com.sun.appserv.web.cache.mapping.ConstraintField;
 import com.sun.appserv.web.cache.mapping.Field;
 import com.sun.appserv.web.cache.mapping.ValueConstraint;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.deployment.runtime.web.*;
+import com.sun.enterprise.deployment.runtime.web.SunWebApp;
+import org.glassfish.web.deployment.runtime.*;
 import com.sun.logging.LogDomains;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
@@ -85,7 +86,7 @@ public final class CacheModule {
                                 SunWebApp bean) throws Exception  {
         Logger logger = LogDomains.getLogger(CacheModule.class, LogDomains.WEB_LOGGER);
 
-        Cache cacheConfig = bean.getCache();
+        Cache cacheConfig = ((SunWebAppImpl)bean).getCache();
 
         // is cache configured?
         if (cacheConfig == null) {
@@ -175,7 +176,7 @@ public final class CacheModule {
 
         // for each cache-mapping, create CacheMapping, setup the filter
         for (int i = 0; i < cacheConfig.sizeCacheMapping(); i++) {
-            com.sun.enterprise.deployment.runtime.web.CacheMapping 
+            org.glassfish.web.deployment.runtime.CacheMapping
                             mapConfig = cacheConfig.getCacheMapping(i);
             
             CacheMapping mapping = new CacheMapping();
@@ -245,7 +246,7 @@ public final class CacheModule {
      *
      */
     private static void configureCacheMapping(
-            com.sun.enterprise.deployment.runtime.web.CacheMapping mapConfig,
+            org.glassfish.web.deployment.runtime.CacheMapping mapConfig,
             CacheMapping mapping,
             Logger logger) throws Exception {
         String name, scope, value, expr;
@@ -277,11 +278,11 @@ public final class CacheModule {
         } else {
             // XXX: get the timeout as a field?
             name = mapConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.TIMEOUT, 
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.NAME);
+                    org.glassfish.web.deployment.runtime.CacheMapping.TIMEOUT,
+                    org.glassfish.web.deployment.runtime.CacheMapping.NAME);
             scope = mapConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.TIMEOUT, 
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.SCOPE);
+                    org.glassfish.web.deployment.runtime.CacheMapping.TIMEOUT,
+                    org.glassfish.web.deployment.runtime.CacheMapping.SCOPE);
             if (name != null && scope != null)
                 mapping.setTimeoutField(new Field(name, scope));
         }
@@ -291,11 +292,11 @@ public final class CacheModule {
          */
 
         name = mapConfig.getAttributeValue(
-            com.sun.enterprise.deployment.runtime.web.CacheMapping.REFRESH_FIELD, 
-            com.sun.enterprise.deployment.runtime.web.CacheMapping.NAME);
+                org.glassfish.web.deployment.runtime.CacheMapping.REFRESH_FIELD,
+                org.glassfish.web.deployment.runtime.CacheMapping.NAME);
         scope = mapConfig.getAttributeValue(
-            com.sun.enterprise.deployment.runtime.web.CacheMapping.REFRESH_FIELD, 
-            com.sun.enterprise.deployment.runtime.web.CacheMapping.SCOPE);
+                org.glassfish.web.deployment.runtime.CacheMapping.REFRESH_FIELD,
+                org.glassfish.web.deployment.runtime.CacheMapping.SCOPE);
         if (name != null && scope != null) {
             Field refreshField = new Field(name, scope);
             mapping.setRefreshField(refreshField);
@@ -313,11 +314,11 @@ public final class CacheModule {
          */
         for (int i = 0; i < mapConfig.sizeKeyField(); i++) {
             name = mapConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.KEY_FIELD,
-                i, com.sun.enterprise.deployment.runtime.web.CacheMapping.NAME);
+                    org.glassfish.web.deployment.runtime.CacheMapping.KEY_FIELD,
+                i, org.glassfish.web.deployment.runtime.CacheMapping.NAME);
             scope = mapConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.CacheMapping.KEY_FIELD,
-                i, com.sun.enterprise.deployment.runtime.web.CacheMapping.SCOPE);
+                    org.glassfish.web.deployment.runtime.CacheMapping.KEY_FIELD,
+                i, org.glassfish.web.deployment.runtime.CacheMapping.SCOPE);
             if (name != null && scope != null) {            
                 mapping.addKeyField(new Field(name, scope));
 
@@ -333,21 +334,21 @@ public final class CacheModule {
          *   <value match-expr="equals"> 200 </value>
          */
         for (int i = 0; i < mapConfig.sizeConstraintField(); i++) {
-            com.sun.enterprise.deployment.runtime.web.ConstraintField 
+            org.glassfish.web.deployment.runtime.ConstraintField
                                 fieldConfig = mapConfig.getConstraintField(i);
 
             name = fieldConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.ConstraintField.NAME);
+                    org.glassfish.web.deployment.runtime.ConstraintField.NAME);
             scope = fieldConfig.getAttributeValue(
-                com.sun.enterprise.deployment.runtime.web.ConstraintField.SCOPE);
+                    org.glassfish.web.deployment.runtime.ConstraintField.SCOPE);
             ConstraintField constraintField = 
                                         new ConstraintField(name, scope);
 
-            value = fieldConfig.getAttributeValue(com.sun.enterprise.deployment.runtime.web.ConstraintField.CACHE_ON_MATCH);
+            value = fieldConfig.getAttributeValue(org.glassfish.web.deployment.runtime.ConstraintField.CACHE_ON_MATCH);
             if (value != null)
                 constraintField.setCacheOnMatch(ConfigBeansUtilities.toBoolean(value));
 
-            value = fieldConfig.getAttributeValue(com.sun.enterprise.deployment.runtime.web.ConstraintField.CACHE_ON_MATCH_FAILURE);
+            value = fieldConfig.getAttributeValue(org.glassfish.web.deployment.runtime.ConstraintField.CACHE_ON_MATCH_FAILURE);
             if (value != null)
                 constraintField.setCacheOnMatchFailure(
                                     ConfigBeansUtilities.toBoolean(value));
@@ -357,14 +358,14 @@ public final class CacheModule {
             for (int j = 0; j < fieldConfig.sizeValue(); j++) {
                 value = fieldConfig.getValue(j).trim();
                 expr = fieldConfig.getAttributeValue(
-                    com.sun.enterprise.deployment.runtime.web.ConstraintField.VALUE, j, com.sun.enterprise.deployment.runtime.web.ConstraintField.MATCH_EXPR);
+                        org.glassfish.web.deployment.runtime.ConstraintField.VALUE, j, org.glassfish.web.deployment.runtime.ConstraintField.MATCH_EXPR);
                 
                 ValueConstraint constraint = new ValueConstraint(value, expr);
-                value = fieldConfig.getAttributeValue(com.sun.enterprise.deployment.runtime.web.ConstraintField.VALUE, j, com.sun.enterprise.deployment.runtime.web.ConstraintField.CACHE_ON_MATCH);
+                value = fieldConfig.getAttributeValue(org.glassfish.web.deployment.runtime.ConstraintField.VALUE, j, org.glassfish.web.deployment.runtime.ConstraintField.CACHE_ON_MATCH);
                 if (value != null) {
                     constraint.setCacheOnMatch(ConfigBeansUtilities.toBoolean(value));
                 }
-                value = fieldConfig.getAttributeValue(com.sun.enterprise.deployment.runtime.web.ConstraintField.VALUE, j, com.sun.enterprise.deployment.runtime.web.ConstraintField.CACHE_ON_MATCH_FAILURE);
+                value = fieldConfig.getAttributeValue(org.glassfish.web.deployment.runtime.ConstraintField.VALUE, j, org.glassfish.web.deployment.runtime.ConstraintField.CACHE_ON_MATCH_FAILURE);
                 if (value != null) {
                     constraint.setCacheOnMatchFailure(
                                     ConfigBeansUtilities.toBoolean(value));

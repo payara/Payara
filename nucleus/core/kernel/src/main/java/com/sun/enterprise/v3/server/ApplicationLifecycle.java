@@ -757,7 +757,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         for (ApplicationMetaDataProvider provider : habitat.getAllByContract(ApplicationMetaDataProvider.class)) {
             if (provider.getMetaData()!=null) {
                 for (Class provided : provider.getMetaData().provides()) {
-                     typeByProvider.put(provided, provider);
+                    typeByProvider.put(provided, provider);
                 }
             }
         }
@@ -828,6 +828,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         for (Class<?> provide : metadata.provides()) {
                             if (context.getModuleMetaData(provide)==null) {
                                 context.addModuleMetaData(deployer.loadMetaData(provide, context));
+                            } else {
+                                deployer.loadMetaData(null, context);
                             }
                         }
                     }

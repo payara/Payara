@@ -43,9 +43,9 @@ package org.glassfish.web.deployment.node.runtime.gf;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
 import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
-import com.sun.enterprise.deployment.runtime.web.CacheHelper;
-import com.sun.enterprise.deployment.runtime.web.WebProperty;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import org.glassfish.web.deployment.runtime.CacheHelper;
+import org.glassfish.web.deployment.runtime.WebProperty;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -60,6 +60,19 @@ public class CacheHelperNode extends RuntimeDescriptorNode<CacheHelper> {
 	
         registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
                                WebPropertyNode.class, "addWebProperty"); 			       
+    }
+
+    protected CacheHelper descriptor = null;
+
+    /**
+     * @return the descriptor instance to associate with this XMLNode
+     */
+    @Override
+    public CacheHelper getDescriptor() {
+        if (descriptor==null) {
+            descriptor = new CacheHelper();
+        }
+        return descriptor;
     }
 
     /**

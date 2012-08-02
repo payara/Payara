@@ -134,7 +134,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
 
     public MetaData getMetaData() {
-        return new MetaData(false, new Class[] { Application.class, WebBundleDescriptor.class }, null);
+        return new MetaData(false, new Class[] { Application.class }, null);
     }
 
     private Application processDOL(DeploymentContext dc) throws IOException {

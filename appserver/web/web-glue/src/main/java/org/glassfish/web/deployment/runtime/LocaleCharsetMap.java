@@ -38,7 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.deployment.runtime.web;
+package org.glassfish.web.deployment.runtime;
+
+import com.sun.enterprise.deployment.runtime.RuntimeDescriptor;
 
 /**
 * this class contains runtime information for the web bundle 
@@ -47,7 +49,13 @@ package com.sun.enterprise.deployment.runtime.web;
 *
 * @author Jerome Dochez
 */
-public class CookieProperties extends WebPropertyContainer
-{    
-    // Tag class
+public class LocaleCharsetMap extends RuntimeDescriptor
+{
+    // attributes names
+    public final static String LOCALE = "Locale";
+    public final static String AGENT = "Agent";
+    public final static String CHARSET = "Charset";
+    
+    // description handled by Descriptor superclass
+    // attributes handled by superclass
 }

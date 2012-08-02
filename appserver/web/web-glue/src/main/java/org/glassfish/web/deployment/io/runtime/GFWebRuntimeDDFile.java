@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.node.RootXMLNode;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.web.WarType;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
 
 import org.jvnet.hk2.annotations.Service;
@@ -83,8 +84,8 @@ public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
     @Override
     public RootXMLNode getRootXMLNode(Descriptor descriptor) {
    
-        if (descriptor instanceof WebBundleDescriptor) {
-            return new GFWebBundleRuntimeNode((WebBundleDescriptor) descriptor);
+        if (descriptor instanceof WebBundleDescriptorImpl) {
+            return new GFWebBundleRuntimeNode((WebBundleDescriptorImpl) descriptor);
         }
         return null;
     }
