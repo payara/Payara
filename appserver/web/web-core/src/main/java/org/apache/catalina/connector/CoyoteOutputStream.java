@@ -61,6 +61,7 @@ package org.apache.catalina.connector;
 import org.apache.catalina.util.StringManager;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import java.io.IOException;
 
 /**
@@ -203,5 +204,12 @@ public class CoyoteOutputStream
     }
 
 
-}
+    public boolean canWrite() {
+        return ob.canWrite();
+    }
 
+
+    public void setWriteListener(WriteListener writeListener) {
+        ob.setWriteListener(writeListener);
+    }
+}

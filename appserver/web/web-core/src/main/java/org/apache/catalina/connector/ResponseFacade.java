@@ -244,6 +244,21 @@ public class ResponseFacade
     }
 
 
+    public void setContentLengthLong(long len) {
+
+        // Disallow operation if the object has gone out of scope
+        if (response == null) {
+            throw new IllegalStateException(
+                    sm.getString("responseFacade.nullResponse"));
+        }
+
+        if (isCommitted())
+            return;
+
+        response.setContentLengthLong(len);
+    }
+
+
     public void setContentType(String type) {
 
         // Disallow operation if the object has gone out of scope

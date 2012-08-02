@@ -107,6 +107,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
+import javax.servlet.http.ProtocolHandler;
 
 import com.sun.appserv.ProxyHandler;
 import com.sun.enterprise.security.integration.RealmInitializer;
@@ -1241,6 +1242,14 @@ public class Request
     @Override
     public int getContentLength() {
         return coyoteRequest.getContentLength();
+    }
+
+    /**
+     * Return the content length for this Request.
+     */
+    @Override
+    public long getContentLengthLong() {
+        return coyoteRequest.getContentLengthLong();
     }
 
     /**
@@ -2986,6 +2995,11 @@ public class Request
     @Override
     public ServletContext getServletContext() {
         return servletContext;
+    }
+    
+    @Override
+    public void upgrade(ProtocolHandler handler)  {
+        //XXX Servlet 3.1
     }
 
     // ------------------------------------------------------ Protected Methods

@@ -855,17 +855,30 @@ public class Response
      */
     public void setContentLength(int length) {
 
+        setContentLengthLong(length);
+
+    }
+
+
+    /**
+     * Sets the length of the content body in the response In HTTP servlets,
+     * this method sets the HTTP Content-Length header.
+     *
+     * @param length The new content length
+     */
+    public void setContentLengthLong(long length) {
+
         if (isCommitted())
             return;
 
         // Ignore any call from an included servlet
         if (included)
             return;
-        
+
         if (usingWriter)
             return;
-        
-        coyoteResponse.setContentLength(length);
+
+        coyoteResponse.setContentLengthLong(length);
 
     }
 

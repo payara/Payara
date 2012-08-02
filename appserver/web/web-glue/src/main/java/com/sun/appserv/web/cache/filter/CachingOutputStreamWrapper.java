@@ -41,6 +41,7 @@
 package com.sun.appserv.web.cache.filter;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -62,6 +63,7 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void write(int b) throws IOException {
         baos.write(b);
     }
@@ -74,6 +76,7 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void write(byte b[]) throws IOException {
         baos.write(b, 0, b.length);
     }
@@ -88,14 +91,16 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
      *
      * @exception IOException if an input/output error occurs
      */
+    @Override
     public void write(byte b[], int off, int len) throws IOException {
         baos.write(b, off, len);
     }
 
-    /**
+    /**                                                                    `
      * Flush any buffered data for this output stream, which also causes the
      * response to be committed.
      */
+    @Override
     public void flush() throws IOException {
         // nothing to do with cached bytes
     }
@@ -104,8 +109,23 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
      * Close this output stream, causing any buffered data to be flushed and
      * any further output data to throw an IOException.
      */
+    @Override
     public void close() throws IOException {
         // nothing to do with cached bytes
+    }
+
+    /**
+     * This method can be used to determine if data can be written without blocking.
+     * @return true if a write to this ServletOutputStream will succeed, otherwise returns false.
+     */
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {
+        // no op
     }
 
     /**

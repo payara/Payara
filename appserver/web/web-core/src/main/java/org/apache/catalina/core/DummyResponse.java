@@ -134,6 +134,7 @@ public class DummyResponse
     public void resetBuffer(boolean resetWriterStreamFlags) {}
     public void setBufferSize(int size) {}
     public void setContentLength(int length) {}
+    public void setContentLengthLong(long length) {}
     public void setContentType(String type) {}
     public void setLocale(Locale locale) {}
 

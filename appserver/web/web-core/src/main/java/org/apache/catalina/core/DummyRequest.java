@@ -85,6 +85,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
+import javax.servlet.http.ProtocolHandler;
 
 import org.apache.catalina.Connector;
 import org.apache.catalina.Context;
@@ -236,6 +237,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public Enumeration<String> getAttributeNames() { return null; }
     public String getCharacterEncoding() { return null; }
     public int getContentLength() { return -1; }
+    public long getContentLengthLong() { return -1L; }
     public void setContentLength(int length) {}
     public String getContentType() { return null; }
     public ServletInputStream getInputStream() throws IOException {
@@ -334,6 +336,7 @@ public class DummyRequest implements HttpRequest, HttpServletRequest {
     public void login(String username, String password)
         throws ServletException {}
     public void logout() throws ServletException {}
+    public void upgrade(ProtocolHandler handler) {}
 
     // START CR 6415120
     /**

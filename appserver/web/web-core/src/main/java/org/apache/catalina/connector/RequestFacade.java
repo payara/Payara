@@ -65,6 +65,7 @@ import org.apache.catalina.util.StringManager;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.servlet.http.ProtocolHandler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -396,6 +397,17 @@ public class RequestFacade
         }
 
         return request.getContentLength();
+    }
+
+
+    public long getContentLengthLong() {
+
+        if (request == null) {
+            throw new IllegalStateException(
+                    sm.getString("requestFacade.nullRequest"));
+        }
+
+        return request.getContentLengthLong();
     }
 
 
@@ -1150,6 +1162,15 @@ public class RequestFacade
                             sm.getString("requestFacade.nullRequest"));
         }
         request.logout();
+    }
+
+
+    public void upgrade(ProtocolHandler handler) throws IOException {
+        if (request == null) {
+            throw new IllegalStateException(
+                    sm.getString("requestFacade.nullRequest"));
+        }
+        request.upgrade(handler);
     }
 
 

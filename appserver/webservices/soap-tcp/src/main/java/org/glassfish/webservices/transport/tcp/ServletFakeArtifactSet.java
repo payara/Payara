@@ -57,6 +57,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.ProtocolHandler;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
@@ -232,6 +233,10 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
             return 0;
         }
 
+        public long getContentLengthLong() {
+            return 0L;
+        }
+
         public String getContentType() {
             return null;
         }
@@ -338,6 +343,9 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         }
         
         public void logout() {
+        }
+
+        public void upgrade(ProtocolHandler handler) {
         }
 
         public boolean authenticate(HttpServletResponse response) {
@@ -463,6 +471,9 @@ public final class ServletFakeArtifactSet extends DistributedPropertySet {
         }
 
         public void setContentLength(final int i) {
+        }
+
+        public void setContentLengthLong(final long l) {
         }
 
         public void setContentType(final String string) {

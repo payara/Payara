@@ -58,19 +58,22 @@
 
 package org.apache.catalina.connector;
 
-import org.apache.catalina.core.StandardHost;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
+import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.util.RequestUtil;
+import org.apache.catalina.util.StringManager;
+import org.glassfish.grizzly.WriteHandler;
 import org.glassfish.grizzly.http.server.io.OutputBuffer.LifeCycleListener;
 import org.glassfish.grizzly.http.util.ByteChunk;
 
@@ -86,6 +89,9 @@ public class OutputBuffer extends Writer
     implements ByteChunk.ByteOutputChannel {
 
     private static final Logger log = Logger.getLogger(OutputBuffer.class.getName());
+
+    private static final StringManager sm = StringManager.getManager(Constants.Package);
+
 
     // -------------------------------------------------------------- Constants
 
@@ -117,6 +123,10 @@ public class OutputBuffer extends Writer
     
     private org.glassfish.grizzly.http.server.Response grizzlyResponse;
     private org.glassfish.grizzly.http.server.io.OutputBuffer grizzlyOutputBuffer;
+
+    private WriteHandler writeHandler = null;
+    private boolean hasSetWriteListener = false;
+    private boolean prevCanWrite = true;
 
     /**
      * Suspended flag. All output bytes will be swallowed if this is true.
@@ -185,7 +195,7 @@ public class OutputBuffer extends Writer
         this.grizzlyOutputBuffer = grizzlyResponse.getOutputBuffer();
         grizzlyOutputBuffer.setBufferSize(size);
         grizzlyOutputBuffer.registerLifeCycleListener(sessionCookieChecker);
-        grizzlyOutputBuffer.setAsyncEnabled(false);
+        grizzlyOutputBuffer.setAsyncEnabled(true);
         // @TODO set chunkingDisabled
     }
 
@@ -226,6 +236,9 @@ public class OutputBuffer extends Writer
         suspended = false;
         grizzlyResponse = null;
         grizzlyOutputBuffer = null;
+        writeHandler = null;
+        prevCanWrite = false;
+        hasSetWriteListener = false;
         response = null;
 
     }
@@ -485,6 +498,26 @@ public class OutputBuffer extends Writer
     }
 
 
+    public boolean canWrite() {
+        boolean result = grizzlyOutputBuffer.canWrite(1);
+        if (prevCanWrite && result == false && writeHandler != null) {
+            grizzlyOutputBuffer.notifyCanWrite(writeHandler, 1);
+        }
+        prevCanWrite = result;
+        return result;
+    }
+
+    public void setWriteListener(WriteListener writeListener) {
+        if (hasSetWriteListener) {
+            throw new IllegalStateException(
+                sm.getString("outputBuffer.alreadysetWriteListener"));
+        }
+
+        writeHandler = new WriteHandlerImpl(writeListener);
+        hasSetWriteListener = true;
+    }
+
+
     private void addSessionCookies() throws IOException {
         Request req = (Request) response.getRequest();
         if (req.isRequestedSessionIdFromURL()) {
@@ -678,4 +711,20 @@ public class OutputBuffer extends Writer
         }
     }
     
+    static class WriteHandlerImpl implements WriteHandler {
+        private WriteListener writeListener = null;
+
+        private WriteHandlerImpl(WriteListener listener) {
+            writeListener = listener;
+        }
+
+        public void onWritePossible() {
+            writeListener.onWritePossible();
+        }
+
+        public void onError(Throwable t) {
+            writeListener.onError(t);
+        }
+    }
+
 }
