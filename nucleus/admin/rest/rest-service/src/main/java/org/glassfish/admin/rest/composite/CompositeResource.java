@@ -70,6 +70,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.security.common.Group;
+import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.component.Habitat;
 
 /**
@@ -101,11 +102,9 @@ public abstract class CompositeResource implements RestResource {
         if (authenticatedUser == null) {
             Subject s = getSubject();
             if (s != null) {
-                for (Principal p : s.getPrincipals()) {
-                    // TODO: This will be replaced with a proper check once the security team delivers the API
-                    if (!(p instanceof Group)) {
-                        authenticatedUser = p.getName();
-                    }
+                List<String> list = SubjectUtil.getUsernamesFromSubject(s);
+                if (list != null) {
+                    authenticatedUser = list.get(0);
                 }
             }
         }
