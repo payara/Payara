@@ -224,14 +224,8 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.bind</groupId>
-                    <artifactId>jaxb-impl</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+            <artifactId>jersey-media-json-jackson</artifactId>
+       </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>launcher</artifactId>

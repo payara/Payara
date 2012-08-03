@@ -172,7 +172,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json</artifactId>
+            <artifactId>jersey-media-json-jettison</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

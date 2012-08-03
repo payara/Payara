@@ -120,10 +120,15 @@
         </dependency>
        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json</artifactId>
+            <artifactId>jersey-media-json-jettison</artifactId>
             <version>${jersey.version}</version>
         </dependency>
-         <dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-sse</artifactId>
             <version>${jersey.version}</version>

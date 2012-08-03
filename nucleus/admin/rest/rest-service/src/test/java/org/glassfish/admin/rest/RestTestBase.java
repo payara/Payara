@@ -53,27 +53,33 @@ import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.glassfish.jersey.media.json.JsonJaxbFeature;
+import org.glassfish.jersey.jettison.JettisonBinder;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartClientModule;
+import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import static org.testng.AssertJUnit.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.w3c.dom.Document;
+
+
+import static org.testng.AssertJUnit.*;
 
 public class RestTestBase {
     protected static String baseUrl;
@@ -96,12 +102,10 @@ public class RestTestBase {
         baseUrl = "http://" + adminHost + ':' + adminPort + '/';
 
         final RestTestBase rtb = new RestTestBase();
-        rtb.client = JerseyClientFactory.clientBuilder().
-                modules(new MultiPartClientModule()).
-                build();
+        rtb.client = JerseyClientFactory.newClient(new ClientConfig().
+                binders(new MultiPartClientBinder(), new JettisonBinder()));
         rtb.client.configuration().
-                register(new CsrfProtectionFilter()).
-                register(new JsonJaxbFeature());
+                register(new CsrfProtectionFilter());
         rtb.get("/domain/rotate-log");
     }
 
@@ -111,12 +115,10 @@ public class RestTestBase {
 
             if (!currentTestClass.isEmpty()) {
                 RestTestBase rtb = new RestTestBase();
-                rtb.client = JerseyClientFactory.clientBuilder().
-                        modules(new MultiPartClientModule()).
-                        build();
+                rtb.client = JerseyClientFactory.newClient(new ClientConfig().
+                        binders(new MultiPartClientBinder(), new JettisonBinder()));
                 rtb.client.configuration().
-                        register(new CsrfProtectionFilter()).
-                        register(new JsonJaxbFeature());
+                        register(new CsrfProtectionFilter());
                 Response cr = rtb.getClient().target(rtb.getAddress("/domain/view-log")).
                         request().
                         get(Response.class);
@@ -156,12 +158,10 @@ public class RestTestBase {
     @BeforeMethod(groups = "online", alwaysRun = true)
     protected Client getClient() {
         if (client == null) {
-            client = JerseyClientFactory.clientBuilder().
-                    modules(new MultiPartClientModule()).
-                    build();
+            client = JerseyClientFactory.newClient(new ClientConfig().
+                    binders(new MultiPartClientBinder(), new JettisonBinder()));
             client.configuration().
-                    register(new CsrfProtectionFilter()).
-                    register(new JsonJaxbFeature());
+                    register(new CsrfProtectionFilter());
         }
         return client;
     }

@@ -39,22 +39,19 @@
  */
 package org.glassfish.admin.rest.provider;
 
-import com.sun.enterprise.v3.common.ActionReporter;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.Provider;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.RestModelMetadata;
-import org.glassfish.jersey.media.json.internal.entity.JsonArrayProvider;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author: jdlee

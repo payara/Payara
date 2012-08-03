@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
@@ -64,7 +65,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.client.ClientFactory;
 
 import javax.faces.context.FacesContext;
 import javax.net.ssl.HostnameVerifier;
@@ -80,7 +80,7 @@ import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.media.json.JsonJacksonFeature;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,7 +107,7 @@ public class RestUtil {
    public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = ClientFactory.newClient();
-            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).register(new JsonJacksonFeature());
+            JERSEY_CLIENT.configuration().register(new CsrfProtectionFilter()).register(new JacksonFeature());
         }
 
         return JERSEY_CLIENT;
@@ -347,8 +347,7 @@ public class RestUtil {
             return getEntityAttrs(endpoint, "entity");
         } finally {
             if (response != null) {
-// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
-//                response.close();
+                response.close();
             }
         }
     }
@@ -776,8 +775,7 @@ public class RestUtil {
             return false;
         } finally {
             if (response != null) {
-// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
-//                response.close();
+                response.close();
             }
         }
         return false;
@@ -925,7 +923,7 @@ public class RestUtil {
                 cause.printStackTrace(System.out);
                 cause = cause.getCause();
             }
-            
+
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();

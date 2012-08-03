@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.adapter;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,14 +57,13 @@ import org.glassfish.admin.rest.resources.GeneratorResource;
 import org.glassfish.admin.rest.resources.StatusGenerator;
 import org.glassfish.admin.rest.resources.custom.ManagementProxyResource;
 import org.glassfish.admin.restconnector.Constants;
-
-import com.sun.enterprise.config.serverbeans.Domain;
-
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.AbstractModule;
-import org.glassfish.jersey.media.json.JsonJacksonModule;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.jackson.JacksonBinder;
+
+import com.sun.enterprise.config.serverbeans.Domain;
 
 /**
  * Adapter for REST management interface
@@ -81,8 +79,8 @@ public class RestManagementAdapter extends RestAdapter {
     }
 
     @Override
-    protected AbstractModule getJsonModule() {
-        return new JsonJacksonModule();
+    protected AbstractBinder getJsonBinder() {
+        return new JacksonBinder();
     }
 
     @Override

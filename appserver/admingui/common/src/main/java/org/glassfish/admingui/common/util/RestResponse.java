@@ -476,8 +476,7 @@ class JerseyRestResponse extends RestResponse {
 
     @Override
     public void close() {
-// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
-//        response.close();
+        response.close();
     }
 
 }
