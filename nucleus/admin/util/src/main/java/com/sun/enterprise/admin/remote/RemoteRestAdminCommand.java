@@ -82,13 +82,14 @@ import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.Payload.Part;
 import org.glassfish.common.util.admin.AuthTokenManager;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientFactory;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartClientModule;
+import org.glassfish.jersey.media.multipart.MultiPartClientBinder;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -126,7 +127,7 @@ public class RemoteRestAdminCommand {
             new LocalStringsImpl(RemoteAdminCommand.class);
 
     private static final String EOL = StringUtils.EOL;
-     
+
     private static final String QUERY_STRING_INTRODUCER = "?";
     private static final String QUERY_STRING_SEPARATOR = "&";
     private static final String ADMIN_URI_PATH = "/__asadmin/";
@@ -134,16 +135,16 @@ public class RemoteRestAdminCommand {
                                     "^[a-zA-Z_][-a-zA-Z0-9_]*$";
     private static final String READ_TIMEOUT = "AS_ADMIN_READTIMEOUT";
     public static final String COMMAND_MODEL_MATCH_HEADER = "X-If-Command-Model-Match";
-    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("actionreport", "json", 
+    private static final MediaType MEDIATYPE_ACTIONREPORT = new MediaType("actionreport", "json",
             new HashMap<String, String>(1) {{ put("q", "0.8"); }});
     private static final MediaType MEDIATYPE_MULTIPART = new MediaType("multipart", null,
             new HashMap<String, String>(1) {{ put("q", "0.9"); }});
     private static final int defaultReadTimeout; // read timeout for URL conns
-    
+
     //JAX-RS Client related attributes
     private static final Client client;
     static {
-        client = JerseyClientFactory.clientBuilder().modules(new MultiPartClientModule()).build();
+        client = JerseyClientFactory.newClient(new ClientConfig().binders(new MultiPartClientBinder()));
         // client = ClientFactory.newClient(); - Move to this standard initialisation when people from Jersey will produce Multipart as a Feature not just module.
         client.configuration()
                 .register(CsrfProtectionFilter.class)
@@ -194,7 +195,7 @@ public class RemoteRestAdminCommand {
     private boolean             omitCache = true;
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
-    
+
     /*
      * Set a default read timeout for URL connections.
      */
@@ -230,7 +231,7 @@ public class RemoteRestAdminCommand {
 //     * but before it invokes {@link URL#connect}.
 //     * <li>{@link #useConnection} - to read from the
 //     * input stream, etc.  The caller will invoke this method after it has
-//     * successfully invoked {@link URL#connect}. 
+//     * successfully invoked {@link URL#connect}.
 //     * </ul>
 //     * Because the caller might have to work with multiple URLConnection objects
 //     * (as it follows redirection, for example) this contract allows the caller
@@ -239,7 +240,7 @@ public class RemoteRestAdminCommand {
 //     * once after it has the "final" URLConnection object.  For this reason
 //     * be sure to implement prepareConnection so that it can be invoked
 //     * multiple times.
-//     * 
+//     *
 //     */
 //    interface HttpCommand {
 //
@@ -258,7 +259,7 @@ public class RemoteRestAdminCommand {
 //        /**
 //         * Uses the configured and connected connection to read
 //         * data, process it, etc.
-//         * 
+//         *
 //         * @param urlConnection the connection to be used
 //         * @throws CommandException
 //         * @throws IOException
@@ -316,7 +317,7 @@ public class RemoteRestAdminCommand {
             //todo: XXX - I18N
         }
     }
-    
+
 //    private Target getTarget() {
 //        if (this.target == null) {
 //            StringBuilder path = new StringBuilder();
@@ -370,11 +371,11 @@ public class RemoteRestAdminCommand {
     public void setReadTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
     }
-    
+
     public static int getReadTimeout() {
         return defaultReadTimeout;
     }
-    
+
     public ActionReport getActionReport() {
         return actionReport;
     }
@@ -385,7 +386,7 @@ public class RemoteRestAdminCommand {
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
-    
+
     /**
      * Set the interactive mode for the command.  By default, the command is
      * interactive.
@@ -393,9 +394,9 @@ public class RemoteRestAdminCommand {
     public void setInteractive(boolean state) {
         this.interactive = state;
     }
-    
+
     /**
-     * Omit local {@code AdminCache} to process command metadata. 
+     * Omit local {@code AdminCache} to process command metadata.
      * If {@code true} it will download the metadata from remote server.<br/>
      * <i>Default value is</i> {@code false}
      */
@@ -437,7 +438,7 @@ public class RemoteRestAdminCommand {
         }
         return commandModel;
     }
-    
+
     private CommandModel getCommandModelFromCahce() {
         String cachedModel = AdminCacheUtils.getCache().get(createCommandCacheKey(), String.class);
         if (cachedModel == null) {
@@ -459,7 +460,7 @@ public class RemoteRestAdminCommand {
         String content = cachedModel.substring(ind + 1).trim();
         return parseMetadata(content, eTag);
     }
-    
+
     /** If command model was load from local cache.
      */
     public boolean isCommandModelFromCache() {
@@ -480,7 +481,7 @@ public class RemoteRestAdminCommand {
     public List<Header> headers() {
         return requestHeaders;
     }
-    
+
     public String executeCommand(ParameterMap opts) throws CommandException {
         //Just to be sure. Cover get help
         if (opts != null && opts.size() == 1 && opts.containsKey("help")) {
@@ -488,7 +489,7 @@ public class RemoteRestAdminCommand {
         }
         //execute
         ParameterMap preparedParams = processParams(opts);
-        Response response = doRestCommand(preparedParams, null, "POST", false, 
+        Response response = doRestCommand(preparedParams, null, "POST", false,
                 MEDIATYPE_MULTIPART, MEDIATYPE_ACTIONREPORT);
         MediaType resultMediaType = response.getMediaType();
         if (logger.isLoggable(Level.FINER)) {
@@ -538,7 +539,7 @@ public class RemoteRestAdminCommand {
         }
         return output;
     }
-    
+
     protected void setActionReport(ActionReport ar) {
         this.actionReport = ar;
         if (ar == null) {
@@ -554,7 +555,7 @@ public class RemoteRestAdminCommand {
             this.output = sb.toString();
         }
     }
-    
+
     private static void addSubMessages(String indentPrefix, ActionReport.MessagePart mp, StringBuilder sb) {
         if (mp == null || sb == null) {
             return;
@@ -578,7 +579,7 @@ public class RemoteRestAdminCommand {
             }
         }
     }
-    
+
     private static void addCombinedMessages(CliActionReport aReport, StringBuilder sb) {
         if (aReport == null || sb == null) {
             return;
@@ -607,7 +608,7 @@ public class RemoteRestAdminCommand {
      * Return the output of the command.
      */
     public ParameterMap processParams(ParameterMap opts) throws CommandException {
-        
+
         // first, make sure we have the command model
         getCommandModel();
         // XXX : This is to take care of camel case from ReST calls that
@@ -741,7 +742,7 @@ public class RemoteRestAdminCommand {
     protected String reportAuthenticationException() {
         return strings.get("InvalidCredentials", user);
     }
-    
+
 //    /**
 //     * Get the URI for executing the command.
 //     */
@@ -757,7 +758,7 @@ public class RemoteRestAdminCommand {
 //     */
 //    private void executeRemoteCommand(String uri) throws CommandException {
 //        doHttpCommand(uri, chooseRequestMethod(), new HttpCommand() {
-//            
+//
 //            @Override
 //            public void prepareConnection(final HttpURLConnection urlConnection) throws IOException {
 //                if (doUpload) {
@@ -780,7 +781,7 @@ public class RemoteRestAdminCommand {
 //                }
 //
 //            }
-//            
+//
 //            @Override
 //            public void useConnection(final HttpURLConnection urlConnection)
 //                    throws CommandException, IOException {
@@ -854,20 +855,20 @@ public class RemoteRestAdminCommand {
          * shoudTryCommandAgain to true.
          */
         boolean shouldTryCommandAgain;
-        
+
         /*
          * Do not send caller-provided credentials the first time unless
          * we know we will send the first request securely.
          */
         boolean shouldSendCredentials = secure;
-        
+
         /*
          * If the DAS challenges us for credentials and we've already sent
          * the caller-provided ones, we might ask the user for a new set
          * and use them.  But we want to ask only once.
          */
         boolean askedUserForCredentials = false;
-        
+
         /*
          * On a subsequent retry we might need to use secure, even if the
          * caller did not request it.
@@ -881,10 +882,10 @@ public class RemoteRestAdminCommand {
          * be secure.
          */
         boolean usedCallerProvidedCredentials = secure;
-        
+
         //Create JAX-RS target
         URI uri = createURI(shouldUseSecure, pathSufix);
-        
+
         do {
             WebTarget target = client.target(uri);
             target.configuration()
@@ -897,7 +898,7 @@ public class RemoteRestAdminCommand {
             try {
                 if (logger.isLoggable(Level.FINER)) {
                     logger.log(Level.FINER, "URI: {0}", uri.toString());
-                    logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}", 
+                    logger.log(Level.FINER, "Using auth info: User: {0}, Password: {1}",
                             new Object[]{user, ok(password) ? "<non-null>" : "<null>"});
                 }
                 final AuthenticationInfo authInfo = authenticationInfo();
@@ -909,14 +910,14 @@ public class RemoteRestAdminCommand {
                 if (authToken != null) {
                     /*
                      * If this request is for metadata then we expect to reuse
-                     * the auth token.   
+                     * the auth token.
                      */
                     request = request.header(
                             SecureAdmin.Util.ADMIN_ONE_TIME_AUTH_TOKEN_HEADER_NAME,
                             (isForMetadata ? AuthTokenManager.markTokenForReuse(authToken) : authToken));
                 }
                 if (commandModel != null && isCommandModelFromCache() && commandModel instanceof CachedCommandModel) {
-                    request =  request.header(COMMAND_MODEL_MATCH_HEADER, 
+                    request =  request.header(COMMAND_MODEL_MATCH_HEADER,
                             ((CachedCommandModel) commandModel).getETag());
                     if (logger.isLoggable(Level.FINER)) {
                         logger.log(Level.FINER, "CommandModel ETag: {0}", ((CachedCommandModel) commandModel).getETag());
@@ -957,7 +958,7 @@ public class RemoteRestAdminCommand {
 //                urlConnection.setReadTimeout(readTimeout);
 //                if (connectTimeout >= 0)
 //                    urlConnection.setConnectTimeout(connectTimeout);
-                
+
                 //Invoke
                 Response response = invoc.invoke();
                 /*
@@ -977,22 +978,22 @@ public class RemoteRestAdminCommand {
                     }
                     uri = new URI(redirection);
                     shouldTryCommandAgain = true;
-                    
+
                     /*
                      * Record that, during the retry of this request, we should
                      * use https.
                      */
                     shouldUseSecure = "https".equals(uri.getScheme());
-                    
+
                     /*
                      * Record that, if this is a metadata request, the real
                      * request should use https also.
                      */
                     secure = true;
-                    
+
                     /*
                      * If we have been redirected to https then we can send
-                     * the credentials - if we have them - on the next 
+                     * the credentials - if we have them - on the next
                      * request we send because the request and therefore the
                      * credentials will be encrypted.
                      */
@@ -1005,7 +1006,7 @@ public class RemoteRestAdminCommand {
                 logger.finer("doHttpCommand succeeds");
                 return response;
             } catch (AuthenticationException authEx) {
-                
+
                 logger.log(Level.FINER, "DAS has challenged for credentials");
 
                 /*
@@ -1189,7 +1190,7 @@ public class RemoteRestAdminCommand {
 //        hca.setInteractive(interactive);
 //        return hca;
 //    }
-    
+
     protected SSLContext getSslContext() {
         try {
             String protocol = "TLSv1";
@@ -1232,18 +1233,18 @@ public class RemoteRestAdminCommand {
          * No headers are processed by RemoteAdminCommand.
          */
     }
-    
-    
+
+
     /*
      * Returns the username/password authenticaiton information to use
      * in building the outbound HTTP connection.
-     * 
+     *
      * @return the username/password auth. information to send with the request
      */
     protected AuthenticationInfo authenticationInfo() {
         return ((user != null || password != null) ? new AuthenticationInfo(user, password) : null);
     }
-    
+
 
     /**
      * Check that the connection was successful and handle any error responses,
@@ -1285,7 +1286,7 @@ public class RemoteRestAdminCommand {
          */
         return null;
     }
-    
+
     private boolean isStatusRedirection(final int returnCode) {
         /*
          * Currently, Grizzly redirects using 302.  For admin requests the
@@ -1323,7 +1324,7 @@ public class RemoteRestAdminCommand {
             String option) throws IOException {
         addStringOption(params, name, option);
     }
-    
+
     /**
      * Adds an option for a file argument, passing the name (for uploads) or the
      * path (for no-upload) operations.
@@ -1418,7 +1419,7 @@ public class RemoteRestAdminCommand {
 //                        "remote failure: " + rfe.getMessage(), rfe);
 //        }
 //    }
-    
+
     public String getManPage() throws CommandException {
         logger.log(Level.FINEST, "getManPage()");
         Response res = doRestCommand(new ParameterMap(), "manpage", "GET", false, MediaType.TEXT_PLAIN_TYPE);
@@ -1431,7 +1432,7 @@ public class RemoteRestAdminCommand {
             throw new CommandException(res.readEntity(String.class));
         }
     }
-    
+
     protected void fetchCommandModel() throws CommandException {
         logger.log(Level.FINEST, "fetchCommandModel()");
         long startNanos = System.nanoTime();
@@ -1477,7 +1478,7 @@ public class RemoteRestAdminCommand {
 //    protected void fetchCommandModel() throws CommandException {
 //        long startNanos = System.nanoTime();
 //        commandModel = null; //For sure not be used during request header construction
-//        
+//
 //        // XXX - there should be a "help" command, that returns XML output
 //        //StringBuilder uriString = new StringBuilder(ADMIN_URI_PATH).
 //                //append("help").append(QUERY_STRING_INTRODUCER);
@@ -1555,15 +1556,15 @@ public class RemoteRestAdminCommand {
 //            //}
 //        }
 //    }
-    
+
     private String createCommandCacheKey() {
         StringBuilder result = new StringBuilder(getCanonicalHost().length() + name.length() + 12);
         result.append("cache/");
         result.append(getCanonicalHost()).append('_').append(port);
         result.append('/').append(name);
         return result.toString();
-    } 
-    
+    }
+
     protected String getCanonicalHost() {
         if (canonicalHostCache == null) {
             try {
@@ -1578,7 +1579,7 @@ public class RemoteRestAdminCommand {
         }
         return canonicalHostCache;
     }
-    
+
     /**
      * Parse the JSon metadata for the command.
      *
@@ -1683,7 +1684,7 @@ public class RemoteRestAdminCommand {
 //        try {
 //            DocumentBuilder d =
 //                    DocumentBuilderFactory.newInstance().newDocumentBuilder();
-//            Document doc = d.parse(in); 
+//            Document doc = d.parse(in);
 //            NodeList cmd = doc.getElementsByTagName("command");
 //            Node cmdnode = cmd.item(0);
 //            if (cmdnode == null) {

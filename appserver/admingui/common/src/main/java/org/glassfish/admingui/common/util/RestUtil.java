@@ -347,8 +347,7 @@ public class RestUtil {
             return getEntityAttrs(endpoint, "entity");
         } finally {
             if (response != null) {
-// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
-//                response.close();
+                response.close();
             }
         }
     }
@@ -776,8 +775,7 @@ public class RestUtil {
             return false;
         } finally {
             if (response != null) {
-// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
-//                response.close();
+                response.close();
             }
         }
         return false;
@@ -925,7 +923,7 @@ public class RestUtil {
                 cause.printStackTrace(System.out);
                 cause = cause.getCause();
             }
-            
+
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
