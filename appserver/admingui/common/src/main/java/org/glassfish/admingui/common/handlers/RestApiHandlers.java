@@ -151,10 +151,11 @@ public class RestApiHandlers {
             if (GuiUtil.getLogger().isLoggable(Level.FINE)){
                 ex.printStackTrace();
             }
-        } finally {
-            if (response != null) {
-                response.close();
-            }
+// TODO - JERSEY2: re-enable after http://java.net/jira/browse/JERSEY-1177 gets resolved
+//        } finally {
+//            if (response != null) {
+//                response.close();
+//        }
         }
         handlerCtx.setOutputValue("exists", result);
     }

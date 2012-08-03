@@ -54,10 +54,9 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
+import javax.security.auth.Subject;
 import javax.ws.rs.core.MediaType;
 
-import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.jvnet.hk2.annotations.Optional;
@@ -72,12 +71,12 @@ import org.glassfish.admin.rest.provider.ActionReportResultXmlProvider;
 import org.glassfish.admin.rest.provider.BaseProvider;
 import org.glassfish.admin.rest.resources.ReloadResource;
 import org.glassfish.admin.rest.results.ActionReportResult;
+import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.ProxiedRestAdapter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
-import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -87,9 +86,9 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.media.json.JsonJaxbBinder;
-import org.glassfish.jersey.media.multipart.MultiPartBinder;
+import org.glassfish.jersey.internal.inject.AbstractModule;
+import org.glassfish.jersey.media.json.JsonJaxbModule;
+import org.glassfish.jersey.media.multipart.MultiPartModule;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
@@ -144,8 +143,8 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         setAllowEncodedSlash(true);
     }
 
-    protected AbstractBinder getJsonBinder() {
-        return new JsonJaxbBinder();
+    protected AbstractModule getJsonModule() {
+        return new JsonJaxbModule();
     }
 
     @Override
@@ -184,7 +183,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                     req.setAttribute(Constants.REQ_ATTR_SUBJECT, subject);
                     access = adminAuthenticator.chooseAccess(subject, req.getRemoteHost());
                 }
-
+                
                 if (access == null || access.isOK()) {
                     String context = getContextRoot();
                     logger.log(Level.FINE, "Exposing rest resource context root: {0}", context);
@@ -328,8 +327,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
          * JRW JRW
          *
          */
-        rc.addBinders(getJsonBinder(), new MultiPartBinder(), new AbstractBinder() {
-
+        rc.addModules(getJsonModule(), new MultiPartModule(), new AbstractModule() {
             @Override
             protected void configure() {
                 AbstractActiveDescriptor<Reloader> descriptor = BuilderHelper.createConstantDescriptor(r);
@@ -343,7 +341,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
                 AbstractActiveDescriptor<Habitat> hDescriptor = BuilderHelper.createConstantDescriptor(habitat);
                 hDescriptor.addContractType(Habitat.class);
                 bind(hDescriptor);
-
+                
                 RestSessionManager rsm = habitat.getService(RestSessionManager.class);
                 AbstractActiveDescriptor<RestSessionManager> rmDescriptor =
                         BuilderHelper.createConstantDescriptor(rsm);
