@@ -52,6 +52,8 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
 
     ByteArrayOutputStream baos;
 
+    private boolean hasSetWriteListener = false;
+
     public CachingOutputStreamWrapper() {
         this.baos = new ByteArrayOutputStream(4096);
     }
@@ -125,7 +127,10 @@ public class CachingOutputStreamWrapper extends ServletOutputStream {
 
     @Override
     public void setWriteListener(WriteListener writeListener) {
-        // no op
+        if (hasSetWriteListener) {
+            throw new IllegalStateException();
+        }
+        hasSetWriteListener = true;
     }
 
     /**
