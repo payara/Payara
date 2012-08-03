@@ -53,12 +53,12 @@ import org.testng.annotations.Test;
  * @author jasonlee
  */
 public class ElementStarTest extends RestTestBase {
-    protected static final String URL_CREATE_INSTANCE = "/domain/servers/server";
+    protected static final String URL_CREATE_INSTANCE = "/domain/create-instance";
 
     protected String instanceName1;
     protected String instanceName2;
 
-    @BeforeMethod(alwaysRun=true)
+    @BeforeMethod(groups="online")
     public void before() {
         instanceName1 = "instance_" + generateRandomString();
         instanceName2 = "instance_" + generateRandomString();
@@ -69,11 +69,11 @@ public class ElementStarTest extends RestTestBase {
         assertTrue(isSuccess(response));
     }
 
-    @AfterMethod(alwaysRun=true)
+    @AfterMethod(groups="online")
     public void after() {
-        Response response = delete("/domain/servers/server/" + instanceName1);
+        Response response = delete("/domain/servers/server/" + instanceName1 + "/delete-instance"); // TODO: This url should be fixed
         assertTrue(isSuccess(response));
-        response = delete("/domain/servers/server/" + instanceName2);
+        response = delete("/domain/servers/server/" + instanceName2 + "/delete-instance");
         assertTrue(isSuccess(response));
     }
 
