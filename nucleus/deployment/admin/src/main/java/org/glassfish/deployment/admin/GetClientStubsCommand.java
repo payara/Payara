@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.appclient.server.core;
+package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
@@ -50,7 +50,6 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.deployment.admin.DeployCommand;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
@@ -125,7 +124,6 @@ public class GetClientStubsCommand implements AdminCommand {
                     getClass(),
                     "get-client-stubs.errorPrepDownloadedFiles",
                     "Error preparing for download"), e);
-            return;
         }
     }
 }
