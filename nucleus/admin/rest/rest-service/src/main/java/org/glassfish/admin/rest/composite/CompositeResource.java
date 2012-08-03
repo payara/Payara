@@ -113,6 +113,20 @@ public abstract class CompositeResource implements RestResource {
         return authenticatedUser;
     }
 
+    public void setUriInfo(UriInfo uriInfo) {
+        this.uriInfo = uriInfo;
+    }
+
+    public void setRequestRef(Ref<Request> requestRef) {
+        this.requestRef = requestRef;
+    }
+
+    public void setHabitat(Habitat habitat) {
+        this.habitat = habitat;
+    }
+
+
+
     @OPTIONS
     public String options() throws JSONException {
         List<MethodInfo> info = new ArrayList<MethodInfo>();
@@ -141,6 +155,30 @@ public abstract class CompositeResource implements RestResource {
 
 
         return metadata.toString(getFormattingIndentLevel());
+    }
+
+    /**
+     * This method creates a sub-resource of the specified type. Since the JAX-RS does not allow for injection into
+     * sub-resources (as it doesn't know or control the lifecycle of the object), this method performs a manual
+     * "injection" of the various system objects the resource might need. If the requested Class can not be instantiated
+     * (e.g., it does not have a no-arg public constructor), the system will throw a <code>WebApplicationException</code>
+     * with an HTTP status code of 500 (internal server error).
+     * 
+     * @param clazz The Class of the desired sub-resource
+     * @return
+     */
+    public <T> T getSubResource(Class<T> clazz) {
+        try {
+            T resource = clazz.newInstance();
+            CompositeResource cr = (CompositeResource)resource;
+            cr.setHabitat(habitat);
+            cr.setRequestRef(requestRef);
+            cr.setUriInfo(uriInfo);
+            
+            return resource;
+        } catch (Exception ex) {
+            throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private static class MethodInfo {
