@@ -90,7 +90,6 @@ import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.xml.sax.SAXParseException;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.hk2.ContractLocator;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
