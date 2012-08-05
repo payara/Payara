@@ -43,6 +43,7 @@ package org.glassfish.admin.rest;
 import org.glassfish.admin.restconnector.ProxyRestCommandAdapter;
 import org.glassfish.admin.restconnector.ProxyRestManagementAdapter;
 import org.glassfish.admin.restconnector.ProxyRestMonitoringAdapter;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.kohsuke.MetaInfServices;
@@ -81,6 +82,10 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
                 return null;
 
         }
+
+		@Override
+		public void setServiceLocator(ServiceLocator serviceLocator) {
+		}
 }
 
 

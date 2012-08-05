@@ -55,6 +55,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import com.sun.enterprise.module.ModulesRegistry;
+import com.sun.enterprise.module.single.StaticModulesRegistry;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.InvalidCommandException;
@@ -69,6 +71,7 @@ import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 import org.glassfish.hk2.utilities.BuilderHelper;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.module.bootstrap.DefaultErrorService;
@@ -263,27 +266,12 @@ public class AsadminMain {
          */
         Thread.currentThread().setContextClassLoader(ecl);
 
-		/*
-		 * Create a habitat that can load from the extension directory.
-		 */
-		ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance()
-				.create("default");
-		DynamicConfigurationService dcs = serviceLocator
-				.getService(DynamicConfigurationService.class);
-		DynamicConfiguration config = dcs.createDynamicConfiguration();
-
-		config.addActiveDescriptor(DefaultErrorService.class);
-		config.commit();
-
-		habitat = new Habitat();
-
-		try {
-			HK2Populator.populate(serviceLocator,
-					new ClasspathDescriptorFileFinder(ecl), new Hk2LoaderPopulatorPostProcessor(ecl));
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "Error initializing HK2", e);
-		}
-
+        /*
+         * Create a habitat that can load from the extension directory.
+         */
+        ModulesRegistry registry = new StaticModulesRegistry(ecl);
+        final ServiceLocator serviceLocator = registry.createServiceLocator("default");
+        habitat = serviceLocator.getService(Habitat.class);
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AsadminMain.class.getName();

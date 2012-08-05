@@ -48,6 +48,7 @@ import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.spi.RuntimeBuilder;
+import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 
 import java.io.File;
 import java.io.FileFilter;

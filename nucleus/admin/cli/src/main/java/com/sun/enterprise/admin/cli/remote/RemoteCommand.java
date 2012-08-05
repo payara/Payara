@@ -57,6 +57,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.internal.api.Globals;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
@@ -912,16 +913,9 @@ public class RemoteCommand extends CLICommand {
         if (manHabitat != null)
             return manHabitat;
         
-        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
-
-        manHabitat = new Habitat();
-        
-        try {
-        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(getModuleClassLoader()));
-        } catch (IOException e) {
-        	logger.log(Level.SEVERE, "Error initializing HK2", e);
-        }
-        
+        ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
+        ServiceLocator serviceLocator = registry.createServiceLocator("default");
+        manHabitat = serviceLocator.getService(Habitat.class);
         return manHabitat;
     }
 

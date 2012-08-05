@@ -55,12 +55,12 @@ import org.kohsuke.MetaInfServices;
 public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
   
 	private ServiceLocator serviceLocator;
-
-	public EmbeddedInhabitantsParser(ServiceLocator serviceLocator) {
-	this.serviceLocator = serviceLocator;	
-	}
 	
-    public String getName() {
+    public void setServiceLocator(ServiceLocator serviceLocator) {
+		this.serviceLocator = serviceLocator;
+	}
+
+	public String getName() {
         return "Embedded";
     }
 

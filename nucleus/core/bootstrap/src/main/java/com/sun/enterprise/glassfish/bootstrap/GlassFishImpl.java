@@ -45,11 +45,6 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
-import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Properties;
@@ -82,16 +77,6 @@ public class GlassFishImpl implements GlassFish {
         }
         status = Status.STARTING;
         gfKernel.start();
-        ServiceLocator serviceLocator = (ServiceLocator) habitat;
-        DynamicConfigurationService dcs = serviceLocator.getService(DynamicConfigurationService.class);
-        DynamicConfiguration config = dcs.createDynamicConfiguration();
-        
-        AbstractActiveDescriptor<GlassFishImpl> glassFishDescriptor = BuilderHelper.createConstantDescriptor(this);
-		glassFishDescriptor.addContractType(GlassFish.class);
-        config.addActiveDescriptor(glassFishDescriptor);
-        
-        config.commit();
-        
         status = Status.STARTED;
     }
 

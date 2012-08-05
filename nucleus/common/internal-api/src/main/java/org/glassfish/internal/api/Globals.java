@@ -88,9 +88,7 @@ public class Globals implements Init {
     
     @Inject
     private Globals(Habitat habitat) {
-        if (defaultHabitat == null) {
-            defaultHabitat = habitat;
-        }
+        defaultHabitat = habitat;
     }
 
     public static BaseServiceLocator getDefaultBaseServiceLocator() {
@@ -117,14 +115,14 @@ public class Globals implements Init {
         if (defaultHabitat == null) {
             synchronized (staticLock) {
                 if (defaultHabitat == null) {
-                    ServiceLocator locator = ServiceLocatorFactory.getInstance().create("default");
-                    
+                    ModulesRegistry modulesRegistry = new StaticModulesRegistry(Globals.class.getClassLoader());
+                    ServiceLocator locator = modulesRegistry.createServiceLocator("default");
                     Habitat previouslyCreated = locator.getService(Habitat.class);
                     if (previouslyCreated != null) {
                         defaultHabitat = previouslyCreated;
                         return defaultHabitat;
                     }
-                    
+                    // Why is this needed?
                     defaultHabitat = new Habitat();
                     initializeClient(locator);
                 }
@@ -193,7 +191,11 @@ public class Globals implements Init {
             
             return descriptorImpl;
         }
-        
+
+        @Override
+        public void setServiceLocator(ServiceLocator serviceLocator) {
+        }
+
     }
 
 }

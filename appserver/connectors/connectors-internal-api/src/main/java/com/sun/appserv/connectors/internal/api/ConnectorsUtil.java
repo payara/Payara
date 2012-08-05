@@ -88,6 +88,7 @@ import org.glassfish.connectors.config.WorkSecurityMap;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.resources.api.GenericResourceInfo;
 import org.glassfish.resources.api.PoolInfo;
@@ -169,7 +170,7 @@ public class ConnectorsUtil {
     }
     
     private static ConfigBeansUtilities getConfigBeansUtilities() {
-    	ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");
+    	ServiceLocator locator = Globals.getDefaultHabitat(); 
     	if (locator == null) return null;
     	
     	return locator.getService(ConfigBeansUtilities.class);

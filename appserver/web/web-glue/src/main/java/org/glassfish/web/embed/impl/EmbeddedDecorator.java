@@ -40,6 +40,7 @@
 
 package org.glassfish.web.embed.impl;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.web.deployment.archivist.WebArchivist;
@@ -74,5 +75,9 @@ public class EmbeddedDecorator implements PopulatorPostProcessor {
 	
 		
 		return descriptorImpl;
+	}
+
+	@Override
+	public void setServiceLocator(ServiceLocator serviceLocator) {
 	}
 }

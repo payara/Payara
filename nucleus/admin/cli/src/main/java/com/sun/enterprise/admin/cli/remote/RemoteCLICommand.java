@@ -73,6 +73,8 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.component.Inhabitants;
@@ -917,8 +919,9 @@ public class RemoteCLICommand extends CLICommand {
     private static synchronized Habitat getManHabitat() {
         if (manHabitat != null)
             return manHabitat;
-        // ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
-        manHabitat = new Habitat(); // Gets the ServiceLocator with name "default"
+        ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
+        ServiceLocator serviceLocator = registry.createServiceLocator("default");
+        manHabitat = serviceLocator.getService(Habitat.class);
         return manHabitat;
     }
 

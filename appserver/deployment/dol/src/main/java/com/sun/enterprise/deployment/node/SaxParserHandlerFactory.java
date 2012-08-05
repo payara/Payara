@@ -54,8 +54,6 @@ import org.glassfish.internal.api.Globals;
  */
 public class SaxParserHandlerFactory {
     
-    private final static BaseServiceLocator habitat = Globals.getDefaultHabitat();
-    
     /** Creates a new instance of SaxParserHandlerFactory */
     public SaxParserHandlerFactory() {
     }
@@ -79,7 +77,9 @@ public class SaxParserHandlerFactory {
          *is bonafide.
           */ 
         
-        if(installRootIsValid()) 
+        final BaseServiceLocator habitat = Globals.getDefaultHabitat();
+
+        if(installRootIsValid())
             result = habitat.getComponent(SaxParserHandler.class);
         else
             result = habitat.getComponent(SaxParserHandlerBundled.class);

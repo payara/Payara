@@ -524,10 +524,9 @@ public class VirtualServer extends StandardHost
         }
     }
     
-    private static ConfigBeansUtilities getConfigBeansUtilities() {
-    	ServiceLocator locator = ServiceLocatorFactory.getInstance().find("default");
-    	if (locator == null) return null;
-    	return locator.getService(ConfigBeansUtilities.class);
+    private ConfigBeansUtilities getConfigBeansUtilities() {
+    	if (services == null) return null;
+    	return services.getService(ConfigBeansUtilities.class);
     }
 
     // ------------------------------------------------------ Protected Methods

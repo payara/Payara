@@ -1320,16 +1320,10 @@ public class SunDeploymentManager implements DeploymentManager {
     }
     
     private void prepareHabitat() {
-        ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
+        ModulesRegistry registry = new StaticModulesRegistry(getClass().getClassLoader());
+        ServiceLocator serviceLocator = registry.createServiceLocator("default");
+        habitat = serviceLocator.getService(Habitat.class);
 
-        habitat = new Habitat();
-        
-        try {
-        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(getClass().getClassLoader()));
-        } catch (IOException e) {
-        	e.printStackTrace();
-        }
-        
         StartupContext startupContext = new StartupContext();
         ((Habitat) habitat).add(new ExistingSingletonInhabitant(startupContext));
 

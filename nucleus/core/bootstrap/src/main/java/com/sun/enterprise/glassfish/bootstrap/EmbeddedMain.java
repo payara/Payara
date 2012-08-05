@@ -40,9 +40,6 @@
 
 package com.sun.enterprise.glassfish.bootstrap;
 
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
-
 import com.sun.enterprise.module.bootstrap.BootException;
 import com.sun.enterprise.module.bootstrap.Main;
 
@@ -58,7 +55,8 @@ import com.sun.enterprise.module.bootstrap.Main;
 
 public class EmbeddedMain extends Main {
 	
-
+    ClassLoader classLoader;
+    
     @Override
 	protected void defineParentClassLoader() throws BootException {
     	  // deliberate no-op
@@ -70,8 +68,6 @@ public class EmbeddedMain extends Main {
     }
 
     public EmbeddedMain(ClassLoader cl) {
-    	setDescriptorFileFinder(new ClasspathDescriptorFileFinder(cl));
-    	addPopulatorPostProcessor(new Hk2LoaderPopulatorPostProcessor(cl));
-    	addPopulatorPostProcessor(new EmbeddedInhabitantsParser(this.getServiceLocator()));
+    	classLoader=cl;
     }
 }

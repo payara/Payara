@@ -173,7 +173,7 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
             final ClassLoader loader) {
         ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
 
-        habitat = new Habitat();
+        habitat = new Habitat(serviceLocator);
         
         try {
         	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader));

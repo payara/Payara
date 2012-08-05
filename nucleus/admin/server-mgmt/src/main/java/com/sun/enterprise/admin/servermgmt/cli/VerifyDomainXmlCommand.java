@@ -125,17 +125,10 @@ public final class VerifyDomainXmlCommand extends LocalDomainCommand {
                     }
                 );
             
-            ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
+            ModulesRegistry registry = new StaticModulesRegistry(cl);
+            ServiceLocator serviceLocator = registry.createServiceLocator("default");
+            Habitat habitat = serviceLocator.getService(Habitat.class);
 
-            Habitat habitat = new Habitat();
-            
-            try {
-            	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl),
-            	        new Hk2LoaderPopulatorPostProcessor(cl));
-            } catch (IOException e) {
-            	logger.log(Level.SEVERE, "Error initializing HK2", e);
-            }
-            
             ConfigParser parser = new ConfigParser(habitat);
             URL domainURL = domainXMLFile.toURI().toURL();
             DomDocument doc = parser.parse(domainURL);
