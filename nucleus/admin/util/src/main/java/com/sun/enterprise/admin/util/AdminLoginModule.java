@@ -56,14 +56,13 @@ import javax.security.auth.callback.*;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 import org.glassfish.common.util.admin.AdminAuthenticator;
-import org.glassfish.common.util.admin.AdminAuthenticator.AuthenticatorType;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.LocalPassword;
 import org.glassfish.security.common.PrincipalImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Handles the non-username/password ways an admin user can authenticate.
@@ -79,7 +78,6 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 public class AdminLoginModule implements LoginModule {
     
     private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
-    private static final String LINE_SEP = System.getProperty("line.separator");
     private static final Level PROGRESS_LEVEL = Level.FINE;
 
     @Inject
@@ -136,7 +134,7 @@ public class AdminLoginModule implements LoginModule {
         @Override
         public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
             if (callbackHandler instanceof AdminCallbackHandler) {
-                BaseServiceLocator sl = ((AdminCallbackHandler) callbackHandler).getServiceLocator();
+                ServiceLocator sl = ((AdminCallbackHandler) callbackHandler).getServiceLocator();
                 findServices(sl);
             }
     
@@ -145,12 +143,12 @@ public class AdminLoginModule implements LoginModule {
             authRealm = (String) options.get("auth-realm");
         }
 
-        private void findServices(final BaseServiceLocator sl) {
-            domain = sl.getComponent(Domain.class);
+        private void findServices(final ServiceLocator sl) {
+            domain = sl.getService(Domain.class);
             secureAdmin = domain.getSecureAdmin();
-            authTokenManager = sl.getComponent(AuthTokenManager.class);
-            localPassword = sl.getComponent(LocalPassword.class);
-            restSessionManager = sl.getComponent(RestSessionManager.class);
+            authTokenManager = sl.getService(AuthTokenManager.class);
+            localPassword = sl.getService(LocalPassword.class);
+            restSessionManager = sl.getService(RestSessionManager.class);
         }
         
     @Override

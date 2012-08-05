@@ -53,8 +53,8 @@ import javax.security.auth.callback.*;
 import org.glassfish.common.util.admin.AdminAuthenticator.AuthenticatorType;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.LocalPassword;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Handles callbacks for admin authentication other than user-provided
@@ -76,7 +76,6 @@ public class AdminCallbackHandler implements CallbackHandler {
     
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
-    private static final String LINE_SEP = System.getProperty("line.separator");
     
     private static final Logger logger = GenericAdminAuthenticator.ADMSEC_LOGGER;
     
@@ -96,10 +95,10 @@ public class AdminCallbackHandler implements CallbackHandler {
     private final String token;
     private final String defaultAdminUsername;
     private final LocalPassword localPassword;
-    private final BaseServiceLocator serviceLocator;
+    private final ServiceLocator serviceLocator;
     
     public AdminCallbackHandler(
-            final BaseServiceLocator serviceLocator,
+            final ServiceLocator serviceLocator,
             final Request request,
             final String alternateHostName,
             final String defaultAdminUsername,
@@ -117,7 +116,7 @@ public class AdminCallbackHandler implements CallbackHandler {
         
     }
     
-    BaseServiceLocator getServiceLocator() {
+    ServiceLocator getServiceLocator() {
         return serviceLocator;
     }
     

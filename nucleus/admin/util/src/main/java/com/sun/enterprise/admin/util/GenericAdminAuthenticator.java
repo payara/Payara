@@ -43,38 +43,33 @@ package com.sun.enterprise.admin.util;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.realm.file.FileRealm;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.AdminService;
-import com.sun.enterprise.module.common_impl.LogHelper;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
-import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
-import javax.security.auth.callback.Callback;
 
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.common.util.admin.AdminAuthCallback;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.*;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
-import org.jvnet.hk2.annotations.ContractProvided;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -87,10 +82,13 @@ import java.rmi.server.RemoteServer;
 import java.rmi.server.ServerNotActiveException;
 import java.security.KeyStore;
 import java.security.Principal;
-import java.util.*;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.security.common.Group;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.internal.api.LocalPassword;
+import org.glassfish.internal.api.ServerContext;
 
 /** Implementation of {@link AdminAccessController} that delegates to LoginContextDriver.
  *  @author Kedar Mhaswade (km@dev.java.net)
@@ -119,7 +117,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, LOG_MESSAGES_RB);
     
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     @Inject @Named("security") @Optional
     Sniffer snif;
