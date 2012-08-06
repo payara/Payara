@@ -131,8 +131,8 @@
            <artifactId>jaxb-api-osgi</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ctc.wstx</groupId>
-            <artifactId>woodstox-osgi</artifactId>
+           <groupId>org.codehaus.woodstox</groupId>
+           <artifactId>woodstox-core-asl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.metro</groupId>
