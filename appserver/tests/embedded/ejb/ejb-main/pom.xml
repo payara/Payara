@@ -100,7 +100,7 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.extras</groupId>
+                <groupId>org.glassfish.main.extras</groupId>
                 <artifactId>glassfish-embedded-web</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>

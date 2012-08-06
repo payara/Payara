@@ -63,7 +63,7 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>org.glassfish.extras</groupId>
+                        <groupId>org.glassfish.main.extras</groupId>
                         <artifactId>glassfish-embedded-static-shell</artifactId>
                         <version>${project.version}</version>
 			<scope>system</scope>
