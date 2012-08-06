@@ -48,8 +48,6 @@ import java.util.TreeSet;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
-import org.glassfish.hk2.Provider;
-import org.glassfish.hk2.Providers;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.ServerRef;
@@ -63,9 +61,8 @@ import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.ORB;
 
 /**
@@ -78,7 +75,7 @@ public class IIOPUtils implements PostConstruct {
     private static IIOPUtils _me;
 
     @Inject
-    BaseServiceLocator services;
+    ServiceLocator services;
 
     @Inject
     private ClassLoaderHierarchy clHierarchy;
@@ -105,7 +102,7 @@ public class IIOPUtils implements PostConstruct {
 
         if( processEnv.getProcessType().isServer()) {
 
-            iiopService = services.getComponent(IiopService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            iiopService = services.getService(IiopService.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
             final Collection<ThreadPool> threadPool = iiopService.getParent(Config.class).getThreadPools().getThreadPool();
             final Collection<NetworkListener> listeners = allByContract(NetworkListener.class);
@@ -120,7 +117,7 @@ public class IIOPUtils implements PostConstruct {
                 }
             }
             serverRefs  = allByContract(ServerRef.class);
-            configs     = services.getComponent(Configs.class);
+            configs     = services.getService(Configs.class);
         }
 
         IIOPUtils.initMe(this);
@@ -192,14 +189,9 @@ public class IIOPUtils implements PostConstruct {
         return processType;
     }
 
-    public BaseServiceLocator getHabitat() {
+    public ServiceLocator getHabitat() {
         return services;
     }
-
-    public BaseServiceLocator getServices() {
-        return services;
-    }
-
 
     public void setORB(ORB orb) {
         defaultORB = orb;
@@ -212,7 +204,7 @@ public class IIOPUtils implements PostConstruct {
     }
     
     private <T> Collection<T> allByContract(Class<T> contractClass) {
-        return services.getAllByContract(contractClass);
+        return services.getAllServices(contractClass);
     }
 
 }

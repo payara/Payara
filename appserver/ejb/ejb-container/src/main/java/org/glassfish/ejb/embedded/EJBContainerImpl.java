@@ -41,8 +41,6 @@
 package org.glassfish.ejb.embedded;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -50,7 +48,6 @@ import java.util.logging.Level;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.ejb.embeddable.EJBContainer;
 import javax.ejb.EJBException;
 import javax.transaction.TransactionManager;
@@ -64,11 +61,8 @@ import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.archive.ScatteredArchive;
-
-import org.glassfish.hk2.Provider;
-import org.glassfish.hk2.Providers;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * GlassFish implementation of the EJBContainer.
@@ -87,7 +81,7 @@ public class EJBContainerImpl extends EJBContainer {
 
     private String deployedAppName;
 
-    private Habitat habitat;
+    private ServiceLocator habitat;
 
     private volatile int state = STARTING;
     private Cleanup cleanup = null;
@@ -105,7 +99,7 @@ public class EJBContainerImpl extends EJBContainer {
         this.server = server;
         this.server.start();
 
-        this.habitat = server.getService(Habitat.class);
+        this.habitat = server.getService(ServiceLocator.class);
         deployer = server.getDeployer();
         state = RUNNING;
         cleanup = new Cleanup(this);
@@ -224,10 +218,10 @@ public class EJBContainerImpl extends EJBContainer {
                 }
             }
             */
-            Inhabitant<TransactionManager> inhabitant =
-                    habitat.getInhabitantByType(TransactionManager.class);
+            ServiceHandle<TransactionManager> inhabitant =
+                    habitat.getServiceHandle(TransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
-                TransactionManager txmgr = inhabitant.get();
+                TransactionManager txmgr = inhabitant.getService();
                 if ( txmgr.getTransaction() != null ) {
                     txmgr.rollback();
                 }
@@ -250,10 +244,10 @@ public class EJBContainerImpl extends EJBContainer {
                 }
             }
             */
-            Inhabitant<ConnectorRuntime> inhabitant =
-                    habitat.getInhabitantByType(ConnectorRuntime.class);
+            ServiceHandle<ConnectorRuntime> inhabitant =
+                    habitat.getServiceHandle(ConnectorRuntime.class);
             if (inhabitant != null && inhabitant.isActive()) {
-                ConnectorRuntime connectorRuntime = inhabitant.get();
+                ConnectorRuntime connectorRuntime = inhabitant.getService();
                 connectorRuntime.cleanUpResourcesAndShutdownAllActiveRAs();
             }
         } catch (Throwable t) {
