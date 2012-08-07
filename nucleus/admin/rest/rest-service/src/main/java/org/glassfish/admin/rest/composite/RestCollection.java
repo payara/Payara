@@ -53,20 +53,20 @@ import java.util.TreeSet;
  *
  * @author jdlee
  */
-public class RestCollection implements Map<RestModelMetadata, RestModel> {
-    private List<RestModel> models = new ArrayList();
+public class RestCollection<T> implements Map<RestModelMetadata, T> {
+    private List<T> models = new ArrayList();
     private List<RestModelMetadata> metadata = new ArrayList<RestModelMetadata>();
 
-    public void put(String id, RestModel model) {
+    public void put(String id, T model) {
         models.add(model);
         metadata.add(new RestModelMetadata(id));
     }
 
-    public RestModel get(String id) {
+    public T get(String id) {
         return get (new RestModelMetadata(id));
     }
 
-    public RestModel remove(String id) {
+    public T remove(String id) {
         return remove (new RestModelMetadata(id));
     }
 
@@ -106,7 +106,7 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         RestModel desired = (RestModel) value;
         boolean found = false;
 
-        for (RestModel rm : models) {
+        for (T rm : models) {
             if (rm.equals(desired)) {
                 found = true;
                 break;
@@ -117,10 +117,10 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
     }
 
     @Override
-    public RestModel get(Object key) {
+    public T get(Object key) {
         checkClass(RestModelMetadata.class, key.getClass());
         RestModelMetadata desired = (RestModelMetadata) key;
-        RestModel result = null;
+        T result = null;
 
         for (int index = 0, total = metadata.size(); index < total; index++) {
             if (metadata.get(index).equals(desired)) {
@@ -133,7 +133,7 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
     }
 
     @Override
-    public RestModel put(RestModelMetadata key, RestModel value) {
+    public T put(RestModelMetadata key, T value) {
         models.add(value);
         metadata.add(key);
 
@@ -141,10 +141,10 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
     }
 
     @Override
-    public RestModel remove(Object key) {
+    public T remove(Object key) {
         checkClass(RestModelMetadata.class, key.getClass());
         RestModelMetadata desired = (RestModelMetadata) key;
-        RestModel result = null;
+        T result = null;
 
         for (int index = 0, total = metadata.size(); index < total; index++) {
             if (metadata.get(index).equals(desired)) {
@@ -159,8 +159,8 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
     }
 
     @Override
-    public void putAll(Map<? extends RestModelMetadata, ? extends RestModel> m) {
-        for (Map.Entry<? extends RestModelMetadata, ? extends RestModel> entry : m.entrySet()) {
+    public void putAll(Map<? extends RestModelMetadata, ? extends T> m) {
+        for (Map.Entry<? extends RestModelMetadata, ? extends T> entry : m.entrySet()) {
             metadata.add(entry.getKey());
             models.add(entry.getValue());
         }
@@ -178,12 +178,12 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
     }
 
     @Override
-    public Collection<RestModel> values() {
+    public Collection<T> values() {
         return new RestModelSet(models);
     }
 
     @Override
-    public Set<Entry<RestModelMetadata, RestModel>> entrySet() {
+    public Set<Entry<RestModelMetadata, T>> entrySet() {
         if (metadata.size() != models.size()) {
             throw new IllegalStateException("InternalError: keys and values out of sync");
         }
@@ -191,7 +191,7 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         for (int i = 0; i < metadata.size(); i++) {
             al.add(new RestCollectionEntry(metadata.get(i), models.get(i)));
         }
-        return new TreeSet<Entry<RestModelMetadata, RestModel>>(al);
+        return new TreeSet<Entry<RestModelMetadata, T>>(al);
     }
 
     protected void checkClass(Class<?> desired, Class<?> given) throws IllegalArgumentException {
@@ -200,11 +200,11 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         }
     }
 
-    private class RestCollectionEntry implements Map.Entry<RestModelMetadata, RestModel>, Comparable {
+    private class RestCollectionEntry<T> implements Map.Entry<RestModelMetadata, T>, Comparable {
         private RestModelMetadata key;
-        private RestModel value;
+        private T value;
 
-        public RestCollectionEntry(RestModelMetadata key, RestModel value) {
+        public RestCollectionEntry(RestModelMetadata key, T value) {
             this.key = key;
             this.value = value;
         }
@@ -215,14 +215,13 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         }
 
         @Override
-        public RestModel getValue() {
+        public T getValue() {
             return value;
         }
 
         @Override
-        public RestModel setValue(RestModel newValue) {
-            put(key, newValue);
-
+        public T setValue(T newValue) {
+            value = newValue;
             return newValue;
         }
 
@@ -237,15 +236,15 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         }
     }
 
-    private static class RestModelSet extends AbstractSet<RestModel> {
-        private List<RestModel> items;
+    private static class RestModelSet<T> extends AbstractSet<T> {
+        private List<T> items;
 
-        private RestModelSet(List<RestModel> items) {
+        private RestModelSet(List<T> items) {
             this.items = items;
         }
 
         @Override
-        public Iterator<RestModel> iterator() {
+        public Iterator<T> iterator() {
             return items.iterator();
         }
 
@@ -262,7 +261,7 @@ public class RestCollection implements Map<RestModelMetadata, RestModel> {
         /*
         @Override
         public boolean contains(Object o) {
-            for (RestModel item : items) {
+            for (T item : items) {
                 if (CompositeUtil.compare(item, o)) {
                     return true;
                 }

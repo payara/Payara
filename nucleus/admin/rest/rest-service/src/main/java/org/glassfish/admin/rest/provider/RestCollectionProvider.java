@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.provider;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -77,7 +78,7 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
 
         JSONArray models = new JSONArray();
         JSONArray metadata = new JSONArray();
-        for (Map.Entry<RestModelMetadata, RestModel> entry : proxy.entrySet()) {
+        for (Map.Entry<RestModelMetadata, RestModel> entry : (Set<Map.Entry<RestModelMetadata, RestModel>>)proxy.entrySet()) {
             try {
                 models.put(getJsonObject(entry.getValue()));
 

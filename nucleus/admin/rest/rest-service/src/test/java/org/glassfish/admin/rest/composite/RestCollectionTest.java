@@ -50,7 +50,7 @@ import org.testng.annotations.Test;
  * @author jdlee
  */
 public class RestCollectionTest {
-    private RestCollection rc;
+    private RestCollection<TestModel> rc;
 
     @BeforeMethod(alwaysRun=true)
     public void setUp() {
@@ -74,7 +74,7 @@ public class RestCollectionTest {
 
         rc.put("1", tm);
 
-        RestModel rm = rc.get("1");
+        RestModel<TestModel> rm = rc.get("1");
         assertEquals(tm, rm);
     }
 
@@ -152,7 +152,7 @@ public class RestCollectionTest {
         tm.setName("two");
         rc.put("2", tm);
 
-        Set<Map.Entry<RestModelMetadata, RestModel>> entries = rc.entrySet();
+        Set<Map.Entry<RestModelMetadata, TestModel>> entries = rc.entrySet();
         assertEquals(2, entries.size());
         // Test contents...
     }

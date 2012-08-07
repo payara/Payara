@@ -42,17 +42,20 @@ package org.glassfish.admin.rest.composite;
 import com.sun.enterprise.v3.common.ActionReporter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.security.Principal;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
@@ -69,7 +72,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.internal.util.collection.Ref;
-import org.glassfish.security.common.Group;
 import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.component.Habitat;
 
@@ -77,6 +79,8 @@ import org.jvnet.hk2.component.Habitat;
  *
  * @author jdlee
  */
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public abstract class CompositeResource implements RestResource {
 
     @Context
@@ -140,7 +144,7 @@ public abstract class CompositeResource implements RestResource {
                     httpMethod = "DELETE";
                 }
                 if (httpMethod != null) {
-                    info.add(new MethodInfo(method.getName(), httpMethod, method.getReturnType().getSimpleName(), method.getParameterTypes()));
+                    info.add(new MethodInfo(method, httpMethod));
                 }
             }
         }
@@ -187,10 +191,11 @@ public abstract class CompositeResource implements RestResource {
         String returnType;
         String[] parameterTypes;
 
-        public MethodInfo(String name, String httpMethod, String returnType, Class<?>[] parameters) {
-            this.name = name;
-            this.httpMethod = httpMethod;
-            this.returnType = returnType;
+        public MethodInfo(Method method, String httpMethod) {
+            this.name = method.getName();
+            this.httpMethod = returnType;
+            this.returnType = determineReturnType(method);
+            Class<?>[] parameters = method.getParameterTypes();
             if (parameters != null) {
                 parameterTypes = new String[parameters.length];
                 for (int i = 0; i < parameters.length; i++) {
@@ -214,6 +219,15 @@ public abstract class CompositeResource implements RestResource {
             o.put("parameters", params);
 
             return o;
+        }
+
+        private String determineReturnType(Method method) {
+            Class<?> clazz = method.getReturnType();
+            String value = clazz.getSimpleName();
+//            Type parameterizedType = (Type)clazz.getGenericSuperclass();
+//            Class<?> c2 = (Class) parameterizedType.getActualTypeArguments()[0];
+
+            return value;
         }
     }
 

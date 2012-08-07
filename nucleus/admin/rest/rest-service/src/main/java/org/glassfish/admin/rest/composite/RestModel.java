@@ -43,6 +43,6 @@ package org.glassfish.admin.rest.composite;
  *
  * @author jdlee
  */
-public interface RestModel {
+public interface RestModel<T> {
 
 }
