@@ -40,6 +40,8 @@
 
 package org.glassfish.deployment.admin;
 
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ServerTags;
@@ -131,6 +133,9 @@ public class CreateLifecycleModuleCommand implements AdminCommand {
     @Inject
     Domain domain;
 
+    @Inject
+    Applications apps;
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateLifecycleModuleCommand.class);
    
     public void execute(AdminCommandContext context) {
@@ -189,6 +194,10 @@ public class CreateLifecycleModuleCommand implements AdminCommand {
 
     private void validateTarget(String target, String name) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
+        Application app = apps.getApplication(name);
+        if (app != null && !app.isLifecycleModule()){
+             throw new IllegalArgumentException(localStrings.getLocalString("application_withsamename_exists", "Application with same name {0} already exists, please pick a different name for the lifecycle module.", name));	
+        }
         if (referencedTargets.isEmpty()) {
             if (deployment.isRegistered(name)) {
                 throw new IllegalArgumentException(localStrings.getLocalString("lifecycle.use.create_app_ref_2", "Lifecycle module {0} is already created in this domain. Please use create application ref to create application reference on target {1}", name, target));
