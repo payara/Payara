@@ -73,7 +73,9 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
@@ -901,15 +903,12 @@ public class RemoteCLICommand extends CLICommand {
      * that command in the server.
      */
     private static String getCommandClass(String cmdName) {
-        Habitat h = getManHabitat();
+        ServiceLocator h = getManHabitat();
         String cname = "org.glassfish.api.admin.AdminCommand";
-        for (Inhabitant<?> command : h.getInhabitantsByContract(cname)) {
-            for (String name : Inhabitants.getNamesFor(command, cname)) {
-                if (name.equals(cmdName))
-                    return command.typeName();
-            }
-        }
-        return null;
+        ActiveDescriptor<?> ad = h.getBestDescriptor(
+                BuilderHelper.createNameAndContractFilter(cname, cmdName));
+        if (ad == null) return null;
+        return ad.getImplementation();
     }
 
     /**

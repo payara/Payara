@@ -53,10 +53,12 @@ import com.sun.enterprise.module.single.StaticModulesRegistry;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.ManPageFinder;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 
 import com.sun.appserv.management.client.prefs.LoginInfo;
@@ -894,14 +896,14 @@ public class RemoteCommand extends CLICommand {
      * that command in the server.
      */
     private static String getCommandClass(String cmdName) {
-        Habitat h = getManHabitat();
+        ServiceLocator h = getManHabitat();
         String cname = "org.glassfish.api.admin.AdminCommand";
-        for (Inhabitant<?> command : h.getInhabitantsByContract(cname)) {
-            for (String name : Inhabitants.getNamesFor(command, cname)) {
-                if (name.equals(cmdName))
-                    return command.typeName();
+        for (ActiveDescriptor<?> ad : h.getDescriptors(BuilderHelper.createContractFilter(cname))) {
+            if (ad.getName() != null && ad.getName().equals(cmdName)) {
+                return ad.getImplementation();
             }
         }
+        
         return null;
     }
 

@@ -391,7 +391,7 @@ public class V2DottedNameSupport {
     }
 
     private int getPrecedenceLevel(Dom entry) {
-        String parent = entry.parent().typeName();
+        String parent = entry.parent().getImplementation();
         int level = 4;
         if(Config.class.getCanonicalName().equals(parent))
             level = 1;

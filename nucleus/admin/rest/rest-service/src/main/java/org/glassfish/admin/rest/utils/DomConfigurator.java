@@ -49,6 +49,6 @@ public class DomConfigurator implements Comparator<Dom>, Serializable {
 
     @Override
     public int compare(Dom o1, Dom o2) {
-        return o1.typeName().compareTo(o2.typeName());
+        return o1.getImplementation().compareTo(o2.getImplementation());
     }
 }

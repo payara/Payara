@@ -202,7 +202,7 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
             String msg = localStrings.getLocalString(GenericCrudCommand.class,
                     "GenericDeleteCommand.transaction_exception",
                     "Exception while deleting the configuration {0} :{1}",
-                    child.typeName(), e.getMessage());
+                    child.getImplementation(), e.getMessage());
             result.failure(logger, msg);
         }
 

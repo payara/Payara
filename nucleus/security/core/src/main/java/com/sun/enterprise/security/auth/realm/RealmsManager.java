@@ -56,6 +56,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.Globals;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -196,15 +199,15 @@ public class RealmsManager {
                "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm",
                "com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm",
                "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm"};*/
-       Habitat habitat = Globals.getDefaultHabitat();
-       Collection<Inhabitant<? extends Realm>> collection = habitat.getInhabitants(Realm.class);
+       ServiceLocator habitat = Globals.getDefaultHabitat();
+       List<ActiveDescriptor<?>> collection = habitat.getDescriptors(
+               BuilderHelper.createContractFilter(Realm.class.getName()));
        List<String> arr = new ArrayList<String>();
-       for (Inhabitant<? extends Realm> it : collection) {
-           arr.add(it.typeName());
+       for (ActiveDescriptor<?> it : collection) {
+           arr.add(it.getImplementation());
        }
       
-       return arr;
-       
+       return arr;   
    }
 
    public void createRealms() {
