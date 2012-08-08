@@ -164,7 +164,7 @@ public class GetHabitatInfo implements AdminCommand {
                 continue;
             sb.append("\n-----------------------------\n");
             for (Inhabitant i : habitat.getInhabitantsByContract(cn)) {
-                sb.append("Inhabitant-Metadata: " + i.metadata());
+                sb.append("Inhabitant-Metadata: " + i.getMetadata());
                 sb.append("\n");
                 boolean isStarted = Boolean.parseBoolean(started);
                 if (isStarted) {
