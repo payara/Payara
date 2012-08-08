@@ -140,7 +140,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
+            <groupId>org.glassfish.main</groupId>
             <artifactId>javax.ejb</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -158,7 +158,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.extras</groupId>
+            <groupId>org.glassfish.main.extras</groupId>
             <artifactId>glassfish-embedded-all</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
