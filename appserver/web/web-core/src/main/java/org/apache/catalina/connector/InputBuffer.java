@@ -176,7 +176,9 @@ public class InputBuffer extends Reader
 
         grizzlyInputBuffer = null;
         grizzlyRequest = null;
+        readHandler = null;
         hasSetReadListener = false;
+        prevIsReady = true;
 
     }
 
