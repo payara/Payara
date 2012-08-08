@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.glassfish.bootstrap;
 
+import com.sun.corba.se.impl.orbutil.closure.Constant;
 import com.sun.enterprise.module.bootstrap.ArgumentManager;
 import com.sun.enterprise.module.bootstrap.PlatformMain;
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -448,6 +449,12 @@ public class ASMainHelper {
             ctx.setProperty(StartupContext.STARTUP_MODULE_NAME, Constants.GF_KERNEL);
         }
 
+        if (!ctx.contains(Constants.NO_FORCED_SHUTDOWN)) {
+            // Since we are in non-embedded mode, we set this property to false unless user has specified it
+            // When set to false, the VM will exit when server fails to startup for whatever reason.
+            // See AppServerStartup.java
+            ctx.setProperty(Constants.NO_FORCED_SHUTDOWN, Boolean.FALSE.toString());
+        }
         mergePlatformConfiguration(ctx);
     }
 

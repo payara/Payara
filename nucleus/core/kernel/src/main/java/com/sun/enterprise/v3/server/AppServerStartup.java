@@ -292,8 +292,13 @@ public class AppServerStartup implements ModuleStartup {
 
         if (runner!=null) {
            final ParameterMap params = new ParameterMap();
-            if (context.getArguments().containsKey("--noforcedshutdown")) {
-                params.set("force", "false");    
+            // By default we don't want to shutdown forcefully, as that will cause the VM to exit and that's not
+            // a very good behavior for a code known to be embedded in other processes.
+            final boolean noForcedShutdown =
+                    Boolean.parseBoolean(context.getArguments().getProperty(
+                            com.sun.enterprise.glassfish.bootstrap.Constants.NO_FORCED_SHUTDOWN, "true"));
+            if (noForcedShutdown) {
+                params.set("force", "false");
             }
             if (env.isDas()) {
                 runner.getCommandInvocation("stop-domain", new DoNothingActionReporter()).parameters(params).execute();
