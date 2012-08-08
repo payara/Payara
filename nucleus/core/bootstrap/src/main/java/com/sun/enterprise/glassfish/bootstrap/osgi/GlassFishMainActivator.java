@@ -47,7 +47,9 @@ import org.osgi.framework.*;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Set;
 
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_INSTALL_PROP;
 import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_PROP;
@@ -159,8 +161,18 @@ public class GlassFishMainActivator implements BundleActivator {
         return context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
     }
 
-    private Properties prepareStartupContext(BundleContext context) {
+    private Properties prepareStartupContext(final BundleContext context) {
         Properties properties = new Properties();
+        properties.putAll(System.getProperties());
+
+        // override by what's defined in BundleContext,
+        for (String key : properties.stringPropertyNames()) {
+            String value = context.getProperty(key);
+            if (value != System.getProperty(key)) {
+                properties.setProperty(key, value);
+            }
+        }
+
         installRoot = context.getProperty(Constants.INSTALL_ROOT_PROP_NAME);
 
         if (installRoot == null) {
