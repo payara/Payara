@@ -52,7 +52,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
-import org.glassfish.admin.rest.composite.RestModelMetadata;
+import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
 
 /**
  * @author: jdlee

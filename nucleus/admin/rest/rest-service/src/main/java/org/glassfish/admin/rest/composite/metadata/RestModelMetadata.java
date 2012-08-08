@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.composite;
+package org.glassfish.admin.rest.composite.metadata;
 
 /**
  *

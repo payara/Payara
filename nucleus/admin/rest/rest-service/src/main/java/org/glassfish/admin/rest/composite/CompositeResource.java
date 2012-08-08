@@ -64,6 +64,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestResource;
+import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
@@ -128,36 +129,10 @@ public abstract class CompositeResource implements RestResource {
         this.habitat = habitat;
     }
 
-
-
     @OPTIONS
     public String options() throws JSONException {
-        List<MethodInfo> info = new ArrayList<MethodInfo>();
-        for (Method method : getClass().getMethods()) {
-            for (Annotation a : method.getAnnotations()) {
-                String httpMethod = null;
-                if (GET.class.isAssignableFrom(a.getClass())) {
-                    httpMethod = "GET";
-                } else if (POST.class.isAssignableFrom(a.getClass())) {
-                    httpMethod = "POST";
-                } else if (DELETE.class.isAssignableFrom(a.getClass())) {
-                    httpMethod = "DELETE";
-                }
-                if (httpMethod != null) {
-                    info.add(new MethodInfo(method, httpMethod));
-                }
-            }
-        }
-
-        JSONObject metadata = new JSONObject();
-        JSONArray methods = new JSONArray();
-        for (MethodInfo m : info) {
-            methods.put(m.toJson());
-        }
-        metadata.put("methods", methods);
-
-
-        return metadata.toString(getFormattingIndentLevel());
+        RestResourceMetadata rrmd = new RestResourceMetadata(getClass());
+        return rrmd.toJson().toString(getFormattingIndentLevel());
     }
 
     /**
@@ -181,53 +156,6 @@ public abstract class CompositeResource implements RestResource {
             return resource;
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private static class MethodInfo {
-
-        String name;
-        String httpMethod;
-        String returnType;
-        String[] parameterTypes;
-
-        public MethodInfo(Method method, String httpMethod) {
-            this.name = method.getName();
-            this.httpMethod = returnType;
-            this.returnType = determineReturnType(method);
-            Class<?>[] parameters = method.getParameterTypes();
-            if (parameters != null) {
-                parameterTypes = new String[parameters.length];
-                for (int i = 0; i < parameters.length; i++) {
-                    parameterTypes[i] = parameters[i].getName();
-                }
-
-            }
-        }
-
-        public JSONObject toJson() throws JSONException {
-            JSONObject o = new JSONObject();
-//            o.put("name", name);
-            o.put("httpMethod", httpMethod);
-            o.put("returnType", returnType);
-            JSONArray params = new JSONArray();
-            if (parameterTypes != null) {
-                for (String param : parameterTypes) {
-                    params.put(param);
-                }
-            }
-            o.put("parameters", params);
-
-            return o;
-        }
-
-        private String determineReturnType(Method method) {
-            Class<?> clazz = method.getReturnType();
-            String value = clazz.getSimpleName();
-//            Type parameterizedType = (Type)clazz.getGenericSuperclass();
-//            Class<?> c2 = (Class) parameterizedType.getActualTypeArguments()[0];
-
-            return value;
         }
     }
 
@@ -266,5 +194,4 @@ public abstract class CompositeResource implements RestResource {
         }
         return ar;
     }
-
 }

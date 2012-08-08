@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
 import java.util.Map;
 import java.util.Set;
 import static org.testng.AssertJUnit.*;

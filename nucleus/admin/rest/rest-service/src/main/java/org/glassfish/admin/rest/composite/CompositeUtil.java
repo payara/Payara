@@ -42,6 +42,7 @@ package org.glassfish.admin.rest.composite;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -52,13 +53,16 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
+import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.api.admin.ParameterMap;
@@ -134,7 +138,7 @@ public class CompositeUtil {
             generatedClasses.put(className, newClass);
         }
         try {
-            return (T) generatedClasses.get(className).newInstance();
+            return (T)generatedClasses.get(className).newInstance();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -239,6 +243,26 @@ public class CompositeUtil {
         }
 
     }
+
+    /**
+     * If the <code>HelpText</code> annotation is in the list of <code>Annotation</code>s, return the value from the
+     * specified bundle for the given key.
+     * @param annos
+     * @return
+     */
+    public String getHelpText(Annotation[] annos) {
+        String helpText = null;
+        for (Annotation annotation : annos) {
+            if (HelpText.class.isAssignableFrom(annotation.getClass())) {
+                HelpText ht = (HelpText) annotation;
+                ResourceBundle bundle = ResourceBundle.getBundle(ht.bundle(), Locale.getDefault());
+                helpText = bundle.getString(ht.key());
+            }
+        }
+
+        return helpText;
+    }
+
 
     /*******************************************************************************************************************
      * Private implement methods
