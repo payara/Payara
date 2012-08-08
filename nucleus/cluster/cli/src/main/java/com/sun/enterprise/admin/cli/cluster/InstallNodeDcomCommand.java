@@ -39,23 +39,20 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import com.sun.enterprise.util.cluster.windows.io.RemoteFileCopyProgress;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
+import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.util.cluster.windows.process.WindowsRemoteScripter;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileCopyProgress;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Byron Nevins
@@ -159,7 +156,7 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
             WindowsRemoteFile unpackScript = new WindowsRemoteFile(remoteInstallDir, unpackScriptName);
             //createUnpackScript
             System.out.printf("Copying %d bytes", zipFile.length());
-            remoteZip.copyFrom(zipFile, new WindowsRemoteFileCopyProgress() {
+            remoteZip.copyFrom(zipFile, new RemoteFileCopyProgress() {
                 @Override
                 public void callback(long numcopied, long numtotal) {
                     //final int percent = (int)((double)numcopied / (double)numtotal * 100.0);

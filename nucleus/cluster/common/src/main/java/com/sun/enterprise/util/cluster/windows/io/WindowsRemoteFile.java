@@ -172,7 +172,7 @@ public final class WindowsRemoteFile {
      * @throws WindowsException
      * @since 3.1.2
      */
-    public final void copyTo(final File file, final WindowsRemoteFileCopyProgress progress) throws WindowsException {
+    public final void copyTo(final File file, final RemoteFileCopyProgress progress) throws WindowsException {
         BufferedInputStream bis = null;
         BufferedOutputStream bos = null;
         try {
@@ -259,7 +259,7 @@ public final class WindowsRemoteFile {
      * reason to clog up the public namespace with it...
      */
     private final void copyFrom(final BufferedInputStream sin,
-            final WindowsRemoteFileCopyProgress progress, final long filelength)
+            final RemoteFileCopyProgress progress, final long filelength)
             throws WindowsException {
         OutputStream sout = null;
 
@@ -303,7 +303,7 @@ public final class WindowsRemoteFile {
         }
     }
 
-    public final void copyFrom(File from, WindowsRemoteFileCopyProgress progress)
+    public final void copyFrom(File from, RemoteFileCopyProgress progress)
             throws WindowsException {
 
         try {
@@ -393,7 +393,7 @@ public final class WindowsRemoteFile {
         return path;
     }
 
-    private int getChunkSize(WindowsRemoteFileCopyProgress progress, long filelength) {
+    private int getChunkSize(RemoteFileCopyProgress progress, long filelength) {
         int chunksize = progress == null ? 1048576 : progress.getChunkSize();
 
         // be careful!  filelength is a long!!!

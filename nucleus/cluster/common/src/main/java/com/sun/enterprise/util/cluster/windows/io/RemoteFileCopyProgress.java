@@ -45,7 +45,7 @@ package com.sun.enterprise.util.cluster.windows.io;
  *
  * @author Byron Nevins
  */
-public interface WindowsRemoteFileCopyProgress {
+public interface RemoteFileCopyProgress {
     void callback(long numcopied, long numtotal);
     public int getChunkSize();
 }
