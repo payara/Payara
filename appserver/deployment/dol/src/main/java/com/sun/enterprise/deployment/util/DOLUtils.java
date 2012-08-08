@@ -202,7 +202,7 @@ public class DOLUtils {
         // resource adapter
         Applications applications = habitat.getComponent(Applications.class);
         if (applications != null) {
-            List<com.sun.enterprise.config.serverbeans.Application> raApps = applications.getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.Application.CONNECTOR_SNIFFER_TYPE, true);
+            List<com.sun.enterprise.config.serverbeans.Application> raApps = applications.getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.ServerTags.CONNECTOR, true);
             ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
             for (com.sun.enterprise.config.serverbeans.Application raApp : raApps) {
                 ApplicationInfo appInfo = appRegistry.get(raApp.getName());

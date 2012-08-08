@@ -121,6 +121,14 @@ public class WebSniffer  extends GenericSniffer {
     public boolean isUserVisible() {
         return true;
     }
+
+    /**
+     * @return whether this sniffer represents a Java EE container type
+     *
+     */
+    public boolean isJavaEE() {
+        return true;
+    }
     
     private static final List<String> deploymentConfigurationPaths = 
             initDeploymentConfigurationPaths();

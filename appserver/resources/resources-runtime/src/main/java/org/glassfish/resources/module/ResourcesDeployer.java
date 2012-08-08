@@ -288,8 +288,8 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                 dc.addTransientAppMetaData(APP_SCOPED_RESOURCES_MAP, appScopedResources);
                 ApplicationInfo appInfo = appRegistry.get(appName);
                 if(appInfo != null){
-                    Application app = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
-                    appInfo.addTransientAppMetaData(Application.APPLICATION, app);
+                    Application app = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
+                    appInfo.addTransientAppMetaData(ServerTags.APPLICATION, app);
                 }
             }
         } catch (Exception e) {
@@ -315,7 +315,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
      */
     public void retainResourceConfig(DeploymentContext dc, Map<String, Resources> allResources) throws Exception {
         String appName = getAppNameFromDeployCmdParams(dc);
-        Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+        Application application = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
         Resources appScopedResources = allResources.get(appName);
 
         if(appScopedResources != null){
@@ -348,7 +348,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
         if(application != null && appInfo != null){
             Resources appScopedResources = application.getResources();
             if(appScopedResources != null){
-                appInfo.addTransientAppMetaData(Application.APPLICATION, application);
+                appInfo.addTransientAppMetaData(ServerTags.APPLICATION, application);
                 appInfo.addTransientAppMetaData(application.getName()+"-resources", appScopedResources);
             }
 
@@ -366,7 +366,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
 
     public void createResources(DeploymentContext dc, boolean embedded, boolean deployResources) throws ResourceException {
         String appName = getAppNameFromDeployCmdParams(dc);
-        Application app = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+        Application app = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
         Map<String, Map<String, List>> resourcesList =
                 (Map<String, Map<String, List>>)dc.getTransientAppMetadata().get(APP_SCOPED_RESOURCES_MAP);
 
@@ -512,7 +512,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             throws ResourceException {
         try {
             if (resources != null) {
-                Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+                Application application = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
                 Resources asc = dc.getTransientAppMetaData(APP_META_DATA_RESOURCES, Resources.class);
                 if (asc == null) {
                     asc = application.createChild(Resources.class);
@@ -748,7 +748,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                             Map<String, Resources> allResources = ResourcesRegistry.remove(appName);
                             Application oldApp = preservedApps.remove(appName);
                             if (allResources != null && oldApp != null) {
-                                Application application = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+                                Application application = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
                                 validatePreservedResources(allResources, oldApp, application);
                                 retainResourceConfig(dc, allResources);
                             }
@@ -756,7 +756,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                         }
                     }
                 }
-                Application app = dc.getTransientAppMetaData(Application.APPLICATION, Application.class);
+                Application app = dc.getTransientAppMetaData(ServerTags.APPLICATION, Application.class);
                 String applicationName = getAppNameFromDeployCmdParams(dc);
                 if(app != null){
                     //application is stored in transient meta data only during deployment.

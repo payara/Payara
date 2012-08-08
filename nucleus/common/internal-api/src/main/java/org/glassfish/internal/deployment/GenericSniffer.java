@@ -218,6 +218,14 @@ public abstract class GenericSniffer implements Sniffer {
         return false;
     }
 
+    /**
+     * @return whether this sniffer represents a Java EE container type
+     *
+     */
+    public boolean isJavaEE() {
+        return false;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Sniffer) {

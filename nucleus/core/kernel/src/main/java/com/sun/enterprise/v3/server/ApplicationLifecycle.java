@@ -1113,7 +1113,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             Application app = newBean.createProxy();
             Application app_w = t.enroll(app);
             setInitialAppAttributes(app_w, deployParams, appProps, context);
-            context.addTransientAppMetaData(Application.APPLICATION, app_w);
+            context.addTransientAppMetaData(ServerTags.APPLICATION, app_w);
         } catch(TransactionFailure e) {
             t.rollback();
             throw e;
@@ -1143,7 +1143,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             try {
                 if (!appRefOnly) {
                     Application app_w = context.getTransientAppMetaData(
-                        Application.APPLICATION, Application.class);
+                        ServerTags.APPLICATION, Application.class);
                     // adding the application element
                     setRestAppAttributes(app_w, appProps);
                     Applications apps_w = t.enroll(applications);
@@ -2130,7 +2130,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             commandParams.command = DeployCommandParameters.Command.enable;
             commandParams.target = target;
             commandParams.enabled = Boolean.TRUE;
-            if (app.containsSnifferType(Application.OSGI_SNIFFER_TYPE)) {
+            if (app.containsSnifferType(ServerTags.OSGI)) {
                 commandParams.type = DeploymentProperties.OSGI;
             }
             Properties contextProps = app.getDeployProperties();

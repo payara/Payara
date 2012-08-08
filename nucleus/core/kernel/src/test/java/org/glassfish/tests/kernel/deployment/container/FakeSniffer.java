@@ -101,6 +101,10 @@ public class FakeSniffer implements Sniffer {
         return false;
     }
 
+   public boolean isJavaEE() {
+        return false;
+    }
+
     public Map<String, String> getDeploymentConfigurations(ReadableArchive source) throws IOException {
         return null;
     }

@@ -96,7 +96,7 @@ public class ApplicationsTest extends ConfigApiTest {
             ConfigSupport.apply(new SingleConfigCode<Applications>() {
                 public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
                     List<Application> appList = param.getApplications();
-                    for (Application application : param.getApplicationsWithSnifferType(Application.WEB_SNIFFER_TYPE)) {
+                    for (Application application : param.getApplicationsWithSnifferType("web")) {
                         assertTrue(appList.remove(application));
                     }
                     return null;

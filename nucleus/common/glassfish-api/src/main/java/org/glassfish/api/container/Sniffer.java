@@ -147,6 +147,12 @@ public interface Sniffer {
     public boolean isUserVisible();
     
     /**
+     * @return whether this sniffer represents a Java EE container type
+     *
+     */
+    public boolean isJavaEE();
+
+    /**
      * Returns a map of deployment configurations for this Sniffer from the
      * specific archive source.  
      * <p>

@@ -291,7 +291,7 @@ public class AppSpecificConnectorClassLoaderUtil {
 
             // find all the standalone connector modules
             List<com.sun.enterprise.config.serverbeans.Application> applications =
-                    getApplications().getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.Application.CONNECTOR_SNIFFER_TYPE, true);
+                    getApplications().getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.ServerTags.CONNECTOR, true);
             Iterator itr = applications.iterator();
             while (itr.hasNext()) {
                 com.sun.enterprise.config.serverbeans.Application application =
@@ -334,7 +334,7 @@ public class AppSpecificConnectorClassLoaderUtil {
         if(appInfo != null){
 
             com.sun.enterprise.config.serverbeans.Application app =
-                    appInfo.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.Application.APPLICATION, 
+                    appInfo.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.ServerTags.APPLICATION, 
                     com.sun.enterprise.config.serverbeans.Application.class);
             Resources resources = null;
             if(app != null){
@@ -385,7 +385,7 @@ public class AppSpecificConnectorClassLoaderUtil {
         if(appInfo != null){
 
             com.sun.enterprise.config.serverbeans.Application app =
-                    appInfo.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.Application.APPLICATION,
+                    appInfo.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.ServerTags.APPLICATION,
                     com.sun.enterprise.config.serverbeans.Application.class);
             Resources resources = null;
             if(app != null){

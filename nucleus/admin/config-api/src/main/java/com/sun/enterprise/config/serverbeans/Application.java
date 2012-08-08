@@ -71,16 +71,6 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
 
     public static final String APP_LOCATION_PROP_NAME = "appLocation";
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
-    public static final String WEB_SNIFFER_TYPE = "web";
-    public static final String EJB_SNIFFER_TYPE = "ejb";
-    public static final String CONNECTOR_SNIFFER_TYPE = "connector";
-    public static final String APPCLIENT_SNIFFER_TYPE = "appclient";
-    public static final String JPA_SNIFFER_TYPE = "jpa";
-    public static final String WEBSERVICE_SNIFFER_TYPE = "webservices";
-    public static final String EAR_SNIFFER_TYPE = "ear";
-    public static final String OSGI_SNIFFER_TYPE = "osgi";
-    public static final String APPLICATION = "application";
-    public static final String EXTERNAL_MODULE_TYPE = "external";
 
     /**
      * Gets the value of the contextRoot property.
@@ -413,7 +403,7 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
         }
 
         public static boolean isOSGiModule(Application me) {
-            return me.containsSnifferType(OSGI_SNIFFER_TYPE);
+            return me.containsSnifferType(ServerTags.OSGI);
         }
 
         public static boolean containsSnifferType(Application app,

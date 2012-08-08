@@ -118,6 +118,14 @@ public class AppClientSniffer extends GenericSniffer {
     }
 
     /**
+     * @return whether this sniffer represents a Java EE container type
+     *
+     */
+    public boolean isJavaEE() {
+        return true;
+    }
+
+    /**
      * @return the set of the sniffers that should not co-exist for the
      * same module. For example, ejb and connector sniffers should not
      * be returned in the sniffer list for a certain module.

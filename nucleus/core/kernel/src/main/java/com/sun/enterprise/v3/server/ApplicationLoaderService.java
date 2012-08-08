@@ -223,7 +223,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         List<Application> allApplications = applications.getApplications();
 
         List<Application> standaloneAdapters =
-            applications.getApplicationsWithSnifferType(Application.CONNECTOR_SNIFFER_TYPE, true);
+            applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
 
         // load standalone resource adapters first
         for (Application standaloneAdapter : standaloneAdapters) {
@@ -240,7 +240,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // then the rest of the applications
         for (Application app : allApplications) {
             if (app.isStandaloneModule() && 
-                app.containsSnifferType(Application.CONNECTOR_SNIFFER_TYPE)) {
+                app.containsSnifferType(ServerTags.CONNECTOR)) {
                 continue;
             }
             // load the referenced enabled applications on this instance 
@@ -396,7 +396,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                             deploymentParams.target = deployment.getDefaultTarget(appName, deploymentParams.origin, deploymentParams._classicstyle);
                         }
                     }
-                    if (app.containsSnifferType(Application.OSGI_SNIFFER_TYPE)) {
+                    if (app.containsSnifferType(ServerTags.OSGI)) {
                         deploymentParams.type = DeploymentProperties.OSGI;
                     }
 

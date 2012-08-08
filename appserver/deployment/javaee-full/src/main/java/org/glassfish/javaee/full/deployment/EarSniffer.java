@@ -108,6 +108,14 @@ public class EarSniffer extends GenericCompositeSniffer {
     }
 
     /**
+     * @return whether this sniffer represents a Java EE container type
+     *
+     */
+    public boolean isJavaEE() {
+        return true;
+    }
+
+    /**
      *
      * This API is used to help determine if the sniffer should recognize
      * the current archive.

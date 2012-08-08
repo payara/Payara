@@ -399,7 +399,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         }
         
         try {
-            com.sun.enterprise.config.serverbeans.Application app_w = dc.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.Application.APPLICATION, com.sun.enterprise.config.serverbeans.Application.class);
+            com.sun.enterprise.config.serverbeans.Application app_w = dc.getTransientAppMetaData(com.sun.enterprise.config.serverbeans.ServerTags.APPLICATION, com.sun.enterprise.config.serverbeans.Application.class);
             if (app_w != null) {
                 if (application.isVirtual()) {
                     Module modConfig = app_w.createChild(Module.class);

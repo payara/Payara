@@ -165,10 +165,8 @@ public class ApplicationInfo extends ModuleInfo {
      */
     public void setIsJavaEEApp(List<EngineInfo> engineInfos) {
         for (EngineInfo engineInfo : engineInfos) {
-            String moduleType = engineInfo.getSniffer().getModuleType(); 
-            if (moduleType.equals("web") || moduleType.equals("ejb") || 
-                moduleType.equals("appclient") || 
-                moduleType.equals("connector") ||  moduleType.equals("ear")) {
+            Sniffer sniffer = engineInfo.getSniffer(); 
+            if (sniffer.isJavaEE()) {
                 isJavaEEApp = true;
                 break;
             }
