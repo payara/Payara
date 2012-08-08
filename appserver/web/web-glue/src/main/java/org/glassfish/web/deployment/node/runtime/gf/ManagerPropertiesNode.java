@@ -40,6 +40,9 @@
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.glassfish.web.deployment.runtime.ManagerProperties;
 
 /**
@@ -47,8 +50,16 @@ import org.glassfish.web.deployment.runtime.ManagerProperties;
  *
  * @version 
  */
-public class ManagerPropertiesNode extends WebPropertyContainerNode {
-    // tag class
+public class ManagerPropertiesNode extends RuntimeDescriptorNode {
+
+    /**
+     * Initialize the child handlers
+     */
+    public ManagerPropertiesNode() {
+
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                WebPropertyNode.class, "addWebProperty");
+    }
 
     protected ManagerProperties descriptor = null;
 

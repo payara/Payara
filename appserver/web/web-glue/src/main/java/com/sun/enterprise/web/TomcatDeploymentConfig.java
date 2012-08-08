@@ -248,7 +248,7 @@ public class TomcatDeploymentConfig {
                                              WebBundleDescriptorImpl wmd) {
         webModule.setJspConfigDescriptor(wmd.getJspConfigDescriptor());
 
-        JspConfigDescriptor jspConfig = wmd.getJspConfigDescriptor();
+        JspConfigDescriptorImpl jspConfig = wmd.getJspConfigDescriptor();
         if (jspConfig != null) {
             for (JspPropertyGroupDescriptor jspGroup :
                     jspConfig.getJspPropertyGroups()) {

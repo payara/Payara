@@ -56,7 +56,7 @@ import java.util.Set;
     * @author Danny Coward
     */
 
-public class SecurityConstraintImpl extends Descriptor implements SecurityConstraint, java.io.Serializable {
+public class SecurityConstraintImpl extends Descriptor implements SecurityConstraint {
     private Set<WebResourceCollection> webResourceCollections;
     private AuthorizationConstraint authorizationConstraint;
     private UserDataConstraint userDataConstraint;

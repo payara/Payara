@@ -323,7 +323,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                     conflictConnectorResourceDefinition = true;
                 }
             } else {
-                addConnectorResourceDefinitionDescriptor(desc);
+                addConnectorResourceDefinitionDescriptor(null);
             }
         }
     }

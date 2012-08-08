@@ -143,10 +143,10 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
             // to read tag lib under web-app. Starting with 2.4, the tag moved under jsp-config
             DOLUtils.getDefaultLogger().fine("Adding taglib component " + newDescriptor);
             if (descriptor.getJspConfigDescriptor()==null) {
-                descriptor.setJspConfigDescriptor(new JspConfigDescriptor());
+                descriptor.setJspConfigDescriptor(new JspConfigDescriptorImpl());
             }
             descriptor.getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);
-        } else if (newDescriptor instanceof JspConfigDescriptor) {
+        } else if (newDescriptor instanceof JspConfigDescriptorImpl) {
             DOLUtils.getDefaultLogger().fine("Adding JSP Config Descriptor" 
                 + newDescriptor);
             if (descriptor.getJspConfigDescriptor()!=null) {
@@ -154,7 +154,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
                     "Has more than one jsp-config element!");
             }
             descriptor.setJspConfigDescriptor(
-                (JspConfigDescriptor)newDescriptor);
+                (JspConfigDescriptorImpl)newDescriptor);
         } else if (newDescriptor instanceof LoginConfiguration) {
             DOLUtils.getDefaultLogger().fine("Adding Login Config Descriptor"
                  + newDescriptor);
@@ -339,7 +339,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         }
         
         // jsp-config *
-	JspConfigDescriptor jspConf = webBundleDesc.getJspConfigDescriptor();
+	JspConfigDescriptorImpl jspConf = webBundleDesc.getJspConfigDescriptor();
 	if(jspConf != null) {
 	    JspConfigNode ln = new JspConfigNode();
 	    ln.writeDescriptor(jarNode, 

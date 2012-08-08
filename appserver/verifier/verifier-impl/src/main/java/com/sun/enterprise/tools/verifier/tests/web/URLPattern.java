@@ -53,7 +53,7 @@ import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.enterprise.deployment.web.WebResourceCollection;
 import com.sun.enterprise.tools.verifier.Result;
 import com.sun.enterprise.tools.verifier.tests.ComponentNameConstructor;
-import org.glassfish.web.deployment.descriptor.JspConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.JspConfigDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 
 /**
@@ -133,7 +133,7 @@ public abstract class URLPattern extends WebTest implements WebCheck {
 
     //This method checks for url-patterns appearing in jsp-config element in an web-app.
     private void checkJspGroupProperties(WebBundleDescriptor descriptor, Result result, ComponentNameConstructor compName){
-        JspConfigDescriptor jspC=((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor();
+        JspConfigDescriptorImpl jspC=((WebBundleDescriptorImpl)descriptor).getJspConfigDescriptor();
         if (jspC==null) return;
         for (JspPropertyGroupDescriptor desc : jspC.getJspPropertyGroups()) {
             for (String urlPattern : desc.getUrlPatterns()) {

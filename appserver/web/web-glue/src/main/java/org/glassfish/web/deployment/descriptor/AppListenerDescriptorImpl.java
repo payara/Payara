@@ -52,7 +52,7 @@ import org.glassfish.deployment.common.Descriptor;
  */
 
 public class AppListenerDescriptorImpl extends Descriptor
-        implements AppListenerDescriptor, java.io.Serializable
+        implements AppListenerDescriptor
 {
     private String listenerClass;
     private String displayName;

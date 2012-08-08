@@ -43,19 +43,20 @@ package org.glassfish.web.deployment.descriptor;
 import org.glassfish.deployment.common.Descriptor;
 
 import java.util.*;
+import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.descriptor.JspPropertyGroupDescriptor;
 import javax.servlet.descriptor.TaglibDescriptor;
 
 /**
  * This is a descriptor for the taglib config used in a web application.
  */
-public class JspConfigDescriptor extends Descriptor
-        implements javax.servlet.descriptor.JspConfigDescriptor {
+public class JspConfigDescriptorImpl extends Descriptor
+        implements JspConfigDescriptor {
 
     private Set<TaglibDescriptor> taglibs = null;
     private Vector<JspPropertyGroupDescriptor> jspGroups = null;
 
-    public void add(JspConfigDescriptor jspConfigDesc) {
+    public void add(JspConfigDescriptorImpl jspConfigDesc) {
         if (jspConfigDesc.taglibs != null) {
             getTaglibs().addAll(jspConfigDesc.taglibs);
         }

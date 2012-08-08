@@ -40,6 +40,9 @@
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.glassfish.web.deployment.runtime.SessionProperties;
 
 /**
@@ -47,8 +50,15 @@ import org.glassfish.web.deployment.runtime.SessionProperties;
  *
  * @version 
  */
-public class SessionPropertiesNode extends WebPropertyContainerNode {
-    // tag class
+public class SessionPropertiesNode extends RuntimeDescriptorNode {
+    /**
+     * Initialize the child handlers
+     */
+    public SessionPropertiesNode() {
+
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                WebPropertyNode.class, "addWebProperty");
+    }
 
     protected SessionProperties descriptor = null;
 

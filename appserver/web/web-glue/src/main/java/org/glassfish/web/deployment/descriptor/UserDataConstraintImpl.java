@@ -73,7 +73,7 @@ public class UserDataConstraintImpl extends Descriptor implements UserDataConstr
     /**
     * Return a String array of my static transport types.
     */
-    public static final String[] getTransportGuaranteeChoices() {
+    private static final String[] getTransportGuaranteeChoices() {
 	return  transportGuaranteeChoices;
     }
     

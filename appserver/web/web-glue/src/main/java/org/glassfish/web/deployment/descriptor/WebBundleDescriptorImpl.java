@@ -116,7 +116,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private LoginConfiguration loginConfiguration;
     private Set<EnvironmentEntry> environmentEntries;
     private LocaleEncodingMappingListDescriptor localeEncodingMappingDesc = null;
-    private JspConfigDescriptor jspConfigDescriptor = null;
+    private JspConfigDescriptorImpl jspConfigDescriptor = null;
 
     private Vector<ServletFilter> servletFilters = null;
     private Vector<ServletFilterMapping> servletFilterMappings = null;
@@ -231,9 +231,9 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
 
         if (webBundleDescriptor.getJspConfigDescriptor() != null) {
-            JspConfigDescriptor jspConfigDesc = getJspConfigDescriptor();
+            JspConfigDescriptorImpl jspConfigDesc = getJspConfigDescriptor();
             if (jspConfigDesc == null) {
-                jspConfigDesc = new JspConfigDescriptor();
+                jspConfigDesc = new JspConfigDescriptorImpl();
                 setJspConfigDescriptor(jspConfigDesc);
             }
             jspConfigDescriptor.add(webBundleDescriptor.getJspConfigDescriptor());
@@ -1481,11 +1481,11 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
 
 
-    public JspConfigDescriptor getJspConfigDescriptor() {
+    public JspConfigDescriptorImpl getJspConfigDescriptor() {
         return jspConfigDescriptor;
     }
 
-    public void setJspConfigDescriptor(JspConfigDescriptor jspC) {
+    public void setJspConfigDescriptor(JspConfigDescriptorImpl jspC) {
         jspConfigDescriptor = jspC;
     }
 

@@ -40,14 +40,24 @@
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import org.glassfish.web.deployment.runtime.JspConfig;
 
 /**
  * This node is the superclass for all web related runtime nodes
  *
  */
-public class JspConfigRuntimeNode extends WebPropertyContainerNode {
-    // tag class
+public class JspConfigRuntimeNode extends RuntimeDescriptorNode {
+    /**
+     * Initialize the child handlers
+     */
+    public JspConfigRuntimeNode() {
+
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                WebPropertyNode.class, "addWebProperty");
+    }
 
     protected JspConfig descriptor = null;
 

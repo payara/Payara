@@ -71,6 +71,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 // END SJSAS 6374691
@@ -682,7 +683,7 @@ final class StandardHostValve
 
         if (response.getContentType() == null && location != null) {
             String str = location.substring(location.lastIndexOf('.') + 1);
-            str = context.findMimeMapping(str.toLowerCase());
+            str = context.findMimeMapping(str.toLowerCase(Locale.ENGLISH));
             if(str != null)
                 ((ServletResponse) response).setContentType(str);
         }

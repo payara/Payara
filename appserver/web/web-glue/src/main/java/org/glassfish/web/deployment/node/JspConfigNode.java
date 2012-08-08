@@ -42,7 +42,7 @@ package org.glassfish.web.deployment.node;
 
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
-import org.glassfish.web.deployment.descriptor.JspConfigDescriptor;
+import org.glassfish.web.deployment.descriptor.JspConfigDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.JspGroupDescriptor;
 import org.glassfish.web.deployment.descriptor.TagLibConfigurationDescriptor;
 import org.glassfish.web.deployment.xml.WebTagNames;
@@ -53,22 +53,22 @@ import javax.servlet.descriptor.*;
 /**
  * This node represents the <jsp-config> element in a web application.
  */
-public class JspConfigNode extends DeploymentDescriptorNode<JspConfigDescriptor> {
+public class JspConfigNode extends DeploymentDescriptorNode<JspConfigDescriptorImpl> {
     public JspConfigNode() {
 	super();
 	registerElementHandler(new XMLElement(WebTagNames.TAGLIB), TagLibNode.class, "addTagLib");
 	registerElementHandler(new XMLElement(WebTagNames.JSP_GROUP), JspGroupNode.class, "addJspGroup");
     }
 
-    protected JspConfigDescriptor descriptor = null;
+    protected JspConfigDescriptorImpl descriptor = null;
 
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
     @Override
-    public JspConfigDescriptor getDescriptor() {
+    public JspConfigDescriptorImpl getDescriptor() {
         if (descriptor==null) {
-            descriptor = new JspConfigDescriptor();
+            descriptor = new JspConfigDescriptorImpl();
         }
         return descriptor;
     }
@@ -81,7 +81,7 @@ public class JspConfigNode extends DeploymentDescriptorNode<JspConfigDescriptor>
      * @param the descriptor to write
      * @return the DOM tree top node
      */
-    public Node writeDescriptor(Node parent, String nodeName, JspConfigDescriptor descriptor) {    
+    public Node writeDescriptor(Node parent, String nodeName, JspConfigDescriptorImpl descriptor) {
 	Node myNode = appendChild(parent, nodeName);
 	TagLibNode lNode = new TagLibNode();
 	for (TaglibDescriptor desc : descriptor.getTaglibs()) {
