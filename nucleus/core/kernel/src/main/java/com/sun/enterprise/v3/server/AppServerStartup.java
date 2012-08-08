@@ -115,6 +115,7 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     ServiceLocator locator;
 
+    @Inject
     ModulesRegistry systemRegistry;
 
     @Inject
