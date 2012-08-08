@@ -47,3 +47,9 @@
 DynamicImport-Package: \
                         org.glassfish.flashlight, \
                         org.glassfish.flashlight.datatree
+
+# logging packages are not always available in every distribution, 
+# e.g., in some embedded setup, we may disable logging altogether.
+# So, we need to mark it as an optional dependency. We can remove this
+# when admin team moves logging rest resources out of this module to logging module.
+Import-Package: com.sun.enterprise.server.logging.*; resolution:=optional, *
