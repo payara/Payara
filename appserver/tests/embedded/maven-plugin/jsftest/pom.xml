@@ -73,7 +73,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.glassfish</groupId>
+                <groupId>org.glassfish.embedded</groupId>
                 <artifactId>maven-embedded-glassfish-plugin</artifactId>
                 <version>4.0-SNAPSHOT</version>
                 <configuration>

@@ -60,7 +60,7 @@
   <defaultGoal>install</defaultGoal>
   <plugins>
     <plugin>
-      <groupId>org.glassfish</groupId>
+      <groupId>org.glassfish.embedded</groupId>
       <artifactId>maven-embedded-glassfish-plugin</artifactId>
       <configuration>
         <goalPrefix>glassfish</goalPrefix>
