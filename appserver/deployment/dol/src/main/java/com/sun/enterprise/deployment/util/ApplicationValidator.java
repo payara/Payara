@@ -89,7 +89,8 @@ public class ApplicationValidator extends ComponentValidator
 
     private boolean allUniqueResource = true;
 
-    
+    String inValidJndiName = "";
+
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ApplicationValidator.class);
     
@@ -104,7 +105,7 @@ public class ApplicationValidator extends ComponentValidator
                         new Object[] { application.getAppName() });
                 throw new IllegalStateException(
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
-                        "Application validation fails for given application {0}",application.getAppName()));
+                        "Application validation fails for given application {0} for jndi-name {1}",application.getAppName(),inValidJndiName));
             }
 
             for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
@@ -519,6 +520,7 @@ public class ApplicationValidator extends ComponentValidator
                     String scope = (String) scopeVector.get(i);
                     for (int j = 0; j < appVectorName.size(); j++) {
                         if (scope.equals(appVectorName.get(j))) {
+                            inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
                                 new Object[] { jndiName });
                             return false;
@@ -526,6 +528,7 @@ public class ApplicationValidator extends ComponentValidator
                     }
                     for (int j = 0; j < ebdVectorName.size(); j++) {
                         if (scope.equals(ebdVectorName.get(j))) {
+                            inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
                                 new Object[] { jndiName });
                             return false;
@@ -539,6 +542,7 @@ public class ApplicationValidator extends ComponentValidator
                     String scope = (String) scopeVector.get(i);
                     for (int j = 0; j < appVectorName.size(); j++) {
                         if (scope.equals(appVectorName.get(j))) {
+                            inValidJndiName = jndiName;
                             DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
                                 new Object[] { jndiName });
                             return false;
@@ -569,6 +573,7 @@ public class ApplicationValidator extends ComponentValidator
                             return false;
                         }
                     } catch (NamingException e) {
+                        inValidJndiName = jndiName;
                         DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.lookup",
                                 new Object[] { jndiName });
                     }
@@ -598,6 +603,7 @@ public class ApplicationValidator extends ComponentValidator
                     otherElements = otherElements.substring(0, otherElements.indexOf("#"));
                 }
                 if (!firstElement.equals(otherElements)) {
+                    inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
                 }
@@ -634,6 +640,7 @@ public class ApplicationValidator extends ComponentValidator
                     otherElements = otherElements.substring(0, otherElements.indexOf("#"));
                 }
                 if (!firstElement.equals(otherElements)) {
+                    inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
                 }
@@ -670,6 +677,7 @@ public class ApplicationValidator extends ComponentValidator
                     otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
                 }
                 if (!firstElement.equals(otherElements)) {
+                    inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
                     return false;
