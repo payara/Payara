@@ -40,17 +40,17 @@
 
 package com.sun.enterprise.security.ssl.impl;
 
-import org.glassfish.security.common.MasterPassword;
+import com.sun.enterprise.security.store.IdentityManagement;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PreDestroy;
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.glassfish.security.common.MasterPassword;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * A contract to pass the Glassfish master password between the admin module and
@@ -60,27 +60,17 @@ import javax.inject.Singleton;
  */
 @Service(name="Security SSL Password Provider Service")
 @Singleton
-public class MasterPasswordImpl implements MasterPassword, PreDestroy {
+public class MasterPasswordImpl implements MasterPassword {
 
-    private char[] _masterPassword;
+    @Inject @Optional IdentityManagement idm;
 
-    public void setMasterPassword(char[] masterPassword) {
-        _masterPassword = Arrays.copyOf(masterPassword, masterPassword.length);
-    }
-
+    @Override
     public PasswordAdapter getMasterPasswordAdapter() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-        PasswordAdapter passwordAdapter = new PasswordAdapter(_masterPassword);
-        return passwordAdapter;
+        char pw[] = idm == null ? null : idm.getMasterPassword();
+        return new PasswordAdapter(pw);
     }
-
-    char[] getMasterPassword() {
-        if (_masterPassword == null) {
-            return null;
-        }
-        return Arrays.copyOf(_masterPassword, _masterPassword.length);
-    }
-
-    public void preDestroy() {
-        Arrays.fill(_masterPassword, ' ');
+    
+    public char[] getMasterPassword() {
+        return idm == null ? null : idm.getMasterPassword();
     }
 }

@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.glassfish.bootstrap.StartupContextUtil;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.security.store.IdentityManagement;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.InitRunLevel;
@@ -67,8 +68,7 @@ import java.util.logging.Logger;
  * @author &#2325;&#2375;&#2342;&#2366;&#2352 (km@dev.java.net)
  */
 @Service(name="jks-based")
-@RunLevel(InitRunLevel.VAL)
-public class IdmService implements PostConstruct/*, IdentityManagement*/ {
+public class IdmService implements PostConstruct, IdentityManagement {
 
     private final Logger logger = Logger.getAnonymousLogger();
 
@@ -78,17 +78,7 @@ public class IdmService implements PostConstruct/*, IdentityManagement*/ {
     @Inject
     private volatile ServerEnvironmentImpl env = null;
 
-    @Inject @Named("Security SSL Password Provider Service") @Optional
-    private MasterPassword masterPasswordHelper=null;
-
-    @Inject @Named("JMX SSL Password Provider Service") @Optional
-    private MasterPassword jmxMasterPasswordHelper=null;
-
     private volatile char[] masterPassword;
-
-    //private final String[] masterPasswordServices = {"Security SSL Password Provider Service"};
-
-    //private final Map<String, String> otherPasswords = Collections.synchronizedMap(new HashMap<String, String>());  //TODO later
 
     private static final String FIXED_KEY = "master-password"; //the fixed key for master-password file
     private static final String PASSWORDFILE_OPTION_TO_ASMAIN = "-passwordfile"; //note single hyphen, in line with other args to ASMain!
@@ -110,18 +100,11 @@ public class IdmService implements PostConstruct/*, IdentityManagement*/ {
         if (!success) {
             masterPassword = "changeit".toCharArray(); //the default;
         }
-        //success = verify();            //See 9592 for details. This saves some time
-        //if (!success)
-            //logger.warning("THIS SHOULD BE FIXED, IN EMBEDDED CASE, THERE IS NO MASTER PASSWORD SET OR KEYSTORE DOES NOT EXIST ...");
-
-        if (masterPasswordHelper!=null)
-            masterPasswordHelper.setMasterPassword(masterPassword);
-
-        if (jmxMasterPasswordHelper != null)
-          jmxMasterPasswordHelper.setMasterPassword(masterPassword);
-
-        Arrays.fill(masterPassword, ' ');
-        masterPassword = null;
+    }
+    
+    @Override
+    public char[] getMasterPassword() {
+        return Arrays.copyOf(masterPassword, masterPassword.length);
     }
 
     ///// All Private
@@ -222,27 +205,4 @@ public class IdmService implements PostConstruct/*, IdentityManagement*/ {
         }
     }
 
-//    private boolean verify() {
-////        long t0 = System.currentTimeMillis();
-//        //only tries to open the keystore
-//        FileInputStream fis = null;
-//        try {
-//            fis = new FileInputStream(env.getJKS());
-//            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-//            ks.load(fis, masterPassword);
-////            long t1 = System.currentTimeMillis();
-////            System.out.println("time spent in verify(): " + (t1-t0) + " ms");
-//            return true;
-//        } catch (Exception e) {
-//            logger.warning(e.getMessage());
-//            return false;
-//        } finally {
-//            try {
-//                if (fis != null)
-//                    fis.close();
-//            } catch(IOException ioe) {
-//                //ignore, I know ...
-//            }
-//        }
-//    }
 }

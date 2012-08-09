@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,17 @@
  */
 package org.glassfish.admin.mbeanserver.ssl;
 
+import com.sun.enterprise.security.store.IdentityManagement;
 import com.sun.enterprise.security.store.PasswordAdapter;
-import org.glassfish.security.common.MasterPassword;
-
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PreDestroy;
-import javax.inject.Singleton;
-
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.glassfish.security.common.MasterPassword;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Created by IntelliJ IDEA.
@@ -61,27 +60,18 @@ import java.util.Arrays;
  */
 @Service(name="JMX SSL Password Provider Service")
 @Singleton
-public class JMXMasterPasswordImpl implements MasterPassword, PreDestroy {
+public class JMXMasterPasswordImpl implements MasterPassword {
 
-    private char[] _masterPassword;
-
-    public void setMasterPassword(char[] masterPassword) {
-        _masterPassword = Arrays.copyOf(masterPassword, masterPassword.length);
+    @Inject @Optional IdentityManagement idm;
+    
+    @Override
+    public PasswordAdapter getMasterPasswordAdapter() 
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+        char pw[] = idm == null ? null : idm.getMasterPassword();
+        return new PasswordAdapter(pw);
     }
-
-    public PasswordAdapter getMasterPasswordAdapter() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-        PasswordAdapter passwordAdapter = new PasswordAdapter(_masterPassword);
-        return passwordAdapter;
-    }
-
+    
     public char[] getMasterPassword() {
-        if (_masterPassword == null) {
-            return null;
-        }
-        return Arrays.copyOf(_masterPassword, _masterPassword.length);
-    }
-
-    public void preDestroy() {
-        Arrays.fill(_masterPassword, ' ');
+        return idm == null ? null : idm.getMasterPassword();
     }
 }
