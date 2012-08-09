@@ -675,7 +675,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     public void preDestroy() {
         try {
-            _embedded.stop();
+            for (Connector con : _embedded.findConnectors()) {
+                deleteConnector((WebConnector)con);
+            }
+            _embedded.removeEngine(getEngine());
+            _embedded.destroy();
         } catch (LifecycleException le) {
             _logger.log(Level.SEVERE,
                     "webcontainer.exceptionDuringEmbeddedStop", le);

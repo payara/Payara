@@ -1688,43 +1688,45 @@ public class VirtualServer extends StandardHost
             }
         }
         for (final NetworkListener listener : networkListeners) {
-            final GrizzlyProxy proxy =
-                    (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
-            if (proxy != null) {
-                GenericGrizzlyListener grizzlyListener =
-                        (GenericGrizzlyListener) proxy.getUnderlyingListener();
-                List<HttpCodecFilter> codecFilters =
-                        grizzlyListener.getFilters(HttpCodecFilter.class);
-                if (codecFilters == null || codecFilters.isEmpty()) {
-                    _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
+            try {
+                final GrizzlyProxy proxy = (GrizzlyProxy) grizzlyService.lookupNetworkProxy(listener);
+                if (proxy != null) {
+                    GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener) proxy.getUnderlyingListener();
+                    List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
+                    if (codecFilters == null || codecFilters.isEmpty()) {
+                        _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
+                    } else {
+                        for (HttpCodecFilter codecFilter : codecFilters) {
+                            if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
+                                httpProbe = new HttpProbeImpl(listener, isAccessLoggingEnabled(globalAccessLoggingEnabled));
+                                codecFilter.getMonitoringConfig().addProbes(httpProbe);
+                            }
+                        }
+                    }
+                    grizzlyListener.getTransport().getConnectionMonitoringConfig().addProbes(new ConnectionProbe.Adapter() {
+
+                        RequestProbeProvider requestProbeProvider = webContainer.getRequestProbeProvider();
+
+                        @Override
+                        public void onReadEvent(Connection connection, Buffer data, int size) {
+                            if (requestProbeProvider != null) {
+                                requestProbeProvider.dataReceivedEvent(size);
+                            }
+                        }
+
+                        @Override
+                        public void onWriteEvent(Connection connection, Buffer data, long size) {
+                            if (requestProbeProvider != null) {
+                                requestProbeProvider.dataSentEvent(size);
+                            }
+                        }
+                    });
+
                 } else {
-                    for (HttpCodecFilter codecFilter : codecFilters) {
-                        if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
-                            httpProbe = new HttpProbeImpl(listener, isAccessLoggingEnabled(globalAccessLoggingEnabled));
-                            codecFilter.getMonitoringConfig().addProbes(httpProbe);
-                        }
-                    }
+                    _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
                 }
-                grizzlyListener.getTransport().getConnectionMonitoringConfig().addProbes(new ConnectionProbe.Adapter() {
 
-                    RequestProbeProvider requestProbeProvider = webContainer.getRequestProbeProvider();
-
-                    @Override
-                    public void onReadEvent(Connection connection, Buffer data, int size) {
-                        if (requestProbeProvider != null) {
-                            requestProbeProvider.dataReceivedEvent(size);
-                        }
-                    }
-
-                    @Override
-                    public void onWriteEvent(Connection connection, Buffer data, long size) {
-                        if (requestProbeProvider != null) {
-                            requestProbeProvider.dataSentEvent(size);
-                        }
-                    }
-                });
-
-            } else {
+            } catch (Exception ex) {
                 _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
             }
         }
