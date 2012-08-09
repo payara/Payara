@@ -48,26 +48,18 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.uuid.UuidGenerator;
 import com.sun.enterprise.util.uuid.UuidGeneratorImpl;
-import com.sun.enterprise.v3.admin.AdminAdapter;
 import com.sun.logging.LogDomains;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.util.CookieSerializerUtils;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -459,7 +451,7 @@ public class CommandResource {
             }
             int ind = fullName.indexOf('/');
             if (ind > 0) {
-                this.scope = fullName.substring(0, ind);
+                this.scope = fullName.substring(0, ind + 1);
                 this.name = fullName.substring(ind + 1);
             } else {
                 this.name = fullName;
@@ -476,7 +468,11 @@ public class CommandResource {
         
         @Override
         public String toString() {
-            return "CommandName[" + scope + " / " + name + "]";
+            if (this.scope == null) {
+                return "CommandName[" + name + "]";
+            } else {
+                return "CommandName[" + scope + name + "]";
+            }
         }
         
     }
