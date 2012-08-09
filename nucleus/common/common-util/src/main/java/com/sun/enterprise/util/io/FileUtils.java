@@ -46,6 +46,7 @@
 package com.sun.enterprise.util.io;
 
 import com.sun.enterprise.universal.io.SmartFile;
+import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import java.io.*;
 import java.util.*;
 
@@ -62,6 +63,7 @@ import java.util.Locale;
 public class FileUtils {
     final static Logger _logger = Logger.getLogger("javax.enterprise.system.util");
     final static Logger _utillogger = com.sun.logging.LogDomains.getLogger(FileUtils.class,com.sun.logging.LogDomains.UTIL_LOGGER);
+    private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
     /**
      * The method, java.io.File.getParentFile() does not necessarily do what
@@ -960,7 +962,12 @@ public class FileUtils {
                     }
                 } while (read!=-1);
             } else {
-                ByteBuffer byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
+                ByteBuffer byteBuffer;
+                try{
+                    byteBuffer = ByteBuffer.allocate(Long.valueOf(size).intValue());
+                }catch(Throwable err){
+                    throw new IOException(messages.get("allocate.more.than.java.heap.space", err));
+                }
                 inChannel.read(byteBuffer);
                 byteBuffer.rewind();
                 outChannel.write(byteBuffer);
