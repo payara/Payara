@@ -213,7 +213,6 @@ public class CLIUtil {
     public static String[] getLocalCommands(ServiceLocator habitat) {
         List<String> names = new ArrayList<String>();
 
-        String cname = CLICommand.class.getName();
         for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class)) {
 
         	String name = command.getActiveDescriptor().getName();
@@ -242,7 +241,6 @@ public class CLIUtil {
          * names.
          */
         Set<String> localnames = new HashSet<String>();
-        String cname = CLICommand.class.getName();
         for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class))  {
             String name = command.getActiveDescriptor().getName();
             localnames.add(name);
