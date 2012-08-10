@@ -45,8 +45,6 @@ import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotDuplicateTargetName;
 import com.sun.enterprise.config.serverbeans.customvalidators.NotTargetKeyword;
 import com.sun.enterprise.config.util.ServerHelper;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.api.admin.config.Container;
 import org.glassfish.api.admin.config.Named;
@@ -55,9 +53,12 @@ import org.glassfish.api.admin.config.PropertyDesc;
 import org.glassfish.config.support.datatypes.Port;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.quality.ToDo;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Injectable;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBean;
@@ -408,7 +409,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
      * @param name name to use to identify the objects
      */
     @DuckTyped
-    void addIndex(Habitat habitat, String name);
+    void addIndex(ServiceLocator habitat, String name);
 
 
     /**
@@ -424,7 +425,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static String setLoggingProperty(Config c, String property, String value) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
-            ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
+            ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
@@ -438,7 +439,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static Map<String, String> getLoggingProperties(Config c) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
-            ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
+            ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
@@ -452,7 +453,7 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
 
         public static Map<String, String> updateLoggingProperties(Config c, Map<String, String> properties) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
-            ServerEnvironmentImpl env = cb.getHabitat().getComponent(ServerEnvironmentImpl.class);
+            ServerEnvironmentImpl env = cb.getHabitat().getService(ServerEnvironmentImpl.class);
             LoggingConfigImpl loggingConfig = new LoggingConfigImpl();
             loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
 
@@ -482,9 +483,9 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             return ServerHelper.getAdminListener(c);
         }
 
-        public static void addIndex(Config c, Habitat habitat, String name) {
-            habitat.addIndex(new ExistingSingletonInhabitant<Config>(c),
-                    Config.class.getName(), name);
+        public static void addIndex(Config c, ServiceLocator habitat, String name) {
+            ActiveDescriptor<?> bob = ServiceLocatorUtilities.addOneDescriptor(habitat,
+                    BuilderHelper.createConstantDescriptor(c, name, Config.class));
 
             // directly referenced objects
             ConfigBeanProxy dirref[] = {
@@ -501,17 +502,17 @@ public interface Config extends Injectable, Named, PropertyBag, SystemPropertyBa
             };
             for (ConfigBeanProxy cbp : dirref) {
                 if (cbp != null) {
-                    habitat.addIndex(new ExistingSingletonInhabitant<ConfigBeanProxy>(cbp),
-                            ConfigSupport.getImpl(cbp).getProxyType().getName(),
-                            name);
+                    ServiceLocatorUtilities.addOneDescriptor(habitat,
+                            BuilderHelper.createConstantDescriptor(cbp, name,
+                                    ConfigSupport.getImpl(cbp).getProxyType()));
                 }
             }
 
             // containers
             for (Container extension : c.getContainers()) {
-                habitat.addIndex(new ExistingSingletonInhabitant<Container>(extension),
-                        ConfigSupport.getImpl(extension).getProxyType().getName(),
-                        name);
+                ServiceLocatorUtilities.addOneDescriptor(habitat,
+                        BuilderHelper.createConstantDescriptor(extension, name,
+                                ConfigSupport.getImpl(extension).getProxyType()));
             }
         }
 

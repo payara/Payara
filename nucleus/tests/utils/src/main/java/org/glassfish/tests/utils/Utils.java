@@ -145,13 +145,10 @@ public class Utils {
 			final ConfigApiTest test) {
         final String fileName = test.getFileName();
         // we cache the habitat per xml file
-
-        if (ServiceLocatorFactory.getInstance().find(fileName) != null) {
-        	ServiceLocatorFactory.getInstance().destroy(fileName);
-        }
         
         if (habitats.containsKey(fileName))  {
-        	habitats.remove(fileName);
+        	ServiceLocator locator = habitats.remove(fileName);
+        	ServiceLocatorFactory.getInstance().destroy(locator);
         }
 	}
 }
