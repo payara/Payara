@@ -46,7 +46,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
-import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.internal.deployment.SnifferManager;
@@ -103,15 +102,6 @@ public class SnifferManagerImpl implements SnifferManager {
     }
 
     /**
-     * Returns all the presently registered composite sniffers
-     *
-     * @return Collection (possibly empty but never null) of CompositeSniffer
-     */
-    public Collection<CompositeSniffer> getCompositeSniffers() {
-        return habitat.getAllByContract(CompositeSniffer.class);
-    }
-
-    /**
      * Check if there's any {@link Sniffer} installed at all.
      */
     public final boolean hasNoSniffers() {
@@ -149,20 +139,14 @@ public class SnifferManagerImpl implements SnifferManager {
 
     public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types) {
         // it is important to keep an ordered sequence here to keep sniffers
+        Collection<Sniffer> regularSniffers = getSniffers();
         // in their natural order.
-        List<Sniffer> regularSniffers = new ArrayList<Sniffer>();
-        for (Sniffer sniffer : getSniffers()) {
-            if (!(sniffer instanceof CompositeSniffer)) 
-                regularSniffers.add(sniffer);
-        }
-
         // scan for registered annotations and retrieve applicable sniffers
         List<Sniffer> appSniffers = this.getApplicableSniffers(uris, types, regularSniffers, true);
         
         // call handles method of the sniffers
         for (Sniffer sniffer : regularSniffers) {
-            if ( !appSniffers.contains(sniffer) &&
-                sniffer.handles(context)) {
+            if ( !appSniffers.contains(sniffer) && sniffer.handles(context)) {
                 appSniffers.add(sniffer);
             }
         }
@@ -175,34 +159,6 @@ public class SnifferManagerImpl implements SnifferManager {
         // we may need a more generic way of doing this, maybe by adding an API to Sniffer
         return sniffer.getModuleType().equalsIgnoreCase("osgi")
           || sniffer.getModuleType().equalsIgnoreCase("library");
-    }
-
-    /**
-     * Returns a collection of composite sniffers that recognized some parts of
-     * the passed archive as components their container handle.
-     *
-     * If no sniffer recognize the passed archive, an empty collection is
-     * returned.
-     *
-     * @param context deployment context
-     * @return possibly empty collection of sniffers that handle the passed
-     * archive.
-     */
-    public Collection<CompositeSniffer> getCompositeSniffers(DeploymentContext context) {
-        // it is important to keep an ordered sequence here to keep sniffers
-        // in their natural order.
-
-        List<CompositeSniffer> appSniffers =
-                getApplicableSniffers(context, getCompositeSniffers(), false);
-
-        // call handles method of the sniffers
-        for (CompositeSniffer sniffer : getCompositeSniffers()) {
-            if (!appSniffers.contains(sniffer) && 
-                sniffer.handles(context)) {
-                appSniffers.add(sniffer);
-            }
-        }
-        return appSniffers;
     }
 
     private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, Collection<T> sniffers, boolean checkPath) {

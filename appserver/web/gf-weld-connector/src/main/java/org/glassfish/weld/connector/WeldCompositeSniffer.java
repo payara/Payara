@@ -43,7 +43,6 @@ package org.glassfish.weld.connector;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -61,7 +60,7 @@ import javax.inject.Inject;
  */
 @Service(name = "weldCompositeSniffer")
 @Singleton
-public class WeldCompositeSniffer extends WeldSniffer implements CompositeSniffer {
+public class WeldCompositeSniffer extends WeldSniffer {
 
     @Inject
     BaseServiceLocator habitat;

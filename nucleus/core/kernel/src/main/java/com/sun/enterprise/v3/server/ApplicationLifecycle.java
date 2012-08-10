@@ -644,10 +644,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (handler instanceof CompositeHandler) {
                 ((CompositeHandler)handler).initCompositeMetaData(context);
                 context.getAppProps().setProperty(ServerTags.IS_COMPOSITE, "true");
-                sniffers = snifferManager.getCompositeSniffers(context);
-            } else {
-                sniffers = snifferManager.getSniffers(context);
-            }
+            } 
+            sniffers = snifferManager.getSniffers(context);
         }
         context.addTransientAppMetaData(DeploymentProperties.SNIFFERS, sniffers);
         snifferManager.validateSniffers(sniffers, context);

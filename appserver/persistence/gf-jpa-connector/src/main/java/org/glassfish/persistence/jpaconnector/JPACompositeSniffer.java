@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.archivist.EARBasedPersistenceHelper;
 import com.sun.enterprise.deployment.archivist.PersistenceArchivist;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.api.container.CompositeSniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -68,7 +67,7 @@ import java.util.Set;
  */
 @Service(name = "jpaCompositeSniffer")
 @Singleton
-public class JPACompositeSniffer extends JPASniffer implements CompositeSniffer {
+public class JPACompositeSniffer extends JPASniffer {
 
     @Inject
     BaseServiceLocator habitat;

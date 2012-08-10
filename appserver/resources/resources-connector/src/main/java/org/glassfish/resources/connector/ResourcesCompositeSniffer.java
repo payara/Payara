@@ -43,7 +43,7 @@ package org.glassfish.resources.connector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.internal.deployment.GenericCompositeSniffer;
+import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.resources.api.ResourceConstants;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
@@ -61,7 +61,7 @@ import java.util.List;
  * @author Jagadish Ramu
  */
 @Service(name = ResourceConstants.GF_RESOURCES_MODULE_EAR)
-public class ResourcesCompositeSniffer extends GenericCompositeSniffer {
+public class ResourcesCompositeSniffer extends GenericSniffer {
 
     //TODO ASR package name change ?
     

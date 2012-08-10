@@ -45,7 +45,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.glassfish.internal.deployment.GenericCompositeSniffer;
+import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.EarType;
 import javax.inject.Inject;
@@ -59,7 +59,7 @@ import java.util.ArrayList;
  * @author Jerome Dochez
  */
 @Service(name="ear")
-public class EarSniffer extends GenericCompositeSniffer {
+public class EarSniffer extends GenericSniffer {
 
     @Inject EarType earType;
     @Inject BaseServiceLocator locator;

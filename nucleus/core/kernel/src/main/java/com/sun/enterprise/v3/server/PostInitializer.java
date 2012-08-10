@@ -63,7 +63,6 @@ public class PostInitializer implements org.glassfish.hk2.api.PostConstruct {
     SnifferManager sniffers;
 
     public void postConstruct() {
-        sniffers.getCompositeSniffers();
         sniffers.getSniffers();
     }
 }
