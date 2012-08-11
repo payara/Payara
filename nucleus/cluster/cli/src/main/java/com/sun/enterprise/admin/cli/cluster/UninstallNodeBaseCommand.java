@@ -44,8 +44,8 @@ import org.glassfish.api.admin.CommandException;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -61,7 +61,7 @@ abstract class UninstallNodeBaseCommand extends NativeRemoteCommandsBase {
     @Param(optional = true, defaultValue = "false")
     private boolean force;
     @Inject
-    private BaseServiceLocator habitat;
+    private Habitat habitat;
 
     abstract void deleteFromHosts() throws CommandException;
 

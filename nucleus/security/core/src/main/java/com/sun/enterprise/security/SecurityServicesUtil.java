@@ -50,8 +50,9 @@ import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.logging.LogDomains;
 import java.util.logging.Logger;
 import javax.security.auth.callback.CallbackHandler;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -63,7 +64,7 @@ import org.glassfish.internal.api.Globals;
 @Singleton
 public class SecurityServicesUtil {
 
-    private static BaseServiceLocator habitat = Globals.getDefaultHabitat();
+    private static Habitat habitat = Globals.getDefaultHabitat();
 //    @Inject
 //    private BaseServiceLocator habitat;
 //    
@@ -180,7 +181,7 @@ public class SecurityServicesUtil {
 //
 //    }
 
-    public BaseServiceLocator getHabitat() {
+    public Habitat getHabitat() {
         return habitat;
     }
     

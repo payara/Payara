@@ -74,7 +74,7 @@ public final class SetupSshKey extends NativeRemoteCommandsBase {
     @Param(optional = true, defaultValue = "false")
     private boolean generatekey;
     @Inject
-    private BaseServiceLocator habitat;
+    private Habitat habitat;
 
     public SetupSshKey() {
     }

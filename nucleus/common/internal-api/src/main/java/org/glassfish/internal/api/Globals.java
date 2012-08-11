@@ -49,7 +49,6 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.common.util.admin.GlassFishErrorServiceImpl;
@@ -57,11 +56,9 @@ import org.glassfish.common.util.admin.HK2BindTracingService;
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.bootstrap.HK2Populator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
-import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorImpl;
@@ -91,7 +88,7 @@ public class Globals implements Init {
         defaultHabitat = habitat;
     }
 
-    public static BaseServiceLocator getDefaultBaseServiceLocator() {
+    public static Habitat getDefaultBaseServiceLocator() {
     	return getDefaultHabitat();
     }
     
@@ -107,7 +104,7 @@ public class Globals implements Init {
         defaultHabitat = habitat;
     }
 
-    public static BaseServiceLocator getStaticBaseServiceLocator() {
+    public static Habitat getStaticBaseServiceLocator() {
     	return getStaticHabitat();
     }
     
@@ -131,10 +128,6 @@ public class Globals implements Init {
 
         return defaultHabitat;
     }
-
-	public static void setDefaultHabitat(BaseServiceLocator habitat) {
-		setDefaultHabitat((Habitat)habitat);
-	}
 	
 	private static void initializeClient(ServiceLocator locator) {
 	    ClassLoader cl = Thread.currentThread().getContextClassLoader();
