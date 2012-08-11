@@ -60,9 +60,14 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import java.util.logging.Logger;
 import java.util.Properties;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 
@@ -78,7 +83,7 @@ import org.glassfish.api.admin.RestEndpoints;
         path="_lifecycle", 
         description="_lifecycle")
 })
-public class InstanceLifecycleModuleCommand implements AdminCommand {
+public class InstanceLifecycleModuleCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceLifecycleModuleCommand.class);
 
@@ -103,6 +108,18 @@ public class InstanceLifecycleModuleCommand implements AdminCommand {
     @Inject
     Applications applications;
 
+    @Inject
+    private Domain domain;
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "write"));
+        return accessChecks;
+    }
+
+    
+    
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();

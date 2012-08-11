@@ -80,6 +80,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.RestEndpoint;
@@ -113,7 +116,8 @@ import org.jvnet.hk2.tracing.TracingUtilities;
         @RestParam(name="target", value="$parent")
     })
 })
-public class DeployCommand extends DeployCommandParameters implements AdminCommand, EventListener {
+public class DeployCommand extends DeployCommandParameters implements AdminCommand, EventListener, 
+        AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployCommand.class);
     
@@ -153,54 +157,58 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private List<String> previousTargets = new ArrayList<String>();
     private Properties previousVirtualServers = new Properties();
     private Properties previousEnabledAttributes = new Properties();
-
+    private Logger logger;
+    private ExtendedDeploymentContext initialContext;
+    private ExtendedDeploymentContext deploymentContext;
+    private ArchiveHandler archiveHandler;
+    private DeploymentTracing tracing;
+    private File expansionDir;
+    private ReadableArchive archive;
+    private ActionReport report;
+    private DeploymentTracing timing;
+    private DeployCommandSupplementalInfo suppInfo;
+    
     public DeployCommand() {
         origin = Origin.deploy;
     }
 
-    /**
-     * Entry point from the framework into the command execution
-     * @param context context for the command.
-     */
     @Override
-    public void execute(AdminCommandContext context) {
+    public boolean preAuthorization(AdminCommandContext context) {
+        events.register(this);
 
-      events.register(this);
-
-      final DeployCommandSupplementalInfo suppInfo =
+      suppInfo =
               new DeployCommandSupplementalInfo();
       context.getActionReport().
               setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
-      try {
-          DeploymentTracing timing = new DeploymentTracing();
-          DeploymentTracing tracing=null;
+          timing = new DeploymentTracing();
+          tracing=null;
           if (System.getProperty("org.glassfish.deployment.trace")!=null) {
             tracing = new DeploymentTracing();
           }
 
-        final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
+        report = context.getActionReport();
+        logger = context.getLogger();
 
         originalPathValue = path;
         if (!path.exists()) {
             report.setMessage(localStrings.getLocalString("fnf","File not found", path.getAbsolutePath()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            return false;
         }
         if (!path.canRead()) {
             report.setMessage(localStrings.getLocalString("fnr","File {0} does not have read permission", path.getAbsolutePath()));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            return false;
         }
 
         if (snifferManager.hasNoSniffers()) {
             String msg = localStrings.getLocalString("nocontainer", "No container services registered, done...");
             report.failure(logger,msg);
-            return;
+            return false;
         }
 
-        ReadableArchive archive;
+        
         try {
             archive = archiveFactory.openArchive(path, this);
             if (tracing!=null) {
@@ -215,25 +223,25 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 report.setMessage(msg + path.getAbsolutePath() + e.toString());
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            return;
+            return false;
         }
-        File expansionDir=null;
-        ExtendedDeploymentContext deploymentContext = null;
+        expansionDir=null;
+        deploymentContext = null;
         try {
 
             deployment.validateSpecifiedTarget(target);
 
-            ArchiveHandler archiveHandler = deployment.getArchiveHandler(archive, type);
+            archiveHandler = deployment.getArchiveHandler(archive, type);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
             if (archiveHandler==null) {
                 report.failure(logger,localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized",path.getName()));
-                return;
+                return false;
             }
 
             // create an initial  context
-            ExtendedDeploymentContext initialContext = new DeploymentContextImpl(report, logger, archive, this, env);
+            initialContext = new DeploymentContextImpl(report, logger, archive, this, env);
             initialContext.setArchiveHandler(archiveHandler);
 
             if (tracing!=null) {
@@ -278,7 +286,51 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 target = deployment.getDefaultTarget(name, origin, _classicstyle);
             }
 
-            // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
+            boolean isRegistered = deployment.isRegistered(name);
+            isredeploy = isRegistered && force;
+            return true;
+        } catch (Exception ex) {
+            events.unregister(this);
+            if (archive != null) {
+                try {
+                    archive.close();
+                } catch (IOException ioex) {
+                    throw new RuntimeException(ioex);
+                }
+            }
+            throw new RuntimeException(ex);
+        }
+    }
+
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getResourceNameForApps(domain), "create"));
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "create"));
+        
+        /*
+         * If this app is already deployed then this operation also represents
+         * an undeployment - a delete - of that app.  
+         */
+        if (isredeploy) {
+            final String appResource = DeploymentCommandUtils.getResourceNameForNewApp(domain, name);
+            accessChecks.add(new AccessCheck(appResource, "delete"));
+            final String appRefResource = DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target, name);
+            accessChecks.add(new AccessCheck(appRefResource, "delete"));
+        }
+        
+        return accessChecks;
+    }
+    
+    /**
+     * Entry point from the framework into the command execution
+     * @param context context for the command.
+     */
+    @Override
+    public void execute(AdminCommandContext context) {
+        try {
+          // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
             Collection<Interceptor> interceptors = habitat.getAllByContract(Interceptor.class);
             if (interceptors!=null) {
                 for (Interceptor interceptor : interceptors) {
@@ -286,8 +338,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 }
             }
             
-            boolean isRegistered = deployment.isRegistered(name);
-            isredeploy = isRegistered && force;
+            
             deployment.validateDeploymentTarget(target, name, isredeploy);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.TARGET_VALIDATED);
@@ -466,13 +517,13 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                     deploymentContext.clean();
                     throw e;
                 }
-
             }
         } catch(Throwable e) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
             report.setFailureCause(e);
         } finally {
+            events.unregister(this);
             try {
                 archive.close();
             } catch(IOException e) {
@@ -533,9 +584,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 deploymentContext.postDeployClean(true);
             }
         }
-      } finally {
-          events.unregister(this);
-      }
     }
 
     /**

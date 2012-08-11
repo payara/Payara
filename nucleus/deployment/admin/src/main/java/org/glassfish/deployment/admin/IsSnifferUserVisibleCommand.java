@@ -53,6 +53,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.internal.deployment.SnifferManager;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -68,6 +69,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
         path="is-sniffer-user-visible", 
         description="Is Sniffer User Visible")
 })
+@AccessRequired(resource="domain/sniffers/$sniffername", action="read")
 public class IsSnifferUserVisibleCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(IsSnifferUserVisibleCommand.class);

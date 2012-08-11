@@ -47,6 +47,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.api.ActionReport;
@@ -65,13 +67,16 @@ import org.jvnet.hk2.config.Transaction;
 import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.deployment.common.DeploymentUtils;
 
 /**
  * Create lifecycle modules.
@@ -98,7 +103,7 @@ import org.glassfish.api.admin.RuntimeType;
             @RestParam(name="target", value="$parent")
         })
 })
-public class CreateLifecycleModuleCommand implements AdminCommand {
+public class CreateLifecycleModuleCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true)
     public String name = null;
@@ -137,7 +142,24 @@ public class CreateLifecycleModuleCommand implements AdminCommand {
     Applications apps;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateLifecycleModuleCommand.class);
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        /*
+         * One check for the life cycle module itself.
+         */
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, "create"));
+        
+        /*
+         * One check for the target.
+         */
+        accessChecks.add(new AccessCheck(
+                DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "create"));
+        return accessChecks;
+    }
    
+    
     public void execute(AdminCommandContext context) {
         
         ActionReport report = context.getActionReport();

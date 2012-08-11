@@ -63,6 +63,7 @@ import org.glassfish.hk2.api.PerLookup;
 
 import java.util.Map;
 import java.io.IOException;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -81,6 +82,7 @@ import org.glassfish.api.admin.RestParam;
         description="Get Deployment Configurations",
         params={@RestParam(name="appname", value="$parent")})
 })
+@AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME + "/$appname", action="read")
 public class GetDeploymentConfigurationsCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetDeploymentConfigurationsCommand.class);

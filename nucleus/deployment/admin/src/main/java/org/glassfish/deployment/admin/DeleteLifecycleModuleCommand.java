@@ -41,6 +41,7 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -51,6 +52,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
+import java.util.Collection;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
@@ -63,8 +65,10 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 import java.util.logging.Logger;
 import java.util.Collections;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
@@ -99,7 +103,7 @@ import org.glassfish.api.admin.ServerEnvironment;
             @RestParam(name="target", value="$parent")
         })
 })
-public class DeleteLifecycleModuleCommand implements AdminCommand {
+public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true)
     public String name = null;
@@ -118,8 +122,26 @@ public class DeleteLifecycleModuleCommand implements AdminCommand {
 
     @Inject
     BaseServiceLocator habitat;
+    
+    private List<String> targets = null;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLifecycleModuleCommand.class);
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
+            targets = domain.getAllReferencedTargetsForApplication(name);
+            for (String t : targets) {
+                accessChecks.add(new AccessCheck(
+                        DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, name), "delete")
+                        );
+            }
+        } else {
+            accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, name), "delete"));
+        }
+        return accessChecks;
+    }
    
     public void execute(AdminCommandContext context) {
         
@@ -144,7 +166,6 @@ public class DeleteLifecycleModuleCommand implements AdminCommand {
         deployment.validateUndeploymentTarget(target, name);
 
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
-            List<String> targets = domain.getAllReferencedTargetsForApplication(name);
             // replicate command to all referenced targets
             try {
                 ParameterMapExtractor extractor = new ParameterMapExtractor(this);

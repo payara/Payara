@@ -73,12 +73,16 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Collections;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
@@ -105,7 +109,8 @@ import org.glassfish.deployment.versioning.VersioningException;
 @RestEndpoints({
         @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
 })
-public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
+public class UndeployCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver, 
+    AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(UndeployCommand.class);
    
@@ -135,16 +140,20 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
     @Inject
     Events events;
+    
+    private ActionReport report;
+    private Logger logger;
+    private List<String> matchedVersions;
 
     public UndeployCommand() {
         origin = Origin.undeploy;
         command = Command.undeploy;
     }
 
-    public void execute(AdminCommandContext context) {
-        
-        ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        report = context.getActionReport();
+        logger = context.getLogger();
 
         deployment.validateSpecifiedTarget(target);
 
@@ -169,7 +178,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 */
 
         // retrieve matched version(s) if exist
-        List<String> matchedVersions = null;
+        matchedVersions = null;
         try {
             matchedVersions = versioningService.getMatchedVersions(name, 
                 target);
@@ -181,7 +190,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 // on instance side for partial deployment case
                 logger.fine(e.getMessage());
             }
-            return;
+            return false;
         }
 
         // if matched list is empty and no VersioningException thrown,
@@ -195,8 +204,35 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                 // on instance side for partial deployment case
                 logger.fine(localStrings.getLocalString("ref.not.referenced.target","Application {0} is not referenced by target {1}", name, target));
             }
-            return;
+            return false;
         }
+        
+        for (String appName : matchedVersions) {
+            if (target == null) {
+                target = deployment.getDefaultTarget(appName, origin, _classicstyle);
+            }
+            
+            Application application = apps.getModule(Application.class, appName);
+
+            if (application==null) {
+                report.setMessage(localStrings.getLocalString("application.notreg","Application {0} not registered", appName));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
+    @Override
+    public Collection<? extends AccessRequired.AccessCheck> getAccessChecks() {
+        return DeploymentCommandUtils.getAccessChecksForExistingApp(
+                domain, apps, target, matchedVersions, "delete", "delete");
+    }
+
+    public void execute(AdminCommandContext context) {
+        
+        
 
         // for each matched version
         Iterator it = matchedVersions.iterator();

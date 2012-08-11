@@ -42,6 +42,7 @@ package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import java.util.Collection;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.Param;
@@ -85,6 +86,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
@@ -110,7 +113,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
     @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="create-application-ref"),
     @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.POST, path="create-application-ref")
 })
-public class CreateApplicationRefCommand implements AdminCommand {
+public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateApplicationRefCommand.class);
 
@@ -155,6 +158,13 @@ public class CreateApplicationRefCommand implements AdminCommand {
 
     @Inject
     Events events;
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "create"));
+        return accessChecks;
+    }
 
     /**
      * Entry point from the framework into the command execution

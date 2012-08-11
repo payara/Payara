@@ -41,6 +41,7 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ColumnFormatter;
+import java.util.List;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -53,11 +54,16 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -79,7 +85,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
         path="list-application-refs", 
         description="list-applications-refs")
 })
-public class ListApplicationRefsCommand implements AdminCommand {
+public class ListApplicationRefsCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListApplicationRefsCommand.class);
 
@@ -94,6 +100,20 @@ public class ListApplicationRefsCommand implements AdminCommand {
 
     @Inject
     Domain domain;
+    
+    private List<ApplicationRef> appRefs;
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        appRefs = domain.getApplicationRefsInTarget(target);
+        for (ApplicationRef appRef : appRefs) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(appRef), "read"));
+        }
+        return accessChecks;
+    }
+    
+    
 
     /**
      * Entry point from the framework into the command execution
@@ -109,7 +129,7 @@ public class ListApplicationRefsCommand implements AdminCommand {
             String[] headings= new String[] { "NAME", "STATUS" };
             cf = new ColumnFormatter(headings);
         }
-        for (ApplicationRef ref : domain.getApplicationRefsInTarget(target)) {
+        for (ApplicationRef ref : appRefs) {
             Object[] row = new Object[] { ref.getRef() };
             if( !terse && long_opt ){
                 row = new Object[]{ ref.getRef(), getLongStatus(ref) };

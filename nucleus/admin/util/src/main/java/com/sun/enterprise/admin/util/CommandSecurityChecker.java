@@ -75,13 +75,13 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 @Singleton
 public class CommandSecurityChecker {
     
-    @LoggerInfo(subsystem="ADMSEC", description="Admin security ")
-    private static final String ADMSEC_LOGGER_NAME = "javax.enterprise.system.tools.admin.security";
+    @LoggerInfo(subsystem="ADMSECAUTHZ", description="Admin security authorization")
+    private static final String ADMSEC_AUTHZ_LOGGER_NAME = "javax.enterprise.system.tools.admin.security.authorization";
 
     @LogMessagesResourceBundle
     private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
 
-    static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, LOG_MESSAGES_RB);
+    static final Logger ADMSEC_AUTHZ_LOGGER = Logger.getLogger(ADMSEC_AUTHZ_LOGGER_NAME, LOG_MESSAGES_RB);
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
     private static final String LINE_SEP = System.getProperty("line.separator");
@@ -138,7 +138,7 @@ public class CommandSecurityChecker {
             }
             result = checkAccessRequired(subject, env, command, accessChecks);
         } catch (Exception ex) {
-            ADMSEC_LOGGER.log(Level.SEVERE, command.getClass().getName(), ex);
+            ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, command.getClass().getName(), ex);
             throw new SecurityException(ex);
         }
         if ( ! result) {
@@ -159,7 +159,7 @@ public class CommandSecurityChecker {
             final List<AccessCheckWork> accessChecks) 
                 throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         
-        final boolean isTaggable = ADMSEC_LOGGER.isLoggable(PROGRESS_LEVEL);
+        final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         /*
          * The CRUD classes such as GenericCreateCommand implement AccessRequired.Authorizer
          * and so provide their own AccessCheck objects.  So the addChecksFromAuthorizer
@@ -188,7 +188,7 @@ public class CommandSecurityChecker {
         }
         if (isTaggable) {
             sb.append(LINE_SEP).append("...final result: ").append(result).append(LINE_SEP);
-            ADMSEC_LOGGER.log(PROGRESS_LEVEL, sb.toString());
+            ADMSEC_AUTHZ_LOGGER.log(PROGRESS_LEVEL, sb.toString());
         }
         return result;
     }
@@ -481,6 +481,9 @@ public class CommandSecurityChecker {
     private void addAccessChecksFromReSTEndpoint(
             final RestEndpoint restEndpoint, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
+        if ( ! restEndpoint.useForAuthorization()) {
+            return;
+        }
         final String action = optypeToAction.get(restEndpoint.opType());
         /*
          * For the moment, if there is no RestParam then the config bean class given

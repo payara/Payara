@@ -41,6 +41,7 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import java.util.ArrayList;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -55,6 +56,7 @@ import org.glassfish.config.support.CommandTarget;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.internal.deployment.Deployment;
@@ -74,6 +76,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 import java.util.Collections;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -101,9 +105,12 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
             @RestParam(name="id", value="$parent")
         })
 })
-public class EnableCommand extends StateCommandParameters implements AdminCommand, DeploymentTargetResolver {
+public class EnableCommand extends StateCommandParameters implements AdminCommand, 
+        DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EnableCommand.class);
+    
+    final static String ENABLE_ACTION = "enable";
 
     @Inject
     Deployment deployment;
@@ -129,19 +136,55 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
     @Inject
     ArchiveFactory archiveFactory;
 
+    private ActionReport report;
+    private Logger logger;
+    private List<AccessCheck> accessChecks;
+
+        
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        report = context.getActionReport();
+        logger = context.getLogger();
+        if (target == null) {
+            target = deployment.getDefaultTarget(name(), OpsParams.Origin.load, _classicstyle);
+        }
+        return true;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        accessChecks = new ArrayList<AccessCheck>();
+        if (!DeploymentUtils.isDomainTarget(target)) {
+            
+            ApplicationRef applicationRef = domain.getApplicationRefInTarget(name(), target);
+            if (applicationRef != null && ! Boolean.getBoolean(applicationRef.getEnabled())) {
+                accessChecks.add(new AccessCheck(applicationRef, ENABLE_ACTION, true));
+            }
+        } else {
+            /*
+             * The target is "domain" so expand that to all places where the
+             * app is assigned.
+             */
+            for (String t : domain.getAllReferencedTargetsForApplication(target)) {
+                final ApplicationRef applicationRef = domain.getApplicationRefInTarget(name(), t);
+                if (applicationRef != null && ! Boolean.getBoolean(applicationRef.getEnabled())) {
+                    accessChecks.add(new AccessCheck(applicationRef, ENABLE_ACTION, true));
+                }
+            }
+        }
+        /*
+         * Add an access check for enabling the app itself.
+         */
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getResourceNameForExistingApp(domain, name()), ENABLE_ACTION));
+        return accessChecks;
+    }
+
     /**
      * Entry point from the framework into the command execution
      * @param context context for the command.
      */
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
-
         deployment.validateSpecifiedTarget(target);
-
-        if (target == null) {
-            target = deployment.getDefaultTarget(name(), OpsParams.Origin.load, _classicstyle);
-        }
 
         if (!deployment.isRegistered(name())) {
             report.setMessage(localStrings.getLocalString("application.notreg","Application {0} not registered", name()));
@@ -167,6 +210,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
         DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
         suppInfo.setDeploymentContext(notifier.dc());
+        suppInfo.setAccessChecks(accessChecks);
         report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
         if (env.isDas()) {
             // try to disable the enabled version, if exist

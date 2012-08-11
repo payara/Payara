@@ -279,7 +279,7 @@ public @interface AccessRequired {
             this.action = action;
             this.note = null;
             childType = null;
-            parent = null;
+            parent = resource.getParent();
             this.isFailureFatal = isFailureFatal;
             childName = null;
         }
@@ -369,6 +369,9 @@ public @interface AccessRequired {
          * @return 
          */
         public String resourceName() {
+            if (resource != null) {
+                return Util.resourceNameFromConfigBeanProxy(resource);
+            }
             if (parent != null) {
                 if (childName == null) {
                     return Util.resourceNameFromConfigBeanType(parent, null, childType);
@@ -497,14 +500,14 @@ public @interface AccessRequired {
         }
         
         public static String resourceNameFromConfigBeanProxy(ConfigBeanProxy b) {
-            return resourceNameFromDom(Dom.unwrap(b));
+            return (b == null ? null : resourceNameFromDom(Dom.unwrap(b)));
         }
      
         public static String resourceNameFromConfigBeanType(
                 final ConfigBeanProxy parent, 
                 final String collectionName,
                 final Class<? extends ConfigBeanProxy> childType) {
-            return resourceNameFromConfigBeanType(Dom.unwrap(parent), collectionName, childType);
+            return (parent == null ? null : resourceNameFromConfigBeanType(Dom.unwrap(parent), collectionName, childType));
             
         }
         

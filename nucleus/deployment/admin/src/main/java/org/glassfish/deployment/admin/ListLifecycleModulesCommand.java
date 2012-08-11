@@ -45,6 +45,9 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.I18n;
@@ -61,6 +64,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.hk2.api.PerLookup;
 
 
@@ -94,7 +98,8 @@ import org.glassfish.hk2.api.PerLookup;
             @RestParam(name="target", value="$parent")
         })
 })
-public class ListLifecycleModulesCommand implements AdminCommand  {
+@AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, action="read")
+public class ListLifecycleModulesCommand implements AdminCommand {
 
     @Param(primary=true, optional=true)
     public String target = "server";
@@ -104,7 +109,7 @@ public class ListLifecycleModulesCommand implements AdminCommand  {
 
     @Inject
     Domain domain;
-
+    
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLifecycleModulesCommand.class);
    
     public void execute(AdminCommandContext context) {

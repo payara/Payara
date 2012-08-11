@@ -41,9 +41,14 @@
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -61,6 +66,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
  * Utility methods useful from deployment-related commands.
@@ -69,7 +80,15 @@ import java.io.IOException;
  */
 public class DeploymentCommandUtils {
 
+    public final static String APPLICATION_RESOURCE_NAME = "domain/applications/application";
+    
+    final static String LIBRARY_SECURITY_RESOURCE_PREFIX = "domain/libraries/";
+    final static String CLUSTERS_RESOURCE_NAME = "domain/clusters/cluster";
+    final static String SERVERS_RESOURCE_NAME = "domain/servers/server";
+    
     final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
+    
+    private static final List<String> LIST_CONTAINING_DOMAIN = new ArrayList<String>(Arrays.asList(DeploymentUtils.DOMAIN_TARGET_NAME));
 
     /**
      * Replicates an enable or disable command to all instances in the cluster
@@ -194,4 +213,124 @@ public class DeploymentCommandUtils {
         return result;
     }
 
+    private static StringBuilder getTargetResourceName(final Domain d,
+                final String target) {
+        final StringBuilder sb = new StringBuilder();
+        ConfigBeanProxy p = d.getServerNamed(target);
+        if (p == null) {
+            p = d.getClusterNamed(target);
+        }
+        if (p == null) {
+            sb.append("domain/???/").append(target);
+        } else {
+            sb.append(AccessRequired.Util.resourceNameFromConfigBeanProxy(p));
+        }
+        return sb;
+    }
+
+    /**
+     * Prepares AccessChecks for an application already deployed to one or
+     * more targets, returning an access check for the application itself and
+     * access checks for each matching version on whatever targets to which
+     * it is assigned.
+     * @param domain
+     * @param applications
+     * @param target
+     * @param matchedVersions
+     * @param appAction
+     * @param appRefAction
+     * @return 
+     */
+    public static Collection<? extends AccessRequired.AccessCheck> getAccessChecksForExistingApp(
+            final Domain domain, final Applications applications,
+            final String target, final Collection<String> matchedVersions,
+            final String appAction, final String appRefAction) {
+        final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
+        
+        final List<String> targets = domain.getTargets(target);
+        for (String mv : matchedVersions) {
+            final Application app = applications.getApplication(mv);
+            if (app == null) {
+                continue;
+            }
+            accessChecks.add(new AccessRequired.AccessCheck(getResourceNameForExistingApp(domain, mv), appAction));
+            for (String t : targets) {
+                final ApplicationRef ar = domain.getApplicationRefInTarget(mv, t);
+                if (ar != null) {
+                    accessChecks.add(new AccessRequired.AccessCheck(
+                            getTargetResourceNameForExistingAppRef(domain, t, mv), appRefAction));
+                }
+            }
+        }
+        return accessChecks;
+    }
+    
+    /**
+     * Returns access checks for a new application (not already deployed) and
+     * for the corresponding app ref(s) given the specified target.  This method
+     * does no target expansion in creating the access checks.
+     * @param domain
+     * @param applications
+     * @param target
+     * @param action
+     * @return 
+     */
+    public static Collection<? extends AccessRequired.AccessCheck> getAccessChecksForNewApp(
+            final Domain domain, final Applications applications,
+            final String target, 
+            final String action) {
+        final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
+        accessChecks.add(new AccessRequired.AccessCheck(getResourceNameForApps(domain), action));
+        accessChecks.add(new AccessRequired.AccessCheck(getTargetResourceNameForNewAppRef(domain, target), action));
+        return accessChecks;
+    }
+    
+    public static String getTargetResourceNameForNewApp(
+            final Domain d, final String target) {
+        final StringBuilder sb = getTargetResourceName(d, target);
+        return sb.toString();
+    }
+
+    public static String getTargetResourceNameForExistingApp(
+            final Domain d, final String target, final String appName) {
+        final ApplicationRef appRef = d.getApplicationRefInTarget(appName, target);
+        if (appRef != null) {
+            return AccessRequired.Util.resourceNameFromConfigBeanProxy(appRef);
+        }
+        return null;
+    }
+    
+    public static String getTargetResourceNameForNewAppRef(
+            final Domain d, final String target) {
+        return new StringBuilder(getTargetResourceNameForNewApp(d, target)).append("/application-ref").toString();
+    }
+    
+    public static String getTargetResourceNameForNewAppRef(
+            final Domain d, final String target, final String appName) {
+        return new StringBuilder(getTargetResourceNameForNewAppRef(d, target)).append('/').append(appName).toString();
+    }
+    
+    public static String getTargetResourceNameForExistingAppRef(
+            final Domain d, final String target, final String appName) {
+        return AccessRequired.Util.resourceNameFromConfigBeanProxy(d.getApplicationRefInTarget(appName, target));
+    }
+    
+    public static String getResourceNameForApps(
+            final Domain d) {
+        return APPLICATION_RESOURCE_NAME;
+    }
+    
+    public static String getResourceNameForNewApp(
+            final Domain d, final String appName) {
+        return new StringBuilder(APPLICATION_RESOURCE_NAME).append('/').append(appName).toString();
+    }
+    
+    public static String getResourceNameForExistingApp(
+            final Domain d, final String appName) {
+        final Application app = d.getApplications().getApplication(appName);
+        if (app != null) {
+            return AccessRequired.Util.resourceNameFromConfigBeanProxy(app);
+        }
+        return null;
+    }
 }

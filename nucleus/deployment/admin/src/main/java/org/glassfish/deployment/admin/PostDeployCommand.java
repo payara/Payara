@@ -61,6 +61,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -81,6 +82,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="_postdeploy", 
         description="_postdeploy")
 })
+@AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, action="write")
 public class PostDeployCommand extends DeployCommandParameters implements AdminCommand {
 
     @Inject

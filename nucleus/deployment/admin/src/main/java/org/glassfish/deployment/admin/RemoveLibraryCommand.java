@@ -70,6 +70,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
 import java.beans.PropertyChangeEvent;
+import java.util.Collection;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="remove-library")
 @PerLookup
@@ -78,7 +82,7 @@ import java.beans.PropertyChangeEvent;
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.DELETE, path="remove-library", description="Uninstall library")
 })
-public class RemoveLibraryCommand implements AdminCommand {
+public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true, multiple=true)
     String[] names = null;
@@ -97,6 +101,16 @@ public class RemoveLibraryCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RemoveLibraryCommand.class);    
 
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessRequired.AccessCheck> accessChecks = new ArrayList<AccessRequired.AccessCheck>();
+        for (String libName : names) {
+            accessChecks.add(new AccessCheck(DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "/" + type + "/" + libName, "delete"));
+        }
+        return accessChecks;
+    }
+    
+    
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();

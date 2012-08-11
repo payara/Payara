@@ -53,6 +53,8 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -69,6 +71,9 @@ import org.glassfish.deployment.versioning.VersioningService;
 
 import org.glassfish.hk2.api.PerLookup;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="show-component-status")
 @PerLookup
@@ -84,7 +89,8 @@ import javax.inject.Inject;
             @RestParam(name="id", value="$parent")
         })
 })
-public class ShowComponentStatusCommand implements AdminCommand {
+public class ShowComponentStatusCommand implements AdminCommand, AdminCommandSecurity.Preauthorization,
+        AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true)
     public String name = null;
@@ -103,33 +109,56 @@ public class ShowComponentStatusCommand implements AdminCommand {
 
     @Inject
     VersioningService versioningService;
+    
+    private ActionReport report;
+    private Logger logger;
+    private List<String> matchedVersions = null;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAppRefsCommand.class);    
 
-    public void execute(AdminCommandContext context) {
-        
-        final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
-
-        ActionReport.MessagePart part = report.getTopMessagePart();
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        report = context.getActionReport();
+        logger = context.getLogger();
 
         // retrieve matched version(s) if exist
-        List<String> matchedVersions = null;
+        
         try {
             matchedVersions = versioningService.getMatchedVersions(name, target);
         } catch (VersioningException e) {
             report.failure(logger, e.getMessage());
-            return;
-         }
-
+            return false;
+        }
+        
         // if matched list is empty and no VersioningException thrown,
         // this is an unversioned behavior and the given application is not registered
         if(matchedVersions.isEmpty()){
             report.setMessage(localStrings.getLocalString("ref.not.referenced.target","Application {0} is not referenced by target {1}", name, target));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
+            return false;
         }
         
+        return true;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (String mv : matchedVersions) {
+            if ( ! DeploymentUtils.isDomainTarget(target)) {
+                final ApplicationRef ref = domain.getApplicationRefInTarget(mv, target);
+                if (ref != null) {
+                    accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(ref), "read"));
+                }
+            }
+        }
+        return accessChecks;
+    }
+    
+    public void execute(AdminCommandContext context) {
+        
+        ActionReport.MessagePart part = report.getTopMessagePart();
+
          // for each matched version
         Iterator it = matchedVersions.iterator();
         while(it.hasNext()){

@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import java.util.ArrayList;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.Param;
@@ -78,8 +79,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.deployment.versioning.VersioningException;
@@ -97,7 +101,7 @@ import org.glassfish.deployment.versioning.VersioningService;
     @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref"),
     @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref")
 })
-public class DeleteApplicationRefCommand implements AdminCommand {
+public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteApplicationRefCommand.class);
 
@@ -131,21 +135,18 @@ public class DeleteApplicationRefCommand implements AdminCommand {
     @Inject
     ServerEnvironment env;
 
-    /**
-     * Entry point from the framework into the command execution
-     * @param context context for the command.
-     */
-    public void execute(AdminCommandContext context) {
+    private List<String> matchedVersions;
+        
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
-
         // retrieve matched version(s) if exist
-        List<String> matchedVersions = null;
         try {
             matchedVersions = versioningService.getMatchedVersions(name, target);
         } catch (VersioningException e) {
             report.failure(logger, e.getMessage());
-            return;
+            return false;
         }
 
         // if matched list is empty and no VersioningException thrown,
@@ -157,9 +158,25 @@ public class DeleteApplicationRefCommand implements AdminCommand {
                 report.setMessage(localStrings.getLocalString("ref.not.referenced.target","Application {0} is not referenced by target {1}", name, target));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
-            return;
+            return false;
         }
+        return true;
+    }
 
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        return DeploymentCommandUtils.getAccessChecksForExistingApp(
+                domain, applications, target, matchedVersions, "update", "delete");
+    }
+    
+    /**
+     * Entry point from the framework into the command execution
+     * @param context context for the command.
+     */
+    public void execute(AdminCommandContext context) {
+        final ActionReport report = context.getActionReport();
+        final Logger logger = context.getLogger();
+        
         UndeployCommandParameters commandParams =
             new UndeployCommandParameters();
 

@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
 import java.beans.PropertyChangeEvent;
+import org.glassfish.api.admin.AccessRequired;
 
 @Service(name="add-library")
 @PerLookup
@@ -77,6 +78,7 @@ import java.beans.PropertyChangeEvent;
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.POST, path="add-library", description="Install library")
 })
+@AccessRequired(resource=DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "/$type", action="create")
 public class AddLibraryCommand implements AdminCommand {
 
     @Param(primary=true, multiple=true)

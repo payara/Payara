@@ -49,6 +49,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
@@ -59,19 +61,34 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  */
 @Service
 @PerLookup
-public class PostStateCommand implements AdminCommand {
+public class PostStateCommand implements AdminCommand, 
+        AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     
     @Inject
     protected BaseServiceLocator habitat;
 
+    private DeployCommandSupplementalInfo suppInfo;
+    private Collection<? extends AccessCheck> accessChecks;
+    
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        suppInfo = context.getActionReport().getResultType(DeployCommandSupplementalInfo.class);
+        accessChecks = suppInfo.getAccessChecks();
+        return true;
+    }
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        return accessChecks;
+    }
+    
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         final Logger logger = context.getLogger();
       try {
         logger.log(Level.INFO, "PostState starting: " + this.getClass().getName());
-        final DeployCommandSupplementalInfo suppInfo =
-                context.getActionReport().getResultType(DeployCommandSupplementalInfo.class);
+                
         final ExtendedDeploymentContext dc = suppInfo.deploymentContext();
         final InterceptorNotifier notifier = new InterceptorNotifier(habitat, dc);
 

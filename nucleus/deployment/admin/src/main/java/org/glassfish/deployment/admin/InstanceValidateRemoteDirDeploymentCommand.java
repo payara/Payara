@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
+import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ExecuteOn;
@@ -79,6 +80,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="_instanceValidateRemoteDirDeployment", 
         description="_instanceValidateRemoteDirDeployment")
 })
+@AccessRequired(resource="domain", action="read")
 public class InstanceValidateRemoteDirDeploymentCommand implements AdminCommand {
 
     private static final LocalStringsImpl localStrings =

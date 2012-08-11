@@ -55,6 +55,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.PostConstruct;
 
 /**
  *
@@ -73,7 +74,7 @@ import org.glassfish.hk2.api.PerLookup;
             @RestParam(name="appname", value="$parent")
         })
 })
-public class GetClientStubsCommand implements AdminCommand {
+public class GetClientStubsCommand implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     private final static String APPNAME = "appname";
 
@@ -88,7 +89,21 @@ public class GetClientStubsCommand implements AdminCommand {
 
     @Param(primary=true)
     private String localDir;
+    
+    @AccessRequired.To("read")
+    private Application matchingApp = null;
 
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        for (Application app : apps.getApplications()) {
+            if (app.getName().equals(appname)) {
+                matchingApp = app;
+                return true;
+            }
+        }
+        return false;
+    }
+    
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
@@ -101,13 +116,6 @@ public class GetClientStubsCommand implements AdminCommand {
             return;
         }
 
-        Application matchingApp = null;
-        for (Application app : apps.getApplications()) {
-            if (app.getName().equals(appname)) {
-                matchingApp = app;
-                break;
-            }
-        }
         if (matchingApp == null) {
             report.failure(logger, localStrings.getLocalString(
                 getClass(),

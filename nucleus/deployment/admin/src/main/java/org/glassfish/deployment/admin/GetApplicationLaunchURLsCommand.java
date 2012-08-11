@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import javax.security.auth.Subject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -66,6 +67,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.net.URL;
+import java.util.Collection;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 
@@ -76,7 +80,7 @@ import org.glassfish.api.admin.ParameterMap;
 @RestEndpoints({
     @RestEndpoint(configBean=Applications.class, opType= RestEndpoint.OpType.GET, path="_get-application-launch-urls", description="Get Urls for launch the application")
 })
-public class GetApplicationLaunchURLsCommand implements AdminCommand {
+public class GetApplicationLaunchURLsCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true)
     private String appname = null;
@@ -89,11 +93,37 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetApplicationLaunchURLsCommand.class);    
 
+    private List<Server> servers;
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        List<String> targets = domain.getAllReferencedTargetsForApplication(appname);
+        for (String target : targets) {
+            if (domain.isAppEnabledInTarget(appname, target)) {
+                servers = new ArrayList<Server>();
+                Cluster cluster = domain.getClusterNamed(target);
+                if (cluster != null) {
+                    servers = cluster.getInstances();
+                }
+                Server server = domain.getServerNamed(target);
+                if (server != null) {
+                    servers.add(server);
+                }
+                for (Server svr : servers) {
+                    accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, svr.getName(), appname), "read"));
+                }
+            }
+        }
+        return accessChecks;
+    }
+
+    
     @Override
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         Logger logger = context.getLogger();
-        getLBLaunchURLInformation(appname, report);
+        getLBLaunchURLInformation(appname, report, context.getSubject());
         List<URL> launchURLs = getLaunchURLInformation(appname, logger);
         if(launchURLs == null || launchURLs.isEmpty()){
             return;
@@ -117,13 +147,13 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
         }
     }
 
-    private void getLBLaunchURLInformation(String appName, ActionReport report){
+    private void getLBLaunchURLInformation(String appName, ActionReport report, final Subject subject){
         CommandRunner.CommandInvocation invocation =
                 commandRunner.getCommandInvocation("_get-lb-launch-urls", report);
         if(invocation != null){
             ParameterMap map = new ParameterMap();
             map.add("appname", appName);
-            invocation.parameters(map).execute();
+            invocation.subject(subject).parameters(map).execute();
         }
     }
 
@@ -131,22 +161,8 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand {
         List<URL> launchURLs = new ArrayList<URL>();
         String contextRoot = getContextRoot(appName);
 
-        List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
-        for (String target : targets) {
-            if (domain.isAppEnabledInTarget(appName, target)) {
-                List<Server> servers = new ArrayList<Server>();
-                Cluster cluster = domain.getClusterNamed(target);
-                if (cluster != null) {
-                    servers = cluster.getInstances();
-                }
-                Server server = domain.getServerNamed(target);
-                if (server != null) {
-                    servers.add(server);
-                }
-                for (Server svr : servers) {
-                    launchURLs.addAll(getURLsForServer(svr, appName, contextRoot, logger));
-                }
-            }
+        for (Server svr : servers) {
+            launchURLs.addAll(getURLsForServer(svr, appName, contextRoot, logger));
         }
         return launchURLs;
     }

@@ -56,11 +56,13 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
+import org.glassfish.api.admin.AccessRequired;
 
 @Service(name="_mt-deploy")
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
+@AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, action="create")
 public class MTDeployCommand implements AdminCommand {
 
     @Param(primary=true)
@@ -83,7 +85,7 @@ public class MTDeployCommand implements AdminCommand {
         parameters.set("DEFAULT", path.getAbsolutePath());
 
         parameters.set(DeploymentProperties.TARGET, DeploymentUtils.DOMAIN_TARGET_NAME);
-        inv.parameters(parameters).execute();
+        inv.subject(context.getSubject()).parameters(parameters).execute();
 
         // do any necessary initialization work here
     }

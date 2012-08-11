@@ -53,6 +53,7 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -67,6 +68,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="_get-targets", 
         description="_get-targets")
 })
+@AccessRequired(resource={DeploymentCommandUtils.CLUSTERS_RESOURCE_NAME,DeploymentCommandUtils.SERVERS_RESOURCE_NAME}, action="read")
 public class GetTargetsCommand implements AdminCommand {
 
     @Param(optional=true, primary=true)

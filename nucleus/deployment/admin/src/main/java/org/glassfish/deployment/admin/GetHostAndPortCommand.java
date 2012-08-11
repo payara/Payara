@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -53,6 +54,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
+import java.util.Collection;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -65,6 +67,9 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
@@ -79,7 +84,7 @@ import org.glassfish.hk2.api.PerLookup;
         path="host-port", 
         description="HostPort")
 })
-public class GetHostAndPortCommand implements AdminCommand {
+public class GetHostAndPortCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(optional=true)
     public String target = "server";
@@ -98,9 +103,32 @@ public class GetHostAndPortCommand implements AdminCommand {
 
     @Inject 
     Domain domain;
+    
+    private Config config;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GetHostAndPortCommand.class);    
 
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        String configName = null;
+        Server server = domain.getServerNamed(target);
+        if (server != null) {
+            configName = server.getConfigRef();
+        } else {
+            Cluster cluster = domain.getClusterNamed(target);
+            if (cluster != null) {
+                configName = cluster.getConfigRef();
+            }
+        }
+        config = configs.getConfigByName(configName);
+        if (config != null) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(config), "read"));
+        }
+        return accessChecks;
+    }
+
+    
     public void execute(AdminCommandContext context) {
         
         final ActionReport report = context.getActionReport();
@@ -111,20 +139,9 @@ public class GetHostAndPortCommand implements AdminCommand {
         HostAndPort hostAndPort = null;
 
         try {
-            String configName = null;
-            Server server = domain.getServerNamed(target);
-            if (server != null) {
-                configName = server.getConfigRef();
-            } else {
-                Cluster cluster = domain.getClusterNamed(target);
-                if (cluster == null) {
-                     throw new Exception("No such target:" + target);   
-                }
-                configName = cluster.getConfigRef();
-                
+            if (config == null) {
+                throw new Exception("No such target:" + target);   
             }
-            Config config = configs.getConfigByName(configName);
-
             httpService = config.getHttpService();
 
             if (httpService != null) {

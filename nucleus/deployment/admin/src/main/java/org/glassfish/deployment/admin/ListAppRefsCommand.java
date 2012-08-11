@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import java.util.ArrayList;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -55,10 +56,14 @@ import com.sun.enterprise.config.serverbeans.Module;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Collection;
 
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 
@@ -72,7 +77,7 @@ import org.glassfish.api.admin.RestEndpoints;
         path="_list-app-refs", 
         description="_list-app-refs")
 })
-public class ListAppRefsCommand implements AdminCommand {
+public class ListAppRefsCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(optional=true)
     String target = "server";
@@ -89,6 +94,20 @@ public class ListAppRefsCommand implements AdminCommand {
     @Inject
     Applications applications;
 
+    private List<ApplicationRef> appRefs;
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        appRefs = domain.getApplicationRefsInTarget(target);
+        for (ApplicationRef appRef : appRefs) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(appRef), "read"));
+        }
+        return accessChecks;
+    }
+    
+    
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListAppRefsCommand.class);    
 
     public void execute(AdminCommandContext context) {
@@ -98,8 +117,6 @@ public class ListAppRefsCommand implements AdminCommand {
         ActionReport.MessagePart part = report.getTopMessagePart();
         part.setMessage(target);
         part.setChildrenType("application");
-        List<ApplicationRef> appRefs = 
-            domain.getApplicationRefsInTarget(target);
         for (ApplicationRef appRef : appRefs) {
             if (state.equals("all") || 
                (state.equals("running") && 

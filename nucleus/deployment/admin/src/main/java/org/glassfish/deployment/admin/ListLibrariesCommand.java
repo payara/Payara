@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.List;
 import java.io.File;
+import org.glassfish.api.admin.AccessRequired;
 
 @Service(name="list-libraries")
 @PerLookup
@@ -72,6 +73,7 @@ import java.io.File;
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class, opType= RestEndpoint.OpType.GET, path="list-libraries", description="List libraries")
 })
+@AccessRequired(resource=DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "/$type", action="read")
 public class ListLibrariesCommand implements AdminCommand {
 
     @Param(optional=true, acceptableValues="common, ext, app")

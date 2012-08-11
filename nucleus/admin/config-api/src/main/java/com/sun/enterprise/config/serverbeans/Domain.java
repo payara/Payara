@@ -436,6 +436,9 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
 
     @DuckTyped
     List<String> getAllTargets();
+    
+    @DuckTyped
+    public List<String> getTargets(final String tgt);
 
     @DuckTyped
     List<Application> getApplicationsInTarget(String target);
@@ -718,15 +721,19 @@ public interface Domain extends ConfigBeanProxy, Injectable, PropertyBag, System
             return getApplicationRefsInTarget(me, target, false);
         }
 
-        public static List<ApplicationRef> getApplicationRefsInTarget(
-            Domain me, String tgt, boolean includeInstances) {
+        public static List<String> getTargets(final Domain me, final String tgt) {
             List<String> targets = new ArrayList<String>();
             if (!tgt.equals("domain")) {
                 targets.add(tgt);
             } else {
                 targets = me.getAllTargets();
             }
-
+            return targets;
+        }
+        
+        public static List<ApplicationRef> getApplicationRefsInTarget(
+            Domain me, String tgt, boolean includeInstances) {
+            List<String> targets = getTargets(me, tgt);
             List<ApplicationRef> allAppRefs = new ArrayList<ApplicationRef>();
 
             for (String target : targets) {

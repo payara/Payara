@@ -42,6 +42,8 @@ package org.glassfish.deployment.admin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -71,12 +73,16 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AppTenant;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.Collection;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="_mt-unprovision")
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-public class MTUnprovisionCommand implements AdminCommand {
+public class MTUnprovisionCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary=true)
     public String appname = null;
@@ -92,6 +98,25 @@ public class MTUnprovisionCommand implements AdminCommand {
 
     @Inject
     ArchiveFactory archiveFactory;
+    
+    private Application app;
+    private AppTenant appTenant = null;
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        app = applications.getApplication(appname);
+        if (app != null) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "read"));
+            if (app.getAppTenants() != null) {
+                appTenant = app.getAppTenants().getAppTenant(tenant);
+                if (appTenant != null) {
+                    accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(appTenant), "unprovision"));
+                }
+            }
+        }
+        return accessChecks;
+    }
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTUnprovisionCommand.class);    
 
@@ -101,15 +126,12 @@ public class MTUnprovisionCommand implements AdminCommand {
 
         final Logger logger = context.getLogger();
 
-        Application app = applications.getApplication(appname);
-
         if (app == null) {
             report.setMessage("Application " + appname + " is not deployed");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        AppTenant appTenant = app.getAppTenants().getAppTenant(tenant);
         if (appTenant == null) {
             report.setMessage("Application " + appname + " is not provisioned to tenant " + tenant);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

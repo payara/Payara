@@ -43,8 +43,10 @@ package org.glassfish.deployment.admin;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
@@ -80,6 +82,9 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Domain;
 import java.io.FileOutputStream;
+import java.util.Collection;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 
@@ -98,7 +103,8 @@ import org.glassfish.api.admin.RestEndpoints;
         path="_deploy", 
         description="_deploy")
 })
-public class InstanceDeployCommand extends InstanceDeployCommandParameters implements AdminCommand {
+public class InstanceDeployCommand extends InstanceDeployCommandParameters 
+        implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InstanceDeployCommand.class);
     private final static String LS = System.getProperty("line.separator");
@@ -121,6 +127,17 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters imple
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     protected Server server;
 
+    @Inject
+    private Domain domain;
+    
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getTargetResourceNameForNewAppRef(domain, target), "write"));
+        return accessChecks;
+    }
+
+    
     @Override
     public void execute(AdminCommandContext ctxt) {
 

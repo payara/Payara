@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import javax.security.auth.Subject;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
@@ -53,18 +54,23 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AppTenant;
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
-import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="_mt-undeploy")
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-public class MTUndeployCommand implements AdminCommand {
+public class MTUndeployCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(primary = true)
     public String name;
@@ -74,6 +80,25 @@ public class MTUndeployCommand implements AdminCommand {
 
     @Inject
     Applications applications;
+    
+    private Application app;
+    private List<AppTenant> appTenants = null;
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        app = applications.getApplication(name);
+        if (app != null) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "read"));
+            if (app.getAppTenants() != null) {
+                appTenants = app.getAppTenants().getAppTenant();
+                for (AppTenant appTenant : appTenants) {
+                    accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(appTenant), "delete"));
+                }
+            }
+        }
+        return accessChecks;
+    }
 
     public void execute(AdminCommandContext context) {
 
@@ -81,7 +106,7 @@ public class MTUndeployCommand implements AdminCommand {
 
         // now unprovision the application from tenants if any was
         // provisioned
-        unprovisionAppFromTenants(name, report);
+        unprovisionAppFromTenants(name, report, context.getSubject());
 
         // invoke the undeploy command with domain target to undeploy the
         // application from domain
@@ -96,20 +121,19 @@ public class MTUndeployCommand implements AdminCommand {
         inv.parameters(parameters).execute();
     }
 
-    private void unprovisionAppFromTenants(String appName, ActionReport report) {
-        Application app = applications.getApplication(appName);
-
-        if (app == null || app.getAppTenants() == null) {
+    private void unprovisionAppFromTenants(String appName, ActionReport report, final Subject subject) {
+        
+        if (app == null || appTenants== null) {
             return;
         }
 
-        for (AppTenant tenant : app.getAppTenants().getAppTenant()) {
+        for (AppTenant tenant : appTenants) {
             ActionReport subReport = report.addSubActionsReport();
             CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation("_mt-unprovision", subReport);
             ParameterMap parameters = new ParameterMap();
             parameters.add("DEFAULT", appName);
             parameters.add("tenant", tenant.getTenant());
-            inv.parameters(parameters).execute();
+            inv.subject(subject).parameters(parameters).execute();
         }
     }
 }

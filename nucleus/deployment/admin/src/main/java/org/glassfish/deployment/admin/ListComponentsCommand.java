@@ -65,6 +65,9 @@ import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.util.*;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 /**
  * list-components command
@@ -98,7 +101,7 @@ import java.util.*;
             @RestParam(name="target", value="$parent")
         })
 })
-public class ListComponentsCommand implements AdminCommand {
+public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(optional=true)
     String type = null;
@@ -128,6 +131,31 @@ public class ListComponentsCommand implements AdminCommand {
  
     @Inject
     CommandRunner commandRunner;
+    
+    private final List<Application> apps = new ArrayList<Application>();
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        /* Read access to the collection of applications. */
+        accessChecks.add(new AccessCheck(DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, "read"));
+        
+        /*
+         * Because the command displays detailed information about the matching
+         * apps, require read access to each app to be displayed.
+         */
+        for (Application app : domain.getApplicationsInTarget(target)) {
+            if (!app.isLifecycleModule()) {
+                if (type == null || isApplicationOfThisType(app, type)) {
+                    apps.add(app);
+                    accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "read"));
+                }
+            }
+        }
+        return accessChecks;
+    }
+    
+    
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListComponentsCommand.class);    
 
@@ -148,25 +176,21 @@ public class ListComponentsCommand implements AdminCommand {
             }
         }
         
-        for (Application app : domain.getApplicationsInTarget(target)) {
-                if (!app.isLifecycleModule()) {
-                    if (type==null || isApplicationOfThisType(app, type)) {
-                        String[] currentRow;
-                        if( !terse && long_opt ){
-                            currentRow = new String[]{ app.getName(),
-                                getAppSnifferEngines(app, true),
-                                getLongStatus(app) };
-                        } else {
-                            currentRow = new String[]{ app.getName(),
-                                getAppSnifferEngines(app, true)};
-                        }
-                        part.addProperty(app.getName(), 
-                            getAppSnifferEngines(app, false));
-                        rowList.add(currentRow);
-                        numOfApplications++;
+        for (Application app : apps) {
+            String[] currentRow;
+            if( !terse && long_opt ){
+                currentRow = new String[]{ app.getName(),
+                    getAppSnifferEngines(app, true),
+                    getLongStatus(app) };
+            } else {
+                currentRow = new String[]{ app.getName(),
+                    getAppSnifferEngines(app, true)};
+            }
+            part.addProperty(app.getName(), 
+                getAppSnifferEngines(app, false));
+            rowList.add(currentRow);
+            numOfApplications++;
 
-                    }
-                }
         }
         // Starting output formatting
         int numCols = 2;

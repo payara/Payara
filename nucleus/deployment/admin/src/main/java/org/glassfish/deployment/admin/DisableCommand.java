@@ -48,6 +48,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -82,6 +83,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
@@ -103,9 +106,12 @@ import org.glassfish.deployment.versioning.VersioningUtils;
     @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.POST, path="disable", description="Disable",
         params={@RestParam(name="id", value="$parent")})
 })
-public class DisableCommand extends UndeployCommandParameters implements AdminCommand, DeploymentTargetResolver {
+public class DisableCommand extends UndeployCommandParameters implements AdminCommand, 
+        DeploymentTargetResolver, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);    
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DisableCommand.class);
+    
+    final static String DISABLE_ACTION = "disable";
 
     @Param(optional=true, defaultValue="false")
     public Boolean isundeploy = false;
@@ -133,31 +139,33 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
     @Inject
     BaseServiceLocator habitat;
-
+    
+    private ActionReport report;
+    private Logger logger;
+    private String appName;
+    private Map<String,Set<String>> enabledVersionsInTargets;
+    private boolean isVersionExpressionWithWildcard;
+    private Set<String> enabledVersionsToDisable = Collections.EMPTY_SET;
+    private List<String> matchedVersions;
+    private final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        
     public DisableCommand() {
         origin = Origin.unload;
         command = Command.disable;
     }
 
-    /**
-     * Entry point from the framework into the command execution
-     * @param context context for the command.
-     */
-    public void execute(AdminCommandContext context) {
-
-        final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
+    @Override
+    public boolean preAuthorization(AdminCommandContext context) {
+        report = context.getActionReport();
+        logger = context.getLogger();
         
-        String appName = name();
-
+        appName = name();
+        
         if (isundeploy) {
             origin = Origin.undeploy;
         }
 
         if (origin == Origin.unload && command == Command.disable) {
-            // we should only validate this for the disable command
-            deployment.validateSpecifiedTarget(target);
-
             // we need to set the default target for non-paas case first
             // so the versioned code could execute as expected
             if (target == null) {
@@ -165,17 +173,14 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             }
         }
 
-        boolean isVersionExpressionWithWilcard =
+        isVersionExpressionWithWildcard =
                 VersioningUtils.isVersionExpressionWithWildCard(appName);
-
-        Set<String> enabledVersionsToDisable = Collections.EMPTY_SET;
-        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
 
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
 
-            Map<String,Set<String>> enabledVersionsInTargets = Collections.EMPTY_MAP;
+            enabledVersionsInTargets = Collections.EMPTY_MAP;
 
-            if( isVersionExpressionWithWilcard ){
+            if( isVersionExpressionWithWildcard ){
                 enabledVersionsInTargets =
                         versioningService.getEnabledVersionInReferencedTargetsForExpression(appName);
             } else {
@@ -184,6 +189,77 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                         new HashSet<String>(domain.getAllReferencedTargetsForApplication(appName)));
             }
             enabledVersionsToDisable = enabledVersionsInTargets.keySet();
+            return true;
+        } else if ( isVersionExpressionWithWildcard ){
+
+            try {
+                matchedVersions = versioningService.getMatchedVersions(appName, target);
+                if (matchedVersions == Collections.EMPTY_LIST) {
+                    // no version matched by the expression
+                    // nothing to do : success
+                    return true;
+                }
+                String enabledVersion = versioningService.getEnabledVersion(appName, target);
+                if (matchedVersions.contains(enabledVersion)) {
+                    // the enabled version is matched by the expression
+                    appName = enabledVersion;
+                    return true;
+                } else {
+                    // the enabled version is not matched by the expression
+                    // nothing to do : success
+                    return true;
+                }
+            } catch (VersioningException e) {
+                report.failure(logger, e.getMessage());
+                return false;
+            }
+        }
+        return true;
+    } 
+
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        
+        if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
+            for (Map.Entry<String,Set<String>> entry : enabledVersionsInTargets.entrySet()) {
+                for (String t : entry.getValue()) {
+                    accessChecks.add(new AccessCheck(
+                            DeploymentCommandUtils.getTargetResourceNameForExistingApp(domain, t, entry.getKey()),DISABLE_ACTION));
+                }
+            }
+        } else if ( isVersionExpressionWithWildcard ){
+            for (String appNm : matchedVersions) {
+                accessChecks.add(new AccessCheck(
+                        DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appNm), DISABLE_ACTION));
+            }
+        } else if (target == null) {
+            accessChecks.add(new AccessCheck(
+                    DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, 
+                        deployment.getDefaultTarget(appName, origin, _classicstyle), appName), DISABLE_ACTION));
+        } else {
+            accessChecks.add(new AccessCheck(
+                    DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appName), DISABLE_ACTION));
+        }
+        
+        accessChecks.add(new AccessCheck(
+                DeploymentCommandUtils.getResourceNameForExistingApp(domain, appName), DISABLE_ACTION));
+        
+        return accessChecks;
+    }
+
+    
+    /**
+     * Entry point from the framework into the command execution
+     * @param context context for the command.
+     */
+    public void execute(AdminCommandContext context) {
+        if (origin == Origin.unload && command == Command.disable) {
+            // we should only validate this for the disable command
+            deployment.validateSpecifiedTarget(target);
+        }
+        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
+
+        if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
 
             // for each distinct enabled version in all known targets
             Iterator it = enabledVersionsInTargets.entrySet().iterator();
@@ -208,10 +284,9 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                     return;
                 }
             }
-        } else if ( isVersionExpressionWithWilcard ){
+        } else if ( isVersionExpressionWithWildcard ){
 
             try {
-                List<String> matchedVersions = versioningService.getMatchedVersions(appName, target);
                 if (matchedVersions == Collections.EMPTY_LIST) {
                     // no version matched by the expression
                     // nothing to do : success
@@ -294,6 +369,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             
             final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
             suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);
+            suppInfo.setAccessChecks(accessChecks);
             report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
         } catch (Exception e) {

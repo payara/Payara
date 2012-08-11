@@ -52,6 +52,7 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
+import org.glassfish.api.admin.AccessRequired;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
@@ -65,6 +66,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 @Supplemental(value="undeploy", ifFailure=FailurePolicy.Warn, on= Supplemental.Timing.AfterReplication)
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
+@AccessRequired(resource=DeploymentCommandUtils.APPLICATION_RESOURCE_NAME, action="write")
 
 public class PostUndeployCommand extends UndeployCommandParameters implements AdminCommand {
     

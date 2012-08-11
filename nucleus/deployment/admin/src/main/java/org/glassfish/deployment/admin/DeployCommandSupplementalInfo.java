@@ -40,7 +40,9 @@
 
 package org.glassfish.deployment.admin;
 
+import java.util.Collection;
 import java.util.List;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 /**
@@ -53,6 +55,7 @@ public class DeployCommandSupplementalInfo {
 
     private ExtendedDeploymentContext dc = null;
     private List<String> previousTargets = null;
+    private Collection<? extends AccessCheck> accessChecks = null;
     
     public void setDeploymentContext(final ExtendedDeploymentContext dc) {
         this.dc = dc;
@@ -68,6 +71,14 @@ public class DeployCommandSupplementalInfo {
         }
     }
 
+    public void setAccessChecks(final Collection<? extends AccessCheck> accessChecks) {
+        this.accessChecks = accessChecks;
+    }
+    
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        return accessChecks;
+    }
+    
     public ExtendedDeploymentContext deploymentContext() {
         return dc;
     }

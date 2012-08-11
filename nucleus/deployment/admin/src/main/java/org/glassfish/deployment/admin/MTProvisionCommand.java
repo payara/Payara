@@ -53,7 +53,6 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.internal.deployment.Deployment;
@@ -71,12 +70,18 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.glassfish.api.admin.AccessRequired;
+import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.admin.AdminCommandSecurity;
 
 @Service(name="_mt-provision")
 @org.glassfish.api.admin.ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-public class MTProvisionCommand implements AdminCommand {
+public class MTProvisionCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {
 
     @Param(optional=true)
     public File customizations = null;
@@ -101,7 +106,24 @@ public class MTProvisionCommand implements AdminCommand {
 
     @Inject
     ArchiveFactory archiveFactory;
+    
+    private Application app;
+    private ApplicationRef appRef;
 
+    @Override
+    public Collection<? extends AccessCheck> getAccessChecks() {
+        final List<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        app = applications.getApplication(appname);
+        if (app != null) {
+            accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "provision"));
+            appRef = domain.getApplicationRefInTarget(appname, DeploymentUtils.DAS_TARGET_NAME);
+            if (appRef != null) {
+                accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(appRef), "provision"));
+            }
+        }
+        return accessChecks;
+    }
+    
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MTProvisionCommand.class);
 
     public void execute(AdminCommandContext context) {
@@ -110,15 +132,11 @@ public class MTProvisionCommand implements AdminCommand {
 
         final Logger logger = context.getLogger();
 
-        Application app = applications.getApplication(appname);
-
         if (app == null) {
             report.setMessage("Application " + appname + " needs to be deployed first before provisioned to tenant");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-
-        ApplicationRef appRef = domain.getApplicationRefInTarget(appname, DeploymentUtils.DAS_TARGET_NAME);
 
         ReadableArchive archive = null;
 
