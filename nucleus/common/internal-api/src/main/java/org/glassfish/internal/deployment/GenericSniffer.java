@@ -53,7 +53,7 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +76,7 @@ public abstract class GenericSniffer implements Sniffer {
     protected ModulesRegistry modulesRegistry;
 
     @Inject
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     final private String containerName;
     final private String appStigma;
@@ -98,7 +98,7 @@ public abstract class GenericSniffer implements Sniffer {
      * @return true if the location is recognized by this sniffer
      */
     public boolean handles(DeploymentContext context) {
-        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
         }

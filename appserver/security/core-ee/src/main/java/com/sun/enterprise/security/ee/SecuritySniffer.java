@@ -49,7 +49,6 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.enterprise.deploy.shared.ModuleType;
 
@@ -71,9 +70,6 @@ public class SecuritySniffer extends GenericSniffer {
 
     @Inject
     private ServiceLocator habitat;
-    
-    @Inject
-    private BaseServiceLocator locator;
 
     private ServiceHandle<SecurityLifecycle> lifecycle;
     
@@ -96,7 +92,7 @@ public class SecuritySniffer extends GenericSniffer {
      * @return true if this sniffer handles this application type
      */
     public boolean handles(ReadableArchive location) {
-        return (DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), locator) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), locator) || isJar(location));
+        return (DeploymentUtils.isArchiveOfType(location, DOLUtils.warType(), habitat) || DeploymentUtils.isArchiveOfType(location, DOLUtils.earType(), habitat) || isJar(location));
     }
 
     /**

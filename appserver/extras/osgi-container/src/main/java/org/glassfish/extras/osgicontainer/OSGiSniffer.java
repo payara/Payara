@@ -92,7 +92,7 @@ public class OSGiSniffer extends GenericSniffer  {
 
     @Override
     public boolean handles(DeploymentContext context) {
-        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         return supportsArchiveType(archiveType);
     }
 

@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.connectors.connector.module;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.deployment.annotation.introspection.EjbComponentAnnotationScanner;
@@ -52,7 +53,6 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class ConnectorSniffer extends GenericSniffer {
     private Logger logger;
 
     @Inject RarType rarType;
-    @Inject BaseServiceLocator locator;
+    @Inject ServiceLocator locator;
 
     private static final Class[]  connectorAnnotations = new Class[] {
             javax.resource.spi.Connector.class };
@@ -173,7 +173,7 @@ public class ConnectorSniffer extends GenericSniffer {
      */
     @Override
     public boolean handles(DeploymentContext context) {
-        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
         }

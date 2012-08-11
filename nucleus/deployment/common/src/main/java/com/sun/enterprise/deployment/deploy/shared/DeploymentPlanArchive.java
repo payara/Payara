@@ -45,8 +45,8 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +78,7 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
     
     String subArchiveUri=null;
 
-    private final static BaseServiceLocator locator = Globals.getDefaultHabitat();
+    private final static ServiceLocator locator = Globals.getDefaultHabitat();
     
     /** Creates a new instance of DeploymentPlanArchive 
      * package private
@@ -181,7 +181,7 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             
             String mangledName = entryName;
             String prefix = "META-INF/";
-            ArchiveType warType = locator.getComponent(ArchiveType.class, "war");
+            ArchiveType warType = locator.getService(ArchiveType.class, "war");
             boolean isWar = DeploymentUtils.isArchiveOfType(getParentArchive(), warType, locator);
             if (entryName.indexOf("sun-web.xml")!=-1 || 
                 entryName.indexOf("glassfish-web.xml")!=-1) {

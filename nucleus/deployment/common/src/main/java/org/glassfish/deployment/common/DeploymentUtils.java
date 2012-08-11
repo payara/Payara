@@ -54,8 +54,8 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 
 import java.io.File;
@@ -190,7 +190,7 @@ public class DeploymentUtils {
     }
 
     // check if the archive matches the specified archive type
-    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, DeploymentContext context, BaseServiceLocator locator) {
+    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, DeploymentContext context, ServiceLocator locator) {
         if (archive == null || archiveType == null) { 
             return false;
         }
@@ -200,7 +200,7 @@ public class DeploymentUtils {
             return type.equals(context.getArchiveHandler().getArchiveType());
         }
         try {
-            ArchiveDetector detector = locator.getComponent(ArchiveDetector.class, type); 
+            ArchiveDetector detector = locator.getService(ArchiveDetector.class, type); 
             if (detector == null) {
                 return false;
             }
@@ -211,7 +211,7 @@ public class DeploymentUtils {
         }
     }
 
-    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, BaseServiceLocator locator) {
+    public static boolean isArchiveOfType(ReadableArchive archive, ArchiveType archiveType, ServiceLocator locator) {
         return isArchiveOfType(archive, archiveType, null, locator);
     }
 

@@ -41,7 +41,6 @@
 package org.glassfish.resources.module;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.logging.LogDomains;
@@ -63,13 +62,12 @@ import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
 import org.glassfish.resources.admin.cli.SunResourcesXML;
 import org.glassfish.resources.api.*;
-import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 
 import org.glassfish.api.event.EventListener;
@@ -119,7 +117,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     private Events events;
 
     @Inject
-    private BaseServiceLocator locator; 
+    private ServiceLocator locator; 
 
     private final Applications applications;
 

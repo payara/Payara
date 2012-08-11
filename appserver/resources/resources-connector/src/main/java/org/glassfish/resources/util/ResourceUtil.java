@@ -45,10 +45,10 @@ import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resources.api.PoolInfo;
 import org.glassfish.resources.api.ResourceConstants;
 import org.glassfish.resources.api.ResourceInfo;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.Collection;
 import java.util.Enumeration;
@@ -190,7 +190,7 @@ public class ResourceUtil {
                 resourceInfo.getName() != null && resourceInfo.getName().startsWith(ResourceConstants.JAVA_MODULE_SCOPE_PREFIX);
     }
 
-    public static boolean hasResourcesXML(ReadableArchive archive, BaseServiceLocator locator){
+    public static boolean hasResourcesXML(ReadableArchive archive, ServiceLocator locator){
         boolean hasResourcesXML = false;
         try{
             if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){

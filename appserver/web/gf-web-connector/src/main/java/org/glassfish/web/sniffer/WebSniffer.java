@@ -46,12 +46,12 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.GenericSniffer;
 import org.glassfish.web.WarType;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ import java.util.List;
 public class WebSniffer  extends GenericSniffer {
 
     @Inject WarType warType;
-    @Inject BaseServiceLocator locator;
+    @Inject ServiceLocator locator;
 
     public WebSniffer() {
         super("web", "WEB-INF/web.xml", null);
@@ -89,7 +89,7 @@ public class WebSniffer  extends GenericSniffer {
      */
     @Override
     public boolean handles(DeploymentContext context) {
-        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
         }
