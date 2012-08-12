@@ -429,7 +429,7 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
                     cluster.deleteResourceRef(jndiName);
 
                     // delete ResourceRef for all instances of Cluster
-                    Target tgt = habitat.getComponent(Target.class);
+                    Target tgt = habitat.getService(Target.class);
                     List<Server> instances = tgt.getInstances(target);
                     for (Server svr : instances) {
                         if (svr.isResourceRefExists(jndiName)) {

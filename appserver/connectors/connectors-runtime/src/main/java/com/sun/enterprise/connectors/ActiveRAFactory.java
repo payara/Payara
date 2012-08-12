@@ -52,11 +52,10 @@ import java.util.logging.Logger;
 import java.util.Collection;
 
 import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 
 /**
  * Factory creating Active Resource adapters.
@@ -69,7 +68,7 @@ public class ActiveRAFactory {
     private static Logger _logger = LogDomains.getLogger(ActiveRAFactory.class,LogDomains.RSR_LOGGER);
 
     @Inject
-    private BaseServiceLocator activeRAHabitat;
+    private ServiceLocator activeRAHabitat;
     /**
      * Creates an active resource adapter.
      *
@@ -145,7 +144,7 @@ public class ActiveRAFactory {
 
     private ActiveResourceAdapter getActiveRA(ConnectorDescriptor cd, String moduleName)
             throws ConnectorRuntimeException{
-        Collection<ActiveResourceAdapter> activeRAs =  activeRAHabitat.getAllByContract(ActiveResourceAdapter.class);
+        Collection<ActiveResourceAdapter> activeRAs =  activeRAHabitat.getAllServices(ActiveResourceAdapter.class);
         for(ActiveResourceAdapter activeRA : activeRAs){
             if(activeRA.handles(cd, moduleName)){
                 if(_logger.isLoggable(Level.FINEST)){
@@ -163,7 +162,7 @@ public class ActiveRAFactory {
             _logger.log(Level.INFO, "Deployed RAR [ "+moduleName+" ] has inbound artifacts, but the runtime " +
                     "does not support it. Providing only outbound support ");
 
-            return activeRAHabitat.getComponent(ActiveResourceAdapter.class, ConnectorConstants.AORA);
+            return activeRAHabitat.getService(ActiveResourceAdapter.class, ConnectorConstants.AORA);
         }
         //could not fine any impl.
         throw new ConnectorRuntimeException("Unable to get active RA for module " + moduleName);

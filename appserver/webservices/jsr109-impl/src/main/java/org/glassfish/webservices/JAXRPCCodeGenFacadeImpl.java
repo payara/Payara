@@ -42,10 +42,9 @@ package org.glassfish.webservices;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.webservices.codegen.JaxRpcCodegenFactory;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.JAXRPCCodeGenFacade;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * This class is responsible for generating all non portable
@@ -57,7 +56,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 @Service
 public class JAXRPCCodeGenFacadeImpl implements JAXRPCCodeGenFacade {
 
-public void run(BaseServiceLocator habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception {
+public void run(ServiceLocator habitat, DeploymentContext context, String cp, boolean processServiceReferences) throws Exception {
     JaxRpcCodegenFactory.newInstance().getAdapter(processServiceReferences).run(habitat, context,cp);
 }
 

@@ -79,7 +79,7 @@ import org.glassfish.deployment.common.Artifacts.FullAndPartURIs;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
@@ -113,7 +113,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
     private Set<FullAndPartURIs> earLevelDownloads = null;
     private final static String EAR_LEVEL_DOWNLOADS_KEY = "earLevelDownloads";
 
-    private final BaseServiceLocator habitat;
+    private final ServiceLocator habitat;
 
     private final AppClientGroupFacadeGenerator groupFacadeGenerator;
 
@@ -128,11 +128,11 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleClassLoader,
             final Application application,
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ASJarSigner jarSigner) throws IOException {
         super(dc, bundleDesc, archivist, gfClientModuleClassLoader, application, habitat);
         this.habitat = habitat;
-        groupFacadeGenerator = habitat.getComponent(AppClientGroupFacadeGenerator.class);
+        groupFacadeGenerator = habitat.getService(AppClientGroupFacadeGenerator.class);
         this.jarSigner = jarSigner;
         isDirectoryDeployed = Boolean.valueOf(dc.getAppProps().getProperty(ServerTags.DIRECTORY_DEPLOYED));
         earURI = dc.getSource().getParentArchive().getURI();
@@ -144,7 +144,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
         super.prepareJARs();
 
         // In embedded mode, we don't process app clients so far.
-        if (habitat.getComponent(ProcessEnvironment.class).getProcessType().isEmbedded()) {
+        if (habitat.<ProcessEnvironment>getService(ProcessEnvironment.class).getProcessType().isEmbedded()) {
             return;
         }
 

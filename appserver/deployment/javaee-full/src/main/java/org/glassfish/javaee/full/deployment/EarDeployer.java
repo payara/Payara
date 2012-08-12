@@ -57,7 +57,6 @@ import org.glassfish.hk2.classmodel.reflect.*;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;

@@ -171,7 +171,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
                 if ((new WsUtil()).isJAXWSbasedService(ws)){
                     setupJaxWSServiceForDeployment(dc, ws);
                 } else {
-                    JAXRPCCodeGenFacade facade= habitat.getByContract(JAXRPCCodeGenFacade.class);
+                    JAXRPCCodeGenFacade facade= habitat.getService(JAXRPCCodeGenFacade.class);
                     if (facade != null) {
                         facade.run(habitat, dc, moduleCP, false);
                     }  else {
@@ -181,7 +181,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             }
             doWebServicesDeployment(app,dc);
             Thread.currentThread().setContextClassLoader(oldCl);
-            WebServicesContainer container = habitat.getComponent(WebServicesContainer.class);
+            WebServicesContainer container = habitat.getService(WebServicesContainer.class);
             WebServicesDeploymentMBean bean = container.getDeploymentBean();
             WebServiceDeploymentNotifier notifier = getDeploymentNotifier();
             bean.deploy(wsDesc,notifier);
@@ -778,7 +778,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
     public void clean(DeploymentContext dc) {
         super.clean(dc);
 
-        WebServicesContainer container = habitat.getComponent(WebServicesContainer.class);
+        WebServicesContainer container = habitat.getService(WebServicesContainer.class);
         WebServicesDeploymentMBean bean = container.getDeploymentBean();
         UndeployCommandParameters params = dc.getCommandParameters(UndeployCommandParameters.class);
         if (params != null)  {
@@ -887,7 +887,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
      *
      */
     private void copyExtraFilesToGeneratedFolder( DeploymentContext context) throws IOException{
-        Archivist archivist = habitat.getByContract(Archivist.class);
+        Archivist archivist = habitat.getService(Archivist.class);
 
         ReadableArchive archive = archiveFactory.openArchive(
                 context.getSourceDir());

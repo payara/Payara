@@ -245,7 +245,7 @@ public class EjbDeployer
         }
         //Register the EjbSecurityComponentInvocationHandler
 
-        RegisteredComponentInvocationHandler handler = habitat.getComponent(RegisteredComponentInvocationHandler.class,"ejbSecurityCIH");
+        RegisteredComponentInvocationHandler handler = habitat.getService(RegisteredComponentInvocationHandler.class,"ejbSecurityCIH");
         handler.register();
 
         EjbBundleDescriptorImpl ejbBundle = dc.getModuleMetaData(EjbBundleDescriptorImpl.class);

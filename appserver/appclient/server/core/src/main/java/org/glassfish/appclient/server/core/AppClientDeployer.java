@@ -249,7 +249,7 @@ public class AppClientDeployer
     
     private AppClientServerApplication newACServerApp(
             final DeploymentContext dc, final AppClientDeployerHelper helper) {
-        final AppClientServerApplication result = habitat.getComponent(AppClientServerApplication.class);
+        final AppClientServerApplication result = habitat.getService(AppClientServerApplication.class);
         result.init(dc, helper);
         return result;
     }
@@ -328,7 +328,7 @@ public class AppClientDeployer
 
     private AppClientDeployerHelper createAndSaveHelper(final DeploymentContext dc,
             final ClassLoader clientModuleLoader) throws IOException {
-            final AppClientArchivist archivist = habitat.getComponent(AppClientArchivist.class);
+            final AppClientArchivist archivist = habitat.getService(AppClientArchivist.class);
             final AppClientDeployerHelper h =
             AppClientDeployerHelper.newInstance(
                 dc,

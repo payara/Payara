@@ -44,6 +44,7 @@ import org.glassfish.api.deployment.*;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -56,7 +57,7 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.DeploymentProperties;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,7 +84,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
     protected ApplicationRegistry appRegistry;
 
     @Inject
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
 
     @Inject @Named("application_undeploy") @Optional
     protected ApplicationVisitor undeploymentVisitor=null;

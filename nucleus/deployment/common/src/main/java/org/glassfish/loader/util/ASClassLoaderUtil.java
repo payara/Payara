@@ -46,10 +46,10 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.ServerEnvironment;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import java.io.File;
@@ -90,7 +90,7 @@ public class ASClassLoaderUtil {
      *         "libraries" defined for the module.
      */
     public static String getModuleClassPath
-        (BaseServiceLocator habitat, String moduleId, String deploymentLibs) {
+        (ServiceLocator habitat, String moduleId, String deploymentLibs) {
 
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "ASClassLoaderUtil.getModuleClassPath " +
@@ -99,7 +99,7 @@ public class ASClassLoaderUtil {
 
         StringBuilder classpath = new StringBuilder(getModulesClasspath(habitat));
         ClassLoaderHierarchy clh =
-                habitat.getByContract(ClassLoaderHierarchy.class);
+                habitat.getService(ClassLoaderHierarchy.class);
         final String commonClassPath = clh.getCommonClassPath();
         if (commonClassPath != null && commonClassPath.length() > 0) {
             classpath.append(commonClassPath).append(File.pathSeparator);
@@ -112,7 +112,7 @@ public class ASClassLoaderUtil {
 
     }
 
-    public static String getModuleClassPath (BaseServiceLocator habitat, 
+    public static String getModuleClassPath (ServiceLocator habitat, 
         DeploymentContext context) {
         DeployCommandParameters params = 
             context.getCommandParameters(DeployCommandParameters.class);
@@ -121,14 +121,14 @@ public class ASClassLoaderUtil {
 
 
     private static void addDeployParamLibrariesForModule(StringBuilder sb, 
-        String moduleId, String deploymentLibs, BaseServiceLocator habitat) {
+        String moduleId, String deploymentLibs, ServiceLocator habitat) {
         if (moduleId.indexOf("#") != -1) {
             moduleId = moduleId.substring(0, moduleId.indexOf("#"));
         }
   
         if (deploymentLibs == null) {
             ApplicationInfo appInfo = 
-                habitat.getComponent(ApplicationRegistry.class).get(moduleId);
+                habitat.<ApplicationRegistry>getService(ApplicationRegistry.class).get(moduleId);
             if (appInfo == null) {
                 // this might be an internal container app, 
                 // like _default_web_app, ignore.
@@ -147,9 +147,9 @@ public class ASClassLoaderUtil {
     }
 
     private static URL[] getDeployParamLibrariesAsURLs(String librariesStr,
-        BaseServiceLocator habitat) {
+        ServiceLocator habitat) {
             return getDeployParamLibrariesAsURLs(librariesStr,
-                habitat.getComponent(ServerEnvironment.class));
+                habitat.<ServerEnvironment>getService(ServerEnvironment.class));
     }
 
 
@@ -215,11 +215,11 @@ public class ASClassLoaderUtil {
         return urls;
     }
 
-    private static synchronized String getModulesClasspath(BaseServiceLocator habitat) {
+    private static synchronized String getModulesClasspath(ServiceLocator habitat) {
         synchronized (ASClassLoaderUtil.class) {
             if (modulesClassPath == null) {
                 final StringBuilder tmpString = new StringBuilder();
-                ModulesRegistry mr = habitat.getComponent(ModulesRegistry.class);
+                ModulesRegistry mr = habitat.getService(ModulesRegistry.class);
                 if (mr != null) {
                     for (Module module : mr.getModules()) {
                         for (URI uri : module.getModuleDefinition().getLocations()) {

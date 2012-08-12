@@ -79,7 +79,7 @@ import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),
@@ -106,7 +106,7 @@ public abstract class AppClientDeployerHelper {
 
     private final Application application;
 
-    private final BaseServiceLocator habitat;
+    private final ServiceLocator habitat;
 
     private static final Logger logger = LogDomains.getLogger(AppClientDeployerHelper.class, LogDomains.ACC_LOGGER);
 
@@ -120,7 +120,7 @@ public abstract class AppClientDeployerHelper {
             final DeploymentContext dc,
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleLoader,
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ASJarSigner jarSigner) throws IOException {
         ApplicationClientDescriptor bundleDesc = dc.getModuleMetaData(ApplicationClientDescriptor.class);
         Application application = bundleDesc.getApplication();
@@ -149,7 +149,7 @@ public abstract class AppClientDeployerHelper {
             final AppClientArchivist archivist,
             final ClassLoader gfClientModuleClassLoader,
             final Application application,
-            final BaseServiceLocator habitat) throws IOException {
+            final ServiceLocator habitat) throws IOException {
         super();
         this.dc = dc;
         this.appClientDesc = bundleDesc;
@@ -454,7 +454,7 @@ public abstract class AppClientDeployerHelper {
 
     protected void prepareJARs() throws IOException, URISyntaxException {
         // In embedded mode, we don't process app clients so far.
-        if (habitat.getComponent(ProcessEnvironment.class).getProcessType().isEmbedded()) {
+        if (habitat.<ProcessEnvironment>getService(ProcessEnvironment.class).getProcessType().isEmbedded()) {
             return;
         }
         generateAppClientFacade();
