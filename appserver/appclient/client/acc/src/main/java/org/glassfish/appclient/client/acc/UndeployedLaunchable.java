@@ -61,7 +61,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 import javax.enterprise.deploy.shared.ModuleType;
@@ -85,7 +85,7 @@ public class UndeployedLaunchable implements Launchable {
     private ClassLoader classLoader = null;
 
     static UndeployedLaunchable newUndeployedLaunchable(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ReadableArchive ra,
             final String callerSuppliedMainClassName,
             final String callerSuppliedAppName,
@@ -192,13 +192,13 @@ public class UndeployedLaunchable implements Launchable {
         return className.replace('.', '/') + ".class";
     }
 
-    private UndeployedLaunchable(final BaseServiceLocator habitat,
+    private UndeployedLaunchable(final ServiceLocator habitat,
             final ReadableArchive clientRA,
             final String callerSuppliedMainClass) throws IOException, SAXParseException {
         this.callerSuppliedMainClassName = callerSuppliedMainClass;
         this.clientRA = clientRA;
     }
-    private UndeployedLaunchable(final BaseServiceLocator habitat,
+    private UndeployedLaunchable(final ServiceLocator habitat,
             final ReadableArchive clientRA,
             final ApplicationClientDescriptor acd,
             final String callerSuppliedMainClass) throws IOException, SAXParseException {
@@ -206,7 +206,7 @@ public class UndeployedLaunchable implements Launchable {
         this.acDesc = acd;
     }
 
-    private UndeployedLaunchable(final BaseServiceLocator habitat,
+    private UndeployedLaunchable(final ServiceLocator habitat,
             final ReadableArchive clientRA,
             final AppClientArchivist archivist,
             final String callerSuppliedMainClass) throws IOException, SAXParseException {

@@ -68,7 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -107,11 +107,11 @@ public class FacadeLaunchable implements Launchable {
     private static AppClientArchivist facadeArchivist = null;
     private ApplicationClientDescriptor acDesc = null;
     private ClassLoader classLoader = null;
-    private final BaseServiceLocator habitat;
+    private final ServiceLocator habitat;
     private final String anchorDir;
 
     FacadeLaunchable(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final Attributes mainAttrs, final ReadableArchive facadeRA,
             final String anchorDir) throws IOException, URISyntaxException {
         this(habitat,
@@ -127,7 +127,7 @@ public class FacadeLaunchable implements Launchable {
     }
 
     FacadeLaunchable(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ReadableArchive facadeClientRA,
             final Attributes mainAttrs,
             final ReadableArchive clientRA,
@@ -151,10 +151,10 @@ public class FacadeLaunchable implements Launchable {
     }
 
     private static MultiReadableArchive openCombinedReadableArchive(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ReadableArchive facadeRA,
             final ReadableArchive clientRA) throws IOException {
-        final MultiReadableArchive combinedRA = habitat.getComponent(MultiReadableArchive.class);
+        final MultiReadableArchive combinedRA = habitat.getService(MultiReadableArchive.class);
         combinedRA.open(facadeRA.getURI(), clientRA.getURI());
         return combinedRA;
     }
@@ -172,9 +172,9 @@ public class FacadeLaunchable implements Launchable {
         return getArchivist(habitat);
     }
 
-    protected synchronized static AppClientArchivist getArchivist(final BaseServiceLocator habitat) {
+    protected synchronized static AppClientArchivist getArchivist(final ServiceLocator habitat) {
         if (facadeArchivist == null) {
-            facadeArchivist = habitat.getComponent(ACCAppClientArchivist.class);
+            facadeArchivist = habitat.getService(ACCAppClientArchivist.class);
         }
         return facadeArchivist;
     }
@@ -207,7 +207,7 @@ public class FacadeLaunchable implements Launchable {
      * @throws javax.xml.stream.XMLStreamException
      */
     static FacadeLaunchable newFacade(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final ReadableArchive facadeRA,
             final String callerSuppliedMainClassName,
             final String callerSuppliedAppName)
@@ -330,7 +330,7 @@ public class FacadeLaunchable implements Launchable {
     }
 
     private static FacadeLaunchable selectFacadeFromGroup(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final URI groupFacadeURI, final ArchiveFactory af,
             final String groupURIs, final String callerSpecifiedMainClassName,
             final String callerSpecifiedAppClientName,

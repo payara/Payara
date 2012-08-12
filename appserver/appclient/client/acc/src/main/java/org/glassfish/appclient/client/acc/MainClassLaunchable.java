@@ -58,7 +58,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -75,9 +75,9 @@ public class
     private ApplicationClientDescriptor acDesc = null;
     private ClassLoader classLoader = null;
     private AppClientArchivist archivist = null;
-    private final BaseServiceLocator habitat;
+    private final ServiceLocator habitat;
 
-    MainClassLaunchable(final BaseServiceLocator habitat, final Class mainClass) {
+    MainClassLaunchable(final ServiceLocator habitat, final Class mainClass) {
         super();
         this.mainClass = mainClass;
         this.habitat = habitat;

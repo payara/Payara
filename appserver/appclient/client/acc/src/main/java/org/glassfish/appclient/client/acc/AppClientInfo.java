@@ -66,8 +66,8 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.appclient.common.Util;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.xml.sax.SAXParseException;
 
 import javax.persistence.EntityManagerFactory;
@@ -287,7 +287,7 @@ public abstract class AppClientInfo {
         }
 
         //TODO: This method does not appear to be used -- can it be deleted?
-        public Application getApplication(BaseServiceLocator habitat) {
+        public Application getApplication(ServiceLocator habitat) {
         	
             Application application = appClient.getApplication();
             if (application == null) {

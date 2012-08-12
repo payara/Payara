@@ -56,8 +56,8 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.api.admin.ProcessEnvironment;
 
 /**
@@ -80,7 +80,7 @@ public class AppClientServerApplication implements
         ApplicationContainer<ApplicationClientDescriptor> {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;
@@ -153,7 +153,7 @@ public class AppClientServerApplication implements
     }
 
     private JavaWebStartInfo newJavaWebStartInfo() {
-        final JavaWebStartInfo info = habitat.getComponent(JavaWebStartInfo.class);
+        final JavaWebStartInfo info = habitat.getService(JavaWebStartInfo.class);
         info.init(this);
         return info;
     }

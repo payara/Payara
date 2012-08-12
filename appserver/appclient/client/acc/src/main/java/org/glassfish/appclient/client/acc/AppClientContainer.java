@@ -87,10 +87,10 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -249,7 +249,7 @@ public class AppClientContainer {
     private ConnectorRuntime connectorRuntime;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private Builder builder;
 
@@ -403,7 +403,7 @@ public class AppClientContainer {
 
 
         // Load any managed beans
-        ManagedBeanManager managedBeanManager = habitat.getByContract(ManagedBeanManager.class);
+        ManagedBeanManager managedBeanManager = habitat.getService(ManagedBeanManager.class);
         managedBeanManager.loadManagedBeans(desc.getApplication());
         cleanup.setManagedBeanManager(managedBeanManager);
 
@@ -903,18 +903,18 @@ public class AppClientContainer {
         private final Logger logger;
         private Thread cleanupThread = null;
         private Collection<EntityManagerFactory> emfs = null;
-        private final BaseServiceLocator habitat;
+        private final ServiceLocator habitat;
         private ConnectorRuntime connectorRuntime;
         private ManagedBeanManager managedBeanMgr;
 
         static Cleanup arrangeForShutdownCleanup(final Logger logger,
-                final BaseServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
+                final ServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
             final Cleanup cu = new Cleanup(logger, habitat, appDesc);
             cu.enable();
             return cu;
         }
 
-        private Cleanup(final Logger logger, final BaseServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
+        private Cleanup(final Logger logger, final ServiceLocator habitat, final ApplicationClientDescriptor appDesc) {
             this.logger = logger;
             this.habitat = habitat;
             this.appClient = appDesc;
