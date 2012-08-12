@@ -65,8 +65,8 @@ import com.sun.jts.CosTransactions.RecoveryManager;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Resource recovery manager to recover transactions.
@@ -79,7 +79,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
     private TransactionService txnService;
 
     @Inject 
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private JavaEETransactionManager txMgr;
 
@@ -223,7 +223,7 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
         if (force) {
             try {
                 if (txnService == null) {
-                    Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                    Config c = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
                     txnService = c.getExtensionByType(TransactionService.class);
                 }
                 if (!Boolean.valueOf(txnService.getAutomaticRecovery())) {
@@ -342,10 +342,10 @@ public class ResourceRecoveryManagerImpl implements PostConstruct, ResourceRecov
             return;
         }
 
-        recoveryResourceHandlers = new ArrayList(habitat.getAllByContract(RecoveryResourceHandler.class));
+        recoveryResourceHandlers = new ArrayList(habitat.getAllServices(RecoveryResourceHandler.class));
         recoveryResourceHandlers.addAll(externallyRegisteredRecoveryResourceHandlers);
-        txMgr = habitat.getByContract(JavaEETransactionManager.class);
-        recoveryListenersRegistry = habitat.getComponent(RecoveryResourceRegistry.class);
+        txMgr = habitat.getService(JavaEETransactionManager.class);
+        recoveryListenersRegistry = habitat.getService(RecoveryResourceRegistry.class);
         if (recoveryListenersRegistry == null) throw new IllegalStateException();
         RecoveryManager.startTransactionRecoveryFence();
 

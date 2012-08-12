@@ -50,13 +50,13 @@ import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.DefaultTransactionService;
 
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.api.admin.ProcessEnvironment;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.pfl.basic.func.NullaryFunction ;
 
@@ -88,7 +88,7 @@ public class TransactionIIOPInterceptorFactory implements IIOPInterceptorFactory
     private static boolean txServiceInitialized = false;
     private InterceptorImpl interceptor = null;
 
-    @Inject private BaseServiceLocator habitat;
+    @Inject private ServiceLocator habitat;
     @Inject private ProcessEnvironment processEnv;
 
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {

@@ -87,8 +87,8 @@ import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  ** Implementation of JavaEETransactionManagerDelegate that supports XA
@@ -100,7 +100,7 @@ import org.glassfish.hk2.api.PostConstruct;
 public class JavaEETransactionManagerJTSDelegate 
             implements JavaEETransactionManagerDelegate, PostConstruct {
 
-    @Inject private BaseServiceLocator habitat;
+    @Inject private ServiceLocator habitat;
 
     // an implementation of the JavaEETransactionManager that calls
     // this object.
@@ -503,7 +503,7 @@ public class JavaEETransactionManagerJTSDelegate
 
     public void initTransactionProperties() {
         if (habitat != null) {
-            txnService = habitat.getComponent(TransactionService.class,
+            txnService = habitat.getService(TransactionService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
             if (txnService != null) {

@@ -52,13 +52,15 @@ import org.glassfish.api.naming.NamingObjectProxy;
 import javax.inject.Inject;
 
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -77,7 +79,7 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
 //  public class TransactionLifecycleService implements Startup, PostConstruct, PreDestroy {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Events events;
@@ -111,7 +113,11 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
                 nm.publishObject(USER_TX_NO_JAVA_COMP, new NamingObjectProxy.InitializationNamingObjectProxy() {
                     @Override
                     public Object create(Context ic) throws NamingException {
-                        return habitat.getByContract("javax.transaction.UserTransaction");
+                        ActiveDescriptor<?> descriptor = habitat.getBestDescriptor(
+                                BuilderHelper.createContractFilter("javax.transaction.UserTransaction"));
+                        if (descriptor == null) return null;
+                        
+                        return habitat.getServiceHandle(descriptor).getService();
                     }
                 }, false);
             } catch (NamingException e) {
@@ -134,12 +140,12 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
     public void onReady() {
         _logger.fine("ON TM READY STARTED");
 
-        TransactionService txnService = habitat.getComponent(TransactionService.class);
+        TransactionService txnService = habitat.getService(TransactionService.class);
         if (txnService != null) {
             boolean isAutomaticRecovery = Boolean.valueOf(txnService.getAutomaticRecovery());
             if (isAutomaticRecovery) {
                 _logger.fine("ON TM RECOVERY START");
-                tm = habitat.getByContract(JavaEETransactionManager.class);
+                tm = habitat.getService(JavaEETransactionManager.class);
                 tm.initRecovery(false);
                 _logger.fine("ON TM RECOVERY END");
             }

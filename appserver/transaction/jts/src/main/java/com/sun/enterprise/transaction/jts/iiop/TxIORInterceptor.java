@@ -60,7 +60,7 @@ import org.omg.PortableInterceptor.IORInterceptor;
 
 import com.sun.logging.LogDomains;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 public class TxIORInterceptor extends LocalObject implements IORInterceptor {
     
@@ -70,9 +70,9 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
 
     private Codec codec;
     
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
    
-    public TxIORInterceptor(Codec c, BaseServiceLocator h) {
+    public TxIORInterceptor(Codec c, ServiceLocator h) {
         codec = c;
         habitat = h;
     }
@@ -94,7 +94,7 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
             OTSPolicy otsPolicy = null;
             try {
                 otsPolicy = (OTSPolicy)iorInfo.get_effective_policy(
-                        habitat.getComponent(GlassFishORBHelper.class).getOTSPolicyType());
+                        habitat.<GlassFishORBHelper>getService(GlassFishORBHelper.class).getOTSPolicyType());
             } catch ( INV_POLICY ex ) {
                 _logger.log(Level.FINE, 
                         "TxIORInterceptor.establish_components: OTSPolicy not present");

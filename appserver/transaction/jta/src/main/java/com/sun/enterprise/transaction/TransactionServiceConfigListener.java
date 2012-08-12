@@ -63,8 +63,8 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
 
@@ -83,7 +83,7 @@ public class TransactionServiceConfigListener implements ConfigListener, PostCon
     private TransactionService ts;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private JavaEETransactionManager tm;
 
@@ -101,7 +101,7 @@ public class TransactionServiceConfigListener implements ConfigListener, PostCon
     @Override
     public void postConstruct() {
         // Listen to monitoring level changes
-        Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        Config c = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         ts = c.getExtensionByType(TransactionService.class);
         ModuleMonitoringLevels mml = c.getMonitoringService().getModuleMonitoringLevels();
         ((ObservableBean)ConfigSupport.getImpl(mml)).addListener(this);

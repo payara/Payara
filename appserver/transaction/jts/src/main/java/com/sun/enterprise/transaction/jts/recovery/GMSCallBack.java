@@ -57,6 +57,8 @@ import com.sun.enterprise.transaction.jts.api.DelegatedTransactionRecoveryFence;
 
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.ee.cms.core.CallBack;
 import com.sun.enterprise.ee.cms.core.DistributedStateCache;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
@@ -64,8 +66,6 @@ import com.sun.enterprise.ee.cms.core.FailureRecoverySignal;
 import com.sun.enterprise.ee.cms.core.Signal;
 
 import com.sun.logging.LogDomains;
-
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class GMSCallBack implements CallBack {
 
@@ -77,7 +77,7 @@ public class GMSCallBack implements CallBack {
     static Logger _logger = LogDomains.getLogger(TransactionServiceProperties.class, LogDomains.TRANSACTION_LOGGER);
 
     private Servers servers;
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private int waitTime;
     private DelegatedTransactionRecoveryFence fence;
@@ -85,15 +85,15 @@ public class GMSCallBack implements CallBack {
     private final long startTime;
     private final static Object lock = new Object();
 
-    public GMSCallBack(int waitTime, BaseServiceLocator habitat) {
-        GMSAdapterService gmsAdapterService = habitat.getComponent(GMSAdapterService.class);
+    public GMSCallBack(int waitTime, ServiceLocator habitat) {
+        GMSAdapterService gmsAdapterService = habitat.getService(GMSAdapterService.class);
         if (gmsAdapterService != null) {
             GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();
             if (gmsAdapter != null) {
                 gmsAdapter.registerFailureRecoveryListener(component, this);
 
                 this.habitat = habitat;
-                servers = habitat.getComponent(Servers.class);
+                servers = habitat.getService(Servers.class);
 
                 this.waitTime = waitTime;
 
@@ -235,7 +235,7 @@ public class GMSCallBack implements CallBack {
                 _logger.log(Level.FINE, "Starting transaction recovery of " + instance);
             }
 
-            ResourceRecoveryManager recoveryManager = habitat.getComponent(ResourceRecoveryManager.class);
+            ResourceRecoveryManager recoveryManager = habitat.getService(ResourceRecoveryManager.class);
             recoveryManager.recoverIncompleteTx(true, logdir, instance, true);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Transaction recovery of " + instance + " is completed");

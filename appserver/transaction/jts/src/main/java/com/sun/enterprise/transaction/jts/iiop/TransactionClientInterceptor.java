@@ -40,14 +40,13 @@
 
 package com.sun.enterprise.transaction.jts.iiop;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.LocalObject;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 public class TransactionClientInterceptor extends LocalObject
         implements ClientRequestInterceptor, Comparable {
@@ -62,10 +61,10 @@ public class TransactionClientInterceptor extends LocalObject
      * @param the name of the interceptor.
      * @param the order in which the interceptor should be invoked.
      */
-    public TransactionClientInterceptor(String name, int order, BaseServiceLocator habitat) {
+    public TransactionClientInterceptor(String name, int order, ServiceLocator habitat) {
 	this.name = name;
 	this.order = order;
-        tm = habitat.getComponent(JavaEETransactionManager.class);
+        tm = habitat.getService(JavaEETransactionManager.class);
     }
 
     public int compareTo(Object o) {

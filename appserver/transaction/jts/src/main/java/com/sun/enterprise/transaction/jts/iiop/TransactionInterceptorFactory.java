@@ -51,10 +51,10 @@ import com.sun.jts.CosTransactions.Configuration;
 
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.omg.IOP.Codec;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
@@ -71,7 +71,7 @@ public class TransactionInterceptorFactory implements IIOPInterceptorFactory{
     private TransactionServerInterceptor tsi = null;
     private TransactionClientInterceptor tci = null;
 
-    @Inject private BaseServiceLocator habitat;
+    @Inject private ServiceLocator habitat;
 
     public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (tci == null) {

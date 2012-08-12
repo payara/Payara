@@ -69,9 +69,9 @@ import com.sun.enterprise.util.i18n.StringManager;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractsProvided;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
@@ -102,7 +102,7 @@ public class JavaEETransactionManagerSimplified
 
     protected Logger _logger = LogDomains.getLogger(JavaEETransactionManagerSimplified.class, LogDomains.JTA_LOGGER);
 
-    @Inject private BaseServiceLocator habitat;
+    @Inject private ServiceLocator habitat;
 
     @Inject protected InvocationManager invMgr;
 
@@ -203,7 +203,7 @@ public class JavaEETransactionManagerSimplified
         // END IASRI 4705808 TTT001
 
         if (habitat != null) {
-            TransactionService txnService = habitat.getComponent(TransactionService.class,
+            TransactionService txnService = habitat.getService(TransactionService.class,
                    ServerEnvironment.DEFAULT_INSTANCE_NAME);
             // running on the server side ?
             if (txnService != null) {
@@ -216,10 +216,10 @@ public class JavaEETransactionManagerSimplified
                 }
 
                 TransactionServiceConfigListener listener = 
-                        habitat.getComponent(TransactionServiceConfigListener.class);
+                        habitat.getService(TransactionServiceConfigListener.class);
                 listener.setTM(this);
             }
-            ModuleMonitoringLevels levels = habitat.getComponent(ModuleMonitoringLevels.class);
+            ModuleMonitoringLevels levels = habitat.getService(ModuleMonitoringLevels.class);
             // running on the server side ?
             if (levels != null) {
                 String level = levels.getTransactionService();
@@ -1489,7 +1489,7 @@ public class JavaEETransactionManagerSimplified
             return; // the delegate will be set explicitly
 
         for (JavaEETransactionManagerDelegate d :
-                habitat.getAllByContract(JavaEETransactionManagerDelegate.class)) {
+                habitat.<JavaEETransactionManagerDelegate>getAllServices(JavaEETransactionManagerDelegate.class)) {
             setDelegate(d);
         }
 

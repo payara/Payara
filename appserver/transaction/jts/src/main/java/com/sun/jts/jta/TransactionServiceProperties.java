@@ -50,6 +50,7 @@ import com.sun.jts.CosTransactions.Configuration;
 import com.sun.jts.CosTransactions.RecoveryManager;
 import com.sun.jts.utils.RecoveryHooks.FailureInducer;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -64,7 +65,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -89,7 +90,7 @@ public class TransactionServiceProperties {
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
 
-    public static synchronized Properties getJTSProperties (BaseServiceLocator habitat, boolean isORBAvailable) {
+    public static synchronized Properties getJTSProperties (ServiceLocator habitat, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
             // We will need to update the properties if ORB availability changed
             return properties;
@@ -98,9 +99,9 @@ public class TransactionServiceProperties {
         Properties jtsProperties = new Properties();
         if (habitat != null) {
             jtsProperties.put(HABITAT, habitat);
-            ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
+            ProcessEnvironment processEnv = habitat.getService(ProcessEnvironment.class);
             if( processEnv.getProcessType().isServer()) {
-                TransactionService txnService = habitat.getComponent(TransactionService.class,
+                TransactionService txnService = habitat.getService(TransactionService.class,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
                 if (txnService != null) {
@@ -181,7 +182,7 @@ public class TransactionServiceProperties {
                     int jtsServerId = DEFAULT_SERVER_ID; // default value
 
                     if (isORBAvailable) {
-                        jtsServerId = habitat.getComponent(GlassFishORBHelper.class).getORBInitialPort();
+                        jtsServerId = habitat.<GlassFishORBHelper>getService(GlassFishORBHelper.class).getORBInitialPort();
                         if (jtsServerId == 0) {
                             // XXX Can this ever happen?
                             jtsServerId = DEFAULT_SERVER_ID; // default value
@@ -204,7 +205,7 @@ public class TransactionServiceProperties {
                     String serverId = String.valueOf(DEFAULT_SERVER_ID);
                     System.setProperty(J2EE_SERVER_ID_PROP, serverId);
     
-                    ServerContext ctx = habitat.getByContract(ServerContext.class);
+                    ServerContext ctx = habitat.getService(ServerContext.class);
                     String instanceName = ctx.getInstanceName();
 
                     /**
@@ -219,7 +220,7 @@ public class TransactionServiceProperties {
                     } else {
 
                        // if (dbLoggingResource == null) {
-                        Domain domain = habitat.getComponent(Domain.class);
+                        Domain domain = habitat.getService(Domain.class);
                         Server server = domain.getServerNamed(instanceName);
 
                         // Check if the server system property is set
@@ -309,12 +310,12 @@ public class TransactionServiceProperties {
         if (force || (isValueSet(value) && "true".equals(value))) {
             recoveryInitialized = true;
 
-            BaseServiceLocator habitat = (BaseServiceLocator)properties.get(HABITAT);
+            Habitat habitat = (Habitat) properties.get(HABITAT);
             if (habitat != null) {
-                ProcessEnvironment processEnv = habitat.getComponent(ProcessEnvironment.class);
+                ProcessEnvironment processEnv = habitat.getService(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
                     // Start ResourceManager if it hadn't started yet
-                    habitat.getComponent(PostStartup.class,"ResourceManager");
+                    habitat.getService(PostStartup.class,"ResourceManager");
                     value = properties.getProperty("pending-txn-cleanup-interval");
                     int interval = -1;
                     if (isValueSet(value)) {
@@ -347,9 +348,9 @@ public class TransactionServiceProperties {
 
     private static class RecoveryHelperThread extends Thread {
         private int interval;
-        private BaseServiceLocator habitat;
+        private ServiceLocator habitat;
 
-        RecoveryHelperThread(BaseServiceLocator habitat, int interval) {
+        RecoveryHelperThread(ServiceLocator habitat, int interval) {
             setName("Recovery Helper Thread");
             setDaemon(true);
             this.habitat = habitat;
@@ -357,7 +358,7 @@ public class TransactionServiceProperties {
         }
 
         public void run() {
-            ResourceRecoveryManager recoveryManager = habitat.getByContract(ResourceRecoveryManager.class);
+            ResourceRecoveryManager recoveryManager = habitat.getService(ResourceRecoveryManager.class);
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
                 return;
