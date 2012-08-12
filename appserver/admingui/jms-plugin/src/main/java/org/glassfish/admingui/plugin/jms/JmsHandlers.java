@@ -64,9 +64,9 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import org.glassfish.admingui.common.util.GuiUtil;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.resources.api.PoolInfo;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.jms.admin.cli.JMSDestination;
 import org.glassfish.jms.admin.cli.MQJMXConnectorInfo;
 
@@ -388,7 +388,7 @@ public class JmsHandlers {
     public static void pingJms(HandlerContext handlerCtx) {
         try {
             String poolName = (String) handlerCtx.getInputValue("poolName");
-            ConnectorRuntime connectorRuntime = GuiUtil.getHabitat().getComponent(ConnectorRuntime.class);
+            ConnectorRuntime connectorRuntime = GuiUtil.getHabitat().getService(ConnectorRuntime.class);
             PoolInfo poolInfo = new PoolInfo(poolName);
             connectorRuntime.pingConnectionPool(poolInfo);
             GuiUtil.prepareAlert("success", GuiUtil.getMessage("msg.PingSucceed"), null);
@@ -456,8 +456,8 @@ public class JmsHandlers {
     }
     
     private static MBeanServerConnection getMBeanServerConnection(String target) throws ConnectorRuntimeException, Exception {
-        BaseServiceLocator habitat = GuiUtil.getHabitat();
-        Domain domain = habitat.getComponent(Domain.class);
+        ServiceLocator habitat = GuiUtil.getHabitat();
+        Domain domain = habitat.getService(Domain.class);
         Cluster cluster = domain.getClusterNamed(target);
         String configRef = null;
         if (cluster == null) {
@@ -474,9 +474,9 @@ public class JmsHandlers {
     }
     
     private static class PhysicalDestinations extends JMSDestination {
-        public MQJMXConnectorInfo getConnectorInfo(String target, String configName, BaseServiceLocator habitat, Domain domain) throws Exception {
-            return getMQJMXConnectorInfo(target, domain.getConfigNamed(configName), habitat.getComponent(ServerContext.class), 
-                domain, habitat.getComponent(ConnectorRuntime.class));
+        public MQJMXConnectorInfo getConnectorInfo(String target, String configName, ServiceLocator habitat, Domain domain) throws Exception {
+            return getMQJMXConnectorInfo(target, domain.getConfigNamed(configName), habitat.<ServerContext>getService(ServerContext.class), 
+                domain, habitat.<ConnectorRuntime>getService(ConnectorRuntime.class));
         }
     }
 }

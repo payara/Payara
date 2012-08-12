@@ -50,7 +50,7 @@ import javax.servlet.ServletContext;
 //import static com.sun.enterprise.web.Constants.HABITAT_ATTRIBUTE;
 
 import org.glassfish.admingui.plugin.ConsolePluginService;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 
 /**
@@ -146,11 +146,11 @@ public class ConsoleClassLoader extends ClassLoader {
 	    (FacesContext.getCurrentInstance().getExternalContext()).getContext();
 
 	// Get the Habitat from the ServletContext
-	BaseServiceLocator habitat = (BaseServiceLocator) servletCtx.getAttribute(HABITAT_ATTRIBUTE);
+	Habitat habitat = (Habitat) servletCtx.getAttribute(HABITAT_ATTRIBUTE);
 
 	// Use the Habitat to find the ConsolePluginService and return the
 	// correct ClassLoader for the requested module (or null)
-	return habitat.getByType(ConsolePluginService.class).
+	return habitat.<ConsolePluginService>getService(ConsolePluginService.class).
 	    getModuleClassLoader(moduleName);
     }
 

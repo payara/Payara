@@ -70,12 +70,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -152,8 +151,8 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
                         + "must be supplied as a property in the provider-config "
                         + "in the domain.xml file!");
             }
-            BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
-            Domain domain = habitat.getByType(Domain.class);
+            ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
+            Domain domain = habitat.getService(Domain.class);
             NetworkListener adminListener = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
 
             if (restURL.contains(TOKEN_ADMIN_LISTENER_PORT)) {
@@ -166,7 +165,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             }
 
             //If secure admin is enabled, we need to ensure using https
-            SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
+            SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
             if (restURL.startsWith("http:") && (SecureAdmin.Util.isEnabled(secureAdmin))) {
                 restURL = restURL.replace("http:", "https:");
             }

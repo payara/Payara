@@ -74,10 +74,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -909,10 +908,10 @@ public class RestUtil {
             client = getJerseyClient();
         }
         try{
-            BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
-            SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
+            ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
+            SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
             client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier());
-            client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null));
+            client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null));
             client.configuration().register(CsrfProtectionFilter.class);
 
         }catch(Exception ex){

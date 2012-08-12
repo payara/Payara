@@ -44,7 +44,6 @@ import org.glassfish.api.admingui.ConsoleProvider;
 
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.ConfigParser;
