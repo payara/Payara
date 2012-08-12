@@ -85,7 +85,6 @@ import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.SnifferManager;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.xml.sax.SAXParseException;
@@ -190,7 +189,7 @@ public class DOLUtils {
        }
    }
 
-    public static boolean isRAConnectionFactory(BaseServiceLocator habitat, 
+    public static boolean isRAConnectionFactory(ServiceLocator habitat, 
         String type, Application thisApp) {
         // first check if this is a connection factory defined in a resource
         // adapter in this application
@@ -200,10 +199,10 @@ public class DOLUtils {
 
         // then check if this is a connection factory defined in a standalone 
         // resource adapter
-        Applications applications = habitat.getComponent(Applications.class);
+        Applications applications = habitat.getService(Applications.class);
         if (applications != null) {
             List<com.sun.enterprise.config.serverbeans.Application> raApps = applications.getApplicationsWithSnifferType(com.sun.enterprise.config.serverbeans.ServerTags.CONNECTOR, true);
-            ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
+            ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
             for (com.sun.enterprise.config.serverbeans.Application raApp : raApps) {
                 ApplicationInfo appInfo = appRegistry.get(raApp.getName());
                 if (isRAConnectionFactory(type, appInfo.getMetaData(Application.class))) {   
@@ -399,10 +398,10 @@ public class DOLUtils {
     }
 
 
-    public static void setExtensionArchivistForSubArchivist(BaseServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app, Archivist subArchivist) {
+    public static void setExtensionArchivistForSubArchivist(ServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app, Archivist subArchivist) {
         try {
             Collection<Sniffer> sniffers = getSniffersForModule(habitat, archive, md, app);
-            ArchivistFactory archivistFactory = habitat.getComponent(ArchivistFactory.class);
+            ArchivistFactory archivistFactory = habitat.getService(ArchivistFactory.class);
             subArchivist.setExtensionArchivists(archivistFactory.getExtensionsArchivists(sniffers, subArchivist.getModuleType()));
         } catch (Exception e) {
             logger.log(Level.WARNING, e.getMessage(), e);
@@ -410,14 +409,14 @@ public class DOLUtils {
     }
 
     // get sniffer list for sub modules of an ear application
-    private static Collection<Sniffer> getSniffersForModule(BaseServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app) throws Exception {
-        ArchiveHandler handler = habitat.getComponent(ArchiveHandler.class, md.getModuleType().toString());
-        SnifferManager snifferManager = habitat.getComponent(SnifferManager.class);
+    private static Collection<Sniffer> getSniffersForModule(ServiceLocator habitat, ReadableArchive archive, ModuleDescriptor md, Application app) throws Exception {
+        ArchiveHandler handler = habitat.getService(ArchiveHandler.class, md.getModuleType().toString());
+        SnifferManager snifferManager = habitat.getService(SnifferManager.class);
         List<URI> classPathURIs = handler.getClassPathURIs(archive);
         classPathURIs.addAll(getLibraryJarURIs(app, archive));
         Types types = archive.getParentArchive().getExtraData(Types.class);
         DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
-        ExtendedDeploymentContext context = new DeploymentContextImpl(null, logger, archive, parameters, habitat.getComponent(ServerEnvironment.class));
+        ExtendedDeploymentContext context = new DeploymentContextImpl(null, logger, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
         context.setArchiveHandler(handler);
         Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);
         String type = getTypeFromModuleType(md.getModuleType());

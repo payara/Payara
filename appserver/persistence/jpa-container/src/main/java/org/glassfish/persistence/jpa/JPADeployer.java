@@ -62,7 +62,6 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import java.io.IOException;

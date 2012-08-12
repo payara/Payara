@@ -61,9 +61,7 @@ import com.sun.enterprise.deployment.xml.WebServicesTagNames;
 import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.Node;
-
 
 /**
  * This class is responsible for loading and saving XML elements

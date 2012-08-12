@@ -44,7 +44,6 @@ import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.StringUtils;
 
 import com.sun.enterprise.module.ModulesRegistry;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import com.sun.hk2.component.ExistingSingletonInhabitant;
@@ -128,7 +127,7 @@ public class SunDeploymentManager implements DeploymentManager {
 
     private static final String ENABLED_ATTRIBUTE_NAME = "Enabled"; // NOI18N
 
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
 
     /** Creates a new instance of DeploymentManager */
@@ -1331,7 +1330,7 @@ public class SunDeploymentManager implements DeploymentManager {
     }
 
     private ArchiveFactory getArchiveFactory() {
-        return habitat.getComponent(ArchiveFactory.class);
+        return habitat.getService(ArchiveFactory.class);
     }
 
     /**

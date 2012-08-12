@@ -40,10 +40,11 @@
 
 package com.sun.enterprise.deployment.node;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import static com.sun.enterprise.util.SystemPropertyConstants.INSTALL_ROOT_PROPERTY;
 
 import java.io.File;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -77,12 +78,12 @@ public class SaxParserHandlerFactory {
          *is bonafide.
           */ 
         
-        final BaseServiceLocator habitat = Globals.getDefaultHabitat();
+        final ServiceLocator habitat = Globals.getDefaultHabitat();
 
         if(installRootIsValid())
-            result = habitat.getComponent(SaxParserHandler.class);
+            result = habitat.getService(SaxParserHandler.class);
         else
-            result = habitat.getComponent(SaxParserHandlerBundled.class);
+            result = habitat.getService(SaxParserHandlerBundled.class);
 
         return result;
     }

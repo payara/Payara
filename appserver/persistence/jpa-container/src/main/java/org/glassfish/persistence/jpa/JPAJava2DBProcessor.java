@@ -48,7 +48,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.persistence.common.*;
 
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.File;
 import java.io.IOException;

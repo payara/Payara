@@ -57,11 +57,12 @@ import com.sun.jdo.api.persistence.support.JDOFatalUserException;
 import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperPersistenceManager;
 import com.sun.jdo.spi.persistence.utility.StringHelper;
 import com.sun.jdo.spi.persistence.utility.logging.Logger;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.persistence.common.DatabaseConstants;
 import org.glassfish.persistence.common.I18NHelper;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** 
  * This class is used for static method invocations to avoid unnecessary
@@ -130,10 +131,10 @@ public class DeploymentHelper
 
         // TODO - pass Habitat or ConnectorRuntime as an argument.
 
-        BaseServiceLocator habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         DataSource ds = null;
         try {
-            ConnectorRuntime connectorRuntime = habitat.getByContract(ConnectorRuntime.class);
+            ConnectorRuntime connectorRuntime = habitat.getService(ConnectorRuntime.class);
             ds = DataSource.class.cast(connectorRuntime.lookupNonTxResource(name, true));
         } catch (Exception e) { 
             throw new JDOFatalUserException(

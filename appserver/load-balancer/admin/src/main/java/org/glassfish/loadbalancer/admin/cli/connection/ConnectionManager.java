@@ -52,7 +52,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import com.sun.enterprise.security.ssl.SSLUtils;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.loadbalancer.admin.cli.LbLogUtil;
 
@@ -161,8 +161,8 @@ public class ConnectionManager {
 
             // Install the all-trusting trust manager
             SSLContext sc = SSLContext.getInstance(TLS);
-            BaseServiceLocator habitat = Globals.getDefaultHabitat();
-            SSLUtils sslUtils = habitat.getComponent(SSLUtils.class);
+            ServiceLocator habitat = Globals.getDefaultHabitat();
+            SSLUtils sslUtils = habitat.getService(SSLUtils.class);
             sc.init(sslUtils.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
 
             //---------------------------------

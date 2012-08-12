@@ -53,8 +53,8 @@ import org.glassfish.api.invocation.InvocationException;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 @Service
 public class TransactionInvocationHandler implements ComponentInvocationHandler {
@@ -62,7 +62,7 @@ public class TransactionInvocationHandler implements ComponentInvocationHandler 
     private static Logger _logger = LogDomains.getLogger(
             TransactionInvocationHandler.class, LogDomains.JTA_LOGGER);
 
-    @Inject private BaseServiceLocator habitat;
+    @Inject private ServiceLocator habitat;
 
     private JavaEETransactionManager tm;
 
@@ -74,7 +74,7 @@ public class TransactionInvocationHandler implements ComponentInvocationHandler 
      */
     private void init() {
         if (tm == null ) {
-            tm = habitat.getByContract(JavaEETransactionManager.class);
+            tm = habitat.getService(JavaEETransactionManager.class);
         }
     }
 

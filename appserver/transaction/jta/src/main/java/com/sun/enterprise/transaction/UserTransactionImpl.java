@@ -63,7 +63,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /** 
  * This class implements javax.transaction.UserTransaction .
@@ -298,9 +298,9 @@ public class UserTransactionImpl implements UserTransaction, Serializable
      * Return instance with all injected values from deserialization if possible
      */
     Object readResolve() throws ObjectStreamException {
-        BaseServiceLocator h = Globals.getDefaultHabitat();
+        ServiceLocator h = Globals.getDefaultHabitat();
         if (h != null) {
-            return h.getComponent(UserTransactionImpl.class);
+            return h.getService(UserTransactionImpl.class);
         }
 
         return this;

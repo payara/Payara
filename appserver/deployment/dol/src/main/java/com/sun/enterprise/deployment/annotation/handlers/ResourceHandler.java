@@ -48,8 +48,8 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -77,7 +77,7 @@ import java.util.logging.Level;
 public class ResourceHandler extends AbstractResourceHandler {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject 
     private Provider<WSDolSupport> wSDolSupportProvider;

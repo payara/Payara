@@ -63,6 +63,8 @@ import javax.sql.DataSource;
 import com.sun.enterprise.*;
 import com.sun.enterprise.deployment.*;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil; //TODO Dependency on connector-internal-api needs to be removed
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.data.ApplicationInfo;
 
@@ -83,7 +85,6 @@ import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import org.glassfish.persistence.common.I18NHelper;
 
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /** Implementation for Sun specific CMP and Container interactions as defined
 * by the ContainerHelper interface.
@@ -133,14 +134,14 @@ public class SunContainerHelper extends SunTransactionHelper implements Containe
         Object[] params = (Object[])info;
         String appName = (String)params[0];
 
-        BaseServiceLocator habitat = Globals.getDefaultHabitat();
-        ApplicationRegistry reg = habitat.getComponent(ApplicationRegistry.class);
+        ServiceLocator habitat = Globals.getDefaultHabitat();
+        ApplicationRegistry reg = habitat.getService(ApplicationRegistry.class);
         ApplicationInfo appInfo = reg.get(appName);
         Application app = appInfo.getMetaData(Application.class);
 
         EjbDescriptor desc = app.getEjbByName((String)params[1]);
 
-        return habitat.getComponent(EjbContainerUtil.class).getContainer(desc.getUniqueId());
+        return habitat.<EjbContainerUtil>getService(EjbContainerUtil.class).getContainer(desc.getUniqueId());
     }
 
     /** Get an EJBObject reference for this primary key and Container helper.
