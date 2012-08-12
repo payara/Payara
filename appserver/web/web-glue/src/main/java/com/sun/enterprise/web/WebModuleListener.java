@@ -57,7 +57,6 @@ import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import javax.naming.NamingException;

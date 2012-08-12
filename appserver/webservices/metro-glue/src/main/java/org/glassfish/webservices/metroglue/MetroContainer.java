@@ -84,8 +84,9 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
@@ -106,7 +107,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
     private final AtomicBoolean wstxServicesDeploying = new AtomicBoolean(false);
     //
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     private ServerContext serverContext;
     @Inject
@@ -179,7 +180,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
                 return;
             }
 
-            Deployment deployment = habitat.getByContract(Deployment.class);
+            Deployment deployment = habitat.getService(Deployment.class);
             boolean isRegistered = deployment.isRegistered(WSTX_SERVICES_APP_NAME);
 
             if (isRegistered) {
@@ -198,7 +199,7 @@ public class MetroContainer implements PostConstruct, Container, WebServiceDeplo
                 if (app == null || !app.exists()) {
                     logger.log(Level.WARNING, format("wstx.service.cannot.deploy", "Required WAR file (" + WSTX_SERVICES_APP_NAME + ".war) is not installed"));
                 } else {
-                    ActionReport report = habitat.getComponent(ActionReport.class, "plain");
+                    ActionReport report = habitat.getService(ActionReport.class, "plain");
                     DeployCommandParameters params = new DeployCommandParameters(app);
                     String appName = WSTX_SERVICES_APP_NAME;
                     params.name = appName;

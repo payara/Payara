@@ -46,11 +46,11 @@ import java.util.Enumeration;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.inject.Inject;
 
@@ -63,10 +63,10 @@ import javax.inject.Inject;
 public class WeldCompositeSniffer extends WeldSniffer {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     public boolean handles(DeploymentContext context) {
-        ArchiveType archiveType = habitat.getComponent(ArchiveType.class, context.getArchiveHandler().getArchiveType());
+        ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
         }

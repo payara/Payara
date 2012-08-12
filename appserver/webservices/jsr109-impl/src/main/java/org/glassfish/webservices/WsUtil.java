@@ -95,7 +95,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.glassfish.web.deployment.util.WebServerInfo;
 import org.glassfish.web.deployment.util.VirtualServerInfo;
 import org.glassfish.web.util.HtmlEntityEncoder;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.w3c.dom.*;
 import org.w3c.dom.Node;
 
