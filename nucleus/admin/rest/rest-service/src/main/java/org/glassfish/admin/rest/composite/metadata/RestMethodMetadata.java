@@ -181,7 +181,6 @@ public class RestMethodMetadata {
     }
 
     private JSONArray getProperties(Class<?> clazz) {
-        Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
         JSONArray props = new JSONArray();
 
         for (Class<?> ifaces : clazz.getInterfaces()) {
