@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,46 +40,14 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>org.glassfish.main.web</groupId>
-    	<artifactId>web</artifactId>
-        <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>web-naming</artifactId>
-    
-    <name>Web Container Naming Utilities</name>
-
-    <developers>
-        <developer>
-            <id>swchan2</id>
-            <name>Shing Wai Chan</name>
-            <url>http://weblogs.java.net/blog/swchan2</url>
-            <organization>Oracle</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-    </properties>
-    <build>
-	<resources>
-        </resources>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-framework</artifactId>
-        </dependency> 
-    </dependencies>
-</project>
+<FindBugsFilter>
+    <!--
+        This class is required to start with a lower case character
+        because of the algorithm used by JNDI to locate the class.
+        See the javax.naming.spi.NamingManager.getURLContext method.
+    -->
+    <Match>
+        <Class name="org.apache.naming.java.javaURLContextFactory"/>
+        <Bug pattern="NM_CLASS_NAMING_CONVENTION"/>
+    </Match>
+</FindBugsFilter>
