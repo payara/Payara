@@ -49,7 +49,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 import org.omg.CORBA.ORB;
 

@@ -61,9 +61,9 @@ import com.sun.logging.LogDomains;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -98,7 +98,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
     private GlassfishNamingManager namingManager;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Events events;
@@ -247,7 +247,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
                     interceptorInfo.setSupportRuntimeDelegate(true);
 
                     JavaEEInterceptorBuilderFactory interceptorBuilderFactory =
-                            habitat.getByContract(JavaEEInterceptorBuilderFactory.class);
+                            habitat.getService(JavaEEInterceptorBuilderFactory.class);
 
                     JavaEEInterceptorBuilder builder = interceptorBuilderFactory.createBuilder(interceptorInfo);
 
@@ -353,7 +353,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
                 }                                 
 
                 com.sun.enterprise.container.common.spi.util.ComponentEnvManager compEnvManager =
-                    habitat.getByContract(com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
+                    habitat.getService(com.sun.enterprise.container.common.spi.util.ComponentEnvManager.class);
 
                 try {
                     compEnvManager.unbindFromComponentNamespace(next);
@@ -362,7 +362,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
                 }
 
                 org.glassfish.api.naming.GlassfishNamingManager namingManager =
-                        habitat.getByContract(org.glassfish.api.naming.GlassfishNamingManager.class);
+                        habitat.getService(org.glassfish.api.naming.GlassfishNamingManager.class);
                 String jndiName = next.getGlobalJndiName();
 
                 if( processType.isServer() ) {
@@ -434,7 +434,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
      */
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass) throws Exception {
 
-        JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+        JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         BundleDescriptor bundleDescriptor = null;
 
@@ -509,7 +509,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
     public <T> T createManagedBean(ManagedBeanDescriptor desc, Class<T> managedBeanClass,
         boolean invokePostConstruct) throws Exception {
 
-        JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+        JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         BundleDescriptor bundleDescriptor = null;
 
@@ -575,7 +575,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
     public boolean isManagedBean(Object object) {
 
         JavaEEInterceptorBuilderFactory interceptorBuilderFactory =
-                            habitat.getByContract(JavaEEInterceptorBuilderFactory.class);
+                            habitat.getService(JavaEEInterceptorBuilderFactory.class);
 
         return interceptorBuilderFactory.isClientProxy(object);
 
@@ -600,7 +600,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
 
         BundleDescriptor bundle = getBundle();
 
-        JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+        JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(bundle)) {
 
@@ -673,7 +673,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostStartup, 
     }
 
     private BundleDescriptor getBundle() {
-        ComponentEnvManager compEnvManager = habitat.getByContract(ComponentEnvManager.class);
+        ComponentEnvManager compEnvManager = habitat.getService(ComponentEnvManager.class);
 
         JndiNameEnvironment env = compEnvManager.getCurrentJndiNameEnvironment();
 

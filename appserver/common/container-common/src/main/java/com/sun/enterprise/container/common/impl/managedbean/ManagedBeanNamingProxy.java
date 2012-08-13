@@ -40,7 +40,8 @@
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
@@ -49,11 +50,11 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
 public class ManagedBeanNamingProxy implements org.glassfish.api.naming.NamingObjectProxy {
 
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private ManagedBeanDescriptor managedBeanDesc;
 
-    public ManagedBeanNamingProxy(ManagedBeanDescriptor desc, BaseServiceLocator h) {
+    public ManagedBeanNamingProxy(ManagedBeanDescriptor desc, ServiceLocator h) {
         managedBeanDesc = desc;
         habitat = h;
     }
@@ -61,7 +62,7 @@ public class ManagedBeanNamingProxy implements org.glassfish.api.naming.NamingOb
     public Object create(javax.naming.Context ic) throws javax.naming.NamingException {
         Object managedBean = null;
         try {
-            ManagedBeanManager managedBeanMgr = habitat.getByContract(ManagedBeanManager.class);
+            ManagedBeanManager managedBeanMgr = habitat.getService(ManagedBeanManager.class);
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
             // Create managed bean instance

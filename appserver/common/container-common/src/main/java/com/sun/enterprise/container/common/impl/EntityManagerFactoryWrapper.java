@@ -46,8 +46,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -248,9 +248,9 @@ public class EntityManagerFactoryWrapper
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        BaseServiceLocator defaultHabitat = Globals.getDefaultHabitat();
-        invMgr        = defaultHabitat.getByContract(InvocationManager.class);
-        compEnvMgr    = defaultHabitat.getByContract(ComponentEnvManager.class);
+        ServiceLocator defaultHabitat = Globals.getDefaultHabitat();
+        invMgr        = defaultHabitat.getService(InvocationManager.class);
+        compEnvMgr    = defaultHabitat.getService(ComponentEnvManager.class);
     }
 
     public void addNamedQuery(String name, Query query) {

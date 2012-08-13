@@ -49,8 +49,8 @@ import com.sun.enterprise.deployment.*;
 
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.NamingException;
 
@@ -75,7 +75,7 @@ public class JavaModuleNamingProxy
         implements NamedNamingObjectProxy, PostConstruct {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;
@@ -141,7 +141,7 @@ public class JavaModuleNamingProxy
     private String getAppName() throws NamingException {
 
         ComponentEnvManager namingMgr =
-                habitat.getComponent(ComponentEnvManager.class);
+                habitat.getService(ComponentEnvManager.class);
 
         String appName = null;
 
@@ -175,7 +175,7 @@ public class JavaModuleNamingProxy
     private String getModuleName() throws NamingException {
 
         ComponentEnvManager namingMgr =
-                habitat.getComponent(ComponentEnvManager.class);
+                habitat.getService(ComponentEnvManager.class);
 
         String moduleName = null;
 
@@ -212,7 +212,7 @@ public class JavaModuleNamingProxy
 
         if( habitat != null ) {
             ComponentEnvManager namingMgr =
-                habitat.getComponent(ComponentEnvManager.class);
+                habitat.getService(ComponentEnvManager.class);
 
             if( namingMgr != null ) {
                 JndiNameEnvironment env = namingMgr.getCurrentJndiNameEnvironment();
@@ -289,7 +289,7 @@ public class JavaModuleNamingProxy
 
                 if( processType == ProcessType.ACC) {
 
-                    ManagedBeanManager mbMgr = habitat.getByContract(ManagedBeanManager.class);
+                    ManagedBeanManager mbMgr = habitat.getService(ManagedBeanManager.class);
 
                     try {
                         returnValue = mbMgr.getManagedBean(newName);

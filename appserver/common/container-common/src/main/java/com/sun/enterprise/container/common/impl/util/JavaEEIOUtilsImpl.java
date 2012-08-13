@@ -44,7 +44,7 @@ import org.jvnet.hk2.annotations.Contract;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 import com.sun.enterprise.container.common.spi.util.GlassFishInputStreamHandler;
@@ -75,7 +75,7 @@ public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER);
 
 	@Inject
-	BaseServiceLocator habitat;
+	ServiceLocator habitat;
 
 	private Collection<GlassFishOutputStreamHandler> outputHandlers = new HashSet<GlassFishOutputStreamHandler>();
 

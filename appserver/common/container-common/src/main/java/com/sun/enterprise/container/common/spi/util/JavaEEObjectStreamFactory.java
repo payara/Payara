@@ -45,8 +45,9 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.io.*;
 import java.security.PrivilegedExceptionAction;
@@ -67,7 +68,7 @@ import java.util.logging.Logger;
 public class JavaEEObjectStreamFactory {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     public static final Logger _logger = LogDomains.getLogger(
             JavaEEObjectStreamFactory.class, LogDomains.UTIL_LOGGER);
@@ -94,7 +95,7 @@ public class JavaEEObjectStreamFactory {
         ObjectOutputStream oos = null;
 
         final Collection<JavaEEObjectStreamHandler> handlers = replaceObject
-                ? habitat.getAllByContract(JavaEEObjectStreamHandler.class) : _empty;
+                ? habitat.<JavaEEObjectStreamHandler>getAllServices(JavaEEObjectStreamHandler.class) : _empty;
 
         if(System.getSecurityManager() == null) {
             oos = new JavaEEObjectOutputStream(os, replaceObject, handlers);
@@ -132,7 +133,7 @@ public class JavaEEObjectStreamFactory {
         if ( loader != null ) {
 
             final Collection<JavaEEObjectStreamHandler> handlers = resolveObject
-                ? habitat.getAllByContract(JavaEEObjectStreamHandler.class) : _empty;
+                ? habitat.<JavaEEObjectStreamHandler>getAllServices(JavaEEObjectStreamHandler.class) : _empty;
 
             // Need privileged block here because EJBObjectInputStream
             // does enableResolveObject

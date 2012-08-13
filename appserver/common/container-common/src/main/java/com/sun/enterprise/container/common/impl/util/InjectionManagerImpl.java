@@ -71,9 +71,8 @@ import javax.annotation.ManagedBean;
 import java.lang.reflect.Constructor;
 import org.glassfish.api.admin.ProcessEnvironment;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Implementation of InjectionManager.
@@ -99,7 +98,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     private GlassfishNamingManager glassfishNamingManager;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private ProcessEnvironment processEnv;
@@ -295,7 +294,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
             ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
 
-            ManagedBeanManager managedBeanMgr = habitat.getByContract(ManagedBeanManager.class);
+            ManagedBeanManager managedBeanMgr = habitat.getService(ManagedBeanManager.class);
 
             if( managedBeanAnn != null ) {
 
@@ -306,7 +305,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
             } else {
 
-                JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+                JCDIService jcdiService = habitat.getService(JCDIService.class);
 
                 if( (jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled() ) {
 
@@ -362,7 +361,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
             ManagedBean managedBeanAnn = clazz.getAnnotation(ManagedBean.class);
 
-            ManagedBeanManager managedBeanMgr = habitat.getByContract(ManagedBeanManager.class);
+            ManagedBeanManager managedBeanMgr = habitat.getService(ManagedBeanManager.class);
 
             if( managedBeanAnn != null ) {
 
@@ -373,7 +372,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
             } else {
 
-                JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+                JCDIService jcdiService = habitat.getService(JCDIService.class);
 
                 if( (jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled() ) {
 
@@ -430,9 +429,9 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
         ManagedBean managedBeanAnn = (ManagedBean) managedObjectClass.getAnnotation(ManagedBean.class);
 
-        ManagedBeanManager managedBeanMgr = habitat.getByContract(ManagedBeanManager.class);
+        ManagedBeanManager managedBeanMgr = habitat.getService(ManagedBeanManager.class);
 
-        JCDIService jcdiService = habitat.getByContract(JCDIService.class);
+        JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         if( (jcdiService != null) && jcdiService.isCurrentModuleJCDIEnabled() ) {
 

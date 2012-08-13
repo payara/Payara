@@ -42,7 +42,6 @@ package com.sun.enterprise.naming.util;
 
 import com.sun.enterprise.naming.GlassFishNamingBuilder;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;

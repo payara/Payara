@@ -60,10 +60,10 @@ import org.glassfish.admin.amx.j2ee.J2EEDomain;
 import org.glassfish.admin.amx.j2ee.J2EETypes;
 import org.glassfish.admin.amx.util.FeatureAvailability;
 import org.glassfish.api.amx.AMXLoader;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.ApplicationRegistry;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.*;
 
 import javax.management.JMException;
@@ -107,7 +107,7 @@ public final class AMXJ2EEStartupService
     }
 
     @Inject
-    BaseServiceLocator mHabitat;
+    ServiceLocator mHabitat;
 
     @Inject
     private ApplicationRegistry mAppsRegistry;
@@ -230,7 +230,7 @@ public final class AMXJ2EEStartupService
         final Metadata metadata = new MetadataImpl();
         metadata.add(Metadata.CORRESPONDING_CONFIG, ConfigBeanRegistry.getInstance().getObjectNameForProxy(domain));
 
-        String serverName = mHabitat.getComponent(Server.class).getName();
+        String serverName = mHabitat.<Server>getService(Server.class).getName();
 
         final J2EEDomainImpl impl = new J2EEDomainImpl(domainRoot, metadata);
         impl.setServerName(serverName);

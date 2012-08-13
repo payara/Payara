@@ -45,7 +45,6 @@ import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
 import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -54,12 +53,14 @@ import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.JNDIBinding;
 import org.glassfish.api.naming.NamingObjectProxy;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.naming.ComponentNamingUtil;
 import org.glassfish.api.admin.*;
 
@@ -92,7 +93,7 @@ public class ComponentEnvManagerImpl
     private static final String JAVA_GLOBAL_PREFIX = "java:global/";
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Logger _logger;
@@ -333,7 +334,7 @@ public class ComponentEnvManagerImpl
 
             setResourceId(env, dsd);
 
-            DataSourceDefinitionProxy proxy = habitat.getComponent(DataSourceDefinitionProxy.class);
+            DataSourceDefinitionProxy proxy = habitat.getService(DataSourceDefinitionProxy.class);
             proxy.setDescriptor(dsd);
 
             String logicalJndiName = descriptorToLogicalJndiName(dsd);
@@ -358,7 +359,7 @@ public class ComponentEnvManagerImpl
 
             setResourceId(env, msd);
 
-            org.glassfish.javaee.services.MailSessionProxy proxy = habitat.getComponent(org.glassfish.javaee.services.MailSessionProxy.class);
+            org.glassfish.javaee.services.MailSessionProxy proxy = habitat.getService(org.glassfish.javaee.services.MailSessionProxy.class);
             proxy.setDescriptor(msd);
 
             String logicalJndiName = descriptorToLogicalJndiName(msd);
@@ -368,7 +369,7 @@ public class ComponentEnvManagerImpl
     }
 
     private ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 
 
@@ -519,7 +520,7 @@ public class ComponentEnvManagerImpl
                 // TODO handle non-default ORBs
                 value = namingUtils.createLazyNamingObjectFactory(name, physicalJndiName, false);
             } else if (resourceRef.isWebServiceContext()) {
-                WebServiceReferenceManager wsRefMgr = habitat.getByContract(WebServiceReferenceManager.class);
+                WebServiceReferenceManager wsRefMgr = habitat.getService(WebServiceReferenceManager.class);
                 if (wsRefMgr != null )  {
                     value = wsRefMgr.getWSContextObject();
                 } else {
@@ -701,7 +702,12 @@ public class ComponentEnvManagerImpl
                         try {
                             return delegate.create(ic);
                         } catch(NamingException e) {
-                            Object ref = habitat.getComponent(next.getRefType(), next.getMappedName());
+                            ActiveDescriptor<?> ad = habitat.getBestDescriptor(
+                                    BuilderHelper.createNameAndContractFilter(
+                                            next.getRefType(), next.getMappedName()));
+                            if (ad == null) throw e;
+                            
+                            Object ref = habitat.getServiceHandle(ad).getService();
                             if (ref!=null) {
                                 return ref;
                             }
@@ -959,7 +965,7 @@ public class ComponentEnvManagerImpl
             Object result = null;
 
             if (ejbRefMgr==null) {
-                ejbRefMgr = habitat.getByContract(EjbNamingReferenceManager.class);
+                ejbRefMgr = habitat.getService(EjbNamingReferenceManager.class);
             }
 
             if (ejbRefMgr != null) {
@@ -1086,7 +1092,7 @@ public class ComponentEnvManagerImpl
                 throws NamingException {
             Object result = null;
 
-            wsRefMgr = habitat.getByContract(WebServiceReferenceManager.class);
+            wsRefMgr = habitat.getService(WebServiceReferenceManager.class);
             if (wsRefMgr != null )  {
                 result = wsRefMgr.resolveWSReference(serviceRef,ctx);
             } else {
@@ -1135,7 +1141,7 @@ public class ComponentEnvManagerImpl
             if (ejbRefMgr == null) {
                 synchronized (this) {
                     if (ejbRefMgr == null) {
-                        ejbRefMgr = habitat.getByContract(EjbNamingReferenceManager.class);
+                        ejbRefMgr = habitat.getService(EjbNamingReferenceManager.class);
                         cacheable = ejbRefMgr.isEjbReferenceCacheable(ejbRef);
                     }
                 }

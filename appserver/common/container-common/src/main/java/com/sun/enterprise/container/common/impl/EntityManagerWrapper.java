@@ -48,8 +48,8 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.persistence.criteria.*;
 import javax.persistence.*;
@@ -1084,11 +1084,11 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         stream.defaultReadObject();
 
         //Initialize the transients that were passed at ctor.
-        BaseServiceLocator defaultHabitat = Globals.getDefaultHabitat();
-        txManager     = defaultHabitat.getByContract(TransactionManager.class);
-        invMgr        = defaultHabitat.getByContract(InvocationManager.class);
-        compEnvMgr    = defaultHabitat.getByContract(ComponentEnvManager.class);
-        callFlowAgent = defaultHabitat.getByContract(CallFlowAgent.class);
+        ServiceLocator defaultHabitat = Globals.getDefaultHabitat();
+        txManager     = defaultHabitat.getService(TransactionManager.class);
+        invMgr        = defaultHabitat.getService(InvocationManager.class);
+        compEnvMgr    = defaultHabitat.getService(ComponentEnvManager.class);
+        callFlowAgent = defaultHabitat.getService(CallFlowAgent.class);
     }
 
     public StoredProcedureQuery createNamedStoredProcedureQuery(String name)  {
