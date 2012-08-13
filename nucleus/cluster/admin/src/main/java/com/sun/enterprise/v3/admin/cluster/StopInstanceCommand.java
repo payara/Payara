@@ -74,9 +74,9 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
@@ -107,7 +107,7 @@ import org.glassfish.cluster.ssh.util.DcomInfo;
 public class StopInstanceCommand extends StopServer implements AdminCommand, PostConstruct {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     private ServerContext serverContext;
     @Inject
@@ -207,7 +207,7 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                 return;
             }
             //use SFTPClient to see if file exists.
-            launcher = habitat.getComponent(SSHLauncher.class);
+            launcher = habitat.getService(SSHLauncher.class);
             launcher.init(node, logger);
             try {
                 ftpClient = launcher.getSFTPClient();

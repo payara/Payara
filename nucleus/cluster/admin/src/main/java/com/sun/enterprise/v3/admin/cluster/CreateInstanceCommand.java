@@ -56,6 +56,7 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 
 import org.jvnet.hk2.annotations.Service;
@@ -86,7 +87,7 @@ public class CreateInstanceCommand implements AdminCommand {
     @Inject
     private CommandRunner cr;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     @Inject
     IterableProvider<Node> nodeList;
     @Inject

@@ -59,9 +59,9 @@ import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.OpsParams;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.File;
@@ -108,7 +108,7 @@ public class DeploymentCommandUtils {
             final Domain domain,
             final String target,
             final String appName,
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final AdminCommandContext context,
             final AdminCommand command) throws IllegalArgumentException, IllegalAccessException {
         /*

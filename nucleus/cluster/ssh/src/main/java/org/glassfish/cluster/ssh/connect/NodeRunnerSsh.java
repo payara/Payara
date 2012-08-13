@@ -46,20 +46,21 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.glassfish.common.util.admin.AsadminInput;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.SSHCommandExecutionException;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import java.io.ByteArrayOutputStream;
 
 public class NodeRunnerSsh  {
 
     private static final String NL = System.getProperty("line.separator");
 
-    private  BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     private Logger logger;
 
     private String lastCommandRun = null;
@@ -68,7 +69,7 @@ public class NodeRunnerSsh  {
 
     private SSHLauncher sshL = null;
 
-    public NodeRunnerSsh(BaseServiceLocator habitat, Logger logger) {
+    public NodeRunnerSsh(ServiceLocator habitat, Logger logger) {
         this.logger = logger;
         this.habitat = habitat;
     }
@@ -119,7 +120,7 @@ public class NodeRunnerSsh  {
             lastCommandRun = commandListToString(fullcommand);
             trace("Running command on " + node.getNodeHost() + ": " +
                     lastCommandRun);
-            sshL=habitat.getComponent(SSHLauncher.class);
+            sshL=habitat.getService(SSHLauncher.class);
             sshL.init(node, logger);
 
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();

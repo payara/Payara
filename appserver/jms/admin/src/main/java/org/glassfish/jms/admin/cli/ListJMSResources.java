@@ -54,6 +54,8 @@ import org.glassfish.connectors.config.ConnectorResource;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -67,7 +69,7 @@ import javax.inject.Inject;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
-import org.jvnet.hk2.component.BaseServiceLocator;
+
 /**
  * List Connector Resources command
  *
@@ -105,7 +107,7 @@ public class ListJMSResources implements AdminCommand {
     Domain domain;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     /**
         * Executes the command with the command parameters passed as Properties

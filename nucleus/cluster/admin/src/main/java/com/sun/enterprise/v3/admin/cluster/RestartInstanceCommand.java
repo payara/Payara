@@ -53,8 +53,9 @@ import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -307,7 +308,7 @@ public class RestartInstanceCommand implements AdminCommand {
     @Inject
     InstanceStateService stateSvc;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     private ServerEnvironment env;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

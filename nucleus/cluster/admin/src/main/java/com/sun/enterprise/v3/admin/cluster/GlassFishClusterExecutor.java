@@ -48,11 +48,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.internal.api.Target;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.common.util.admin.CommandModelImpl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -80,7 +80,7 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
     private Target targetService;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private static final LocalStringManagerImpl strings =
                         new LocalStringManagerImpl(GlassFishClusterExecutor.class);

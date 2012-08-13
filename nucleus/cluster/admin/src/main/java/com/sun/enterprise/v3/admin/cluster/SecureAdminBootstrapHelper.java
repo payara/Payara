@@ -63,7 +63,7 @@ import java.util.logging.Logger;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Bootstraps the secure admin-related files, either over ssh (copying files from the
@@ -97,7 +97,7 @@ public abstract class SecureAdminBootstrapHelper {
      * @throws IOException
      */
     public static SecureAdminBootstrapHelper getRemoteHelper(
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final File DASInstanceDir,
             final String remoteNodeDir,
             final String instance,
@@ -224,7 +224,7 @@ public abstract class SecureAdminBootstrapHelper {
         final String remoteInstanceDir;
 
         RemoteHelper(
-                final BaseServiceLocator habitat,
+                final ServiceLocator habitat,
                 final File dasInstanceDir,
                 String remoteNodeDir,
                 final String instance,
@@ -322,7 +322,7 @@ public abstract class SecureAdminBootstrapHelper {
         final SSHLauncher launcher;
 
         private SSHHelper(
-                final BaseServiceLocator habitat,
+                final ServiceLocator habitat,
                 final File dasInstanceDir,
                 String remoteNodeDir,
                 final String instance,
@@ -330,7 +330,7 @@ public abstract class SecureAdminBootstrapHelper {
                 final Logger logger) throws BootstrapException {
             super(habitat, dasInstanceDir, remoteNodeDir, instance, node, logger);
 
-            launcher = habitat.getComponent(SSHLauncher.class);
+            launcher = habitat.getService(SSHLauncher.class);
             launcher.init(node, logger);
 
             try {
@@ -417,7 +417,7 @@ public abstract class SecureAdminBootstrapHelper {
         final DcomInfo info;
 
         DCOMHelper(
-                final BaseServiceLocator habitat,
+                final ServiceLocator habitat,
                 final File dasInstanceDir,
                 String remoteNodeDir,
                 final String instance,

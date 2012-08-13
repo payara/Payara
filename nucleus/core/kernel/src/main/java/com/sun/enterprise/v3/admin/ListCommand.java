@@ -48,8 +48,8 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;
 import org.glassfish.api.Param;
 import org.glassfish.api.ActionReport;
@@ -88,7 +88,7 @@ public class ListCommand extends V2DottedNameSupport implements AdminCommand {
     Target targetService;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     //How to define short option name?
     @Param(name="MoniTor", optional=true, defaultValue="false", shortName="m", alias="Mon")

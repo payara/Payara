@@ -56,6 +56,7 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.glassfish.api.admin.config.ReferenceContainer;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
@@ -90,7 +91,7 @@ import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 public class ListInstancesCommand implements AdminCommand {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     private Domain domain;
     @Inject
@@ -226,7 +227,7 @@ public class ListInstancesCommand implements AdminCommand {
             String clusterName = (cluster != null) ? cluster.getName() : null;
             // skip DAS
             if (notDas(name)) {
-                ActionReport tReport = habitat.getComponent(ActionReport.class, "html");
+                ActionReport tReport = habitat.getService(ActionReport.class, "html");
                 InstanceInfo ii = new InstanceInfo(
                         habitat,
                         server,

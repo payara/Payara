@@ -55,9 +55,9 @@ import org.glassfish.api.admin.config.ReferenceContainer;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -88,7 +88,7 @@ import org.glassfish.api.admin.*;
 public final class ListClustersCommand implements AdminCommand, PostConstruct {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     Domain domain;
     @Inject
@@ -160,7 +160,7 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
                 String name = server.getName();
 
                 if (name != null) {
-                    ActionReport tReport = habitat.getComponent(ActionReport.class, "html");
+                    ActionReport tReport = habitat.getService(ActionReport.class, "html");
                     InstanceInfo ii = new InstanceInfo(
                             habitat, server, helper.getAdminPort(server), server.getAdminHost(),
                             clusterName, logger, timeoutInMsec, tReport, stateService);

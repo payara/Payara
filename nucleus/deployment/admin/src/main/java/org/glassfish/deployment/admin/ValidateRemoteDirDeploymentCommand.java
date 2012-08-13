@@ -67,8 +67,8 @@ import javax.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Makes sure that, if a deployment is a directory deployment to a non-DAS
@@ -101,7 +101,7 @@ public class ValidateRemoteDirDeploymentCommand extends DeployCommandParameters
     private ArchiveFactory archiveFactory;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Deployment deployment;

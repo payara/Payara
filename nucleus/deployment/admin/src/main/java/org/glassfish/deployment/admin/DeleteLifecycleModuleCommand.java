@@ -60,7 +60,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.logging.Logger;
 import java.util.Collections;
@@ -121,7 +121,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandS
     ServerEnvironment env;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     private List<String> targets = null;
 

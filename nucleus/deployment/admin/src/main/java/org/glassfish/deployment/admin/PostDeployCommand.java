@@ -64,8 +64,8 @@ import javax.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Causes InstanceDeployCommand executions on the correct remote instances.
@@ -86,7 +86,7 @@ import org.glassfish.hk2.api.PerLookup;
 public class PostDeployCommand extends DeployCommandParameters implements AdminCommand {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Deployment deployment;

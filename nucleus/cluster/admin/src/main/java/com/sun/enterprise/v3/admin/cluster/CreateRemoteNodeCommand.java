@@ -53,6 +53,8 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
@@ -70,7 +72,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
     @Inject
     private CommandRunner cr;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     @Inject
     Nodes nodes;
     @Param(name = "name", primary = true)

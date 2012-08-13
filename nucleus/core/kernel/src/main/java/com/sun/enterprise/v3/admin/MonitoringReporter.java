@@ -41,7 +41,6 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.config.serverbeans.Domain;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.v3.common.ActionReporter;
 import com.sun.enterprise.v3.common.PlainTextActionReporter;
@@ -50,8 +49,6 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.ExecuteOn;
-import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.external.statistics.Statistic;
 import org.glassfish.external.statistics.Stats;
 import org.glassfish.external.statistics.impl.StatisticImpl;
@@ -65,6 +62,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 
@@ -848,7 +846,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     @Inject
     ServerEnvironment serverEnv;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     private OutputType outputType;
     private final static String DOTTED_NAME = ".dotted-name";
     private final StringBuilder cliOutput = new StringBuilder();

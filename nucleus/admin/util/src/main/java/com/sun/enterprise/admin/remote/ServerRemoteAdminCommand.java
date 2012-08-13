@@ -50,8 +50,8 @@ import java.net.URLConnection;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.common.MasterPassword;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * RemoteAdminCommand which is sent from a server (DAS or instance).
@@ -65,7 +65,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private final static String SSL_SOCKET_PROTOCOL = "TLS";
 
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private SecureAdmin secureAdmin;
 
@@ -75,7 +75,7 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
     
     private MasterPassword masterPasswordHelper = null;
 
-    public ServerRemoteAdminCommand(BaseServiceLocator habitat, String name, String host, int port,
+    public ServerRemoteAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
         super(name, host, port, secure, "admin", "", logger);
@@ -83,11 +83,11 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
         completeInit(habitat);
     }
 
-    private synchronized void completeInit(final BaseServiceLocator habitat) {
+    private synchronized void completeInit(final ServiceLocator habitat) {
         this.habitat = habitat;
-        final Domain domain = habitat.getComponent(Domain.class);
+        final Domain domain = habitat.getService(Domain.class);
         secureAdmin = domain.getSecureAdmin();
-        serverEnv = habitat.getComponent(ServerEnvironment.class);
+        serverEnv = habitat.getService(ServerEnvironment.class);
         this.secure = SecureAdmin.Util.isEnabled(secureAdmin);
         setInteractive(false);
     }
@@ -155,14 +155,14 @@ public class ServerRemoteAdminCommand extends RemoteAdminCommand {
 
     private synchronized SSLUtils sslUtils() {
         if (_sslUtils == null) {
-            _sslUtils = habitat.getComponent(SSLUtils.class);
+            _sslUtils = habitat.getService(SSLUtils.class);
         }
         return _sslUtils;
     }
     
     private synchronized MasterPassword masterPassword() {
         if (masterPasswordHelper == null) {
-            masterPasswordHelper = habitat.getComponent(MasterPassword.class);
+            masterPasswordHelper = habitat.getService(MasterPassword.class);
         }
         return masterPasswordHelper;
     }

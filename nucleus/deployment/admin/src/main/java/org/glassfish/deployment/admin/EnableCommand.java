@@ -63,13 +63,13 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.logging.Level;
@@ -116,7 +116,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
     Deployment deployment;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Domain domain;

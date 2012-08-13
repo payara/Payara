@@ -43,10 +43,11 @@ package com.sun.enterprise.admin.util;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import java.util.*;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * @author Byron Nevins
@@ -65,11 +66,11 @@ import org.jvnet.hk2.component.BaseServiceLocator;
  */
 public final class RemoteInstanceCommandHelper {
 
-    public RemoteInstanceCommandHelper(BaseServiceLocator habitatIn) {
+    public RemoteInstanceCommandHelper(ServiceLocator habitatIn) {
 
         try {
             habitat = habitatIn;
-            servers = habitat.getByType(Servers.class).getServer();
+            servers = habitat.<Servers>getService(Servers.class).getServer();
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -128,5 +129,5 @@ public final class RemoteInstanceCommandHelper {
     ///////////////////////////////////////////////////////////////////////////
 
     final private List<Server> servers;
-    final private BaseServiceLocator habitat;
+    final private ServiceLocator habitat;
 }

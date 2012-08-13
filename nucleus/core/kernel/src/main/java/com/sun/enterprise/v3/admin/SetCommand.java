@@ -57,9 +57,9 @@ import org.glassfish.api.admin.config.LegacyConfigurationUpgrade;
 import org.glassfish.internal.api.Target;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -98,7 +98,7 @@ import java.util.StringTokenizer;
 public class SetCommand extends V2DottedNameSupport implements AdminCommand, PostConstruct {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Domain domain;
@@ -536,7 +536,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     }
 
     private void runLegacyChecks(AdminCommandContext context) {
-        final Collection<LegacyConfigurationUpgrade> list = habitat.getAllByContract(LegacyConfigurationUpgrade.class);
+        final Collection<LegacyConfigurationUpgrade> list = habitat.<LegacyConfigurationUpgrade>getAllServices(LegacyConfigurationUpgrade.class);
         for (LegacyConfigurationUpgrade upgrade : list) {
             upgrade.execute(context);
         }

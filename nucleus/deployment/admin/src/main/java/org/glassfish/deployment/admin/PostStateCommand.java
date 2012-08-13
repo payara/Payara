@@ -46,6 +46,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
@@ -53,7 +54,6 @@ import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -65,7 +65,7 @@ public class PostStateCommand implements AdminCommand,
         AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
     
     @Inject
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     private DeployCommandSupplementalInfo suppInfo;
     private Collection<? extends AccessCheck> accessChecks;

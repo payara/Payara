@@ -44,7 +44,7 @@ import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Level;
 import javax.security.auth.Subject;
 import org.glassfish.cluster.ssh.util.DcomUtils;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -55,7 +55,6 @@ import com.sun.enterprise.util.ExceptionUtil;
 import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
 import com.sun.enterprise.util.cluster.windows.process.WindowsRemotePinger;
@@ -103,10 +102,10 @@ public class NodeUtils {
     private static final String NL = System.getProperty("line.separator");
     private TokenResolver resolver = null;
     private Logger logger = null;
-    private BaseServiceLocator habitat = null;
+    private ServiceLocator habitat = null;
     SSHLauncher sshL = null;
 
-    NodeUtils(BaseServiceLocator habitat, Logger logger) {
+    NodeUtils(ServiceLocator habitat, Logger logger) {
         this.logger = logger;
         this.habitat = habitat;
 
@@ -114,7 +113,7 @@ public class NodeUtils {
         Map<String, String> systemPropsMap =
                 new HashMap<String, String>((Map) (System.getProperties()));
         resolver = new TokenResolver(systemPropsMap);
-        sshL = habitat.getComponent(SSHLauncher.class);
+        sshL = habitat.getService(SSHLauncher.class);
     }
 
     static boolean isSSHNode(Node node) {

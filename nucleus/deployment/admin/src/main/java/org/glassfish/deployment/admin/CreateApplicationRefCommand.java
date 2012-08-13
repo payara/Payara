@@ -72,6 +72,7 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transaction;
 
@@ -99,7 +100,6 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.deployment.versioning.VersioningWildcardException;
 import org.glassfish.deployment.versioning.VersioningService;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Create application ref command
@@ -154,7 +154,7 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
     protected Server server;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     Events events;

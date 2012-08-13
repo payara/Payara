@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.config.serverbeans.Node;
 
@@ -86,7 +86,7 @@ import com.sun.enterprise.config.serverbeans.Node;
 })
 public class StartInstanceCommand implements AdminCommand {
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     private Nodes nodes;
@@ -130,16 +130,16 @@ public class StartInstanceCommand implements AdminCommand {
      * do NOT make this public!!
      * @author Byron Nevins
      */
-    StartInstanceCommand(BaseServiceLocator habitat_, String iname_, boolean debug_, ServerEnvironment env_) {
+    StartInstanceCommand(ServiceLocator habitat_, String iname_, boolean debug_, ServerEnvironment env_) {
         instanceName = iname_;
         debug = debug_;
         habitat = habitat_;
-        nodes = habitat.getByType(Nodes.class);
+        nodes = habitat.getService(Nodes.class);
 
         // env:  neither getByType or getByContract works.  Not worth the effort
         //to find the correct magic incantation for HK2!
         env = env_;
-        servers = habitat.getByType(Servers.class);
+        servers = habitat.getService(Servers.class);
     }
 
     /**

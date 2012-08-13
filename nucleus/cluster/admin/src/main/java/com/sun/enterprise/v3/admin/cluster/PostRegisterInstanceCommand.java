@@ -55,8 +55,8 @@ import org.glassfish.common.util.admin.ParameterMapExtractor;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Causes InstanceRegisterInstanceCommand executions on the correct remote instances.
@@ -76,7 +76,7 @@ import org.glassfish.hk2.api.PerLookup;
 public class PostRegisterInstanceCommand extends RegisterInstanceCommandParameters implements AdminCommand {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Target target;

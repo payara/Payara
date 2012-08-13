@@ -65,13 +65,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.logging.Level;
@@ -138,7 +138,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
     VersioningService versioningService;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     private ActionReport report;
     private Logger logger;

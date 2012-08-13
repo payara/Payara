@@ -40,7 +40,7 @@
 
 package org.glassfish.config.support;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * a extensible mechanism to define new configuration targets
@@ -56,7 +56,7 @@ public interface TargetValidator {
      * @param target the target identifier to check
      * @return true if target is a valid identifier of a target instance
      */
-    public boolean isValid(BaseServiceLocator habitat, String target);
+    public boolean isValid(ServiceLocator habitat, String target);
 
     /**
      * Returns a internalized aware string describing the target type

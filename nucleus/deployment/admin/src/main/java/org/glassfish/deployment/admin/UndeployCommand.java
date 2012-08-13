@@ -60,11 +60,11 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.common.util.admin.ParameterMapExtractor;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.io.File;
@@ -136,7 +136,7 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     CommandRunner commandRunner;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Events events;

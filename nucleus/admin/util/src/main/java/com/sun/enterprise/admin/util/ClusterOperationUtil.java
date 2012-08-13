@@ -51,9 +51,9 @@ import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.glassfish.config.support.CommandTarget;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -89,7 +89,7 @@ public class ClusterOperationUtil {
                                                    List<Server> instancesForReplication,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   BaseServiceLocator habitat) {
+                                                   ServiceLocator habitat) {
         return replicateCommand(commandName, failPolicy, offlinePolicy, neverStartedPolicy,
                 instancesForReplication, context, parameters, habitat, null);
     }
@@ -120,11 +120,11 @@ public class ClusterOperationUtil {
                                                    List<Server> instancesForReplication,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   BaseServiceLocator habitat,
+                                                   ServiceLocator habitat,
                                                    final File intermediateDownloadDir) {
 
         ActionReport.ExitCode returnValue = ActionReport.ExitCode.SUCCESS;
-        InstanceStateService instanceState = habitat.getComponent(InstanceStateService.class);
+        InstanceStateService instanceState = habitat.getService(InstanceStateService.class);
         validateIntermediateDownloadDir(intermediateDownloadDir);
         RemoteInstanceCommandHelper rich = new RemoteInstanceCommandHelper(habitat);
         Map<String, Future<InstanceCommandResult>> futures = new HashMap<String, Future<InstanceCommandResult>>();
@@ -264,7 +264,7 @@ public class ClusterOperationUtil {
                                                    Collection<String> targetNames,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   BaseServiceLocator habitat) {
+                                                   ServiceLocator habitat) {
         return replicateCommand(commandName, failPolicy, offlinePolicy, neverStartedPolicy,
                 targetNames, context, parameters, habitat, null);
     }
@@ -295,11 +295,11 @@ public class ClusterOperationUtil {
                                                    Collection<String> targetNames,
                                                    AdminCommandContext context,
                                                    ParameterMap parameters,
-                                                   BaseServiceLocator habitat,
+                                                   ServiceLocator habitat,
                                                    File intermediateDownloadDir) {
 
         ActionReport.ExitCode result = ActionReport.ExitCode.SUCCESS;
-        Target targetService = habitat.getComponent(Target.class);
+        Target targetService = habitat.getService(Target.class);
         for(String t : targetNames) {
             if(CommandTarget.DAS.isValid(habitat, t) ||
                     CommandTarget.DOMAIN.isValid(habitat, t))

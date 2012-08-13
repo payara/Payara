@@ -113,8 +113,9 @@ import org.glassfish.internal.grizzly.LazyServiceInitializer;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
@@ -302,7 +303,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     @Inject
-     private BaseServiceLocator habitat;
+     private ServiceLocator habitat;
     
     /**
      * Constructor for an active Jms Adapter.
@@ -2251,7 +2252,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private JmsService getJmsService(){
-        Config c = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        Config c = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
                 return c.getExtensionByType(JmsService.class);
     }
 

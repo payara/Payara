@@ -44,7 +44,7 @@ import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class Target {
     private ServerEnvironment serverEnv;
 
     @Inject
-    BaseServiceLocator habitat;
+    Habitat habitat;
 
     /**
      * Lets caller to know if the caller is in DAS

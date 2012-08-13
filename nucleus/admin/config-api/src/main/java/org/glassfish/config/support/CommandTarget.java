@@ -41,9 +41,10 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.*;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import java.util.List;
+
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * CommandTarget is an enumeration of valid configuration target for a command execution
@@ -56,7 +57,7 @@ public enum CommandTarget implements TargetValidator {
      */
     DOMAIN {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
+        public boolean isValid(ServiceLocator habitat, String target) {
             return target.equals("domain");
         }
 
@@ -70,7 +71,7 @@ public enum CommandTarget implements TargetValidator {
      */
     DAS {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
+        public boolean isValid(ServiceLocator habitat, String target) {
             return target.equals("server");
         }
 
@@ -84,8 +85,8 @@ public enum CommandTarget implements TargetValidator {
      */
     CLUSTERED_INSTANCE {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
-            Domain domain = habitat.getComponent(Domain.class);
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
             return (domain.getClusterForInstance(target) != null);
         }
 
@@ -99,8 +100,8 @@ public enum CommandTarget implements TargetValidator {
      */
     STANDALONE_INSTANCE {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
-            Domain domain = habitat.getComponent(Domain.class);
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
             return (domain.getServerNamed(target) != null);
         }
 
@@ -114,8 +115,8 @@ public enum CommandTarget implements TargetValidator {
      */
     CONFIG {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
-            Domain domain = habitat.getComponent(Domain.class);
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
             return domain.getConfigNamed(target) != null;
         }
 
@@ -129,8 +130,8 @@ public enum CommandTarget implements TargetValidator {
      */
     CLUSTER {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
-            Domain domain = habitat.getComponent(Domain.class);
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
             return domain.getClusterNamed(target) != null;
         }
 
@@ -144,8 +145,8 @@ public enum CommandTarget implements TargetValidator {
      */
     NODE {
         @Override
-        public boolean isValid(BaseServiceLocator habitat, String target) {
-            Domain domain = habitat.getComponent(Domain.class);
+        public boolean isValid(ServiceLocator habitat, String target) {
+            Domain domain = habitat.getService(Domain.class);
             return domain.getNodeNamed(target) != null;
         }
 
@@ -156,7 +157,7 @@ public enum CommandTarget implements TargetValidator {
     };
 
     @Override
-    public boolean isValid(BaseServiceLocator habitat, String target) {
+    public boolean isValid(ServiceLocator habitat, String target) {
         return false;
     }
 

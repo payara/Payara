@@ -50,11 +50,11 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
 import org.glassfish.api.admin.AccessRequired;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Runs after any replications of the undeploy command have been sent to
@@ -71,7 +71,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 public class PostUndeployCommand extends UndeployCommandParameters implements AdminCommand {
     
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {
