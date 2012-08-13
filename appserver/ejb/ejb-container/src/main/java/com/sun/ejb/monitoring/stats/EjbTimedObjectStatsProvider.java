@@ -75,15 +75,13 @@ public class EjbTimedObjectStatsProvider {
     private String appName = null;
     private String moduleName = null;
     private String beanName = null;
-    private long beanId = 0L;
     private boolean registered = false;
 
     public EjbTimedObjectStatsProvider(String appName, String moduleName,
-            String beanName, long beanId) {
+            String beanName) {
         this.appName = appName;
         this.moduleName = moduleName;
         this.beanName = beanName;
-        this.beanId = beanId;
     }
 
     public void register() {

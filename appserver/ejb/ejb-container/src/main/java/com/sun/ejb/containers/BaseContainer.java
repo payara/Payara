@@ -4830,7 +4830,7 @@ public abstract class BaseContainer
                 }
             }
             timerProbeListener = new EjbTimedObjectStatsProvider(
-                    containerInfo.appName, containerInfo.modName, containerInfo.ejbName, getContainerId());
+                    containerInfo.appName, containerInfo.modName, containerInfo.ejbName);
             timerProbeListener.register();
 	}
         _logger.log(Level.FINE, "[BaseContainer] registered timer monitorable");
