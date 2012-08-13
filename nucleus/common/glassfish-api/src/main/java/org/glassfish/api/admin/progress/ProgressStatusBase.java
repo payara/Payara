@@ -39,24 +39,20 @@
  */
 package org.glassfish.api.admin.progress;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.glassfish.api.admin.ProgressStatus;
 
 /** Basic <i>abstract</i> implementation of {@code ProgressStatus}.
  *
  * @author mmares
  */
-//TODO: Move to kernel if possible. It is now in API only because ProgressStatusImpl is here, too
+//TODO: Move to utils if possible. It is now in API only because ProgressStatusImpl is here, too
 public abstract class ProgressStatusBase implements ProgressStatus {
     
-    public class ChildProgressStatus {
+    public static class ChildProgressStatus {
         
-        private int allocatedSteps;
-        private ProgressStatusBase progressStatus;
+        private final int allocatedSteps;
+        private final ProgressStatusBase progressStatus;
         
         public ChildProgressStatus(int allocatedSteps, ProgressStatusBase progressStatus) {
             if (allocatedSteps > 0) {
@@ -104,9 +100,9 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     protected String id;
     protected int totalStepCount = -1;
     protected int currentStepCount = 0;
-    private ProgressStatusBase parent;
-    private boolean completed = false;
-    protected Set<ChildProgressStatus> childs = new HashSet<ChildProgressStatus>();
+    protected ProgressStatusBase parent;
+    protected boolean completed = false;
+    protected Set<ChildProgressStatus> children = new HashSet<ChildProgressStatus>();
 
     /** Construct unnamed {@code ProgressStatus}
      * 
@@ -181,7 +177,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     @Override
     public int getRemainingStepCount() {
         int childAlocSteps = 0;
-        for (ChildProgressStatus childProgressStatus : childs) {
+        for (ChildProgressStatus childProgressStatus : children) {
             childAlocSteps += childProgressStatus.getAllocatedSteps();
         }
         return totalStepCount - currentStepCount - childAlocSteps;
@@ -258,7 +254,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             currentStepCount = totalStepCount;
         }
         completed = true;
-        for (ChildProgressStatus child : childs) {
+        for (ChildProgressStatus child : children) {
             child.getProgressStatus().completeSilently();
         }
         return true;
@@ -281,7 +277,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             allocatedSteps = 0;
         }
         if (totalStepCount >= 0) {
-            for (ChildProgressStatus child : childs) {
+            for (ChildProgressStatus child : children) {
                 allocatedSteps += child.getAllocatedSteps();
             }
             if ((allocatedSteps + currentStepCount) > totalStepCount) {
@@ -304,7 +300,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         }
         allocateStapsForChildProcess(allocatedSteps);
         ProgressStatusBase result = doCreateChild(name, totalStepCount);
-        childs.add(new ChildProgressStatus(allocatedSteps, result));
+        children.add(new ChildProgressStatus(allocatedSteps, result));
         fireEvent(new ProgressStatusEvent(result, allocatedSteps));
         return result;
     }
@@ -319,7 +315,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         return createChild(null, allocatedSteps);
     }
     
-    protected int getCurrentStepCount() {
+    public int getCurrentStepCount() {
         return this.currentStepCount;
     }
     
@@ -328,7 +324,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             return totalStepCount;
         }
         float realStepCount = currentStepCount;
-        for (ChildProgressStatus child : childs) {
+        for (ChildProgressStatus child : children) {
             float childPortion = child.progressStatus.computeCompletePortion();
             if (childPortion < 0) {
                 return -1;
@@ -338,7 +334,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         return realStepCount;
     }
     
-    protected synchronized float computeCompletePortion() {
+    public synchronized float computeCompletePortion() {
         if (totalStepCount < 0) {
             return -1;
         }
@@ -373,11 +369,46 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     }
     
     public synchronized Collection<ProgressStatusBase> getChildren() {
-        Collection<ProgressStatusBase> result = new ArrayList<ProgressStatusBase>(childs.size());
-        for (ChildProgressStatus chld : childs) {
+        Collection<ProgressStatusBase> result = new ArrayList<ProgressStatusBase>(children.size());
+        for (ChildProgressStatus chld : children) {
             result.add(chld.getProgressStatus());
         }
         return result;
+    }
+
+    public Set<ChildProgressStatus> getChildProgressStatuses() {
+        return children;
+    }
+    
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+    
+    public ProgressStatusBase getParrent() {
+        return parent;
+    }
+    
+    /** Recursive search for child by id.
+     */
+    protected ProgressStatusBase findById(String id) {
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+        if (id.equals(getId())) {
+            return this;
+        }
+        for (ChildProgressStatus child : getChildProgressStatuses()) {
+            ProgressStatusBase result = child.getProgressStatus().findById(id);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
     
 }

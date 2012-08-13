@@ -49,6 +49,7 @@ import com.sun.enterprise.admin.cli.DirectoryClassLoader;
 import com.sun.enterprise.admin.cli.Environment;
 import com.sun.enterprise.admin.cli.ProgramOptions;
 import com.sun.enterprise.admin.cli.ProgramOptions.PasswordLocation;
+import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.CommandModelData;
@@ -71,6 +72,7 @@ import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -112,6 +114,7 @@ public class RemoteCLICommand extends CLICommand {
         private static final String COOKIE_HEADER  = "Cookie";
         private CookieManager cookieManager = null;
         private File sessionCache = null;
+        private final ProgressStatusPrinter stausPrinter;
 
         /**
          * Construct a new remote command object.  The command and arguments
@@ -134,6 +137,10 @@ public class RemoteCLICommand extends CLICommand {
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
+            
+            stausPrinter = new ProgressStatusPrinter(logger);
+            super.registerListener("ProgressStatus\\.change", stausPrinter);
+            super.registerListener("ProgressStatus\\.state", stausPrinter);
         }
         
         @Override
@@ -679,6 +686,7 @@ public class RemoteCLICommand extends CLICommand {
     protected int executeCommand()
             throws CommandException, CommandValidationException {
         try {
+            rac.stausPrinter.reset();
             options.set("DEFAULT", operands);
             output = rac.executeCommand(options);
             ar = rac.getActionReport();
@@ -720,6 +728,7 @@ public class RemoteCLICommand extends CLICommand {
             throw ex;
         }
         ActionReport ar = rac.getActionReport();
+        //logger.log(Level.INFO, Metrix.getInstance().toString());
         if (ar != null && ExitCode.WARNING == ar.getActionExitCode()) {
             return WARNING;
         }

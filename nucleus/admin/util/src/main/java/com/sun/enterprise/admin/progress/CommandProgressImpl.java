@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin.progress;
+package com.sun.enterprise.admin.progress;
 
+import com.sun.enterprise.util.StringUtils;
 import java.util.Date;
-import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.CommandProgress;
-import org.glassfish.api.admin.Payload;
-import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusImpl;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
@@ -53,14 +53,15 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  * @author mmares
  */
 public class CommandProgressImpl extends ProgressStatusImpl implements CommandProgress {
-
-    public class LastChanged {
+    
+    public class LastChangedMessage {
         
-        private ProgressStatus source;
+        private String sourceId;
         private String message;
+        private String contextString;
 
-        private LastChanged(ProgressStatus source, String message) {
-            this.source = source;
+        private LastChangedMessage(String sourceId, String message) {
+            this.sourceId = sourceId;
             if (message != null && message.isEmpty()) {
                 message = null;
             }
@@ -71,23 +72,42 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
             return message;
         }
 
-        public ProgressStatus getSource() {
-            return source;
+        public String getSourceId() {
+            return sourceId;
+        }
+        
+        public String getContextString() {
+            if (contextString == null) {
+                StringBuilder result = new StringBuilder();
+                ProgressStatusBase fnd = findById(sourceId);
+                if (StringUtils.ok(fnd.getName())) {
+                    result.append(fnd.getName());
+                }
+                ProgressStatusBase parent;
+                while((parent = fnd.getParrent()) != null) {
+                    if (StringUtils.ok(parent.getName())) {
+                        if (result.length() > 0) {
+                            result.insert(0, '.');
+                        }
+                        result.insert(0, parent.getName());
+                    }
+                }
+                contextString = result.toString();
+            }
+            return contextString;
         }
         
     }
     
-    private LastChanged lastChanged;
-    private LastChanged lastMessage;
+    private LastChangedMessage lastMessage;
     private long eTag = 0;
     private Date startTime;
     private Date endTime;
-    private CommandResult commandResult;
+    private AdminCommandEventBroker eventBroker;
     
-    public CommandProgressImpl(String name) {
-        super(name, -1, null, null);
+    public CommandProgressImpl(String name, String id) {
+        super(name, -1, null, id);
         startTime = new Date();
-        lastChanged = new LastChanged(this, null);
     }
     
     @Override
@@ -95,33 +115,31 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         if (event == null) {
             return;
         }
-        lastChanged = new LastChanged(event.getSource(), event.getMessage());
         if (event.getMessage() != null && !event.getMessage().isEmpty()) {
-            lastMessage = lastChanged;
+            lastMessage = new LastChangedMessage(event.getSource().getId(), event.getMessage());
         }
         eTag++;
+        if (eventBroker != null) {
+            eventBroker.fireEvent(EVENT_PROGRESSSTAUS_CHANGE, event);
+        }
     }
     
     @Override
-    public synchronized void complete(ActionReport actionReport, Payload.Outbound payload) {
-        this.commandResult = new CommandResult(actionReport, payload);
-        this.endTime = new Date();
-        super.complete();
+    public void setEventBroker(AdminCommandEventBroker eventBroker) {
+        this.eventBroker = eventBroker;
+        if (eventBroker != null) {
+            eventBroker.fireEvent(EVENT_PROGRESSSTAUS_STATE, this);
+        }
     }
     
     @Override
     public synchronized ProgressStatusMirroringImpl createMirroringChild(int allocatedSteps) {
         allocateStapsForChildProcess(allocatedSteps);
-        String childId = (id == null ? "" : id) + "." + (childs.size() + 1);
+        String childId = (id == null ? "" : id) + "." + (children.size() + 1);
         ProgressStatusMirroringImpl result = new ProgressStatusMirroringImpl(null, this, childId);
-        childs.add(new ChildProgressStatus(allocatedSteps, result));
+        children.add(new ChildProgressStatus(allocatedSteps, result));
         fireEvent(new ProgressStatusEvent(result, allocatedSteps));
         return result;
-    }
-
-    @Override
-    public CommandResult getCommandResult() {
-        return commandResult;
     }
 
     @Override
@@ -145,14 +163,15 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
     }
     
     @Override
-    public float computeCompletePortion() {
-        return super.computeCompletePortion();
-    }
-    
-    @Override
     public String getLastMessage() {
         if (lastMessage != null) {
-            return lastMessage.getMessage();
+            StringBuilder result = new StringBuilder();
+            result.append(lastMessage.getContextString());
+            if (result.length() > 0) {
+                result.append(": ");
+            }
+            result.append(lastMessage.getMessage());
+            return result.toString();
         } else {
             return null;
         }

@@ -40,7 +40,6 @@
 package org.glassfish.api.admin;
 
 import java.util.Date;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
 
 /** Base interface of progress status implementation. Provides information
@@ -50,38 +49,8 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  */
 public interface CommandProgress extends ProgressStatus {
     
-    public class CommandResult {
-        
-        private ActionReport actionReport;
-        private Payload.Outbound payload;
-
-        public CommandResult(ActionReport actionReport, Payload.Outbound payload) {
-            this.actionReport = actionReport;
-            this.payload = payload;
-        }
-
-        public ActionReport getActionReport() {
-            return actionReport;
-        }
-
-        public Payload.Outbound getPayload() {
-            return payload;
-        }
-
-    }
-    
-    /** Completes whole progress and records result
-     * 
-     * @param actionReport result message
-     * @param payload result data
-     */
-    public void complete(ActionReport actionReport, Payload.Outbound payload);
-    
-    /** If progress was completed result data will be returned else {@code null}
-     * 
-     * @return 
-     */
-    public CommandResult getCommandResult();
+    public static final String EVENT_PROGRESSSTAUS_CHANGE = "ProgressStatus.change";
+    public static final String EVENT_PROGRESSSTAUS_STATE = "ProgressStatus.state";
     
     /** Timestamp of command complete event or {@code null} for running command
      */ 
@@ -104,5 +73,7 @@ public interface CommandProgress extends ProgressStatus {
     public float computeCompletePortion();
     
     public String getLastMessage();
+    
+    public void setEventBroker(AdminCommandEventBroker eventBroker);
     
 }

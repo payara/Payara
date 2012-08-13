@@ -161,6 +161,13 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     public HttpHandler getHttpService() {
         return this;
     }
+    
+    /** If resource can provide access for non-GET methods. 
+     * By default - NO.
+     */
+    protected boolean enableModifAccessToInstances() {
+        return false;
+    }
 
     @Override
     public void service(Request req, Response res) {
@@ -170,7 +177,7 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             res.setCharacterEncoding(Constants.ENCODING);
             if (latch.await(20L, TimeUnit.SECONDS)) {
                 if(serverEnvironment.isInstance()) {
-                    if(!Method.GET.equals(req.getMethod())) {
+                    if(!Method.GET.equals(req.getMethod()) && !enableModifAccessToInstances()) {
                         reportError(req, res, HttpURLConnection.HTTP_FORBIDDEN,
                                 localStrings.getLocalString("rest.resource.only.GET.on.instance",
                                 "Only GET requests are allowed on an instance that is not DAS."));

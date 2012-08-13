@@ -122,7 +122,7 @@
                             <mainClass>com.sun.enterprise.admin.cli.AsadminMain</mainClass>
                         </manifest>
                         <manifestEntries>
-				<Class-Path>config-api.jar cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar logging.jar trilead-ssh2-repackaged.jar hk2-config.jar hk2-deprecated.jar hk2-api.jar core.jar security-services.jar jdbc-config.jar orb-connector.jar nucleus-grizzly-all.jar connectors-internal-api.jar gf-jms-connector.jar gf-web-connector.jar gf-ejb-connector.jar transaction-internal-api.jar glassfish-mbeanserver.jar</Class-Path>
+				<Class-Path>config-api.jar cluster-cli.jar glassfish.jar server-mgmt.jar common-util.jar admin-util.jar launcher.jar backup.jar admin-cli-l10n.jar glassfish-api.jar hk2.jar gms-adapter.jar logging.jar trilead-ssh2-repackaged.jar hk2-config.jar hk2-deprecated.jar hk2-api.jar core.jar security-services.jar jdbc-config.jar orb-connector.jar nucleus-grizzly-all.jar connectors-internal-api.jar gf-jms-connector.jar gf-web-connector.jar gf-ejb-connector.jar transaction-internal-api.jar glassfish-mbeanserver.jar javax.ws.rs-api.jar jersey-media-multipart.jar jettison.jar jersey-common.jar guava-osgi.jar jersey-client.jar jackson-core-asl.jar mimepull.jar jersey-media-sse.jar jersey-server.jar</Class-Path>
                         <!-- 5776: we do not need backup jar entry, but I retain it, Kedar -->
                         </manifestEntries>
                     </archive>
@@ -213,6 +213,10 @@
                     <artifactId>mimepull</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-sse</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jvnet.mimepull</groupId>

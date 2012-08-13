@@ -160,6 +160,7 @@ public class RemoteAdminCommand {
      * Set a default read timeout for URL connections.
      */
     static {
+        Metrix.event("Initialize system properties");
         String rt = System.getProperty(READ_TIMEOUT);
         if (rt == null) {
             rt = System.getenv(READ_TIMEOUT);
@@ -250,6 +251,7 @@ public class RemoteAdminCommand {
             final String authToken,
             final boolean prohibitDirectoryUploads)
             throws CommandException {
+        Metrix.event("RemoteAdminCommand constructed");
         this.name = name;
         this.host = host;
         this.port = port;
@@ -347,6 +349,7 @@ public class RemoteAdminCommand {
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
+        Metrix.event("getCommandModel() - start");
         if (commandModel == null && !omitCache) {
             long startNanos = System.nanoTime();
             try {
@@ -375,6 +378,7 @@ public class RemoteAdminCommand {
         if (commandModel == null) {
             fetchCommandModel();
         }
+        Metrix.event("getCommandModel() - done");
         return commandModel;
     }
     
@@ -404,6 +408,7 @@ public class RemoteAdminCommand {
      * Return the output of the command.
      */
     public String executeCommand(ParameterMap opts) throws CommandException {
+        Metrix.event("executeCommand() - start");
         // first, make sure we have the command model
         getCommandModel();
 
@@ -489,6 +494,7 @@ public class RemoteAdminCommand {
             // possibly an error caused while reading or writing a file?
             throw new CommandException("I/O Error", ioex);
         }
+        Metrix.event("executeCommand() - done");
         return output;
     }
 
@@ -561,6 +567,7 @@ public class RemoteAdminCommand {
             
             @Override
             public void prepareConnection(final HttpURLConnection urlConnection) throws IOException {
+                Metrix.event("prepareConnection() - start");
                 if (doUpload) {
                     /*
                      * If we are uploading anything then set the content-type
@@ -579,13 +586,14 @@ public class RemoteAdminCommand {
                 if (doUpload) {
                     outboundPayload.writeTo(urlConnection.getOutputStream());
                 }
+                Metrix.event("prepareConnection() - done");
 
             }
             
             @Override
             public void useConnection(final HttpURLConnection urlConnection)
                     throws CommandException, IOException {
-
+                Metrix.event("useConnection() - start");
                 InputStream in = urlConnection.getInputStream();
 
                 String responseContentType = urlConnection.getContentType();
@@ -613,6 +621,7 @@ public class RemoteAdminCommand {
                 } catch (Exception ex) {
                     throw new CommandException(ex.getMessage(), ex);
                 }
+                Metrix.event("useConnection() - done");
                 }
             });
     }
@@ -639,6 +648,7 @@ public class RemoteAdminCommand {
      */
     private void doHttpCommand(String uriString, String httpMethod,
             HttpCommand cmd, boolean isForMetadata) throws CommandException {
+        Metrix.event("doHttpCommand() - start");
         HttpURLConnection urlConnection;
         /*
          * There are various reasons we might retry the command - an authentication
@@ -737,6 +747,7 @@ public class RemoteAdminCommand {
                 addAdditionalHeaders(urlConnection);
                 
                 cmd.prepareConnection(urlConnection);
+                Metrix.event("doHttpCommand() - about to connect");
                 urlConnection.connect();
                 /*
                  * We must handle redirection from http to https explicitly
@@ -901,6 +912,7 @@ public class RemoteAdminCommand {
             }
         } while (shouldTryCommandAgain);
         outboundPayload = null; // no longer needed
+        Metrix.event("doHttpCommand() - done");
     }
 
     /**
@@ -1189,6 +1201,7 @@ public class RemoteAdminCommand {
      * Fetch the command metadata from the remote server.
      */
     protected void fetchCommandModel() throws CommandException {
+        Metrix.event("fetchCommandModel() - start");
         long startNanos = System.nanoTime();
         commandModel = null; //For sure not be used during request header construction
         
@@ -1249,8 +1262,10 @@ public class RemoteAdminCommand {
         });
         if (commandModel == null) {
             if (metadataErrors != null) {
+                Metrix.event("fetchCommandModel() - done");
                 throw new InvalidCommandException(metadataErrors.toString());
             } else {
+                Metrix.event("fetchCommandModel() - done");
                 throw new InvalidCommandException(strings.get("unknownError"));
             }
         } else {
@@ -1268,6 +1283,7 @@ public class RemoteAdminCommand {
                 }
             //}
         }
+        Metrix.event("fetchCommandModel() - done");
     }
     
     private String createCommandCacheKey() {

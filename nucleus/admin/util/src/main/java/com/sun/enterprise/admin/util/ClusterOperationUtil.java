@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.admin.util.InstanceRestCommandExecutor;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
@@ -92,6 +93,12 @@ public class ClusterOperationUtil {
                                                    ServiceLocator habitat) {
         return replicateCommand(commandName, failPolicy, offlinePolicy, neverStartedPolicy,
                 instancesForReplication, context, parameters, habitat, null);
+    }
+    
+    //TODO: Remove after one replication method will be choosen
+    private static boolean useRest() {
+        String useRestStr = System.getenv("AS_ADMIN_USE_REST");
+        return Boolean.valueOf(useRestStr);
     }
 
     /**
@@ -171,16 +178,33 @@ public class ClusterOperationUtil {
                 int port = rich.getAdminPort(svr);
                 ActionReport aReport = context.getActionReport().addSubActionsReport();
                 InstanceCommandResult aResult = new InstanceCommandResult();
-                InstanceCommandExecutor ice =
-                        new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
-                                svr, host, port, logger, parameters, aReport, aResult);
-                if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
-                    continue;
-                if (intermediateDownloadDir != null) {
-                    ice.setFileOutputDirectory(
-                        subdirectoryForInstance(intermediateDownloadDir, ice));
+                //TODO: Remove this if after only one remote admin call method will be choosen
+                Future<InstanceCommandResult> f;
+                if (useRest()) {
+                    logger.log(Level.INFO, "replicateCommand(): Use rest for replication - {0}", commandName);
+                    InstanceRestCommandExecutor ice =
+                            new InstanceRestCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                                    svr, host, port, logger, parameters, aReport, aResult);
+                    if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
+                        continue;
+                    if (intermediateDownloadDir != null) {
+                        ice.setFileOutputDirectory(
+                                new File(intermediateDownloadDir, ice.getServer().getName()));
+                    }
+                    f = instanceState.submitJob(svr, ice, aResult);
+                } else {
+                    logger.log(Level.FINEST, "replicateCommand(): Use traditional way for replication - {0}", commandName);
+                    InstanceCommandExecutor ice =
+                            new InstanceCommandExecutor(habitat, commandName, failPolicy, offlinePolicy,
+                                    svr, host, port, logger, parameters, aReport, aResult);
+                    if (CommandTarget.DAS.isValid(habitat, ice.getServer().getName()))
+                        continue;
+                    if (intermediateDownloadDir != null) {
+                        ice.setFileOutputDirectory(
+                            new File(intermediateDownloadDir, ice.getServer().getName()));
+                    }
+                    f = instanceState.submitJob(svr, ice, aResult);
                 }
-                Future<InstanceCommandResult> f = instanceState.submitJob(svr, ice, aResult);
                 if(f==null) {
                     logger.severe(strings.getLocalString("clusterutil.instancehasnostate",
                             "Could not find state of instance registered in the state service"));
@@ -340,8 +364,8 @@ public class ClusterOperationUtil {
         }
     }
 
-    private static File subdirectoryForInstance(final File dir,
-            final InstanceCommandExecutor exec) {
-        return new File(dir, exec.getServer().getName());
-    }
+//    private static File subdirectoryForInstance(final File dir,
+//            final InstanceCommandExecutor exec) {
+//        return new File(dir, exec.getServer().getName());
+//    }
 }
