@@ -78,7 +78,7 @@ public class IdmService implements PostConstruct, IdentityManagement {
     @Inject
     private volatile ServerEnvironmentImpl env = null;
 
-    private volatile char[] masterPassword;
+    private char[] masterPassword;
 
     private static final String FIXED_KEY = "master-password"; //the fixed key for master-password file
     private static final String PASSWORDFILE_OPTION_TO_ASMAIN = "-passwordfile"; //note single hyphen, in line with other args to ASMain!
@@ -110,7 +110,6 @@ public class IdmService implements PostConstruct, IdentityManagement {
     ///// All Private
     
     private boolean setFromMasterPasswordFile() {
-//        long t0 = System.currentTimeMillis();
         try {
             File mp = env.getMasterPasswordFile();
             if (!mp.isFile()) {
@@ -118,12 +117,11 @@ public class IdmService implements PostConstruct, IdentityManagement {
                 return false;
             }
             PasswordAdapter p   = new PasswordAdapter(mp.getAbsolutePath(), FIXED_KEY.toCharArray());
-            this.masterPassword = p.getPasswordForAlias(FIXED_KEY).toCharArray();
-//            long t1 = System.currentTimeMillis();
-//            System.out.println("time spent in setFromMasterPasswordFile(): " + (t1-t0) + " ms");
-            if (masterPassword == null) {
+            String mpstr = p.getPasswordForAlias(FIXED_KEY);
+            if (mpstr == null) {
                 return false;
             }
+            masterPassword = mpstr.toCharArray();
             return true;
         } catch (Exception ex) {
             logger.fine("Error in master-password processing: " + ex.getMessage());
