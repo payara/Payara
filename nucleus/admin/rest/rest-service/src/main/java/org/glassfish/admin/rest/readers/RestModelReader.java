@@ -93,10 +93,12 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
             T model = CompositeUtil.instance().unmarshallClass(type, o);
             Set<ConstraintViolation<T>> cv = CompositeUtil.instance().validateRestModel(model);
             if (!cv.isEmpty()) {
-                throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-                        .entity(CompositeUtil.instance().getValidationFailureMessages(cv, model)).build());
+                final Response response = Response.status(Status.BAD_REQUEST)
+                        .entity(CompositeUtil.instance().getValidationFailureMessages(cv, model))
+                        .build();
+                throw new WebApplicationException(response);
             }
-            return (T)model;
+            return (T) model;
         } catch (Exception e) {
             throw new WebApplicationException(e);
         }

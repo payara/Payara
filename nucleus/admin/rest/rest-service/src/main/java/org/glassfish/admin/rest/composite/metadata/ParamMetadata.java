@@ -55,6 +55,9 @@ public class ParamMetadata {
     private String help;
     private String defaultValue;
 
+    public ParamMetadata() {
+
+    }
     public ParamMetadata(Class<?> paramType, String name, Annotation[] others) {
         this.name = name;
         type = paramType.getSimpleName();

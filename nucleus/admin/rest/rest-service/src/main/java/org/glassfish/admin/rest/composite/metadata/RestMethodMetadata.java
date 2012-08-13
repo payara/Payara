@@ -53,6 +53,7 @@ import javax.ws.rs.QueryParam;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 
 /**
@@ -180,13 +181,36 @@ public class RestMethodMetadata {
         }
     }
 
-    private JSONArray getProperties(Class<?> clazz) {
+    private JSONArray getProperties(Class<?> clazz) throws JSONException {
+        Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
         JSONArray props = new JSONArray();
+        if (clazz.isInterface()) {
+            Object model = CompositeUtil.instance().getModel(clazz);
+            clazz = model.getClass();
+        }
 
         for (Class<?> ifaces : clazz.getInterfaces()) {
             for (Method m : ifaces.getDeclaredMethods()) {
-                
+                String methodName = m.getName();
+                final boolean isGetter = methodName.startsWith("get");
+                final boolean isSetter = methodName.startsWith("set");
+                if (isGetter || isSetter) {
+                    String propertyName = methodName.substring(3,4).toLowerCase() +
+                            methodName.substring(4);
+
+                    map.put(propertyName, new ParamMetadata((isGetter ? m.getReturnType() : m.getParameterTypes()[0]),
+                            propertyName, null));
+                }
             }
+        }
+
+        for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
+            JSONObject prop = new JSONObject();
+            prop.put("name", entry.getKey());
+            prop.put("default", entry.getValue().getDefaultValue());
+            prop.put("type", entry.getValue().getType());
+            prop.put("help", entry.getValue().getHelp());
+            props.put(prop);
         }
 
         return props;

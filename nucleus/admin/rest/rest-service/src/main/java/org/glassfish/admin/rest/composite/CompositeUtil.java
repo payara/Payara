@@ -273,11 +273,13 @@ public class CompositeUtil {
      */
     public String getHelpText(Annotation[] annos) {
         String helpText = null;
-        for (Annotation annotation : annos) {
-            if (HelpText.class.isAssignableFrom(annotation.getClass())) {
-                HelpText ht = (HelpText) annotation;
-                ResourceBundle bundle = ResourceBundle.getBundle(ht.bundle(), Locale.getDefault());
-                helpText = bundle.getString(ht.key());
+        if (annos != null) {
+            for (Annotation annotation : annos) {
+                if (HelpText.class.isAssignableFrom(annotation.getClass())) {
+                    HelpText ht = (HelpText) annotation;
+                    ResourceBundle bundle = ResourceBundle.getBundle(ht.bundle(), Locale.getDefault());
+                    helpText = bundle.getString(ht.key());
+                }
             }
         }
 
@@ -668,13 +670,13 @@ public class CompositeUtil {
             }
         });
         try {
-//            Thread.currentThread().setContextClassLoader(null);
+            Thread.currentThread().setContextClassLoader(null);
             ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
             ValidatorContext validatorContext = validatorFactory.usingContext();
             validatorContext.messageInterpolator(new MessageInterpolatorImpl());
             beanValidator = validatorContext.getValidator();
         } finally {
-//            Thread.currentThread().setContextClassLoader(cl);
+            Thread.currentThread().setContextClassLoader(cl);
         }
     }
 
