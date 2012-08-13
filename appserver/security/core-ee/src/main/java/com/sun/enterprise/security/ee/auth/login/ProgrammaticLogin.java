@@ -59,8 +59,8 @@ import com.sun.enterprise.security.UsernamePasswordStore;
 import com.sun.enterprise.security.web.integration.WebProgrammaticLogin;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
@@ -511,8 +511,8 @@ public class ProgrammaticLogin
     }
     
     private void resolveWebProgrammaticLogin() {
-        BaseServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
-        this.webProgrammaticLogin = habitat.getComponent(WebProgrammaticLogin.class);
+        ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
+        this.webProgrammaticLogin = habitat.getService(WebProgrammaticLogin.class);
     }
 
     private WebProgrammaticLogin getWebProgrammaticLogin() {

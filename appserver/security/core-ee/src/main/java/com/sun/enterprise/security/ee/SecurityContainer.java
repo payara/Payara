@@ -50,7 +50,7 @@ import org.glassfish.api.container.Container;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -69,7 +69,7 @@ public class SecurityContainer implements Container, PostConstruct{
     private ServerContext serverContext;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Provider<ClassLoaderHierarchy> classLoaderHierarchyProvider;

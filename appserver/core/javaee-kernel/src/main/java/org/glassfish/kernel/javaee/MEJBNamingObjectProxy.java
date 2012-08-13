@@ -47,10 +47,10 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -74,13 +74,13 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
                     PORTABLE_MEJB_JNDI_NAME_SHORT,
                     PORTABLE_MEJB_JNDI_NAME_LONG};
 
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private static final Logger _logger = LogDomains.getLogger(
             MEJBNamingObjectProxy.class, LogDomains.EJB_LOGGER);
 
 
-    public MEJBNamingObjectProxy(BaseServiceLocator habitat) {
+    public MEJBNamingObjectProxy(ServiceLocator habitat) {
         this.habitat = habitat;
     }
 
@@ -107,7 +107,7 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
     }
 
     private void unpublishJndiNames() throws NamingException {
-        GlassfishNamingManager gfNamingManager = habitat.getComponent(GlassfishNamingManager.class);
+        GlassfishNamingManager gfNamingManager = habitat.getService(GlassfishNamingManager.class);
         for (String next : getJndiNames()) {
             gfNamingManager.unpublishObject(next);
         }
@@ -115,16 +115,16 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
 
     private void deployMEJB() throws IOException {
         _logger.info("Loading MEJB app on JNDI look up");
-        ServerContext serverContext = habitat.getComponent(ServerContext.class);
+        ServerContext serverContext = habitat.getService(ServerContext.class);
         File mejbArchive = new File(serverContext.getInstallRoot(),
                 "lib/install/applications/mejb.jar");
         DeployCommandParameters deployParams =
                 new DeployCommandParameters(mejbArchive);
-        String targetName = habitat.getComponent(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
+        String targetName = habitat.<Server>getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME).getName();
         deployParams.target = targetName;
         deployParams.name = "mejb";
-        ActionReport report = habitat.getComponent(ActionReport.class, "plain");
-        Deployment deployment = habitat.getComponent(Deployment.class);
+        ActionReport report = habitat.getService(ActionReport.class, "plain");
+        Deployment deployment = habitat.getService(Deployment.class);
         ExtendedDeploymentContext dc = deployment.getBuilder(_logger, deployParams, report).source(mejbArchive).build();
         deployment.deploy(dc);
 

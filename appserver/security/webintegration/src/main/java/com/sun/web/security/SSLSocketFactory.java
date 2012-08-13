@@ -59,7 +59,7 @@ import com.sun.logging.*;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.X509KeyManager;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.SharedSecureRandom;
 
@@ -183,8 +183,8 @@ public class SSLSocketFactory implements org.apache.catalina.net.ServerSocketFac
         if (initialized) {
             return;
         }
-        BaseServiceLocator habitat = Globals.getDefaultHabitat();
-        SSLUtils sslUtils = habitat.getComponent(SSLUtils.class);
+        ServiceLocator habitat = Globals.getDefaultHabitat();
+        SSLUtils sslUtils = habitat.getService(SSLUtils.class);
 
         keyManagers = sslUtils.getKeyManagers();
         trustManagers = sslUtils.getTrustManagers();

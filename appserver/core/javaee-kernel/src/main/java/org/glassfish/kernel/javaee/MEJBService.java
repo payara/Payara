@@ -46,7 +46,7 @@ import javax.inject.Provider;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -70,7 +70,7 @@ public class MEJBService implements PostConstruct {
     Globals globals;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject 
     Provider<GlassfishNamingManager> gfNamingManagerProvider;
