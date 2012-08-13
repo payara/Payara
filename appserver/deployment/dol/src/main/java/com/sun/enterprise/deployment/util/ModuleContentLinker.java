@@ -91,8 +91,10 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
             accept(aWebService);
         }
 
-        for (Iterator<ServiceReferenceDescriptor> itr = ((JndiNameEnvironment)bundle).getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
-            accept(itr.next());
+        if (bundle instanceof JndiNameEnvironment) {
+            for (Iterator<ServiceReferenceDescriptor> itr = ((JndiNameEnvironment)bundle).getServiceReferenceDescriptors().iterator(); itr.hasNext();) {
+                accept(itr.next());
+            }
         }
 
         if (bundle instanceof EjbBundleDescriptor) {

@@ -636,7 +636,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public List<EngineInfo> setupContainerInfos(DeploymentContext context)
         throws Exception {
 
-        return setupContainerInfos(null, null, context);
+        return setupContainerInfos(context.getArchiveHandler(), null, context);
     }
 
     public Collection<? extends Sniffer> getSniffers(final ArchiveHandler handler, Collection<? extends Sniffer> sniffers, DeploymentContext context) {
@@ -1242,8 +1242,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         final Transaction t = new Transaction();
         try {
-            final DeployCommandParameters commandParams =
-                    context.getCommandParameters(DeployCommandParameters.class);
             final AppTenant appTenant_w = writeableTenantForApp(
                     appName,
                     t);

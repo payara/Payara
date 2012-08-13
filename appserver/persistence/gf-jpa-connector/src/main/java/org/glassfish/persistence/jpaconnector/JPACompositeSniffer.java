@@ -69,9 +69,6 @@ import java.util.Set;
 @Singleton
 public class JPACompositeSniffer extends JPASniffer {
 
-    @Inject
-    ServiceLocator habitat;
-
     /**
      * Decides whether we have any pu roots at ear level
      */

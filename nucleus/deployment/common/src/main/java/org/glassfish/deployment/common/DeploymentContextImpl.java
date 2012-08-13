@@ -190,7 +190,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         return getClassLoader(true);
     }
 
-    public void setClassLoader(ClassLoader cloader) {
+    public synchronized void setClassLoader(ClassLoader cloader) {
         this.cloader = cloader;
     }
 

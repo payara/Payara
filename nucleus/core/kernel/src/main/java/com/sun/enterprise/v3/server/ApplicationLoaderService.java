@@ -567,7 +567,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     deploymentContext.setTenant(tenant.getTenant(), app.getName());
                     deployment.deploy(deployment.getSniffersFromApp(app), deploymentContext);
                 } else {
-                    logger.log(Level.SEVERE, "not.found.in.original.location" + new Object[] {app.getLocation()});
+                    logger.log(Level.SEVERE, "not.found.in.original.location", new Object[] {app.getLocation()});
                 }
             } catch(Throwable e) {
                subReport.setActionExitCode(ActionReport.ExitCode.FAILURE);

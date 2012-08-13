@@ -62,9 +62,6 @@ import javax.inject.Inject;
 @Singleton
 public class WeldCompositeSniffer extends WeldSniffer {
 
-    @Inject
-    ServiceLocator habitat;
-
     public boolean handles(DeploymentContext context) {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {

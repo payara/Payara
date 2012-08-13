@@ -161,13 +161,6 @@ public class SnifferManagerImpl implements SnifferManager {
           || sniffer.getModuleType().equalsIgnoreCase("library");
     }
 
-    private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, Collection<T> sniffers, boolean checkPath) {
-        Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-        ArchiveHandler handler = context.getArchiveHandler();
-        List<URI> uris = handler.getClassPathURIs(context.getSource());
-        return getApplicableSniffers(uris, types, sniffers, checkPath);
-    }
-
     private <T extends Sniffer> List<T> getApplicableSniffers(List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
         if (sniffers==null || sniffers.isEmpty()) {
             return Collections.emptyList();
