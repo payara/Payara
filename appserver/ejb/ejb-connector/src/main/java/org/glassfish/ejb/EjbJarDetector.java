@@ -47,10 +47,11 @@ import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.GenericAnnotationDetector;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class EjbJarDetector implements ArchiveDetector {
     @Inject
     private EjbType archiveType;
     @Inject
-    private BaseServiceLocator baseServiceLocator;
+    private ServiceLocator baseServiceLocator;
     
     private ArchiveHandler archiveHandler; // lazy initialisation
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
@@ -116,7 +117,7 @@ public class EjbJarDetector implements ArchiveDetector {
                 } catch (IOException e) {
                     throw new RuntimeException(e); // TODO(Sahoo): Proper Exception Handling
                 }
-                archiveHandler = baseServiceLocator.getComponent(ArchiveHandler.class, ARCHIVE_TYPE);
+                archiveHandler = baseServiceLocator.getService(ArchiveHandler.class, ARCHIVE_TYPE);
             }
             return archiveHandler;
         }

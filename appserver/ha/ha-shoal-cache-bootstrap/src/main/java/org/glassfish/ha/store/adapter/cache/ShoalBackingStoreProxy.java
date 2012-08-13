@@ -47,8 +47,8 @@ import org.glassfish.ha.store.api.*;
 import org.glassfish.ha.store.spi.BackingStoreFactoryRegistry;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,7 +64,7 @@ public class ShoalBackingStoreProxy
         implements Startup, PostConstruct, BackingStoreFactory {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Events events;
@@ -83,7 +83,7 @@ public class ShoalBackingStoreProxy
     @Override
     public <K extends Serializable, V extends Serializable> BackingStore<K, V> createBackingStore(BackingStoreConfiguration<K, V> conf) throws BackingStoreException {
         try {
-            BackingStoreFactory storeFactory = habitat.getComponent(BackingStoreFactory.class, "shoal-backing-store-factory");
+            BackingStoreFactory storeFactory = habitat.getService(BackingStoreFactory.class, "shoal-backing-store-factory");
             return storeFactory.createBackingStore(conf);
         } catch (IllegalStateException ex) {
             String msg = "ReplicatedBackingStore requires GMS to be running in the target cluster before the application is deployed. ";
@@ -112,7 +112,7 @@ public class ShoalBackingStoreProxy
     @Override
     public BackingStoreTransaction createBackingStoreTransaction() {
         try {
-            BackingStoreFactory storeFactory = habitat.getComponent(BackingStoreFactory.class, "shoal-backing-store-factory");
+            BackingStoreFactory storeFactory = habitat.getService(BackingStoreFactory.class, "shoal-backing-store-factory");
             return storeFactory.createBackingStoreTransaction();
         } catch (Exception ex) {
             //FIXME avoid runtime exception

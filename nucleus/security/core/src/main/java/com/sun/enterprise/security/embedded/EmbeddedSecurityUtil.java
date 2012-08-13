@@ -59,10 +59,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
 
@@ -82,9 +82,9 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
     private static final Logger _logger = LogDomains.getLogger(EmbeddedSecurityUtil.class, LogDomains.SECURITY_LOGGER);
     
-    public void copyConfigFiles(BaseServiceLocator habitat, File fromInstanceDir, File domainXml) {
+    public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) {
         //For security reasons, permit only an embedded server instance to carry out the copy operations
-        ServerEnvironment se = habitat.getComponent(ServerEnvironment.class);
+        ServerEnvironment se = habitat.getService(ServerEnvironment.class);
         if (!isEmbedded(se)) {
             return;
         }
@@ -93,7 +93,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
             throw new IllegalArgumentException("Null inputs");
         }
 
-        File toInstanceDir = habitat.getComponent(ServerEnvironmentImpl.class).getInstanceRoot();
+        File toInstanceDir = habitat.<ServerEnvironmentImpl>getService(ServerEnvironmentImpl.class).getInstanceRoot();
 
         List<String> fileNames = new ArrayList<String>();
 

@@ -59,6 +59,8 @@ import org.glassfish.orb.admin.config.IiopService;
 import com.sun.enterprise.config.serverbeans.SslClientConfig;
 
 import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import java.util.Arrays;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -79,7 +81,6 @@ import java.util.logging.Logger;
 import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.ModulesRegistry;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -184,7 +185,7 @@ public final class GlassFishORBManager {
     public static final String S1AS_ORB_ID = "S1AS-ORB";
 
     // Set in constructor
-    private BaseServiceLocator services;
+    private ServiceLocator services;
     private IIOPUtils iiopUtils;
 
     // the ORB instance
@@ -210,14 +211,14 @@ public final class GlassFishORBManager {
      * move all public statics or change them to package private.
      * All external orb/iiop access should go through orb-connector module
      */
-    GlassFishORBManager(BaseServiceLocator h ) {
+    GlassFishORBManager(ServiceLocator h ) {
         fineLog( "GlassFishORBManager: Constructing GlassFishORBManager: h {0}",
             h ) ;
         services = h;
 
-        iiopUtils = services.getByType(IIOPUtils.class);
+        iiopUtils = services.getService(IIOPUtils.class);
 
-        ProcessEnvironment processEnv = services.getByType(
+        ProcessEnvironment processEnv = services.getService(
             ProcessEnvironment.class);
 
         processType = processEnv.getProcessType();
@@ -558,7 +559,7 @@ public final class GlassFishORBManager {
                     Module corbaOrbModule = null;
 
                     // start glassfish-corba-orb bundle
-                    ModulesRegistry modulesRegistry = services.getByContract(ModulesRegistry.class);
+                    ModulesRegistry modulesRegistry = services.getService(ModulesRegistry.class);
 
                     for(Module m : modulesRegistry.getModules()) {
                         if( m.getName().equals("glassfish-corba-orb") ) {

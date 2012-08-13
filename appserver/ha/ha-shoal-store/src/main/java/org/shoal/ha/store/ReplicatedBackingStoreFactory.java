@@ -43,7 +43,6 @@ package org.shoal.ha.store;
 
 import org.glassfish.ha.store.api.*;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.shoal.adapter.store.ReplicatedBackingStore;
 import org.shoal.adapter.store.StoreableReplicatedBackingStore;
 import org.shoal.ha.mapper.KeyMapper;

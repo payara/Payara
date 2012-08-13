@@ -62,12 +62,13 @@ import org.glassfish.deployment.common.GenericAnnotationDetector;
 import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import org.glassfish.ejb.deployment.io.EjbDeploymentDescriptorFile;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.security.EmbeddedSecurity;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import com.sun.enterprise.module.bootstrap.Which;
 
 /**
@@ -205,7 +206,7 @@ public class EJBContainerProviderImpl implements EJBContainerProvider {
                     // XXX Start the server to get the services
                     server.start();
                     EmbeddedSecurity es = server.getService(EmbeddedSecurity.class);
-                    BaseServiceLocator habitat = server.getService(BaseServiceLocator.class);
+                    ServiceLocator habitat = server.getService(ServiceLocator.class);
 
                     // XXX Wait a little before stopping to avoid a deadlock
                     Thread.sleep(1000);
