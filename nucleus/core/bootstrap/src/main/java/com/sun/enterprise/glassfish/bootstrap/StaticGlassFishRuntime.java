@@ -55,10 +55,13 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.bootstrap.PopulatorPostProcessor;
 import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
+import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.component.BaseServiceLocator;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -108,10 +111,16 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             
             ModulesRegistry modulesRegistry = SingleHK2Factory.getInstance().createModulesRegistry();
             
-            List<PopulatorPostProcessor> postProcessors = new ArrayList <PopulatorPostProcessor>();
-            postProcessors.add(new EmbeddedInhabitantsParser());
+            Binder postProcessorBinder = new Binder() {
+
+				@Override
+				public void bind(DynamicConfiguration config) {
+					config.bind(BuilderHelper.createConstantDescriptor(new EmbeddedInhabitantsParser()));
+				}
+            	
+            };
             
-            ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, postProcessors, null);
+            ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, postProcessorBinder, null);
 
             final BaseServiceLocator habitat = serviceLocator.getService(BaseServiceLocator.class);
             final ModuleStartup gfKernel = main.findStartupService(modulesRegistry, serviceLocator, null, startupContext);

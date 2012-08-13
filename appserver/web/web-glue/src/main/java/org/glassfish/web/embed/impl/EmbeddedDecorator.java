@@ -77,7 +77,4 @@ public class EmbeddedDecorator implements PopulatorPostProcessor {
 		return descriptorImpl;
 	}
 
-	@Override
-	public void setServiceLocator(ServiceLocator serviceLocator) {
-	}
 }

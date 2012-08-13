@@ -52,6 +52,8 @@ import com.sun.enterprise.v3.admin.adapter.AdminConsoleAdapter;
 import com.sun.enterprise.v3.server.DomainXmlPersistence;
 import com.sun.enterprise.v3.server.GFDomainXml;
 
+import javax.inject.Inject;
+
 /**
  * Kernel's decoration for embedded environment.
  *
@@ -60,10 +62,10 @@ import com.sun.enterprise.v3.server.GFDomainXml;
 @MetaInfServices
 public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
   
+	@Inject
 	private ServiceLocator serviceLocator;
 
-	public EmbeddedInhabitantsParser(ServiceLocator serviceLocator) {
-	this.serviceLocator = serviceLocator;	
+	public EmbeddedInhabitantsParser() {
 	}
 	
     public String getName() {
@@ -130,9 +132,5 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
 		}
 		return null;
 	}
-
-	@Override
-	public void setServiceLocator(ServiceLocator serviceLocator) {
-    }
 }
 

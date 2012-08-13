@@ -338,7 +338,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     Habitat habitat = new Habitat();
                     
                     try {
-                    	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl));
+                    	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl), null);
                     } catch (IOException e) {
                     	logger.log(Level.SEVERE, "Error initializing HK2", e);
                     }

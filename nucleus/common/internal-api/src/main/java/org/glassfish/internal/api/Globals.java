@@ -64,7 +64,8 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorImpl;
 import org.glassfish.internal.api.Init;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-
+import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import javax.inject.Inject;
 
 /**
@@ -154,10 +155,19 @@ public class Globals implements Init {
 	    
 	    config.commit();
 	    
+		Binder postProcessorBinder = new Binder() {
+
+			@Override
+			public void bind(DynamicConfiguration config) {
+				config.bind(BuilderHelper
+						.createConstantDescriptor(new ClientPostProcessor()));
+			}
+		};
+
 	    try {
             HK2Populator.populate(locator,
                     new ClasspathDescriptorFileFinder(cl),
-                    new ClientPostProcessor());
+                    postProcessorBinder);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error initializing HK2", e);
         }
@@ -184,11 +194,6 @@ public class Globals implements Init {
             
             return descriptorImpl;
         }
-
-        @Override
-        public void setServiceLocator(ServiceLocator serviceLocator) {
-        }
-
     }
 
 }

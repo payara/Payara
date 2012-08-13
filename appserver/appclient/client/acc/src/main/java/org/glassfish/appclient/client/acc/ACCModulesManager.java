@@ -176,7 +176,7 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
         habitat = new Habitat(serviceLocator);
         
         try {
-        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader));
+        	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(loader), null);
         } catch (IOException e) {
         	e.printStackTrace();
         }

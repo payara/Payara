@@ -82,10 +82,6 @@ public class EmbeddedInhabitantsParser implements PopulatorPostProcessor {
                 return null;
 
         }
-
-		@Override
-		public void setServiceLocator(ServiceLocator serviceLocator) {
-		}
 }
 
 
