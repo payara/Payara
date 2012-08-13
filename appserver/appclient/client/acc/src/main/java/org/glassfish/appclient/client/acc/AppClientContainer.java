@@ -1073,7 +1073,8 @@ public class AppClientContainer {
                         ((Habitat) habitat).getInhabitantByType(TransactionManager.class);
                 if (inhabitant != null && inhabitant.isActive()) {
                     TransactionManager txmgr = inhabitant.get();
-                    if (txmgr.getStatus() == Status.STATUS_ACTIVE) {
+                    if (txmgr.getStatus() == Status.STATUS_ACTIVE 
+                            || txmgr.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                         txmgr.rollback();
                     }
                 }
