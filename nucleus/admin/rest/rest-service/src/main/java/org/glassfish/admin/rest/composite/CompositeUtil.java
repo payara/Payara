@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,8 +48,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +64,14 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorContext;
+import javax.validation.ValidatorFactory;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
@@ -69,6 +82,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.internal.api.Globals;
 import static org.glassfish.pfl.objectweb.asm.Opcodes.*;
 import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.MessageInterpolatorImpl;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -82,6 +96,8 @@ public class CompositeUtil {
     private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
     private static final Map<String, List<String>> modelExtensions = new HashMap<String, List<String>>();
     private boolean extensionsLoaded = false;
+    private static volatile Validator beanValidator = null;
+    private static final LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(CompositeUtil.class);
 
     private CompositeUtil() {
     }
@@ -180,7 +196,12 @@ public class CompositeUtil {
                 try {
                     Method getter = source.getClass().getMethod(getterName);
                     final String key = ResourceUtil.convertToXMLName(name.substring(3));
-                    final Object value = getter.invoke(source);
+                    Object value = null;
+                    try {
+                        value = getter.invoke(source);
+                    } catch (Exception ex) {
+                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     if (value != null) {
                         String currentValue = currentValues.get(basePath + key);
 
@@ -188,8 +209,8 @@ public class CompositeUtil {
                             parameters.add("DEFAULT", basePath + "." + key + "=" + value);
                         }
                     }
-                } catch (Exception ex) {
-//                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchMethodException ex) {
+                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.FINE, null, ex);
                 }
             }
         }
@@ -263,6 +284,32 @@ public class CompositeUtil {
         return helpText;
     }
 
+    public <T> Set<ConstraintViolation<T>> validateRestModel(T model) {
+        initBeanValidator();
+
+        Set<ConstraintViolation<T>> constraintViolations = beanValidator.validate(model);
+        if (constraintViolations == null || constraintViolations.isEmpty()) {
+            return Collections.EMPTY_SET;
+        }
+
+        return constraintViolations;
+    }
+
+    public <T> String getValidationFailureMessages(Set<ConstraintViolation<T>> constraintViolations, T model) {
+        StringBuilder msg = new StringBuilder(adminStrings.getLocalString("rest.model.validationFailure",
+                "Properties for model {0} violate the following constraints: ",
+                model.getClass().getSimpleName()));
+        String sep = "";
+        String violationMsg = adminStrings.getLocalString("rest.model.validationFailure.reason",
+                                                          "on property [ {1} ] violation reason [ {0} ]");
+        for (ConstraintViolation cv : constraintViolations) {
+            msg.append(sep)
+                    .append(MessageFormat.format(violationMsg, cv.getMessage(), cv.getPropertyPath()));
+
+            sep = "\n";
+        }
+        return msg.toString();
+    }
 
     /*******************************************************************************************************************
      * Private implement methods
@@ -311,7 +358,7 @@ public class CompositeUtil {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                 while (reader.ready()) {
                     final String line = reader.readLine();
-                    if (line.isEmpty()) {
+                    if ((line == null) || line.isEmpty()) {
                         continue;
                     }
                     if (line.charAt(0) != '#') {
@@ -607,4 +654,28 @@ public class CompositeUtil {
             throw new RuntimeException(ex);
         }
     }
+
+    private static synchronized void initBeanValidator() {
+        if (beanValidator != null) {
+            return;
+        }
+        ClassLoader cl = System.getSecurityManager() == null
+                         ? Thread.currentThread().getContextClassLoader()
+                         : AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
+        try {
+//            Thread.currentThread().setContextClassLoader(null);
+            ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+            ValidatorContext validatorContext = validatorFactory.usingContext();
+            validatorContext.messageInterpolator(new MessageInterpolatorImpl());
+            beanValidator = validatorContext.getValidator();
+        } finally {
+//            Thread.currentThread().setContextClassLoader(cl);
+        }
+    }
+
 }

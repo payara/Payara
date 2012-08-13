@@ -40,14 +40,23 @@
 package org.glassfish.admin.rest.model;
 
 import java.util.List;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 public interface BaseModel {
-    public String getName();
-    public void setName(String name);
+    @NotNull
+    String getName();
+    void setName(String name);
 
-    public int getCount();
-    public void setCount(int count);
+    int getCount();
+    void setCount(int count);
 
-    public List<RelatedModel> getRelated();
-    public void setRelated(List<RelatedModel> related);
+    @Min(10)
+    @Max(15)
+    int getSize();
+    void setSize(int size);
+
+    List<RelatedModel> getRelated();
+    void setRelated(List<RelatedModel> related);
 }

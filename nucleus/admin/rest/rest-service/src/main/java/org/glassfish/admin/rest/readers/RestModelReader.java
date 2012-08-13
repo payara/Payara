@@ -50,14 +50,18 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONArray;
@@ -73,7 +77,7 @@ import org.glassfish.admin.rest.composite.RestModel;
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class JsonPojoProvider<T extends RestModel> implements MessageBodyReader<T> {
+public class RestModelReader<T extends RestModel> implements MessageBodyReader<T> {
     @Override
     public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException {
         try {
@@ -87,6 +91,11 @@ public class JsonPojoProvider<T extends RestModel> implements MessageBodyReader<
 
             JSONObject o = new JSONObject(sb.toString());
             T model = CompositeUtil.instance().unmarshallClass(type, o);
+            Set<ConstraintViolation<T>> cv = CompositeUtil.instance().validateRestModel(model);
+            if (!cv.isEmpty()) {
+                throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
+                        .entity(CompositeUtil.instance().getValidationFailureMessages(cv, model)).build());
+            }
             return (T)model;
         } catch (Exception e) {
             throw new WebApplicationException(e);

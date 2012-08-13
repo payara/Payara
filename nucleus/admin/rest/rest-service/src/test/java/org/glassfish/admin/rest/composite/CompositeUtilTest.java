@@ -40,10 +40,11 @@
 
 package org.glassfish.admin.rest.composite;
 
+import java.util.Set;
+import javax.validation.ConstraintViolation;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.model.BaseModel;
-import static org.testng.AssertJUnit.*;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -59,8 +60,19 @@ public class CompositeUtilTest {
         JSONObject o = new JSONObject(json);
         BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
 
-        assertEquals("testModel", model.getName());
-        assertEquals(2, model.getRelated().size());
-        assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
+        Assert.assertEquals(model.getName(), "testModel");
+        Assert.assertEquals(model.getRelated().size(), 2);
+        Assert.assertTrue(model.getRelated().get(0).getDescription().startsWith("description "));
+    }
+
+    @Test(groups="offline")
+    public void testBeanValidationSupport() {
+        final CompositeUtil cu = CompositeUtil.instance();
+        BaseModel model = cu.getModel(BaseModel.class);
+        model.setName(null); // Redundant, but here for emphasis
+        model.setSize(16); // Must be between 10 and 15, inclusive
+
+        Set<ConstraintViolation<BaseModel>> violations = cu.validateRestModel(model);
+        Assert.assertEquals(violations.size(), 2);
     }
 }

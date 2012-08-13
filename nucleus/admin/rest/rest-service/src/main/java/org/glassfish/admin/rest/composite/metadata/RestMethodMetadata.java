@@ -9,7 +9,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -76,10 +78,13 @@ public class RestMethodMetadata {
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
-        o.put("httpMethpd", httpMethod);
+        o.put("httpMethod", httpMethod);
         o.put("path", path);
         if (requestPayload != null) {
-            o.put("requestType", requestPayload.getName());
+            JSONObject rp = new JSONObject();
+            rp.put("type", requestPayload.getName());
+            rp.put("properties", getProperties(requestPayload));
+            o.put("request", rp);
         }
         o.put("returnType", returnType);
         o.put("type", type);
@@ -129,7 +134,7 @@ public class RestMethodMetadata {
                     isPathParam = true;
                 }
                 if (QueryParam.class.isAssignableFrom(annotation.getClass())) {
-                    queryParameters.add(new ParamMetadata(paramType, (QueryParam)annotation, paramAnnos[i]));
+                    queryParameters.add(new ParamMetadata(paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
                     processed = true;
                 }
 
@@ -138,5 +143,18 @@ public class RestMethodMetadata {
                 requestPayload = paramType;
             }
         }
+    }
+
+    private JSONArray getProperties(Class<?> clazz) {
+        Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
+        JSONArray props = new JSONArray();
+
+        for (Class<?> ifaces : clazz.getInterfaces()) {
+            for (Method m : ifaces.getDeclaredMethods()) {
+                
+            }
+        }
+
+        return props;
     }
 }

@@ -15,15 +15,14 @@ import org.glassfish.admin.rest.composite.CompositeUtil;
  * @author jdlee
  */
 public class ParamMetadata {
-
     private String name;
     private String type;
     private String help;
+    private String defaultValue;
 
-    public ParamMetadata(Class<?> paramType, QueryParam qp, Annotation[] others) {
-        name = qp.value();
+    public ParamMetadata(Class<?> paramType, String name, Annotation[] others) {
+        this.name = name;
         type = paramType.getSimpleName();
-
         help = CompositeUtil.instance().getHelpText(others);
     }
 
@@ -51,6 +50,14 @@ public class ParamMetadata {
         this.help = help;
     }
 
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Override
     public String toString() {
         return "ParamMetadata{" + "name=" + name + ", type=" + type + ", help=" + help + '}';
@@ -61,6 +68,7 @@ public class ParamMetadata {
         o.put("name", name);
         o.put("type", type);
         o.put("help", help);
+        o.put("default", defaultValue);
 
         return o;
     }

@@ -32,7 +32,7 @@ public class DummyResource extends CompositeResource {
 
     @GET
     @Path("{name}")
-    public BaseModel getDummyData() {
+    public BaseModel getDummyData(@QueryParam("foo") String foo) {
         return compositeUtil.getModel(BaseModel.class);
     }
 
