@@ -42,8 +42,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.embeddable.GlassFish;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -60,13 +59,13 @@ public class StopServer {
      * All running services are stopped. 
      * LookupManager is flushed.
      */
-    protected final void doExecute(BaseServiceLocator habitat, ServerEnvironment env, Logger logger, boolean force) {
+    protected final void doExecute(ServiceLocator habitat, ServerEnvironment env, Logger logger, boolean force) {
         try {
             logger.info(localStrings.getLocalString("stop.domain.init", "Server shutdown initiated"));
             // Don't shutdown GlassFishRuntime, as that can bring the OSGi framework down which is wrong
             // when we are embedded inside an existing runtime. So, just stop the glassfish instance that
             // we are supposed to stop. Leave any cleanup to some other code.
-            GlassFish gfKernel = habitat.getComponent(GlassFish.class);
+            GlassFish gfKernel = habitat.getService(GlassFish.class);
             if (gfKernel != null) {
                 gfKernel.stop();
             }

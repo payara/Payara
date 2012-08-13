@@ -42,7 +42,6 @@ package org.glassfish.gms;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.ee.cms.core.*;
-import com.sun.enterprise.ee.cms.core.AliveAndReadySignal;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.enterprise.ee.cms.impl.client.*;
 import com.sun.enterprise.mgmt.transport.NetworkUtility;
@@ -60,9 +59,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
 
@@ -132,7 +131,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
     Server server;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Clusters clusters;
@@ -176,7 +175,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
                 return false;
             }
 
-            Domain domain = habitat.getComponent(Domain.class);
+            Domain domain = habitat.getService(Domain.class);
             instanceName = env.getInstanceName();
             isDas = env.isDas();
             cluster = server.getCluster();

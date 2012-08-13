@@ -52,6 +52,7 @@ import javax.inject.Inject;
 
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
@@ -76,7 +77,7 @@ import java.util.logging.Logger;
 })
 public class DeleteNodeConfigCommand implements AdminCommand {
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     IterableProvider<Node> nodeList;

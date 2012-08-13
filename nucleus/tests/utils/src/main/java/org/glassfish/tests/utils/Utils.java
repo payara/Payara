@@ -63,7 +63,6 @@ import org.glassfish.hk2.internal.ConstantActiveDescriptor;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorBuilder;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
@@ -103,7 +102,7 @@ public class Utils {
 
         String name = test.getFileName();
         final ServiceLocator sl = getNewHabitat(name);
-        Habitat habitat = (Habitat)sl.getService(BaseServiceLocator.class);
+        Habitat habitat = sl.getService(Habitat.class);
 
         final String fileName = test.getFileName();
         ConfigParser configParser = new ConfigParser(habitat);

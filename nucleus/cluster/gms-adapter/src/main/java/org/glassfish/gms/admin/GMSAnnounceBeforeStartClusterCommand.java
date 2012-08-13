@@ -51,8 +51,8 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.*;
 
@@ -82,7 +82,7 @@ public class GMSAnnounceBeforeStartClusterCommand implements AdminCommand {
     @Inject
     private ServerEnvironment env;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Param(optional = false, primary = true)
     private String clusterName;
     @Inject

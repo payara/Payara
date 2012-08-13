@@ -49,6 +49,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 
@@ -81,7 +82,7 @@ public class UpdateNodeConfigCommand implements AdminCommand  {
     private CommandRunner cr;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     private Nodes nodes;

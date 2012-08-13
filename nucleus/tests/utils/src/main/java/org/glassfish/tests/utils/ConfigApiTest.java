@@ -42,7 +42,6 @@ package org.glassfish.tests.utils;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Ignore;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Transactions;

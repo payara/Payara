@@ -48,8 +48,8 @@ import org.glassfish.api.admin.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * AdminCommand to stop the domain execution which mean shuting down the application
@@ -67,7 +67,7 @@ public class StopDomainCommand extends StopServer implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StopDomainCommand.class);
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     @Inject
     ServerEnvironment env;
     @Param(optional = true, defaultValue = "true")

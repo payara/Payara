@@ -51,8 +51,9 @@ import org.glassfish.api.admin.CommandValidationException;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.remote.*;
 
@@ -68,7 +69,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
     private Boolean debug;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Override
     protected final int doRemoteCommand() throws CommandException {
@@ -102,7 +103,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
     @Override
     protected int instanceNotRunning() throws CommandException {
         logger.warning(Strings.get("restart.instanceNotRunning"));
-        CLICommand cmd = habitat.getComponent(CLICommand.class, "start-local-instance");
+        CLICommand cmd = habitat.getService(CLICommand.class, "start-local-instance");
         /*
          * Collect the arguments that also apply to start-instance-domain.
          * The start-local-instance CLICommand object will already have the

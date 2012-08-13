@@ -79,7 +79,6 @@ import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import org.glassfish.security.common.MasterPassword;
