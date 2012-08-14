@@ -41,6 +41,8 @@
 package org.glassfish.admin.mbeanserver;
 
 import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.management.MBeanServer;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -54,8 +56,6 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jvnet.hk2.component.*;
-
 /**
 Start and stop JMX connectors.
  */
@@ -67,7 +67,7 @@ final class JMXMPConnectorStarter extends ConnectorStarter
         final int port,
         final String authRealmName,
         final boolean securityEnabled,
-        final BaseServiceLocator habitat,
+        final ServiceLocator habitat,
         final BootAMXListener bootListener,
         final Ssl sslConfig)
     {

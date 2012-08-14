@@ -41,10 +41,10 @@
 package org.glassfish.internal.data;
 
 import org.glassfish.api.container.Sniffer;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -59,7 +59,7 @@ import java.util.*;
 public class ContainerRegistry {
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     Map<String, EngineInfo> containers = new HashMap<String, EngineInfo>();
 

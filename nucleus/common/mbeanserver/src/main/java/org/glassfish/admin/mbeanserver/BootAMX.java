@@ -40,12 +40,6 @@
 
 package org.glassfish.admin.mbeanserver;
 
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.StandardMBean;
@@ -54,6 +48,7 @@ import javax.management.remote.JMXServiceURL;
 
 import org.glassfish.external.amx.BootAMXMBean;
 import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
 The MBean implementation for BootAMXMBean.
@@ -64,7 +59,7 @@ final class BootAMX implements BootAMXMBean
 {
     private final MBeanServer mMBeanServer;
     private final ObjectName mObjectName;
-    private final BaseServiceLocator mHabitat;
+    private final ServiceLocator mHabitat;
     private ObjectName mDomainRootObjectName;
 
 
@@ -75,7 +70,7 @@ final class BootAMX implements BootAMXMBean
 
 
     private BootAMX(
-        final BaseServiceLocator habitat,
+        final ServiceLocator habitat,
         final MBeanServer mbeanServer)
     {
         mHabitat = habitat;
@@ -98,7 +93,7 @@ final class BootAMX implements BootAMXMBean
     /**
     Create an instance of the booter.
      */
-    public static synchronized BootAMX create(final BaseServiceLocator habitat, final MBeanServer server)
+    public static synchronized BootAMX create(final ServiceLocator habitat, final MBeanServer server)
     {
         final BootAMX booter = new BootAMX(habitat, server);
         final ObjectName objectName = getBootAMXMBeanObjectName();
@@ -125,7 +120,7 @@ final class BootAMX implements BootAMXMBean
     {
         try
         {
-            return mHabitat.getByContract(AMXStartupServiceMBean.class);
+            return mHabitat.getService(AMXStartupServiceMBean.class);
         }
         catch (Throwable t)
         {

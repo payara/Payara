@@ -48,6 +48,7 @@ import javax.management.MBeanRegistrationException;
 
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -55,7 +56,7 @@ import javax.management.ObjectName;
 import org.glassfish.external.amx.BootAMXMBean;
 
 import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -107,11 +108,11 @@ public final class JMXStartupService implements PostConstruct {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private AdminService mAdminService;
     @Inject
-    private BaseServiceLocator mHabitat;
+    private ServiceLocator mHabitat;
     @Inject
     Events mEvents;
      
-    static BaseServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
+    static Habitat habitat = Globals.getDefaultHabitat();
     
     @Inject
     private ServerEnvironment serverEnv;

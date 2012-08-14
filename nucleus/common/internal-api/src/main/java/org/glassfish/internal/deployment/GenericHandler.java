@@ -45,7 +45,7 @@ import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.deployment.DeploymentContext;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +73,7 @@ import javax.inject.Inject;
 public abstract class GenericHandler implements ArchiveHandler {
 
     @Inject
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     /**
      * Prepares the jar file to a format the ApplicationContainer is
@@ -131,7 +131,7 @@ public abstract class GenericHandler implements ArchiveHandler {
         DeploymentContext context) {
         // first try to get the name from ApplicationInfoProvider if 
         // we can find an implementation of this service
-        ApplicationInfoProvider nameProvider = habitat.getComponent(ApplicationInfoProvider.class);
+        ApplicationInfoProvider nameProvider = habitat.getService(ApplicationInfoProvider.class);
 
         DeploymentTracing tracing = null;
 

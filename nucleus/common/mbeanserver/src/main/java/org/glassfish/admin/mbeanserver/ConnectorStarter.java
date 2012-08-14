@@ -40,7 +40,7 @@
 package org.glassfish.admin.mbeanserver;
 
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.management.MBeanServer;
 import javax.management.remote.JMXAuthenticator;
@@ -64,7 +64,7 @@ abstract class ConnectorStarter {
     protected final int mPort;
     protected final String mAuthRealmName;
     protected final boolean mSecurityEnabled;
-    private final BaseServiceLocator mHabitat;
+    private final ServiceLocator mHabitat;
     protected final BootAMXListener mBootListener;
     protected final Ssl ssl;
     protected volatile JMXServiceURL mJMXServiceURL = null;
@@ -89,7 +89,7 @@ abstract class ConnectorStarter {
             final int port,
             final String authRealmName,
             final boolean securityEnabled,
-            final BaseServiceLocator habitat,
+            final ServiceLocator habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) {
         mMBeanServer = mbeanServer;
@@ -120,7 +120,7 @@ abstract class ConnectorStarter {
                 // lazy init...
                 // todo : lloyd, if this becomes a performance bottleneck, we should cache
                 // on first access.
-                JMXAuthenticator controller = mHabitat.getByContract(JMXAuthenticator.class);
+                JMXAuthenticator controller = mHabitat.getService(JMXAuthenticator.class);
                 return controller.authenticate(credentials);
             }
         };

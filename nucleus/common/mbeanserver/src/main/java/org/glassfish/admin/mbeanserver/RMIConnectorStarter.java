@@ -41,6 +41,7 @@ package org.glassfish.admin.mbeanserver;
 
 import org.glassfish.admin.mbeanserver.ssl.JMXMasterPasswordImpl;
 import org.glassfish.grizzly.config.dom.Ssl;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.management.MBeanServer;
 import javax.management.remote.JMXAuthenticator;
@@ -123,13 +124,13 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final String protocol,
             final String authRealmName,
             final boolean securityEnabled,
-            final BaseServiceLocator habitat,
+            final Habitat habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) throws UnknownHostException {
 
         super(mbeanServer, address, port, authRealmName, securityEnabled, habitat, bootListener, sslConfig);
 
-        masterPassword = new String(habitat.getComponent(JMXMasterPasswordImpl.class).getMasterPassword());
+        masterPassword = new String(habitat.<JMXMasterPasswordImpl>getService(JMXMasterPasswordImpl.class).getMasterPassword());
 
         if (!"rmi_jrmp".equals(protocol)) {
             throw new IllegalArgumentException("JMXConnectorServer not yet supporting protocol: " + protocol);

@@ -462,7 +462,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         if (holder==null || holder.app==null) {
             try {
                 long start = System.currentTimeMillis();
-                ApplicationArchivist archivist = habitat.getComponent(ApplicationArchivist.class);
+                ApplicationArchivist archivist = habitat.getService(ApplicationArchivist.class);
                 archivist.setAnnotationProcessingRequested(true);
 
                 String xmlValidationLevel = dasConfig.getDeployXmlValidation();
@@ -493,13 +493,13 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     // the normal way which might involve annotation scanning
     private ArchiveHandler getArchiveHandlerFromModuleType(ArchiveType type) {
         if (type.equals(DOLUtils.warType())) {
-            return habitat.getComponent(ArchiveHandler.class, WarDetector.ARCHIVE_TYPE);
+            return habitat.getService(ArchiveHandler.class, WarDetector.ARCHIVE_TYPE);
         } else if (type.equals(DOLUtils.rarType())) {
-            return habitat.getComponent(ArchiveHandler.class, RarDetector.ARCHIVE_TYPE);
+            return habitat.getService(ArchiveHandler.class, RarDetector.ARCHIVE_TYPE);
         } else if (type.equals(DOLUtils.ejbType())) {
-            return habitat.getComponent(ArchiveHandler.class, EjbJarDetector.ARCHIVE_TYPE);
+            return habitat.getService(ArchiveHandler.class, EjbJarDetector.ARCHIVE_TYPE);
         } else if (type.equals(DOLUtils.carType())) {
-            return habitat.getComponent(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
+            return habitat.getService(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
         } else {
             return null;
         }
