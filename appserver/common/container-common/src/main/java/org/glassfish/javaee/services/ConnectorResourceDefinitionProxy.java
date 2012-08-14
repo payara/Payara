@@ -48,7 +48,8 @@ import org.glassfish.resources.util.ResourceManagerFactory;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -75,11 +76,11 @@ public class ConnectorResourceDefinitionProxy implements NamingObjectProxy.Initi
     private static final long serialVersionUID = -1086161264032837297L;
     
     @Inject
-    private transient BaseServiceLocator habitat;
+    private transient ServiceLocator habitat;
     private ConnectorResourceDefinitionDescriptor desc;
     private String actualResourceName;
 
-    public Object create(Context ic) throws NamingException {
+    public synchronized Object create(Context ic) throws NamingException {
         if(actualResourceName == null){
             
             actualResourceName = ConnectorsUtil.deriveConnectorResourceDefinitionResourceName
@@ -108,6 +109,6 @@ public class ConnectorResourceDefinitionProxy implements NamingObjectProxy.Initi
     }
 
     private ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 }
