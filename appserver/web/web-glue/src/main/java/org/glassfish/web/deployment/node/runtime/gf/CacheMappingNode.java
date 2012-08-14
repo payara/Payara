@@ -87,7 +87,7 @@ public class CacheMappingNode extends RuntimeDescriptorNode<CacheMapping> {
     protected Map<String, String> getDispatchTable() {    
 	Map<String, String> dispatchTable = super.getDispatchTable();
 	dispatchTable.put(RuntimeTagNames.SERVLET_NAME, "setServletName");
-	dispatchTable.put(RuntimeTagNames.URL_PATTERN, "setUrlPattern");
+	dispatchTable.put(RuntimeTagNames.URL_PATTERN, "setURLPattern");
 	dispatchTable.put(RuntimeTagNames.CACHE_HELPER_REF, "setCacheHelperRef");	
 	dispatchTable.put(RuntimeTagNames.TIMEOUT, "setTimeout");
 	dispatchTable.put(RuntimeTagNames.HTTP_METHOD, "addNewHttpMethod");	
@@ -149,7 +149,7 @@ public class CacheMappingNode extends RuntimeDescriptorNode<CacheMapping> {
 	if (descriptor.getServletName()!=null) {
 	    appendTextChild(cacheMapping, RuntimeTagNames.SERVLET_NAME, descriptor.getServletName());
 	} else {
-	    appendTextChild(cacheMapping, RuntimeTagNames.URL_PATTERN, descriptor.getUrlPattern());
+	    appendTextChild(cacheMapping, RuntimeTagNames.URL_PATTERN, descriptor.getURLPattern());
 	}
 	
 	// cache-helper-ref 

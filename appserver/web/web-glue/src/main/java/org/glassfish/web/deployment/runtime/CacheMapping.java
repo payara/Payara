@@ -86,13 +86,13 @@ public class CacheMapping extends RuntimeDescriptor
     }
     
     // This attribute is mandatory
-    public void setUrlPattern(String value)
+    public void setURLPattern(String value)
     {
 	this.setValue(URL_PATTERN, value);
     }
     
     //
-    public String getUrlPattern()
+    public String getURLPattern()
     {
 	return (String)this.getValue(URL_PATTERN);
     }

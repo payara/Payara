@@ -255,7 +255,7 @@ public final class CacheModule {
          * <cache-mapping  ((servlet-name|url-pattern)..)
          */
         mapping.setServletName(trim(mapConfig.getServletName()));
-        mapping.setURLPattern(trim(mapConfig.getUrlPattern()));
+        mapping.setURLPattern(trim(mapConfig.getURLPattern()));
 
         // resolve the helper for this mapping
         String helperRef = mapConfig.getCacheHelperRef();
