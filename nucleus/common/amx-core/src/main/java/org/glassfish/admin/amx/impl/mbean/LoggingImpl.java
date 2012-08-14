@@ -41,6 +41,7 @@
 package org.glassfish.admin.amx.impl.mbean;
 
 import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.admin.amx.core.Util;
 
 import org.glassfish.admin.amx.logging.Logging;
@@ -78,7 +79,6 @@ import java.util.logging.LogRecord;
  import static org.glassfish.admin.amx.logging.LogAnalyzer.*;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 //import com.sun.enterprise.server.logging.LoggingImplHook;
 
@@ -106,7 +106,7 @@ public final class LoggingImpl extends AMXImplBase
     private final LogFilter logFilter;
     private final MessageIdCatalog msgIdCatalog;
     private final Logger logger;
-    private final BaseServiceLocator mHabitat;
+    private final ServiceLocator mHabitat;
 
 
     final String  FILE_SEP;
@@ -146,8 +146,8 @@ public final class LoggingImpl extends AMXImplBase
         loggingConfig.setupConfigDir(env.getConfigDirPath(), env.getLibPath());
         msgIdCatalog = new MessageIdCatalog();
         mHabitat = InjectedValues.getInstance().getHabitat();
-        gfFileHandler = mHabitat.getComponent(GFFileHandler.class);
-        logFilter = mHabitat.getComponent(LogFilter.class);
+        gfFileHandler = mHabitat.getService(GFFileHandler.class);
+        logFilter = mHabitat.getService(LogFilter.class);
         logger = Logger.getAnonymousLogger();
 
     }

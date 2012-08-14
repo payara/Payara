@@ -52,7 +52,6 @@ import org.glassfish.internal.config.UnprocessedConfigListener;
 import com.sun.enterprise.module.ModulesRegistry;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 /**
@@ -65,7 +64,7 @@ because many AMX MBeans and support code don't have any access to injection.
 public class InjectedValues {
 
     @Inject
-    BaseServiceLocator mHabitat;
+    Habitat mHabitat;
     @Inject
     private MBeanServer mMBeanServer;
     @Inject
@@ -81,7 +80,7 @@ public class InjectedValues {
         return mMBeanServer;
     }
 
-    public BaseServiceLocator getHabitat() {
+    public Habitat getHabitat() {
         return mHabitat;
     }
 

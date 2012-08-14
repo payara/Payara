@@ -67,8 +67,8 @@ import org.glassfish.api.event.Events;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.external.amx.AMXUtil;
 import org.glassfish.external.amx.MBeanListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 import javax.management.*;
@@ -93,7 +93,7 @@ public final class AMXStartupService
     }
 
     @Inject
-    BaseServiceLocator mHabitat;
+    ServiceLocator mHabitat;
     @Inject
     InjectedValues mInjectedValues;
     @Inject
@@ -334,7 +334,7 @@ public final class AMXStartupService
 
         try {
             // Find and load any additional AMX subsystems
-            final Collection<AMXLoader> loaders = mHabitat.getAllByContract(AMXLoader.class);
+            final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
             logger.fine( "AMXStartupService._loadAMXMBeans(): found this many loaders: " + loaders.size() );
             final AMXLoaderThread[] threads = new AMXLoaderThread[loaders.size()];
             int i = 0;
@@ -369,7 +369,7 @@ public final class AMXStartupService
 
     public synchronized void unloadAMXMBeans() {
         if (getDomainRoot() != null) {
-            final Collection<AMXLoader> loaders = mHabitat.getAllByContract(AMXLoader.class);
+            final Collection<AMXLoader> loaders = mHabitat.getAllServices(AMXLoader.class);
             for (final AMXLoader loader : loaders) {
                 if (loader == this) {
                     continue;

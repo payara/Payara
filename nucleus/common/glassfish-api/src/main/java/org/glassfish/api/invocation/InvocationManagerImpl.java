@@ -42,12 +42,9 @@ package org.glassfish.api.invocation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Collection;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType;
 import org.jvnet.hk2.annotations.Optional;
 
@@ -55,9 +52,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.IterableProvider;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 

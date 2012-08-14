@@ -41,8 +41,6 @@
 package org.glassfish.api.naming;
 
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 
 /**
  */

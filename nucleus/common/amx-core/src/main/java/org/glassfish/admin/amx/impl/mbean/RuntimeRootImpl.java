@@ -63,9 +63,9 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.internal.data.ApplicationRegistry;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.admin.amx.impl.util.InjectedValues;
 
@@ -91,7 +91,7 @@ public final class RuntimeRootImpl extends AMXImplBase
 {
     private final ApplicationRegistry appRegistry;
 
-    private final BaseServiceLocator mHabitat;
+    private final ServiceLocator mHabitat;
 
 
     public RuntimeRootImpl(final ObjectName parent)
@@ -100,7 +100,7 @@ public final class RuntimeRootImpl extends AMXImplBase
 
         mHabitat = InjectedValues.getInstance().getHabitat();
 
-        appRegistry = mHabitat.getComponent(ApplicationRegistry.class);
+        appRegistry = mHabitat.getService(ApplicationRegistry.class);
 
 
     }
@@ -231,7 +231,7 @@ public final class RuntimeRootImpl extends AMXImplBase
     {
         try
         {
-            final SSLUtils sslUtils = mHabitat.getComponent(SSLUtils.class);
+            final SSLUtils sslUtils = mHabitat.getService(SSLUtils.class);
             return sslUtils.getSupportedCipherSuites();
         }
         catch (final Exception ex)
