@@ -61,22 +61,10 @@ public class UserDataConstraintImpl extends Descriptor implements UserDataConstr
 
     /** JACC Specific **/
     public static final String TRANSPORT_GUARANTEE_CLEAR = UserDataConstraint.CLEAR;
-    private static final String[] transportGuaranteeChoices = {
-	TRANSPORT_GUARANTEE_NONE,
-	TRANSPORT_GUARANTEE_INTEGRAL,
-	TRANSPORT_GUARANTEE_CONFIDENTIAL,
-    };
     private String transportGuarantee;
     private static LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(UserDataConstraintImpl.class);
 
-    /**
-    * Return a String array of my static transport types.
-    */
-    private static final String[] getTransportGuaranteeChoices() {
-	return  transportGuaranteeChoices;
-    }
-    
     /**
     * Return my transport type.
     */
