@@ -100,7 +100,7 @@ public final class FileStore extends StoreBase {
      */
     private static final String FILE_EXT = ".session";
 
-    protected Logger log = Logger.getLogger(FileStore.class.getName());
+    private Logger log = Logger.getLogger(FileStore.class.getName());
 
     // ----------------------------------------------------- Instance Variables
 
