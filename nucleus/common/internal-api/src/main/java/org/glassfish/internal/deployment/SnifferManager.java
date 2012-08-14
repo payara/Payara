@@ -90,13 +90,4 @@ public interface SnifferManager {
     public Collection<Sniffer> getSniffers(DeploymentContext context);
 
     public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types);
-
-    /**
-     * Return whether a sniffer supports to be isolated during deployment per use request.
-     *
-     * @param sniffer the sniffer to test
-     * @return true if a sniffer can by specified by the user when deploying
-     *
-     */
-    public boolean canBeIsolated(Sniffer sniffer);
 }

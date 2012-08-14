@@ -385,8 +385,10 @@ public interface Application extends Injectable, ApplicationName, PropertyBag {
                 if (module.getProperty() != null) {
                     Properties moduleProps = new Properties();
                     for (Property property : module.getProperty()) {
-                        moduleProps.put(property.getName(),
+                        if (property.getValue() != null) {
+                            moduleProps.put(property.getName(),
                                 property.getValue());
+                        }
                     }
                     modulePropertiesMap.put(module.getName(), moduleProps);
                 }

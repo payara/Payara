@@ -1374,10 +1374,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 !propName.startsWith(
                     DeploymentProperties.APP_CONFIG))
                     {
-                Property prop = app.createChild(Property.class);
-                app.getProperty().add(prop);
-                prop.setName(propName);
-                prop.setValue(appProps.getProperty(propName));
+                if (appProps.getProperty(propName) != null) {
+                    Property prop = app.createChild(Property.class);
+                    app.getProperty().add(prop);
+                    prop.setName(propName);
+                    prop.setValue(appProps.getProperty(propName));
+                }
             }
         }
     }
@@ -1831,29 +1833,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
         appRef.setEnabled(deployParams.enabled.toString());
     }        
-
-    public List<Sniffer> prepareSniffersForOSGiDeployment(String type, 
-        DeploymentContext context) {
-        ActionReport report = context.getActionReport();
-        Logger logger = context.getLogger();
-
-        StringTokenizer st = new StringTokenizer(type);
-        List<Sniffer> sniffers = new ArrayList<Sniffer>();
-        while (st.hasMoreTokens()) {
-            String aType = st.nextToken();
-            Sniffer sniffer = snifferManager.getSniffer(aType);
-            if (sniffer==null) {
-                report.failure(logger, localStrings.getLocalString("deploy.unknowncontainer", "{0} is not a recognized container ", new String[] { aType }));
-                return sniffers;
-            }
-            if (!snifferManager.canBeIsolated(sniffer)) {
-                report.failure(logger, localStrings.getLocalString("deploy.isolationerror", "container {0} does not support other components containers to be turned off, --type {0} is forbidden", new String[] { aType }));
-                return sniffers;
-            }
-            sniffers.add(sniffer);
-        }
-        return sniffers;
-    }
 
     public ParameterMap prepareInstanceDeployParamMap(DeploymentContext dc) 
         throws Exception {

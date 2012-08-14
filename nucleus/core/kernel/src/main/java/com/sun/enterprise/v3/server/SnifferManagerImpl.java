@@ -153,14 +153,6 @@ public class SnifferManagerImpl implements SnifferManager {
         return appSniffers;
     }
 
-    public boolean canBeIsolated(Sniffer sniffer) {
-        // quick and dirty to isolate OSGi container, this avoid clashes between
-        // java ee and OSGi fighting to deploy applications.
-        // we may need a more generic way of doing this, maybe by adding an API to Sniffer
-        return sniffer.getModuleType().equalsIgnoreCase("osgi")
-          || sniffer.getModuleType().equalsIgnoreCase("library");
-    }
-
     private <T extends Sniffer> List<T> getApplicableSniffers(List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
         if (sniffers==null || sniffers.isEmpty()) {
             return Collections.emptyList();

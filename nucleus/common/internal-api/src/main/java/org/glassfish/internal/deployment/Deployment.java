@@ -232,8 +232,6 @@ public interface Deployment {
 
     public ApplicationInfo get(String appName);
 
-    public List<Sniffer> prepareSniffersForOSGiDeployment(String type, DeploymentContext context);
-
     public ParameterMap prepareInstanceDeployParamMap(DeploymentContext dc) throws Exception;
 
     public void validateDeploymentTarget(String target, String name,

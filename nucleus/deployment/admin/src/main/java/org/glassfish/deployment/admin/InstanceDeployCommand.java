@@ -210,11 +210,7 @@ public class InstanceDeployCommand extends InstanceDeployCommandParameters
             }
 
             ApplicationInfo appInfo;
-            if (type==null) {
-                appInfo = deployment.deploy(deploymentContext);
-            } else {
-                appInfo = deployment.deploy(deployment.prepareSniffersForOSGiDeployment(type, deploymentContext), deploymentContext);
-            }
+            appInfo = deployment.deploy(deploymentContext);
 
             if (report.getActionExitCode()==ActionReport.ExitCode.SUCCESS) {
                 try {

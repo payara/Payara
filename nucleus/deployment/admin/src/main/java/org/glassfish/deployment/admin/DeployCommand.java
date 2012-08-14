@@ -463,11 +463,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 tracing.addMark(DeploymentTracing.Mark.DEPLOY);
             }
             ApplicationInfo appInfo;
-            if (type==null) {
-                appInfo = deployment.deploy(deploymentContext);
-            } else {
-                appInfo = deployment.deploy(deployment.prepareSniffersForOSGiDeployment(type, deploymentContext), deploymentContext);
-            }
+            appInfo = deployment.deploy(deploymentContext);
 
             /*
              * Various deployers might have added to the downloadable or
