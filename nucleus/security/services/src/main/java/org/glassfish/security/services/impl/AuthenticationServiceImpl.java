@@ -153,7 +153,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
         // If required, initialize the currently configured Realm instances
         // TODO - Reconcile initialization with SecurityLifeCycle
         if (usePasswordCredential && (realmName != null)) {
-        	RealmsManager realmsManager = Globals.getDefaultBaseServiceLocator().getComponent(RealmsManager.class);
+        	RealmsManager realmsManager = Globals.getDefaultHabitat().getService(RealmsManager.class);
         	realmsManager.createRealms();
         }
     }

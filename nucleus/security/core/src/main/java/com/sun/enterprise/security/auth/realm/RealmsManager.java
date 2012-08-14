@@ -65,7 +65,6 @@ import javax.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import javax.inject.Singleton;

@@ -77,12 +77,12 @@ import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.Server;
 import org.glassfish.internal.api.Globals;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 /**
@@ -109,7 +109,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     private Date initDate = new Date();
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Inject
     private ProcessEnvironment penv;
 

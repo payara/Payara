@@ -48,12 +48,14 @@ import java.util.List;
 import javax.security.auth.callback.CallbackHandler;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.embedded.Server;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
+
 import javax.inject.Singleton;
 
 /**
@@ -64,7 +66,7 @@ import javax.inject.Singleton;
 @Service
 @Singleton
 public class Util {
-    private static BaseServiceLocator habitat = Globals.getDefaultHabitat();
+    private static Habitat habitat = Globals.getDefaultHabitat();
 //    @Inject
 //    private static BaseServiceLocator habitat;
     @Inject 
@@ -77,13 +79,13 @@ public class Util {
     
     //Note: Will return Non-Null only after Util has been 
     //Injected in some Service.
-    public static BaseServiceLocator getDefaultHabitat() {
+    public static Habitat getDefaultHabitat() {
         return habitat;
     }
     
     public static Util getInstance() {
         // return my singleton service
-        return habitat.getComponent(Util.class);
+        return habitat.getService(Util.class);
     }
     
     public boolean isACC() {

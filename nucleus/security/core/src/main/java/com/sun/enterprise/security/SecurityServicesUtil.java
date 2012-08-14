@@ -65,9 +65,7 @@ import org.glassfish.internal.api.Globals;
 public class SecurityServicesUtil {
 
     private static Habitat habitat = Globals.getDefaultHabitat();
-//    @Inject
-//    private BaseServiceLocator habitat;
-//    
+    
     private static final LocalStringManagerImpl _localStrings =
             new LocalStringManagerImpl(SecurityServicesUtil.class);
     private static final Logger _logger = LogDomains.getLogger(SecurityServicesUtil.class, LogDomains.SECURITY_LOGGER);

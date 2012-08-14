@@ -63,8 +63,8 @@ import org.glassfish.security.services.impl.ServiceFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
@@ -93,7 +93,7 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
     ServerContext serverContext;
 
     @Inject
-    private BaseServiceLocator serviceLocator;
+    private ServiceLocator serviceLocator;
     
     private org.glassfish.security.services.config.AuthorizationService atzSvCfg;
     
@@ -122,7 +122,7 @@ public class AuthorizationServiceImpl implements AuthorizationService, PostConst
                 throw new RuntimeException("No provider  configured for the Authorization service in the domain configuration file");
 
                 //get the provider
-                atzProvider = serviceLocator.getComponent(AuthorizationProvider.class, atzPrvConfig.getName());
+                atzProvider = serviceLocator.getService(AuthorizationProvider.class, atzPrvConfig.getName());
         }
         
         //init the provider  -- use the first config under the provider config???

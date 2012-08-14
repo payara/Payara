@@ -155,7 +155,7 @@ public class SecureAdminConfigUpgrade extends SecureAdminUpgradeHelper implement
              */
             if (requiresSecureAdmin()) {
                 final EnableSecureAdminCommand enableSecureAdminCommand =
-                        habitat.getComponent(EnableSecureAdminCommand.class);
+                        habitat.getService(EnableSecureAdminCommand.class);
                 stage = "upgrading secure admin set-up";
                 try {
                     enableSecureAdminCommand.run();

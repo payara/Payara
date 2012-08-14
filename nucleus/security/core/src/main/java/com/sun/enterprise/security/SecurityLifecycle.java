@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.jvnet.hk2.annotations.Optional;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
@@ -61,7 +62,6 @@ import org.glassfish.api.event.Events;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 
@@ -96,7 +96,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     private SecurityConfigListener configListener;
     
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private RealmsManager realmsManager;
@@ -213,7 +213,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     public void postConstruct() {
         onInitialization();
         listener = new AuditServerShutdownListener();
-        Events events = habitat.getByContract(Events.class);
+        Events events = habitat.getService(Events.class);
         events.register(listener);
 
     }

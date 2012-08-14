@@ -50,11 +50,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 
 /**
  * javadoc
@@ -308,19 +307,19 @@ public abstract class Realm implements Comparable {
         throws BadRealmException
     {
         
-        BaseServiceLocator habitat = Globals.getDefaultHabitat();
+        ServiceLocator habitat = Globals.getDefaultHabitat();
         RealmsManager mgr = null;
         try {
             mgr = getRealmsManager();
             Class realmClass = null;
             //try a HK2 route first
-            Realm r = habitat.getComponent(Realm.class, name);
+            Realm r = habitat.getService(Realm.class, name);
             if (r == null) {
                 try {
                     //TODO: workaround here. Once fixed in V3 we should be able to use
                     //Context ClassLoader instead.
                     ClassLoaderHierarchy hierarchy =
-                            habitat.getComponent(ClassLoaderHierarchy.class);
+                            habitat.getService(ClassLoaderHierarchy.class);
                     realmClass = hierarchy.getCommonClassLoader().loadClass(className);
                     Object obj = realmClass.newInstance();
                     r = (Realm) obj;

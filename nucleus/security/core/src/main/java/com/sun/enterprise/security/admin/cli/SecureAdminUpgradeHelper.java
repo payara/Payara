@@ -59,8 +59,8 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -82,7 +82,7 @@ public class SecureAdminUpgradeHelper {
     protected Domain domain;
     
     @Inject
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
     
     @Inject
     protected StartupContext startupContext;
@@ -150,14 +150,14 @@ public class SecureAdminUpgradeHelper {
     
     final protected SecureAdminHelper secureAdminHelper() {
         if (secureAdminHelper == null) {
-            secureAdminHelper = habitat.getComponent(SecureAdminHelper.class);
+            secureAdminHelper = habitat.getService(SecureAdminHelper.class);
         }
         return secureAdminHelper;
     }
     
     final protected SSLUtils sslUtils() {
         if (sslUtils == null) {
-            sslUtils = habitat.getComponent(SSLUtils.class);
+            sslUtils = habitat.getService(SSLUtils.class);
         }
         return sslUtils;
     }

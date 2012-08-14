@@ -44,7 +44,6 @@ import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.glassfish.security.services.common.StateManager;
 import org.glassfish.security.services.common.SecurityScope;
@@ -63,19 +62,18 @@ public class AuthenticationServiceFactory extends ServiceFactory implements Fact
     private StateManager manager;
 
     @Inject
-    // TODO - Obtain HK2 API org.glassfish.hk2.api.ServiceLocator.getService()
-    private BaseServiceLocator serviceLocator;
+    private ServiceLocator serviceLocator;
 
     @SecurityScope
     public AuthenticationService provide() {
         String currentState = manager.getCurrent();
 
         // Get Service Instance
-        AuthenticationService atnService = serviceLocator.getComponent(AuthenticationService.class);
+        AuthenticationService atnService = serviceLocator.getService(AuthenticationService.class);
 
         // Get Service Configuration
         org.glassfish.security.services.config.AuthenticationService atnConfiguration =
-            serviceLocator.getComponent(org.glassfish.security.services.config.AuthenticationService.class,currentState);
+            serviceLocator.getService(org.glassfish.security.services.config.AuthenticationService.class,currentState);
 
         // Initialize Service
         atnService.initialize(atnConfiguration);
