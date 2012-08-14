@@ -178,6 +178,7 @@
         <websocket.version>0.2</websocket.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.1</logging-annotation-processor.version>
+        <command-security-plugin.version>1.0.1</command-security-plugin.version>
     </properties>
 
     <modules>
@@ -741,6 +742,23 @@
                         </plugin>
                     </reportPlugins>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>command-security-maven-plugin</artifactId>
+                <version>${command-security-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>check-command-authorization</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <isFailureFatal>false</isFailureFatal>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
