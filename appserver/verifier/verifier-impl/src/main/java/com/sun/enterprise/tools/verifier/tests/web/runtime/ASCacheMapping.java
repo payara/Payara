@@ -87,7 +87,7 @@ public class ASCacheMapping extends ASCache implements WebCheck {
                 for(int rep=0;rep < cacheMapp.length;rep++){
                     servletName = cacheMapp[rep].getServletName();
 
-                    urlPattern = cacheMapp[rep].getUrlPattern();
+                    urlPattern = cacheMapp[rep].getURLPattern();
 
                     timeout = cacheMapp[rep].getTimeout();
                     httpMethods = cacheMapp[rep].getHttpMethod();
@@ -170,7 +170,7 @@ public class ASCacheMapping extends ASCache implements WebCheck {
                             if(cacheMapp[rep].getServletName()!=null)
                                 cacheMapName = cacheMapp[rep].getServletName();
                             else
-                                cacheMapName = cacheMapp[rep].getUrlPattern();
+                                cacheMapName = cacheMapp[rep].getURLPattern();
                             String name = getXPathValue("sun-web-app/cache/cache-mapping["+j+"]/refresh-field/@name");
                             if(name!=null && name.length()!=0)
                             {

@@ -86,7 +86,7 @@ public class ASCacheMappingFieldConstraint extends ASCache implements WebCheck {
             for(int rep=0;rep < cacheMapp.length;rep++){
 
 		servletName = cacheMapp[rep].getServletName();
-                urlPattern = cacheMapp[rep].getUrlPattern();
+                urlPattern = cacheMapp[rep].getURLPattern();
 
                 if(servletName !=null)
                     mappingFor=servletName;
