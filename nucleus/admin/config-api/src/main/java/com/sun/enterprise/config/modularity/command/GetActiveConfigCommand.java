@@ -130,7 +130,6 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             }
         }
 
-        if (serviceName != null) {
             String className = ConfigModularityUtils.convertConfigElementNameToClassName(serviceName);
             Class configBeanType = ConfigModularityUtils.getClassFor(serviceName, habitat);
             if (configBeanType == null) {
@@ -154,7 +153,6 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 report.setMessage(msg);
                 report.setFailureCause(e);
             }
-        }
     }
 
     private String getActiveConfigFor(Class configBeanType, Habitat habitat) throws InvocationTargetException, IllegalAccessException {

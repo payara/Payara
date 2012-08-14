@@ -89,6 +89,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -540,7 +541,8 @@ public final class ConfigModularityUtils {
 
         while (tokenizer.hasMoreTokens()) {
             String part = tokenizer.nextToken();
-            part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase());
+            Locale loc = Locale.getDefault();
+            part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase(loc));
             className.append(part);
 
         }
@@ -641,24 +643,24 @@ public final class ConfigModularityUtils {
         return null;
     }
 
-    /**
-     * checks and see if a class has an attribute with he specified name or not.
-     *
-     * @param classToQuery  the class toc heck the attribute presence
-     * @param attributeName the attribute to check its presence in the class.
-     * @return true if present and false if not.
-     */
-    private static boolean checkAttributePresence(Class classToQuery, String attributeName) {
-        String fieldName = convertAttributeToPropertyName(attributeName);
-        String methodName = "set" + fieldName.replaceFirst(fieldName.substring(0, 1), String.valueOf(Character.toUpperCase(fieldName.charAt(0))));
-        Method[] methods = classToQuery.getMethods();
-        for (Method m : methods) {
-            if (m.getName().equals(methodName)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /**
+//     * checks and see if a class has an attribute with he specified name or not.
+//     *
+//     * @param classToQuery  the class toc heck the attribute presence
+//     * @param attributeName the attribute to check its presence in the class.
+//     * @return true if present and false if not.
+//     */
+//    private static boolean checkAttributePresence(Class classToQuery, String attributeName) {
+//        String fieldName = convertAttributeToPropertyName(attributeName);
+//        String methodName = "set" + fieldName.replaceFirst(fieldName.substring(0, 1), String.valueOf(Character.toUpperCase(fieldName.charAt(0))));
+//        Method[] methods = classToQuery.getMethods();
+//        for (Method m : methods) {
+//            if (m.getName().equals(methodName)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * convert an xml attribute name to variable name representing it.
@@ -673,7 +675,8 @@ public final class ConfigModularityUtils {
         while (tokenizer.hasMoreTokens()) {
             String part = tokenizer.nextToken();
             if (!isFirst) {
-                part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase());
+                Locale loc = Locale.getDefault();
+                part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase(loc));
             }
             isFirst = false;
             propertyName.append(part);
