@@ -1011,7 +1011,6 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             return;
         }
 
-        //Only create one CRD node?
         ConnectorResourceDefinitionNode subNode = new ConnectorResourceDefinitionNode();
         for(;descIterator.hasNext();){
             ConnectorResourceDefinitionDescriptor next = descIterator.next();

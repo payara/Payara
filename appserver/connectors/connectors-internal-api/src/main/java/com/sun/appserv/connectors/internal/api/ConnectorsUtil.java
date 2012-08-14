@@ -587,6 +587,16 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDINameForDataSourceDefinitionPool(compId, derivedName);
     }
 
+    public static String deriveConnectorResourceDefinitionResourceName(String compId, String name) {
+        //String derivedName = escapeJavaName(name);
+        String derivedName = name;
+        return getReservePrefixedJNDINameForConnectorResourceDefinitionResource(compId, derivedName);
+    }
+
+    public static String deriveConnectorResourceDefinitionPoolName(String compId, String poolName) {
+        return getReservePrefixedJNDINameForConnectorResourceDefinitionPool(compId, poolName);
+    }
+
     private static String escapeJavaName(String name) {
         if (name != null) {
             //replace all 'delimiter' to double delimiter
@@ -621,6 +631,18 @@ public class ConnectorsUtil {
         return getReservePrefixedJNDIName(prefix, poolName);
     }
 
+    public static String getReservePrefixedJNDINameForConnectorResourceDefinitionPool(String compId, String poolName) {
+        String prefix = null;
+        if(compId == null || compId.equals("")){
+            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
+                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX ;
+        }else{
+            prefix = ConnectorConstants.POOLS_JNDINAME_PREFIX +
+                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, poolName);
+    }
+
     private static String getReservePrefixedJNDIName(String prefix, String resourceName) {
         return prefix + resourceName;
     }
@@ -633,6 +655,18 @@ public class ConnectorsUtil {
         }else{
             prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
                 ConnectorConstants.DATASOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
+        }
+        return getReservePrefixedJNDIName(prefix, resourceName);
+    }
+
+    public static String getReservePrefixedJNDINameForConnectorResourceDefinitionResource(String compId, String resourceName) {
+        String prefix = null;
+        if(compId == null || compId.equals("")){
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX ;
+        }else{
+            prefix = ConnectorConstants.RESOURCE_JNDINAME_PREFIX +
+                ConnectorConstants.CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX + compId +"/";
         }
         return getReservePrefixedJNDIName(prefix, resourceName);
     }

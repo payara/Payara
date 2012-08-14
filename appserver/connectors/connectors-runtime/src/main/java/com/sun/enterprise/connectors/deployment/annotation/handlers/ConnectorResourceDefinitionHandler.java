@@ -287,7 +287,7 @@ public class ConnectorResourceDefinitionHandler extends AbstractResourceHandler 
                     if (index > 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);
                         String value = property.substring(index + 1);
-                        properties.put(name, value);
+                        properties.put(name.trim(), value.trim());
                     }
                 }
             }

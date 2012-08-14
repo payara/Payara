@@ -58,7 +58,6 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
     
     private String resourceId;
     private MetadataSource metadataSource = MetadataSource.XML;
-    private boolean deployed = false;
     private static final String JAVA_URL = "java:";
     private static final String JAVA_COMP_URL = "java:comp/";
     
@@ -99,17 +98,6 @@ public class ConnectorResourceDefinitionDescriptor extends Descriptor {
 	public void setMetadataSource(MetadataSource metadataSource) {
 		this.metadataSource = metadataSource;
 	}
-
-
-	public boolean isDeployed() {
-		return deployed;
-	}
-
-
-	public void setDeployed(boolean deployed) {
-		this.deployed = deployed;
-	}
-
 
 	public void addProperty(String key, String value){
         properties.put(key, value);

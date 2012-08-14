@@ -82,11 +82,11 @@ public class ConnectorResourcePropertyDescriptor extends Descriptor {
         }
 
         if(obj instanceof ConnectorResourcePropertyDescriptor){
-        	ConnectorResourcePropertyDescriptor propertyDesc = (ConnectorResourcePropertyDescriptor)obj;
-            String propertyDescName = propertyDesc.getName() ;
-            if(propertyDescName!= null && name != null && name.equals(propertyDescName)){
-                String propertyDescValue = propertyDesc.getValue();
-                if(propertyDescValue != null && value != null && value.equals(propertyDescName)){
+        	ConnectorResourcePropertyDescriptor that = (ConnectorResourcePropertyDescriptor)obj;
+            String thatName = that.getName() ;
+            if(thatName!= null && this.name != null && this.name.equals(thatName)){
+                String thatValue = that.getValue();
+                if(thatValue != null && this.value != null && this.value.equals(thatValue)){
                     return true;
                 }
             }

@@ -121,6 +121,7 @@ public interface ResourceConstants {
      *  Reserved sub-context where datasource-definition objets (resource and pool) are bound with generated names.
      */
     public static String DATASOURCE_DEFINITION_JNDINAME_PREFIX="__datasource_definition/";
+    public static String CONNECTOR_RESOURCE_DEFINITION_JNDINAME_PREFIX="__connector_resource_definition/";
 
     public static final String JAVA_SCOPE_PREFIX = "java:";
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";

@@ -57,6 +57,7 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.DataSourceDefinitionProxy;
+import org.glassfish.javaee.services.ConnectorResourceDefinitionProxy;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import javax.inject.Inject;
@@ -289,7 +290,7 @@ public class ComponentEnvManagerImpl
         return;
     }
 
-    private void setResourceId(JndiNameEnvironment env, DataSourceDefinitionDescriptor desc){
+    private String getResourceId(JndiNameEnvironment env, Descriptor desc){
 
         String resourceId = "";
         if(dependencyAppliesToScope(desc, ScopeType.COMPONENT)){
@@ -301,7 +302,7 @@ public class ComponentEnvManagerImpl
             resourceId = getApplicationName(env)  ;
         }
         
-        desc.setResourceId(resourceId);
+        return resourceId;
 
     }
 
@@ -332,7 +333,8 @@ public class ComponentEnvManagerImpl
                 continue;
             }
 
-            setResourceId(env, dsd);
+            String resourceId = getResourceId(env, dsd);
+            dsd.setResourceId(resourceId);
 
             DataSourceDefinitionProxy proxy = habitat.getService(DataSourceDefinitionProxy.class);
             proxy.setDescriptor(dsd);
@@ -357,7 +359,8 @@ public class ComponentEnvManagerImpl
                 continue;
             }
 
-            setResourceId(env, msd);
+            String resourceId = getResourceId(env, msd);
+            msd.setResourceId(resourceId);
 
             org.glassfish.javaee.services.MailSessionProxy proxy = habitat.getService(org.glassfish.javaee.services.MailSessionProxy.class);
             proxy.setDescriptor(msd);
@@ -367,6 +370,33 @@ public class ComponentEnvManagerImpl
             jndiBindings.add(envBinding);
         }
     }
+    
+    private void addConnectorResourceBindings(JndiNameEnvironment env, ScopeType scope, Collection<JNDIBinding> jndiBindings) {
+
+        if(env instanceof ApplicationClientDescriptor){
+            // Do not support connectore-resource in client module
+            _logger.fine("Do not support connector-resource in client module.");
+            return;
+        }
+        
+        for (ConnectorResourceDefinitionDescriptor crd : env.getConnectorResourceDefinitionDescriptors()) {
+
+            if (!dependencyAppliesToScope(crd, scope)) {
+                continue;
+            }
+
+            String resourceId = getResourceId(env, crd);
+            crd.setResourceId(resourceId);
+
+            ConnectorResourceDefinitionProxy proxy = habitat.getService(ConnectorResourceDefinitionProxy.class);
+            proxy.setDescriptor(crd);
+
+            String logicalJndiName = descriptorToLogicalJndiName(crd);
+            CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
+            jndiBindings.add(envBinding);
+        }
+    }
+    
 
     private ResourceDeployer getResourceDeployer(Object resource) {
         return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
@@ -382,6 +412,9 @@ public class ComponentEnvManagerImpl
         //undelploy mail-sessions
         undeployMailSessions(env);
 
+        //undelploy connector-resources
+        undeployConnectorResourceDefinitions(env);
+        
         // Unpublish any global entries exported by this environment
         Collection<JNDIBinding> globalBindings = new ArrayList<JNDIBinding>();
         addJNDIBindings(env, ScopeType.GLOBAL, globalBindings);
@@ -450,6 +483,18 @@ public class ComponentEnvManagerImpl
                 }
             }catch(Exception e){
                 _logger.log(Level.WARNING, "unable to undeploy MailSessions [ " + msd.getName() + " ] ", e);
+            }
+        }
+    }
+
+    private void undeployConnectorResourceDefinitions(JndiNameEnvironment env) {
+
+        for (ConnectorResourceDefinitionDescriptor crd : env.getConnectorResourceDefinitionDescriptors()) {
+            try{
+                ResourceDeployer deployer = getResourceDeployer(crd);
+                deployer.undeployResource(crd);
+            }catch(Exception e){
+                _logger.log(Level.WARNING, "unable to undeploy ConnectorResourceDefinition [ " + crd.getName() + " ] ", e);
             }
         }
     }
@@ -562,6 +607,7 @@ public class ComponentEnvManagerImpl
 
         addDataSourceBindings(env, scope, jndiBindings); 
         addMailSessionBindings(env, scope, jndiBindings);
+        addConnectorResourceBindings(env, scope, jndiBindings); 
 
         for (Iterator itr = env.getEjbReferenceDescriptors().iterator();
              itr.hasNext();) {
