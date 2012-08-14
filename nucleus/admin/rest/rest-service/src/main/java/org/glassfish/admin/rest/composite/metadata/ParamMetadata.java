@@ -40,7 +40,8 @@
 package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Annotation;
-import javax.ws.rs.QueryParam;
+import java.util.Arrays;
+import java.util.List;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
@@ -54,14 +55,23 @@ public class ParamMetadata {
     private String type;
     private String help;
     private String defaultValue;
+    private boolean readOnly = false;
 
     public ParamMetadata() {
 
     }
-    public ParamMetadata(Class<?> paramType, String name, Annotation[] others) {
+    public ParamMetadata(Class<?> paramType, String name, Annotation[] annotations) {
         this.name = name;
         type = paramType.getSimpleName();
-        help = CompositeUtil.instance().getHelpText(others);
+        final CompositeUtil instance = CompositeUtil.instance();
+        help = instance.getHelpText(annotations);
+        defaultValue = instance.getDefaultValue(annotations);
+
+        for (Annotation a : annotations) {
+            if (a.annotationType().equals(ReadOnly.class)) {
+                readOnly = true;
+            }
+        }
     }
 
     public String getName() {
@@ -107,6 +117,7 @@ public class ParamMetadata {
         o.put("type", type);
         o.put("help", help);
         o.put("default", defaultValue);
+        o.put("readOnly", readOnly);
 
         return o;
     }

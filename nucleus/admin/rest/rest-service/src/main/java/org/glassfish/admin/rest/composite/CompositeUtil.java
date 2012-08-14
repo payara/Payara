@@ -64,17 +64,17 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.security.auth.Subject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
+import org.glassfish.admin.rest.composite.metadata.Default;
+import org.glassfish.admin.rest.composite.metadata.DefaultGenerator;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -98,6 +98,7 @@ public class CompositeUtil {
     private boolean extensionsLoaded = false;
     private static volatile Validator beanValidator = null;
     private static final LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(CompositeUtil.class);
+    private ThreadLocal<Subject> subject = new ThreadLocal<Subject>();
 
     private CompositeUtil() {
     }
@@ -158,6 +159,14 @@ public class CompositeUtil {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    public Subject getSubject() {
+        return subject.get();
+    }
+
+    public void setSubject(Subject subject) {
+        this.subject.set(subject);
     }
 
     /**
@@ -284,6 +293,30 @@ public class CompositeUtil {
         }
 
         return helpText;
+    }
+
+    public String getDefaultValue(Annotation[] annos) {
+        String defaultValue = null;
+        if (annos != null) {
+            for (Annotation annotation : annos) {
+                 if (Default.class.isAssignableFrom(annotation.getClass())) {
+                    try {
+                        Default def = (Default)annotation;
+                        Class<? extends DefaultGenerator> clazz = def.generator();
+                        DefaultGenerator generator = clazz.newInstance();
+                        defaultValue = generator.getDefaultValue();
+                        break;
+                    } catch (Exception ex) {
+                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else if (Attribute.class.isAssignableFrom(annotation.getClass())) {
+                    Attribute attr = (Attribute)annotation;
+                    defaultValue = attr.defaultValue();
+                    break;
+                }
+            }
+        }
+        return defaultValue;
     }
 
     public <T> Set<ConstraintViolation<T>> validateRestModel(T model) {

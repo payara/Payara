@@ -181,6 +181,13 @@ public class RestMethodMetadata {
         }
     }
 
+    /**
+     * This method will analyze the getters of the given class to determine its properties.  Currently, for simplicity's
+     * sake, only getters are checked.
+     * @param clazz
+     * @return
+     * @throws JSONException
+     */
     private JSONArray getProperties(Class<?> clazz) throws JSONException {
         Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
         JSONArray props = new JSONArray();
@@ -192,25 +199,15 @@ public class RestMethodMetadata {
         for (Class<?> ifaces : clazz.getInterfaces()) {
             for (Method m : ifaces.getDeclaredMethods()) {
                 String methodName = m.getName();
-                final boolean isGetter = methodName.startsWith("get");
-                final boolean isSetter = methodName.startsWith("set");
-                if (isGetter || isSetter) {
-                    String propertyName = methodName.substring(3,4).toLowerCase() +
-                            methodName.substring(4);
-
-                    map.put(propertyName, new ParamMetadata((isGetter ? m.getReturnType() : m.getParameterTypes()[0]),
-                            propertyName, null));
+                if (methodName.startsWith("get")) {
+                    String propertyName = methodName.substring(3,4).toLowerCase() + methodName.substring(4);
+                    map.put(propertyName, new ParamMetadata(m.getReturnType(), propertyName, m.getAnnotations()));
                 }
             }
         }
 
         for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
-            JSONObject prop = new JSONObject();
-            prop.put("name", entry.getKey());
-            prop.put("default", entry.getValue().getDefaultValue());
-            prop.put("type", entry.getValue().getType());
-            prop.put("help", entry.getValue().getHelp());
-            props.put(prop);
+            props.put(entry.getValue().toJson());
         }
 
         return props;
