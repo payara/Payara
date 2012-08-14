@@ -151,6 +151,15 @@ public abstract class DomainXml implements Populator {
     protected void decorate() {
 
         Server server = habitat.getComponent(Server.class, env.getInstanceName());
+        if (server == null) {
+            LogRecord lr = new LogRecord(Level.SEVERE, 
+                    localStrings.getLocalString("BadEnv",
+                        "Instance {0} from environment not found in domain.xml", 
+                        env.getInstanceName()));
+            lr.setLoggerName(getClass().getName());
+            EarlyLogHandler.earlyMessages.add(lr);
+            return;
+        }
         habitat.addIndex(new ExistingSingletonInhabitant<Server>(server),
                 Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
