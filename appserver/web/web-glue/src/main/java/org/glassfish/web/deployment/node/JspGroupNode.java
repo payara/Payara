@@ -48,7 +48,6 @@ import org.glassfish.web.deployment.descriptor.JspGroupDescriptor;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
-import java.util.Enumeration;
 import java.util.Map;
 
 /**
