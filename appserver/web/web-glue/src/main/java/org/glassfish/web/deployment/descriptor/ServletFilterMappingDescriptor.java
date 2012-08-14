@@ -54,8 +54,6 @@ public final class ServletFilterMappingDescriptor
     extends Descriptor
     implements com.sun.enterprise.deployment.web.ServletFilterMapping
 {
-
-    private static EnumSet<DispatcherType> allowed_dispatchers;
     
     private EnumSet<DispatcherType> dispatchers;
     private List<String> servletNames;
@@ -116,12 +114,6 @@ public final class ServletFilterMappingDescriptor
         return dispatchers;
     }
 
-    public static Set<DispatcherType> getAllowedDispatchers() {
-        if (allowed_dispatchers == null) {
-            allowed_dispatchers = EnumSet.allOf(DispatcherType.class);
-        }
-        return allowed_dispatchers;
-    }
 
     /** compare equals */
     public boolean equals(Object obj) {
