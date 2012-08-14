@@ -60,9 +60,10 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
@@ -89,7 +90,7 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     DasConfig activeDasConfig;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     @Inject
     ServerEnvironment env;

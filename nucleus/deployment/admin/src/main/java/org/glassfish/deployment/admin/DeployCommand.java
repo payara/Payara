@@ -69,7 +69,7 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Transaction;
 
 import java.io.File;
@@ -128,7 +128,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     ServerEnvironment env;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     CommandRunner commandRunner;
@@ -331,7 +331,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     public void execute(AdminCommandContext context) {
         try {
           // needs to be fixed in hk2, we don't generate the right innerclass index. it should use $
-            Collection<Interceptor> interceptors = habitat.getAllByContract(Interceptor.class);
+            Collection<Interceptor> interceptors = habitat.getAllServices(Interceptor.class);
             if (interceptors!=null) {
                 for (Interceptor interceptor : interceptors) {
                     interceptor.intercept(this, initialContext);
@@ -883,7 +883,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             // haven't created the application classloader yet
             DeploymentContext context = (DeploymentContext)event.hook();
             if (verify) {
-                Verifier verifier = habitat.getByContract(Verifier.class);
+                Verifier verifier = habitat.getService(Verifier.class);
                 if (verifier != null) {
                     verifier.verify(context);
                 } else  {

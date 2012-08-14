@@ -54,8 +54,8 @@ import javax.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Performs a single auto-deployment operation for a single file.
@@ -84,7 +84,7 @@ public class AutoDeploymentOperation extends AutoOperation {
      * @return the injected, initialized AutoDeploymentOperation
      */
     static AutoDeploymentOperation newInstance(
-            BaseServiceLocator habitat,
+            ServiceLocator habitat,
             boolean renameOnSuccess,
             File file, 
             boolean enabled,
@@ -95,7 +95,7 @@ public class AutoDeploymentOperation extends AutoOperation {
             String target) {
         
         AutoDeploymentOperation o = 
-                (AutoDeploymentOperation) habitat.getComponent(AutoDeploymentOperation.class);
+                (AutoDeploymentOperation) habitat.getService(AutoDeploymentOperation.class);
         
         o.init(renameOnSuccess, file, enabled, virtualServer, forceDeploy, verify, preJspCompilation, target);
         return o;

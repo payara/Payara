@@ -58,8 +58,8 @@ import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Handles the logic of deploying the module/app to the required destination.</br>
@@ -88,7 +88,7 @@ public class AutoDeployer {
     
     private AtomicBoolean inProgress = new AtomicBoolean(false);
     
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private File domainRoot = null;
     
@@ -126,7 +126,7 @@ public class AutoDeployer {
             String target, 
             String directoryPath,
             String virtualServer,
-            BaseServiceLocator habitat) throws AutoDeploymentException {
+            ServiceLocator habitat) throws AutoDeploymentException {
         this(
             target, 
             directoryPath, 
@@ -158,7 +158,7 @@ public class AutoDeployer {
             boolean renameOnSuccess,
             boolean forceDeploy,
             boolean enabled,
-            BaseServiceLocator habitat) throws AutoDeploymentException {
+            ServiceLocator habitat) throws AutoDeploymentException {
         
         setHabitat(habitat);
         setTarget(target);
@@ -178,7 +178,7 @@ public class AutoDeployer {
             String virtualServer,
             boolean jspPrecompilationEnabled, 
             boolean verifierEnabled,
-            BaseServiceLocator habitat) throws AutoDeploymentException {
+            ServiceLocator habitat) throws AutoDeploymentException {
         this(
             target, 
             directoryPath, 
@@ -196,7 +196,7 @@ public class AutoDeployer {
      * instances.
      * @param habitat
      */
-    public void setHabitat(BaseServiceLocator habitat) {
+    public void setHabitat(ServiceLocator habitat) {
         this.habitat = habitat;
     }
     /**
@@ -269,7 +269,7 @@ public class AutoDeployer {
 
     private synchronized File domainRoot() {
         if (domainRoot == null) {
-            ServerEnvironment serverEnv = habitat.getComponent(ServerEnvironment.class);
+            ServerEnvironment serverEnv = habitat.getService(ServerEnvironment.class);
             domainRoot = serverEnv.getDomainRoot();
         }
         return domainRoot;
@@ -400,8 +400,8 @@ public class AutoDeployer {
         cancelDeployment = false;
     }
 
-    private void setRetryManager(BaseServiceLocator habitat) {
-        retryManager = habitat.getComponent(AutodeployRetryManager.class);
+    private void setRetryManager(ServiceLocator habitat) {
+        retryManager = habitat.getService(AutodeployRetryManager.class);
     }
     
     private void markInProgress() {

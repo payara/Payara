@@ -65,7 +65,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import static org.junit.Assert.*;

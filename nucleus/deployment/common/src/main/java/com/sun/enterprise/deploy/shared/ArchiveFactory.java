@@ -53,7 +53,6 @@ import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.io.File;
