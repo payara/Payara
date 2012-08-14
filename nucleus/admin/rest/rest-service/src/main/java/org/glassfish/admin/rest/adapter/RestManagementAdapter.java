@@ -115,6 +115,7 @@ public class RestManagementAdapter extends RestAdapter {
 
         //body readers, not in META-INF/services anymore
         r.add(org.glassfish.admin.rest.readers.RestModelReader.class);
+        r.add(org.glassfish.admin.rest.readers.RestModelListReader.class);
         r.add(org.glassfish.admin.rest.readers.FormReader.class);
         r.add(org.glassfish.admin.rest.readers.ParameterMapFormReader.class);
         r.add(org.glassfish.admin.rest.readers.JsonHashMapProvider.class);
