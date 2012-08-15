@@ -137,10 +137,9 @@ public class ParamMetadata {
                         if (useContext) {
                             defval = ((DefaultsGenerator) context).getDefaultValue(name);
                             break;
-                        } else if (!DefaultsGenerator.class.equals(clazz)) {
+                        } else {
                             defval = clazz.newInstance().getDefaultValue(name);
                             break;
-                        } else {
                         }
                     } catch (Exception ex) {
                         Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);

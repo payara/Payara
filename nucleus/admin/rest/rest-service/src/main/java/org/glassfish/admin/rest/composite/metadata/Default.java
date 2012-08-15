@@ -55,6 +55,13 @@ import javax.inject.Qualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Default {
-    Class<? extends DefaultsGenerator> generator() default DefaultsGenerator.class;
+    Class<? extends DefaultsGenerator> generator() default NoopDefaultsGenerator.class;
     boolean useContext() default false;
+
+    static class NoopDefaultsGenerator implements DefaultsGenerator {
+    @Override
+    public String getDefaultValue(String propertyName) {
+        return null;
+    }
+}
 }
