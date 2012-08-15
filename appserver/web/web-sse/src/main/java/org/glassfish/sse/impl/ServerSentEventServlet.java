@@ -66,11 +66,11 @@ public final class ServerSentEventServlet extends HttpServlet {
 
     @SuppressWarnings("UnusedDeclaration")
     @Inject
-    private ServerSentEventCdiExtension extension;
+    private transient ServerSentEventCdiExtension extension;
 
     @SuppressWarnings("UnusedDeclaration")
     @Inject
-    private BeanManager bm;
+    private transient BeanManager bm;
 
     @Override
     @SuppressWarnings("unchecked")
