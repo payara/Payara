@@ -40,18 +40,11 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
-import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -59,11 +52,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestResource;
+import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
@@ -82,7 +74,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public abstract class CompositeResource implements RestResource {
+public abstract class CompositeResource implements RestResource, DefaultsGenerator {
 
     @Context
     protected UriInfo uriInfo;
@@ -129,9 +121,14 @@ public abstract class CompositeResource implements RestResource {
         this.habitat = habitat;
     }
 
+    @Override
+    public String getDefaultValue(String propertyName) {
+        return null;
+    }
+
     @OPTIONS
     public String options() throws JSONException {
-        RestResourceMetadata rrmd = new RestResourceMetadata(getClass());
+        RestResourceMetadata rrmd = new RestResourceMetadata(this);
         return rrmd.toJson().toString(getFormattingIndentLevel());
     }
 

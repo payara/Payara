@@ -40,11 +40,12 @@
 package org.glassfish.admin.rest.composite.metadata;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
+import org.jvnet.hk2.config.Attribute;
 
 /**
  *
@@ -56,16 +57,18 @@ public class ParamMetadata {
     private String help;
     private String defaultValue;
     private boolean readOnly = false;
+    private Object context;
 
     public ParamMetadata() {
 
     }
-    public ParamMetadata(Class<?> paramType, String name, Annotation[] annotations) {
+    public ParamMetadata(Object context, Class<?> paramType, String name, Annotation[] annotations) {
         this.name = name;
+        this.context = context;
         type = paramType.getSimpleName();
         final CompositeUtil instance = CompositeUtil.instance();
         help = instance.getHelpText(annotations);
-        defaultValue = instance.getDefaultValue(annotations);
+        defaultValue = getDefaultValue(annotations);
 
         for (Annotation a : annotations) {
             if (a.annotationType().equals(ReadOnly.class)) {
@@ -121,4 +124,35 @@ public class ParamMetadata {
 
         return o;
     }
+
+    private String getDefaultValue(Annotation[] annos) {
+        String defval = null;
+        if (annos != null) {
+            for (Annotation annotation : annos) {
+                 if (Default.class.isAssignableFrom(annotation.getClass())) {
+                    try {
+                        Default def = (Default)annotation;
+                        Class<? extends DefaultsGenerator> clazz = def.generator();
+                        boolean useContext = def.useContext();
+                        if (useContext) {
+                            defval = ((DefaultsGenerator) context).getDefaultValue(name);
+                            break;
+                        } else if (!DefaultsGenerator.class.equals(clazz)) {
+                            defval = clazz.newInstance().getDefaultValue(name);
+                            break;
+                        } else {
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else if (Attribute.class.isAssignableFrom(annotation.getClass())) {
+                    Attribute attr = (Attribute)annotation;
+                    defval = attr.defaultValue();
+                    break;
+                }
+            }
+        }
+        return defval;
+    }
+
 }

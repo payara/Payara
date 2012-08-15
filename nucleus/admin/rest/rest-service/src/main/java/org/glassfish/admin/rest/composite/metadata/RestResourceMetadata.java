@@ -56,17 +56,20 @@ import org.codehaus.jettison.json.JSONObject;
  * @author jdlee
  */
 public class RestResourceMetadata {
-    List<RestMethodMetadata> resourceMethods = new ArrayList<RestMethodMetadata>();
-    public RestResourceMetadata(Class<?> resource) {
-        processClass(resource);
+    private List<RestMethodMetadata> resourceMethods = new ArrayList<RestMethodMetadata>();
+    private Object context;
+
+    public RestResourceMetadata(Object context) {
+        this.context = context;
+        processClass();
     }
 
-    private void processClass(Class<?> resource) {
-        for (Method m : resource.getDeclaredMethods()) {
+    private void processClass() {
+        for (Method m : context.getClass().getDeclaredMethods()) {
             Annotation designator = getMethodDesignator(m);
 
             if (designator != null) {
-                RestMethodMetadata rmm = new RestMethodMetadata(m, designator);
+                RestMethodMetadata rmm = new RestMethodMetadata(context, m, designator);
                 resourceMethods.add(rmm);
             }
         }

@@ -74,7 +74,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.composite.metadata.Default;
-import org.glassfish.admin.rest.composite.metadata.DefaultGenerator;
+import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -293,30 +293,6 @@ public class CompositeUtil {
         }
 
         return helpText;
-    }
-
-    public String getDefaultValue(Annotation[] annos) {
-        String defaultValue = null;
-        if (annos != null) {
-            for (Annotation annotation : annos) {
-                 if (Default.class.isAssignableFrom(annotation.getClass())) {
-                    try {
-                        Default def = (Default)annotation;
-                        Class<? extends DefaultGenerator> clazz = def.generator();
-                        DefaultGenerator generator = clazz.newInstance();
-                        defaultValue = generator.getDefaultValue();
-                        break;
-                    } catch (Exception ex) {
-                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else if (Attribute.class.isAssignableFrom(annotation.getClass())) {
-                    Attribute attr = (Attribute)annotation;
-                    defaultValue = attr.defaultValue();
-                    break;
-                }
-            }
-        }
-        return defaultValue;
     }
 
     public <T> Set<ConstraintViolation<T>> validateRestModel(T model) {

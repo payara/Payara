@@ -55,5 +55,6 @@ import javax.inject.Qualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Default {
-    Class<? extends DefaultGenerator> generator();
+    Class<? extends DefaultsGenerator> generator() default DefaultsGenerator.class;
+    boolean useContext() default false;
 }

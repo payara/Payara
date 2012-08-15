@@ -43,6 +43,6 @@ package org.glassfish.admin.rest.composite.metadata;
  *
  * @author jdlee
  */
-public interface DefaultGenerator {
-    String getDefaultValue();
+public interface DefaultsGenerator {
+    String getDefaultValue(String propertyName);
 }

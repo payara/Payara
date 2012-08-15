@@ -67,8 +67,10 @@ public class RestMethodMetadata {
     private String returnType;
     private String type = "item";
     private String path;
+    private Object context;
 
-    public RestMethodMetadata(Method method, Annotation designator) {
+    public RestMethodMetadata(Object context, Method method, Annotation designator) {
+        this.context = context;
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
         this.returnType = calculateReturnType(method);
         this.path = calculatePath(method);
@@ -170,7 +172,7 @@ public class RestMethodMetadata {
                     isPathParam = true;
                 }
                 if (QueryParam.class.isAssignableFrom(annotation.getClass())) {
-                    queryParameters.add(new ParamMetadata(paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
+                    queryParameters.add(new ParamMetadata(context, paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
                     processed = true;
                 }
 
@@ -201,7 +203,7 @@ public class RestMethodMetadata {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) {
                     String propertyName = methodName.substring(3,4).toLowerCase() + methodName.substring(4);
-                    map.put(propertyName, new ParamMetadata(m.getReturnType(), propertyName, m.getAnnotations()));
+                    map.put(propertyName, new ParamMetadata(context, m.getReturnType(), propertyName, m.getAnnotations()));
                 }
             }
         }
