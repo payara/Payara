@@ -223,26 +223,33 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
             for (Map.Entry<String,Set<String>> entry : enabledVersionsInTargets.entrySet()) {
                 for (String t : entry.getValue()) {
-                    accessChecks.add(new AccessCheck(
-                            DeploymentCommandUtils.getTargetResourceNameForExistingApp(domain, t, entry.getKey()),DISABLE_ACTION));
+                    final String resourceForApp = DeploymentCommandUtils.getTargetResourceNameForExistingApp(domain, t, entry.getKey());
+                    if (resourceForApp != null) {
+                        accessChecks.add(new AccessCheck(resourceForApp, DISABLE_ACTION));
+                    }
                 }
             }
         } else if ( isVersionExpressionWithWildcard ){
             for (String appNm : matchedVersions) {
-                accessChecks.add(new AccessCheck(
-                        DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appNm), DISABLE_ACTION));
+                final String resourceForApp = DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appNm);
+                accessChecks.add(new AccessCheck(resourceForApp, DISABLE_ACTION));
             }
         } else if (target == null) {
-            accessChecks.add(new AccessCheck(
-                    DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, 
-                        deployment.getDefaultTarget(appName, origin, _classicstyle), appName), DISABLE_ACTION));
+            final String resourceForApp = DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, 
+                        deployment.getDefaultTarget(appName, origin, _classicstyle), appName);
+            if (resourceForApp != null) {
+                accessChecks.add(new AccessCheck(resourceForApp, DISABLE_ACTION));
+            }
         } else {
-            accessChecks.add(new AccessCheck(
-                    DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appName), DISABLE_ACTION));
+            final String resourceForApp = DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, appName);
+            if (resourceForApp != null) {
+                accessChecks.add(new AccessCheck(resourceForApp, DISABLE_ACTION));
+            }
         }
-        
-        accessChecks.add(new AccessCheck(
-                DeploymentCommandUtils.getResourceNameForExistingApp(domain, appName), DISABLE_ACTION));
+        final String resourceForApp = DeploymentCommandUtils.getResourceNameForExistingApp(domain, appName);
+        if (resourceForApp != null) {
+            accessChecks.add(new AccessCheck(resourceForApp, DISABLE_ACTION));
+        }
         
         return accessChecks;
     }

@@ -175,7 +175,10 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
         /*
          * Add an access check for enabling the app itself.
          */
-        accessChecks.add(new AccessCheck(DeploymentCommandUtils.getResourceNameForExistingApp(domain, name()), ENABLE_ACTION));
+        final String resourceForApp = DeploymentCommandUtils.getResourceNameForExistingApp(domain, name());
+        if (resourceForApp != null) {
+            accessChecks.add(new AccessCheck(resourceForApp, ENABLE_ACTION));
+        }
         return accessChecks;
     }
 
