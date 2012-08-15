@@ -66,7 +66,7 @@
       <ejb-jar xmlns="http://java.sun.com/xml/ns/javaee"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-      	  http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+      	  http://java.sun.com/xml/ns/javaee/ejb-jar_3_2.xsd"
       version="3.2">
       ...
       </ejb-jar>
@@ -118,7 +118,7 @@
         <xsd:documentation>
 
           The ejb-name element contains the name of an enterprise
-          bean. The name must be unique within the ejb-jar or
+          bean. The name must be unique within the ejb-jar file or
           .war file.
           
         </xsd:documentation>
@@ -229,7 +229,8 @@
         expected configuration properties of the message-driven bean
         in its operational environment. This may include information
         about message acknowledgement, message selector, expected
-        destination type, etc.
+        destination type, destination or connection factory lookup
+        string, subscription name, etc.
         
         The configuration information is expressed in terms of
         name/value configuration properties.
@@ -279,7 +280,9 @@
             
             For JMS message-driven beans, the following property
             names are recognized: acknowledgeMode,
-            messageSelector, destinationType, subscriptionDurability
+            messageSelector, destinationType, subscriptionDurability,
+            destinationLookup, connectionFactoryLookup, subscriptionName,
+            clientId, and shareSubscriptions.
             
           </xsd:documentation>
         </xsd:annotation>
@@ -384,7 +387,7 @@
         omitted if the lists represented by them are empty.
         
         Providing an assembly-descriptor in the deployment
-        descriptor is optional for the ejb-jar or .war file producer.
+        descriptor is optional for the ejb-jar file or .war file producer.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -499,7 +502,7 @@
     <xsd:annotation>
       <xsd:documentation>
 
-        The cmr-fieldType describes the bean provider's view of
+        The cmr-fieldType describes the Bean Provider's view of
         a relationship. It consists of an optional description, and
         the name and the class type of a field in the source of a
         role of a relationship. The cmr-field-name element
@@ -748,8 +751,8 @@
         icon file name
         - an optional module name. Only applicable to
         stand-alone ejb-jars or ejb-jars packaged in an ear.
-        Ignored if specified for an ejb-jar.xml within a .war.
-        In that case, standard .war module-name rules apply.
+        Ignored if specified for an ejb-jar.xml within a .war file.
+        In that case, standard .war file module-name rules apply.
         - structural information about all included
         enterprise beans that is not specified through
         annotations
@@ -797,7 +800,7 @@
           <xsd:documentation>
 
             Providing an assembly-descriptor in the deployment
-            descriptor is optional for the ejb-jar or .war file
+            descriptor is optional for the ejb-jar file or .war file
             producer.
             
           </xsd:documentation>
@@ -881,9 +884,9 @@
         The ejb-nameType specifies an enterprise bean's name. It is
         used by ejb-name elements. This name is assigned by the
         file producer to name the enterprise bean in the
-        ejb-jar or .war file's deployment descriptor. The name must be
+        ejb-jar file or .war file's deployment descriptor. The name must be
         unique among the names of the enterprise beans in the same
-        ejb-jar or .war file.
+        ejb-jar file or .war file.
         
         There is no architected relationship between the used
         ejb-name in the deployment descriptor and the JNDI name that
@@ -940,9 +943,9 @@
         </xsd:annotation>
       </xsd:element>
       <xsd:element name="ejb-relationship-role"
-                   type="javaee:ejb-relationship-roleType"/>
-      <xsd:element name="ejb-relationship-role"
-                   type="javaee:ejb-relationship-roleType"/>
+                   type="javaee:ejb-relationship-roleType"
+                   minOccurs="2"
+                   maxOccurs="2"/>
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -1652,7 +1655,7 @@
       <xsd:documentation>
 
         The interceptorsType element declares one or more interceptor
-        classes used by components within this ejb-jar or .war.  The declaration
+        classes used by components within this ejb-jar file or .war file.  The declaration
         consists of :
         
         - An optional description.
@@ -1735,13 +1738,13 @@
       <xsd:documentation>
         <![CDATA[[
         The interceptor-bindingType element describes the binding of
-        interceptor classes to beans within the ejb-jar or .war.
+        interceptor classes to beans within the ejb-jar file or .war file.
         It consists of :
         
         - An optional description.
         - The name of an ejb within the module or the wildcard value "*",
         which is used to define interceptors that are bound to all
-        beans in the ejb-jar or .war.
+        beans in the ejb-jar file or .war file.
         - A list of interceptor classes that are bound to the contents of
         the ejb-name element or a specification of the total ordering
         over the interceptors defined for the given level and above.
@@ -1755,7 +1758,7 @@
         of a method-level interceptor.
         
         Interceptors bound to all classes using the wildcard syntax
-        "*" are default interceptors for the components in the ejb-jar or .war. 
+        "*" are default interceptors for the components in the ejb-jar file or .war file. 
         In addition, interceptors may be bound at the level of the bean
         class (class-level interceptors) or business methods (method-level
         interceptors ).
@@ -1775,7 +1778,7 @@
         
         Specifying the ejb-name as the wildcard value "*" designates
         default interceptors (interceptors that apply to all session and
-        message-driven beans contained in the ejb-jar or .war).
+        message-driven beans contained in the ejb-jar file or .war file).
         
         2. 
         <interceptor-binding>
@@ -2081,18 +2084,27 @@
       <xsd:documentation>
         <![CDATA[[
         The methodType is used to denote a method of an enterprise
-        bean's business, home, component, and/or web service endpoint
-        interface, or, in the case of a message-driven bean, the
-        bean's message listener method, or a set of such
-        methods. The ejb-name element must be the name of one of the
-        enterprise beans declared in the deployment descriptor; the
-        optional method-intf element allows to distinguish between a
+        bean.  The method may be any of the following or a set of
+        any of the following methods may be designated:
+        business interface method
+        home interface method
+        component interface method
+        web service endpoint interface method
+        no-interface view method
+        singleton session bean lifecycle callback method
+        stateful session bean lifecycle callback method (see 
+        limitations)
+        timeout callback method
+        message-driven bean message listener method
+        
+        The ejb-name element must be the name of one of the enterprise 
+        beans declared in the deployment descriptor.
+        The optional method-intf element allows distinguishing between a
         method with the same signature that is multiply defined
-        across the business, home, component, and/or web service 
-        endpoint nterfaces; the method-name element specifies the 
-        method name; and the optional method-params elements identify 
-        a single method among multiple methods with an overloaded
-        method name.
+        across any of the above.
+        The method-name element specifies the method name.
+        The optional method-params elements identify a single method 
+        among multiple methods with an overloaded method name.
         
         There are three possible styles of using methodType element
         within a method element:
@@ -2103,9 +2115,21 @@
         <method-name>*</method-name>
         </method>
         
-        This style is used to refer to all the methods of the
-        specified enterprise bean's business, home, component, 
-        and/or web service endpoint interfaces.
+        This style is used to refer to all of the following methods 
+        of the specified enterprise bean:
+        business interface methods
+        home interface methods
+        component interface methods
+        web service endpoint interface methods
+        no-interface view methods
+        singleton session bean lifecycle callback methods
+        timeout callback methods
+        message-driven bean message listener method
+        
+        This style may be used for stateful session bean lifecycle 
+        callback methods to specify their transaction attributes, 
+        if used with the method-intf element that contains 
+        LifecycleCallback as the value.
         
         2.
         <method>
@@ -2118,6 +2142,16 @@
         methods with the same overloaded name, the element of
         this style refers to all the methods with the overloaded
         name.
+        
+        This style may be used to refer to stateful session bean
+        lifecycle callback methods to specify their transaction
+        attributes if any of the following is true:
+        there is only one method with this name in the specified 
+        enterprise bean
+        all overloaded methods with this name in the specified 
+        enterprise bean are lifecycle callback methods
+        method-intf element is specified and it contains 
+        LifecycleCallback as the value 
         
         3.
         <method>
@@ -2138,15 +2172,24 @@
         arguments, the method-params element contains no
         method-param elements). Arrays are specified by the
         array element's type, followed by one or more pair of
-        square brackets (e.g. int[][]). If there are multiple
-        methods with the same overloaded name, this style refers
-        to all of the overloaded methods. 
+        square brackets (e.g. int[][]). 
+        If a method with the same name and signature is defined 
+        on more than one interface of an enterprise bean, this 
+        style refers to all those methods. 
         
         Examples:
         
-        Style 1: The following method element refers to all the
-        methods of the EmployeeService bean's business, home, 
-        component, and/or web service endpoint interfaces:
+        Style 1: The following method element refers to all of the
+        following methods of the EmployeeService bean:
+        no interface view methods
+        business interface methods   
+        home interface methods   
+        component business interface methods   
+        singleton session bean lifecycle callback methods, if any
+        timeout callback methods
+        web service endpoint interface methods
+        message-driven bean message listener methods (if the bean
+        a message-driven bean)
         
         <method>
         <ejb-name>EmployeeService</ejb-name>
@@ -2193,11 +2236,20 @@
         </method>
         
         The optional method-intf element can be used when it becomes
-        necessary to differentiate between a method that is multiply
-        defined across the enterprise bean's business, home, component,
-        and/or web service endpoint interfaces with the same name and
-        signature. However, if the same method is a method of both the
-        local business interface, and the local component interface, 
+        necessary to differentiate between a method that is defined
+        multiple times with the same name and signature across any
+        of the following methods of an enterprise bean:
+        business interface methods
+        home interface methods
+        component interface methods
+        web service endpoint methods
+        no-interface view methods
+        singleton or stateful session bean lifecycle callback methods
+        timeout callback methods
+        message-driven bean message listener methods
+        
+        However, if the same method is a method of both the local 
+        business interface, and the local component interface, 
         the same attribute applies to the method for both interfaces.
         Likewise, if the same method is a method of both the remote 
         business interface and the remote component interface, the same
@@ -2308,6 +2360,9 @@
         MessageEndpoint refers to the methods of a message-driven bean's
         message-listener interface.
         
+        LifecycleCallback refers to the lifecycle callback methods of 
+        a singleton or stateful session bean.
+        
         The method-intf element must be one of the following:
         
         Home
@@ -2317,6 +2372,7 @@
         ServiceEndpoint
         Timer
         MessageEndpoint
+        LifecycleCallback
         
       </xsd:documentation>
     </xsd:annotation>
@@ -2329,6 +2385,7 @@
         <xsd:enumeration value="ServiceEndpoint"/>
         <xsd:enumeration value="Timer"/>
         <xsd:enumeration value="MessageEndpoint"/>
+        <xsd:enumeration value="LifecycleCallback"/>
       </xsd:restriction>
     </xsd:simpleContent>
   </xsd:complexType>
@@ -2401,8 +2458,9 @@
         The security roles used in the method-permissionType
         must be defined in the security-role elements of the
         deployment descriptor, and the methods must be methods
-        defined in the enterprise bean's business, home, component 
-        and/or web service endpoint interfaces.
+        defined in the enterprise bean's no-interface view, 
+        business, home, component and/or web service endpoint 
+        interfaces.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -2789,6 +2847,9 @@
         environment references.
         - an optional declaration of the bean's message 
         destination references
+        - an optional specification as to whether the stateful 
+        session bean is passivation capable or not. If not 
+        specified, the bean is assumed to be passivation capable
         
         The elements that are optional are "optional" in the sense
         that they are omitted when if lists represented by them are
@@ -2981,11 +3042,24 @@
       <xsd:element name="security-role-ref"
                    type="javaee:security-role-refType"
                    minOccurs="0"
-                   maxOccurs="unbounded">
-      </xsd:element>
+                   maxOccurs="unbounded"/>
       <xsd:element name="security-identity"
                    type="javaee:security-identityType"
+                   minOccurs="0"/>
+      <xsd:element name="passivation-capable"
+                   type="xsd:boolean"
+                   default="true"
                    minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The passivation-capable element specifies whether the 
+            stateful session bean is passivation capable or not. 
+            If not specified, the bean is assumed to be passivation 
+            capable.
+            
+          </xsd:documentation>
+        </xsd:annotation>
       </xsd:element>
     </xsd:sequence>
     <xsd:attribute name="id"
