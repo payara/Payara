@@ -87,9 +87,8 @@ import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
@@ -1069,10 +1068,10 @@ public class AppClientContainer {
 
         private void cleanupTransactions() {
             try {
-                Inhabitant<TransactionManager> inhabitant =
-                        ((Habitat) habitat).getInhabitantByType(TransactionManager.class);
+                ServiceHandle<TransactionManager> inhabitant =
+                        habitat.getServiceHandle(TransactionManager.class);
                 if (inhabitant != null && inhabitant.isActive()) {
-                    TransactionManager txmgr = inhabitant.get();
+                    TransactionManager txmgr = inhabitant.getService();
                     if (txmgr.getStatus() == Status.STATUS_ACTIVE 
                             || txmgr.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                         txmgr.rollback();
