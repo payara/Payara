@@ -100,6 +100,7 @@ import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
@@ -648,7 +649,7 @@ public class StandardContext
     /**
      * used to create unique id for each app instance.
      */
-    private static int instanceIDCounter = 1;
+    private static AtomicInteger instanceIDCounter = new AtomicInteger(1);
     // END RIMOD 4868393
 
     /**
@@ -6165,7 +6166,7 @@ public class StandardContext
             }
             // START RIMOD 4868393
             // append an id to make the name unique to the instance.
-            namingContextName += instanceIDCounter++;
+            namingContextName += instanceIDCounter.getAndIncrement();
             // END RIMOD 4868393
         }
         return namingContextName;
