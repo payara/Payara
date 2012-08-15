@@ -54,7 +54,8 @@
 
     <name>Felix Web Console Extension for GlassFish</name>
     <description>
-        Felix Web Console Extension for GlassFish. This custoimizes branding as well as HttpService selection
+        Felix Web Console Extension for GlassFish.
+        This customizes branding as well as HttpService selection.
     </description>
     <dependencies>
         <dependency>
