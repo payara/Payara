@@ -132,17 +132,22 @@ public class ParamMetadata {
                  if (Default.class.isAssignableFrom(annotation.getClass())) {
                     try {
                         Default def = (Default)annotation;
-                        Class<? extends DefaultsGenerator> clazz = def.generator();
+                        Class clazz = def.generator();
                         boolean useContext = def.useContext();
                         if (useContext) {
                             defval = ((DefaultsGenerator) context).getDefaultValue(name);
                             break;
                         } else {
-                            defval = clazz.newInstance().getDefaultValue(name);
+                            if (DefaultsGenerator.class.isAssignableFrom(clazz)) {
+                                defval = ((DefaultsGenerator) clazz.newInstance()).getDefaultValue(name);
+                            } else {
+                                Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, 
+                                    "The class specified by generator does not implement DefaultsGenerator"); //i18n
+                            }
                             break;
                         }
                     } catch (Exception ex) {
-                        Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ParamMetadata.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else if (Attribute.class.isAssignableFrom(annotation.getClass())) {
                     Attribute attr = (Attribute)annotation;
