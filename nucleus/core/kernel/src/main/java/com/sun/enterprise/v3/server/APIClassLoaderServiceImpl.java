@@ -60,6 +60,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.module.Module;
+import com.sun.enterprise.module.ModuleLifecycleListener;
 import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.common_impl.CompositeEnumeration;
@@ -198,25 +199,24 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
             blacklist = new HashSet<String>();
 
             // add a listener to manage blacklist in APIClassLoader
-            // TODO:
-//            mr.register(new ModuleLifecycleListener() {
-//                public void moduleInstalled(Module module) {
-//                    clearBlackList();
-//                }
-//
-//                public void moduleResolved(Module module) {
-//                }
-//
-//                public void moduleStarted(Module module) {
-//                }
-//
-//                public void moduleStopped(Module module) {
-//                }
-//
-//                public void moduleUpdated(Module module) {
-//                    clearBlackList();
-//                }
-//            });
+            mr.register(new ModuleLifecycleListener() {
+                public void moduleInstalled(Module module) {
+                    clearBlackList();
+                }
+
+                public void moduleResolved(Module module) {
+                }
+
+                public void moduleStarted(Module module) {
+                }
+
+                public void moduleStopped(Module module) {
+                }
+
+                public void moduleUpdated(Module module) {
+                    clearBlackList();
+                }
+            });
 
         }
 
