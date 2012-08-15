@@ -13,6 +13,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
@@ -27,12 +28,13 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.utils.Util;
 
 /**
  *
  * @author jdlee
  */
-@Provider
+//@Provider
 @Consumes(MediaType.APPLICATION_JSON)
 public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
     @Override
@@ -42,7 +44,8 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
         if (index > -1) {
             submittedType = submittedType.substring(0, index);
         }
-        return submittedType.equals(MediaType.APPLICATION_JSON) && List.class.isAssignableFrom(type);
+        return submittedType.equals(MediaType.APPLICATION_JSON) && List.class.isAssignableFrom(type) &&
+                RestModel.class.isAssignableFrom(Util.getFirstGenericType(genericType));
     }
 
     @Override

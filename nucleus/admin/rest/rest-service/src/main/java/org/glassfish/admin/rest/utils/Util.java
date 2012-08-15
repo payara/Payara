@@ -50,6 +50,8 @@ import org.glassfish.admin.rest.provider.ProviderUtil;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -505,6 +507,27 @@ public class Util {
                 Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        return null;
+    }
+
+    /**
+     * This method takes a Type argument that represents a generic class (e.g., <code>List&lt;String&gt;) and returns the
+     * <code>Class</code> for the first generic type.  If the <code>Class</code> is not a generic type,
+     * <code>null</code> is returned. The primary intended usage for this is in the <code>MessageBodyReader</code>s to
+     * help return a more accurate result from <code>isReadable</code>, though it may also be helpful in other, more
+     * general situations.
+     * @param genericType
+     * @return
+     */
+    public static Class<?> getFirstGenericType(Type genericType) {
+        if (ParameterizedType.class.isAssignableFrom(genericType.getClass())) {
+            ParameterizedType pt = (ParameterizedType)genericType;
+            Type [] typeArgs = pt.getActualTypeArguments();
+            if ((typeArgs != null) && (typeArgs.length >= 1)) {
+                return (Class<?>)typeArgs[0];
+            }
+        }
+
         return null;
     }
 }

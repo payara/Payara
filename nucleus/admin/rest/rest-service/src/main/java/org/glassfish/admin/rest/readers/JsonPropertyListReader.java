@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.glassfish.admin.rest.utils.Util;
 
 /**
  *
@@ -67,7 +69,7 @@ public class JsonPropertyListReader implements MessageBodyReader<List<Map<String
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return type.equals(List.class);
+        return type.equals(List.class) && Map.class.isAssignableFrom(Util.getFirstGenericType(genericType));
     }
 
     @Override
