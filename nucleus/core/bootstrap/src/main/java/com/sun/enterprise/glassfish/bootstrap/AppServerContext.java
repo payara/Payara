@@ -90,35 +90,40 @@ public class AppServerContext implements Context<AppServer> {
   }
 
   /* (non-Javadoc)
-  * @see org.glassfish.hk2.api.Context#isActive()
-  */
-  @Override
-  public boolean isActive() {
-    return true;
-  }
-
-  /* (non-Javadoc)
-  * @see org.glassfish.hk2.api.Context#supportsNullCreation()
-  */
-  @Override
-  public boolean supportsNullCreation() {
-    return false;
-  }
-
-  /* (non-Javadoc)
-  * @see org.glassfish.hk2.api.Context#supportsNullCreation()
-  */
-  @Override
-  public void shutdown() {
-  }
-
-  /**
-   * Called when the server goes down so that the services are cleared from this context.
+   * @see org.glassfish.hk2.api.Context#isActive()
    */
-  public void serverStopping() {
-    for ( ActiveDescriptor descriptor : serviceMap.keySet()) {
-      descriptor.dispose( serviceMap.get( descriptor ) );
+    @Override
+    public boolean isActive() {
+        return true;
     }
-    serviceMap.clear();
-  }
+
+    /* (non-Javadoc)
+     * @see org.glassfish.hk2.api.Context#supportsNullCreation()
+     */
+    @Override
+    public boolean supportsNullCreation() {
+        return false;
+    }
+
+    /* (non-Javadoc)
+    * @see org.glassfish.hk2.api.Context#supportsNullCreation()
+    */
+    @Override
+    public void shutdown() {
+    }
+
+    /**
+     * Called when the server goes down so that the services are cleared from this context.
+     */
+    public void serverStopping() {
+        for ( ActiveDescriptor descriptor : serviceMap.keySet()) {
+            descriptor.dispose( serviceMap.get( descriptor ) );
+        }
+        serviceMap.clear();
+    }
+
+    @Override
+    public void destroyOne(ActiveDescriptor<?> descriptor) {
+    
+    }
 }

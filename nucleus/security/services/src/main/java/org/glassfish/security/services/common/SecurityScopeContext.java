@@ -123,4 +123,10 @@ public class SecurityScopeContext implements Context<SecurityScope> {
         // Do nothing
         
     }
+
+    @Override
+    public void destroyOne(ActiveDescriptor<?> descriptor) {
+        // TODO Auto-generated method stub
+        
+    }
 }

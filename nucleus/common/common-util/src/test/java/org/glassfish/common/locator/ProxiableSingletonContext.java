@@ -112,4 +112,10 @@ public class ProxiableSingletonContext implements
         
     }
 
+    @Override
+    public void destroyOne(ActiveDescriptor<?> descriptor) {
+        // Do nothing
+        
+    }
+
 }

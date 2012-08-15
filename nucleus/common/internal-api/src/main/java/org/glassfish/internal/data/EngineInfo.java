@@ -44,23 +44,14 @@ import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.ApplicationContainer;
-import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 
-import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
-import javax.inject.Provider;
 
 /**
  * This class holds information about a particular container such as a reference
@@ -144,15 +135,15 @@ public class EngineInfo<T extends Container, U extends ApplicationContainer> {
     public void stop(Logger logger)
     {
         if (getDeployer()!=null) {
-            Inhabitant i = ((Habitat)registry.habitat).getInhabitantByType(getDeployer().getClass());
+            ServiceHandle<?> i = registry.habitat.getServiceHandle(getDeployer().getClass());
             if (i!=null) {
-                i.release();
+                i.destroy();
             }
         }
         if (getContainer()!=null) {
-            Inhabitant i = ((Habitat)registry.habitat).getInhabitantByType(getContainer().getClass());
+            ServiceHandle<?> i = registry.habitat.getServiceHandle(getContainer().getClass());
             if (i!=null) {
-                i.release();
+                i.destroy();
             }
         }
         registry.removeContainer(this);
