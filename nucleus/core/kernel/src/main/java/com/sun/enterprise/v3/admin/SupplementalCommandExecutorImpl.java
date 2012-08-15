@@ -79,7 +79,7 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
 
     @Inject
     private ServerContext sc;
-
+    
     private static final Logger logger = LogDomains.getLogger(SupplementalCommandExecutorImpl.class,
                                         LogDomains.ADMIN_LOGGER);
 
@@ -249,11 +249,17 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
                 if (origCL != ccl) {
                     try {
                         thread.setContextClassLoader(ccl);
+                        if (command instanceof AdminCommandSecurity.Preauthorization) {
+                            ((AdminCommandSecurity.Preauthorization) command).preAuthorization(ctxt);
+                        }
                         command.execute(ctxt);
                     } finally {
                         thread.setContextClassLoader(origCL);
                     }
                 } else {
+                    if (command instanceof AdminCommandSecurity.Preauthorization) {
+                        ((AdminCommandSecurity.Preauthorization) command).preAuthorization(ctxt);
+                    }
                     command.execute(ctxt);
                 }
         }
