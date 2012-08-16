@@ -55,11 +55,10 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.naming.Context;
@@ -157,10 +156,10 @@ public class TransactionLifecycleService implements PostConstruct, PreDestroy {
     public void onShutdown() {
         // Cleanup if TM was loaded
         if (tm == null) {
-            Inhabitant<JavaEETransactionManager> inhabitant =
-                    ((Habitat) habitat).getInhabitantByType(JavaEETransactionManager.class);
+            ServiceHandle<JavaEETransactionManager> inhabitant =
+                    habitat.getServiceHandle(JavaEETransactionManager.class);
             if (inhabitant != null && inhabitant.isActive()) {
-                tm = inhabitant.get();
+                tm = inhabitant.getService();
             }
         }
         if (tm != null) {
