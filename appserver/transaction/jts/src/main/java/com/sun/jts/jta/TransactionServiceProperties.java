@@ -65,7 +65,6 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -310,7 +309,7 @@ public class TransactionServiceProperties {
         if (force || (isValueSet(value) && "true".equals(value))) {
             recoveryInitialized = true;
 
-            Habitat habitat = (Habitat) properties.get(HABITAT);
+            ServiceLocator habitat = (ServiceLocator) properties.get(HABITAT);
             if (habitat != null) {
                 ProcessEnvironment processEnv = habitat.getService(ProcessEnvironment.class);
                 if( processEnv.getProcessType().isServer()) {
