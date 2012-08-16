@@ -396,7 +396,7 @@ public class JSONUtil {
 	    }
 
 	    // Get the Colon...
-	    if (jsonToJava(json) != COLON) {
+	    if (!(jsonToJava(json).equals(COLON))) {
 		throw new IllegalArgumentException(
 		    "Object keys must be followed by a colon (:)!");
 	    }
@@ -406,7 +406,7 @@ public class JSONUtil {
 
 	    // Get the comma between properties (may also be context end)
 	    tmp = jsonToJava(json);
-	    if ((tmp != COMMA) && !json.isAtContextEnd()) {
+	    if ( (!(tmp.equals(COMMA))) && !json.isAtContextEnd()) {
 		throw new IllegalArgumentException(
 		    "Expected comma (,) or end curly brace (}), but found ("
 		    + tmp + ") instead!  Near: (" + json.getContext(30) + ")");
@@ -441,7 +441,7 @@ public class JSONUtil {
 
 		// Get the comma between properties (may also be context end)
 		tmp = jsonToJava(json);
-		if ((tmp != COMMA) && !json.isAtContextEnd()) {
+		if (( !(tmp.equals(COMMA))) && !json.isAtContextEnd()) {
 		    throw new IllegalArgumentException(
 			"Expected comma (,) or end curly brace (}), but found ("
 			+ tmp + ") instead!");
@@ -449,7 +449,7 @@ public class JSONUtil {
 	    }
 
 	    // Add the value to the List...
-	    if ((value == null) || (value != ABORT_PROCESSING)) {
+	    if ((value == null) || ( !(value.equals(ABORT_PROCESSING)))) {
 		list.add(value);
 	    }
 	}

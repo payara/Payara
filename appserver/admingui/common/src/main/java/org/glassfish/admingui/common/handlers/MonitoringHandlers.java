@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -148,7 +148,7 @@ public class MonitoringHandlers {
         String type = (String) handlerCtx.getInputValue("type");
         Locale locale = GuiUtil.getLocale();
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale);
-        NumberFormat nf = NumberFormat.getNumberInstance(locale);
+        //NumberFormat nf = NumberFormat.getNumberInstance(locale);
         List result = new ArrayList();
 
         try {
@@ -309,8 +309,8 @@ public class MonitoringHandlers {
                             statMap.put("lastTime", last);
                             statMap.put("description", desc);
                             statMap.put("value", (val == null) ? "" : val);
-                            statMap.put("details", (details == null) ? "--" : details);
-                            statMap.put("thresholds", (thresholds == null) ? "--" : thresholds);
+                            statMap.put("details",  details);
+                            statMap.put("thresholds", thresholds);
                             statMap.put("queueSize", (queuesize == null) ? "--" : queuesize);
                             statMap.put("runtimes", (runtimes == null) ? "--" : runtimes);
                             result.add(statMap);

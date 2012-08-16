@@ -393,7 +393,7 @@ public class RestUtil {
         }
         if (response != null) {
             try {
-                int status = response.getResponseCode();
+                //int status = response.getResponseCode();
                 Map responseMap = response.getResponse();
                 if (responseMap.get("data") != null){
                     String exitCodeStr = (String)((Map)responseMap.get("data")).get("exit_code");

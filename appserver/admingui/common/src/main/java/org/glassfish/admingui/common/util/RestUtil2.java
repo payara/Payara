@@ -79,7 +79,7 @@ public class RestUtil2 {
             output = {
                     @HandlerOutput(name="result", type=List.class)})
     public static void sendRequestToCollectionResource(HandlerContext handlerCtx) {
-        Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
+        //Map<String, Object> attrs = (Map<String, Object>) handlerCtx.getInputValue("attrs");
         String endpoint = fixEndpoint((String) handlerCtx.getInputValue("endpoint"));
 
         Response resp = RestUtil.getJerseyClient().target(endpoint)
