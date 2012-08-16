@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
 
     private FileBackingStoreFactory factory;
 
-    private int defaultMaxIdleTimeoutInSeconds = 10 * 60;
+    private long defaultMaxIdleTimeoutInSeconds = 10L * 60L;
 
     /**
      * No arg constructor
@@ -103,7 +103,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
 
         try {
             Map<String, Object> vendorMap = conf.getVendorSpecificSettings();
-            defaultMaxIdleTimeoutInSeconds = Integer.valueOf(
+            defaultMaxIdleTimeoutInSeconds = Long.valueOf(
                     (String) vendorMap.get("max.idle.timeout.in.seconds"));
         } catch (Exception ex) {
             //Ignore. Use default
@@ -156,7 +156,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             if (logger.isLoggable(TRACE_LEVEL)) {
                 logger.log(TRACE_LEVEL, debugStr + "Entered remove(" + sessionKey + ")");
             }
-            boolean status = removeFile(new File(baseDir, sessionKey.toString()));
+            boolean status = removeFile(new File(baseDir, sessionKey));
             if (logger.isLoggable(TRACE_LEVEL)) {
                 logger.log(TRACE_LEVEL, debugStr + "Done remove( " + sessionKey + "); status => " + status);
             }
@@ -195,7 +195,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     }
 
     public int removeExpired() {
-        return removeExpired(defaultMaxIdleTimeoutInSeconds * 1000);
+        return removeExpired(defaultMaxIdleTimeoutInSeconds * 1000L);
     }
 
     //TODO: deprecate after next shoal integration   
@@ -341,10 +341,14 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
             throw new BackingStoreException("Error during getSerializedState", ioEx);
         } finally {
             try {
-                oos.close();
+		if (oos != null) {
+                    oos.close();
+                }
             } catch (IOException ioEx) {/* Noop */}
             try {
-                bos.close();
+                if (bos != null) {
+                    bos.close();
+                }
             } catch (IOException ioEx) {/* Noop */}
         }
 
