@@ -41,18 +41,13 @@
 
 package com.sun.enterprise.glassfish.bootstrap.osgi;
 
-import com.sun.enterprise.glassfish.bootstrap.GlassFishImpl;
 import com.sun.enterprise.glassfish.bootstrap.GlassFishRuntimeDecorator;
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
-
-import java.util.Properties;
 
 /**
  * This is a special implementation used in non-embedded environment. It assumes that it has launched the

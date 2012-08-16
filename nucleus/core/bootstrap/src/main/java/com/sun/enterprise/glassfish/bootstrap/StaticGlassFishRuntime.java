@@ -62,7 +62,7 @@ import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
 import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.Main;
@@ -122,7 +122,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             
             ServiceLocator serviceLocator = main.createServiceLocator(modulesRegistry, startupContext, postProcessorBinder, null);
 
-            final BaseServiceLocator habitat = serviceLocator.getService(BaseServiceLocator.class);
+            final Habitat habitat = serviceLocator.getService(Habitat.class);
             final ModuleStartup gfKernel = main.findStartupService(modulesRegistry, serviceLocator, null, startupContext);
             // create a new GlassFish instance
             GlassFishImpl gfImpl = new GlassFishImpl(gfKernel, habitat, gfProps.getProperties()) {

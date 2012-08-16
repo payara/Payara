@@ -58,6 +58,7 @@ import com.sun.enterprise.transaction.jts.api.DelegatedTransactionRecoveryFence;
 import org.glassfish.gms.bootstrap.GMSAdapter;
 import org.glassfish.gms.bootstrap.GMSAdapterService;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.ee.cms.core.CallBack;
 import com.sun.enterprise.ee.cms.core.DistributedStateCache;
@@ -85,7 +86,7 @@ public class GMSCallBack implements CallBack {
     private final long startTime;
     private final static Object lock = new Object();
 
-    public GMSCallBack(int waitTime, ServiceLocator habitat) {
+    public GMSCallBack(int waitTime, Habitat habitat) {
         GMSAdapterService gmsAdapterService = habitat.getService(GMSAdapterService.class);
         if (gmsAdapterService != null) {
             GMSAdapter gmsAdapter = gmsAdapterService.getGMSAdapter();

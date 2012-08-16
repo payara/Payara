@@ -51,9 +51,10 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -93,7 +94,7 @@ public class LogFilter {
     ServerEnvironment env;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     LoggingConfigImpl loggingConfig;

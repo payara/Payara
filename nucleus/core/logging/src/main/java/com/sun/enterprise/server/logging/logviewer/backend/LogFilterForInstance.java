@@ -54,7 +54,7 @@ import com.trilead.ssh2.SFTPv3FileAttributes;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 import org.glassfish.cluster.ssh.util.DcomInfo;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.*;
 import java.util.Vector;
@@ -71,7 +71,7 @@ public class LogFilterForInstance {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LogFilterForInstance.class);
 
-    public File downloadGivenInstanceLogFile(BaseServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
+    public File downloadGivenInstanceLogFile(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                              String instanceName, String domainRoot, String logFileName, String instanceLogFileName)
             throws IOException {
 
@@ -191,7 +191,7 @@ public class LogFilterForInstance {
 
     }
 
-    public void downloadAllInstanceLogFiles(BaseServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
+    public void downloadAllInstanceLogFiles(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                             String instanceName, String tempDirectoryOnServer, String instanceLogFileDirectory)
             throws IOException {
 
@@ -271,7 +271,7 @@ public class LogFilterForInstance {
         }
     }
 
-    public Vector getInstanceLogFileNames(BaseServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
+    public Vector getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
                                           String instanceName, String instanceLogFileDirectory) throws IOException {
 
         // helper method to get all log file names for given instance
@@ -391,10 +391,10 @@ public class LogFilterForInstance {
         return instanceLogFileNamesAsString;
     }
 
-    private SSHLauncher getSSHL(BaseServiceLocator habitat) {
+    private SSHLauncher getSSHL(ServiceLocator habitat) {
         SSHLauncher sshL = null;
         try {
-            sshL = habitat.getComponent(SSHLauncher.class);
+            sshL = habitat.getService(SSHLauncher.class);
         } catch (NoClassDefFoundError ex) {
             throw new NoClassDefFoundError(localStrings.getLocalString(
                     "collectlogfiles.missingclusterlibraries", "Missing Cluster libraries in your ClassPath."));

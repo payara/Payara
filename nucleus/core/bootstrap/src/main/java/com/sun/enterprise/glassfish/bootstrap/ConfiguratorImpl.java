@@ -43,7 +43,7 @@ package com.sun.enterprise.glassfish.bootstrap;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.Properties;
 
@@ -52,16 +52,16 @@ import java.util.Properties;
  */
 class ConfiguratorImpl implements Configurator {
 
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     private static final String CONFIG_PROP_PREFIX = "embedded-glassfish-config.";
 
-    public ConfiguratorImpl(BaseServiceLocator habitat) {
+    public ConfiguratorImpl(ServiceLocator habitat) {
         this.habitat = habitat;
     }
 
     public void configure(Properties props) throws GlassFishException {
-        CommandRunner commandRunner = habitat.getComponent(CommandRunner.class);
+        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
         for (Object obj : props.keySet()) {
             String key = (String) obj;
             if (key.startsWith(CONFIG_PROP_PREFIX)) {

@@ -45,7 +45,7 @@ import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.util.Properties;
 
@@ -56,10 +56,10 @@ import java.util.Properties;
 public class GlassFishImpl implements GlassFish {
 
     private ModuleStartup gfKernel;
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     volatile Status status = Status.INIT;
 
-    public GlassFishImpl(ModuleStartup gfKernel, BaseServiceLocator habitat, Properties gfProps) throws GlassFishException {
+    public GlassFishImpl(ModuleStartup gfKernel, ServiceLocator habitat, Properties gfProps) throws GlassFishException {
         this.gfKernel = gfKernel;
         this.habitat = habitat;
         configure(gfProps);
@@ -120,8 +120,8 @@ public class GlassFishImpl implements GlassFish {
 
         // Habitat.getComponent(Class) searches both contract and type maps, but
         // getComponent(Class, String) only searches contract map.
-        return serviceName != null ? habitat.getComponent(serviceType, serviceName) :
-                habitat.getComponent(serviceType);
+        return serviceName != null ? habitat.<T>getService(serviceType, serviceName) :
+                habitat.<T>getService(serviceType);
     }
 
     public Deployer getDeployer() throws GlassFishException {

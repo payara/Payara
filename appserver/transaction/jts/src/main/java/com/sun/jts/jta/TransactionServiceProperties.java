@@ -65,6 +65,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 /**
@@ -89,7 +90,7 @@ public class TransactionServiceProperties {
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
 
-    public static synchronized Properties getJTSProperties (ServiceLocator habitat, boolean isORBAvailable) {
+    public static synchronized Properties getJTSProperties (Habitat habitat, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
             // We will need to update the properties if ORB availability changed
             return properties;

@@ -86,6 +86,8 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.component.Habitat;
+
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -100,7 +102,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class JavaEETransactionManagerJTSDelegate 
             implements JavaEETransactionManagerDelegate, PostConstruct {
 
-    @Inject private ServiceLocator habitat;
+    @Inject private Habitat habitat;
 
     // an implementation of the JavaEETransactionManager that calls
     // this object.
