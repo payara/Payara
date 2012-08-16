@@ -84,7 +84,7 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
             for (int i = 0; i < allThreadPools.length; i++) {
                 createThreadPools(allThreadPools[i], i);
             }
-            defaultID = (String) indexToIdTable.get(new Integer(0));
+            defaultID = (String) indexToIdTable.get(Integer.valueOf(0));
         } catch (NullPointerException npe) {
             _logger.log(Level.FINE, "Server Context is NULL. Ignoring and proceeding.");
         }
@@ -188,17 +188,17 @@ public class S1ASThreadPoolManager implements ThreadPoolManager {
         ThreadPoolFactory threadPoolFactory = new ThreadPoolFactory();
         ThreadPool threadpool =
                 threadPoolFactory.create(minThreads, maxThreads,
-                        idleTimeoutInSeconds * 1000, threadpoolId,
+                        idleTimeoutInSeconds * 1000L, threadpoolId,
                         _iiopUtils.getCommonClassLoader());
 
         // Add the threadpool instance to the threadpoolList
         threadpoolList.add(threadpool);
 
         // Associate the threadpoolId to the index passed
-        idToIndexTable.put(threadpoolId, new Integer(index));
+        idToIndexTable.put(threadpoolId, Integer.valueOf(index));
 
         // Associate the threadpoolId to the index passed
-        indexToIdTable.put(new Integer(index), threadpoolId);
+        indexToIdTable.put(Integer.valueOf(index), threadpoolId);
     }
 
     /**
