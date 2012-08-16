@@ -145,7 +145,9 @@ public class WoodstockHandler {
                 uploadTmpFile = tmpFile.getCanonicalPath();
             } catch (IOException ioex) {
                 try {
-                    uploadTmpFile = tmpFile.getAbsolutePath();
+                    if (tmpFile != null){
+                        uploadTmpFile = tmpFile.getAbsolutePath();
+                    }
                 } catch (Exception ex) {
                     //Handle AbsolutePathException here
                 }
@@ -274,7 +276,7 @@ public class WoodstockHandler {
             handlerCtx.setOutputValue("optionArray", new Option[0]);
             return;
         }
-        handlerCtx.setOutputValue("optionArray", SunOptionUtil.getOptionsArray( list.toArray(new String[0])));
+        handlerCtx.setOutputValue("optionArray", SunOptionUtil.getOptionsArray( list.toArray(new String[list.size()])));
     }
 
 
