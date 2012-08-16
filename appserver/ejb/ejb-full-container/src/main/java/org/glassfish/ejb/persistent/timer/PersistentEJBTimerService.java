@@ -1394,13 +1394,15 @@ public class PersistentEJBTimerService extends EJBTimerService {
     }
 
     private static String getTimerResource(EjbTimerService _ejbt) {
-        String resource = TIMER_RESOURCE_JNDI;
+        String resource = null; // EjbTimerService is not available for domain deployment
         if (_ejbt != null) {
             if (_ejbt.getTimerDatasource() != null) {
                 resource = _ejbt.getTimerDatasource();
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Found Timer Service resource name " + resource);
                 }
+            } else {
+                resource = TIMER_RESOURCE_JNDI;
             }
         }
         return resource;
