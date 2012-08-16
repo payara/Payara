@@ -92,6 +92,10 @@ import org.glassfish.pfl.dynamic.codegen.spi.Wrapper ;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
 import javax.rmi.CORBA.Tie;
 import javax.rmi.CORBA.Util;
 import org.omg.CORBA.CompletionStatus;
@@ -621,5 +625,13 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
 	}
 
 	return result;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        throw new NotSerializableException();
+    }
+
+     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+         throw new NotSerializableException();
     }
 }
