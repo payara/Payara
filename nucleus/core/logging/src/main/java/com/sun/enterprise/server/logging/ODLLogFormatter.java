@@ -228,8 +228,14 @@ public class ODLLogFormatter extends Formatter {
             recordBuffer.append(FIELD_BEGIN_MARKER);
             recordBuffer.append("tid: _ThreadID=");
             recordBuffer.append(record.getThreadID());
+            String threadName;
+            if (record instanceof GFLogRecord) {
+                threadName = ((GFLogRecord)record).getThreadName();
+            } else {
+                threadName = Thread.currentThread().getName();
+            }
             recordBuffer.append(" _ThreadName=");
-            recordBuffer.append(Thread.currentThread().getName());
+            recordBuffer.append(threadName);
             recordBuffer.append(FIELD_END_MARKER);
             recordBuffer.append(getRecordFieldSeparator() != null ? getRecordFieldSeparator() : FIELD_SEPARATOR);
 

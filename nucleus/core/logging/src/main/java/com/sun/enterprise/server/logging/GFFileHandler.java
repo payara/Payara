@@ -792,15 +792,22 @@ public class GFFileHandler extends StreamHandler implements PostConstruct, PreDe
         if (done.isSignalled()) {
             return;
         }
+        
+        // JUL LogRecord does not capture thread-name. Create a wrapper to
+        // capture the name of the logging thread so that a formatter can
+        // output correct thread-name if done asynchronously. Note that 
+        // this fix is limited to records published through this handler only.
+        GFLogRecord recordWrapper = new GFLogRecord(record);
+        recordWrapper.setThreadName(Thread.currentThread().getName());
 
         try {
             // set the thread id to be the current thread that is logging the message
 //            record.setThreadID((int)Thread.currentThread().getId());
-            pendingRecords.add(record);
+            pendingRecords.add(recordWrapper);
         } catch (IllegalStateException e) {
             // queue is full, start waiting.
             try {
-                pendingRecords.put(record);
+                pendingRecords.put(recordWrapper);
             } catch (InterruptedException e1) {
                 // too bad, record is lost...
             }

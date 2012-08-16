@@ -265,7 +265,13 @@ public class UniformLogFormatter extends Formatter {
             recordBuffer.append(record.getThreadID()).append(NVPAIR_SEPARATOR);
 
             recordBuffer.append("_ThreadName").append(NV_SEPARATOR);
-            recordBuffer.append(Thread.currentThread().getName());
+            String threadName;
+            if (record instanceof GFLogRecord) {
+            	threadName = ((GFLogRecord)record).getThreadName();
+            } else {
+                threadName = Thread.currentThread().getName();
+            }
+            recordBuffer.append(threadName);
             recordBuffer.append(NVPAIR_SEPARATOR);
 
             // See 6316018. ClassName and MethodName information should be
