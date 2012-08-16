@@ -124,7 +124,6 @@ public class CreateInstanceCommand implements AdminCommand {
     private String nodeDir = null;
     private String installDir = null;
     private String registerInstanceMessage = null;
-    private InstanceDirUtils insDU;
 
     @Override
     public void execute(AdminCommandContext context) {

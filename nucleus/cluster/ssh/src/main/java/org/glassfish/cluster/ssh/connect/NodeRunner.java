@@ -61,7 +61,6 @@ public class NodeRunner {
     private ServiceLocator habitat;
     private Logger logger;
     private String lastCommandRun = null;
-    private int commandStatus;
     private final AuthTokenManager authTokenManager;
 
     public NodeRunner(ServiceLocator habitat, Logger logger) {
