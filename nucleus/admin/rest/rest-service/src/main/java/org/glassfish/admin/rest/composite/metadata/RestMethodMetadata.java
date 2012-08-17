@@ -55,6 +55,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
+import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.utils.Util;
 
 /**
  *
@@ -64,15 +66,16 @@ public class RestMethodMetadata {
     private String httpMethod;
     private List<ParamMetadata> queryParameters = new ArrayList<ParamMetadata>();
     private Class<?> requestPayload;
-    private String returnType;
-    private String type = "item";
+    private Class<?> returnPayload;
+//    private String returnType;
+    private boolean isCollection = false;
     private String path;
     private Object context;
 
     public RestMethodMetadata(Object context, Method method, Annotation designator) {
         this.context = context;
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
-        this.returnType = calculateReturnType(method);
+        this.returnPayload = calculateReturnPayload(method);
         this.path = calculatePath(method);
         processParameters(method);
     }
@@ -93,61 +96,76 @@ public class RestMethodMetadata {
         this.queryParameters = queryParameters;
     }
 
-    public String getReturnType() {
-        return returnType;
+    public Class<?> getRequestPayload() {
+        return requestPayload;
     }
 
-    public void setReturnType(String returnType) {
-        this.returnType = returnType;
+    public void setRequestPayload(Class<?> requestPayload) {
+        this.requestPayload = requestPayload;
     }
 
-    public String getType() {
-        return type;
+    public Class<?> getReturnPayload() {
+        return returnPayload;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setReturnPayload(Class<?> returnPayload) {
+        this.returnPayload = returnPayload;
+    }
+
+    public boolean getIsCollection() {
+        return isCollection;
+    }
+
+    public void setIsCollection(boolean isCollection) {
+        this.isCollection = isCollection;
     }
 
     @Override
     public String toString() {
-        return "RestMethodMetadata{" + "httpMethod=" + httpMethod + ", queryParameters=" + queryParameters + ", returnType=" + returnType + ", type=" + type + '}';
+        return "RestMethodMetadata{" + "httpMethod=" + httpMethod + ", queryParameters=" + queryParameters + ", returnType=" 
+                + returnPayload + ", isCollection =" + isCollection + '}';
     }
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
         o.put("httpMethod", httpMethod);
         o.put("path", path);
-        if (requestPayload != null) {
-            JSONObject rp = new JSONObject();
-            rp.put("type", requestPayload.getName());
-            rp.put("properties", getProperties(requestPayload));
-            o.put("request", rp);
-        }
-        o.put("returnType", returnType);
-        o.put("type", type);
         JSONArray array = new JSONArray();
         for (ParamMetadata pmd : queryParameters) {
             array.put(pmd.toJson());
         }
         o.put("queryParams", array);
 
+        if (requestPayload != null) {
+            JSONObject requestProps = new JSONObject();
+            requestProps.put("isCollection", isCollection);
+            requestProps.put("dataType", requestPayload.getSimpleName());
+            requestProps.put("properties", getProperties(requestPayload));
+            o.put("request", requestProps);
+        }
+
+        if (returnPayload != null) {
+            JSONObject returnProps = new JSONObject();
+            returnProps.put("isCollection", isCollection);
+            returnProps.put("dataType", returnPayload.getSimpleName());
+            returnProps.put("properties", getProperties(returnPayload));
+            o.put("response", returnProps);
+        }
+
         return o;
     }
 
-    private String calculateReturnType(Method method) {
-        String value;
+    private Class<?> calculateReturnPayload(Method method) {
         final Type grt = method.getGenericReturnType();
+        Class<?> value = (Class<?>)method.getReturnType();
         if (ParameterizedType.class.isAssignableFrom(grt.getClass())) {
             final ParameterizedType pt = (ParameterizedType) grt;
-            value = grt.toString();
             if (RestCollection.class.isAssignableFrom((Class) pt.getRawType())) {
-                this.type = "collection";
-                Class<?> gt = (Class<?>) pt.getActualTypeArguments()[0];
-                value = gt.getName();
+                isCollection = true;
+                value = Util.getFirstGenericType(grt);
+            } else if (RestModel.class.isAssignableFrom((Class)pt.getRawType())) {
+                value = Util.getFirstGenericType(grt);
             }
-        } else {
-            value = ((Class<?>)grt).getName();
         }
         
         return value;
@@ -159,26 +177,26 @@ public class RestMethodMetadata {
     }
 
     private void processParameters(Method method) {
-        Class<?>[] paramTypes = method.getParameterTypes();
+        Type[] paramTypes = method.getGenericParameterTypes();
         Annotation[][] paramAnnos = method.getParameterAnnotations();
         int paramCount = paramTypes.length;
 
         for (int i = 0; i < paramCount; i++) {
             boolean processed = false;
             boolean isPathParam = false;
-            Class<?> paramType = paramTypes[i];
+            Type paramType = paramTypes[i];
             for (Annotation annotation : paramAnnos[i]) {
                 if (PathParam.class.isAssignableFrom(annotation.getClass())) {
                     isPathParam = true;
                 }
                 if (QueryParam.class.isAssignableFrom(annotation.getClass())) {
-                    queryParameters.add(new ParamMetadata(context, paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
+                    queryParameters.add(new ParamMetadata(context, (Class<?>)paramType, ((QueryParam)annotation).value(), paramAnnos[i]));
                     processed = true;
                 }
 
             }
             if (!processed && !isPathParam) {
-                requestPayload = paramType;
+                requestPayload = Util.getFirstGenericType(paramType);
             }
         }
     }
