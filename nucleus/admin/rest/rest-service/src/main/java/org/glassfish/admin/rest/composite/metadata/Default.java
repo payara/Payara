@@ -55,6 +55,10 @@ import javax.inject.Qualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Default {
+    // Revert to the following once the JDK issue on the Hudson nodes is resolved
+    // Class<? extends DefaultsGenerator> generator() default DefaultsGenerator.class;
+    // or
+    // Class<? extends DefaultsGenerator> generator() default NoopDefaultsGenerator.class;
     Class<?> generator() default Void.class;
     boolean useContext() default false;
 
