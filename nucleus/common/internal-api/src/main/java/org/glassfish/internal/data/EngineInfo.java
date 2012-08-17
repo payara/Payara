@@ -140,12 +140,11 @@ public class EngineInfo<T extends Container, U extends ApplicationContainer> {
                 i.destroy();
             }
         }
-        if (getContainer()!=null) {
-            ServiceHandle<?> i = registry.habitat.getServiceHandle(getContainer().getClass());
-            if (i!=null) {
-                i.destroy();
-            }
+        
+        if (container != null && container.isActive()) {
+            container.destroy();
         }
+        
         registry.removeContainer(this);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Container " + getContainer().getName() + " stopped");
