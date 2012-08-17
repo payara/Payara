@@ -46,7 +46,6 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
@@ -67,7 +66,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
 
     @Test
     public void testSubTypesOfDomain() {
-        JavaConfig config = super.getHabitat().getComponent(JavaConfig.class);
+        JavaConfig config = super.getHabitat().getService(JavaConfig.class);
         try {
             Class<?>[] subTypes = ConfigSupport.getSubElementsTypes((ConfigBean) ConfigBean.unwrap(config));
             boolean found=false;
@@ -109,7 +108,7 @@ public class JavaConfigSubTypesTest extends ConfigPersistence {
     public void doTest() throws TransactionFailure {
 
 
-        JavaConfig javaConfig = habitat.getComponent(JavaConfig.class);
+        JavaConfig javaConfig = habitat.getService(JavaConfig.class);
 
         ConfigSupport.apply(new SingleConfigCode<JavaConfig>() {
             public Object run(JavaConfig param) throws PropertyVetoException, TransactionFailure {

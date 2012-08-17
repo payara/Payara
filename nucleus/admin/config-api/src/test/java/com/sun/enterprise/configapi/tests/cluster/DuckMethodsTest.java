@@ -43,14 +43,13 @@ package com.sun.enterprise.configapi.tests.cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -60,7 +59,7 @@ import static org.junit.Assert.assertTrue;
  * @author Jerome Dochez 
  */
 public class DuckMethodsTest extends ConfigApiTest {
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     public String getFileName() {
         return "ClusterDomain";
@@ -74,7 +73,7 @@ public class DuckMethodsTest extends ConfigApiTest {
 
     @Test
     public void getClusterFromServerTest() {
-        Domain d = habitat.getComponent(Domain.class);
+        Domain d = habitat.getService(Domain.class);
         Server server = d.getServerNamed("server");
         assertTrue(server!=null);
         Cluster cluster = server.getCluster();

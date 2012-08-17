@@ -40,8 +40,8 @@
 
 package com.sun.enterprise.configapi.tests;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -65,8 +65,8 @@ public class TraversalTest extends ConfigApiTest {
 
     @Test
     public void traverse() {
-        BaseServiceLocator habitat = super.getHabitat();
-        Domain domain = Domain.class.cast(habitat.getComponent(Domain.class.getName(), ""));
+        ServiceLocator habitat = super.getHabitat();
+        Domain domain = Domain.class.cast(habitat.<Domain>getService(Domain.class));
         introspect(0, Dom.unwrap(domain));
     }
 

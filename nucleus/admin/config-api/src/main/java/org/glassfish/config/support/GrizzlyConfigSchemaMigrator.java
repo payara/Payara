@@ -68,8 +68,8 @@ import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transports;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -86,7 +86,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     private Configs configs;
     private Config currentConfig = null;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     private static final String HTTP_THREAD_POOL = "http-thread-pool";
     private static final String ASADMIN_LISTENER = "admin-listener";
     private static final String ASADMIN_VIRTUAL_SERVER = "__asadmin";
@@ -336,7 +336,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                 param.setJvmOptions(props);
                 return param;
             }
-        }, habitat.getByType(JavaConfig.class));
+        }, habitat.<JavaConfig>getService(JavaConfig.class));
     }
 
     private void promoteVirtualServerProperties(HttpService service) throws TransactionFailure {
@@ -389,7 +389,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     }
 
     private void updateSsl(final String propName, final String value) throws TransactionFailure {
-        final Collection<Protocol> protocols = habitat.getAllByContract(Protocol.class);
+        final Collection<Protocol> protocols = habitat.getAllServices(Protocol.class);
         for (Protocol protocol : protocols) {
             final Ssl ssl = protocol.getSsl();
             if (ssl != null) {

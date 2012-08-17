@@ -44,9 +44,9 @@ import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.glassfish.api.admin.config.Container;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -58,7 +58,7 @@ import java.util.List;
 public class ContainerExtensionTest extends ConfigApiTest {
 
 
-    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
 
     @Override
     public String getFileName() {
@@ -68,7 +68,7 @@ public class ContainerExtensionTest extends ConfigApiTest {
     @Test
     public void existenceTest() {
 
-        Config config = habitat.getComponent(Domain.class).getConfigs().getConfig().get(0);
+        Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
         List<Container> containers = config.getContainers();
         assertTrue(containers.size()==2);
         RandomContainer container = (RandomContainer) containers.get(0);
@@ -81,7 +81,7 @@ public class ContainerExtensionTest extends ConfigApiTest {
 
     @Test
     public void extensionTest() {
-        Config config = habitat.getComponent(Domain.class).getConfigs().getConfig().get(0);
+        Config config = habitat.<Domain>getService(Domain.class).getConfigs().getConfig().get(0);
         RandomExtension extension = config.getExtensionByType(RandomExtension.class);
         assertNotNull(extension);
         assertEquals("foo", extension.getSomeAttribute());
@@ -89,7 +89,7 @@ public class ContainerExtensionTest extends ConfigApiTest {
     
     @Test
     public void applicationExtensionTest() {
-        Application a = habitat.getComponent(Application.class);
+        Application a = habitat.getService(Application.class);
         List<AnApplicationExtension> taes = a.getExtensionsByType(AnApplicationExtension.class);
         assertEquals(taes.size(), 2);
     }

@@ -44,7 +44,6 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
-import java.util.ArrayList;
 
 import javax.inject.Inject;
 import javax.xml.stream.XMLInputFactory;
@@ -62,8 +61,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.grizzly.config.dom.*;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 
@@ -89,7 +88,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     Configs configs;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";

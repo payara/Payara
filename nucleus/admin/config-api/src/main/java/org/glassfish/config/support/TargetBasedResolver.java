@@ -46,8 +46,8 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.Dom;
@@ -69,7 +69,7 @@ public class TargetBasedResolver implements CrudResolver {
     String target="server";
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
@@ -95,7 +95,7 @@ public class TargetBasedResolver implements CrudResolver {
 
         final String name = getName();
 
-        ConfigBeanProxy config = habitat.getComponent(targetType, target);
+        ConfigBeanProxy config = habitat.getService(targetType, target);
         if (config!=null) {
             try {
                 return type.cast(config);

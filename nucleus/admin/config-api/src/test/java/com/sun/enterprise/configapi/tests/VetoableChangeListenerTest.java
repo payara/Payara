@@ -46,6 +46,8 @@ import org.jvnet.hk2.component.*;
 import org.junit.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.*;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -60,7 +62,7 @@ import java.beans.*;
  */
 public class VetoableChangeListenerTest extends ConfigApiTest implements VetoableChangeListener {
 
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     boolean result = false;
 
     public String getFileName() {
@@ -75,7 +77,7 @@ public class VetoableChangeListenerTest extends ConfigApiTest implements Vetoabl
     @Test
     public void propertyChangeEventReceptionTest() throws TransactionFailure {
 
-        HttpService httpService = habitat.getComponent(HttpService.class);
+        HttpService httpService = habitat.getService(HttpService.class);
         assertNotNull(httpService);
 
        // let's find a acceptable target.

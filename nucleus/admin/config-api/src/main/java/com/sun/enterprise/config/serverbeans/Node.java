@@ -53,8 +53,8 @@ import org.glassfish.config.support.*;
 import static org.glassfish.config.support.Constants.*;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
@@ -369,7 +369,7 @@ public interface Node extends ConfigBeanProxy, Injectable, Named, ReferenceConta
         @Param(name = "windowsdomain", optional = true)
         String windowsdomain;
         @Inject
-        BaseServiceLocator habitat;
+        ServiceLocator habitat;
         @Inject
         ServerEnvironment env;
         @Inject

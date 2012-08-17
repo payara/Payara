@@ -48,7 +48,6 @@ import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import org.junit.Test;
 import org.junit.Before;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;

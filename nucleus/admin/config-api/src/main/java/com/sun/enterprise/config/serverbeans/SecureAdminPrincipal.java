@@ -49,9 +49,9 @@ import org.glassfish.config.support.CreationDecorator;
 import org.glassfish.config.support.CrudResolver;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -150,7 +150,7 @@ public interface SecureAdminPrincipal extends Injectable, ConfigBeanProxy {
         private boolean isAlias = true;
 
         @Inject
-        BaseServiceLocator habitat;
+        ServiceLocator habitat;
 
         @Inject
         private SecureAdminHelper helper;
@@ -179,7 +179,7 @@ public interface SecureAdminPrincipal extends Injectable, ConfigBeanProxy {
              * Look among all instances of this contract type for a match on the
              * full name.
              */
-            for (T candidate : habitat.getAllByContract(type)) {
+            for (T candidate : habitat.<T>getAllServices(type)) {
                 if (value.equals(((SecureAdminPrincipal) candidate).getDn())) {
                     return candidate;
                 }

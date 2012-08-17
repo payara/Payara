@@ -44,16 +44,8 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.config.support.GlassFishDocument;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.tests.utils.Utils;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;

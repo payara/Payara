@@ -41,7 +41,6 @@
 package org.glassfish.config.support;
 
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 
 import javax.xml.stream.XMLStreamReader;

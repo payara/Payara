@@ -45,12 +45,12 @@ import java.util.List;
 
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ObservableBean;
@@ -67,7 +67,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class UnprocessedEventsTest  extends ConfigApiTest
         implements ConfigListener, TransactionListener {
 
-    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
     UnprocessedChangeEvents unprocessed = null;
 
     /**
@@ -84,7 +84,7 @@ public class UnprocessedEventsTest  extends ConfigApiTest
      public void unprocessedEventsTest() throws TransactionFailure {
 
         // let's find our target
-        NetworkConfig service = habitat.getComponent(NetworkConfig.class);
+        NetworkConfig service = habitat.getService(NetworkConfig.class);
         NetworkListener listener = service.getNetworkListener("http-listener-1");
         assertNotNull(listener);
 

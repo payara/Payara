@@ -58,8 +58,8 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
 import org.glassfish.api.admin.config.Named;
@@ -447,7 +447,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
 
             Dom clusterDom = Dom.unwrap(cluster);
             Domain domain =
-                    clusterDom.getHabitat().getComponent(Domain.class);
+                    clusterDom.getHabitat().getService(Domain.class);
 
             ArrayList<Server> instances = new ArrayList<Server>();
             for (ServerRef sRef : cluster.getServerRef()) {
@@ -584,7 +584,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
         String portbase=null;
 
         @Inject
-        BaseServiceLocator habitat;
+        ServiceLocator habitat;
 
         @Inject
         ServerEnvironment env;
@@ -631,9 +631,9 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
             }
 
             if (configRef==null) {
-                Config config = habitat.getComponent(Config.class, "default-config");
+                Config config = habitat.getService(Config.class, "default-config");
                 if (config==null) {
-                    config = habitat.getAllByContract(Config.class).iterator().next();
+                    config = habitat.<Config>getAllServices(Config.class).iterator().next();
                     logger.warning(localStrings.getLocalString(Cluster.class,
                             "Cluster.no_default_config_found",
                             "No default config found, using config {0} as the default config for the cluster {1}",
@@ -738,7 +738,7 @@ public interface Cluster extends ConfigBeanProxy, Injectable, PropertyBag, Named
                 } else {
                      // lookup server-config and set environment property value
                     // GMS_LISTENER_PORT-clusterName to fixed value.
-                    Config config = habitat.getComponent(Config.class, "server-config");
+                    Config config = habitat.getService(Config.class, "server-config");
                     if (config != null) {
                         String propName = String.format("GMS_LISTENER_PORT-%s", instanceName);
                         if (config.getProperty(propName) == null ) {

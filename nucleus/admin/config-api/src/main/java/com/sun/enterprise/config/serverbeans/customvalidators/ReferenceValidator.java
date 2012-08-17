@@ -49,7 +49,8 @@ import java.util.logging.Logger;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.UnexpectedTypeException;
-import org.jvnet.hk2.component.BaseServiceLocator;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 
@@ -88,7 +89,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
         }
         Collection<RemoteKeyInfo> remoteKeys = findRemoteKeys(config);
         if (remoteKeys != null && !remoteKeys.isEmpty()) {
-            BaseServiceLocator habitat = dom.getHabitat();
+            ServiceLocator habitat = dom.getHabitat();
             boolean result = true;
             boolean disableGlobalMessage = true;
             for (RemoteKeyInfo remoteKeyInfo : remoteKeys) {
@@ -100,7 +101,7 @@ public class ReferenceValidator implements ConstraintValidator<ReferenceConstrai
                     Object value = remoteKeyInfo.method.invoke(config);
                     if (value instanceof String) {
                         String key = (String) value;
-                        ConfigBeanProxy component = habitat.getComponent(remoteKeyInfo.annotation.type(), key);
+                        ConfigBeanProxy component = habitat.getService(remoteKeyInfo.annotation.type(), key);
                         if (component == null) {
                             result = false;
                             if (remoteKeyInfo.annotation.message().isEmpty()) {

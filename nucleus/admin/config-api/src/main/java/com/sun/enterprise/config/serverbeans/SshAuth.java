@@ -40,39 +40,13 @@
 
 package com.sun.enterprise.config.serverbeans;
 
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.config.support.*;
-
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Injectable;
-import org.glassfish.api.admin.config.Named;
-import org.glassfish.api.admin.config.ReferenceContainer;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.glassfish.api.Param;
 
 import java.beans.PropertyVetoException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.lang.reflect.Proxy;
-
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
-
-import org.glassfish.quality.ToDo;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 /**
  * A cluster defines a homogeneous set of server instances that share the same

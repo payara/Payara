@@ -40,18 +40,14 @@
 
 package com.sun.enterprise.configapi.tests.validation;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import org.junit.Test;
 import org.junit.Before;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;

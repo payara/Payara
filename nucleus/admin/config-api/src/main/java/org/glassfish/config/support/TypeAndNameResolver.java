@@ -43,8 +43,8 @@ package org.glassfish.config.support;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
@@ -61,13 +61,13 @@ public class TypeAndNameResolver implements CrudResolver {
     String name;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
-        T proxy = habitat.getComponent(type, name);
+        T proxy = habitat.getService(type, name);
         return proxy;
     }
     

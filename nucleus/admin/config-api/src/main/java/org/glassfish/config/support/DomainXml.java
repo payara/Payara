@@ -43,7 +43,6 @@ package org.glassfish.config.support;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.bootstrap.BootException;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 
 import org.jvnet.hk2.annotations.Optional;
@@ -59,7 +58,6 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationCleanup;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigParser;

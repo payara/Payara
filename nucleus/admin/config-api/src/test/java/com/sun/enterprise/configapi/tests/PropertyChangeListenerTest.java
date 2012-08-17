@@ -40,12 +40,13 @@
 
 package com.sun.enterprise.configapi.tests;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import com.sun.enterprise.config.serverbeans.*;
 
@@ -60,7 +61,7 @@ import java.beans.PropertyChangeEvent;
  */
 public class PropertyChangeListenerTest  extends ConfigApiTest implements ConfigListener {
 
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     boolean result = false;
 
     public String getFileName() {
@@ -75,7 +76,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
     @Test
     public void propertyChangeEventReceptionTest() throws TransactionFailure {
 
-        HttpService  httpService = habitat.getComponent(HttpService.class);
+        HttpService  httpService = habitat.getService(HttpService.class);
         assertNotNull(httpService);
 
        // let's find a acceptable target.
@@ -101,7 +102,7 @@ public class PropertyChangeListenerTest  extends ConfigApiTest implements Config
             }
         }, prop);
 
-        getHabitat().getComponent(Transactions.class).waitForDrain();
+        getHabitat().<Transactions>getService(Transactions.class).waitForDrain();
         assertTrue(result);
         ((ObservableBean) ConfigSupport.getImpl(target)).removeListener(this);
     }
