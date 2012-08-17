@@ -49,5 +49,6 @@
                         org.glassfish.internal.grizzly; \
                         org.glassfish.internal.embedded; \
                         org.glassfish.internal.embedded.admin; \
+                        org.glassfish.internal.logging; \
                         org.glassfish.flashlight; version=${project.osgi.version}
 
