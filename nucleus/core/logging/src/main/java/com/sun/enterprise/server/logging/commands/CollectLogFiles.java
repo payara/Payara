@@ -443,8 +443,8 @@ public class CollectLogFiles implements AdminCommand {
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 } finally {
-                    from.close();
-                    to.close();
+                    if (from != null) try { from.close(); } catch (Exception ex) {}
+                    if (to != null) try { to.close(); } catch (Exception ex) {}
                 }
 
 

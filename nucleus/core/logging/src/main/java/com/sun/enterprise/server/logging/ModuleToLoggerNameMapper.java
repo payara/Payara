@@ -96,7 +96,7 @@ public class ModuleToLoggerNameMapper {
          group-management-service %log-level; "INFO"
          management-event %log-level; "INFO">
     */
-    private static Object[][] ModuleAndLoggerTable = {
+    private static final Object[][] ModuleAndLoggerTable = {
         {"admin",          new String[] { LogDomains.ADMIN_LOGGER } },    //admin
         {"classloader",    new String[] { LogDomains.LOADER_LOGGER} },    //classloader
         {"cmp",            new String[] { LogDomains.CMP_LOGGER} },
