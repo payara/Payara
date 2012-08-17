@@ -55,5 +55,6 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface CommandWrapperImpl {
-    AdminCommand createWrapper(Annotation ann, CommandModel model, AdminCommand command, ActionReport report);
+    WrappedAdminCommand createWrapper(Annotation ann, CommandModel model,
+            AdminCommand command, ActionReport report);
 }

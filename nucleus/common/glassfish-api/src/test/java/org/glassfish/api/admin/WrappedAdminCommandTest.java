@@ -37,59 +37,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api;
+package org.glassfish.api.admin;
 
-import java.lang.annotation.Annotation;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.CommandModel;
-import org.glassfish.api.admin.CommandWrapperImpl;
 import org.glassfish.api.admin.WrappedAdminCommand;
-import org.jvnet.hk2.annotations.Service;
+import org.junit.Test;
 
 /**
- * Implementation for the @Async command capability. 
- *
- * @author tmueller
+ * 
+ * @author Andriy Zhdanov
+ * 
  */
-@Service
-public class AsyncImpl implements CommandWrapperImpl {
-    
-    private static final Logger logger = Logger.getLogger(AsyncImpl.class.getName());
-    private static final ResourceBundle strings = 
-            ResourceBundle.getBundle("org/glassfish/api/LocalStrings");
-    
-    public AsyncImpl() { }
-    
-    @Override
-    public WrappedAdminCommand createWrapper(final Annotation ann, final CommandModel model, 
-            final AdminCommand command, final ActionReport report) {
-        return new WrappedAdminCommand(command) {
+public class WrappedAdminCommandTest {
 
+    /*
+     * Test getParamValue from wrapped command.
+     */
+    @Test
+    public void getParamValueTest() {
+        DummyAdminCommand dac = new DummyAdminCommand();
+        dac.foo = "test";
+        WrappedAdminCommand wrappedCommand = new WrappedAdminCommand(dac) {
             @Override
-            public void execute(final AdminCommandContext context) {
-                Thread t = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            command.execute(context);
-                        } catch (RuntimeException e) {
-                            logger.log(Level.SEVERE, e.getMessage(), e);
-                        }
-                    }
-                };
-                Async async = (Async) ann;
-                t.setPriority(async.priority());
-                t.start();
-
-                report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                report.setMessage(MessageFormat.format(strings.getString("command.launch"),
-                        model.getCommandName()));
+            public void execute(AdminCommandContext context) {
+                // nothing todo
             }
         };
+        assertEquals("set param value", "test", wrappedCommand.getParamValue("foo"));
+        // note, after resolver it must be not null
+        assertNull("unset param value must be null", wrappedCommand.getParamValue("foobar"));
+        assertNull("non existent param value must be null", wrappedCommand.getParamValue("dummy"));
+    }
+
+    private class DummyAdminCommand implements AdminCommand {
+        @Param(optional = false)
+        String foo;
+
+        @Param(name = "bar", defaultValue = "false", optional = true)
+        String foobar;
+
+        @Override
+        public void execute(AdminCommandContext context) {
+        }
     }
 }

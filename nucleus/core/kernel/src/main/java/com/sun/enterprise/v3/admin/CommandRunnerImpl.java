@@ -501,8 +501,7 @@ public class CommandRunnerImpl implements CommandRunner {
 
         // We need to set context CL to common CL before executing
         // the command. See issue #5596
-        AdminCommand wrappedCommand = new AdminCommand() {
-
+        AdminCommand wrappedCommand = new WrappedAdminCommand(command) {
             @Override
             public void execute(AdminCommandContext context) {
                 Thread thread = Thread.currentThread();
