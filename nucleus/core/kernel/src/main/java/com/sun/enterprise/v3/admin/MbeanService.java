@@ -44,12 +44,12 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.api.Startup;
 import org.glassfish.config.support.PropertyResolver;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import javax.management.InstanceNotFoundException;
@@ -73,7 +73,7 @@ public class MbeanService implements Startup {
     @Inject
     private Target tgt;
 
-    private static BaseServiceLocator habitat = Globals.getDefaultBaseServiceLocator();
+    private static ServiceLocator habitat = Globals.getDefaultHabitat();
 
     @Inject
     private ServerEnvironment env;
@@ -86,7 +86,7 @@ public class MbeanService implements Startup {
     public static MbeanService getInstance() {
         if (habitat == null)
             return null;
-        return habitat.getComponent(MbeanService.class);
+        return habitat.getService(MbeanService.class);
     }
 
     public String getHost(String instance) throws InstanceNotFoundException {

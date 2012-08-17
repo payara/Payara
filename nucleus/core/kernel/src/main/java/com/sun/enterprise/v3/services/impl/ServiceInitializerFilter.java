@@ -55,7 +55,6 @@ import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * The {@link org.glassfish.grizzly.filterchain.Filter} implementation,

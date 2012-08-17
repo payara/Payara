@@ -41,6 +41,8 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.data.EngineInfo;
 import org.glassfish.internal.data.ContainerRegistry;
 import com.sun.enterprise.module.Module;
@@ -56,7 +58,6 @@ import org.glassfish.api.container.Sniffer;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 /**
@@ -84,7 +85,7 @@ public class ListContainersCommand implements AdminCommand {
     ModulesRegistry modulesRegistry;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     Applications applications;
@@ -99,7 +100,7 @@ public class ListContainersCommand implements AdminCommand {
         top.setMessage(localStrings.getLocalString("list.containers.command", "List of Containers"));
         top.setChildrenType(localStrings.getLocalString("container", "Container"));
 
-        Iterable<? extends Sniffer> sniffers = habitat.getAllByContract(Sniffer.class);
+        Iterable<? extends Sniffer> sniffers = habitat.getAllServices(Sniffer.class);
         if (sniffers ==null) {
             top.setMessage(localStrings.getLocalString("list.containers.nocontainer",
                     "No container currently configured"));

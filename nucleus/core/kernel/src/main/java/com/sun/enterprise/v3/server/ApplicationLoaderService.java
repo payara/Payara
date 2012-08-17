@@ -76,6 +76,7 @@ import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.PostStartup;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -169,7 +170,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     ServerEnvironment env;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     private String deploymentTracingEnabled = null;
 
@@ -206,7 +207,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         deploymentTracingEnabled = System.getProperty(
             "org.glassfish.deployment.trace");
 
-        domain = habitat.getComponent(Domain.class);
+        domain = habitat.getService(Domain.class);
         systemApplications = domain.getSystemApplications();
         
         for (Application systemApp : systemApplications.getApplications()) {
@@ -340,13 +341,13 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // ApplicationLoaderService needs to be initialized after
         // ManagedBeanManagerImpl. By injecting ManagedBeanManagerImpl,
         // we guarantee the initialization order.
-        habitat.getComponent(PostStartup.class, "ManagedBeanManagerImpl");
+        habitat.getService(PostStartup.class, "ManagedBeanManagerImpl");
 
         // ApplicationLoaderService needs to be initialized after
         // ResourceManager. By injecting ResourceManager, we guarantee the
         // initialization order.
         // See https://glassfish.dev.java.net/issues/show_bug.cgi?id=7179
-        habitat.getComponent(PostStartup.class, "ResourceManager");
+        habitat.getService(PostStartup.class, "ResourceManager");
 
     }
 

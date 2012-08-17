@@ -60,8 +60,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -132,7 +132,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
     @Inject
     Domain domain;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     @Inject
     Events events;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -197,7 +197,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
 
         //This is needed to support the case where user update to 3.1 from previous release, and didn't run the upgrade tool.
         if (adminConsoleConfigUpgrade == null) {
-            adminConsoleConfigUpgrade = habitat.getComponent(AdminConsoleConfigUpgrade.class);
+            adminConsoleConfigUpgrade = habitat.getService(AdminConsoleConfigUpgrade.class);
         }
 
         try {
@@ -520,7 +520,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         try {
             NetworkListener nl = domain.getServerNamed("server").getConfig().getNetworkConfig()
                     .getNetworkListener("admin-listener");
-            SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
+            SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
 
             URL url = new URL(
                     (SecureAdmin.Util.isEnabled(secureAdmin) ? "https" : "http"),

@@ -41,11 +41,7 @@
 package com.sun.enterprise.v3.admin;
 
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.ComponentException;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.api.admin.config.ReferenceContainer;
 
@@ -288,7 +284,7 @@ public class V2DottedNameSupport {
         }
     }
 
-    public TreeNode[] getAliasedParent(Domain domain, String prefix) throws ComponentException {
+    public TreeNode[] getAliasedParent(Domain domain, String prefix) {
 
         // let's get the potential aliased element name
         String name;

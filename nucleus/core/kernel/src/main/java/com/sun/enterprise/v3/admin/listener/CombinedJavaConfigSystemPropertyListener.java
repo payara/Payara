@@ -68,8 +68,8 @@ import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TranslatedConfigView;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -122,7 +122,7 @@ import javax.inject.Inject;
 @Service
 public final class CombinedJavaConfigSystemPropertyListener implements PostConstruct, ConfigListener, Startup {
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     
     @Inject
     Transactions transactions;
@@ -151,10 +151,10 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
     
     @Override
     public void postConstruct() {
-        domain = habitat.getComponent(Domain.class);
-        cluster = habitat.getComponent(Cluster.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        config = habitat.getComponent(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        server = habitat.getComponent(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        domain = habitat.getService(Domain.class);
+        cluster = habitat.getService(Cluster.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        config = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        server = habitat.getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         jc = config.getJavaConfig();
         if (jc != null) {
             // register to listen for config events on the JavaConfig

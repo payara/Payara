@@ -44,7 +44,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.Port;
 import org.glassfish.internal.embedded.Ports;
 
@@ -66,7 +66,7 @@ public class PortsImpl implements Ports {
     NetworkConfig network;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     final Map<Integer, Port> ports = new HashMap<Integer, Port>();
 
@@ -86,7 +86,7 @@ public class PortsImpl implements Ports {
                 throw new IOException("Port " + portNumber + " is alredy open");
             }
         }
-        PortImpl port = habitat.getComponent(PortImpl.class);
+        PortImpl port = habitat.getService(PortImpl.class);
         port.setPortNumber(portNumber);
         ports.put(portNumber, port);
         return port;    }

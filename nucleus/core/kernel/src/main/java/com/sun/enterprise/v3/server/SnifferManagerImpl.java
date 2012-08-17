@@ -43,27 +43,21 @@ package com.sun.enterprise.v3.server;
 import org.glassfish.hk2.classmodel.reflect.*;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.internal.deployment.SnifferManager;
-import org.glassfish.internal.deployment.ApplicationInfoProvider;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import com.sun.enterprise.deployment.deploy.shared.Util;
-import org.glassfish.deployment.common.DeploymentUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
-import java.io.File;
 import java.lang.annotation.Annotation;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.logging.Level;
 import java.net.URI;
-import java.net.URL;
-
-import com.sun.enterprise.module.impl.ClassLoaderProxy;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Provide convenience methods to deal with {@link Sniffer}s in the system.
@@ -75,7 +69,7 @@ public class SnifferManagerImpl implements SnifferManager {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SnifferManagerImpl.class);
 
     @Inject
-    protected BaseServiceLocator habitat;
+    protected Habitat habitat;
 
     /**
      * Returns all the presently registered sniffers
@@ -91,7 +85,7 @@ public class SnifferManagerImpl implements SnifferManager {
         // is that sniffers are highly pluggable so you never know which sniffers
         // set you are working with depending on the distribution
         List<Sniffer> sniffers = new ArrayList<Sniffer>();
-        sniffers.addAll(habitat.getAllByContract(Sniffer.class));
+        sniffers.addAll(habitat.<Sniffer>getAllServices(Sniffer.class));
         Collections.sort(sniffers, new Comparator<Sniffer>() {
             public int compare(Sniffer o1, Sniffer o2) {
                 return o1.getModuleType().compareTo(o2.getModuleType());

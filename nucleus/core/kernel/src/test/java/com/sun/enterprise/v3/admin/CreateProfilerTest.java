@@ -48,6 +48,7 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 
 import org.glassfish.api.admin.AdminCommandContextImpl;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.types.Property;
 
 import org.glassfish.api.admin.AdminCommandContext;
@@ -57,9 +58,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
 import static org.junit.Assert.*;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.jvnet.hk2.config.DomDocument;
@@ -74,12 +74,12 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Ignore
 public class CreateProfilerTest extends ConfigApiTest {
     // Get Resources config bean
-    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
-    private JavaConfig javaConfig = habitat.getComponent(JavaConfig.class);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
+    private JavaConfig javaConfig = habitat.getService(JavaConfig.class);
     private CreateProfiler command = null;
     private ParameterMap parameters = new ParameterMap();
     private AdminCommandContext context = null;
-    private CommandRunnerImpl cr = habitat.getComponent(CommandRunnerImpl.class);
+    private CommandRunnerImpl cr = habitat.getService(CommandRunnerImpl.class);
     
     @Override
     public DomDocument getDocument(Habitat habitat) {
@@ -102,12 +102,12 @@ public class CreateProfilerTest extends ConfigApiTest {
         assertTrue(javaConfig!=null);
         
         // Get an instance of the CreateProfiler command
-        command = habitat.getComponent(CreateProfiler.class);
+        command = habitat.getService(CreateProfiler.class);
         assertTrue(command!=null);
         
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateProfilerTest.class, LogDomains.ADMIN_LOGGER),
-                habitat.getComponent(ActionReport.class, "hk2-agent"));
+                habitat.<ActionReport>getService(ActionReport.class, "hk2-agent"));
         
     }
 

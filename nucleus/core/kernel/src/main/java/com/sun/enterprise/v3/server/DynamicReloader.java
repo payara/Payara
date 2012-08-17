@@ -54,15 +54,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Triggers reloads of deployed applications depending on the presence of and
@@ -103,9 +101,9 @@ public class DynamicReloader implements Runnable {
     
     private Logger logger = Logger.getLogger(getClass().getName());
     
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     
-    DynamicReloader(Applications applications, BaseServiceLocator habitat) throws URISyntaxException {
+    DynamicReloader(Applications applications, ServiceLocator habitat) throws URISyntaxException {
         this.applications = applications;
         this.habitat = habitat;
         initAppReloadInfo(applications);
@@ -228,7 +226,7 @@ public class DynamicReloader implements Runnable {
          * the app is directory-deployed.
          * 
          */
-        CommandRunnerImpl commandRunner = habitat.getComponent(CommandRunnerImpl.class);
+        CommandRunnerImpl commandRunner = habitat.getService(CommandRunnerImpl.class);
 
         ParameterMap deployParam = new ParameterMap();
         deployParam.set(DeploymentProperties.FORCE, Boolean.TRUE.toString());

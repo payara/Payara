@@ -41,7 +41,6 @@
 package com.sun.enterprise.v3.admin.commands;
 
 import java.beans.PropertyVetoException;
-import java.util.List;
 
 import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.*;
@@ -57,8 +56,8 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -113,7 +112,7 @@ public class CreateThreadpool implements AdminCommand {
     Domain domain;
     
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -124,7 +123,7 @@ public class CreateThreadpool implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = habitat.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;

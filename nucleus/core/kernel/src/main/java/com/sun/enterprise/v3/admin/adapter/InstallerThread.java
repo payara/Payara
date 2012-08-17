@@ -41,23 +41,17 @@
 package com.sun.enterprise.v3.admin.adapter;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.zip.ZipFile;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
 
 
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -74,7 +68,7 @@ final class InstallerThread extends Thread {
     private final ServerEnvironmentImpl env;
     private final String contextRoot;
     private final AdminConsoleAdapter adapter;
-    private final BaseServiceLocator habitat;
+    private final ServiceLocator habitat;
     private final Logger log;
     private final List<String> vss;
 
@@ -82,7 +76,7 @@ final class InstallerThread extends Thread {
     /**
      * Constructor.
      */
-    InstallerThread(AdminConsoleAdapter adapter, BaseServiceLocator habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, Logger log, List<String> vss) {
+    InstallerThread(AdminConsoleAdapter adapter, ServiceLocator habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, Logger log, List<String> vss) {
 
         this.adapter = adapter;
         this.habitat = habitat;
@@ -206,7 +200,7 @@ final class InstallerThread extends Thread {
         String sn = env.getInstanceName();
 // FIXME: An exception may not be thrown... check for errors!
         ApplicationRef ref = domain.getApplicationRefInServer(sn, AdminConsoleAdapter.ADMIN_APP_NAME);
-        habitat.getComponent(ApplicationLoaderService.class).processApplication(config, ref, log);
+        habitat.<ApplicationLoaderService>getService(ApplicationLoaderService.class).processApplication(config, ref, log);
 
         // Set adapter state
         adapter.setStateMsg(AdapterState.APPLICATION_LOADED);

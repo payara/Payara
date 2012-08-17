@@ -43,7 +43,6 @@ package com.sun.enterprise.v3.admin;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.ConfigModel;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.junit.Ignore;
@@ -60,11 +59,11 @@ import javax.xml.stream.XMLStreamReader;
 @Ignore
 public class TestDocument extends DomDocument<GlassFishConfigBean> {
 
-    public TestDocument(BaseServiceLocator habitat) {
-        super((Habitat) habitat);
+    public TestDocument(Habitat habitat) {
+        super(habitat);
     }
 
-    public Dom make(final BaseServiceLocator habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
+    public Dom make(final Habitat habitat, XMLStreamReader xmlStreamReader, GlassFishConfigBean dom, ConfigModel configModel) {
         // by default, people get the translated view.
         return new GlassFishConfigBean(habitat,this, dom, configModel, xmlStreamReader);
     }

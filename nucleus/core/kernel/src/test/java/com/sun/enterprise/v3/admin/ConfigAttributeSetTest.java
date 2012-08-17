@@ -43,7 +43,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.v3.common.HTMLActionReporter;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
-import org.glassfish.api.ActionReport;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.api.admin.*;
 import org.glassfish.tests.utils.ConfigApiTest;
 import org.glassfish.tests.utils.Utils;
@@ -51,7 +51,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -61,7 +60,6 @@ import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import java.beans.PropertyChangeEvent;
-import java.util.Properties;
 
 /**
  * test the set command
@@ -71,7 +69,7 @@ import java.util.Properties;
 @Ignore 
 public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigListener {
 
-    BaseServiceLocator habitat = Utils.instance.getHabitat(this);
+    ServiceLocator habitat = Utils.instance.getHabitat(this);
     PropertyChangeEvent event = null;
 
     public DomDocument getDocument(Habitat habitat) {
@@ -91,12 +89,12 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
     @Test
      public void simpleAttributeSetTest() {
 
-        CommandRunnerImpl runner = habitat.getComponent(CommandRunnerImpl.class);
+        CommandRunnerImpl runner = habitat.getService(CommandRunnerImpl.class);
         assertNotNull(runner);
 
         // let's find our target
         NetworkListener listener = null;
-        NetworkListeners service = habitat.getComponent(NetworkListeners.class);
+        NetworkListeners service = habitat.getService(NetworkListeners.class);
         for (NetworkListener l : service.getNetworkListener()) {
             if ("http-listener-1".equals(l.getName())) {
                 listener = l;
@@ -122,7 +120,7 @@ public class ConfigAttributeSetTest  extends ConfigApiTest implements ConfigList
         assertEquals(port, "8090");
 
         // ensure events are delivered.
-        habitat.getComponent(Transactions.class).waitForDrain();
+        habitat.<Transactions>getService(Transactions.class).waitForDrain();
         
         // finally
         bean.removeListener(this);

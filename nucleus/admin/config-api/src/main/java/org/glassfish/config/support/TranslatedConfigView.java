@@ -40,9 +40,9 @@
 
 package org.glassfish.config.support;
 
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.component.BaseServiceLocator;
 //import org.glassfish.security.common.RelativePathResolver;
 import org.glassfish.security.common.MasterPassword;
 
@@ -152,8 +152,8 @@ public class TranslatedConfigView implements ConfigView {
         return proxyType.cast(Proxy.newProxyInstance(proxyType.getClassLoader(), new Class[]{proxyType},
                  this));
     }
-    static BaseServiceLocator habitat;
-    public static void setHabitat(BaseServiceLocator h) {
+    static Habitat habitat;
+    public static void setHabitat(Habitat h) {
          habitat = h;
     }
 

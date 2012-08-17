@@ -42,10 +42,10 @@ package org.glassfish.kernel.embedded;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.internal.embedded.Server;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -89,7 +89,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
     CommandRunner commandRunner;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     ArchiveFactory factory;
@@ -206,7 +206,7 @@ public class EmbeddedDeployerImpl implements EmbeddedDeployer {
 
     public void undeploy(String name, UndeployCommandParameters params) {
 
-        ActionReport report = habitat.getComponent(ActionReport.class, "plain");
+        ActionReport report = habitat.getService(ActionReport.class, "plain");
         EmbeddedDeployedInfo info = deployedApps.get(name);
         ApplicationInfo appInfo  = info!=null?info.appInfo:null;
         if (appInfo==null) {

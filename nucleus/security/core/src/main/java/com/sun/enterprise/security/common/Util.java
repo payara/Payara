@@ -67,8 +67,7 @@ import javax.inject.Singleton;
 @Singleton
 public class Util {
     private static Habitat habitat = Globals.getDefaultHabitat();
-//    @Inject
-//    private static BaseServiceLocator habitat;
+    
     @Inject 
     private ProcessEnvironment penv;
     

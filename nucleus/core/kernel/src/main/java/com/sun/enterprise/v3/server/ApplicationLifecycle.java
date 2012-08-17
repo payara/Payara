@@ -93,10 +93,10 @@ import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 
 import org.jvnet.hk2.component.ComponentException;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -129,7 +129,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     protected SnifferManagerImpl snifferManager;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     ArchiveFactory archiveFactory;
@@ -179,7 +179,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         executorService = createExecutorService();
         deploymentLifecycleProbeProvider = 
             new DeploymentLifecycleProbeProvider();
-        alcInterceptors = habitat.getAllByContract(
+        alcInterceptors = habitat.getAllServices(
             ApplicationLifecycleInterceptor.class);
     }
 
@@ -206,9 +206,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
      */
     public ArchiveHandler getArchiveHandler(ReadableArchive archive, String type) throws IOException {
         if (type != null) {
-            return habitat.getComponent(ArchiveDetector.class, type).getArchiveHandler();
+            return habitat.<ArchiveDetector>getService(ArchiveDetector.class, type).getArchiveHandler();
         }
-        List<ArchiveDetector> detectors = new ArrayList<ArchiveDetector>(habitat.getAllByContract(ArchiveDetector.class));
+        List<ArchiveDetector> detectors = new ArrayList<ArchiveDetector>(habitat.<ArchiveDetector>getAllServices(ArchiveDetector.class));
         Collections.sort(detectors, new Comparator<ArchiveDetector>() {
             // rank 2 is considered lower than rank 1, let's sort them in inceasing order
             @Override
@@ -355,7 +355,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
  
             sniffers = getSniffers(handler, sniffers, context);
 
-            ClassLoaderHierarchy clh = habitat.getByContract(ClassLoaderHierarchy.class);
+            ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.CLASS_LOADER_HIERARCHY);
             }
@@ -747,12 +747,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // have now been successfully started. Start the deployment process.
 
         List<ApplicationMetaDataProvider> providers = new LinkedList<ApplicationMetaDataProvider>();
-        providers.addAll(habitat.getAllByContract(ApplicationMetaDataProvider.class));
+        providers.addAll(habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class));
 
         List<EngineInfo> sortedEngineInfos = new ArrayList<EngineInfo>();
 
         Map<Class, ApplicationMetaDataProvider> typeByProvider = new HashMap<Class, ApplicationMetaDataProvider>();
-        for (ApplicationMetaDataProvider provider : habitat.getAllByContract(ApplicationMetaDataProvider.class)) {
+        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
             if (provider.getMetaData()!=null) {
                 for (Class provided : provider.getMetaData().provides()) {
                     typeByProvider.put(provided, provider);
@@ -761,7 +761,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         }
 
         // check if everything is provided.
-        for (ApplicationMetaDataProvider provider : habitat.getAllByContract(ApplicationMetaDataProvider.class)) {
+        for (ApplicationMetaDataProvider provider : habitat.<ApplicationMetaDataProvider>getAllServices(ApplicationMetaDataProvider.class)) {
             if (provider.getMetaData()!=null) {
                  for (Class dependency : provider.getMetaData().requires()) {
                      if (!typeByProvider.containsKey(dependency)) {
@@ -983,7 +983,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     protected Collection<EngineInfo> setupContainer(Sniffer sniffer, Logger logger, DeploymentContext context) {
         ActionReport report = context.getActionReport();
-        ContainerStarter starter = habitat.getComponent(ContainerStarter.class);
+        ContainerStarter starter = habitat.getService(ContainerStarter.class);
         Collection<EngineInfo> containersInfo = starter.startContainer(sniffer);
         if (containersInfo == null || containersInfo.size()==0) {
             report.failure(logger, "Cannot start container(s) associated to application of type : " + sniffer.getModuleType(), null);
@@ -1007,7 +1007,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             Class<? extends Deployer> deployerClass = container.getDeployer();
             Deployer deployer;
             try {
-                    deployer = habitat.getComponent(deployerClass);
+                    deployer = habitat.getService(deployerClass);
                     engineInfo.setDeployer(deployer);
             } catch (ComponentException e) {
                 report.failure(logger, "Cannot instantiate or inject "+deployerClass, e);
@@ -1725,7 +1725,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             throw new IOException("Source archive or file not provided to builder");
         }
         if (archive==null && builder.sourceAsFile()!=null) {
-             archive = habitat.getComponent(ArchiveFactory.class).openArchive(builder.sourceAsFile());
+             archive = habitat.<ArchiveFactory>getService(ArchiveFactory.class).openArchive(builder.sourceAsFile());
             if (archive==null) {
                 throw new IOException("Invalid archive type : " + builder.sourceAsFile().getAbsolutePath());
             }

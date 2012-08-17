@@ -48,12 +48,11 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.tests.utils.Utils;
 import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.config.support.GlassFishDocument;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -79,7 +78,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
  */
 public class EventsTest extends ConfigApiTest {
 
-    static BaseServiceLocator habitat;
+    static Habitat habitat;
     static File application;
     static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
     static private EventListener listener = new EventListener() {
@@ -93,8 +92,9 @@ public class EventsTest extends ConfigApiTest {
         return "DomainTest";
     }
 
+    @Override
     public DomDocument getDocument(Habitat habitat) {
-       DomDocument doc = habitat.getByType(GlassFishDocument.class);
+       DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 
@@ -117,7 +117,7 @@ public class EventsTest extends ConfigApiTest {
             return;
         }
         habitat  = super.getHabitat();
-        ((Habitat) habitat).addIndex(new ExistingSingletonInhabitant<Server>(habitat.getComponent(Server.class, "server")),
+        habitat.addIndex(new ExistingSingletonInhabitant<Server>(habitat.<Server>getService(Server.class, "server")),
                      Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
 
         try {
@@ -131,7 +131,7 @@ public class EventsTest extends ConfigApiTest {
         application.delete();
         application.mkdirs();
 
-        Events events = habitat.getByContract(Events.class);
+        Events events = habitat.getService(Events.class);
         events.register(listener);
     }
 
@@ -178,7 +178,7 @@ public class EventsTest extends ConfigApiTest {
     public void deployUndeployTest() throws Exception {
 
         final List<EventTypes> myTestEvents = getSingletonModuleSuccessfullDeploymentEvents();
-        Events events = habitat.getByContract(Events.class);
+        Events events = habitat.getService(Events.class);
         EventListener listener = new EventListener() {
             public void event(Event event) {
                 if (myTestEvents.contains(event.type())) {
@@ -187,11 +187,11 @@ public class EventsTest extends ConfigApiTest {
             }
         };
         events.register(listener);
-        Deployment deployment = habitat.getByContract(Deployment.class);
+        Deployment deployment = habitat.getService(Deployment.class);
         DeployCommandParameters params = new DeployCommandParameters(application);
         params.name = "fakeApplication";
         params.target = "server";
-        ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
+        ActionReport report = habitat.getService(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc = deployment.getBuilder(Logger.getAnonymousLogger(), params, report).source(application).build();
         deployment.deploy(dc);
         events.unregister(listener);
@@ -211,7 +211,7 @@ public class EventsTest extends ConfigApiTest {
         events.register(listener2);
         UndeployCommandParameters params2 = new UndeployCommandParameters("fakeApplication");
         params2.target = "server";
-        ActionReport report2 = habitat.getComponent(ActionReport.class, "hk2-agent");
+        ActionReport report2 = habitat.getService(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc2 = deployment.getBuilder(Logger.getAnonymousLogger(), params2, report2).source(application).build();
         deployment.undeploy("fakeApplication", dc2);
         events.unregister(listener2);
@@ -226,10 +226,10 @@ public class EventsTest extends ConfigApiTest {
 
     @Test
     public void badUndeployTest() throws Exception {
-        Deployment deployment = habitat.getByContract(Deployment.class);
+        Deployment deployment = habitat.getService(Deployment.class);
         UndeployCommandParameters params = new UndeployCommandParameters("notavalidname");
         params.target = "server";
-        ActionReport report = habitat.getComponent(ActionReport.class, "hk2-agent");
+        ActionReport report = habitat.getService(ActionReport.class, "hk2-agent");
         ExtendedDeploymentContext dc = deployment.getBuilder(Logger.getAnonymousLogger(), params, report).source(application).build();
         deployment.undeploy("notavalidname", dc);
         Assert.assertEquals(report.getActionExitCode(), ActionReport.ExitCode.FAILURE);

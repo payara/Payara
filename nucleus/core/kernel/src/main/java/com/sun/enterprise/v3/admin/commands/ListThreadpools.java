@@ -62,8 +62,8 @@ import javax.inject.Named;
 
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -96,7 +96,7 @@ public class ListThreadpools implements AdminCommand {
     String target;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListThreadpools.class);
 
@@ -107,7 +107,7 @@ public class ListThreadpools implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = habitat.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig != null) {
             config = newConfig;

@@ -40,12 +40,12 @@
 
 package com.sun.enterprise.v3.server;
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import javax.inject.Singleton;
 
 import java.net.MalformedURLException;
@@ -78,7 +78,7 @@ public class AppLibClassLoaderServiceImpl {
      */
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     CommonClassLoaderServiceImpl commonCLS;
@@ -92,7 +92,7 @@ public class AppLibClassLoaderServiceImpl {
     public ClassLoader getAppLibClassLoader(String application, List<URI> libURIs)
             throws MalformedURLException {
 
-        ClassLoaderHierarchy clh = habitat.getComponent(ClassLoaderHierarchy.class);
+        ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
         DelegatingClassLoader connectorCL = clh.getConnectorClassLoader(application);
 
         if (libURIs == null || libURIs.isEmpty()) {

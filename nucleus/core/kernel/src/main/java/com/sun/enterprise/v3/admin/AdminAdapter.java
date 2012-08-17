@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.remote.RemoteAdminCommand;
 import com.sun.enterprise.config.serverbeans.*;
-import java.security.Principal;
 import java.util.Set;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -59,6 +58,7 @@ import org.glassfish.api.container.Adapter;
 import org.glassfish.grizzly.http.Cookie;
 import org.glassfish.grizzly.http.util.CookieSerializerUtils;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -72,7 +72,6 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.net.HttpURLConnection;
 import com.sun.enterprise.universal.GFBase64Decoder;
-import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
 
 import java.io.*;
@@ -95,7 +94,6 @@ import javax.inject.Named;
 import javax.security.auth.Subject;
 import org.glassfish.grizzly.http.util.HttpStatus;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 /**
  * Listen to admin commands...
  * @author dochez
@@ -143,7 +141,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
     ServerContext sc;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     volatile AdminService as;
@@ -503,25 +501,25 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         // first we look at the command extension (ie list-applications.[json | html | mf]
         if (requestURI.indexOf('.')!=-1) {
             String qualifier = requestURI.substring(requestURI.indexOf('.')+1);
-            report = habitat.getComponent(ActionReport.class, qualifier);
+            report = habitat.getService(ActionReport.class, qualifier);
         } else {
             String userAgent = req.getHeader("User-Agent");
             if (userAgent!=null)
-                report = habitat.getComponent(ActionReport.class, userAgent.substring(userAgent.indexOf('/')+1));
+                report = habitat.getService(ActionReport.class, userAgent.substring(userAgent.indexOf('/')+1));
             if (report==null) {
                 String accept = req.getHeader("Accept");
                 if (accept!=null) {
                     StringTokenizer st = new StringTokenizer(accept, ",");
                     while (report==null && st.hasMoreElements()) {
                         final String scheme=st.nextToken();
-                        report = habitat.getComponent(ActionReport.class, scheme.substring(scheme.indexOf('/')+1));
+                        report = habitat.getService(ActionReport.class, scheme.substring(scheme.indexOf('/')+1));
                     }
                 }
             }
         }
         if (report==null) {
             // get the default one.
-            report = habitat.getComponent(ActionReport.class, "html");
+            report = habitat.getService(ActionReport.class, "html");
         }
         return report;
     }
