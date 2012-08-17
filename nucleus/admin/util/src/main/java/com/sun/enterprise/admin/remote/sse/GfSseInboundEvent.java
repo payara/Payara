@@ -55,6 +55,7 @@ import org.glassfish.jersey.message.MessageBodyWorkers;
  *
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
+//TODO: Temporary implementation until more features in Jersey client
 public class GfSseInboundEvent {
     private String name = null;
     private String id = null;

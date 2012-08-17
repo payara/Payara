@@ -52,7 +52,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
 
-import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.message.MessageBodyWorkers;
 
 
@@ -61,12 +60,13 @@ import org.glassfish.jersey.message.MessageBodyWorkers;
  *
  * @author Pavel Bucek (pavel.bucek at oracle.com)
  */
+//TODO: Temporary implementation until more features in Jersey client
 @Provider
 @Consumes("text/event-stream")
 public class GfSseEventReceiverReader implements MessageBodyReader<GfSseEventReceiver> {
 
     @Inject
-    Ref<MessageBodyWorkers> messageBodyWorkers;
+    javax.inject.Provider<MessageBodyWorkers> messageBodyWorkers;
 
     @Override
     public boolean isReadable(Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType) {
