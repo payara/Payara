@@ -58,9 +58,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.client.ClientProperties;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -74,10 +73,10 @@ import com.sun.enterprise.security.ssl.SSLUtils;
 public abstract class ProxyImpl implements Proxy {
 
     @Override
-    public Properties proxyRequest(UriInfo sourceUriInfo, Client client, BaseServiceLocator habitat) {
+    public Properties proxyRequest(UriInfo sourceUriInfo, Client client, ServiceLocator habitat) {
         Properties proxiedResponse = new Properties();
         try {
-            Domain domain = habitat.getComponent(Domain.class);
+            Domain domain = habitat.getService(Domain.class);
             String forwardInstanceName = extractTargetInstanceName(sourceUriInfo);
             Server forwardInstance = domain.getServerNamed(forwardInstanceName);
             if (forwardInstance != null) {
@@ -134,11 +133,11 @@ public abstract class ProxyImpl implements Proxy {
     /**
      * Use SSL to authenticate
      */
-    private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, BaseServiceLocator habitat) {
-        SecureAdmin secureAdmin = habitat.getComponent(SecureAdmin.class);
+    private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, ServiceLocator habitat) {
+        SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
         //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
         client.configuration().setProperty(ClientProperties.HOSTNAME_VERIFIER, new BasicHostnameVerifier(server.getAdminHost()));
-        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.getComponent(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
+        client.configuration().setProperty(ClientProperties.SSL_CONTEXT, habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" )); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
     }
 
     /**

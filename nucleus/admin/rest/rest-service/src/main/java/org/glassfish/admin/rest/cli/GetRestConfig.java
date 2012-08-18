@@ -48,8 +48,8 @@ import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * Remote asadmin command: get-rest-config
@@ -73,7 +73,7 @@ public class GetRestConfig implements AdminCommand {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {

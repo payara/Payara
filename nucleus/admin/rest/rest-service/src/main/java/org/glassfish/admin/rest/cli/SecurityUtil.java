@@ -53,13 +53,13 @@ import java.util.Properties;
 
 
 
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.User;
 
 import java.util.Enumeration;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import org.jvnet.hk2.config.types.Property;
 
@@ -293,7 +293,7 @@ public class SecurityUtil {
         }
     }
 
-    public String getAnonymousUser(BaseServiceLocator habitat) {
+    public String getAnonymousUser(ServiceLocator habitat) {
         String user = null;
         // find the ADMIN_REALM
         AuthRealm adminFileAuthRealm = null;
@@ -340,7 +340,7 @@ public class SecurityUtil {
         String[] usernames = getUserNames(adminFileAuthRealm.getName());
         if (usernames.length == 1) {
             try {
-                habitat.getByType(com.sun.enterprise.security.SecurityLifecycle.class);
+                habitat.getService(com.sun.enterprise.security.SecurityLifecycle.class);
                 LoginContextDriver.login(usernames[0], new char[0], ADMIN_REALM);
                 user = usernames[0];
             } catch (Exception e) {

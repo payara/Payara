@@ -40,6 +40,8 @@
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
+
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.LogManager;
 
 import javax.ws.rs.GET;
@@ -49,7 +51,6 @@ import java.io.IOException;
 import java.util.Vector;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * REST resource to get Log Names
@@ -60,7 +61,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 public class LogNamesResource {
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     @GET
     @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
@@ -76,13 +77,13 @@ public class LogNamesResource {
 
     private String getLogNames(String instanceName, String type) throws IOException {
 
-        if (habitat.getComponent(LogManager.class) == null) {
+        if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
             //return an error
             throw new IOException("The GlassFish LogManager Service is not available. Not installed?");
         }
 
-        LogFilter logFilter = habitat.getComponent(LogFilter.class);
+        LogFilter logFilter = habitat.getService(LogFilter.class);
 
         return convertQueryResult(logFilter.getInstanceLogFileNames(instanceName),type);
 

@@ -62,12 +62,12 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.sse.EventChannel;
 import org.glassfish.jersey.media.sse.OutboundEvent;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  *
@@ -561,18 +561,18 @@ public class CommandResource {
     
     private CommandRunner getCommandRunner() {
         if (this.commandRunner == null) {
-            commandRunner = getHabitat().getByContract(CommandRunner.class);
+            commandRunner = getHabitat().getService(CommandRunner.class);
         }
         return this.commandRunner;
     }
     
-    private BaseServiceLocator getHabitat() {
-        return Globals.getDefaultBaseServiceLocator();
+    private ServiceLocator getHabitat() {
+        return Globals.getDefaultHabitat();
     }
     
     private String getServerName() {
         if (serverName == null) {
-            Server server = getHabitat().getComponent(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            Server server = getHabitat().getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
             if (server != null) {
                 serverName = server.getName();
             }

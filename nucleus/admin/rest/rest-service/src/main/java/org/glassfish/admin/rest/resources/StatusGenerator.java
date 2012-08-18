@@ -76,7 +76,7 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestRedirect;
 import org.glassfish.api.admin.RestRedirects;
-import org.jvnet.hk2.component.BaseServiceLocator;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigModel;
@@ -90,7 +90,7 @@ import org.jvnet.hk2.config.DomDocument;
 public class StatusGenerator {
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
     protected StringBuilder status = new StringBuilder();
     private Set<String> commandsUsed = new TreeSet<String>();
     private Set<String> allCommands = new TreeSet<String>();
@@ -117,7 +117,7 @@ public class StatusGenerator {
 //        status.append("\n------------------------");
 //        status.append("Status of Command usage\n");
         try {
-            Domain entity = habitat.getComponent(Domain.class);
+            Domain entity = habitat.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
@@ -199,7 +199,7 @@ public class StatusGenerator {
     @Produces({MediaType.TEXT_HTML})
     public String getHtml() {
         try {
-            Domain entity = habitat.getComponent(Domain.class);
+            Domain entity = habitat.getService(Domain.class);
             Dom dom = Dom.unwrap(entity);
             DomDocument document = dom.document;
             ConfigModel rootModel = dom.document.getRoot().model;
@@ -281,7 +281,7 @@ public class StatusGenerator {
     }
 
     public void listOfCommands() {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
+        CommandRunner cr = habitat.getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         ParameterMap parameters = new ParameterMap();
         cr.getCommandInvocation("list-commands", ar).parameters(parameters).execute();
@@ -501,7 +501,7 @@ try{
     }
 
     public Collection<CommandModel.ParamModel> getParamMetaData(String commandName) {
-        CommandRunner cr = habitat.getComponent(CommandRunner.class);
+        CommandRunner cr = habitat.getService(CommandRunner.class);
         CommandModel cm = cr.getModel(commandName, RestService.logger);
         Collection<CommandModel.ParamModel> params = cm.getParameters();
         return params;

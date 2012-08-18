@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.generator.client;
 
 import org.glassfish.admin.rest.utils.Util;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigModel;
 
@@ -49,7 +48,6 @@ import com.sun.appserv.server.util.Version;
 import java.io.*;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;

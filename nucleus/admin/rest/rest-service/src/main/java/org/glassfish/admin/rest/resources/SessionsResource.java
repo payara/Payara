@@ -115,7 +115,7 @@ public class SessionsResource {
         AdminAccessController.Access access = AdminAccessController.Access.NONE;
         Subject subject = null;
         try {
-//            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultBaseServiceLocator(), grizzlyRequest, hostName);
+//            subject = ResourceUtil.authenticateViaAdminRealm(Globals.getDefaultHabitat(), grizzlyRequest, hostName);
             subject = ResourceUtil.authenticateViaAdminRealm(habitat, grizzlyRequest, hostName);
             access = (hostName == null) ? AdminAccessController.Access.FULL :
                     ResourceUtil.chooseAccess(habitat, subject, hostName);

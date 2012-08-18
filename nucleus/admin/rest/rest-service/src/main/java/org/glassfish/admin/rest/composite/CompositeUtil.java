@@ -180,7 +180,7 @@ public class CompositeUtil {
     public Object getResourceExtensions(Class<?> baseClass, Object data, String method) {
         List<RestExtension> extensions = new ArrayList<RestExtension>();
 
-        for (RestExtension extension : Globals.getDefaultBaseServiceLocator().getAllByContract(RestExtension.class)) {
+        for (RestExtension extension : Globals.getDefaultHabitat().<RestExtension>getAllServices(RestExtension.class)) {
             if (baseClass.getName().equals(extension.getParent())) {
                 extensions.add(extension);
             }

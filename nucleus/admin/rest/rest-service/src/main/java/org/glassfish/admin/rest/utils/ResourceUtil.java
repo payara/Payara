@@ -244,7 +244,7 @@ public class ResourceUtil {
                                                 ServiceLocator habitat,
                                                 String resultType,
                                                 Subject subject) {
-        CommandRunner cr = Globals.getDefaultBaseServiceLocator().getComponent(CommandRunner.class);
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
 //        final Payload.Outbound outbound = PayloadImpl.Outbound.newInstance();
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar);

@@ -42,6 +42,7 @@ package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import javax.ws.rs.core.Context;
+
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Dom;
 
@@ -64,7 +65,7 @@ public class GlassFishDomainResource extends TemplateRestResource {
     //called when jersey is injecting the habitat...
     @Context
     public void setBaseServiceLocator(Habitat hab) {
-        Dom dom1 = Dom.unwrap(hab.getComponent(Domain.class));
+        Dom dom1 = Dom.unwrap(hab.<Domain>getService(Domain.class));
         childModel = dom1.document.getRoot().model;
         entity = dom1.document.getRoot();
     }

@@ -56,9 +56,9 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import javax.inject.Inject;
 
@@ -105,7 +105,7 @@ public class GetTokensCommand implements AdminCommand {
     private Domain domain;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     
     @Param(separator=',', primary=true)
     String[] tokens;

@@ -46,12 +46,11 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.LocalPassword;
 import org.glassfish.internal.api.RestInterfaceUID;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-
 
 /**
  * @author Ludovic Champenois ludo@dev.java.net
@@ -61,7 +60,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 public class RestService implements PostConstruct, PreDestroy, RestInterfaceUID {
 
     @Inject
-    private static BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     com.sun.enterprise.config.serverbeans.Domain domain;

@@ -43,8 +43,6 @@ package org.glassfish.admin.rest.resources.custom;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.ProxyImpl;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.Dom;
 
 import javax.ws.rs.GET;
@@ -59,6 +57,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import org.glassfish.admin.rest.utils.Util;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * @author Mitesh Meswani
@@ -70,7 +69,7 @@ public class ManagementProxyResource {
     protected UriInfo uriInfo;
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
 
     @GET
     public ActionReportResult proxyRequest() {

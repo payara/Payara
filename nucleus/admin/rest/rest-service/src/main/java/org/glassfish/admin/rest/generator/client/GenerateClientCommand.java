@@ -67,8 +67,6 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PerLookup;
 
@@ -95,7 +93,7 @@ import javax.inject.Inject;
 })
 public class GenerateClientCommand implements AdminCommand {
     @Inject
-    BaseServiceLocator habitat;
+    Habitat habitat;
 
     @Param
     private String outputDir;
@@ -113,9 +111,9 @@ public class GenerateClientCommand implements AdminCommand {
         for (String lang : languages.split(",")) {
             ClientGenerator gen = null;
             if ("java".equalsIgnoreCase(lang)) {
-                gen = new JavaClientGenerator((Habitat)habitat);
+                gen = new JavaClientGenerator(habitat);
             } else if ("python".equalsIgnoreCase(lang)) {
-                gen = new PythonClientGenerator((Habitat)habitat);
+                gen = new PythonClientGenerator(habitat);
             }
 
             if (gen != null) {

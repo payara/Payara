@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.rest.resources;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;

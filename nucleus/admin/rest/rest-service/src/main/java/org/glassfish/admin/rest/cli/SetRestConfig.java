@@ -56,8 +56,8 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -85,7 +85,7 @@ public class SetRestConfig implements AdminCommand {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     @Param(optional = true)
     private String debug;
     @Param(optional = true, defaultValue = "-100")

@@ -60,7 +60,6 @@ import java.util.Properties;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import org.glassfish.admin.rest.logviewer.LogRecord;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 /**
  * REST resource to get Log records
@@ -71,7 +70,7 @@ import org.jvnet.hk2.component.BaseServiceLocator;
 public class StructuredLogViewerResource {
 
     @Context
-    protected BaseServiceLocator habitat;
+    protected ServiceLocator habitat;
     @Context
     protected ServiceLocator injector;
 
@@ -143,7 +142,7 @@ public class StructuredLogViewerResource {
             String logLevel, boolean onlyLevel, String anySearch, List<String> listOfModules,
             String instanceName,
             String type) throws IOException {
-        if (habitat.getComponent(LogManager.class) == null) {
+        if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
             //return an error
             throw new IOException("The GlassFish LogManager Service is not available. Not installed?");
@@ -155,7 +154,7 @@ public class StructuredLogViewerResource {
         if (!searchForward) {
             sortAscending = false;
         }
-        LogFilter logFilter = habitat.getComponent(LogFilter.class);
+        LogFilter logFilter = habitat.getService(LogFilter.class);
         if (instanceName.equals("")) {
             final AttributeList result = logFilter.getLogRecordsUsingQuery(logFileName,
                     startIndex,
