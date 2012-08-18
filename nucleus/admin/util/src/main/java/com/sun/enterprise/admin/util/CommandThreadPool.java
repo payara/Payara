@@ -42,19 +42,18 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerTags;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.InstanceCommand;
 import org.glassfish.api.admin.InstanceCommandResult;
-import org.glassfish.api.admin.InstanceState;
 import org.glassfish.api.admin.ServerEnvironment;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import javax.inject.Singleton;
 
 import javax.inject.Inject;
@@ -72,7 +71,7 @@ import java.util.logging.Logger;
 public class CommandThreadPool implements Startup, PostConstruct {
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private ServerEnvironment serverEnv;

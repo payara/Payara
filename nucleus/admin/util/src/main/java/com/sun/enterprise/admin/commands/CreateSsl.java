@@ -62,8 +62,8 @@ import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.internal.api.Target;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -137,7 +137,7 @@ public class CreateSsl implements AdminCommand {
     @Inject
     Domain domain;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     private static final String GF_SSL_IMPL_NAME = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
 
     /**
@@ -148,7 +148,7 @@ public class CreateSsl implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = habitat.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;
@@ -161,7 +161,7 @@ public class CreateSsl implements AdminCommand {
                 return;
             }
         }
-        SslConfigHandler configHandler = habitat.getComponent(SslConfigHandler.class, type);
+        SslConfigHandler configHandler = habitat.getService(SslConfigHandler.class, type);
         if (configHandler!=null) {
             configHandler.create(this, report);
         } else if ("jmx-connector".equals(type)) {
@@ -204,7 +204,7 @@ public class CreateSsl implements AdminCommand {
                     param.getProtocol().add(newProtocol);
                     return newProtocol;
                 }
-            }, habitat.getComponent(Protocols.class));
+            }, habitat.<Protocols>getService(Protocols.class));
         }
         return protocol;
     }

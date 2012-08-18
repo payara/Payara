@@ -54,8 +54,8 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
@@ -86,7 +86,7 @@ public class DeleteResourceRef implements AdminCommand {
     private ConfigBeansUtilities configBeanUtilities;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     @Inject
     private Domain domain;
@@ -124,7 +124,7 @@ public class DeleteResourceRef implements AdminCommand {
                 }
 
                 // delete ResourceRef for all instances of Cluster
-                Target tgt = habitat.getComponent(Target.class);
+                Target tgt = habitat.getService(Target.class);
                 List<Server> instances = tgt.getInstances(target);
                 for (Server svr : instances) {
                     svr.deleteResourceRef(refName);

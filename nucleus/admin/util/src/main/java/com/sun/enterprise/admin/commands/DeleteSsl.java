@@ -50,13 +50,12 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -104,7 +103,7 @@ public class DeleteSsl implements AdminCommand {
     Domain domain;
     
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     /**
      * Executes the command with the command parameters passed as Properties
@@ -114,7 +113,7 @@ public class DeleteSsl implements AdminCommand {
      */
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
-        Target targetUtil = habitat.getComponent(Target.class);
+        Target targetUtil = habitat.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {
             config = newConfig;
@@ -132,7 +131,7 @@ public class DeleteSsl implements AdminCommand {
         }
         
         try {
-            SslConfigHandler sslConfigHandler = habitat.getComponent(SslConfigHandler.class, type);
+            SslConfigHandler sslConfigHandler = habitat.getService(SslConfigHandler.class, type);
             if (sslConfigHandler!=null) {
                 sslConfigHandler.delete(this, report);
             } else if ("jmx-connector".equals(type)) {

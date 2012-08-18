@@ -51,11 +51,11 @@ import javax.inject.Singleton;
 import javax.security.auth.Subject;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
@@ -87,7 +87,7 @@ public class CommandSecurityChecker {
     private static final String LINE_SEP = System.getProperty("line.separator");
     
     @Inject
-    private BaseServiceLocator locator;
+    private ServiceLocator locator;
 
     @Inject
     private AuthorizationService authService;
@@ -506,8 +506,8 @@ public class CommandSecurityChecker {
         accessChecks.add(new AccessCheckWork(a, tag));
     }
     
-    private static String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c, final BaseServiceLocator locator) {
-        ConfigBeanProxy b = locator.getComponent(c);
+    private static String resourceNameFromConfigBeanType(Class<? extends ConfigBeanProxy> c, final ServiceLocator locator) {
+        ConfigBeanProxy b = locator.getService(c);
         return (b != null ? AccessRequired.Util.resourceNameFromConfigBeanProxy(b) : "?");
     }
         
