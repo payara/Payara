@@ -64,6 +64,7 @@ import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.util.ExceptionUtil;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
 
 import java.io.OutputStream;
@@ -116,6 +117,12 @@ public class SSHLauncher {
      */
     private String keyFile;
 
+    /**
+     * The private key to use to authenticate. Usually either keyFile or
+     * privateKey will be used (since a keyFile contains a private key)
+     */
+    private char[] privateKey;
+
   /**
      * The connection object that represents the connection to the host
      * via ssh
@@ -140,6 +147,11 @@ public class SSHLauncher {
         this.logger = logger;
     }
 
+    /**
+     * Initialize the SSHLauncher use a Node config object
+     * @param node
+     * @param logger 
+     */
     public void init(Node node, Logger logger) {
         this.logger = logger;
         int port;
@@ -181,12 +193,44 @@ public class SSHLauncher {
 
     }
 
+    /**
+     * Initialize the SSHLauncher using a private key
+     * 
+     * @param userName
+     * @param host
+     * @param port
+     * @param password
+     * @param privateKey
+     * @param logger 
+     */
+    public void init(String userName, String host, int port, String password, char[] privateKey, Logger logger) {
+        init(userName, host, port, password, null, null, privateKey, logger);
+    }
+
+    /**
+     * Initialize the SSHLauncher using a private key file
+     * 
+     * @param userName
+     * @param host
+     * @param port
+     * @param password
+     * @param keyFile
+     * @param keyPassPhrase
+     * @param logger 
+     */
     public void init(String userName, String host, int port, String password, String keyFile, String keyPassPhrase, Logger logger) {
+        init(userName, host, port, password, keyFile, keyPassPhrase, null, logger);
+    }
+
+    private void init(String userName, String host, int port, String password, String keyFile, String keyPassPhrase, char[] privateKey,  Logger logger) {
+
 
         this.port = port == 0 ? 22 : port;
 
         this.host = host;
-        this.keyFile = (keyFile == null) ? SSHUtil.getExistingKeyFile(): keyFile;
+        this.privateKey = (privateKey != null) ? Arrays.copyOf(privateKey, privateKey.length) : null;
+        this.keyFile = (keyFile == null && privateKey == null) ?
+                                    SSHUtil.getExistingKeyFile(): keyFile;
         this.logger = logger;
 
         this.userName = SSHUtil.checkString(userName) == null ?
@@ -227,7 +271,8 @@ public class SSHLauncher {
     connection = new Connection(host, port);
 
         connection.connect(new HostVerifier(knownHostsDatabase));
-        if(SSHUtil.checkString(keyFile) == null && SSHUtil.checkString(password) == null) {
+        if(SSHUtil.checkString(keyFile) == null && SSHUtil.checkString(password) == null &&
+                privateKey == null) {
             message += "No key or password specified - trying default keys \n";
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("keyfile and password are null. Will try to authenticate with default key file if available");
@@ -265,11 +310,25 @@ public class SSHLauncher {
             try {
               isAuthenticated = connection.authenticateWithPassword(userName, password);
             } catch (IOException iex) {
-                   if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Tried authenticating with password " + password);
-                   }
+                message = "SSH authentication with password failed: " +
+                                ExceptionUtil.getRootCause(iex).getMessage();
+                logger.warning(message);
             }
       }
+
+        if (!isAuthenticated && privateKey != null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Authenticating with privateKey");
+            }
+            try {
+                  isAuthenticated = connection.authenticateWithPublicKey(
+                                                      userName, privateKey, keyPassPhrase);
+            } catch (IOException iex) {
+                message = "SSH authentication with private key failed: " +
+                                ExceptionUtil.getRootCause(iex).getMessage();
+                logger.warning(message);
+            }
+        }
       
         if (!isAuthenticated && SSHUtil.checkString(keyFile) != null) {
             if (logger.isLoggable(Level.FINER)) {
@@ -283,16 +342,15 @@ public class SSHLauncher {
                 try {
                   isAuthenticated = connection.authenticateWithPublicKey(
                                                       userName, key, keyPassPhrase);
-                } catch (IOException ex){
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("Tried authenticating with specified key at " + key);
-                        }
-
+                } catch (IOException iex){
+                    message = "SSH authentication with key file " + key +
+                                    " failed: " +
+                                ExceptionUtil.getRootCause(iex).getMessage();
+                    logger.warning(message);
                 }
 
             }
         }
-
 
 
         if (!isAuthenticated && !connection.isAuthenticationComplete()) {
