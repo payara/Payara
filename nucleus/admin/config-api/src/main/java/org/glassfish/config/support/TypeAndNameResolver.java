@@ -65,9 +65,10 @@ public class TypeAndNameResolver implements CrudResolver {
 
     final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
-        T proxy = habitat.getService(type, name);
+        T proxy = (T) habitat.getService(type, name);
         return proxy;
     }
     
