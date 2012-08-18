@@ -47,7 +47,9 @@ import java.util.logging.*;
 
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
+import org.jvnet.hk2.component.InjectionManager;
+import org.jvnet.hk2.component.UnsatisfiedDependencyException;
+
 import com.sun.hk2.component.InjectionResolver;
 
 import org.glassfish.api.Param;
@@ -58,6 +60,7 @@ import org.glassfish.common.util.admin.MapInjectionResolver;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.admin.cli.remote.RemoteCommand;
@@ -197,28 +200,28 @@ public abstract class CLICommand implements PostConstruct {
     /**
      * Get a CLICommand object representing the named command.
      */
-    public static CLICommand getCommand(BaseServiceLocator habitat, String name)
+    public static CLICommand getCommand(ServiceLocator habitat, String name)
             throws CommandException {
 
         // first, check if it's a known unsupported command
         checkUnsupportedLegacyCommand(name);
 
         // next, try to load our own implementation of the command
-        CLICommand cmd = habitat.getComponent(CLICommand.class, name);
+        CLICommand cmd = habitat.getService(CLICommand.class, name);
         if (cmd != null)
             return cmd;
 
         // nope, must be a remote command
         logger.finer("Assuming it's a remote command: " + name);
-        Environment environment = habitat.getComponent(Environment.class);
+        Environment environment = habitat.getService(Environment.class);
         if (environment != null && environment.getBooleanOption("USE_REST")) {
             logger.finest("AS_ADMIN_USE_REST environment variable is on.");
             return new RemoteCLICommand(name,
-                habitat.getComponent(ProgramOptions.class),
+                habitat.<ProgramOptions>getService(ProgramOptions.class),
                 environment);
         } else {
             return new RemoteCommand(name,
-                habitat.getComponent(ProgramOptions.class),
+                habitat.<ProgramOptions>getService(ProgramOptions.class),
                 environment);
         }
     }

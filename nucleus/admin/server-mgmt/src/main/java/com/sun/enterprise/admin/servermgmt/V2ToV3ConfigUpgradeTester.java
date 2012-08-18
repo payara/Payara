@@ -50,9 +50,9 @@ import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 
 import javax.inject.Inject;
 
@@ -60,7 +60,7 @@ import javax.inject.Inject;
 @PerLookup
 public class V2ToV3ConfigUpgradeTester  implements AdminCommand {
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Inject
     V2ToV3ConfigUpgrade up;

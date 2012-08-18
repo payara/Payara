@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.monitor.cli;
 
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.ActionReport;
@@ -49,6 +48,8 @@ import org.glassfish.api.Param;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import javax.inject.Inject;
@@ -71,7 +72,7 @@ public class Monitor implements AdminCommand {
     private String filter;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     final private LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(Monitor.class);
@@ -80,7 +81,7 @@ public class Monitor implements AdminCommand {
     public void execute(AdminCommandContext context) {
         ActionReport report = context.getActionReport();
         MonitorContract mContract = null;
-        for (MonitorContract m : habitat.getAllByContract(MonitorContract.class)) {
+        for (MonitorContract m : habitat.<MonitorContract>getAllServices(MonitorContract.class)) {
             if ((m.getName()).equals(type)) {
                 mContract = m;
                 break;
@@ -90,10 +91,10 @@ public class Monitor implements AdminCommand {
             mContract.process(report, filter);
             return;
         }
-        if (habitat.getAllByContract(MonitorContract.class).size() != 0) {
+        if (habitat.getAllServices(MonitorContract.class).size() != 0) {
             StringBuffer buf = new StringBuffer();
             Iterator<MonitorContract> contractsIterator = habitat.
-                    getAllByContract(MonitorContract.class).iterator();
+                    <MonitorContract>getAllServices(MonitorContract.class).iterator();
             while (contractsIterator.hasNext()) {
                 buf.append(contractsIterator.next().getName());
                 if (contractsIterator.hasNext()) {

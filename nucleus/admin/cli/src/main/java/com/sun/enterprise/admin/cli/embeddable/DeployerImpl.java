@@ -51,8 +51,8 @@ import org.glassfish.embeddable.GlassFishException;
 import org.jvnet.hk2.annotations.ContractsProvided;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -92,7 +92,7 @@ public class DeployerImpl implements Deployer {
      */
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     @Override
     public String deploy(URI archive, String... params) throws GlassFishException {
@@ -110,7 +110,7 @@ public class DeployerImpl implements Deployer {
         String[] newParams = new String[params.length + 1];
         System.arraycopy(params, 0, newParams, 0, params.length);
         newParams[params.length] = file.getAbsolutePath();
-        CommandExecutorImpl executer = habitat.getComponent(CommandExecutorImpl.class);
+        CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
         try {
             String command = "deploy";
             ActionReport actionReport = executer.createActionReport();
@@ -152,7 +152,7 @@ public class DeployerImpl implements Deployer {
         String[] newParams = new String[params.length + 1];
         System.arraycopy(params, 0, newParams, 0, params.length);
         newParams[params.length] = appName;
-        CommandExecutorImpl executer = habitat.getComponent(CommandExecutorImpl.class);
+        CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
         try {
             ActionReport actionReport = executer.executeCommand("undeploy", newParams);
             actionReport.writeReport(System.out);
@@ -166,7 +166,7 @@ public class DeployerImpl implements Deployer {
     @Override
     public Collection<String> getDeployedApplications() throws GlassFishException {
         try {
-            CommandExecutorImpl executer = habitat.getComponent(CommandExecutorImpl.class);
+            CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
             ActionReport report = executer.executeCommand("list-components");
             Properties props = report.getTopMessagePart().getProps();
             return new ArrayList<String>(props.stringPropertyNames());

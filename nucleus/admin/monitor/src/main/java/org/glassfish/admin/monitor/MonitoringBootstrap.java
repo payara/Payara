@@ -55,6 +55,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.external.probe.provider.StatsProviderInfo;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.component.*;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -64,7 +65,6 @@ import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -136,7 +136,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     @Inject
     private org.glassfish.flashlight.provider.ProbeRegistry probeRegistry;
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
     @Inject 
     Transactions transactions;
     
@@ -159,7 +159,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     private boolean hasDiscoveredXMLProviders = false;
 
     public void postConstruct() {
-        domain = habitat.getComponent(Domain.class);
+        domain = habitat.getService(Domain.class);
         transactions.addListenerForType(ContainerMonitoring.class, this);
         transactions.addListenerForType(MonitoringService.class, this);
         transactions.addListenerForType(ModuleMonitoringLevels.class, this);

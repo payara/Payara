@@ -55,9 +55,9 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 
 import com.sun.enterprise.admin.cli.CLIUtil;
 import com.sun.enterprise.admin.cli.Parser;
@@ -78,7 +78,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     CommandRunner commandRunner;
 
     @Inject
-    BaseServiceLocator habitat;
+    ServiceLocator habitat;
 
     private boolean terse;
 
@@ -205,7 +205,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
     }
 
     ActionReport createActionReport() {
-        return habitat.getComponent(ActionReport.class, "plain");
+        return habitat.getService(ActionReport.class, "plain");
     }
 
     CommandRunner getCommandRunner() {

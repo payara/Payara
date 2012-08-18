@@ -43,13 +43,13 @@ package com.sun.enterprise.admin.servermgmt.cli;
 import com.sun.enterprise.admin.cli.CLICommand;
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
 import org.glassfish.api.Param;
 
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.admin.cli.remote.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -80,7 +80,7 @@ public class RestartDomainCommand extends StopDomainCommand {
     private Boolean debug;
 
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(RestartDomainCommand.class);
 
@@ -126,7 +126,7 @@ public class RestartDomainCommand extends StopDomainCommand {
             throw new CommandException(
                 Strings.get("restart.dasNotRunningNoRestart"));
         logger.warning(strings.get("restart.dasNotRunning"));
-        CLICommand cmd = habitat.getComponent(CLICommand.class, "start-domain");
+        CLICommand cmd = habitat.getService(CLICommand.class, "start-domain");
         /*
          * Collect the arguments that also apply to start-domain.
          * The start-domain CLICommand object will already have the

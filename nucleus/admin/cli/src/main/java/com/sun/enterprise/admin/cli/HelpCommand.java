@@ -41,14 +41,12 @@
 package com.sun.enterprise.admin.cli;
 
 import java.io.*;
-import java.util.*;
-
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
@@ -62,7 +60,7 @@ import javax.inject.Inject;
 @PerLookup
 public class HelpCommand extends CLICommand {
     @Inject
-    private BaseServiceLocator habitat;
+    private ServiceLocator habitat;
 
     private static final int DEFAULT_PAGE_LENGTH = 50;
     private static final int NO_PAGE_LENGTH = -1;

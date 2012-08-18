@@ -56,7 +56,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
 
-import java.awt.Component.BaselineResizeBehavior;
 import java.beans.PropertyVetoException;
 import java.io.Console;
 import java.io.File;
@@ -77,8 +76,8 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.security.common.FileRealmHelper;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.BaseServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -771,13 +770,13 @@ public final class CreateDomainCommand extends CLICommand {
 
         // now for every such Inhabitant, fetch the actual initial config and
         // insert it into the module that initial config was targeted for.
-        BaseServiceLocator habitat = glassfish.getService(BaseServiceLocator.class);
+        ServiceLocator habitat = glassfish.getService(ServiceLocator.class);
         Collection<DomainInitializer> inits =
-                habitat.getAllByContract(DomainInitializer.class);
+                habitat.getAllServices(DomainInitializer.class);
         if (inits.isEmpty()) {
             logger.info(strings.get("NoCustomization"));
         }
-        for (DomainInitializer inhabitant : habitat.getAllByContract(
+        for (DomainInitializer inhabitant : habitat.<DomainInitializer>getAllServices(
                 DomainInitializer.class)) {
             logger.info(strings.get("InvokeInitializer",
                     inhabitant.getClass()));
