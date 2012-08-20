@@ -524,7 +524,12 @@ public class Util {
             ParameterizedType pt = (ParameterizedType)genericType;
             Type [] typeArgs = pt.getActualTypeArguments();
             if ((typeArgs != null) && (typeArgs.length >= 1)) {
-                return (Class<?>)typeArgs[0];
+                final Type type = typeArgs[0];
+                if (ParameterizedType.class.isAssignableFrom(type.getClass())) {
+                    return (Class<?>)((ParameterizedType)type).getRawType();
+                } else {
+                    return (Class<?>)type;
+                }
             }
         }
 
