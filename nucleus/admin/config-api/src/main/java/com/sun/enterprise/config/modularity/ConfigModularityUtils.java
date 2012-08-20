@@ -662,27 +662,27 @@ public final class ConfigModularityUtils {
 //        return false;
 //    }
 
-    /**
-     * convert an xml attribute name to variable name representing it.
-     *
-     * @param attributeName the attribute name in "-" separated form as appears in the domain.xml
-     * @return the class instance variable which represent that attributeName
-     */
-    private static String convertAttributeToPropertyName(String attributeName) {
-        StringTokenizer tokenizer = new StringTokenizer(attributeName, "-", false);
-        StringBuilder propertyName = new StringBuilder();
-        boolean isFirst = true;
-        while (tokenizer.hasMoreTokens()) {
-            String part = tokenizer.nextToken();
-            if (!isFirst) {
-                Locale loc = Locale.getDefault();
-                part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase(loc));
-            }
-            isFirst = false;
-            propertyName.append(part);
-        }
-        return propertyName.toString();
-    }
+//    /**
+//     * convert an xml attribute name to variable name representing it.
+//     *
+//     * @param attributeName the attribute name in "-" separated form as appears in the domain.xml
+//     * @return the class instance variable which represent that attributeName
+//     */
+//    private static String convertAttributeToPropertyName(String attributeName) {
+//        StringTokenizer tokenizer = new StringTokenizer(attributeName, "-", false);
+//        StringBuilder propertyName = new StringBuilder();
+//        boolean isFirst = true;
+//        while (tokenizer.hasMoreTokens()) {
+//            String part = tokenizer.nextToken();
+//            if (!isFirst) {
+//                Locale loc = Locale.getDefault();
+//                part = part.replaceFirst(part.substring(0, 1), part.substring(0, 1).toUpperCase(loc));
+//            }
+//            isFirst = false;
+//            propertyName.append(part);
+//        }
+//        return propertyName.toString();
+//    }
 
     public static boolean isConfigElementPresent(String serviceName, Habitat habitat, String target) {
         Class configBeanType = getClassFor(serviceName, habitat);
