@@ -54,7 +54,7 @@ public interface ServletFilterMapping {
     public Set<DispatcherType> getDispatchers();
 
     public void addURLPattern(String urlPattern);
-    public List<String> getURLPatterns();
+    public List<String> getUrlPatterns();
     public void addServletName(String servletName);
     public List<String> getServletNames();
 }

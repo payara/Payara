@@ -927,7 +927,7 @@ public class WebModule extends PwcWebModule implements Context {
             }
         }
 
-        List<String> urlPatterns = sfm.getURLPatterns();
+        List<String> urlPatterns = sfm.getUrlPatterns();
         if (urlPatterns != null) {
             for(String urlPattern : urlPatterns) {
                 filterMaps.addURLPattern(urlPattern);

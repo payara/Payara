@@ -164,7 +164,7 @@ public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMap
             appendTextChild(myNode, WebTagNames.SERVLET_NAME, servletName);
         }
 
-        for (String urlPattern : descriptor.getURLPatterns()) {
+        for (String urlPattern : descriptor.getUrlPatterns()) {
             appendTextChild(myNode, WebTagNames.URL_PATTERN, urlPattern);
         }
 

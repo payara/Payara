@@ -83,10 +83,10 @@ public final class ServletFilterMappingDescriptor
     }
 
     public void addURLPattern(String urlPattern) {
-        getURLPatterns().add(urlPattern);
+        getUrlPatterns().add(urlPattern);
     }
 
-    public List<String> getURLPatterns() {
+    public List<String> getUrlPatterns() {
         if (urlPatterns == null) {
             urlPatterns = new LinkedList<String>();
         }
@@ -126,7 +126,7 @@ public final class ServletFilterMappingDescriptor
                     (dispatchers != null && dispatchers.equals(otherDispatchers)) );
             if ( this.getName().equals(o.getName())
                     && this.getServletNames().equals(o.getServletNames())
-                    && this.getURLPatterns().equals(o.getURLPatterns())
+                    && this.getUrlPatterns().equals(o.getUrlPatterns())
                     && sameDispatchers ) {
                 return true;
             }
@@ -139,7 +139,7 @@ public final class ServletFilterMappingDescriptor
         int result = 17;
         result = 37*result + getName().hashCode();
         result = 37*result + getServletNames().hashCode();
-        result = 37*result + getURLPatterns().hashCode();
+        result = 37*result + getUrlPatterns().hashCode();
         return result;
     }
 }

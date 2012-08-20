@@ -1828,7 +1828,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             }
             if (!sfmInfo.hasMapping) {
                 sfmInfo.hasMapping = (sfMapping.getServletNames().size() > 0 ||
-                       sfMapping.getURLPatterns().size() > 0);
+                       sfMapping.getUrlPatterns().size() > 0);
             }
             if (!sfmInfo.hasDispatcher) {
                 sfmInfo.hasDispatcher = (sfMapping.getDispatchers().size() > 0);
@@ -1840,7 +1840,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             if (sfmInfo != null) {
                 if (!sfmInfo.hasMapping) {
                     sfmInfo.servletFilterMapping.getServletNames().addAll(sfMapping.getServletNames());
-                    sfmInfo.servletFilterMapping.getURLPatterns().addAll(sfMapping.getURLPatterns());
+                    sfmInfo.servletFilterMapping.getUrlPatterns().addAll(sfMapping.getUrlPatterns());
                 }
                 if (!sfmInfo.hasDispatcher) {
                     sfmInfo.servletFilterMapping.getDispatchers().addAll(sfMapping.getDispatchers());

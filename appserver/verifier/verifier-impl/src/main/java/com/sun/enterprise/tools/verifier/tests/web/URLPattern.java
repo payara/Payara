@@ -124,8 +124,8 @@ public abstract class URLPattern extends WebTest implements WebCheck {
     private void checkServletFilterMappings(WebBundleDescriptor descriptor, Result result, ComponentNameConstructor compName){
         for(Iterator iter=descriptor.getServletFilterMappings().iterator();iter.hasNext();){
             ServletFilterMapping filterMapping=(ServletFilterMapping)iter.next();
-            if(filterMapping.getURLPatterns().size() > 0) {
-                for(String url : filterMapping.getURLPatterns())
+            if(filterMapping.getUrlPatterns().size() > 0) {
+                for(String url : filterMapping.getUrlPatterns())
                     checkUrlPatternAndSetResult(url, descriptor, result, compName);
             }
         }

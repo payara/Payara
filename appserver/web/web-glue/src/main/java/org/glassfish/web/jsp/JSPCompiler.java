@@ -147,7 +147,7 @@ public final class JSPCompiler {
 
             if(files == null || files.length <= 0) {
                 if (!outWebDir.delete()) {
-                    // Ignore
+                    logger.fine("Cannot delete file: " + outWebDir);
                 }
             }
 			
@@ -165,7 +165,7 @@ public final class JSPCompiler {
 	 
         if (!FileUtils.safeIsDirectory(outWebDir)) {
             if (!outWebDir.mkdirs()) {
-                // Ignore
+                logger.fine("Cannot delete file: " + outWebDir);
             }
 		
 			if (!FileUtils.safeIsDirectory(outWebDir)) {

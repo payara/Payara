@@ -179,7 +179,7 @@ public class WebFilterHandler extends AbstractWebHandler {
         for (ServletFilterMapping sfm : webBundleDesc.getServletFilterMappings()) {
             if (filterName.equals(sfm.getName())) {
                 servletFilterMappingDesc = sfm;
-                hasUrlPattern = hasUrlPattern || (sfm.getURLPatterns().size() > 0);
+                hasUrlPattern = hasUrlPattern || (sfm.getUrlPatterns().size() > 0);
                 hasServletName = hasServletName || (sfm.getServletNames().size() > 0);
             }
         }

@@ -107,7 +107,7 @@ public class FilterMapping extends WebTest {
             } while (!mappingFound && filtermapperEnum.hasMoreElements());
 
             if (mappingFound) {
-                List<String> urlPatterns = filterMapper.getURLPatterns();
+                List<String> urlPatterns = filterMapper.getUrlPatterns();
                 for(String url : urlPatterns) {
                     if (!((url.startsWith("/")) ||
                             ((url.startsWith("/")) && (url.endsWith("/*"))) ||

@@ -111,7 +111,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     private boolean enabled = true;
     private Boolean asyncSupported = null;
     private MultipartConfig multipartConfig = null;
-    private List<Method> httpMethods = null;
+    private transient List<Method> httpMethods = null;
     private boolean conflict = false;
 
     /**

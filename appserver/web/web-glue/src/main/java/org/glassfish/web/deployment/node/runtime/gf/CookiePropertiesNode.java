@@ -52,8 +52,6 @@ import org.glassfish.web.deployment.runtime.CookieProperties;
 public class CookiePropertiesNode extends WebPropertyContainerNode {
     // tag class
 
-    protected CookieProperties descriptor = null;
-
     /**
      * @return the descriptor instance to associate with this XMLNode
      */
@@ -62,6 +60,7 @@ public class CookiePropertiesNode extends WebPropertyContainerNode {
         if (descriptor==null) {
             descriptor = new CookieProperties();
         }
-        return descriptor;
+        return (CookieProperties) descriptor;
     }
+
 }
