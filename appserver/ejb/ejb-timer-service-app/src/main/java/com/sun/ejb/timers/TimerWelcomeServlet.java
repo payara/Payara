@@ -64,7 +64,7 @@ import com.sun.ejb.containers.EJBTimerService;
 public class TimerWelcomeServlet extends HttpServlet {
 
     @EJB
-    TimerLocal timer;
+    private transient TimerLocal timer;
 
     /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
