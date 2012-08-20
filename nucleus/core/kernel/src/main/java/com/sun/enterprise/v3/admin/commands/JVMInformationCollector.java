@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,16 +44,11 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import java.text.NumberFormat;
 import java.util.Hashtable;
-import javax.management.MBeanRegistration;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerConnection;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
+import javax.management.*;
 
 /**
  */
-public class JVMInformationCollector extends StandardMBean implements JVMInformationMBean, MBeanRegistration {
+public class JVMInformationCollector extends StandardMBean implements JVMInformationMBean {
     
     static final String SERVER_NAME_KEY_IN_ON = "server"; // the key to identify the server
     private MBeanServerConnection mbsc;
@@ -61,6 +56,7 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
     public JVMInformationCollector() throws NotCompliantMBeanException {
         super(JVMInformationMBean.class);
     }
+    @Override
     public String getThreadDump(final String processName) {
         final ObjectName on = processTarget(processName);
         final String title = sm.getString("thread.dump.title", getInstanceNameFromObjectName(on));
@@ -68,6 +64,7 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
         return ( td );
     }
 
+    @Override
     public String getSummary(final String processName) {
         final ObjectName on = processTarget(processName);
         final String title = sm.getString("summary.title", getInstanceNameFromObjectName(on));
@@ -75,6 +72,7 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
         return ( s );
     }
 
+    @Override
     public String getMemoryInformation(final String processName) {
         final ObjectName on = processTarget(processName);
         final String title = sm.getString("memory.info.title", getInstanceNameFromObjectName(on));
@@ -82,12 +80,14 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
         return ( mi );
     }
 
+    @Override
     public String getClassInformation(final String processName) {
         final ObjectName on = processTarget(processName);
         final String title = sm.getString("class.info.title", getInstanceNameFromObjectName(on));
         final String ci = title + "\n " + invokeMBean(on, "getClassInformation");
         return ( ci );
     }
+    @Override
     public String getLogInformation(String processName) {
         ObjectName on  = processTarget(processName);
         String title   = sm.getString("log.info.title", getInstanceNameFromObjectName(on));
@@ -127,9 +127,11 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
             throw new RuntimeException(e);
         }
     }
+    @Override
     public void postRegister(Boolean registrationDone) {
     }
 
+    @Override
     public ObjectName preRegister(final MBeanServer server, final ObjectName name) throws Exception {
         this.mbsc = server;
         final String sn = System.getProperty(SystemPropertyConstants.SERVER_NAME);
@@ -137,9 +139,11 @@ public class JVMInformationCollector extends StandardMBean implements JVMInforma
         return ( on );
     }
 
+    @Override
     public void preDeregister() throws Exception {
     }
 
+    @Override
     public void postDeregister() {
     }
     

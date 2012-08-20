@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,31 +41,16 @@
 package com.sun.enterprise.admin.servermgmt.pe;
 
 //import com.sun.enterprise.admin.servermgmt.launch.LaunchConstants;
-import java.io.IOException;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.i18n.StringManager;
-
-import com.sun.enterprise.admin.servermgmt.DomainException;
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
-import com.sun.enterprise.admin.servermgmt.RepositoryException;
-import com.sun.enterprise.admin.servermgmt.DomainsManager;
-import com.sun.enterprise.admin.servermgmt.RepositoryNameValidator;
-import com.sun.enterprise.admin.servermgmt.DomainXmlEventListener;
-import com.sun.enterprise.admin.servermgmt.RepositoryManager;
+import com.sun.enterprise.admin.servermgmt.*;
 import com.sun.enterprise.admin.servermgmt.util.DomainXmlSAXParser;
-
-//import com.sun.enterprise.admin.common.Status;
-
 import com.sun.enterprise.admin.util.TokenValueSet;
-//import com.sun.enterprise.config.serverbeans.ServerValidationHandler;
-import java.util.Map;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.Locale;
-import java.util.Properties;
+import java.util.Map;
 
 public class PEDomainsManager extends RepositoryManager 
     implements DomainsManager
@@ -89,6 +74,7 @@ public class PEDomainsManager extends RepositoryManager
     
     //PE does not require that an admin user / password is available at start-domain time.
     //SE/SEE does require it.
+    @Override
     public BitSet getDomainFlags()
     {
         BitSet bs = new BitSet();        
@@ -96,6 +82,7 @@ public class PEDomainsManager extends RepositoryManager
         return bs;
     }
     
+    @Override
     public void validateDomain(DomainConfig domainConfig, boolean domainExists)
         throws DomainException
     {
@@ -118,6 +105,7 @@ public class PEDomainsManager extends RepositoryManager
         }
     }
     */
+    @Override
     public void validateMasterPassword(DomainConfig domainConfig) 
         throws DomainException
     {
@@ -128,6 +116,7 @@ public class PEDomainsManager extends RepositoryManager
         }
     }
     
+    @Override
     public void createDomain(DomainConfig domainConfig) 
         throws DomainException
     {
@@ -214,6 +203,7 @@ public class PEDomainsManager extends RepositoryManager
         }   
     }
 
+    @Override
     public void deleteDomain(DomainConfig domainConfig) 
         throws DomainException
     {               
@@ -223,47 +213,11 @@ public class PEDomainsManager extends RepositoryManager
             throw new DomainException(e);
         }
     }
-    /*
-    public void startDomain(DomainConfig domainConfig) 
-        throws DomainException
-    {                        
-        try {
-            checkRepository(domainConfig);            
-            String[] options = getInteractiveOptions(
-                (String)domainConfig.get(DomainConfig.K_USER), 
-                (String)domainConfig.get(DomainConfig.K_PASSWORD),
-                (String)domainConfig.get(DomainConfig.K_MASTER_PASSWORD),
-                (HashMap)domainConfig.get(DomainConfig.K_EXTRA_PASSWORDS));            
-            getInstancesManager(domainConfig).startInstance(options, (String[])null, getEnvProps(domainConfig));            
-        } catch (Exception e) {
-            throw new DomainException(e);
-        }
-    }
-
-    public void stopDomain(DomainConfig domainConfig) 
-        throws DomainException
-    {                        
-        try {
-            checkRepository(domainConfig);            
-            getInstancesManager(domainConfig).stopInstance();
-        } catch (Exception e) {
-            throw new DomainException(e);
-        }
-    }
-
-    public String[] listDomainsAndStatus(DomainConfig domainConfig)
-        throws DomainException
-    {
-        try {
-            return listDomainsAndStatusAsString(domainConfig);
-        } catch (Exception e) {
-            throw new DomainException(e);
-        }        
-    }
-    */
+    
     /**
      * Lists all the domains.
      */
+    @Override
     public String[] listDomains(DomainConfig domainConfig)
         throws DomainException
     {        
@@ -317,7 +271,7 @@ public class PEDomainsManager extends RepositoryManager
             TokenValueSet tokens = getDomainXmlTokens(domainConfig);
             String tn = (String)domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
             if((tn == null)||(tn.equals(""))) {
-                File tr = new File(layout.getTemplatesDir(), layout.DOMAIN_XML_FILE);
+                File tr = new File(layout.getTemplatesDir(), PEFileLayout.DOMAIN_XML_FILE);
                 generateFromTemplate(tokens, tr, dx);
             }
             else {
@@ -441,7 +395,12 @@ public class PEDomainsManager extends RepositoryManager
         File src  = layout.getNonEnglishIndexFileTemplate(locale);
         File dest = layout.getIndexFile();
         if (src.exists()) {
-            dest.renameTo(layout.getEnglishIndexFile());
+            if (!dest.renameTo(layout.getEnglishIndexFile())) {
+                String zero = strMgr.getString("problemRenaming", dest.getAbsolutePath(), 
+                        layout.getEnglishIndexFile().getAbsolutePath());
+                System.out.println(zero);
+                return;
+            }
             dest = layout.getIndexFile();
             try {
                 generateFromTemplate(tokens, src, dest);
@@ -600,39 +559,10 @@ public class PEDomainsManager extends RepositoryManager
                 strMgr.getString("masterPasswordNotChanged"), ex);
         }
     }
+    @Override
     public String[] getExtraPasswordOptions(DomainConfig config)
         throws DomainException
     {
         return null;
     }
-    
-    private static String readProfilePropertyValue(final File propsFile, final
-        String propName) throws IOException {
-        /* Could be optimized, but it should not be done prematurely. This
-         * method could be called multiple times while doing profile processing,
-         * but it is OK to load the properties every time, because I don't have
-         * data to suggest that that should not be done. I don't think we will
-         * run into performance issues with respect to this.
-         */
-        final Properties ps = new Properties();
-        String propValue = null;
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(propsFile));
-        try {
-            ps.load(bis);
-            propValue = ps.getProperty(propName);
-            if (propValue == null) {
-                propValue = "";
-            }
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (final IOException ee) {
-                    // Have to squelch
-                }
-            }
-        }
-        return ( propValue ); 
-    }
-    
 }

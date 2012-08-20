@@ -41,24 +41,17 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.universal.collections.ManifestUtils;
-
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-
+import java.util.*;
+import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import javax.inject.Inject;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * Create data structures that describe the command.
@@ -74,6 +67,7 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
     @Inject
     ServiceLocator habitat;
 
+    @Override
     public void execute(AdminCommandContext context) {
         setAdminCommands();
         sort();
@@ -82,11 +76,12 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
             cliCmds.add(reflect(cmd));
         }
         ActionReport report = context.getActionReport();
-        String s = "ALL COMMANDS: " + EOL;
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALL COMMANDS: ").append(EOL);
         for(CLICommand cli : cliCmds) {
-            s += cli.toString() + EOL;
+            sb.append(cli.toString()).append(EOL);
         }
-        report.setMessage(s);
+        report.setMessage(sb.toString());
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
     
@@ -103,77 +98,7 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
         }
         return cliCmd;
     }
-/*
- private String generateUsageText(AdminCommand command) {
-        StringBuffer usageText = new StringBuffer();
-        usageText.append("Usage: ");
-        usageText.append(command.getClass().getAnnotation(Service.class).name());
-        usageText.append(" ");
-        StringBuffer operand = new StringBuffer();
-            final String paramName = getParamName(param, f);
-            final boolean optional = param.optional();
-            final Class<?> ftype = f.getType();
-            Object fvalue = null;
-            String fvalueString = null;
-            try {
-                f.setAccessible(true);
-                fvalue = f.get(command);
-                if(fvalue != null)
-                    fvalueString = fvalue.toString();
-            }
-            catch(Exception e) {
-                // just leave it as null...
-            }
-            // this is a param.
-            if (param.primary()) {
-                if (optional) {
-                    operand.append("[").append(paramName).append("] ");
-                }
-                else {
-                    operand.append(paramName).append(" ");
-                }
-                continue;
-            }
-            if (optional) { usageText.append("["); }
-            usageText.append("--").append(paramName);
-
-            if (ok(param.defaultValue())) {
-                usageText.append("=").append(param.defaultValue());
-                if(optional) { usageText.append("] "); }
-                else { usageText.append(" "); }
-            }
-            else if (ftype.isAssignableFrom(String.class)) {
-                    //check if there is a default value assigned
-                if (ok(fvalueString)) {
-                    usageText.append("=").append(fvalueString);
-                    if (optional) { usageText.append("] "); }
-                    else { usageText.append(" "); }
-                } else {
-                    usageText.append("=").append(paramName);
-                    if (optional) { usageText.append("] "); }
-                    else { usageText.append(" "); }
-                }
-            }
-            else if (ftype.isAssignableFrom(Boolean.class)) {
-                // note: There is no defaultValue for this param.  It might
-                // hava  value -- but we don't care -- it isn't an official
-                // default value.
-                    usageText.append("=").append("true|false");
-                    if (optional) { usageText.append("] "); }
-                    else { usageText.append(" "); }
-            }
-            else {
-                usageText.append("=").append(paramName);
-                if (optional) { usageText.append("] "); }
-                else { usageText.append(" "); }
-            }
-        }//for
-        usageText.append(operand);
-        return usageText.toString();
-    }
-
-  */  
-     
+ 
     private void setAdminCommands() {
         adminCmds = new ArrayList<AdminCommand>();
         for (AdminCommand command : habitat.<AdminCommand>getAllServices(AdminCommand.class)) {
@@ -183,6 +108,7 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
 
     private void sort() {
         Collections.sort(adminCmds, new Comparator<AdminCommand>() {
+            @Override
             public int compare(AdminCommand c1, AdminCommand c2) {
                 Service service1 = c1.getClass().getAnnotation(Service.class);
                 Service service2 = c2.getClass().getAnnotation(Service.class);
@@ -213,14 +139,14 @@ public class ListCommandDescriptorsCommand implements AdminCommand {
 
         @Override
         public String toString() {
-            String s = "CLI Command:" +
-                    " name=" + name +
-                    " class=" + adminCommand.getClass().getName();
+            StringBuilder sb = new StringBuilder();
+            sb.append("CLI Command: name=").append(name);
+            sb.append(" class=").append(adminCommand.getClass().getName()).append(EOL);
             
             for(Option opt : options) {
-                s += opt.toString() + EOL;
+                sb.append(opt.toString()).append(EOL);
             }
-            return s;
+            return sb.toString();
         }
 
         AdminCommand adminCommand;

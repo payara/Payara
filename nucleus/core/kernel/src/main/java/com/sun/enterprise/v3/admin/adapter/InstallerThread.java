@@ -42,14 +42,11 @@ package com.sun.enterprise.v3.admin.adapter;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.v3.server.ApplicationLoaderService;
-
-
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -128,6 +125,7 @@ final class InstallerThread extends Thread {
 
         //create the application entry in domain.xml
         ConfigCode code = new ConfigCode() {
+            @Override
             public Object run(ConfigBeanProxy... proxies) throws PropertyVetoException, TransactionFailure {
                 SystemApplications sa = (SystemApplications) proxies[0];
                 Application app = sa.createChild(Application.class);
@@ -178,7 +176,7 @@ final class InstallerThread extends Thread {
     private String getVirtualServerList() {
         if (vss == null)
             return "";
-        String s = Arrays.toString(vss.toArray(new String[0]));
+        String s = Arrays.toString(vss.toArray(new String[vss.size()]));
         //standard JDK implemetation always returns this enclosed in [], remove them
         s = s.substring(1, s.length() - 1);
         return (s);

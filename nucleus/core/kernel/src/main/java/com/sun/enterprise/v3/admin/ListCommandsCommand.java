@@ -41,23 +41,16 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.module.common_impl.Tokenizer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import javax.inject.Inject;
-
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import com.sun.hk2.component.Inhabitants;
-import javax.inject.Singleton;
 
 /**
  * Simple admin command to list all existing commands.
@@ -138,18 +131,6 @@ public class ListCommandsCommand implements AdminCommand {
     
     private static boolean debugCommand(ServiceHandle<?> command) {
         return false;//;!Inhabitants.getNamesFor(command, "mode").isEmpty();
-    }
-    
-    private static boolean metadataContains(String md, String nev) {
-        boolean contains = false;
-        Tokenizer st = new Tokenizer(md, ","); //TODO
-        for (String pair : st) {
-            if (pair.trim().equals(nev)) {
-                contains = true;
-                break;
-            }
-        }
-        return ( contains );
     }
     
     private static boolean debugSet() { //TODO take into a/c debug-enabled?

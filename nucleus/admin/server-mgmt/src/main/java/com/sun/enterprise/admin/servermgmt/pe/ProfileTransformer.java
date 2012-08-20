@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,19 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-
 import com.sun.enterprise.util.i18n.StringManager;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -97,7 +93,7 @@ final class ProfileTransformer {
             builder.setEntityResolver(er);
             final TransformerFactory tf     = TransformerFactory.newInstance();
             Document doc  = null;
-            DOMSource src = null;
+            DOMSource src;
             int cnt       = 0;
             File   rfn    = null;
             for (final File ss : styleSheets) {
@@ -132,12 +128,13 @@ final class ProfileTransformer {
     
     private static class TemplateUriResolver implements URIResolver {
         
+        @Override
         public Source resolve (final String href, final String base) throws TransformerException {
             try {
                 StreamSource source     = null;
                 final URI baseUri       = new URI(base);
                 final URI tbResolved    = baseUri.resolve(href);
-                final boolean isFileUri = tbResolved.toString().toLowerCase().startsWith("file:");
+                final boolean isFileUri = tbResolved.toString().toLowerCase(Locale.ENGLISH).startsWith("file:");
                 if (isFileUri) {
                     final File f = new File(tbResolved);
                     if (f.exists()) {

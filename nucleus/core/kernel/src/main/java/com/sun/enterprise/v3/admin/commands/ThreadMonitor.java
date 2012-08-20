@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -211,13 +211,9 @@ class ThreadMonitor {
         String ms = "";
         try {
             Method glmm = ti.getClass().getDeclaredMethod(mn, (Class[])null);
-            if (glmm != null) {
-                Object monitors = glmm.invoke(ti, (Object[])null);
-                if (monitors instanceof Object[]) {
-                    return ( Arrays.toString((Object[])monitors) );
-                } else {
-                    return (NA);
-                }
+            Object monitors = glmm.invoke(ti, (Object[])null);
+            if (monitors instanceof Object[]) {
+                return ( Arrays.toString((Object[])monitors) );
             } else {
                 return (NA);
             }
