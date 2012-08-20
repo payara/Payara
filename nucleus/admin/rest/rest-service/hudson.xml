@@ -149,19 +149,7 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <if>
-                    <resourceexists>
-                        <file file="${env.MAVEN_HOME}/bin/mvn"/>
-                    </resourceexists>
-                    <then>
-                        <property name="mvn.bin" value="${env.MAVEN_HOME}/bin/mvn"/>
-                    </then>
-                    <else>
-                        <!-- Make a guess. This will break on Windows -->
-                        <property name="mvn.bin" value="/usr/bin/mvn"/>
-                    </else>
-                </if>
-                <exec executable="${mvn.bin}" resultproperty="test.result">
+                <exec executable="${env.MAVEN_HOME}/bin/mvn" resultproperty="test.result">
                 <!--
                 <artifact:mvn pom="pom.xml" failonerror="false" resultproperty="test.result">
                 -->
