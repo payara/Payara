@@ -46,20 +46,19 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 
 import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.Populator;
 import org.jvnet.hk2.config.ConfigPopulatorException;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.universal.NanoDuration;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
+
 import java.io.ByteArrayInputStream;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationCleanup;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -74,6 +73,9 @@ import java.util.logging.LogRecord;
 import javax.xml.stream.XMLResolver;
 import javax.xml.stream.XMLStreamException;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 /**
  * Locates and parses the portion of <tt>domain.xml</tt> that we care.
@@ -110,7 +112,7 @@ public abstract class DomainXml implements Populator {
                 getClass().getClassLoader() : registry.getParentClassLoader() ;
         if (parentClassLoader == null) parentClassLoader = getClass().getClassLoader();
         
-        habitat.addComponent(new ExistingSingletonInhabitant<ClassLoader>(ClassLoader.class, parentClassLoader));
+        ServiceLocatorUtilities.addOneConstant(habitat, parentClassLoader, null, ClassLoader.class);
 
         try {
             parseDomainXml(parser, getDomainXml(env), env.getInstanceName());
@@ -125,9 +127,9 @@ public abstract class DomainXml implements Populator {
         }
 
         // run the cleanup.
-        for (Inhabitant<? extends ConfigurationCleanup> cc : habitat.getInhabitants(ConfigurationCleanup.class)) {
+        for (ServiceHandle<?> cc : habitat.getAllServiceHandles(ConfigurationCleanup.class)) {
             try {
-                cc.get(); // run the upgrade
+                cc.getService(); // run the upgrade
                 lr = new LogRecord(Level.FINE, "Successful cleaned domain.xml with " + cc.getClass());
                 lr.setLoggerName(getClass().getName());
                 EarlyLogHandler.earlyMessages.add(lr);
@@ -148,7 +150,7 @@ public abstract class DomainXml implements Populator {
 
     protected void decorate() {
 
-        Server server = habitat.getComponent(Server.class, env.getInstanceName());
+        Server server = habitat.getService(Server.class, env.getInstanceName());
         if (server == null) {
             LogRecord lr = new LogRecord(Level.SEVERE, 
                     localStrings.getLocalString("BadEnv",
@@ -158,24 +160,24 @@ public abstract class DomainXml implements Populator {
             EarlyLogHandler.earlyMessages.add(lr);
             return;
         }
-        habitat.addIndex(new ExistingSingletonInhabitant<Server>(server),
-                Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        ServiceLocatorUtilities.addOneConstant(habitat, server,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
 
         server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         
         Cluster c = server.getCluster();
         if (c != null) {
-            habitat.addIndex(new ExistingSingletonInhabitant<Cluster>(c),
-                Cluster.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            ServiceLocatorUtilities.addOneConstant(habitat, c,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
         }
     }
 
     protected void upgrade() {
 
         // run the upgrades...
-        for (Inhabitant<? extends ConfigurationUpgrade> cu : habitat.getInhabitants(ConfigurationUpgrade.class)) {
+        for (ServiceHandle<?> cu : habitat.getAllServiceHandles(ConfigurationUpgrade.class)) {
             try {
-                cu.get(); // run the upgrade
+                cu.getService(); // run the upgrade
                 LogRecord lr = new LogRecord(Level.FINE, "Successful Upgrade domain.xml with " + cu.getClass());
                 lr.setLoggerName(getClass().getName());
                 EarlyLogHandler.earlyMessages.add(lr);

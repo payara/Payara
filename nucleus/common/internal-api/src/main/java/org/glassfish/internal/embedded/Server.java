@@ -40,13 +40,12 @@
 
 package org.glassfish.internal.embedded;
 
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.embeddable.*;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Inhabitants;
 
 import java.io.File;
 import java.io.IOException;
@@ -214,8 +213,8 @@ public class Server {
     private final File loggerFile;
     private final int jmxPort;
     private final ContainerStatus status = new ContainerStatus();
-    private final Inhabitant<EmbeddedFileSystem> fileSystem;
-    private final Habitat habitat;
+    private final ServiceHandle<EmbeddedFileSystem> fileSystem;
+    private final ServiceLocator habitat;
     private final List<Container> containers = new ArrayList<Container>();
     private final GlassFish glassfish;
     private static GlassFishRuntime glassfishRuntime;
@@ -279,10 +278,10 @@ public class Server {
             }
             
             // Add the neccessary inhabitants.
-            habitat = glassfish.getService(Habitat.class);
-            habitat.add(Inhabitants.create(this));
-            fileSystem = new ExistingSingletonInhabitant<EmbeddedFileSystem>(fs);
-            habitat.addIndex(fileSystem, EmbeddedFileSystem.class.getName(), null);
+            habitat = glassfish.getService(ServiceLocator.class);
+            ServiceLocatorUtilities.addOneConstant(habitat, this);
+            fileSystem = habitat.getServiceHandle(
+                    ServiceLocatorUtilities.<EmbeddedFileSystem>addOneConstant(habitat, fs, null, EmbeddedFileSystem.class));
             
             logger.logp(Level.FINER, "Server", "<init>", "Created GlassFish = {0}, " +
                     "GlassFish Status = {1}", new Object[]{glassfish, glassfish.getStatus()});
@@ -331,7 +330,7 @@ public class Server {
      */
     @SuppressWarnings("unchecked")
     public ContainerBuilder<EmbeddedContainer> createConfig(String name) {
-        return habitat.getComponent(ContainerBuilder.class, name);
+        return habitat.getService(ContainerBuilder.class, name);
     }
 
     /**
@@ -349,7 +348,7 @@ public class Server {
      * @return the configuration to configure a container of type <T>
      */
     public <T extends ContainerBuilder<?>> T createConfig(Class<T> configType) {
-        return habitat.getComponent(configType);        
+        return habitat.getService(configType);        
     }
 
     /**
@@ -404,7 +403,7 @@ public class Server {
 
                         public List<Sniffer> getSniffers() {
                             List<Sniffer> sniffers = new ArrayList<Sniffer>();
-                            Sniffer s = habitat.getComponent(Sniffer.class, type.toString());
+                            Sniffer s = habitat.getService(Sniffer.class, type.toString());
                             if (s!=null) {
                                 sniffers.add(s);
                             }
@@ -501,17 +500,8 @@ public class Server {
      * @throws IOException if the port cannot be opened.
      */
     public Port createPort(int portNumber) throws IOException {
-        Ports ports = habitat.getComponent(Ports.class);
+        Ports ports = habitat.getService(Ports.class);
         return ports.createPort(portNumber);
-    }
-
-    /**
-     * Returns the configured habitat for this server.
-     *
-     * @return the habitat
-     */
-    public Habitat getHabitat() {
-        return habitat;
     }
 
     /**
@@ -529,7 +519,7 @@ public class Server {
      * @return embedded file system used by this instance
      */
     public EmbeddedFileSystem getFileSystem() {
-        return fileSystem.get();
+        return fileSystem.getService();
     }
 
     /**
@@ -575,7 +565,7 @@ public class Server {
             synchronized(servers) {
                 servers.remove(serverName);
             }
-            fileSystem.get().preDestroy();
+            fileSystem.getService().preDestroy();
         }
     }
 
@@ -586,7 +576,7 @@ public class Server {
      * @return embedded deployer
      */
     public EmbeddedDeployer getDeployer() {
-        return habitat.getByContract(EmbeddedDeployer.class);
+        return habitat.getService(EmbeddedDeployer.class);
     }
 
 

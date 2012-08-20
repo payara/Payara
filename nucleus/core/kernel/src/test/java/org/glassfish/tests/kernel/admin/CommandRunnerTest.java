@@ -51,6 +51,8 @@ import java.lang.reflect.Proxy;
 import junit.framework.Assert;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -79,11 +81,12 @@ public class CommandRunnerTest extends HK2Runner {
          * exercise the code path that requires the domain.  So register a
          * dummy Domain instance with the habitat so injection will work.
          */
-        h.addIndex(new ExistingSingletonInhabitant<Domain>(simpleDomain()),
-                Domain.class.getName(), null);
-        h.addComponent(new StartupContext());
-        h.addIndex(new ExistingSingletonInhabitant<ModulesRegistry>(new SingleModulesRegistry(CommandRunnerTest.class.getClassLoader()))
-                , ModulesRegistry.class.getName(), null);
+        ServiceLocatorUtilities.addOneDescriptor(h,
+                BuilderHelper.createConstantDescriptor(simpleDomain(), null, Domain.class));
+        ServiceLocatorUtilities.addOneConstant(h, new StartupContext());
+        ServiceLocatorUtilities.addOneDescriptor(h,
+                BuilderHelper.createConstantDescriptor(new SingleModulesRegistry(CommandRunnerTest.class.getClassLoader()),
+                        null, ModulesRegistry.class));
     }
     
     private static Domain simpleDomain() {

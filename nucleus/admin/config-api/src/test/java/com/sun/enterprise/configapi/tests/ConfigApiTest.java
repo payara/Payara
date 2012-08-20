@@ -44,6 +44,9 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.config.support.GlassFishDocument;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.DomDocument;
 
@@ -59,7 +62,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiTest {
 	
     public DomDocument getDocument(Habitat habitat) {
-        DomDocument doc = habitat.getByType(GlassFishDocument.class);
+        DomDocument doc = habitat.getService(GlassFishDocument.class);
         if (doc==null) {
             return new GlassFishDocument(habitat, Executors.newCachedThreadPool(new ThreadFactory() {
 
@@ -76,17 +79,19 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
     
     @Override
     public void decorate(Habitat habitat) {
-        Server server = habitat.getComponent(Server.class, "server");
+        Server server = habitat.getService(Server.class, "server");
         if (server != null) {
-            habitat.addIndex(new ExistingSingletonInhabitant<Server>(Server.class, server),
-                Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            ActiveDescriptor<Server> serverDescriptor = BuilderHelper.createConstantDescriptor(server,
+                    ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
+            ServiceLocatorUtilities.addOneDescriptor(habitat, serverDescriptor);
 
             server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         
             Cluster c = server.getCluster();
             if (c != null) {
-                habitat.addIndex(new ExistingSingletonInhabitant<Cluster>(Cluster.class, c),
-                    Cluster.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                ActiveDescriptor<Cluster> clusterDescriptor = BuilderHelper.createConstantDescriptor(c,
+                        ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
+                ServiceLocatorUtilities.addOneDescriptor(habitat, clusterDescriptor);
             }
         }
     }

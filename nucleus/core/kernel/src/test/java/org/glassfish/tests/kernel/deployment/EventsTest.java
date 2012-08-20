@@ -49,7 +49,10 @@ import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.tests.utils.ConfigApiTest;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.config.support.GlassFishDocument;
@@ -78,7 +81,7 @@ import com.sun.enterprise.module.bootstrap.StartupContext;
  */
 public class EventsTest extends ConfigApiTest {
 
-    static Habitat habitat;
+    static ServiceLocator habitat;
     static File application;
     static List<EventListener.Event> allEvents = new ArrayList<EventListener.Event>();
     static private EventListener listener = new EventListener() {
@@ -117,8 +120,11 @@ public class EventsTest extends ConfigApiTest {
             return;
         }
         habitat  = super.getHabitat();
-        habitat.addIndex(new ExistingSingletonInhabitant<Server>(habitat.<Server>getService(Server.class, "server")),
-                     Server.class.getName(), ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        
+        Server server = habitat.getService(Server.class, "server");
+        ActiveDescriptor<Server> descriptor = BuilderHelper.createConstantDescriptor(server,
+                ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
+        ServiceLocatorUtilities.addOneDescriptor(habitat, descriptor);
 
         try {
             application = File.createTempFile("kerneltest", "tmp");

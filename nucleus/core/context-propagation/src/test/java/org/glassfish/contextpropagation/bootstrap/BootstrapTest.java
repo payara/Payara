@@ -23,11 +23,6 @@ public class BootstrapTest extends ConfigApiTest {
   
   @Test
   public void test() {
-    //getHabitat().addIndex(new ExistingSingletonInhabitant<DependencyProvider>(new DependencyProviderImpl()), 
-    //    DependencyProvider.class.getName(), null);
-    //System.out.println("dp: " + getHabitat().getComponent(DependencyProvider.class));
-    //assertNotNull(rci); -- fails on command line
-    //assertNotNull(dp);
     assertNotNull(ContextMapHelper.getScopeAwareContextMap());
     Object o = Deencapsulation.getField(ContextBootstrap.class, "dependencyProvider"); 
     System.out.println("DependencyProvider: " + o);

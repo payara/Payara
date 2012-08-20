@@ -40,6 +40,7 @@
 
 package org.glassfish.config.support;
 
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.component.Habitat;
 
@@ -70,16 +71,12 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
     public GlassFishDocument(final Habitat habitat, final ExecutorService executor) {
         super(habitat);
 
-        // todo, move this to an init service (Globals?)
-        ExistingSingletonInhabitant<ExecutorService> executorInhab =
-                new ExistingSingletonInhabitant<ExecutorService>(executor);
-        
-        habitat.addIndex(executorInhab, ExecutorService.class.getName(), "transactions-executor");
-        habitat.addIndex(new ExistingSingletonInhabitant<DomDocument>(this), DomDocument.class.getName(), null);
+        ServiceLocatorUtilities.addOneConstant(habitat, executor, "transactions-executor", ExecutorService.class);
+        ServiceLocatorUtilities.addOneConstant(habitat, this, null, DomDocument.class);
 
         final DomDocument doc = this;
         
-        habitat.getComponent(Transactions.class).addTransactionsListener(new TransactionListener() {
+        habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
             public void transactionCommited(List<PropertyChangeEvent> changes) {
                 for (ConfigurationPersistence pers : habitat.getAllByContract(ConfigurationPersistence.class)) {
                     try {
