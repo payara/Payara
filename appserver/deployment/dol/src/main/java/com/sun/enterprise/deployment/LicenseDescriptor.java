@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,8 +57,8 @@ public class LicenseDescriptor extends Descriptor {
     */
     public String getLicenseRequiredValue() {
         if (licenseRequired.booleanValue() == true)
-            return new String("true");
-        else return new String("false");
+            return "true";
+        else return "false";
     }
 
     /** set value for licenseRequired
@@ -68,7 +68,6 @@ public class LicenseDescriptor extends Descriptor {
             this.licenseRequired =Boolean.TRUE;
         else if(licenseRequired==false)
             this.licenseRequired =Boolean.FALSE;
-        else this.licenseRequired = Boolean.FALSE;
     }
 
     /** set value for licenseRequired
@@ -78,6 +77,5 @@ public class LicenseDescriptor extends Descriptor {
             this.licenseRequired =Boolean.TRUE;
         else if(licenseRequired.equals("false"))
             this.licenseRequired =Boolean.FALSE;
-        else this.licenseRequired = Boolean.FALSE;
     }
 }	

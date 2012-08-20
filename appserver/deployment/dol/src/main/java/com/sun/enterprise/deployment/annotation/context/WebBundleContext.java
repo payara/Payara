@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -107,11 +107,11 @@ public class WebBundleContext extends ResourceContainerContextImpl {
                     result.add(endpoint);
                 }
             }            
-            return(result.toArray(new HandlerChainContainer[0]));
+            return(result.toArray(new HandlerChainContainer[result.size()]));
         } else {
             List<ServiceReferenceDescriptor> result = new ArrayList<ServiceReferenceDescriptor>();
             result.addAll(getDescriptor().getServiceReferenceDescriptors());
-            return(result.toArray(new HandlerChainContainer[0]));
+            return(result.toArray(new HandlerChainContainer[result.size()]));
         }
     }
 }

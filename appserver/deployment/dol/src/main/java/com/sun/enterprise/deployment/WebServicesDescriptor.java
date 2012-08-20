@@ -72,7 +72,7 @@ public class WebServicesDescriptor extends RootDeploymentDescriptor {
      * loaded by this descriptor
      */
     public String getDefaultSpecVersion() {
-        return new String("1.3");//TODO fix this WebServicesDescriptorNode.SPEC_VERSION;
+        return "1.3";//TODO fix this WebServicesDescriptorNode.SPEC_VERSION;
     }
 
     public void setBundleDescriptor(BundleDescriptor module) {

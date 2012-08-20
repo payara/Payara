@@ -148,7 +148,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
             AnnotationInfo ainfo) throws AnnotationProcessorException
     {
         String methodName = method.getName();
-        String propertyName = methodName;
+        String propertyName = null;
 
         if( (methodName.length() > 3) &&
             methodName.startsWith("set") ) {

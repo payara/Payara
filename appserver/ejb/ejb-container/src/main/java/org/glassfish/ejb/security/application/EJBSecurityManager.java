@@ -362,7 +362,7 @@ public final class EJBSecurityManager
         if (pc != null) {
             String eName = eDescriptor.getName();
             for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
-                String rolename = roleRef.getRolename();
+                String rolename = roleRef.getRoleName();
                 EJBRoleRefPermission ejbrr =
                         new EJBRoleRefPermission(eName, rolename);
                 String rolelink = roleRef.getSecurityRoleLink().getName();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -75,7 +75,7 @@ public class MethodPermission extends Descriptor {
      * @return an unchecked method permission. Methods associated with such a 
      * method permission can be invoked by anyone
      */
-    public static MethodPermission getUncheckedMethodPermission() {
+    public static synchronized MethodPermission getUncheckedMethodPermission() {
         if (unchecked==null) {
             unchecked = new MethodPermission();
             unchecked.isUnchecked=true;   
@@ -87,7 +87,7 @@ public class MethodPermission extends Descriptor {
      * @return an ecluded method permission. Methods associated with such a 
      * method permission cannot be invoked by anyone.
      */
-    public static MethodPermission getExcludedMethodPermission() {
+    public static synchronized MethodPermission getExcludedMethodPermission() {
         if (excluded==null) {
             excluded = new MethodPermission();
             excluded.isExcluded=true;   

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import org.xml.sax.Attributes;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class is responsible for handling the xml lang attribute of 
@@ -105,10 +106,13 @@ public class LocalizedNode extends DeploymentDescriptorNode {
      */
     public void writeLocalizedMap(Node parentNode, String tagName, Map localizedMap) {
         if (localizedMap!=null) {
-            for (Iterator itr = localizedMap.keySet().iterator();itr.hasNext();) {
-                String lang = (String) itr.next();
-                Element aLocalizedNode = (Element) appendTextChild(parentNode, tagName, (String) localizedMap.get(lang));
-                if (aLocalizedNode!=null && lang!=Locale.getDefault().getLanguage()) { 
+            Set<Map.Entry> entrySet = localizedMap.entrySet();
+            Iterator<Map.Entry> entryIt = entrySet.iterator();
+            while (entryIt.hasNext()) {
+                Map.Entry entry = entryIt.next();
+                String lang = (String)entry.getKey();
+                Element aLocalizedNode = (Element) appendTextChild(parentNode, tagName, (String) entry.getValue());
+                if ((aLocalizedNode!=null) && (Locale.getDefault().getLanguage().equals(lang))) { 
 		    aLocalizedNode.setAttributeNS(TagNames.XML_NAMESPACE, TagNames.XML_NAMESPACE_PREFIX + TagNames.LANG, lang);
  		 } 
             }

@@ -74,7 +74,7 @@ import java.util.List;
 @Contract
 public abstract class ExtensionsArchivist  {
 
-    protected final Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
+    protected Logger logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
 
     // standard DD file associated with this archivist
     protected DeploymentDescriptorFile standardDD;

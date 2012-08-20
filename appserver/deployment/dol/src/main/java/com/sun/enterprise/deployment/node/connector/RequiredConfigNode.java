@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,17 +96,17 @@ public class RequiredConfigNode extends DeploymentDescriptorNode {
             throw new IllegalArgumentException(getClass() + " cannot handle descriptors of type " + descriptor.getClass());
         }
 	Iterator configProps = null;
-	if (descriptor instanceof MessageListener) {
-	    configProps = ((MessageListener)descriptor).getRequiredConfigProperties().iterator();
-	}
+        configProps = ((MessageListener)descriptor).getRequiredConfigProperties().iterator();
 
 	//config property info
-	for (;configProps.hasNext();) {
+        if (configProps != null) {
+          for (;configProps.hasNext();) {
 	    EnvironmentProperty config = (EnvironmentProperty) configProps.next();
 	    Node configNode = appendChild(parent, ConnectorTagNames.REQUIRED_CONFIG_PROP);
             writeLocalizedDescriptions(configNode, config);
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_NAME, config.getName());  
-	}
+          }
+        }
 	return parent;
     }
 }

@@ -69,7 +69,12 @@ public abstract class PersistenceArchivist extends ExtensionsArchivist {
 
 
     private static final Logger st_logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-    protected final Logger logger = st_logger;
+  /*
+    protected Logger logger = st_logger;
+  */
+  public PersistenceArchivist() {
+    logger = st_logger;
+  }
 
     public DeploymentDescriptorFile getStandardDDFile(RootDeploymentDescriptor descriptor) {
         if (standardDD == null) {

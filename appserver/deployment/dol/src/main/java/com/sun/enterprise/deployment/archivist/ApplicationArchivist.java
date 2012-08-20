@@ -157,8 +157,12 @@ public class ApplicationArchivist extends Archivist<Application> {
                 subArchivist.writeContents(internalJar);
                 out.closeEntry(internalJar);
             } finally {
-                if (tmpFile!=null)
-                    tmpFile.delete();
+                if (tmpFile!=null) {
+                    boolean ok = tmpFile.delete();
+                    if (! ok) {
+                      logger.log(Level.WARNING, localStrings.getLocalString("enterprise.deployment.cantDelete", "Error deleting file {0}", new Object[]{tmpFile.getAbsolutePath()}));
+                    }
+                }
             }
                 
             // no need to copy the bundle from the original jar file
@@ -606,9 +610,7 @@ public class ApplicationArchivist extends Archivist<Application> {
                         is.close();
                         newArchivist.postRuntimeDDsRead(descriptor, embeddedArchive);
                     } else {
-                        if (embeddedArchive!=null) {
-                            newArchivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
-                        }
+                        newArchivist.readRuntimeDeploymentDescriptor(embeddedArchive,descriptor);
                     }
                     // read extensions runtime deployment descriptors if any
                     for (Map.Entry<ExtensionsArchivist, RootDeploymentDescriptor> extension : extensions.entrySet()) {
@@ -621,20 +623,9 @@ public class ApplicationArchivist extends Archivist<Application> {
                 }
             } else {
                 // open the subarchive to get the deployment descriptor...
-                if (embeddedArchive!=null) {
-                    descriptor = newArchivist.open(embeddedArchive, app);
-                } else {
-                    DOLUtils.getDefaultLogger().info(localStrings.getLocalString(
-                        "enterprise.deployment.cannotfindmodule",
-                        "Cannot find module {0} in application bundle", 
-                        new Object[] {aModule.getArchiveUri()}));
-                    nonexistentModules.add(aModule);
-                    continue;
-                }
+                descriptor = newArchivist.open(embeddedArchive, app);
             }
-            if (embeddedArchive!=null) {
-                embeddedArchive.close();
-            }
+            embeddedArchive.close();
             if (descriptor != null) {
                 descriptor.getModuleDescriptor().setArchiveUri(
                     aModule.getArchiveUri());
@@ -652,12 +643,6 @@ public class ApplicationArchivist extends Archivist<Application> {
                 }
             } else {
                 // display a message only if we had a handle on the sub archive
-                if (embeddedArchive!=null) {
-                    DOLUtils.getDefaultLogger().info(localStrings.getLocalString(
-                        "enterprise.deployment.cannotreadDDs",
-                        "Cannot read the Deployment Descriptors for module {0}", 
-                        new Object[] {aModule.getArchiveUri()}));
-                }
                 return false;
             }
         }        

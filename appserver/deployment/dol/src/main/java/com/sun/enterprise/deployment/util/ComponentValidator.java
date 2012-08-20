@@ -484,7 +484,7 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
                 // it must be remote business.
                 if( ( (referringBundle == null) && (getEjbBundleDescriptor() == null) )
                     ||
-                    (referringBundle.getModuleType() == DOLUtils.carType())
+                    ((referringBundle != null) && (referringBundle.getModuleType() == DOLUtils.carType()))
                     ||
                     ( (getApplication() == null) &&
                       (referringBundle.getModuleType() != null && referringBundle.getModuleType().equals(DOLUtils.warType())) ) ) {
@@ -532,8 +532,6 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
         // check that declared types are compatible with expected values
         // if there is a target ejb descriptor available
-        if( ejbReferee != null ) {
-
             if( ejbRef.isEJB30ClientView() ) {
 
                 Set<String> targetBusinessIntfs = ejbRef.isLocal() ?
@@ -607,7 +605,6 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
             // set jndi name in ejb ref 
             ejbRef.setJndiName(ejbReferee.getJndiName());
-        }
 
         if (!type.equals(ejbRef.getType())) {
             // if they don't match 

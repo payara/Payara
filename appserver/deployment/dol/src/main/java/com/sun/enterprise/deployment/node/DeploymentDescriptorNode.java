@@ -641,12 +641,16 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             LinkedHashMap<String, Class> elementToNodeMappings = ((RuntimeBundleNode)rootNode).getNodeMappings(nodeName);
 
             if (elementToNodeMappings != null) {
-                for (String subElementName : elementToNodeMappings.keySet()) {
+              Set<Map.Entry<String, Class>> entrySet = elementToNodeMappings.entrySet();
+              Iterator<Map.Entry<String, Class>> entryIt = entrySet.iterator();
+              while (entryIt.hasNext()) {
+                  Map.Entry<String, Class> entry = entryIt.next();
+                  String subElementName = entry.getKey();
                     // skip if it's the element itself and not the subelement
                     if (subElementName.equals(nodeName)) {
                         continue;
                     }
-                    Class handlerClass = elementToNodeMappings.get(subElementName);
+                    Class handlerClass = entry.getValue();
                     if (handlerClass.getName().equals(this.getClass().getName())) {
                         // if this sublement is handled by the current node
                         // it is a simple text element, just append the text
@@ -1112,12 +1116,15 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     protected void addNamespaceDeclaration(Element node, Descriptor descriptor) {
 
         // declare now all remaining namepace...
-        Map prefixMapping = (descriptor != null ) ?
+        Map<String, String> prefixMapping = (descriptor != null ) ?
             descriptor.getPrefixMapping() : null;
         if (prefixMapping!=null) {
-            for (Iterator itr =prefixMapping.keySet().iterator();itr.hasNext();) {
-                String prefix = (String) itr.next();
-                String namespaceURI = (String) prefixMapping.get(prefix);
+            Set<Map.Entry<String, String>> entrySet = prefixMapping.entrySet();
+            Iterator<Map.Entry<String, String>> entryIt = entrySet.iterator();
+            while (entryIt.hasNext()) {
+                Map.Entry<String, String> entry = entryIt.next();
+                String prefix = entry.getKey();
+                String namespaceURI = entry.getValue();
                 setAttributeNS(node, prefix, namespaceURI);
             }
         }

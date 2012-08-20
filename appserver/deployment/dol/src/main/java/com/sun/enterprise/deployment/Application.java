@@ -966,9 +966,7 @@ public class Application extends CommonResourceBundleDescriptor
         BundleDescriptor targetBundle = null;
 
         if (targetBundleUri != null) {
-            Descriptor module = getModuleByUri(targetBundleUri);
-            targetBundle = (module instanceof BundleDescriptor) ?
-                    (BundleDescriptor) module : null;
+            targetBundle = getModuleByUri(targetBundleUri);
         }
 
         return targetBundle;

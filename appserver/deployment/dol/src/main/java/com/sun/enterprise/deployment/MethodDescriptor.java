@@ -435,9 +435,11 @@ public final class MethodDescriptor extends Descriptor {
                     && this.getEjbName().length() > 0) {
                     next.setEjbName(ejbDescriptor.getName());
                 }
+                /*
 		if (!next.isExact()) {                    
 		    //throw new RuntimeException("Conversion failed: " + next);
 		}
+                */
                 if (this.getDescription() != null
                     && this.getDescription().length() > 0) {
 		    next.setDescription(this.getDescription());
@@ -531,10 +533,7 @@ public final class MethodDescriptor extends Descriptor {
 	if (s1 == null && s2 == null) {
 	    return true;
 	}
-	if (s1 == null && s2 != null) {
-	    return false;
-	}
-	if (s2 == null && s1 != null) {
+	if (s1 == null || s2 == null) {
 	    return false;
 	}
 	if (s1.length == s2.length) {
@@ -757,9 +756,15 @@ public final class MethodDescriptor extends Descriptor {
                     break;
 		case 'L':
 		    newparam = param.substring(dimensions+1);
+                    break;
+                default:
+                  newparam = null;
 	    }
+            StringBuffer buf = new StringBuffer();
+            buf.append(newparam);
 	    for ( int j=0; j<dimensions; j++ )
-		newparam += "[]";
+                buf.append("[]");
+            newparam = buf.toString();
 	    return newparam;
 	}
 	else {

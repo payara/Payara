@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,8 +73,6 @@ import java.util.logging.Level;
 @Service(name="car")
 @PerLookup
 public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor> {
-    private ApplicationClientDescriptor descriptor;
-
     private static final Class[] managedBeanAnnotations = new Class[] {javax.annotation.ManagedBean.class}; 
 
     @Override
@@ -111,7 +109,6 @@ public class AppClientScanner extends ModuleScanner<ApplicationClientDescriptor>
             AnnotationUtils.getLogger().fine("archiveFile is " + archive.getURI().toASCIIString());
             AnnotationUtils.getLogger().fine("classLoader is " + classLoader);
         }
-        this.descriptor = desc;
 
         //always add main class
         String mainClassName = desc.getMainClassName();

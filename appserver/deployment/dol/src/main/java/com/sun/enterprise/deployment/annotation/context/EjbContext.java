@@ -158,11 +158,11 @@ public class EjbContext extends ResourceContainerContextImpl {
             for (EjbDescriptor ejb : ejbs) {
                 result.addAll(getDescriptor().getEjbBundleDescriptor().getWebServices().getEndpointsImplementedBy(ejb));
             }
-            return(result.toArray(new HandlerChainContainer[0]));
+            return(result.toArray(new HandlerChainContainer[result.size()]));
         } else {
             List<ServiceReferenceDescriptor> result = new ArrayList<ServiceReferenceDescriptor>();
             result.addAll(getDescriptor().getEjbBundleDescriptor().getEjbServiceReferenceDescriptors());
-            return(result.toArray(new HandlerChainContainer[0]));
+            return(result.toArray(new HandlerChainContainer[result.size()]));
         }
     }    
 }

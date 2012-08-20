@@ -414,7 +414,9 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
         }
         File dirs = new File(dir.replace('/', File.separatorChar));
         if (!dirs.exists()) {
-            dirs.mkdirs();
+            boolean ok = dirs.mkdirs();
+            if (! ok)
+              throw new IOException(dirs.getAbsolutePath() + " not created");
         }
         File out = new File(dirs, fileName);        
         write(descriptor, out);

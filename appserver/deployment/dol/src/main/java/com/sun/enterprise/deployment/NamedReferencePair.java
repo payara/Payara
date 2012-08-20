@@ -63,7 +63,10 @@ public class NamedReferencePair implements Serializable {
     public static NamedReferencePair createEjbPair
         (EjbDescriptor referant, EjbDescriptor referee) 
     {
+      if (referant instanceof Descriptor)
         return new NamedReferencePair((Descriptor) referant, referee, EJB); // FIXME by srini - can we extract intf to avoid this
+      else
+        return null;
     }
         
     public static NamedReferencePair createEjbRefPair

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -116,7 +116,8 @@ public class ConfigPropertyNode extends DeploymentDescriptorNode {
         configProps = ((MessageListener)descriptor).getConfigProperties().iterator();
     }
 	//config property info
-	for (;configProps.hasNext();) {
+        if (configProps != null) {
+          for (;configProps.hasNext();) {
 	    ConnectorConfigProperty config = (ConnectorConfigProperty) configProps.next();
 	    Node configNode = appendChild(parent, ConnectorTagNames.CONFIG_PROPERTY);
 	    writeLocalizedDescriptions(configNode, config);  
@@ -124,11 +125,12 @@ public class ConfigPropertyNode extends DeploymentDescriptorNode {
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_TYPE, config.getType());  
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_VALUE, config.getValue());  
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_CONFIDENTIAL,
-                String.valueOf(config.isConfidential()));
+                            String.valueOf(config.isConfidential()));
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_IGNORE, String.valueOf(config.isIgnore()));
 	    appendTextChild(configNode, ConnectorTagNames.CONFIG_PROPERTY_SUPPORTS_DYNAMIC_UPDATES,
-                String.valueOf(config.isSupportsDynamicUpdates()));
-	}
+                            String.valueOf(config.isSupportsDynamicUpdates()));
+          }
+        }
 	return parent;
     }
 }

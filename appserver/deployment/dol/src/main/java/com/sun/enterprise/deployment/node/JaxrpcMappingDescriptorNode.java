@@ -55,7 +55,6 @@ import java.util.*;
  */
 @Service
 public class JaxrpcMappingDescriptorNode extends AbstractBundleNode 
-    implements RootXMLNode
                                     
 {    
 

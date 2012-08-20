@@ -124,7 +124,7 @@ public class DOLUtils {
     /**
      * @return a logger to use in the DOL implementation classes
      */
-    public static Logger getDefaultLogger() {
+    public static synchronized Logger getDefaultLogger() {
         if (logger==null) {
             logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
         }

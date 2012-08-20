@@ -843,13 +843,20 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
 
             // next look to see if there is unique match in ear scope.
             int sameNamedEarScopedPUCount = 0;
-            for (String s : visiblePUs.keySet()) {
-                int idx = s.lastIndexOf(PERSISTENCE_UNIT_NAME_SEPARATOR);
-                if (idx != -1 // ear scoped
-                        && s.substring(idx + 1).matches(unitName)) {
-                    result = visiblePUs.get(s);
-                    sameNamedEarScopedPUCount++;
-                }
+            Set<Map.Entry<String, PersistenceUnitDescriptor>> entrySet =
+              visiblePUs.entrySet();
+            Iterator <Map.Entry<String, PersistenceUnitDescriptor>> entryIt =
+              entrySet.iterator();
+            while (entryIt.hasNext()) {
+              Map.Entry<String, PersistenceUnitDescriptor> entry =
+                entryIt.next();
+              String s = entry.getKey();
+              int idx = s.lastIndexOf(PERSISTENCE_UNIT_NAME_SEPARATOR);
+              if (idx != -1 // ear scoped
+                  && s.substring(idx + 1).matches(unitName)) {
+                result = entry.getValue();
+                sameNamedEarScopedPUCount++;
+              }
             }
             // if there are more than one ear scoped PU with same name (this
             // is possible when PU is inside two different library jar),

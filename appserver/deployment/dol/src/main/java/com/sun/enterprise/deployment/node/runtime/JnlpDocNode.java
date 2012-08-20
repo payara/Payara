@@ -67,7 +67,7 @@ public class JnlpDocNode extends DeploymentDescriptorNode<JavaWebStartAccessDesc
     public JavaWebStartAccessDescriptor getDescriptor() {
 	if (descriptor==null) {
 	    XMLNode parentNode = getParentNode();
-            if (parentNode != null && (parentNode instanceof JavaWebStartAccessNode)) {
+            if (parentNode != null) {
                 Object parentDescriptor = parentNode.getDescriptor();
                 if (parentDescriptor != null && (parentDescriptor instanceof JavaWebStartAccessDescriptor) ) {
                     descriptor = (JavaWebStartAccessDescriptor) parentDescriptor;

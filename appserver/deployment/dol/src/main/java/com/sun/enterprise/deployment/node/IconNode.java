@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import org.w3c.dom.Node;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -115,9 +116,12 @@ public class IconNode extends LocalizedNode {
             return;
         }
         if (smallIcons!=null) {
-            for (Iterator smallItr = smallIcons.keySet().iterator();smallItr.hasNext();) {
-                String lang = (String) smallItr.next();
-                String smallIconUri = (String) smallIcons.get(lang);                
+            Set<Map.Entry> entrySet = smallIcons.entrySet();
+            Iterator<Map.Entry> entryIt = entrySet.iterator();
+            while (entryIt.hasNext()) {
+                Map.Entry entry = entryIt.next();
+                String lang = (String)entry.getKey();
+                String smallIconUri = (String)entry.getValue();
                 String largeIconUri = null;
                 if (largeIcons!=null) {
                     largeIconUri = (String) largeIcons.get(lang);
@@ -126,9 +130,12 @@ public class IconNode extends LocalizedNode {
             }
         } 
         if (largeIcons!=null) {
-            for (Iterator largeItr = largeIcons.keySet().iterator();largeItr.hasNext();) {
-                String lang = (String) largeItr.next();
-                String largeIconUri = (String) largeIcons.get(lang);
+            Set<Map.Entry> entrySet = largeIcons.entrySet();
+            Iterator<Map.Entry> entryIt = entrySet.iterator();
+            while (entryIt.hasNext()) {
+                Map.Entry entry = entryIt.next();
+                String lang = (String)entry.getKey();
+                String largeIconUri = (String)entry.getValue();
                 if (smallIcons!=null && smallIcons.get(lang)!=null) {
                     // we already wrote this icon info in the previous loop
                     continue;
@@ -145,7 +152,7 @@ public class IconNode extends LocalizedNode {
     private void addIconInfo(Node node, String lang, String smallIconUri, String largeIconUri) {
         
         Element iconNode =appendChild(node, TagNames.ICON);
-        if (lang!=Locale.ENGLISH.getLanguage()) {
+        if (Locale.ENGLISH.getLanguage().equals(lang)) {
 	    iconNode.setAttributeNS(TagNames.XML_NAMESPACE, TagNames.XML_NAMESPACE_PREFIX + TagNames.LANG, lang);
 	}
         appendTextChild(iconNode, TagNames.SMALL_ICON, smallIconUri);

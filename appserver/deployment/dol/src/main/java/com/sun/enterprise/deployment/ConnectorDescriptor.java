@@ -477,6 +477,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         }
     }
 
+  /*
     private boolean hasAdminObject(String intfClass, String implClass, Set adminObjects) {
         boolean found = false;
         Iterator adminObjectsIterator = adminObjects.iterator();
@@ -490,6 +491,7 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         }
         return found;
     }
+  */
 
     public void removeAdminObject(AdminObject admin) {
         adminObjects.remove(admin);
@@ -612,13 +614,6 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         }
     }    
 
-    /*
-     * Prints entry information.
-     */
-    private static void printEntry(ZipEntry e)	throws IOException {
-        DOLUtils.getDefaultLogger().log(Level.FINE, e.getName());
-    }
-    
     /*
      * @param type The full qualified name for connection factory interface
      */

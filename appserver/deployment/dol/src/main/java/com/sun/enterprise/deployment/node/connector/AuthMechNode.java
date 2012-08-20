@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -110,13 +110,15 @@ public class AuthMechNode extends DeploymentDescriptorNode {
 	}
 
 	//auth mechanism info
-	for (;authMechs.hasNext();) {
+        if (authMechs != null) {
+          for (;authMechs.hasNext();) {
 	    AuthMechanism auth = (AuthMechanism) authMechs.next();
 	    Node authNode = appendChild(parent, ConnectorTagNames.AUTH_MECHANISM);
 	    appendTextChild(authNode, TagNames.DESCRIPTION, auth.getDescription()); 
 	    appendTextChild(authNode, ConnectorTagNames.AUTH_MECH_TYPE, auth.getAuthMechType());   
 	    appendTextChild(authNode, ConnectorTagNames.CREDENTIAL_INTF, auth.getCredentialInterface());  
-	}
+          }
+        }
 	return parent;
     }
 }

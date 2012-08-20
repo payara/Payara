@@ -59,6 +59,8 @@ import java.lang.annotation.Annotation;
 public class ServiceReferenceDescriptor extends EnvironmentProperty 
         implements HandlerChainContainer {
 
+    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+
     private String serviceInterface;
 
     private String mappedName;
@@ -682,6 +684,15 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
             return thatReference.getName().equals(this.getName());
         }
         return false;
+    }
+
+    public int hashCode() {
+        int result = NULL_HASH_CODE;
+        String name = getName();
+        if (name != null) {
+            result += name.hashCode();
+        }
+        return result;
     }
 
     public boolean isConflict(ServiceReferenceDescriptor other) {

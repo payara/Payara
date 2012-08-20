@@ -323,49 +323,54 @@ public class ApplicationValidator extends ComponentValidator
         }
 
         // Reads MSD and DSD at application-client level
-        Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
-        Vector appClientLevel = new Vector();
-        for (ApplicationClientDescriptor acd : appClientDescs) {
+        if (application != null) {
+          Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
+          Vector appClientLevel = new Vector();
+          for (ApplicationClientDescriptor acd : appClientDescs) {
             Set<MailSessionDescriptor> mailSessionDescriptors = acd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, APPCLIENTBUNDLE_LEVEL+acd.getName())) {
-                return false;
+              return false;
             }
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = acd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENTBUNDLE_LEVEL+acd.getName())) {
-                return false;
+              return false;
             }
             appClientLevel.add(APPCLIENTBUNDLE_LEVEL+acd.getName());
+          }
+          validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
         }
-        validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
 
         // Reads MSD and DSD at connector level
-        Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
-        Vector cdLevel = new Vector();
-        for (ConnectorDescriptor cd : connectorDescs) {
+        if (application != null) {
+          Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
+          Vector cdLevel = new Vector();
+          for (ConnectorDescriptor cd : connectorDescs) {
             Set<MailSessionDescriptor> mailSessionDescriptors = cd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
-                return false;
+              return false;
             }
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = cd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
-                return false;
+              return false;
             }
             cdLevel.add(APPCLIENT_LEVEL+cd.getName());
+          }
+          validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
         }
-        validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
 
         // Reads MSD and DSD at ejb-bundle level
-        Set<EjbBundleDescriptor> ejbBundleDescs = application.getBundleDescriptors(EjbBundleDescriptor.class);
-        Vector ebdLevel = new Vector();
-        Vector edLevel = new Vector();
-        for (EjbBundleDescriptor ebd : ejbBundleDescs) {
+        if (application != null) {
+          Set<EjbBundleDescriptor> ejbBundleDescs = application.getBundleDescriptors(EjbBundleDescriptor.class);
+          Vector ebdLevel = new Vector();
+          Vector edLevel = new Vector();
+          for (EjbBundleDescriptor ebd : ejbBundleDescs) {
             Set<MailSessionDescriptor> mailSessionDescriptors = ebd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
-                return false;
+              return false;
             }
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = ebd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
-                return false;
+              return false;
             }
             ebdLevel.add(EJBBUNDLE_LEVEL+ebd.getName());
 
@@ -373,38 +378,41 @@ public class ApplicationValidator extends ComponentValidator
             // Reads MSD and DSD at ejb level
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
             for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
-                EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-                mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
-                if (isExistingMailSession(mailSessionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
-                    return false;
-                }
-                dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
-                if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
-                    return false;
-                }
-                edLevel.add(EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName());
+              EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+              mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
+              if (isExistingMailSession(mailSessionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                return false;
+              }
+              dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
+              if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                return false;
+              }
+              edLevel.add(EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName());
 
             }
+          }
+          validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
+          validNameSpaceDetails.put(EJB_KEYS, edLevel);
         }
-        validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
-        validNameSpaceDetails.put(EJB_KEYS, edLevel);
 
 
         // Reads MSD and DSD at web-bundle level
-        Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
-        Vector wbdLevel = new Vector();
-        for (WebBundleDescriptor wbd : webBundleDescs) {
+        if (application != null) {
+          Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
+          Vector wbdLevel = new Vector();
+          for (WebBundleDescriptor wbd : webBundleDescs) {
             Set<MailSessionDescriptor> mailSessionDescriptors = wbd.getMailSessionDescriptors();
             if (isExistingMailSession(mailSessionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
-                return false;
+              return false;
             }
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = wbd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
-                return false;
+              return false;
             }
             wbdLevel.add(WEBBUNDLE_LEVEL+wbd.getName());
+          }
+          validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
         }
-        validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
 
         // if all resources names are unique then validate each descriptor is unique or not
         if (allUniqueResource) {

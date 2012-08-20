@@ -68,7 +68,6 @@ public abstract class AbstractBundleNode<T extends RootDeploymentDescriptor>
     protected final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
     
     protected String docType;
-    private Map namespaceContext=null;
     
     /**
      * set the DOCTYPE as read in the input XML File

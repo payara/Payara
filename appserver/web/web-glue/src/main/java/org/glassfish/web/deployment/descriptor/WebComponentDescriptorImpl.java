@@ -314,7 +314,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     public SecurityRoleReference getSecurityRoleReferenceByName(String roleReferenceName) {
         for (SecurityRoleReference nextRR : getSecurityRoleReferenceSet()) {
-            if (nextRR.getRolename().equals(roleReferenceName)) {
+            if (nextRR.getRoleName().equals(roleReferenceName)) {
                 return nextRR;
             }
         }
@@ -607,7 +607,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
              secRoleRefIter.hasNext();) {
             SecurityRoleReference secRoleRef =
                     secRoleRefIter.next();
-            if (getSecurityRoleReferenceByName(secRoleRef.getRolename())
+            if (getSecurityRoleReferenceByName(secRoleRef.getRoleName())
                     == null) {
                 getSecurityRoleReferenceSet().add(secRoleRef);
             }

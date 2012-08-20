@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -587,7 +587,7 @@ public class WebPermissionUtil {
 	    for (; esrr.hasMoreElements();){
 		SecurityRoleReference srr = (SecurityRoleReference)esrr.nextElement();
 		if(srr != null){
-		    String action = srr.getRolename();
+		    String action = srr.getRoleName();
 		    WebRoleRefPermission wrrp = new WebRoleRefPermission(name, action);
 		    role.add(new Role(action));
 		    pc.addToRole(srr.getSecurityRoleLink().getName(),wrrp);

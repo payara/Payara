@@ -58,6 +58,9 @@ import java.util.logging.Logger;
 
 public class ResourceReferenceDescriptor extends EnvironmentProperty 
 	implements NamedDescriptor, ResourceReference {
+
+    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+
     /** 
      * For database resources, this says the application will log in.
      */
@@ -445,6 +448,15 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	return false;
     }
     
+    public int hashCode() {
+        int result = NULL_HASH_CODE;
+        String name = getName();
+        if (name != null) {
+            result += name.hashCode();
+        }
+        return result;
+    }
+
     /** 
      * Returns a formatted string representing my state.
      */

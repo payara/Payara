@@ -431,7 +431,7 @@ public class TomcatDeploymentConfig {
                 securityRoleReference = (SecurityRoleReference)
                     enumeration.nextElement();
                 wrapper.addSecurityReference(
-                    securityRoleReference.getRolename(),
+                    securityRoleReference.getRoleName(),
                     securityRoleReference.getSecurityRoleLink().getName());
             }
 

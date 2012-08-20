@@ -49,6 +49,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 
 public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implements NamedDescriptor, ResourceEnvReference { 
 
+    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+
     private String refType;
 
     private boolean isManagedBean = false;
@@ -160,6 +162,14 @@ public class ResourceEnvReferenceDescriptor extends EnvironmentProperty implemen
         return false;
     }
 
+    public int hashCode() {
+        int result = NULL_HASH_CODE;
+        String name = getName();
+        if (name != null) {
+            result += name.hashCode();
+        }
+        return result;
+    }
     /**
      * Performs the same check as in ResourceReferenceDescriptor
      */

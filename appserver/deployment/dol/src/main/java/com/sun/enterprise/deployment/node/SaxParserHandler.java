@@ -557,10 +557,13 @@ public class SaxParserHandler extends DefaultHandler {
                       replacementName = versionUpgrade.getReplacementElementName();
                       replacementValue = versionUpgrade.getReplacementElementValue();
                     } else {
+                      StringBuffer buf = new StringBuffer();
                       String errorString = "Invalid upgrade from <";
+                      buf.append(errorString);
                       for (Map.Entry<String, String> entry : matchXPath.entrySet()) {
-                        errorString += entry.getKey() + "  " + entry.getValue() + " >";
+                        buf.append(entry.getKey() + "  " + entry.getValue() + " >");
                       }
+                      errorString = buf.toString();
                       DOLUtils.getDefaultLogger().log(Level.SEVERE, errorString);
                       // Since the elements are not replaced,
                       // there should be a parsing error

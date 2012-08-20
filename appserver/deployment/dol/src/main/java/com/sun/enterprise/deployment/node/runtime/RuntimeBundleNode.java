@@ -59,6 +59,8 @@ import java.util.Map;
 public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
         extends DeploymentDescriptorNode<T> implements RootXMLNode<T> {
 
+    private static Boolean restrictDTDDeclarations=null;
+
     protected T descriptor=null;
 
     // we record the XML element to node class mapping when parsing and 
@@ -142,7 +144,7 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
      * @return true if the runtime bundle node should only process
      * the product FCS DTD declarations
      */
-    protected static final boolean restrictDTDDeclarations() {
+    protected static final synchronized boolean restrictDTDDeclarations() {
         if (restrictDTDDeclarations==null) {
             restrictDTDDeclarations = Boolean.valueOf(Boolean.getBoolean("com.sun.aas.deployment.restrictdtddeclarations"));
         }
@@ -171,8 +173,6 @@ public abstract class RuntimeBundleNode<T extends RootDeploymentDescriptor>
     public LinkedHashMap<String, Class> getNodeMappings(String currentElementName) {
         return elementToNodeMappings.get(currentElementName);
     }
-
-    private static Boolean restrictDTDDeclarations=null;
 
     /**
      * receives notiification of the value for a particular tag

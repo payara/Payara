@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -116,7 +116,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Return the coded name. 
      * @return the role name used in the bean code.
      */
-    public String getRolename() {
+    public String getRoleName() {
 	return this.getName();
     }
     
@@ -124,7 +124,7 @@ public class RoleReference extends EnvironmentProperty implements
      * Sets the coded name.
      * @param the role name used in the bean code.
      */
-    public void setRolename(String rolename) {
+    public void setRoleName(String rolename) {
 	this.setName(rolename);
     }
     

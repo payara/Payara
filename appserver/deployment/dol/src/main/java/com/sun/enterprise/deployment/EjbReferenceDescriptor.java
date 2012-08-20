@@ -52,6 +52,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 
 public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbReference, NamedDescriptor {
 
+    static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
+
     // In case the reference has been resolved, the ejbDescriptor will
     // be the referenced ejb.
     private EjbDescriptor ejbDescriptor;
@@ -455,6 +457,15 @@ public class EjbReferenceDescriptor extends EnvironmentProperty implements EjbRe
 	    return ejbReference.getName().equals(this.getName());
 	}
 	return false;
+    }
+
+    public int hashCode() {
+        int result = NULL_HASH_CODE;
+        String name = getName();
+        if (name != null) {
+            result += name.hashCode();
+        }
+        return result;
     }
 
     public boolean isConflict(EjbReferenceDescriptor other) {

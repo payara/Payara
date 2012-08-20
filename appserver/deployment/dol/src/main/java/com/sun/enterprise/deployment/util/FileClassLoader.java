@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,20 +72,33 @@ public class FileClassLoader extends ClassLoader {
 		file = wf;
 	    }
 	}
-	FileInputStream fis = new FileInputStream(file);
-	int avail = fis.available();
-	byte[] buf = new byte[avail];
-	fis.read(buf);
-        fis.close();
+	FileInputStream fis = null;
+        byte[] buf = null;
+        try {
+          fis = new FileInputStream(file);
+          int avail = fis.available();
+          buf = new byte[avail];
+          fis.read(buf);
+        } finally {
+          if (fis != null)
+            fis.close();
+        }
 	return buf;
     }
     
     String getClassName(File f) throws IOException, ClassFormatError {
-	FileInputStream fis = new FileInputStream(f);
-	int avail = fis.available();
-	byte[] buf = new byte[avail];
-	fis.read(buf);
-        fis.close();
+	FileInputStream fis = null;
+        byte[] buf = null;
+        int avail = 0;
+        try {
+          fis = new FileInputStream(f);
+          avail = fis.available();
+          buf = new byte[avail];
+          fis.read(buf);
+        } finally {
+          if (fis != null)
+            fis.close();
+        }
 	Class c = super.defineClass(null, buf, 0, avail);
 	return c.getName();
     }
