@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,5 +61,24 @@
         <Class name="com.sun.ejb.containers.MessageBeanContainer$ASyncClientShutdownTask"/>
         <Method name="run"/>
         <Bug pattern="NO_NOTIFY_NOT_NOTIFYALL"/>
+    </Match>
+
+    <!--
+        These public fields are set and read in other modules.
+    -->
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="startsWithRemove"/>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="targetMethod2"/>
+        <Bug pattern="UWF_NULL_FIELD"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="isHomeFinder"/>
+        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
     </Match>
 </FindBugsFilter>
