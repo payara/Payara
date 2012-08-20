@@ -67,7 +67,7 @@
     <property name="env.DEBUGGER_PORT" value="9009"/>
 
     <property name="ant.contrib.url"
-              value="http://mirrors.ibiblio.org/pub/mirrors/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"/>
+              value="http://mirrors.ibiblio.org/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"/>
     <property name="maven.ant.tasks.url"
               value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks/2.1.3/maven-ant-tasks-2.1.3.jar"/>
     <property name="glassfish.dist.url"
@@ -149,7 +149,19 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <exec executable="${env.MAVEN_HOME}/bin/mvn" resultproperty="test.result">
+                <if>
+                    <resourceexists>
+                        <file file="${env.MAVEN_HOME}/bin/mvn"/>
+                    </resourceexists>
+                    <then>
+                        <property name="mvn.bin" value="${env.MAVEN_HOME}/bin/mvn"/>
+                    </then>
+                    <else>
+                        <!-- Make a guess. This will break on Windows -->
+                        <property name="mvn.bin" value="/usr/bin/mvn"/>
+                    </else>
+                </if>
+                <exec executable="${mvn.bin}" resultproperty="test.result">
                 <!--
                 <artifact:mvn pom="pom.xml" failonerror="false" resultproperty="test.result">
                 -->
