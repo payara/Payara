@@ -156,7 +156,7 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
-                <exec executable="${env.MAVEN_HOME}/bin/mvn" resultproperty="test.result">
+                <exec executable="${MAVEN_HOME}/bin/mvn" resultproperty="test.result">
                     <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
