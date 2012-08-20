@@ -128,8 +128,8 @@ public class RestMethodMetadata {
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
-        o.put("httpMethod", httpMethod);
-        o.put("path", path);
+//        o.put("httpMethod", httpMethod);
+//        o.put("path", path);
         JSONArray array = new JSONArray();
         for (ParamMetadata pmd : queryParameters) {
             array.put(pmd.toJson());

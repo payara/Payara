@@ -37,31 +37,41 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.composite;
+package org.glassfish.admin.rest.composite.resource;
 
-import org.codehaus.jettison.json.JSONException;
-import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
-import org.glassfish.admin.rest.composite.resource.DummiesResource;
-import org.glassfish.admin.rest.composite.resource.DummyResource;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.RestCollection;
+import org.glassfish.admin.rest.composite.metadata.HelpText;
+import org.glassfish.admin.rest.model.BaseModel;
 
 /**
  *
  * @author jdlee
  */
-public class ResourceMetadataTest {
-    @Test(groups="offline")
-    public void testMetadata() throws JSONException {
-        RestResourceMetadata rrmd = new RestResourceMetadata(new DummiesResource());
-        Assert.assertNotNull(rrmd);
-        Assert.assertEquals(rrmd.getResourceMethods().size(), 2);
-        Assert.assertEquals(rrmd.getSubResources().size(), 1);
+public class DummiesResource extends CompositeResource {
+    @GET
+    public RestCollection<BaseModel> getDummyDataCollection(
+            @QueryParam("type") @HelpText(bundle="org.glassfish.admin.rest.composite.HelpText", key="dummy.type") String type
+            ) {
+        RestCollection<BaseModel> rc = new RestCollection<BaseModel>();
 
-        rrmd = new RestResourceMetadata(new DummyResource());
-        Assert.assertNotNull(rrmd);
-        Assert.assertEquals(rrmd.getResourceMethods().size(), 2);
-        Assert.assertEquals(rrmd.getSubResources().size(), 0);
-//        System.out.println(rrmd.toJson().toString(4));
+        return rc;
+    }
+
+    @Path("id/{name}")
+    public DummyResource getDummyData(@QueryParam("foo") String foo) {
+        return getSubResource(DummyResource.class);
+    }
+
+    @POST
+    public Response createDummy(BaseModel model) {
+        return Response.ok().build();
     }
 }

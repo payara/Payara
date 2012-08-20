@@ -42,11 +42,14 @@ package org.glassfish.admin.rest.composite.metadata;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -56,7 +59,8 @@ import org.codehaus.jettison.json.JSONObject;
  * @author jdlee
  */
 public class RestResourceMetadata {
-    private List<RestMethodMetadata> resourceMethods = new ArrayList<RestMethodMetadata>();
+    private Map<String, RestMethodMetadata> resourceMethods = new HashMap<String, RestMethodMetadata>();
+    private List<String> subResources = new ArrayList<String>();
     private Object context;
 
     public RestResourceMetadata(Object context) {
@@ -64,13 +68,39 @@ public class RestResourceMetadata {
         processClass();
     }
 
+    public Map<String, RestMethodMetadata> getResourceMethods() {
+        return resourceMethods;
+    }
+
+    public void setResourceMethods(Map<String, RestMethodMetadata> resourceMethods) {
+        this.resourceMethods = resourceMethods;
+    }
+
+    public List<String> getSubResources() {
+        return subResources;
+    }
+
+    public void setSubResources(List<String> subResources) {
+        this.subResources = subResources;
+    }
+
     private void processClass() {
         for (Method m : context.getClass().getDeclaredMethods()) {
             Annotation designator = getMethodDesignator(m);
 
             if (designator != null) {
+                final String httpMethod = designator.annotationType().getSimpleName();
                 RestMethodMetadata rmm = new RestMethodMetadata(context, m, designator);
-                resourceMethods.add(rmm);
+                if (resourceMethods.containsKey(httpMethod)) {
+                    throw new RuntimeException("Multiple " + httpMethod + " methods found on resource: " +
+                            context.getClass().getName());
+                }
+                resourceMethods.put(httpMethod, rmm);
+            }
+
+            final Path path = m.getAnnotation(Path.class);
+            if (path != null) {
+                subResources.add(path.value());
             }
         }
     }
@@ -90,19 +120,23 @@ public class RestResourceMetadata {
         return a;
     }
 
-    @Override
-    public String toString() {
-        return "RestResourceMetadata{" + "resources=" + resourceMethods + '}';
-    }
-
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
-        final JSONArray array = new JSONArray();
-        for (RestMethodMetadata rmd : resourceMethods) {
-            array.put(rmd.toJson());
+
+        if (!resourceMethods.isEmpty()) {
+            final JSONObject methods = new JSONObject();
+            for (Map.Entry<String, RestMethodMetadata> entry : resourceMethods.entrySet()) {
+                methods.put(entry.getKey(), entry.getValue().toJson());
+            }
+
+            o.put("resourceMethods", methods);
         }
 
-        o.put("resourceMethods", array);
+        if (!subResources.isEmpty()) {
+            final JSONArray children = new JSONArray();
+            children.put(subResources);
+            o.put("subResources", children);
+        }
 
         return o;
     }
