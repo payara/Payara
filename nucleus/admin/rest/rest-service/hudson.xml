@@ -149,6 +149,7 @@
         <trycatch>
             <try>
                 <antcall target="start-server"/>
+                <echo>${env.PATH}</echo>
                 <exec executable="${env.MAVEN_HOME}/bin/mvn" resultproperty="test.result">
                 <!--
                 <artifact:mvn pom="pom.xml" failonerror="false" resultproperty="test.result">
