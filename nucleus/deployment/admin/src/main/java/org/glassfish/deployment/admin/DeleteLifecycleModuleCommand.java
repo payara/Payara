@@ -134,7 +134,7 @@ public class DeleteLifecycleModuleCommand implements AdminCommand, AdminCommandS
             targets = domain.getAllReferencedTargetsForApplication(name);
             for (String t : targets) {
                 accessChecks.add(new AccessCheck(
-                        DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, target, name), "delete")
+                        DeploymentCommandUtils.getTargetResourceNameForExistingAppRef(domain, t, name), "delete")
                         );
             }
         } else {
