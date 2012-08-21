@@ -196,7 +196,8 @@ public class RestMethodMetadata {
 
             }
             if (!processed && !isPathParam) {
-                requestPayload = Util.getFirstGenericType(paramType);
+                requestPayload = Util.isGenericType(paramType) ?
+                                 Util.getFirstGenericType(paramType) : (Class<?>)paramType;
             }
         }
     }

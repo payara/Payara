@@ -510,6 +510,10 @@ public class Util {
         return null;
     }
 
+    public static boolean isGenericType(Type type) {
+        return ParameterizedType.class.isAssignableFrom(type.getClass());
+    }
+
     /**
      * This method takes a Type argument that represents a generic class (e.g., <code>List&lt;String&gt;) and returns the
      * <code>Class</code> for the first generic type.  If the <code>Class</code> is not a generic type,

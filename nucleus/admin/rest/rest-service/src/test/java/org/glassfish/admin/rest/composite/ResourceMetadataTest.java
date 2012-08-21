@@ -62,6 +62,5 @@ public class ResourceMetadataTest {
         Assert.assertNotNull(rrmd);
         Assert.assertEquals(rrmd.getResourceMethods().size(), 2);
         Assert.assertEquals(rrmd.getSubResources().size(), 0);
-//        System.out.println(rrmd.toJson().toString(4));
     }
 }
