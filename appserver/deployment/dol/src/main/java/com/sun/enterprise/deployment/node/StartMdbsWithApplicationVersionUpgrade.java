@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,6 @@
 
 package com.sun.enterprise.deployment.node;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * This interface defines the processing used to upgrade
  * start-mdbs-with-application to the latest version
@@ -50,33 +47,10 @@ import java.util.Map;
  * @author  Gerald Ingalls
  * @version 
  */
-public class StartMdbsWithApplicationVersionUpgrade implements VersionUpgrade {
+public class StartMdbsWithApplicationVersionUpgrade extends RemoveVersionUpgrade {
   private static String START_MDBS_WITH_APPLICATION =
     "weblogic-application/ejb/start-mdbs-with-application";
-  private Map<String,String> matches;
   public StartMdbsWithApplicationVersionUpgrade() {
-    matches = new HashMap<String,String>();
-    init();
-  }
-  public UpgradeType getUpgradeType() {
-    return UpgradeType.REMOVE_ELEMENT;
-  }
-  public void init() {
-    matches.put(START_MDBS_WITH_APPLICATION, null);
-  }
-  public Map<String,String> getMatchXPath() {
-    return matches;
-  }
-  public String getReplacementElementName() {
-    return START_MDBS_WITH_APPLICATION;
-  }
-  public String getReplacementElementValue() {
-    return null;
-  }
-  public Map<String,String> getElementAttributes() {
-    return null;
-  }
-  public boolean isValid() {
-    return false;
+    super(START_MDBS_WITH_APPLICATION);
   }
 }

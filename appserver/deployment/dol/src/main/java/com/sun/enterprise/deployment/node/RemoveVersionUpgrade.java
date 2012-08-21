@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,71 @@
 
 package com.sun.enterprise.deployment.node;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * This interface defines the processing used to upgrade
- * data-source-name to the latest version
+ * This class implements VersionUpgrade and can be used as a
+ * convenience class to cause an element name to be removed.
  *
- * One element name is matched:
- * "weblogic-application/jdbc-connection-pool/data-source-name" is replaced by
- * "weblogic-application/jdbc-connection-pool/data-source-jndi-name".
  * @author  Gerald Ingalls
  * @version 
  */
-public class DataSourceNameVersionUpgrade extends ReplaceVersionUpgrade {
-  private static String DATA_SOURCE_NAME =
-    "weblogic-application/jdbc-connection-pool/data-source-name";
-  private static String DATA_SOURCE_JNDI_NAME =
-    "weblogic-application/jdbc-connection-pool/data-source-jndi-name";
-  public DataSourceNameVersionUpgrade() {
-    super(DATA_SOURCE_NAME, DATA_SOURCE_JNDI_NAME);
+public abstract class RemoveVersionUpgrade implements VersionUpgrade {
+  private static String START_MDBS_WITH_APPLICATION =
+    "weblogic-application/ejb/start-mdbs-with-application";
+  protected Map<String,String> matches;
+  protected String replacedElementName;
+  public RemoveVersionUpgrade(String replacedName) {
+    replacedElementName = replacedName;
+    matches = new HashMap<String,String>();
+    init();
+  }
+
+  /**
+   * Return the kind of processing to do
+   * @return the kind of processing to do
+   */
+  public UpgradeType getUpgradeType() {
+    return UpgradeType.REMOVE_ELEMENT;
+  }
+
+  /**
+   * Initialize
+   */
+  public void init() {
+    matches.put(replacedElementName, null);
+  }
+
+  /**
+   * Return the map of xml element to match
+   * @return the map of xml element to match
+   */
+  public Map<String,String> getMatchXPath() {
+    return matches;
+  }
+
+  /**
+   * Return the replacement element name
+   * @return the replacement element name
+   */
+  public String getReplacementElementName() {
+    return null;
+  }
+
+  /**
+   * Return the replacement element value
+   * @return the replacement element value
+   */
+  public String getReplacementElementValue() {
+    return null;
+  }
+
+  /**
+   * Return whether the matched items are valid.
+   * @return whether the matched items are valid.
+   */
+  public boolean isValid() {
+    return false;
   }
 }
