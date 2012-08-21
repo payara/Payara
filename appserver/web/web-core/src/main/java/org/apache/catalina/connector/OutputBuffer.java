@@ -195,8 +195,8 @@ public class OutputBuffer extends Writer
         this.grizzlyOutputBuffer = grizzlyResponse.getOutputBuffer();
         grizzlyOutputBuffer.setBufferSize(size);
         grizzlyOutputBuffer.registerLifeCycleListener(sessionCookieChecker);
-        //XXX commented out for SAAJ CTS, need to enable when Grizzly 2.3.x is integrated
-        //grizzlyOutputBuffer.setAsyncEnabled(true);
+        //XXX set false for SAAJ CTS, need to enable when Grizzly 2.3.x is integrated
+        grizzlyOutputBuffer.setAsyncEnabled(false);
         // @TODO set chunkingDisabled
     }
 
