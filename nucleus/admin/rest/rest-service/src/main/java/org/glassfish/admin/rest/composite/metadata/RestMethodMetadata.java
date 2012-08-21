@@ -47,36 +47,44 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.Util;
 
 /**
- *
+ * This class encapsulates the metadata for the specified REST resource method.
  * @author jdlee
  */
 public class RestMethodMetadata {
     private String httpMethod;
     private List<ParamMetadata> queryParameters = new ArrayList<ParamMetadata>();
+    /**
+     * The type of the incoming request body, if there is one.
+     */
     private Class<?> requestPayload;
+    /**
+     * The type of the response entity.  If <code>isCollection</code> is true, this value reflects the type of the items
+     * in the collection.
+     */
     private Class<?> returnPayload;
-//    private String returnType;
+    /**
+     * Specifies whether or not the return payload is a collection (in which case <code>returnPayload</code> gives the
+     * type of the items in the collection) or not.
+     */
     private boolean isCollection = false;
-    private String path;
-    private Object context;
+    private CompositeResource context;
 
-    public RestMethodMetadata(Object context, Method method, Annotation designator) {
+    public RestMethodMetadata(CompositeResource context, Method method, Annotation designator) {
         this.context = context;
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
         this.returnPayload = calculateReturnPayload(method);
-        this.path = calculatePath(method);
         processParameters(method);
     }
 
@@ -126,10 +134,13 @@ public class RestMethodMetadata {
                 + returnPayload + ", isCollection =" + isCollection + '}';
     }
 
+    /**
+     * Build and return a JSON object representing the metadata for the resource method
+     * @return
+     * @throws JSONException
+     */
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
-//        o.put("httpMethod", httpMethod);
-//        o.put("path", path);
         JSONArray array = new JSONArray();
         for (ParamMetadata pmd : queryParameters) {
             array.put(pmd.toJson());
@@ -155,6 +166,14 @@ public class RestMethodMetadata {
         return o;
     }
 
+    /**
+     * Get the return type of the method.  If the return type is a generic type, then extract the first generic type
+     * from the declaration via reflection.  This method does not take into account types with multiple generic types,
+     * but, given the style guide, this should not be an issue.  If the style guide is modified to allow non-RestModel and
+     * non-RestCollection returns (for example), this may need to be modified.
+     * @param method
+     * @return
+     */
     private Class<?> calculateReturnPayload(Method method) {
         final Type grt = method.getGenericReturnType();
         Class<?> value = (Class<?>)method.getReturnType();
@@ -171,11 +190,13 @@ public class RestMethodMetadata {
         return value;
     }
 
-    private String calculatePath(Method method) {
-        Path p = method.getAnnotation(Path.class);
-        return (p != null) ? p.value() : null;
-    }
-
+    /**
+     * Process the parameters for the method.  Any parameter marked <code>@PathParam</code> is ignored, since JAX-RS
+     * handles setting that value, meaning its presence need not be exposed to the client.  Any parameter marked with
+     * <code>@QueryParameter</code> is stored in the <code>queryParameter</code> list.  Anything left is considered the
+     * type of the request body. There should be only one of these.
+     * @param method
+     */
     private void processParameters(Method method) {
         Type[] paramTypes = method.getGenericParameterTypes();
         Annotation[][] paramAnnos = method.getParameterAnnotations();
@@ -209,9 +230,9 @@ public class RestMethodMetadata {
      * @return
      * @throws JSONException
      */
-    private JSONArray getProperties(Class<?> clazz) throws JSONException {
+    private JSONObject getProperties(Class<?> clazz) throws JSONException {
         Map<String, ParamMetadata> map = new HashMap<String, ParamMetadata>();
-        JSONArray props = new JSONArray();
+        JSONObject props = new JSONObject();
         if (clazz.isInterface()) {
             Object model = CompositeUtil.instance().getModel(clazz);
             clazz = model.getClass();
@@ -228,7 +249,7 @@ public class RestMethodMetadata {
         }
 
         for (Map.Entry<String, ParamMetadata> entry : map.entrySet()) {
-            props.put(entry.getValue().toJson());
+            props.put(entry.getKey(), entry.getValue().toJson());
         }
 
         return props;

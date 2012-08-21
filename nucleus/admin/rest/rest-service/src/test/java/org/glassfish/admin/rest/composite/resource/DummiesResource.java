@@ -54,6 +54,7 @@ import org.glassfish.admin.rest.model.BaseModel;
  *
  * @author jdlee
  */
+@Path("dummies")
 public class DummiesResource extends CompositeResource {
 
     @Override

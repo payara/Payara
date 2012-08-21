@@ -71,7 +71,9 @@ import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.component.Habitat;
 
 /**
- *
+ * This is the base class for all composite resources. It provides all of the basic configuration and utilities needed
+ * by composites.  For top-level resources, the <code>@Path</code> and <code>@Service</code> annotations are still
+ * required, though, in order for the resource to be located and configured properly.
  * @author jdlee
  */
 @Produces(MediaType.APPLICATION_JSON)
@@ -88,6 +90,10 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     private String authenticatedUser;
     protected CompositeUtil compositeUtil = CompositeUtil.instance();
 
+    /**
+     * This method will return the Subject associated with the current request.
+     * @return
+     */
     protected Subject getSubject() {
         if (subject == null) {
             Request req = requestRef.get();
@@ -97,6 +103,10 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return subject;
     }
 
+    /**
+     * This method will return the authenticated user associated with the current request.
+     * @return
+     */
     protected String getAuthenticatedUser() {
         if (authenticatedUser == null) {
             Subject s = getSubject();
@@ -132,6 +142,12 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return null;
     }
 
+
+    /**
+     * This method will handle any OPTIONS requests for composite resources. 
+     * @return
+     * @throws JSONException 
+     */
     @OPTIONS
     public String options() throws JSONException {
         RestResourceMetadata rrmd = new RestResourceMetadata(this);
@@ -162,6 +178,10 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         }
     }
 
+    /**
+     * Get the current configured indenting value for the REST layer
+     * @return
+     */
     protected int getFormattingIndentLevel() {
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
         if (rg == null) {
@@ -198,7 +218,15 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return ar;
     }
 
+    /**
+     * Every resource that returns a collection will need to return the URI for each item in the colleciton. This method
+     * handles the creation of that URI, ensuring a correct and consistent URI pattern.
+     * @param name
+     * @return
+     * @throws IllegalArgumentException
+     * @throws UriBuilderException
+     */
     protected URI getChildItemUri(String name) throws IllegalArgumentException, UriBuilderException {
-        return uriInfo.getAbsolutePathBuilder().path("id").path(name).build();
+        return uriInfo.getBaseUriBuilder().path("id").path(name).build();
     }
 }

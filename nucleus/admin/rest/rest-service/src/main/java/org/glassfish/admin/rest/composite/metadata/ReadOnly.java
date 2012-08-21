@@ -47,7 +47,8 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 /**
- *
+ * An attribute not intended to be updated/set by the client should be marked read only to indicate that any value
+ * passed to the server by the client will be ignored
  * @author jdlee
  */
 @Qualifier

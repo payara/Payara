@@ -86,7 +86,7 @@ public class DummyUriInfo implements UriInfo {
 
     @Override
     public UriBuilder getRequestUriBuilder() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new UriBuilderImpl();
     }
 
     @Override
@@ -96,138 +96,7 @@ public class DummyUriInfo implements UriInfo {
 
     @Override
     public UriBuilder getAbsolutePathBuilder() {
-        return new UriBuilder() {
-            @Override
-            public UriBuilder clone() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder uri(URI uri) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder uri(String uriTemplate) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder scheme(String scheme) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder schemeSpecificPart(String ssp) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder userInfo(String ui) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder host(String host) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder port(int port) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder replacePath(String path) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder path(String path) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder path(Class<?> resource) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder path(Class<?> resource, String method) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder path(Method method) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder segment(String... segments) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder replaceMatrix(String matrix) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder matrixParam(String name, Object... values) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder replaceMatrixParam(String name, Object... values) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder replaceQuery(String query) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder queryParam(String name, Object... values) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder replaceQueryParam(String name, Object... values) throws IllegalArgumentException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public UriBuilder fragment(String fragment) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public URI buildFromMap(Map<String, ? extends Object> values) throws IllegalArgumentException, UriBuilderException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public URI buildFromEncodedMap(Map<String, ? extends Object> values) throws IllegalArgumentException, UriBuilderException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public URI build(Object... values) throws IllegalArgumentException, UriBuilderException {
-                URI uri = null;
-                try {
-                    uri = new URI("");
-                } catch (URISyntaxException ex) {
-                    Logger.getLogger(DummiesResource.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                return uri;
-            }
-
-            @Override
-            public URI buildFromEncoded(Object... values) throws IllegalArgumentException, UriBuilderException {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return new UriBuilderImpl();
     }
 
     @Override
@@ -237,7 +106,7 @@ public class DummyUriInfo implements UriInfo {
 
     @Override
     public UriBuilder getBaseUriBuilder() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new UriBuilderImpl();
     }
 
     @Override
@@ -273,5 +142,142 @@ public class DummyUriInfo implements UriInfo {
     @Override
     public List<Object> getMatchedResources() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private static class UriBuilderImpl extends UriBuilder {
+
+        public UriBuilderImpl() {
+        }
+
+        @Override
+        public UriBuilder clone() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder uri(URI uri) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder uri(String uriTemplate) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder scheme(String scheme) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder schemeSpecificPart(String ssp) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder userInfo(String ui) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder host(String host) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder port(int port) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder replacePath(String path) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder path(String path) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder path(Class<?> resource) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder path(Class<?> resource, String method) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder path(Method method) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder segment(String... segments) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder replaceMatrix(String matrix) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder matrixParam(String name, Object... values) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder replaceMatrixParam(String name, Object... values) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder replaceQuery(String query) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder queryParam(String name, Object... values) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder replaceQueryParam(String name, Object... values) throws IllegalArgumentException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public UriBuilder fragment(String fragment) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public URI buildFromMap(Map<String, ? extends Object> values) throws IllegalArgumentException, UriBuilderException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public URI buildFromEncodedMap(Map<String, ? extends Object> values) throws IllegalArgumentException, UriBuilderException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public URI build(Object... values) throws IllegalArgumentException, UriBuilderException {
+            URI uri = null;
+            try {
+                uri = new URI("");
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(DummiesResource.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return uri;
+        }
+
+        @Override
+        public URI buildFromEncoded(Object... values) throws IllegalArgumentException, UriBuilderException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

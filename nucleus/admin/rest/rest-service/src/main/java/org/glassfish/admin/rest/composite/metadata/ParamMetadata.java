@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.jvnet.hk2.config.Attribute;
 
@@ -57,12 +58,12 @@ public class ParamMetadata {
     private String help;
     private String defaultValue;
     private boolean readOnly = false;
-    private Object context;
+    private CompositeResource context;
 
     public ParamMetadata() {
 
     }
-    public ParamMetadata(Object context, Class<?> paramType, String name, Annotation[] annotations) {
+    public ParamMetadata(CompositeResource context, Class<?> paramType, String name, Annotation[] annotations) {
         this.name = name;
         this.context = context;
         type = paramType.getSimpleName();
@@ -116,7 +117,7 @@ public class ParamMetadata {
 
     public JSONObject toJson() throws JSONException {
         JSONObject o = new JSONObject();
-        o.put("name", name);
+//        o.put("name", name);
         o.put("type", type);
         o.put("help", help);
         o.put("default", defaultValue);
@@ -125,6 +126,11 @@ public class ParamMetadata {
         return o;
     }
 
+    /**
+     * This method will process the annotations for a field to try to determine the default value, if one has been specified.
+     * @param annos
+     * @return
+     */
     private String getDefaultValue(Annotation[] annos) {
         String defval = null;
         if (annos != null) {
@@ -158,5 +164,4 @@ public class ParamMetadata {
         }
         return defval;
     }
-
 }

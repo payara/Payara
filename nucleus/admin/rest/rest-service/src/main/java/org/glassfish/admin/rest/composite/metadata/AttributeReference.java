@@ -47,7 +47,10 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 /**
- *
+ * Many, if not all, <code>RestModel</code> instances will expose properties that mirror similarly-named properties on
+ * <code>ConfigBean</code>s in another module. In such instances, it is undesirable that metadata (e.g., default values,
+ * min/max, etc) be repeated. This annotation allows a model author to refer to the property on the related
+ * <code>ConfigBean</code> from which the system should pull metadata.
  * @author jdlee
  */
 @Qualifier

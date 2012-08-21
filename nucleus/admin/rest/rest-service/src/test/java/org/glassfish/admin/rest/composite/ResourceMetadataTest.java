@@ -50,7 +50,7 @@ import org.testng.annotations.Test;
  *
  * @author jdlee
  */
-public class ResourceMetadataTest {
+public class ResourceMetadataTest  {
     @Test(groups="offline")
     public void testMetadata() throws JSONException {
         RestResourceMetadata rrmd = new RestResourceMetadata(new DummiesResource());
