@@ -45,6 +45,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.model.BaseModel;
 
@@ -61,5 +62,10 @@ public class DummyResource extends CompositeResource {
     @DELETE
     public Response deleteDummy(@PathParam("name") String name) {
         return Response.ok().build();
+    }
+
+    @Override
+    public UriInfo getUriInfo() {
+        return new DummyUriInfo();
     }
 }
