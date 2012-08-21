@@ -40,6 +40,7 @@
 package org.glassfish.admin.rest.composite;
 
 import com.sun.enterprise.v3.common.ActionReporter;
+import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
 import javax.security.auth.Subject;
@@ -51,6 +52,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
@@ -107,6 +109,10 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         }
 
         return authenticatedUser;
+    }
+
+    public UriInfo getUriInfo() {
+        return uriInfo;
     }
 
     public void setUriInfo(UriInfo uriInfo) {
@@ -190,5 +196,9 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
                     build());
         }
         return ar;
+    }
+
+    protected URI getChildItemUri(String name) throws IllegalArgumentException, UriBuilderException {
+        return uriInfo.getAbsolutePathBuilder().path("id").path(name).build();
     }
 }

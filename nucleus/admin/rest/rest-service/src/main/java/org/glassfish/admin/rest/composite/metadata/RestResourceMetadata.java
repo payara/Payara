@@ -53,6 +53,7 @@ import javax.ws.rs.Path;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.CompositeResource;
 
 /**
  *
@@ -61,9 +62,9 @@ import org.codehaus.jettison.json.JSONObject;
 public class RestResourceMetadata {
     private Map<String, RestMethodMetadata> resourceMethods = new HashMap<String, RestMethodMetadata>();
     private List<String> subResources = new ArrayList<String>();
-    private Object context;
+    private CompositeResource context;
 
-    public RestResourceMetadata(Object context) {
+    public RestResourceMetadata(CompositeResource context) {
         this.context = context;
         processClass();
     }
@@ -100,7 +101,7 @@ public class RestResourceMetadata {
 
             final Path path = m.getAnnotation(Path.class);
             if (path != null) {
-                subResources.add(path.value());
+                subResources.add(context.getUriInfo().getAbsolutePathBuilder().build().toASCIIString() + "/" + path.value());
             }
         }
     }
