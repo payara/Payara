@@ -163,6 +163,7 @@
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <arg value="clean"/>
                     <arg value="install"/>
                 </exec>
                 <antcall target="start-server"/>
