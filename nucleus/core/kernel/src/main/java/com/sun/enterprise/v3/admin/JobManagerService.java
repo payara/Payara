@@ -41,9 +41,12 @@ package com.sun.enterprise.v3.admin;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
-import org.glassfish.api.admin.AdminCommandInstance;
-import org.glassfish.api.admin.AdminCommandInstanceRegistry;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.logging.LogDomains;
+import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.AdminCommandState;
 import org.jvnet.hk2.annotations.Service;
 
@@ -53,21 +56,36 @@ import org.jvnet.hk2.annotations.Service;
  *  1. generating unique ids for jobs
  *  2. serving as a registry for jobs
  *  3. creating threadpools for jobs
+ *  4.removing expired jobs
  *
  * @author Martin Mares
  * @author Bhakti Mehta
  */
 
 @Service
-public class JobManagerService implements AdminCommandInstanceRegistry {
+public class JobManagerService implements JobManager {
     
     private static final int MAX_SIZE = 65535;
+
+    /**
+     * This is configurable retention period of 1 day
+     */
+    private static final int JOBS_RETENTION_PERIOD = 86400000;
     
-    private HashMap<String, AdminCommandInstance> map = new HashMap<String, AdminCommandInstance>();
-    private HashSet<String> ids = new HashSet<String>();
+    private HashMap<String, Job> jobRegistry = new HashMap<String, Job>();
+
     private AtomicInteger lastId = new AtomicInteger(0);
 
-    
+    private static final LocalStringManagerImpl adminStrings =
+            new LocalStringManagerImpl(JobManagerService.class);
+
+    private final static Logger logger = LogDomains.getLogger(JobManagerService.class, LogDomains.ADMIN_LOGGER);
+
+
+    /**
+     * This will return a new id which is unused
+     * @return
+     */
     protected synchronized String getNewId() {
         int nextId = lastId.incrementAndGet();
         if (nextId > MAX_SIZE) {
@@ -78,43 +96,100 @@ public class JobManagerService implements AdminCommandInstanceRegistry {
     }
 
 
+    /**
+     * This resets the id to 0
+     */
     private void reset() {
         lastId.set(0);
     }
 
+    /**
+     * This method will return if the id is in use
+     * @param id
+     * @return true if id is in use
+     */
     private boolean idInUse(String id) {
-        return map.containsKey(id) ;
+        return jobRegistry.containsKey(id) ;
     }
 
+    /**
+     * This will create a new job with the name of command and a new unused id for the job
+     * @param name  The name of the command
+     * @return   a newly created job
+     */
     @Override
-    public AdminCommandInstance createCommandInstance(String name) {
+    public Job createJob(String name) {
         return new AdminCommandInstanceImpl(getNewId(),name);
     }
 
+    /**
+     * This adds the jobs
+     * @param instance
+     * @throws IllegalArgumentException
+     */
     @Override
-    public synchronized void register(AdminCommandInstance instance) throws IllegalArgumentException {
+    public synchronized void registerJob(Job instance) throws IllegalArgumentException {
         if (instance == null) {
-            throw new IllegalArgumentException("Argument instance can not be null");
+            throw new IllegalArgumentException(adminStrings.getLocalString("job.cannot.be.null","Job cannot be null"));
         }
-        if (map.containsKey(instance.getId())) {
-            throw new IllegalArgumentException("Instance id is already in use.");
-        }     
-       
-        map.put(instance.getId(), instance);
-        ids.add(instance.getId());
+        if (jobRegistry.containsKey(instance.getId())) {
+            throw new IllegalArgumentException(adminStrings.getLocalString("job.id.in.use","Job id is already in use."));
+        }
+
+        jobRegistry.put(instance.getId(), instance);
+
         if (instance instanceof AdminCommandInstanceImpl) {
             ((AdminCommandInstanceImpl) instance).setState(AdminCommandState.State.RUNNING);
         }
     }
 
+    /**
+     * This returns all the jobs in the registry
+     * @return   The iterator of jobs
+     */
     @Override
-    public Iterator<AdminCommandInstance> iterator() {
-        return map.values().iterator();
+    public Iterator<Job> getJobs() {
+        return jobRegistry.values().iterator();
     }
 
+    /**
+     * This will return a job associated with the id
+     * @param id  The job whose id matches
+     * @return
+     */
     @Override
-    public AdminCommandInstance get(String id) {
-        return map.get(id);
+    public Job get(String id) {
+        return jobRegistry.get(id);
     }
-    
+
+    /**
+     * This will return a list of jobs which have crossed the JOBS_RETENTION_PERIOD
+     * and need to be purged
+     * @return  list of jobs to be purged
+     */
+    public ArrayList<Job> getExpiredJobs() {
+        ArrayList expiredJobs = new ArrayList();
+        Iterator<Job> jobs = getJobs();
+        while ( jobs.hasNext()) {
+            Job job = jobs.next();
+            long executedTime = job.getCommandExecutionDate();
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - executedTime > JOBS_RETENTION_PERIOD) {
+                 expiredJobs.add(job);
+            }
+
+        }
+        return expiredJobs;
+    }
+
+    /**
+     * This will remove the job from the registry
+     * @param id  The job id of the job to be removed
+     */
+    @Override
+    public synchronized void purgeJob(String id) {
+        Job obj = jobRegistry.remove(id);
+        logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
+
+    }
 }

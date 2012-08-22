@@ -70,7 +70,7 @@ class CommandRunnerProgressHelper {
     private ProgressStatus progressForMainCommand = null;
     private ProgressStatusMirroringImpl progressMirroring = null;
     
-    public CommandRunnerProgressHelper(AdminCommand command, String name, AdminCommandInstance commandInstance) {
+    public CommandRunnerProgressHelper(AdminCommand command, String name, Job commandInstance) {
         progressAnnotation = command.getClass().getAnnotation(Progress.class);
         if (progressAnnotation != null) {
             if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
@@ -82,7 +82,7 @@ class CommandRunnerProgressHelper {
         }
     }
     
-    private String createIdForCommandProgress(AdminCommandInstance commandInstance) {
+    private String createIdForCommandProgress(Job commandInstance) {
         String cid = commandInstance == null ? null : commandInstance.getId();
         if (cid == null || cid.isEmpty()) {
             cid = UUID.randomUUID().toString();

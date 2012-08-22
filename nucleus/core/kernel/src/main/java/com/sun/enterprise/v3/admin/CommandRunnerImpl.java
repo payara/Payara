@@ -136,8 +136,8 @@ public class CommandRunnerImpl implements CommandRunner {
     @Inject @Named("SupplementalCommandExecutorImpl")
     SupplementalCommandExecutor supplementalExecutor;
     @Inject
-    AdminCommandInstanceRegistry commandInstanceRegistry;
-    
+    JobManager jobRegistry;
+
     //private final Map<Class<? extends AdminCommand>, String> commandModelEtagMap = new WeakHashMap<Class<? extends AdminCommand>, String>();
     private final Map<NameCommandClassPair, String> commandModelEtagMap = new IdentityHashMap<NameCommandClassPair, String>();
 
@@ -1064,7 +1064,7 @@ public class CommandRunnerImpl implements CommandRunner {
      * Called from ExecutionContext.execute.
      */
     private void doCommand(ExecutionContext inv, AdminCommand command, 
-            final Subject subject, final AdminCommandInstance commandInstance) {
+            final Subject subject, final Job commandInstance) {
 
         if (command == null) {
             command = getCommand(inv.scope(), inv.name(), inv.report(), logger);
@@ -1694,11 +1694,11 @@ public class CommandRunnerImpl implements CommandRunner {
 
         @Override
         public void execute(AdminCommand command) {
-            AdminCommandInstance commandInstance = commandInstanceRegistry.createCommandInstance(name());
+            Job commandInstance = jobRegistry.createJob(name());
             for (NameListerPair nameListerPair : nameListerPairs) {
                 commandInstance.getEventBroker().registerListener(nameListerPair.nameRegexp, nameListerPair.listener);
             }
-            commandInstanceRegistry.register(commandInstance);
+            jobRegistry.registerJob(commandInstance);
             CommandRunnerImpl.this.doCommand(this, command, subject, commandInstance);
             commandInstance.complete(report(), outboundPayload());
         }

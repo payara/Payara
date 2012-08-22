@@ -46,7 +46,7 @@ import org.glassfish.api.ActionReport;
  *
  * @author mmares
  */
-public interface AdminCommandInstance extends AdminCommandState {
+public interface Job extends AdminCommandState {
     
     /** Id of command instance.
      */
@@ -64,7 +64,9 @@ public interface AdminCommandInstance extends AdminCommandState {
 
     public String getName();
 
-    public String getExecutionDate();
+    public long getCommandExecutionDate();
+
+
 
 
     

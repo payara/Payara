@@ -64,10 +64,10 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
     private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(AttachCommand.class);
     
     private AdminCommandEventBroker eventBroker;
-    private AdminCommandInstance attached;
+    private Job attached;
     
     @Inject
-    AdminCommandInstanceRegistry registry;
+    JobManager registry;
     
     @Param(primary=true, optional=false, multiple=false)
     String commandId;

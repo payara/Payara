@@ -43,7 +43,7 @@ import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandEventBroker;
-import org.glassfish.api.admin.AdminCommandInstance;
+import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.Payload;
 
@@ -57,20 +57,20 @@ import java.util.Date;
  * @author Bhakti Mehta
  */
 
-public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements AdminCommandInstance {
+public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements Job {
     
     private CommandProgress commandProgress;
     private Payload.Outbound payload;
     private final AdminCommandEventBroker broker;
 
-    private final String executionDate;
+    private final long executionDate;
 
     private final String commandName;
 
     protected AdminCommandInstanceImpl(String id, String name) {
         super(id);
         this.broker = new AdminCommandEventBrokerImpl();
-        this.executionDate = getExecutionInfo();
+        this.executionDate = new Date().getTime();
         this.commandName = name;
 
     }
@@ -121,15 +121,12 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements A
     }
 
     @Override
-    public String getExecutionDate ()  {
+    public long getCommandExecutionDate ()  {
         return executionDate;
 
     }
 
-    private String getExecutionInfo() {
-        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date execDate = new Date();
-        String strDate = sdfDate.format(execDate);
-        return strDate;
-    }
+
+
+
 }

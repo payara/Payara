@@ -43,19 +43,23 @@ import java.util.Iterator;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
+ * This is the contract for the JobManagerService
  *
- * @author mmares
+ * @author Martin Mares
+ * @author Bhakti Mehta
  */
-//TODO: Just for basic SSE implementation. Will be replaced by Bhakti with JobManager
+
 @Contract
-public interface AdminCommandInstanceRegistry {
+public interface JobManager {
     
-    public AdminCommandInstance createCommandInstance(String name);
+    public Job createJob(String name);
     
-    public void register(AdminCommandInstance instance) throws IllegalArgumentException;
+    public void registerJob(Job instance) throws IllegalArgumentException;
     
-    public Iterator<AdminCommandInstance> iterator();
+    public Iterator<Job> getJobs();
     
-    public AdminCommandInstance get(String id);
+    public Job get(String id);
+
+    public void purgeJob(String id);
     
 }
