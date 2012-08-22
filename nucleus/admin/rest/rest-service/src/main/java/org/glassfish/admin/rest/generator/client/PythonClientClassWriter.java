@@ -177,7 +177,9 @@ class PythonClientClassWriter implements ClientClassWriter {
         BufferedWriter writer = null;
         try {
             try {
-                classFile.createNewFile();
+                if (!classFile.createNewFile()) {
+                    throw new RuntimeException("Unable to create new file"); //i18n
+                }
                 classFile.deleteOnExit();
                 writer = new BufferedWriter(new FileWriter(classFile));
                 writer.append(source.toString());

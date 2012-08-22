@@ -113,7 +113,6 @@ public class CommandResource {
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "getCommandModel({0})", commandName);
         }
-        CommandRunner cr = getCommandRunner();
         CommandModel model = getCommandModel(commandName);
         String eTag = CachedCommandModel.computeETag(model);
         return Response.ok(model).tag(new EntityTag(eTag, true)).build();
@@ -307,7 +306,7 @@ public class CommandResource {
             logger.log(Level.FINEST, "execCommandMultInMultOut({0})", commandName);
         }
         ParameterMap data = new ParameterMap();
-        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
+//        Payload.Inbound inbound = RestPayloadImpl.Inbound.parseFromFormDataMultipart(mp, data);
         return executeSseCommand(commandName, null, data, modelETag, jSessionId);
     }
     
@@ -540,7 +539,7 @@ public class CommandResource {
         if (model == null) {
             //Looks like not existing command. Try to get info
             RestActionReporter ar = new RestActionReporter();
-            AdminCommand cmd = cr.getCommand(commandName.getScope(), commandName.getName(), ar, logger);
+//            AdminCommand cmd = cr.getCommand(commandName.getScope(), commandName.getName(), ar, logger);
             if (ar.hasFailures()) {
                 throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
                         .type(MediaType.TEXT_PLAIN)

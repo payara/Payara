@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -157,7 +158,7 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
         for (Method m : model.getClass().getDeclaredMethods()) {
             if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
                 String propName = m.getName().substring(3);
-                propName = propName.substring(0,1).toLowerCase() + propName.substring(1);
+                propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
                 try {
                     result.put(propName, getJsonObject(m.invoke(model)));
                 } catch (Exception e) {

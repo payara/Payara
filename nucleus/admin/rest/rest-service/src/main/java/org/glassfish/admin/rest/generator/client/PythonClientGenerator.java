@@ -77,7 +77,9 @@ public class PythonClientGenerator extends ClientGenerator {
 
             File zipDir = Util.createTempDirectory();
             File zipFile = new File(zipDir, ARTIFACT_NAME + "-" + versionString + "-egg.zip");
-            zipFile.createNewFile();
+            if (!zipFile.createNewFile()) {
+                throw new RuntimeException("Unable to create new file"); //i18n
+            }
             zipFile.deleteOnExit();
             zip = new ZipOutputStream(new FileOutputStream(zipFile));
             

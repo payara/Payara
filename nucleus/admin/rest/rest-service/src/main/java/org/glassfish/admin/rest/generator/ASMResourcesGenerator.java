@@ -46,8 +46,8 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public class ASMResourcesGenerator extends ResourcesGeneratorBase {
 
-    protected final String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
-    protected final String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
+    protected final static String GENERATED_PATH = "org/glassfish/admin/rest/resources/generatedASM/";
+    protected final static String GENERATED_PACKAGE = GENERATED_PATH.replace("/", ".");
 
     public ASMResourcesGenerator(ServiceLocator habitat) {
         super(habitat);

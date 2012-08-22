@@ -40,6 +40,10 @@
 
 package org.glassfish.admin.rest.adapter;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
@@ -51,17 +55,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import javax.ws.rs.core.MediaType;
-
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
-
-import org.jvnet.hk2.annotations.Optional;
-import org.jvnet.hk2.component.Habitat;
+import javax.ws.rs.core.MediaType;
 
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.RestConfigChangeListener;
@@ -88,17 +86,14 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.jettison.JettisonBinder;
 import org.glassfish.jersey.media.multipart.MultiPartBinder;
 import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.server.filter.UriConnegFilter;
-
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
-import com.sun.logging.LogDomains;
-import org.glassfish.jersey.jettison.JettisonBinder;
+import org.jvnet.hk2.annotations.Optional;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * Adapter for REST interface
@@ -137,7 +132,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile HttpHandler adapter = null;
-    private boolean isRegistered = false;
     private AdminEndpointDecider epd = null;
 
     protected RestAdapter() {

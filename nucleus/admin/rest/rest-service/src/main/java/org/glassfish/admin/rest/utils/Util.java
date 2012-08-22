@@ -404,7 +404,9 @@ public class Util {
     public static File createTempDirectory() {
         File baseTempDir = new File(System.getProperty(JAVA_IO_TMPDIR));
         File tempDir = new File(baseTempDir, Long.toString(System.currentTimeMillis()));
-        tempDir.mkdirs();
+        if (!tempDir.mkdirs()) {
+            throw new RuntimeException("Unable to create directories"); // i81n
+        }
         tempDir.deleteOnExit();
 
         return tempDir;

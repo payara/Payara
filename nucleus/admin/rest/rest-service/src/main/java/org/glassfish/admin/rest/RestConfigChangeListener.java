@@ -1,4 +1,4 @@
-/*
+    /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
@@ -59,15 +59,11 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 public class RestConfigChangeListener implements ConfigListener {
 
     private Reloader r;
-    private ResourceConfig rc;
     private ServerContext sc;
-    private ServiceLocator habitat;
 
     public RestConfigChangeListener(ServiceLocator habitat, Reloader reload, ResourceConfig rc, ServerContext sc) {
         this.r = reload;
-        this.rc = rc;
         this.sc = sc;
-        this.habitat = habitat;
 
 
         RestConfig target = ResourceUtil.getRestConfig(habitat);
@@ -79,6 +75,7 @@ public class RestConfigChangeListener implements ConfigListener {
         /// ((ObservableBean) ConfigSupport.getImpl(target)).removeListener(this);
     }
 
+    @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {

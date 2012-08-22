@@ -60,9 +60,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name=RestCommandAdapter.CONTEXT_ROOT)
 public class RestCommandAdapter extends RestAdapter {
-    
     public static final String CONTEXT_ROOT = "command";
-    
     private static final Logger logger = LogDomains.getLogger(RestCommandAdapter.class, LogDomains.ADMIN_LOGGER);
     
     @Override

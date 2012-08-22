@@ -46,6 +46,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -242,7 +243,7 @@ public class RestMethodMetadata {
             for (Method m : ifaces.getDeclaredMethods()) {
                 String methodName = m.getName();
                 if (methodName.startsWith("get")) {
-                    String propertyName = methodName.substring(3,4).toLowerCase() + methodName.substring(4);
+                    String propertyName = methodName.substring(3,4).toLowerCase(Locale.getDefault()) + methodName.substring(4);
                     map.put(propertyName, new ParamMetadata(context, m.getReturnType(), propertyName, m.getAnnotations()));
                 }
             }

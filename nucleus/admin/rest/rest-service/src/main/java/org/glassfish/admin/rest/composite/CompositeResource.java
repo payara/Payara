@@ -142,6 +142,9 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return null;
     }
 
+    public CompositeUtil getCompositeUtil() {
+        return compositeUtil;
+    }
 
     /**
      * This method will handle any OPTIONS requests for composite resources. 

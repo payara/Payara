@@ -113,47 +113,4 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
         }
         return submittedType.equals(MediaType.APPLICATION_JSON) && RestModel.class.isAssignableFrom(type);
     }
-
-    private void setValue (Object model, String key, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        if (value == null) {
-            return;
-        }
-
-        String setterName = "set" + key.substring(0,1).toUpperCase() + key.substring(1);
-        System.out.println("Setter = " + setterName);
-        Method method = null;
-        try {
-            method = model.getClass().getMethod(setterName, value.getClass());
-        } catch (Exception ex) {
-        }
-        if (method == null) {
-            Method[] methods = model.getClass().getMethods();
-            for (Method m : methods) {
-                if (m.getName().equals(setterName)) {
-                    if (m.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
-                        method = m;
-                        break;
-                    }
-                }
-            }
-        }
-        if (method != null) {
-            method.invoke(model, value);
-        }
-    }
-
-    private Object getRealObject(Object o) throws JSONException {
-        if (o.equals(JSONObject.NULL)) {
-            return null;
-        } else if (JSONArray.class.isAssignableFrom(o.getClass())) {
-            JSONArray array = (JSONArray) o;
-            List list = new ArrayList();
-            for (int i = 0; i < array.length(); i++) {
-                list.add(getRealObject(array.get(i)));
-            }
-            return list;
-        }
-
-        return o;
-    }
 }

@@ -235,6 +235,31 @@ public class RestCollection<T> implements Map<RestModelMetadata, T> {
             Object otherKey = ((RestCollectionEntry) o).getKey();
             return ((Comparable) key).compareTo((Comparable) otherKey);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final RestCollectionEntry<T> other = (RestCollectionEntry<T>) obj;
+            if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+                return false;
+            }
+            if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 
     private static class RestModelSet<T> extends AbstractSet<T> {

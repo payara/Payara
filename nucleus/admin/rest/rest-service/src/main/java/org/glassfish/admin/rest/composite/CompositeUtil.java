@@ -201,7 +201,7 @@ public class CompositeUtil {
         for (Method cbMethod : configBean.getMethods()) {
             name = cbMethod.getName();
             if (name.startsWith("set")/* && (cbMethod.getAnnotation(Attribute.class) !=null)*/) {
-                String getterName = "get" + name.substring(3, 4).toUpperCase() + name.substring(4);
+                String getterName = "get" + name.substring(3, 4).toUpperCase(Locale.getDefault()) + name.substring(4);
                 try {
                     Method getter = source.getClass().getMethod(getterName);
                     final String key = ResourceUtil.convertToXMLName(name.substring(3));
@@ -238,7 +238,7 @@ public class CompositeUtil {
             T model = getModel(modelClass);
             for (Method setter : getSetters(modelClass)) {
                 String name = setter.getName();
-                String attribute = name.substring(3, 4).toLowerCase() + name.substring(4);
+                String attribute = name.substring(3, 4).toLowerCase(Locale.getDefault()) + name.substring(4);
                 Type param0 = setter.getGenericParameterTypes()[0];
                 if (json.has(attribute)) {
                     java.lang.Object o = json.get(attribute);
@@ -362,11 +362,12 @@ public class CompositeUtil {
      * @param similarClass
      */
     private void loadModelExtensionMetadata(Class<?> similarClass) {
+        BufferedReader reader = null;
         try {
             Enumeration<URL> urls = similarClass.getClassLoader().getResources("META-INF/restmodelextensions");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                reader = new BufferedReader(new InputStreamReader(url.openStream()));
                 while (reader.ready()) {
                     final String line = reader.readLine();
                     if ((line == null) || line.isEmpty()) {
@@ -389,9 +390,18 @@ public class CompositeUtil {
                         list.add(ext);
                     }
                 }
+
             }
         } catch (IOException ex) {
             Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
@@ -459,7 +469,7 @@ public class CompositeUtil {
     }
 
     private String getPropertyName(String name) {
-        return name.substring(0,1).toLowerCase() + name.substring(1);
+        return name.substring(0,1).toLowerCase(Locale.getDefault()) + name.substring(1);
     }
 
     /**
@@ -637,7 +647,7 @@ public class CompositeUtil {
         try {
             java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedExceptionAction() {
-
+                        @Override
                         public java.lang.Object run() throws Exception {
                             if (!clM.isAccessible()) {
                                 clM.setAccessible(true);
@@ -652,8 +662,9 @@ public class CompositeUtil {
                     //Thread.currentThread().getContextClassLoader();
 //                    Thread.currentThread().getContextClassLoader();
             try {
-                Class<?> newClass = (Class<?>) clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);
+                clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);
             } catch (Exception e) {
+                 throw new RuntimeException(e);
             }
 
             try {

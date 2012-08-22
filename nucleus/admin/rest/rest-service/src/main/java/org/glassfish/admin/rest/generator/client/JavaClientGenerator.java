@@ -136,7 +136,9 @@ public class JavaClientGenerator extends ClientGenerator {
         try {
             File jarDir = Util.createTempDirectory();
             File jarFile = new File(jarDir, fileName);
-            jarFile.createNewFile();
+            if (!jarFile.createNewFile()) {
+                throw new RuntimeException("Unable to create new file"); //i18n
+            }
             jarFile.deleteOnExit();
             target = new JarOutputStream(new FileOutputStream(jarFile));
 

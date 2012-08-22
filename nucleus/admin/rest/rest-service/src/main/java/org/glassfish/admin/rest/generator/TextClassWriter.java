@@ -69,8 +69,9 @@ public class TextClassWriter implements ClassWriter {
         boolean success = file.createNewFile();
         if (!success) {
             file = new File(generationDir, className + Long.toString(System.currentTimeMillis())+ ".java");
-            file.createNewFile();
-            //throw new IOException("Unable to create file: " + file.getAbsolutePath()); //i18n
+            if (!file.createNewFile()) {
+                throw new IOException("Unable to create file: " + file.getAbsolutePath()); //i18n
+            }
         }
         FileWriter fstream = new FileWriter(file);
         writer = new BufferedWriter(fstream);
