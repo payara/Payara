@@ -63,6 +63,7 @@ import org.glassfish.api.admin.InvalidCommandException;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.common.util.admin.AsadminInput;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.component.Habitat;
 
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
@@ -340,8 +341,8 @@ public class AsadminMain {
             }
             command = argv[0];
 
-            habitat.addComponent(env);
-            habitat.addComponent(po);
+            ServiceLocatorUtilities.addOneConstant(habitat, env);
+            ServiceLocatorUtilities.addOneConstant(habitat, po);
             cmd = CLICommand.getCommand(habitat, command);
             return cmd.execute(argv);
         } catch (CommandValidationException cve) {

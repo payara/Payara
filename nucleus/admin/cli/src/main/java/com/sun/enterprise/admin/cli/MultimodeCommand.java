@@ -48,7 +48,13 @@ import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandModel.ParamModel;
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 
 import com.sun.enterprise.admin.util.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -158,6 +164,18 @@ public class MultimodeCommand extends CLICommand {
             }
         }
     }
+    
+    private static void atomicReplace(ServiceLocator locator, ProgramOptions options) {
+        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
+        
+        config.addUnbindFilter(BuilderHelper.createContractFilter(ProgramOptions.class.getName()));
+        ActiveDescriptor<ProgramOptions> desc = BuilderHelper.createConstantDescriptor(
+                options, null, ProgramOptions.class);
+        config.addActiveDescriptor(desc);
+        
+        config.commit();
+    }
 
     /**
      * Read commands from the specified BufferedReader
@@ -225,9 +243,8 @@ public class MultimodeCommand extends CLICommand {
                 po.setClassPath(programOpts.getClassPath());
                 po.setClassName(programOpts.getClassName());
                 // remove the old one and replace it
-                habitat.remove(
-                    habitat.getInhabitantByType(ProgramOptions.class));
-                habitat.addComponent(po);
+                atomicReplace(habitat, po);
+                
                 cmd = CLICommand.getCommand(habitat, command);
                 rc = cmd.execute(args);
             } catch (CommandValidationException cve) {
@@ -263,9 +280,7 @@ public class MultimodeCommand extends CLICommand {
             } finally {
                 // restore the original program options
                 // XXX - is this necessary?
-                habitat.remove(
-                    habitat.getInhabitantByType(ProgramOptions.class));
-                habitat.addComponent(programOpts);
+                atomicReplace(habitat, programOpts);
             }
 
             // XXX - this duplicates code in AsadminMain, refactor it

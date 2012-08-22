@@ -40,7 +40,6 @@
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.logging.LogDomains;
 
 import java.beans.PropertyChangeEvent;
@@ -48,9 +47,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.Startup;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
@@ -69,7 +70,7 @@ import javax.inject.Named;
 public final class ConfigConfigBeanListener implements ConfigListener, Startup {
 
     @Inject
-    Habitat habitat;
+    private ServiceLocator habitat;
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
     static final Logger logger = LogDomains.getLogger(ConfigConfigBeanListener.class,
@@ -95,8 +96,9 @@ public final class ConfigConfigBeanListener implements ConfigListener, Startup {
                 ConfigBeanProxy ovbp = (ConfigBeanProxy) ov;
                 logger.log(Level.FINE, "removing default instance index for {0}",
                         ConfigSupport.getImpl(ovbp).getProxyType().getName());
-                habitat.removeIndex(ConfigSupport.getImpl(ovbp).getProxyType().getName(),
-                        ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                ServiceLocatorUtilities.removeFilter(habitat, BuilderHelper.createNameAndContractFilter(
+                        ConfigSupport.getImpl(ovbp).getProxyType().getName(),
+                        ServerEnvironment.DEFAULT_INSTANCE_NAME));
             }
             
             // add the DEFAULT_INSTANCE_NAME entry for a new value
@@ -106,9 +108,9 @@ public final class ConfigConfigBeanListener implements ConfigListener, Startup {
                 ConfigBeanProxy nvbp = nvb.getProxy(nvb.getProxyType());
                 logger.log(Level.FINE, "adding default instance index for {0}",
                         nvb.getProxyType().getName());
-                habitat.addIndex(new ExistingSingletonInhabitant<ConfigBeanProxy>(nvbp),
-                        nvb.getProxyType().getName(),
-                        ServerEnvironment.DEFAULT_INSTANCE_NAME);
+                ServiceLocatorUtilities.addOneConstant(habitat, nvbp,
+                        ServerEnvironment.DEFAULT_INSTANCE_NAME,
+                        nvb.getProxyType());
             }
         }
         return null;

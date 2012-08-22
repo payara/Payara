@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.concurrent.ExecutorService;
 import java.io.IOException;
 
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.appserv.server.util.Version;

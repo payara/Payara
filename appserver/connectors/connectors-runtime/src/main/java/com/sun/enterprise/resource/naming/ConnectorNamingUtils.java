@@ -44,7 +44,6 @@ import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.logging.LogDomains;
 
 import java.util.logging.Level;
@@ -52,6 +51,7 @@ import java.util.logging.Logger;
 
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.api.admin.*;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.Globals;
 
 /**
@@ -91,9 +91,10 @@ public class ConnectorNamingUtils {
     static private Habitat getHabitat() {
         Habitat habitat = Globals.getStaticHabitat();
         StartupContext startupContext = new StartupContext();
-        habitat.add(new ExistingSingletonInhabitant(startupContext));
+        ServiceLocatorUtilities.addOneConstant(habitat, startupContext);
+        ServiceLocatorUtilities.addOneConstant(habitat,
+                new ProcessEnvironment(ProcessEnvironment.ProcessType.Other));
 
-        habitat.addComponent(new ProcessEnvironment(ProcessEnvironment.ProcessType.Other));
         return habitat;
     }
 }

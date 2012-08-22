@@ -47,7 +47,6 @@ import com.sun.enterprise.ee.cms.core.GMSConstants;
 import com.sun.enterprise.ee.cms.core.GroupManagementService;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.logging.LogDomains;
 
 import java.beans.PropertyChangeEvent;
@@ -65,6 +64,9 @@ import javax.inject.Provider;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.config.*;
 
 /**
@@ -97,7 +99,7 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
     ServerEnvironment env;
 
     @Inject
-    Habitat habitat;
+    private ServiceLocator habitat;
 
     @Inject
     StartupContext startupContext;
@@ -171,7 +173,7 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
 
     public GMSAdapter getGMSAdapterByName(String clusterName) {
         synchronized(lock) {
-            return habitat.getComponent(GMSAdapter.class, clusterName);
+            return habitat.getService(GMSAdapter.class, clusterName);
         }
     }
 
@@ -225,7 +227,8 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
                 if (initResult == false) {
                     return null;
                 }
-                habitat.addIndex(new ExistingSingletonInhabitant<GMSAdapter>(result), GMSAdapter.class.getName(), cluster.getName());
+                ServiceLocatorUtilities.addOneConstant(habitat, result, cluster.getName(), GMSAdapter.class);
+                
                 if (logger.isLoggable(TRACE_LEVEL)) {
                     logger.log(TRACE_LEVEL, "loadModule: registered created gmsadapter for cluster " + cluster.getName() + " initialized result=" + initResult);
                 }
@@ -272,10 +275,8 @@ public class GMSAdapterService implements Startup, PostConstruct, ConfigListener
                             if (localGmsAdapter != null) {
                                 gmsAdapters.remove(localGmsAdapter);
                                 localGmsAdapter.getModule().shutdown(GMSConstants.shutdownType.INSTANCE_SHUTDOWN);
-                                boolean result = habitat.removeIndex(GMSAdapter.class.getName(), localGmsAdapter);
-                                if (logger.isLoggable(TRACE_LEVEL)) {
-                                    logger.log(TRACE_LEVEL, "removeIndex(" + GMSAdapter.class.getName() + ") returned result of " + result);
-                                }
+                                ServiceLocatorUtilities.removeFilter(habitat, BuilderHelper.createNameAndContractFilter(
+                                        GMSAdapter.class.getName(), cluster.getName()));
 
                                 // remove GMS module for deleted cluster.  Must do this or will fail if the cluster is recreated before DAS is stopped.
                                 localGmsAdapter.complete();

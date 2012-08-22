@@ -63,6 +63,7 @@ import org.glassfish.hk2.internal.ConstantActiveDescriptor;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorBuilder;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.DomDocument;
@@ -113,7 +114,7 @@ public class Utils {
 			try {
 				DomDocument document = configParser.parse(url,
 						test.getDocument(habitat));
-				habitat.addComponent(document);
+				ServiceLocatorUtilities.addOneConstant(habitat, document);
 				test.decorate(habitat);
 			} catch (Exception e) {
 				e.printStackTrace();

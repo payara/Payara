@@ -42,10 +42,10 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.Habitat;
 import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
@@ -61,7 +61,7 @@ import java.beans.PropertyVetoException;
 public class TypeResolver implements CrudResolver {
 
     @Inject
-    Habitat habitat;
+    private ServiceLocator habitat;
 
     @Inject
     Domain domain;
@@ -70,7 +70,7 @@ public class TypeResolver implements CrudResolver {
 
     @Override
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, final Class<T> type) {
-        T proxy = habitat.getComponent(type);
+        T proxy = habitat.getService(type);
         if (proxy==null) {
             try {
                 proxy = type.cast(ConfigSupport.apply(new SingleConfigCode<Domain>() {
@@ -93,7 +93,7 @@ public class TypeResolver implements CrudResolver {
                         domDomain.setNodeElements(elementName, Dom.unwrap(child));
 
                         // add to the habitat
-                        habitat.addIndex(new ExistingSingletonInhabitant<ConfigBeanProxy>(child), type.getName(), null);
+                        ServiceLocatorUtilities.addOneConstant(habitat, child, null, type);
 
                         return child;
                     }

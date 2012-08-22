@@ -68,7 +68,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 

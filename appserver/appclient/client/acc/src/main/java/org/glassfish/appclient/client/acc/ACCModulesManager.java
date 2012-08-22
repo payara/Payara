@@ -44,7 +44,6 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.naming.impl.ClientNamingConfiguratorImpl;
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

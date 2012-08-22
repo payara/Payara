@@ -44,9 +44,7 @@ import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.StringUtils;
 
 import com.sun.enterprise.module.ModulesRegistry;
-import org.jvnet.hk2.component.Habitat;
 
-import com.sun.hk2.component.ExistingSingletonInhabitant;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -62,9 +60,7 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.MemoryMappedArchive;
 import org.glassfish.deployment.client.DFDeploymentProperties;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.hk2.bootstrap.HK2Populator;
-import org.glassfish.hk2.bootstrap.impl.ClasspathDescriptorFileFinder;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
@@ -1321,12 +1317,11 @@ public class SunDeploymentManager implements DeploymentManager {
     private void prepareHabitat() {
         ModulesRegistry registry = new StaticModulesRegistry(getClass().getClassLoader());
         ServiceLocator serviceLocator = registry.createServiceLocator("default");
-        habitat = serviceLocator.getService(Habitat.class);
+        habitat = serviceLocator.getService(ServiceLocator.class);
 
         StartupContext startupContext = new StartupContext();
-        ((Habitat) habitat).add(new ExistingSingletonInhabitant(startupContext));
-
-        ((Habitat) habitat).addComponent(new ProcessEnvironment(ProcessEnvironment.ProcessType.Other));
+        ServiceLocatorUtilities.addOneConstant(habitat, startupContext);
+        ServiceLocatorUtilities.addOneConstant(habitat, new ProcessEnvironment(ProcessEnvironment.ProcessType.Other));
     }
 
     private ArchiveFactory getArchiveFactory() {

@@ -42,6 +42,7 @@ package com.sun.enterprise.configapi.tests;
 
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -55,6 +56,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.Transactions;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * This test will ensure that when a class is injected with a parent bean and a child
@@ -94,14 +96,21 @@ public class ParentConfigListenerTest extends ConfigApiTest {
             }
         }, container.httpService);
 
-        getHabitat().getComponent(Transactions.class).waitForDrain();
+        getHabitat().<Transactions>getService(Transactions.class).waitForDrain();
         assertTrue(container.received);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(container.httpService);
 
         // let's check that my newly added listener is available in the habitat.
-        Collection<NetworkListener> networkListeners = habitat.getAllByContract(NetworkListener.class);
+        List<ServiceHandle<?>> networkListeners = habitat.getAllServiceHandles(NetworkListener.class);
         boolean found = false;
-        for (NetworkListener nl : networkListeners) {
+        
+        for (ServiceHandle<?> bobSH : networkListeners) {
+            Object bob = bobSH.getService();
+            if (!(bob instanceof NetworkListener)) {
+                System.out.println("JRW(10) PCL bob=" + bob + " of type " + bob.getClass().getName() +
+                        " bobSH=" + bobSH);
+            }
+            NetworkListener nl = (NetworkListener) bob;
             System.out.println("Network listener " + nl.getName());
             if (nl.getName().equals("Funky-Listener")) {
                 found=true;
