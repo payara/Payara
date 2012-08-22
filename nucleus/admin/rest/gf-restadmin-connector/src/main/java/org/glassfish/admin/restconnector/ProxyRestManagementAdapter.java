@@ -56,7 +56,7 @@ import javax.inject.Named;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Service
-public class ProxyRestManagementAdapter extends AbstractProxyRestAdapter implements Adapter {
+public class ProxyRestManagementAdapter extends AbstractProxyRestAdapter {
 
     @Inject
     Habitat services;

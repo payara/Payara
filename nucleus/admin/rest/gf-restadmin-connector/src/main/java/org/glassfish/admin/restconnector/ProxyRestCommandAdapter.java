@@ -54,7 +54,7 @@ import org.jvnet.hk2.component.Habitat;
  * @author mmares
  */
 @Service
-public class ProxyRestCommandAdapter extends AbstractProxyRestAdapter implements Adapter {
+public class ProxyRestCommandAdapter extends AbstractProxyRestAdapter {
     
     @Inject
     Habitat services;
