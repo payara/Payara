@@ -205,7 +205,9 @@ public class MarshallingUtils {
                 throw new RuntimeException(ex);
             } finally {
                 try {
-                    input.close();
+                    if (input != null) {
+                        input.close();
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(MarshallingUtils.class.getName()).log(Level.SEVERE, null, ex);
                 }
