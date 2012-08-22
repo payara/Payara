@@ -112,6 +112,7 @@ public class InputBuffer extends Reader
     private ReadHandler readHandler = null;
     private boolean hasSetReadListener = false;
     private boolean prevIsReady = true;
+    private static final ThreadLocal<Boolean> IS_READY_SCOPE = new ThreadLocal<Boolean>();
 
     // ----------------------------------------------------------- Constructors
 
@@ -150,6 +151,8 @@ public class InputBuffer extends Reader
     public void setRequest(Request grizzlyRequest) {
 	this.grizzlyRequest = grizzlyRequest;
         this.grizzlyInputBuffer = grizzlyRequest.getInputBuffer();
+        //XXX set false for SAAJ CTS, need to enable when Grizzly 2.3.x is integrated
+        this.grizzlyInputBuffer.setAsyncEnabled(false);
     }
 
 
@@ -242,11 +245,26 @@ public class InputBuffer extends Reader
 
 
     public boolean isReady() {
-        boolean result = (grizzlyInputBuffer.available() > 0);
-        if (prevIsReady && result == false && readHandler != null) {
-            grizzlyInputBuffer.notifyAvailable(readHandler);
+        if (!prevIsReady) {
+            return false;
         }
-        prevIsReady = result;
+
+        boolean result = (grizzlyInputBuffer.available() > 0);
+        if (!result) {
+            if (hasSetReadListener) {
+                prevIsReady = false; // Not data available
+                IS_READY_SCOPE.set(Boolean.TRUE);
+                try {
+                    grizzlyInputBuffer.notifyAvailable(readHandler);
+                } finally {
+                    IS_READY_SCOPE.remove();
+                }
+                
+            } else {
+                prevIsReady = true;  // Allow next .isReady() call to check underlying inputStream
+            }
+        }
+
         return result;
     }
 
@@ -371,23 +389,74 @@ public class InputBuffer extends Reader
     }
 
 
-    static class ReadHandlerImpl implements ReadHandler {
+    class ReadHandlerImpl implements ReadHandler {
         private ReadListener readListener = null;
+        private Object lk = new Object();
 
         private ReadHandlerImpl(ReadListener listener) {
             readListener = listener;
         }
 
+        @Override
         public void onDataAvailable() {
-            readListener.onDataAvailable();
+            if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
+                processDataAvailable();
+            } else {
+                AsyncContextImpl.pool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        processDataAvailable();
+                    }
+                });
+            }
         }
 
+        private void processDataAvailable() {
+            synchronized(lk) {
+                prevIsReady = true;
+                readListener.onDataAvailable();
+            }
+        }
+
+        @Override
         public void onAllDataRead() {
-            readListener.onAllDataRead();
+            if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
+                processAllDataRead();
+            } else {
+                AsyncContextImpl.pool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        processAllDataRead();
+                    }
+                });
+            }
         }
 
+        private void processAllDataRead() {
+            synchronized(lk) {
+                prevIsReady = true;
+                readListener.onAllDataRead();
+            }
+        }
+
+        @Override
         public void onError(final Throwable t) {
-            readListener.onError(t);
+            if (!Boolean.TRUE.equals(IS_READY_SCOPE.get())) {
+                processError(t);
+            } else {
+                AsyncContextImpl.pool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        processError(t);
+                    }
+                });
+            }
+        }
+
+        private void processError(final Throwable t) {
+            synchronized(lk) {
+                readListener.onError(t);
+            }
         }
     }
 }

@@ -74,7 +74,7 @@ class AsyncContextImpl implements AsyncContext {
     private static final long DEFAULT_ASYNC_TIMEOUT_MILLIS = 30000L;
 
     // Thread pool for async dispatches
-    private static final ExecutorService pool =
+    static final ExecutorService pool =
         Executors.newCachedThreadPool(new AsyncPoolThreadFactory());
 
     private static final StringManager STRING_MANAGER =
