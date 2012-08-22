@@ -146,6 +146,8 @@
     </target>
 
     <target name="start-server" depends="recreate-domain">
+        <echo message="***** Copying updated rest-service.jar"/>
+        <copy file="target/rest-service.jar" todir="binaries/glassfish3/glassfish/modules/" overwrite="false" flatten="true" verbose="true"/>
         <echo message="***** Starting GlassFish"/>
         <exec executable="${executable}">
             <arg value="start-domain"/>
@@ -156,6 +158,13 @@
     <target name="test" depends="download,setup">
         <trycatch>
             <try>
+                <exec executable="${MAVEN_HOME}/bin/mvn" resultproperty="build.result">
+                    <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
+                    <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
+                    <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
+                    <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <arg value="install"/>
+                </exec>
                 <antcall target="start-server"/>
                 <exec executable="${MAVEN_HOME}/bin/mvn" resultproperty="test.result">
                     <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
