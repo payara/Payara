@@ -230,6 +230,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
      * @throws UriBuilderException
      */
     protected URI getChildItemUri(String name) throws IllegalArgumentException, UriBuilderException {
-        return uriInfo.getBaseUriBuilder().path("id").path(name).build();
+        return uriInfo.getAbsolutePathBuilder().path("id").path(name).build();
     }
 }
