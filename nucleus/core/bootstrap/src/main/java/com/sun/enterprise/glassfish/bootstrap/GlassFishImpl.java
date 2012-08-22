@@ -105,7 +105,7 @@ public class GlassFishImpl implements GlassFish {
         this.status = Status.DISPOSED;
     }
 
-    public synchronized Status getStatus() {
+    public Status getStatus() {
         return status;
     }
 
