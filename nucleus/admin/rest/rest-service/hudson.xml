@@ -75,19 +75,20 @@
     <property name="glassfish.dist.url"
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
     <property name="maven.url"
-              value="http://apache.osuosl.org/maven/binaries/apache-maven-${maven.version}-bin.zip"/>
+              value="http://apache.osuosl.org/maven/binaries/apache-maven-${maven.version}-bin.tar.gz"/>
 
     <target name="download">
         <get src="${ant.contrib.url}" dest="ant-contrib.jar" usetimestamp="true"/>
         <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar" usetimestamp="true"/>
         <get src="${glassfish.dist.url}" dest="${glassfish.download}" usetimestamp="true"/>
-        <get src="${maven.url}" dest="maven.zip" usetimestamp="true"/>
+        <get src="${maven.url}" dest="maven.tar.gz" usetimestamp="true"/>
 
         <delete dir="${install.dir}"/>
         <mkdir dir="${install.dir}"/>
         <unzip src="${glassfish.download}" dest="${install.dir}"/>
 
-        <unzip src="maven.zip" dest="${install.dir}"/>
+        <untar src="maven.tar.gz" dest="${install.dir}" compression="gzip"/>
+        <chmod file="${MAVEN_HOME}/bin/mvn" perm="ugo+rx"/>
     </target>
 
     <target name="setup">
