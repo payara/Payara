@@ -40,7 +40,6 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.Module;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.process.JavaClassRunner;
@@ -48,10 +47,14 @@ import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.embeddable.GlassFish;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * For non-verbose mode:
@@ -64,6 +67,9 @@ import java.util.logging.*;
  * @author Byron Nevins
  */
 public class RestartServer {
+    @Inject
+    private Provider<GlassFish> glassfishProvider;
+    
     protected final void setDebug(Boolean b) {
         debug = b;
     }
@@ -98,14 +104,10 @@ public class RestartServer {
             }
             // else we just return a special int from System.exit()
 
-            Collection<Module> modules = registry.getModules(
-                    "com.sun.enterprise.osgi-adapter");
-            if (modules.size() == 1) {
-                final Module mgmtAgentModule = modules.iterator().next();
-                mgmtAgentModule.stop();
+            GlassFish gfKernel = glassfishProvider.get();
+            if (gfKernel != null) {
+                gfKernel.stop();
             }
-            else
-                context.getLogger().warning(strings.get("restart.server.badNumModules", modules.size()));
 
         }
         catch (Exception e) {
