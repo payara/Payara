@@ -40,6 +40,7 @@
 
 -exportcontents: \
                         org.glassfish.admin.rest, \
+                        org.glassfish.admin.rest.adapter, \
                         org.glassfish.admin.rest.model, \
 						org.glassfish.admin.rest.utils, \
 						org.glassfish.admin.rest.composite, \

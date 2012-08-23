@@ -119,18 +119,18 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     private CountDownLatch latch = new CountDownLatch(1);
 
     @Inject
-    private ServerContext sc;
+    protected ServerContext sc;
 
     @Inject
-    private ServerEnvironment serverEnvironment;
+    protected ServerEnvironment serverEnvironment;
 
     @Inject
     private RestSessionManager sessionManager;
 
     @Inject @Optional
-    private AdminAccessController adminAuthenticator;
+    protected AdminAccessController adminAuthenticator;
 
-    private static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
+    protected static final Logger logger = LogDomains.getLogger(RestAdapter.class, LogDomains.ADMIN_LOGGER);
     private volatile HttpHandler adapter = null;
     private AdminEndpointDecider epd = null;
 
@@ -286,14 +286,9 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         }};
     }
 
-    /**
-     * dynamically load the class that contains all references to Jersey APIs
-     * so that Jersey is not loaded when the RestAdapter is loaded at boot time
-     * gain a few 100 millis at GlassFish startup time
-     */
-    public HttpHandler exposeContext(Set<Class<?>> classes, final ServerContext sc, final Habitat habitat) throws EndpointRegistrationException {
-
-        HttpHandler httpHandler = null;
+    protected ResourceConfig getResourceConfig(Set<Class<?>> classes,
+                                               final ServerContext sc,
+                                               final Habitat habitat) throws EndpointRegistrationException {
         final Reloader r = new Reloader();
 
         ResourceConfig rc = new ResourceConfig(classes);
@@ -352,6 +347,20 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
             }
         });
 
+        //add a rest config listener for possible reload of Jersey
+        new RestConfigChangeListener(habitat, r, rc, sc);
+        return rc;
+    }
+
+    /**
+     * dynamically load the class that contains all references to Jersey APIs
+     * so that Jersey is not loaded when the RestAdapter is loaded at boot time
+     * gain a few 100 millis at GlassFish startup time
+     */
+    public HttpHandler exposeContext(Set<Class<?>> classes, final ServerContext sc,
+                                     final Habitat habitat) throws EndpointRegistrationException {
+        HttpHandler httpHandler = null;
+        ResourceConfig rc = getResourceConfig(classes, sc, habitat);
         //Use common classloader. Jersey artifacts are not visible through
         //module classloader
         ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -362,8 +371,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
-        //add a rest config listener for possible reload of Jersey
-        new RestConfigChangeListener(habitat, r, rc, sc);
         return httpHandler;
     }
 
