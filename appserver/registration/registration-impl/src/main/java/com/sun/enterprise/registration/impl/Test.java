@@ -232,6 +232,7 @@ public class Test {
             System.out.println(rm.getRegistrationStatus());
 
             testTransferManager(getRepositoryFile());
+            testRMRegistration();
         } catch(Exception ex) {
             ex.printStackTrace();
         }

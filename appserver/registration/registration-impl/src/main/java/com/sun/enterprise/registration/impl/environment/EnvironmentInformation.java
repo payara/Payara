@@ -403,26 +403,26 @@ public class EnvironmentInformation {
         StringBuilder sb = new StringBuilder();
         Formatter fmt = new Formatter(sb);
 
-        fmt.format("<environment>\n");
-        fmt.format("<hostname>%s</hostname>\n", hostname);
-        fmt.format("<hostId>%s</hostId>\n", hostId);
-        fmt.format("<osName>%s</osName>\n", osName);
-        fmt.format("<osVersion>%s</osVersion>\n", osVersion);
-        fmt.format("<osArchitecture>%s</osArchitecture>\n", osArchitecture);
-        fmt.format("<systemModel>%s</systemModel>\n", systemModel);
-        fmt.format("<systemManufacturer>%s</systemManufacturer>\n",
+        fmt.format("<environment>");
+        fmt.format("<hostname>%s</hostname>", hostname);
+        fmt.format("<hostId>%s</hostId>", hostId);
+        fmt.format("<osName>%s</osName>", osName);
+        fmt.format("<osVersion>%s</osVersion>", osVersion);
+        fmt.format("<osArchitecture>%s</osArchitecture>", osArchitecture);
+        fmt.format("<systemModel>%s</systemModel>", systemModel);
+        fmt.format("<systemManufacturer>%s</systemManufacturer>",
             systemManufacturer);
-        fmt.format("<cpuManufacturer>%s</cpuManufacturer>\n", cpuManufacturer);
-        fmt.format("<serialNumber>%s</serialNumber>\n",serialNumber);
-        fmt.format("<physmem>%s</physmem>\n",physmem);
-        fmt.format("<cpuinfo>\n");
-        fmt.format("<sockets>%s</sockets>\n",sockets);
-        fmt.format("<cores>%s</cores>\n",cores);
-        fmt.format("<virtcpus>%s</virtcpus>\n",virtcpus);
-        fmt.format("<name>%s</name>\n",cpuname);
-        fmt.format("<clockrate>%s</clockrate>\n",clockrate);
-        fmt.format("</cpuinfo>\n");
-        fmt.format("</environment>\n");
+        fmt.format("<cpuManufacturer>%s</cpuManufacturer>", cpuManufacturer);
+        fmt.format("<serialNumber>%s</serialNumber>",serialNumber);
+        fmt.format("<physmem>%s</physmem>",physmem);
+        fmt.format("<cpuinfo>");
+        fmt.format("<sockets>%s</sockets>",sockets);
+        fmt.format("<cores>%s</cores>",cores);
+        fmt.format("<virtcpus>%s</virtcpus>",virtcpus);
+        fmt.format("<name>%s</name>",cpuname);
+        fmt.format("<clockrate>%s</clockrate>",clockrate);
+        fmt.format("</cpuinfo>");
+        fmt.format("</environment>");
 
         return sb.toString();
     }
