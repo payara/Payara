@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,10 +79,8 @@ public class LocalServiceRegistry {
     */
     public static void main(String[] args) {
 	
-        Properties p = System.getProperties();
-	//p.list(System.out);
 	System.out.println("From Local service registry  ..");
-	LocalServiceRegistry reg = LocalServiceRegistry.getLocalRegistry();
+	//LocalServiceRegistry reg = LocalServiceRegistry.getLocalRegistry();
 	//Revisit: set the debug flag from ant file itself
 	//reg.showServiceTagAttributes();
     }
@@ -107,7 +105,6 @@ public class LocalServiceRegistry {
     }
 
     public  void showServiceTagAttributes() {
-        Properties data = System.getProperties();
 	showAttribute(ServiceTag.PRODUCT_NAME);
 	showAttribute(ServiceTag.PRODUCT_VERSION);
 	showAttribute(ServiceTag.PRODUCT_URN);
