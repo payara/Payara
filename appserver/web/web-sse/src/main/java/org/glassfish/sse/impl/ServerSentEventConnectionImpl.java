@@ -64,6 +64,7 @@ final class ServerSentEventConnectionImpl extends ServerSentEventConnection impl
     final AsyncContext asyncContext;
     final CreationalContext<?> cc;
     private final ServerSentEventApplication owner;
+    private boolean closed;
 
     ServerSentEventConnectionImpl(ServerSentEventApplication owner, HttpServletRequest request,
                 ServerSentEventHandler sseh, CreationalContext<?> cc, AsyncContext asyncContext) {
@@ -92,6 +93,9 @@ final class ServerSentEventConnectionImpl extends ServerSentEventConnection impl
 
     @Override
     public void sendMessage(ServerSentEventData eventData) throws IOException {
+        if (closed) {
+            throw new IllegalStateException("sendMessage cannot be called after the connection is closed.");
+        }
         synchronized (sseh) {       // so that events don't interleave
             try {
                 // Write message on response and flush
@@ -108,6 +112,7 @@ final class ServerSentEventConnectionImpl extends ServerSentEventConnection impl
 
     @Override
     public void close() {
+        closed = true;
         destroy();
     }
 

@@ -73,6 +73,7 @@ public abstract class ServerSentEventConnection implements Closeable {
      *
      * @param eventData Server-Sent event data
      * @throws IOException when there is an error in sending
+     * @throws IllegalStateException when called after calling close method
      * @see ServerSentEventData
      */
     public abstract void sendMessage(String eventData) throws IOException;
@@ -81,6 +82,7 @@ public abstract class ServerSentEventConnection implements Closeable {
      * Sends the Server-Sent event to client
      * @param eventData Server-Sent event data
      * @throws IOException when there is an error in sending
+     * @throws IllegalStateException when called after calling close method
      * @see ServerSentEventData
      */
     public abstract void sendMessage(ServerSentEventData eventData)
