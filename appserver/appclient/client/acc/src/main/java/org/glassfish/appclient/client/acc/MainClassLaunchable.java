@@ -75,12 +75,10 @@ public class
     private ApplicationClientDescriptor acDesc = null;
     private ClassLoader classLoader = null;
     private AppClientArchivist archivist = null;
-    private final ServiceLocator habitat;
 
     MainClassLaunchable(final ServiceLocator habitat, final Class mainClass) {
         super();
         this.mainClass = mainClass;
-        this.habitat = habitat;
     }
 
     public Class getMainClass() throws ClassNotFoundException {
