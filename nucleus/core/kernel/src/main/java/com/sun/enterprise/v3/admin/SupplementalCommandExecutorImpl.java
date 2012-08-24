@@ -159,39 +159,32 @@ public class SupplementalCommandExecutorImpl implements SupplementalCommandExecu
     /**
      * Get list of all supplemental commands, map it to various commands and cache this list
      */
-    private Map<String, List<ServiceHandle<?>>> getSupplementalCommandsList() {
-        if (supplementalCommandsMap != null) return supplementalCommandsMap;
+    private synchronized Map<String, List<ServiceHandle<?>>> getSupplementalCommandsList() {
         
-        synchronized(this) {
-            if (supplementalCommandsMap != null) return supplementalCommandsMap;
-            
-            supplementalCommandsMap = new ConcurrentHashMap<String, List<ServiceHandle<?>>>();
-            List<ServiceHandle<?>> supplementals = habitat.getAllServiceHandles(Supplemental.class);
-            for (ServiceHandle<?> handle : supplementals) {
-                ActiveDescriptor<?> inh = handle.getActiveDescriptor();
-                String commandName = getOne("target", inh.getMetadata());
-                if(supplementalCommandsMap.containsKey(commandName)) {
-                    supplementalCommandsMap.get(commandName).add(handle);
-                } else {
-                    ArrayList<ServiceHandle<?>> inhList =
-                            new ArrayList<ServiceHandle<?>>();
-                    inhList.add(handle);
-                    supplementalCommandsMap.put(commandName, inhList);
-                }
+        if (supplementalCommandsMap != null) return supplementalCommandsMap;
+
+        supplementalCommandsMap = new ConcurrentHashMap<String, List<ServiceHandle<?>>>();
+        List<ServiceHandle<?>> supplementals = habitat.getAllServiceHandles(Supplemental.class);
+        for (ServiceHandle<?> handle : supplementals) {
+            ActiveDescriptor<?> inh = handle.getActiveDescriptor();
+            String commandName = getOne("target", inh.getMetadata());
+            if(supplementalCommandsMap.containsKey(commandName)) {
+                supplementalCommandsMap.get(commandName).add(handle);
+            } else {
+                ArrayList<ServiceHandle<?>> inhList =
+                        new ArrayList<ServiceHandle<?>>();
+                inhList.add(handle);
+                supplementalCommandsMap.put(commandName, inhList);
             }
         }
-        
         return supplementalCommandsMap;
+        
     }
 
     private InjectionResolver<Param> getInjector(AdminCommand command, ParameterMap parameters, MultiMap<String, File> map) {
-        CommandModel model;
-        try {
-            CommandModelProvider c = CommandModelProvider.class.cast(command);
-            model = c.getModel();
-        } catch (ClassCastException e) {
-            model = new CommandModelImpl(command.getClass());
-        }
+        CommandModel model = command instanceof CommandModelProvider ?
+                CommandModelProvider.class.cast(command).getModel() :
+                new CommandModelImpl(command.getClass());
         return new MapInjectionResolver(model, parameters, map);
     }
 
