@@ -143,8 +143,8 @@ public class JWSAdapterManager implements PostConstruct {
 
     private IiopService iiopService;
 
-    private final ConcurrentHashMap<String,Set<AppClientServerApplication>> contributingAppClients =
-            new ConcurrentHashMap<String,Set<AppClientServerApplication>>();
+    private final HashMap<String,Set<AppClientServerApplication>> contributingAppClients =
+            new HashMap<String,Set<AppClientServerApplication>>();
 
     private final ConcurrentHashMap<String,AppClientHTTPAdapter> httpAdapters = new
             ConcurrentHashMap<String, AppClientHTTPAdapter>();
