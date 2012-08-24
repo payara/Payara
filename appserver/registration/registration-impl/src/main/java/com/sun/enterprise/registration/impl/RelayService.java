@@ -209,32 +209,32 @@ public class RelayService {
         Formatter fmt = new Formatter(html);
 
         html.append("<environment>");
-        fmt.format("<hostname>%s</hostname>\r\n", se.getHostname());
-        fmt.format("<hostId>%s</hostId>\r\n",se.getHostId());
-        fmt.format("<osName>%s</osName>\r\n",se.getOsName());
-        fmt.format("<osVersion>%s</osVersion>\r\n",se.getOsVersion());
-        fmt.format("<osArchitecture>%s</osArchitecture>\r\n",se.getOsArchitecture());
-        fmt.format("<systemModel>%s</systemModel>\r\n",se.getSystemModel());
-        fmt.format("<systemManufacturer>%s</systemManufacturer>\r\n",se.getSystemManufacturer());
-        fmt.format("<cpuManufacturer>%s</cpuManufacturer>\r\n",se.getCpuManufacturer());
-        fmt.format("<serialNumber>%s</serialNumber>\r\n",se.getSerialNumber());
+        fmt.format("<hostname>%s</hostname>", se.getHostname());
+        fmt.format("<hostId>%s</hostId>",se.getHostId());
+        fmt.format("<osName>%s</osName>",se.getOsName());
+        fmt.format("<osVersion>%s</osVersion>",se.getOsVersion());
+        fmt.format("<osArchitecture>%s</osArchitecture>",se.getOsArchitecture());
+        fmt.format("<systemModel>%s</systemModel>",se.getSystemModel());
+        fmt.format("<systemManufacturer>%s</systemManufacturer>",se.getSystemManufacturer());
+        fmt.format("<cpuManufacturer>%s</cpuManufacturer>",se.getCpuManufacturer());
+        fmt.format("<serialNumber>%s</serialNumber>",se.getSerialNumber());
 
         addNumericTag(fmt, "physmem", se.getPhysMem());
-        html.append("<cpuinfo>\r\n");
+        html.append("<cpuinfo>");
         addNumericTag(fmt, "sockets", se.getSockets());
         addNumericTag(fmt, "cores", se.getCores());
         addNumericTag(fmt, "virtcpus", se.getVirtCpus());
-        fmt.format("<name>%s</name>\r\n", se.getCpuName());
+        fmt.format("<name>%s</name>", se.getCpuName());
         addNumericTag(fmt, "clockrate", se.getClockRate());
-        html.append("</cpuinfo>\r\n");
-        html.append("</environment>\r\n");
+        html.append("</cpuinfo>");
+        html.append("</environment>");
         return html.toString();
     }
 
     private void addNumericTag(Formatter fmt, String tag, String value) {
        try {
             int i = Integer.valueOf(value);
-            fmt.format("<" + tag + ">%s</" + tag + ">\r\n", i);
+            fmt.format("<" + tag + ">%s</" + tag + ">", i);
         } catch (Exception ex) {
             //ignore.
         }
@@ -243,23 +243,23 @@ public class RelayService {
     private String getHtml(ServiceTag tag) {
         StringBuilder html = new StringBuilder();
         Formatter fmt = new Formatter(html);
-        fmt.format("<service_tag>\r\n");
-        fmt.format("<instance_urn>%s</instance_urn>\r\n",tag.getInstanceURN());
-        fmt.format("<product_name>%s</product_name>\r\n",tag.getProductName());
-        fmt.format("<product_version>%s</product_version>\r\n",tag.getProductVersion());
-        fmt.format("<product_urn>%s</product_urn>\r\n",tag.getProductURN());
-        fmt.format("<product_parent_urn/>\r\n");
-        fmt.format("<product_parent>%s</product_parent>\r\n",tag.getProductParent());
-        fmt.format("<product_defined_inst_id>%s</product_defined_inst_id>\r\n",tag.getProductDefinedInstID());
-        fmt.format("<product_vendor>%s</product_vendor>\r\n",tag.getProductVendor());
-        fmt.format("<platform_arch>%s</platform_arch>\r\n",tag.getPlatformArch());
+        fmt.format("<service_tag>");
+        fmt.format("<instance_urn>%s</instance_urn>",tag.getInstanceURN());
+        fmt.format("<product_name>%s</product_name>",tag.getProductName());
+        fmt.format("<product_version>%s</product_version>",tag.getProductVersion());
+        fmt.format("<product_urn>%s</product_urn>",tag.getProductURN());
+        fmt.format("<product_parent_urn/>");
+        fmt.format("<product_parent>%s</product_parent>",tag.getProductParent());
+        fmt.format("<product_defined_inst_id>%s</product_defined_inst_id>",tag.getProductDefinedInstID());
+        fmt.format("<product_vendor>%s</product_vendor>",tag.getProductVendor());
+        fmt.format("<platform_arch>%s</platform_arch>",tag.getPlatformArch());
         fmt.format("<timestamp>%s</timestamp>", (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")).format(new Date()));
-        fmt.format("<container>%s</container>\r\n",tag.getContainer());
-        fmt.format("<source>%s</source>\r\n",tag.getSource());
+        fmt.format("<container>%s</container>",tag.getContainer());
+        fmt.format("<source>%s</source>",tag.getSource());
         fmt.format("<installer_uid>-1</installer_uid>");
 
 //        fmt.format("<installer_uid>%s</installer_uid>",tag.getInstallerUID());
-        fmt.format("</service_tag>\r\n");
+        fmt.format("</service_tag>");
 
         return html.toString();
     }
