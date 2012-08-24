@@ -976,8 +976,12 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
             Manifest jarManifest;
             try {
                 final JarFile dependentJar = new JarFile(physicalFile());
-                jarManifest = dependentJar.getManifest();
-                dependentJar.close();
+                try {
+                  jarManifest = dependentJar.getManifest();
+                } finally 
+                {
+                  dependentJar.close();
+                }
                 if (jarManifest == null) {
                     logger.log(Level.WARNING,
                             "enterprise.deployment.appclient.jws.nomf",
@@ -990,7 +994,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
                  * Ignore it.
                  */
                 return;
-            }
+            } 
 
             final Attributes mainAttrs = jarManifest.getMainAttributes();
             if (mainAttrs == null) {
