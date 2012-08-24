@@ -51,6 +51,7 @@
     <property name="glassfish.download.dir" value="."/> 
     <property name="glassfish.download" value="${glassfish.download.dir}/glassfish.zip"/>
     <property name="maven.version" value="3.0.4"/>
+    <property name="hudson-settings" value="hudson-settings.xml"/>
 
     <property name="http.proxyHost" value=""/>
     <property name="http.proxyPort" value=""/>
@@ -75,7 +76,7 @@
     <property name="glassfish.dist.url"
               value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
     <property name="maven.url"
-              value="http://apache.osuosl.org/maven/binaries/apache-maven-${maven.version}-bin.tar.gz"/>
+              value="http://mirrors.ibiblio.org/apache/maven/binaries/apache-maven-${maven.version}-bin.tar.gz"/>
 
     <target name="download">
         <get src="${ant.contrib.url}" dest="ant-contrib.jar" usetimestamp="true"/>
@@ -163,6 +164,8 @@
                     <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <arg value="-s"/>
+                    <arg value="${hudson-settings}"/>
                     <arg value="clean"/>
                     <arg value="install"/>
                 </exec>
@@ -173,6 +176,8 @@
                     <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
                     <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
                     <arg value="-Prest-devtest"/>
+                    <arg value="-s"/>
+                    <arg value="${hudson-settings}"/>
                     <arg value="test"/>
                 </exec>
             </try>

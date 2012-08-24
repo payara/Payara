@@ -1,0 +1,36 @@
+<settings>
+  <mirrors>
+      <mirror>
+          <id>internal-glassfish-nexus</id>
+          <url>http://gf-maven.us.oracle.com/nexus/content/groups/internal-gf-nexus/</url>
+          <mirrorOf>*,!jvnet-nexus-snapshots,!temp</mirrorOf>
+      </mirror>
+      <mirror>
+          <id>maven.java.net-snapshot-nexus</id>
+          <url>http://gf-maven.us.oracle.com/nexus/content/repositories/maven.java.net-snapshot</url>
+          <mirrorOf>jvnet-nexus-snapshots</mirrorOf>
+      </mirror>
+  </mirrors>
+  <proxies>
+    <proxy>
+      <active>true</active>
+      <protocol>http</protocol>
+        <host>www-proxy.us.oracle.com</host>
+        <port>80</port>
+        <nonProxyHosts>adc2170275|*.oracle.com|*.oracleads.com|*.us.oracle.com|
+                       *.uk.oracle.com|*.ca.oracle.com|*.oraclecorp.com|
+                       *.oracleportal.com</nonProxyHosts>
+    </proxy>
+  </proxies>
+  <profiles>
+    <profile>
+      <id>BG</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <product.name>BG Server</product.name>
+      </properties>
+    </profile>
+  </profiles>
+</settings>
