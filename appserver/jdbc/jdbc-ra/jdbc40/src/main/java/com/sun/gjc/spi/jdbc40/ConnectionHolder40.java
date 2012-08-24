@@ -42,8 +42,8 @@ package com.sun.gjc.spi.jdbc40;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
-import com.sun.gjc.spi.ManagedConnection;
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
+import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.spi.base.ConnectionHolder;
 
 import java.lang.reflect.InvocationHandler;
@@ -68,7 +68,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
 
     protected Properties defaultClientInfo;
     protected final static StringManager localStrings =
-            StringManager.getManager(ManagedConnectionFactory.class);
+            StringManager.getManager(ManagedConnectionFactoryImpl.class);
     protected boolean jdbc30Connection;
 
     /**
@@ -78,7 +78,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @param mc            ManagedConnection
      * @param cxRequestInfo Connection Request Information
      */
-    public ConnectionHolder40(Connection con, ManagedConnection mc,
+    public ConnectionHolder40(Connection con, ManagedConnectionImpl mc,
                               javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
                               boolean jdbc30Connection) {
         super(con, mc, cxRequestInfo);

@@ -75,7 +75,7 @@ import javax.resource.spi.ConnectionDefinition;
     connection = java.sql.Connection.class,
     connectionImpl = com.sun.gjc.spi.base.ConnectionHolder.class
 )
-public class DMManagedConnectionFactory extends ManagedConnectionFactory {
+public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
 
     Properties props;
 
@@ -118,7 +118,7 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactory {
         }
 
         java.sql.Connection dsConn = null;
-        com.sun.gjc.spi.ManagedConnection mc = null;
+        ManagedConnectionImpl mc = null;
 
         Properties driverProps = new Properties();
         //Will return a set of properties that would have setURL and <url> as objects

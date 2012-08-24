@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import javax.transaction.xa.Xid;
 public class XAResourceImpl implements XAResource {
 
     XAResource xar;
-    ManagedConnection mc;
+    ManagedConnectionImpl mc;
 
     /**
      * Constructor for XAResourceImpl
@@ -61,7 +61,7 @@ public class XAResourceImpl implements XAResource {
      * @param xar <code>XAResource</code>
      * @param mc  <code>ManagedConnection</code>
      */
-    public XAResourceImpl(XAResource xar, ManagedConnection mc) {
+    public XAResourceImpl(XAResource xar, ManagedConnectionImpl mc) {
         this.xar = xar;
         this.mc = mc;
     }

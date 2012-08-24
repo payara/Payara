@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.gjc.util;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
+import com.sun.gjc.spi.ConnectionRequestInfoImpl;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionFactory;
@@ -114,7 +115,7 @@ public class SecurityUtils {
                 }
             }
         } else {
-            com.sun.gjc.spi.ConnectionRequestInfo cxReqInfo = (com.sun.gjc.spi.ConnectionRequestInfo) info;
+            ConnectionRequestInfoImpl cxReqInfo = (ConnectionRequestInfoImpl) info;
             PasswordCredential pc = new PasswordCredential(cxReqInfo.getUser(), cxReqInfo.getPassword().toCharArray());
             pc.setManagedConnectionFactory(mcf);
             return pc;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import org.glassfish.resources.api.PoolInfo;
  * @author Evani Sai Surya Kiran
  * @version 1.0, 02/07/22
  */
-public class ManagedConnection implements javax.resource.spi.ManagedConnection,
+public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnection,
         javax.resource.spi.LazyEnlistableManagedConnection,
         javax.resource.spi.DissociatableManagedConnection {
 
@@ -134,7 +134,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     protected final static Logger _logger;
 
     static {
-        _logger = LogDomains.getLogger(ManagedConnection.class, LogDomains.RSR_LOGGER);
+        _logger = LogDomains.getLogger(ManagedConnectionImpl.class, LogDomains.RSR_LOGGER);
     }
 
     protected static final StringManager localStrings =
@@ -146,7 +146,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     private Boolean isClientInfoSupported = null;
     
     /**
-     * Constructor for <code>ManagedConnection</code>. The pooledConn parameter is expected
+     * Constructor for <code>ManagedConnectionImpl</code>. The pooledConn parameter is expected
      * to be null and sqlConn parameter is the actual connection in case where
      * the actual connection is got from a non pooled datasource object. The
      * pooledConn parameter is expected to be non null and sqlConn parameter
@@ -162,11 +162,11 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
      * @param passwdCred object conatining the
      *                   user and password for allocating the connection
      * @throws ResourceException if the <code>ManagedConnectionFactory</code> object
-     *                           that created this <code>ManagedConnection</code> object
+     *                           that created this <code>ManagedConnectionImpl</code> object
      *                           is not the same as returned by <code>PasswordCredential</code>
      *                           object passed
      */
-    public ManagedConnection(PooledConnection pooledConn, java.sql.Connection sqlConn,
+    public ManagedConnectionImpl(PooledConnection pooledConn, java.sql.Connection sqlConn,
                              PasswordCredential passwdCred, 
                              javax.resource.spi.ManagedConnectionFactory mcf,
                              PoolInfo poolInfo,
@@ -263,7 +263,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
         stmtLeakReclaim = statementLeakReclaim;
 
         if(stmtLeakTimeout > 0) {
-            ManagedConnectionFactory spiMCF = (ManagedConnectionFactory) mcf;
+            ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
             statementLeakTracing = true;
             if (leakDetector == null) {
                 leakDetector = new StatementLeakDetector(poolInfo, statementLeakTracing,
@@ -273,7 +273,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
         }
     }
     /**
-     * Adds a connection event listener to the ManagedConnection instance.
+     * Adds a connection event listener to the ManagedConnectionImpl instance.
      *
      * @param listener <code>ConnectionEventListener</code>
      * @see <code>removeConnectionEventListener</code>
@@ -284,10 +284,10 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
     /**
      * Used by the container to change the association of an application-level
-     * connection handle with a <code>ManagedConnection</code> instance.
+     * connection handle with a <code>ManagedConnectionImpl</code> instance.
      *
      * @param connection <code>ConnectionHolder30</code> to be associated with
-     *                   this <code>ManagedConnection</code> instance
+     *                   this <code>ManagedConnectionImpl</code> instance
      * @throws ResourceException if the physical connection is no more
      *                           valid or the connection handle passed is null
      */
@@ -301,7 +301,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
         }
         ConnectionHolder ch = (ConnectionHolder) connection;
 
-        com.sun.gjc.spi.ManagedConnection mc = ch.getManagedConnection();
+        com.sun.gjc.spi.ManagedConnectionImpl mc = ch.getManagedConnection();
         isClean = false;
 
         ch.associateConnection(actualConnection, this);
@@ -309,7 +309,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
          * The expectation from the above method is that the connection holder
          * replaces the actual sql connection it holds with the sql connection
          * handle being passed in this method call. Also, it replaces the reference
-         * to the ManagedConnection instance with this ManagedConnection instance.
+         * to the ManagedConnectionImpl instance with this ManagedConnectionImpl instance.
          * Any previous statements and result sets also need to be removed.
          */
 
@@ -328,8 +328,8 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
     /**
      * Application server calls this method to force any cleanup on the
-     * <code>ManagedConnection</code> instance. This method calls the invalidate
-     * method on all ConnectionHandles associated with this <code>ManagedConnection</code>.
+     * <code>ManagedConnectionImpl</code> instance. This method calls the invalidate
+     * method on all ConnectionHandles associated with this <code>ManagedConnectionImpl</code>.
      *
      * @throws ResourceException if the physical connection is no more valid
      */
@@ -344,7 +344,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
         //GJCINT
         isClean = true;
 
-        ManagedConnectionFactory spiMCF = (ManagedConnectionFactory) mcf;
+        ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
         resetConnectionProperties(spiMCF);
     }
 
@@ -426,7 +426,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
     /**
      * Creates a new connection handle for the underlying physical
-     * connection represented by the <code>ManagedConnection</code> instance.
+     * connection represented by the <code>ManagedConnectionImpl</code> instance.
      *
      * @param sub       <code>Subject</code> parameter needed for authentication
      * @param cxReqInfo <code>ConnectionRequestInfo</code> carries the user
@@ -453,7 +453,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
         //GJCINT
         getActualConnection();
-        ManagedConnectionFactory spiMCF = (ManagedConnectionFactory) mcf;
+        ManagedConnectionFactoryImpl spiMCF = (ManagedConnectionFactoryImpl) mcf;
 
         String statementTimeoutString = spiMCF.getStatementTimeout();
         if (statementTimeoutString != null) {
@@ -487,7 +487,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
      * @param spiMCF
      * @throws ResourceException
      */
-    private void resetConnectionProperties(ManagedConnectionFactory spiMCF) throws ResourceException {
+    private void resetConnectionProperties(ManagedConnectionFactoryImpl spiMCF) throws ResourceException {
         if (isClean) {
 
             // If the ManagedConnection is clean, reset the transaction isolation level to what
@@ -534,10 +534,10 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     }
 
     /**
-     * Gets the log writer for this <code>ManagedConnection</code> instance.
+     * Gets the log writer for this <code>ManagedConnectionImpl</code> instance.
      *
      * @return <code>PrintWriter</code> instance associated with this
-     *         <code>ManagedConnection</code> instance
+     *         <code>ManagedConnectionImpl</code> instance
      * @throws ResourceException if the physical connection is not valid
      * @see <code>setLogWriter</code>
      */
@@ -559,7 +559,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
         logFine("In getMetaData");
         checkIfValid();
 
-        return new com.sun.gjc.spi.ManagedConnectionMetaData(this);
+        return new com.sun.gjc.spi.ManagedConnectionMetaDataImpl(this);
     }
 
     /**
@@ -595,7 +595,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
     /**
      * Removes an already registered connection event listener from the
-     * <code>ManagedConnection</code> instance.
+     * <code>ManagedConnectionImpl</code> instance.
      *
      * @param listener <code>ConnectionEventListener</code> to be removed
      * @see <code>addConnectionEventListener</code>
@@ -663,10 +663,10 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
     }
 
     /**
-     * Sets the log writer for this <code>ManagedConnection</code> instance.
+     * Sets the log writer for this <code>ManagedConnectionImpl</code> instance.
      *
      * @param out <code>PrintWriter</code> to be associated with this
-     *            <code>ManagedConnection</code> instance
+     *            <code>ManagedConnectionImpl</code> instance
      * @throws ResourceException if the physical connection is not valid
      * @see <code>getLogWriter</code>
      */
@@ -677,7 +677,7 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
 
     /**
      * This method determines the type of the connection being held
-     * in this <code>ManagedConnection</code>.
+     * in this <code>ManagedConnectionImpl</code>.
      *
      * @param pooledConn <code>PooledConnection</code>
      * @return connection type
@@ -699,8 +699,8 @@ public class ManagedConnection implements javax.resource.spi.ManagedConnection,
      * @return <code>ManagedConnectionFactory</code> instance that created this
      *         <code>ManagedConnection</code> instance
      */
-    public com.sun.gjc.spi.ManagedConnectionFactory getManagedConnectionFactory() {
-        return (com.sun.gjc.spi.ManagedConnectionFactory) mcf;
+    public com.sun.gjc.spi.ManagedConnectionFactoryImpl getManagedConnectionFactory() {
+        return (com.sun.gjc.spi.ManagedConnectionFactoryImpl) mcf;
     }
 
     /**

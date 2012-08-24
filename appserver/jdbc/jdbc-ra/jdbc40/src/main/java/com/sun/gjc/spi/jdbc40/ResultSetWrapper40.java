@@ -42,7 +42,7 @@ package com.sun.gjc.spi.jdbc40;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.base.ResultSetWrapper;
 
 import java.io.InputStream;
@@ -58,7 +58,7 @@ import javax.resource.ResourceException;
 public class ResultSetWrapper40 extends ResultSetWrapper {
 
     protected final static StringManager localStrings =
-            StringManager.getManager(ManagedConnectionFactory.class);
+            StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**
      * Creates a new instance of ResultSetWrapper for JDBC 4.0

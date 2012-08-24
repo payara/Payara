@@ -41,8 +41,9 @@
 package com.sun.gjc.spi.base;
 
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
-import com.sun.gjc.spi.ConnectionRequestInfo;
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ConnectionManagerImplementation;
+import com.sun.gjc.spi.ConnectionRequestInfoImpl;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.gjc.util.MethodExecutor;
@@ -66,7 +67,7 @@ import java.util.logging.Logger;
 public abstract class AbstractDataSource implements javax.sql.DataSource, java.io.Serializable,
         com.sun.appserv.jdbc.DataSource, javax.resource.Referenceable {
 
-    protected ManagedConnectionFactory mcf;
+    protected ManagedConnectionFactoryImpl mcf;
     protected MethodExecutor executor = null;
     private ConnectionManager cm;
     private int loginTimeout;
@@ -79,7 +80,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
     protected final static Logger _logger;
 
     static {
-        _logger = LogDomains.getLogger(ManagedConnectionFactory.class, LogDomains.RSR_LOGGER);
+        _logger = LogDomains.getLogger(ManagedConnectionFactoryImpl.class, LogDomains.RSR_LOGGER);
     }
 
     /**
@@ -91,11 +92,11 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      * @param cm  <code>ConnectionManager</code> object either associated
      *            with Application server or Resource Adapter.
      */
-    public AbstractDataSource(ManagedConnectionFactory mcf, ConnectionManager cm) {
+    public AbstractDataSource(ManagedConnectionFactoryImpl mcf, ConnectionManager cm) {
         this.mcf = mcf;
         executor = new MethodExecutor();
         if (cm == null) {
-            this.cm = new com.sun.gjc.spi.ConnectionManager();
+            this.cm = new ConnectionManagerImplementation();
         } else {
             this.cm = cm;
             conType_ = findConnectionType();
@@ -141,7 +142,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      */
     public Connection getConnection(String user, String pwd) throws SQLException {
         try {
-            ConnectionRequestInfo info = new ConnectionRequestInfo(user, pwd);
+            ConnectionRequestInfoImpl info = new ConnectionRequestInfoImpl(user, pwd);
             ConnectionHolder con = (ConnectionHolder)
                     cm.allocateConnection(mcf, info);
             setConnectionType(con);
@@ -212,7 +213,7 @@ public abstract class AbstractDataSource implements javax.sql.DataSource, java.i
      */
     public Connection getNonTxConnection(String user, String password) throws SQLException {
         try {
-            ConnectionRequestInfo cxReqInfo = new ConnectionRequestInfo(user, password);
+            ConnectionRequestInfoImpl cxReqInfo = new ConnectionRequestInfoImpl(user, password);
             ConnectionHolder con = (ConnectionHolder)
                     ((com.sun.appserv.connectors.internal.spi.ConnectionManager)
                             cm).allocateNonTxConnection(mcf, cxReqInfo);

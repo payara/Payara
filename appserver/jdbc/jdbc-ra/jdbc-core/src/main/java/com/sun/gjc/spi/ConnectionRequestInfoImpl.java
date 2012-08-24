@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,18 +46,18 @@ package com.sun.gjc.spi;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class ConnectionRequestInfo implements javax.resource.spi.ConnectionRequestInfo {
+public class ConnectionRequestInfoImpl implements javax.resource.spi.ConnectionRequestInfo {
 
     private String user;
     private String password;
 
     /**
-     * Constructs a new <code>ConnectionRequestInfo</code> object
+     * Constructs a new <code>ConnectionRequestInfoImpl</code> object
      *
      * @param user     User Name.
      * @param password Password
      */
-    public ConnectionRequestInfo(String user, String password) {
+    public ConnectionRequestInfoImpl(String user, String password) {
         this.user = user;
         this.password = password;
     }
@@ -81,14 +81,14 @@ public class ConnectionRequestInfo implements javax.resource.spi.ConnectionReque
     }
 
     /**
-     * Verify whether two ConnectionRequestInfos are equal.
+     * Verify whether two ConnectionRequestInfoImpls are equal.
      *
      * @return True, if they are equal and false otherwise.
      */
     public boolean equals(Object obj) {
         if (obj == null) return false;
-        if (obj instanceof ConnectionRequestInfo) {
-            ConnectionRequestInfo other = (ConnectionRequestInfo) obj;
+        if (obj instanceof ConnectionRequestInfoImpl) {
+            ConnectionRequestInfoImpl other = (ConnectionRequestInfoImpl) obj;
             return (isEqual(this.user, other.user) &&
                     isEqual(this.password, other.password));
         } else {

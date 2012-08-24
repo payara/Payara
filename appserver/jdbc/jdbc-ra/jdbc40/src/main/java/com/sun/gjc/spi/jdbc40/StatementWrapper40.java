@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
 package com.sun.gjc.spi.jdbc40;
 
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.base.StatementWrapper;
 
 import java.sql.*;
@@ -52,7 +52,7 @@ import java.sql.*;
 public class StatementWrapper40 extends StatementWrapper {
 
     protected final static StringManager localStrings =
-            StringManager.getManager(ManagedConnectionFactory.class);
+            StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**
      * Creates a new instance of StatementWrapper for JDBC 3.0<br>

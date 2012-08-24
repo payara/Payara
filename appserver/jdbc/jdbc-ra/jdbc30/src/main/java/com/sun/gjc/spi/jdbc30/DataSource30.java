@@ -40,7 +40,7 @@
 
 package com.sun.gjc.spi.jdbc30;
 
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 
 import javax.resource.spi.ConnectionManager;
 
@@ -64,7 +64,7 @@ public class DataSource30 extends com.sun.gjc.spi.base.AbstractDataSource {
      * @param cm  <code>ConnectionManager</code> object either associated
      *            with Application server or Resource Adapter.
      */
-    public DataSource30(ManagedConnectionFactory mcf, ConnectionManager cm) {
+    public DataSource30(ManagedConnectionFactoryImpl mcf, ConnectionManager cm) {
         super(mcf, cm);
     }
 }

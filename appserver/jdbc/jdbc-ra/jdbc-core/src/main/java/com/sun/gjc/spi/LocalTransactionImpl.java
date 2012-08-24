@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,7 +56,7 @@ import java.util.logging.Logger;
  */
 public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction {
 
-    private ManagedConnection mc;
+    private ManagedConnectionImpl mc;
     protected final static Logger _logger;
 
     static {
@@ -70,7 +70,7 @@ public class LocalTransactionImpl implements javax.resource.spi.LocalTransaction
      *           this <code>LocalTransactionImpl</code> object as
      *           a result of <code>getLocalTransaction</code>
      */
-    public LocalTransactionImpl(ManagedConnection mc) {
+    public LocalTransactionImpl(ManagedConnectionImpl mc) {
         this.mc = mc;
     }
 

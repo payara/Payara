@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.sun.gjc.spi.jdbc30;
 
-import com.sun.gjc.spi.ManagedConnection;
+import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.spi.base.ConnectionWrapper;
 import com.sun.gjc.util.SQLTraceDelegator;
 import java.lang.reflect.InvocationHandler;
@@ -72,7 +72,7 @@ public class ProfiledConnectionWrapper30 extends ConnectionHolder30 implements C
      * @param mc  Managed Connection
      * @param cxRequestInfo  Connection Request Info
      */
-    public ProfiledConnectionWrapper30(Connection con, ManagedConnection mc,
+    public ProfiledConnectionWrapper30(Connection con, ManagedConnectionImpl mc,
             javax.resource.spi.ConnectionRequestInfo cxRequestInfo,
             SQLTraceDelegator delegator) {
         super(con, mc, cxRequestInfo);

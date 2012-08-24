@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,8 @@
 package com.sun.gjc.spi.jdbc30;
 
 import com.sun.gjc.spi.JdbcObjectsFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
+import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.spi.base.ConnectionHolder;
 
 import com.sun.gjc.util.SQLTraceDelegator;
@@ -62,7 +64,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      * @return ConnectionHolder
      */
     public ConnectionHolder getConnection(Connection conObject,
-                                          com.sun.gjc.spi.ManagedConnection mcObject,
+                                          ManagedConnectionImpl mcObject,
                                           javax.resource.spi.ConnectionRequestInfo criObject,
                                           boolean statementWrapping,
                                           SQLTraceDelegator sqlTraceDelegator) {
@@ -90,7 +92,7 @@ public class Jdbc30ObjectsFactory extends JdbcObjectsFactory {
      * @param cmObject  Connection Manager
      * @return DataSource
      */
-    public javax.sql.DataSource getDataSourceInstance(com.sun.gjc.spi.ManagedConnectionFactory mcfObject,
+    public javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
                                                       javax.resource.spi.ConnectionManager cmObject) {
         return new DataSource30(mcfObject, cmObject);
     }

@@ -67,7 +67,7 @@ import javax.resource.spi.ConnectionDefinition;
     connection = java.sql.Connection.class,
     connectionImpl = com.sun.gjc.spi.base.ConnectionHolder.class
 )
-public class DSManagedConnectionFactory extends ManagedConnectionFactory {
+public class DSManagedConnectionFactory extends ManagedConnectionFactoryImpl {
 
     private transient javax.sql.DataSource dataSourceObj;
 
@@ -102,7 +102,7 @@ public class DSManagedConnectionFactory extends ManagedConnectionFactory {
         javax.sql.DataSource dataSource = getDataSource();
 
         java.sql.Connection dsConn = null;
-        com.sun.gjc.spi.ManagedConnection mc = null;
+        ManagedConnectionImpl mc = null;
 
         try {
             /* For the case where the user/passwd of the connection pool is

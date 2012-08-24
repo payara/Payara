@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,26 +53,26 @@ import java.util.logging.Logger;
  * @author Evani Sai Surya Kiran
  * @version 1.0, 02/08/03
  */
-public class ManagedConnectionMetaData implements javax.resource.spi.ManagedConnectionMetaData {
+public class ManagedConnectionMetaDataImpl implements javax.resource.spi.ManagedConnectionMetaData {
 
     private java.sql.DatabaseMetaData dmd = null;
-    private ManagedConnection mc;
+    private ManagedConnectionImpl mc;
 
     private static Logger _logger;
 
     static {
-        _logger = LogDomains.getLogger(ManagedConnectionMetaData.class, LogDomains.RSR_LOGGER);
+        _logger = LogDomains.getLogger(ManagedConnectionMetaDataImpl.class, LogDomains.RSR_LOGGER);
     }
 
     private boolean debug = false;
 
     /**
-     * Constructor for <code>ManagedConnectionMetaData</code>
+     * Constructor for <code>ManagedConnectionMetaDataImpl</code>
      *
      * @param mc <code>ManagedConnection</code>
      * @throws <code>ResourceException</code> if getting the DatabaseMetaData object fails
      */
-    public ManagedConnectionMetaData(ManagedConnection mc) throws ResourceException {
+    public ManagedConnectionMetaDataImpl(ManagedConnectionImpl mc) throws ResourceException {
         try {
             this.mc = mc;
             dmd = mc.getActualConnection().getMetaData();

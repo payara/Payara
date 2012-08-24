@@ -42,7 +42,7 @@ package com.sun.gjc.spi.jdbc40;
 
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.gjc.common.DataSourceObjectBuilder;
-import com.sun.gjc.spi.ManagedConnectionFactory;
+import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.base.AbstractDataSource;
 
 import javax.resource.ResourceException;
@@ -62,7 +62,7 @@ public class DataSource40 extends AbstractDataSource {
 
 
     protected final static StringManager localStrings =
-            StringManager.getManager(ManagedConnectionFactory.class);
+            StringManager.getManager(ManagedConnectionFactoryImpl.class);
 
     /**
      * Constructs <code>DataSource</code> object. This is created by the
@@ -73,7 +73,7 @@ public class DataSource40 extends AbstractDataSource {
      * @param cm  <code>ConnectionManager</code> object either associated
      *            with Application server or Resource Adapter.
      */
-    public DataSource40(ManagedConnectionFactory mcf, ConnectionManager cm) {
+    public DataSource40(ManagedConnectionFactoryImpl mcf, ConnectionManager cm) {
         super(mcf, cm);
     }
 

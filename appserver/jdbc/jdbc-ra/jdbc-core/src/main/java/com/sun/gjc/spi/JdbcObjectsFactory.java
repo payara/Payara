@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -94,7 +94,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      * @param cmObject  Connection Manager
      * @return DataSource
      */
-    public abstract javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactory mcfObject,
+    public abstract javax.sql.DataSource getDataSourceInstance(ManagedConnectionFactoryImpl mcfObject,
                                                                javax.resource.spi.ConnectionManager cmObject);
 
     /**
@@ -108,7 +108,7 @@ public abstract class JdbcObjectsFactory implements Serializable {
      * @return ConnectionHolder
      */
     public abstract ConnectionHolder getConnection(Connection conObject,
-                                                   ManagedConnection mcObject,
+                                                   ManagedConnectionImpl mcObject,
                                                    javax.resource.spi.ConnectionRequestInfo criObject,
                                                    boolean statementWrapping,
                                                    SQLTraceDelegator sqlTraceDelegator);

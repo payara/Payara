@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,7 @@ import javax.resource.spi.ManagedConnectionFactory;
  * @author Binod P.G
  * @version 1.0, 02/07/31
  */
-public class ConnectionManager implements javax.resource.spi.ConnectionManager {
+public class ConnectionManagerImplementation implements javax.resource.spi.ConnectionManager {
 
     /**
      * Returns a <code>Connection </code> object to the <code>ConnectionFactory</code>

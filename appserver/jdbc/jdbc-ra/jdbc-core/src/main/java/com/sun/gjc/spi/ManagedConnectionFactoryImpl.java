@@ -87,7 +87,7 @@ import org.glassfish.resources.api.PoolInfo;
  * @version 1.0, 02/08/03
  */
 
-public abstract class ManagedConnectionFactory implements javax.resource.spi.ManagedConnectionFactory,
+public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi.ManagedConnectionFactory,
         javax.resource.spi.ValidatingManagedConnectionFactory, 
         MCFLifecycleListener, ResourceAdapterAssociation,
         java.io.Serializable, Externalizable {
@@ -105,7 +105,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     protected SQLTraceDelegator sqlTraceDelegator;
 
     static {
-        _logger = LogDomains.getLogger(ManagedConnectionFactory.class, LogDomains.RSR_LOGGER);
+        _logger = LogDomains.getLogger(ManagedConnectionFactoryImpl.class, LogDomains.RSR_LOGGER);
     }
 
     protected javax.resource.spi.LazyEnlistableConnectionManager cm_;
@@ -172,20 +172,20 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
             (javax.security.auth.Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException;
 
     /**
-     * Check if this <code>ManagedConnectionFactory</code> is equal to
-     * another <code>ManagedConnectionFactory</code>.
+     * Check if this <code>ManagedConnectionFactoryImpl</code> is equal to
+     * another <code>ManagedConnectionFactoryImpl</code>.
      *
-     * @param other <code>ManagedConnectionFactory</code> object for checking equality with
+     * @param other <code>ManagedConnectionFactoryImpl</code> object for checking equality with
      * @return true    if the property sets of both the
-     *         <code>ManagedConnectionFactory</code> objects are the same
+     *         <code>ManagedConnectionFactoryImpl</code> objects are the same
      *         false	otherwise
      */
     public abstract boolean equals(Object other);
 
     /**
-     * Get the log writer for this <code>ManagedConnectionFactory</code> instance.
+     * Get the log writer for this <code>ManagedConnectionFactoryImpl</code> instance.
      *
-     * @return <code>PrintWriter</code> associated with this <code>ManagedConnectionFactory</code> instance
+     * @return <code>PrintWriter</code> associated with this <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>setLogWriter</code>
      */
     public java.io.PrintWriter getLogWriter() {
@@ -193,9 +193,9 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     }
 
     /**
-     * Get the <code>ResourceAdapterImpl</code> for this <code>ManagedConnectionFactory</code> instance.
+     * Get the <code>ResourceAdapterImpl</code> for this <code>ManagedConnectionFactoryImpl</code> instance.
      *
-     * @return <code>ResourceAdapterImpl</code> associated with this <code>ManagedConnectionFactory</code> instance
+     * @return <code>ResourceAdapterImpl</code> associated with this <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>setResourceAdapter</code>
      */
     public javax.resource.spi.ResourceAdapter getResourceAdapter() {
@@ -204,9 +204,9 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     }
 
     /**
-     * Returns the hash code for this <code>ManagedConnectionFactory</code>.
+     * Returns the hash code for this <code>ManagedConnectionFactoryImpl</code>.
      *
-     * @return hash code for this <code>ManagedConnectionFactory</code>
+     * @return hash code for this <code>ManagedConnectionFactoryImpl</code>
      */
     public int hashCode() {
         logFine("In hashCode");
@@ -241,11 +241,11 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
         PasswordCredential pc = SecurityUtils.getPasswordCredential(this, subject, cxRequestInfo);
 
         java.util.Iterator iter = connectionSet.iterator();
-        com.sun.gjc.spi.ManagedConnection mc = null;
+        ManagedConnectionImpl mc = null;
 
         while (iter.hasNext()) {
             try {
-                mc = (com.sun.gjc.spi.ManagedConnection) iter.next();
+                mc = (ManagedConnectionImpl) iter.next();
             } catch (java.util.NoSuchElementException nsee) {
                 _logger.log(Level.SEVERE, "jdbc.exc_iter");
                 throw new ResourceException(nsee.getMessage());
@@ -271,9 +271,9 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      */
     public Set getInvalidConnections(Set connectionSet) throws ResourceException {
         Iterator iter = connectionSet.iterator();
-        Set<ManagedConnection> invalidConnections = new HashSet<ManagedConnection>();
+        Set<ManagedConnectionImpl> invalidConnections = new HashSet<ManagedConnectionImpl>();
         while (iter.hasNext()) {
-            ManagedConnection mc = (ManagedConnection) iter.next();
+            ManagedConnectionImpl mc = (ManagedConnectionImpl) iter.next();
             try {
                 isValid(mc);
             } catch (ResourceException re) {
@@ -297,7 +297,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      * @throws ResourceException if the connection is not valid or
      *                           if validation method is not proper
      */
-    void isValid(com.sun.gjc.spi.ManagedConnection mc) throws ResourceException {
+    void isValid(ManagedConnectionImpl mc) throws ResourceException {
 
         if (mc == null || mc.isTransactionInProgress()) {
             return;
@@ -473,7 +473,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      * @throws ResourceException if the isolation property is invalid
      *                           or if the isolation cannot be set over the connection
      */
-    protected void setIsolation(com.sun.gjc.spi.ManagedConnection mc) throws ResourceException {
+    protected void setIsolation(ManagedConnectionImpl mc) throws ResourceException {
 
         java.sql.Connection con = mc.getActualConnection();
         if (con == null) {
@@ -507,7 +507,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      * @throws ResourceException if the isolation property is invalid
      *                           or if the isolation cannot be set over the connection
      */
-    void resetIsolation(com.sun.gjc.spi.ManagedConnection mc, int tranIsol) throws ResourceException {
+    void resetIsolation(ManagedConnectionImpl mc, int tranIsol) throws ResourceException {
 
         java.sql.Connection con = mc.getActualConnection();
         if (con == null) {
@@ -632,7 +632,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     /**
      * Common operation performed by all the child MCFs before returning a created mc
      */
-    protected void validateAndSetIsolation(ManagedConnection mc) throws ResourceException {
+    protected void validateAndSetIsolation(ManagedConnectionImpl mc) throws ResourceException {
         try {
             isValid(mc);
             setIsolation(mc);
@@ -671,7 +671,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     }
 
     /**
-     * Set the log writer for this <code>ManagedConnectionFactory</code> instance.
+     * Set the log writer for this <code>ManagedConnectionFactoryImpl</code> instance.
      *
      * @param out <code>PrintWriter</code> passed by the application server
      * @see <code>getLogWriter</code>
@@ -684,7 +684,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
      * Set the associated <code>ResourceAdapterImpl</code> JavaBean.
      *
      * @param ra <code>ResourceAdapterImpl</code> associated with this
-     *           <code>ManagedConnectionFactory</code> instance
+     *           <code>ManagedConnectionFactoryImpl</code> instance
      * @see <code>getResourceAdapter</code>
      */
     public void setResourceAdapter(javax.resource.spi.ResourceAdapter ra) {
@@ -808,7 +808,7 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
     /**
      * Sets the validation class name checked for during validation
      *
-     * @param table <code>String</code>
+     * @param className <code>String</code>
      */
     public void setValidationClassName(String className) {
         try {
@@ -1285,10 +1285,10 @@ public abstract class ManagedConnectionFactory implements javax.resource.spi.Man
         return new PoolInfo(getPoolName(), getApplicationName(), getModuleName());
     }
 
-    protected ManagedConnection constructManagedConnection(PooledConnection pc,
+    protected ManagedConnectionImpl constructManagedConnection(PooledConnection pc,
                                                            Connection sqlCon, PasswordCredential passCred,
-                                                           ManagedConnectionFactory mcf) throws ResourceException {
-        return new com.sun.gjc.spi.ManagedConnection(pc, sqlCon, passCred, mcf, 
+                                                           ManagedConnectionFactoryImpl mcf) throws ResourceException {
+        return new ManagedConnectionImpl(pc, sqlCon, passCred, mcf,
                 getPoolInfo(), statementCacheSize, statementCacheType, sqlTraceDelegator,
                 statementLeakTimeout, statementLeakReclaim);
     }

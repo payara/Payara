@@ -69,7 +69,7 @@ import javax.resource.spi.ConnectionDefinition;
     connection = java.sql.Connection.class,
     connectionImpl = com.sun.gjc.spi.base.ConnectionHolder.class
 )
-public class XAManagedConnectionFactory extends ManagedConnectionFactory {
+public class XAManagedConnectionFactory extends ManagedConnectionFactoryImpl {
 
     private transient javax.sql.XADataSource xaDataSourceObj;
 
@@ -104,7 +104,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactory {
         javax.sql.XADataSource dataSource = getDataSource();
 
         javax.sql.XAConnection xaConn = null;
-        com.sun.gjc.spi.ManagedConnection mc = null;
+        ManagedConnectionImpl mc = null;
 
         try {
             /* For the case where the user/passwd of the connection pool is
@@ -135,7 +135,7 @@ public class XAManagedConnectionFactory extends ManagedConnectionFactory {
             mc = constructManagedConnection(
                     xaConn, null, pc, this);
 
-            mc.initializeConnectionType(ManagedConnection.ISXACONNECTION);
+            mc.initializeConnectionType(ManagedConnectionImpl.ISXACONNECTION);
             //GJCINT
             validateAndSetIsolation(mc);
         } finally {
