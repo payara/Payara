@@ -343,7 +343,7 @@ public class ConnectorConfigParserUtils {
         String methodName = method.getName();
         int length = "set".length();
         String retValue = 
-            methodName.substring(length,length+1).toUpperCase() +
+            methodName.substring(length,length+1).toUpperCase(Locale.getDefault()) +
             methodName.substring(length+1);
         return retValue;
     }

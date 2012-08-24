@@ -268,20 +268,20 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             proxy.setDescriptor(dsd);
 
             //String appName = application.getAppName();
-            String moduleName = null;
-            if(dsd.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
+            String dsdName = dsd.getName();
+            if(dsdName.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
                 dsd.setResourceId(appName);
             }
 
-            if(dsd.getName().startsWith(ConnectorConstants.JAVA_GLOBAL_SCOPE_PREFIX)
+            if(dsdName.startsWith(ConnectorConstants.JAVA_GLOBAL_SCOPE_PREFIX)
                     /*|| next.getName().startsWith("java:module/")*/
-                    || dsd.getName().startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
-                ResourceInfo resourceInfo = new ResourceInfo(dsd.getName(), appName, moduleName);
+                    || dsdName.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
+                ResourceInfo resourceInfo = new ResourceInfo(dsdName, appName, null);
                 try {
                     resourceNamingService.publishObject(resourceInfo, proxy, true);
                     dsd.setDeployed(true);
                 } catch (NamingException e) {
-                    Object params[] = new Object[]{appName, dsd.getName(), e};
+                    Object params[] = new Object[]{appName, dsdName, e};
                     _logger.log(Level.WARNING, "dsd.registration.failed", params);    
                 }
             }

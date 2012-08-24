@@ -255,7 +255,11 @@ public abstract class ConnectionHolder implements Connection {
         jdbcPreInvoke();
         Statement stmt = con.createStatement();
         if (statementTimeoutEnabled) {
-            stmt.setQueryTimeout(statementTimeout);
+            try {
+                stmt.setQueryTimeout(statementTimeout);
+            } catch (SQLException ex) {
+                stmt.close();
+            }
         }
         return stmt;
     }
@@ -758,7 +762,9 @@ public abstract class ConnectionHolder implements Connection {
 
     protected void performLazyEnlistment() throws SQLException {
         try {
-            this.lazyEnlistCm_.lazyEnlist(mc);
+            if(lazyEnlistCm_ != null) {
+                lazyEnlistCm_.lazyEnlist(mc);
+            }
         } catch (ResourceException re) {
             String msg = sm.getString(
                     "jdbc.cannot_enlist", re.getMessage() +
@@ -774,7 +780,9 @@ public abstract class ConnectionHolder implements Connection {
     protected void performLazyAssociation() throws SQLException {
         if (mc == null) {
             try {
-                this.lazyAssocCm_.associateConnection(this, mcf_, cxReqInfo_);
+                if(lazyAssocCm_ != null) {
+                    lazyAssocCm_.associateConnection(this, mcf_, cxReqInfo_);
+                }
             } catch (ResourceException re) {
                 String msg = sm.getString(
                         "jdbc.cannot_assoc", re.getMessage() +

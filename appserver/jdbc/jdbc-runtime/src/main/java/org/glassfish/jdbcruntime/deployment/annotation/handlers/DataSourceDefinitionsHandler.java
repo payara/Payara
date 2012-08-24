@@ -102,7 +102,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
         return getDefaultProcessedResult();
     }
 
-    private HandlerProcessingResultImpl getFailureResult(AnnotationInfo element, String message, boolean doLog) {
+/*    private HandlerProcessingResultImpl getFailureResult(AnnotationInfo element, String message, boolean doLog) {
         HandlerProcessingResultImpl result = new HandlerProcessingResultImpl();
         result.addResult(getAnnotationType(), ResultType.FAILED);
         if (doLog) {
@@ -116,7 +116,7 @@ public class DataSourceDefinitionsHandler extends AbstractResourceHandler {
         }
         return result;
     }
-
+*/
     public Class<? extends Annotation>[] getTypeDependencies() {
         return getEjbAndWebAnnotationTypes();
     }

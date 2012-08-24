@@ -604,7 +604,7 @@ public class JdbcConnPoolStatsProvider {
         }    
     }*/
     
-    private void lowLevelLog(StringBuffer stackTrace) {
+/*    private void lowLevelLog(StringBuffer stackTrace) {
         stackTrace.append("\n curNumConnUsed = " + numConnUsed.getCurrent());
         stackTrace.append("\n curNumConnFree = " + numConnFree.getCurrent());
         stackTrace.append("\n numConnCreated = " + numConnCreated.getCount());
@@ -620,16 +620,16 @@ public class JdbcConnPoolStatsProvider {
         stackTrace.append("\n numConnReleased = " + numConnReleased.getCount());
 
         //TODO V3 : enabling other counters.
-        /*stackTrace.append("\n currConnectionRequestWait = " + currConnectionRequestWait);
+        stackTrace.append("\n currConnectionRequestWait = " + currConnectionRequestWait);
         stackTrace.append("\n minConnectionRequestWait = " + minConnectionRequestWait);
         stackTrace.append("\n maxConnectionRequestWait = " + maxConnectionRequestWait);
         stackTrace.append("\n totalConnectionRequestWait = " + totalConnectionRequestWait);
 
         stackTrace.append("\n numConnSuccessfullyMatched = " + this.numConnSuccessfullyMatched);
-        stackTrace.append("\n numConnNotSuccessfullyMatched = " + numConnNotSuccessfullyMatched);*/
+        stackTrace.append("\n numConnNotSuccessfullyMatched = " + numConnNotSuccessfullyMatched);
         stackTrace.append("\n numPotentialConnLeak = " + numPotentialConnLeak.getCount());
     }
-
+*/
     @ManagedAttribute(id="numpotentialconnleak")
     public CountStatistic getNumPotentialConnLeakCount() {
         return numPotentialConnLeak.getStatistic();

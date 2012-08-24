@@ -154,10 +154,9 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
     public PoolInfo getPoolNameFromResourceJndiName(ResourceInfo resourceInfo) {
         PoolInfo poolInfo= null;
         JdbcResource jdbcResource = null;
-        ResourceInfo actualResourceInfo = resourceInfo;
         String jndiName = resourceInfo.getName();
 
-        actualResourceInfo =
+        ResourceInfo actualResourceInfo =
                 new ResourceInfo(jndiName, resourceInfo.getApplicationName(), resourceInfo.getModuleName());
         ConnectorRuntime runtime = ConnectorRuntime.getRuntime();
         jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(runtime.getResources(actualResourceInfo),

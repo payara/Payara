@@ -52,6 +52,7 @@ public class ConnectorTimerProxy extends Timer {
     
     private static ConnectorTimerProxy connectorTimer;
     private Timer timer;
+    private boolean timerException = false;
     private final Object getTimerLock = new Object();
     
     private final static Logger _logger = LogDomains.getLogger(ConnectorTimerProxy.class, 
@@ -63,7 +64,7 @@ public class ConnectorTimerProxy extends Timer {
 
     private Timer getTimer() {
         synchronized (getTimerLock) {
-            if (timer == null) {
+            if (timer == null || timerException) {
                 ClassLoader loader = null;
                 try {
                     loader = Thread.currentThread().getContextClassLoader();
@@ -72,6 +73,7 @@ public class ConnectorTimerProxy extends Timer {
                     timer = new Timer("connector-timer-proxy", true);
                 } finally {
                     Thread.currentThread().setContextClassLoader(loader);
+                    timerException = false;
                 }
             }
         }
@@ -79,11 +81,9 @@ public class ConnectorTimerProxy extends Timer {
     }
 
     public static final ConnectorTimerProxy getProxy() {
-        if (connectorTimer == null) {
-            synchronized (ConnectorTimerProxy.class) {
-                if (connectorTimer == null) {
-                    connectorTimer = new ConnectorTimerProxy(true);
-                }
+        synchronized (ConnectorTimerProxy.class) {
+            if (connectorTimer == null) {
+                connectorTimer = new ConnectorTimerProxy(true);
             }
         }
         return connectorTimer;
@@ -240,7 +240,7 @@ public class ConnectorTimerProxy extends Timer {
         
         //In case of unchecked exceptions, timer needs to recreated.
         _logger.info("Recreating Timer and scheduling at fixed rate");
-        timer = null;
+        timerException = true;
         timer = getTimer();
     }
 }
