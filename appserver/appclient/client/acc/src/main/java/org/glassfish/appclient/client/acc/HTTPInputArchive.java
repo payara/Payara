@@ -84,8 +84,8 @@ public class HTTPInputArchive extends AbstractReadableArchive {
     /** caches the manifest so we read if from the JAR at most once */
     private Manifest cachedManifest = null;
 
-    /** caches the archive size to avoid opening connections to it multiple times */
-    private Integer cachedArchiveSize = null;
+    /** caches the archive size to avoid opening connections to it multiple times. The real cached value will never be -2 */
+    private int cachedArchiveSize = -2;
 
     /** caches the list of all entries; reused for subsequent calls to the entries methods */
     private Collection<String> cachedEntryNames = null;
@@ -147,12 +147,11 @@ public class HTTPInputArchive extends AbstractReadableArchive {
             return exists.booleanValue();
         }
         InputStream is = null;
+        exists = Boolean.FALSE;
         try {
             is = archiveURL.openStream();
             exists = Boolean.TRUE;
             is.close();
-        } catch (Exception e) {
-            exists = Boolean.FALSE;
         } finally {
             return exists.booleanValue();
         }
@@ -313,8 +312,8 @@ public class HTTPInputArchive extends AbstractReadableArchive {
 
     @Override
     public long getArchiveSize() throws SecurityException {
-        if (cachedArchiveSize != null) {
-            return Integer.valueOf(cachedArchiveSize);
+        if (cachedArchiveSize != -2) {
+            return cachedArchiveSize;
         }
         try {
             URLConnection cnx = archiveURL.openConnection();
