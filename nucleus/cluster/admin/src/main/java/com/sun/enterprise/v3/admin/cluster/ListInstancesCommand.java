@@ -113,7 +113,7 @@ public class ListInstancesCommand implements AdminCommand {
     private List<InstanceInfo> infos = new LinkedList<InstanceInfo>();
     private List<Server> serverList;
     private ActionReport report;
-    private ActionReport.MessagePart top;
+    private ActionReport.MessagePart top = null;
     private static final String EOL = "\n";
 
     @Override

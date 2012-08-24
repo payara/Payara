@@ -42,20 +42,20 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.admin.util.InstanceStateService;
-import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.CommandTarget;
-import org.glassfish.internal.api.Target;
-import org.glassfish.common.util.admin.CommandModelImpl;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.*;
+import org.glassfish.common.util.admin.CommandModelImpl;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * A ClusterExecutor is responsible for remotely executing commands.
@@ -106,13 +106,11 @@ public class GlassFishClusterExecutor implements ClusterExecutor, PostConstruct 
     @Override
     public ActionReport.ExitCode execute(String commandName, AdminCommand command, AdminCommandContext context, ParameterMap parameters) {
 
-        CommandModel model;
-        try {
-            CommandModelProvider c = (CommandModelProvider) command;
-            model = c.getModel();
-        } catch(ClassCastException e) {
-            model = new CommandModelImpl(command.getClass());
-        }
+        CommandModel model =
+            command instanceof CommandModelProvider ?
+                ((CommandModelProvider)command).getModel() :
+                new CommandModelImpl(command.getClass());
+        
         org.glassfish.api.admin.ExecuteOn clAnnotation = model.getClusteringAttributes();
         List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
         @ExecuteOn final class DefaultExecuteOn {}
