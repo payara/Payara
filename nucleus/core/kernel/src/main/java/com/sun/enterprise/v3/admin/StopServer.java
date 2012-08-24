@@ -65,7 +65,15 @@ public class StopServer {
             // Don't shutdown GlassFishRuntime, as that can bring the OSGi framework down which is wrong
             // when we are embedded inside an existing runtime. So, just stop the glassfish instance that
             // we are supposed to stop. Leave any cleanup to some other code.
+            
+            // get the GlassFish object - we have to wait in case startup is still in progress
+            // This is a temporary work-around until HK2 supports waiting for the service to 
+            // show up in the ServiceLocator. 
             GlassFish gfKernel = habitat.getService(GlassFish.class);
+            while (gfKernel == null) {
+                Thread.sleep(1000);
+                gfKernel = habitat.getService(GlassFish.class);
+            }
             if (gfKernel != null) {
                 gfKernel.stop();
             }
