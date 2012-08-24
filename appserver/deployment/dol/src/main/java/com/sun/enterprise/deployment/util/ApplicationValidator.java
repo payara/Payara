@@ -86,6 +86,9 @@ public class ApplicationValidator extends ComponentValidator
     private final String EJB_KEYS = "EJB_KEYS";
     private final String CONNECTOR_KEYS = "CONNECTOR_KEYS";
 
+    final String JNDI_COMP = "java:comp";
+    final String JNDI_MODULE = "java:module";
+    final String JNDI_APP = "java:app";
 
     private boolean allUniqueResource = true;
 
@@ -318,6 +321,11 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APP_LEVEL+commonResourceBundleDescriptor.getName())) {
                 return false;
             }
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = application.getConnectorResourceDefinitionDescriptors();
+            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, APP_LEVEL+application.getName())) {
+                return false;
+            }
+
             appLevel.add(APP_LEVEL+commonResourceBundleDescriptor.getName());
             validNameSpaceDetails.put(APP_KEYS, appLevel);
         }
@@ -353,6 +361,10 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
               return false;
             }
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = cd.getConnectorResourceDefinitionDescriptors();
+            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, APPCLIENT_LEVEL+cd.getName())) {
+                return false;
+            }
             cdLevel.add(APPCLIENT_LEVEL+cd.getName());
           }
           validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
@@ -372,21 +384,29 @@ public class ApplicationValidator extends ComponentValidator
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
               return false;
             }
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = ebd.getConnectorResourceDefinitionDescriptors();
+            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJBBUNDLE_LEVEL+ebd.getName())) {
+                return false;
+            }
             ebdLevel.add(EJBBUNDLE_LEVEL+ebd.getName());
 
 
             // Reads MSD and DSD at ejb level
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
             for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
-              EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-              mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
-              if (isExistingMailSession(mailSessionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
-                return false;
-              }
-              dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
-              if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
-                return false;
-              }
+                EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+                mailSessionDescriptors = ejbDescriptor.getMailSessionDescriptors();
+                if (isExistingMailSession(mailSessionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                dataSourceDefinitionDescriptors = ejbDescriptor.getDataSourceDefinitionDescriptors();
+                if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
+                connectorResourceDefinitionDescriptors = ejbDescriptor.getConnectorResourceDefinitionDescriptors();
+                if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName())) {
+                    return false;
+                }
               edLevel.add(EJB_LEVEL+ebd.getName() + "#" + ejbDescriptor.getName());
 
             }
@@ -408,6 +428,10 @@ public class ApplicationValidator extends ComponentValidator
             Set<DataSourceDefinitionDescriptor> dataSourceDefinitionDescriptors = wbd.getDataSourceDefinitionDescriptors();
             if (isExistingDataSourceDefinition(dataSourceDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
               return false;
+            }
+            Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors = wbd.getConnectorResourceDefinitionDescriptors();
+            if (isExistingConnectorResourceDefinitionDescriptor(connectorResourceDefinitionDescriptors, WEBBUNDLE_LEVEL+wbd.getName())) {
+                return false;
             }
             wbdLevel.add(WEBBUNDLE_LEVEL+wbd.getName());
           }
@@ -455,6 +479,22 @@ public class ApplicationValidator extends ComponentValidator
     }
 
     /**
+         * Method to validate CRD is unique or not
+         * @param connectorResourceDefinitionDescriptors
+         * @param scope
+         * @return
+         */
+        private boolean isExistingConnectorResourceDefinitionDescriptor(Set<ConnectorResourceDefinitionDescriptor> connectorResourceDefinitionDescriptors, String scope) {
+            for (Iterator itr = connectorResourceDefinitionDescriptors.iterator(); itr.hasNext(); ) {
+                ConnectorResourceDefinitionDescriptor connectorResourceDefinitionDescriptor = (ConnectorResourceDefinitionDescriptor) itr.next();
+                if (isExistsDescriptor(connectorResourceDefinitionDescriptor.getName(), connectorResourceDefinitionDescriptor, scope)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    /**
      * Method to compare existing descriptor with other descriptors. If both descriptor is equal then deployment
      * should be failed. scope is nothing but app level,connector level, ejb level etc., which is used later to
      * compare same jndi name is defined at different scope or not.
@@ -488,6 +528,15 @@ public class ApplicationValidator extends ComponentValidator
                                 new Object[] { descriptor.getName() });
 
                     }
+                } else if (descriptor instanceof ConnectorResourceDefinitionDescriptor && existingDescriptor instanceof ConnectorResourceDefinitionDescriptor) {
+                    if (!descriptor.equals(existingDescriptor)) {
+                        allUniqueResource = false;
+                        return true;
+                    } else {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                                new Object[] { descriptor.getName() });
+
+                    }
                 }
 
                 Vector vectorScope = commonResourceValidator.getScope();
@@ -510,10 +559,6 @@ public class ApplicationValidator extends ComponentValidator
      * @return
      */
     private boolean compareDescriptors() {
-
-        final String JNDI_COMP = "java:comp";
-        final String JNDI_MODULE = "java:module";
-        final String JNDI_APP = "java:app";
 
         Vector appVectorName = validNameSpaceDetails.get(APP_KEYS);
         Vector ebdVectorName = validNameSpaceDetails.get(EJBBUNDLE_KEYS);
@@ -605,12 +650,12 @@ public class ApplicationValidator extends ComponentValidator
             if (firstElement.contains("#")) {
                 firstElement = firstElement.substring(0, firstElement.indexOf("#"));
             }
-            for (int i = j; i < myVector.size(); i++) {
+            for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(0, otherElements.indexOf("#"));
                 }
-                if (!firstElement.equals(otherElements)) {
+                if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
@@ -639,7 +684,7 @@ public class ApplicationValidator extends ComponentValidator
             if (firstElement.contains("#")) {
                 firstElement = firstElement.substring(0, firstElement.indexOf("#"));
             }
-            for (int i = j; i < myVector.size(); i++) {
+            for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(otherElements.indexOf("#") + 1, otherElements.length());
@@ -647,7 +692,7 @@ public class ApplicationValidator extends ComponentValidator
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(0, otherElements.indexOf("#"));
                 }
-                if (!firstElement.equals(otherElements)) {
+                if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
@@ -676,7 +721,7 @@ public class ApplicationValidator extends ComponentValidator
             if (firstElement.contains("#")) {
                 firstElement = firstElement.substring(firstElement.lastIndexOf("#") + 1, firstElement.length());
             }
-            for (int i = j; i < myVector.size(); i++) {
+            for (int i = j+1; i < myVector.size(); i++) {
                 String otherElements = (String) myVector.get(i);
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
@@ -684,7 +729,7 @@ public class ApplicationValidator extends ComponentValidator
                 if (otherElements.contains("#")) {
                     otherElements = otherElements.substring(otherElements.lastIndexOf("#") + 1, otherElements.length());
                 }
-                if (!firstElement.equals(otherElements)) {
+                if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;
                     DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
                         new Object[] { jndiName, application.getAppName() });
