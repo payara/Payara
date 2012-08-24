@@ -629,9 +629,15 @@ public class JWSAdapterManager implements PostConstruct {
 
     private String getGFClientModuleClassPath(final File gfClientJAR) throws IOException {
         final JarFile jf = new JarFile(gfClientJAR);
-        final Manifest mf = jf.getManifest();
-        Attributes mainAttrs = mf.getMainAttributes();
-        return mainAttrs.getValue(Attributes.Name.CLASS_PATH);
+
+        try {
+          final Manifest mf = jf.getManifest();
+          Attributes mainAttrs = mf.getMainAttributes();
+          return mainAttrs.getValue(Attributes.Name.CLASS_PATH);
+        } finally 
+        {
+          jf.close();
+        }
     }
 
 }
