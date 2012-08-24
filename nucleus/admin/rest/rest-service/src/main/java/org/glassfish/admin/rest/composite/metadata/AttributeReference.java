@@ -59,5 +59,5 @@ import javax.inject.Qualifier;
 @Target(ElementType.METHOD)
 public @interface AttributeReference {
     String configBean();
-    String attribute();
+    String methodName();
 }

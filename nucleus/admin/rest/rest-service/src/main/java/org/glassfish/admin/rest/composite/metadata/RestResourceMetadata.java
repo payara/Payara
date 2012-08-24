@@ -134,9 +134,7 @@ public class RestResourceMetadata {
         }
 
         if (!subResources.isEmpty()) {
-            final JSONArray children = new JSONArray();
-            children.put(subResources);
-            o.put("subResources", children);
+            o.put("subResources", subResources);
         }
 
         return o;

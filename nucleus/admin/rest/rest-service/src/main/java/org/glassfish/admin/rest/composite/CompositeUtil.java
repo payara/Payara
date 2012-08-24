@@ -44,6 +44,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -73,8 +74,7 @@ import javax.validation.ValidatorFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
-import org.glassfish.admin.rest.composite.metadata.Default;
-import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
+import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
@@ -138,9 +138,10 @@ public class CompositeUtil {
 
             for (Map.Entry<String, Map<String, Object>> entry : properties.entrySet()) {
                 String name = entry.getKey();
-                Class<?> type = (Class<?>) entry.getValue().get("type");
+                final Map<String, Object> property = entry.getValue();
+                Class<?> type = (Class<?>) property.get("type");
                 createField(classWriter, name, type);
-                createGettersAndSetters(classWriter, modelIface, className, name, type);
+                createGettersAndSetters(classWriter, modelIface, className, name, property);
 
             }
 
@@ -429,6 +430,10 @@ public class CompositeUtil {
                     properties.put(name, property);
                 }
 
+                AttributeReference ar = method.getAnnotation(AttributeReference.class);
+                if (ar != null) {
+                    property.put("annotations", gatherReferencedAttributes((AttributeReference)ar));
+                }
                 Attribute attr = method.getAnnotation(Attribute.class);
                 if (attr != null) {
                     property.put("defaultValue", attr.defaultValue());
@@ -439,6 +444,27 @@ public class CompositeUtil {
                 property.put("type", type);
             }
         }
+    }
+
+    private Map<String, Map<String, Object>> gatherReferencedAttributes(AttributeReference ar) {
+        Map<String, Map<String, Object>> annos = new HashMap<String, Map<String, Object>>();
+        try {
+            Class<?> configBeanClass = Class.forName(ar.configBean());
+            Method m = configBeanClass.getMethod(ar.methodName());
+            for (Annotation a : m.getAnnotations()) {
+                Map<String, Object> anno = new HashMap<String, Object>();
+                for (Method am : a.annotationType().getDeclaredMethods()) {
+                    String methodName = am.getName();
+                    Object value = am.invoke(a);
+                    anno.put(methodName, value);
+                }
+                annos.put(a.annotationType().getName(), anno);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(CompositeUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return annos;
     }
 
     private void handleGetExtensions(List<RestExtension> extensions, Object data) {
@@ -593,7 +619,8 @@ public class CompositeUtil {
     /**
      * Create getters and setters for the given field
      */
-    private void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Class<?> type) {
+    private void createGettersAndSetters(ClassWriter cw, Class c, String className, String name, Map<String, Object> props) {
+        Class<?> type = (Class<?>)props.get("type");
         String internalType = getInternalTypeString(type);
         className = getInternalName(className);
 
@@ -607,6 +634,26 @@ public class CompositeUtil {
                          : ARETURN);
         getter.visitMaxs(0, 0);
         getter.visitEnd();
+        Map<String, Map<String, Object>> annotations = (Map<String, Map<String, Object>>)props.get("annotations");
+        if (annotations != null) {
+            for (Map.Entry<String, Map<String, Object>> entry : annotations.entrySet()) {
+                String annotationClass = entry.getKey();
+                Map<String, Object> annotationValues = entry.getValue();
+                AnnotationVisitor av = getter.visitAnnotation("L" + getInternalName(annotationClass) + ";", true);
+                for (Map.Entry<String, Object> values : annotationValues.entrySet()) {
+                    final String paramName = values.getKey();
+                    Object paramValue = values.getValue();
+                    if (Class.class.isAssignableFrom(paramValue.getClass())) {
+                        paramValue = org.objectweb.asm.Type.getType("L" + getInternalName(paramValue.getClass().getName()) + ";");
+                    }
+                    if (paramValue.getClass().isArray() && (Array.getLength(paramValue) == 0)) {
+                        continue;
+                    }
+                    av.visit(paramName, paramValue);
+                }
+                av.visitEnd();
+            }
+        }
 
         // Create the setter
         MethodVisitor setter = cw.visitMethod(ACC_PUBLIC, "set" + name, "(" + internalType + ")V", null, null);
