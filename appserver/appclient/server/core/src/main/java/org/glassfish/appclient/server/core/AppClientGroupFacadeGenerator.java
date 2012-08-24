@@ -218,8 +218,11 @@ public class AppClientGroupFacadeGenerator {
         //Now manifest is ready to be written.
         final File manifestFile = File.createTempFile("groupMF", ".MF");
         final OutputStream manifestOutputStream = new BufferedOutputStream(new FileOutputStream(manifestFile)); //facadeArchive.putNextEntry(JarFile.MANIFEST_NAME);
-        manifest.write(manifestOutputStream);
-        manifestOutputStream.close();
+        try {
+          manifest.write(manifestOutputStream);
+        } finally {
+          manifestOutputStream.close();
+        }
         clientArtifactsManager.add(manifestFile, JarFile.MANIFEST_NAME, true /* isTemp */);
         
 
