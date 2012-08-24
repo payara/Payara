@@ -42,7 +42,8 @@
 
 <FindBugsFilter>
     <!--
-        XXX
+        These wrapper classes just pass their arguments through to
+        the underlying JDBC driver.
     -->
     <Match>
         <Class name="com.sun.gjc.spi.base.ConnectionHolder"/>
