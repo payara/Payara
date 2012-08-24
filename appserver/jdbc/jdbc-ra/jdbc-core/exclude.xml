@@ -1,9 +1,8 @@
-<?xml version="1.0"?><project>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,48 +40,21 @@
 
 -->
 
-  <parent>
-    <artifactId>jdbc-ra</artifactId>
-    <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
-    <version>4.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc40</groupId>
-  <artifactId>jdbc40</artifactId>
-  <name>JDBC 40 related classes for JDBC Resource Adapter</name>
-
-  <properties>
-    <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-  </properties>
-
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <plugins>
-	    <plugin>
-	      <!--
-	        Use JDBC 4.0 API regardless of which JDK we are building with.
-	      -->
-	      <artifactId>maven-compiler-plugin</artifactId>
-	      <configuration>
-	        <compilerArgument>-Xbootclasspath/p:${project.basedir}/jdbc40.jar</compilerArgument>
-	      </configuration>
-	    </plugin>
-	  </plugins>
-  </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
-      <artifactId>jdbc-core</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-  </dependencies>
-</project>
+<FindBugsFilter>
+    <!--
+        XXX
+    -->
+    <Match>
+        <Class name="com.sun.gjc.spi.base.ConnectionHolder"/>
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.gjc.spi.base.StatementWrapper"/>
+        <Bug pattern="SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.gjc.spi.ManagedConnectionImpl"/>
+        <Method name="executeInitSql"/>
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
+    </Match>
+</FindBugsFilter>

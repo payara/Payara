@@ -53,6 +53,10 @@
   <artifactId>jdbc-core</artifactId>
   <name>Core JDBC Resource Adapter classes</name>
 
+  <properties>
+    <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+  </properties>
+
   <build>
     <resources>
       <resource>

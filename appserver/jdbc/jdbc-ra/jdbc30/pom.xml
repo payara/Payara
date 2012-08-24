@@ -52,6 +52,10 @@
   <artifactId>jdbc30</artifactId>
   <name>JDBC 30 related classes for JDBC Resource Adapter</name>
 
+  <properties>
+    <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+  </properties>
+
   <build>
     <resources>
       <resource>
