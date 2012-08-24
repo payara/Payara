@@ -407,18 +407,15 @@ public abstract class LocalServerCommand extends CLICommand {
         long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
                 + System.currentTimeMillis();
 
-      logger.log(Level.INFO,"waitForRestartLocal");
-      while (System.currentTimeMillis() < end) {
+        while (System.currentTimeMillis() < end) {
             // when the server has restarted the passwordfile will be different
             // don't waste time reading the file again and again, just look
             // for the time stamp to change.
             // Careful -- there is a slice of time where the file does not exist!
             try {
                 long newTimeStamp = pwFile.lastModified(); // could be 0L
-                logger.log(Level.INFO,"Checking timestamp of local-password. old: {0}, new: {1}",
+                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}", 
                         new Object[]{oldTimeStamp, newTimeStamp});
-//                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}",
-//                        new Object[]{oldTimeStamp, newTimeStamp});
 
                 if (newTimeStamp > oldTimeStamp) {
                     // Server has restarted but may not be quite ready to handle commands
@@ -445,15 +442,12 @@ public abstract class LocalServerCommand extends CLICommand {
         long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
                 + System.currentTimeMillis();
 
-      logger.log(Level.INFO, "waitForRestartRemote" );
-      while (System.currentTimeMillis() < end) {
+        while (System.currentTimeMillis() < end) {
             try {
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
                 long up = getUptime();
-                logger.log(Level.INFO, "oldserver-uptime, newserver-uptime = {0} --- {1}",
+                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}", 
                         new Object[]{uptimeOldServer, up});
-//                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}",
-//                        new Object[]{uptimeOldServer, up});
 
                 if (up > 0 && up < uptimeOldServer) {
                     return;
