@@ -379,9 +379,7 @@ public class V2DottedNameSupport {
                 store.put(currentNode.getValue(), currentNode);
         }
         List<Map.Entry> finalList = new ArrayList<Map.Entry>();
-        for(String key : store.keySet()) {
-            finalList.add(store.get(key));
-        }
+        finalList.addAll(store.values());
         store.clear();
         return finalList;
     }

@@ -98,16 +98,13 @@ public class DynamicInterceptor implements MBeanServer
         MbeanService.getInstance();
     }
 
-    private ReplicationInfo getTargets( final ObjectName objectName) throws InstanceNotFoundException {
+    private DynamicInterceptor.ReplicationInfo getTargets( final ObjectName objectName) throws InstanceNotFoundException {
 
         //TODO : Check if we already have a target list for this ObjectName
 
         //create a  ReplicationInfo instance
-        ReplicationInfo result = new ReplicationInfo();
-
-        //get the instances list
-        List<String> instances = result.getInstances();
-
+        DynamicInterceptor.ReplicationInfo result = new DynamicInterceptor.ReplicationInfo();
+        
         // if this is for create Mbean
         if(objectName == null) {
             result.addInstance("server");
@@ -232,81 +229,9 @@ public class DynamicInterceptor implements MBeanServer
         return result;
     }
 
-    private ReplicationInfo getInstance(final ObjectName o) throws InstanceNotFoundException {
+    private DynamicInterceptor.ReplicationInfo getInstance(final ObjectName o) throws InstanceNotFoundException {
         return getTargets(o);
     }
-
-    /*
-    private ReplicationInfo getInstance(final ObjectName o) throws InstanceNotFoundException {
-        ReplicationInfo result = new ReplicationInfo();
-        List<String> instances = result.getInstances();
-        if(o == null) {
-            // this is possible for createMBean calls only
-            instances.add("server");
-            return result;
-        }
-        String j2eeTypeProp = o.getKeyProperty("j2eeType");
-        String oName = o.toString();
-        //TODO : This if-else thing is ugly; got to find a better way; for now
-        // this is what we get till this thing is up and running
-        try {
-            if(MbeanService.getInstance() == null) {
-                // This is kludge; during init the habitat is not initialized;
-                // this is to take care of that
-                instances.add("server");
-            } else if(!MbeanService.getInstance().isDas()) {
-                // This is kludge; we set the JDK sys property in domain template but that
-                // gets set for DAS and instances. For instance, we want only default MBean server
-                // So if this instance is not DAS, we just return server so the instances will
-                // use default MbeanServer.
-                instances.add("server");
-            } else if(oName.startsWith("amx:pp=/domain/configs/config[AMXConfigProxyTests.TEST]")) {
-                instances.add("server");                
-            } else if(oName.startsWith("amx:pp=/domain/configs/config[")) {
-                String configName = oName.substring(oName.indexOf("[")+1, oName.indexOf("-config"));
-                instances.add("server");
-                if( (!"default".equals(configName)) && (!"server".equals(configName)) )
-                    instances.addAll(MbeanService.getInstance().getInstances(configName));
-            } else if(oName.startsWith("amx:pp=/domain/clusters/cluster[")) {
-                String clusterName = oName.substring(oName.indexOf("[")+1, oName.indexOf("]"));
-                instances.add("server");
-                instances.addAll(MbeanService.getInstance().getInstances(clusterName));
-            } else if(oName.startsWith("amx:pp=/domain/servers/server[")) {
-                String svrName = oName.substring(oName.indexOf("[")+1, oName.indexOf("]"));
-                instances.add(svrName);
-                if(!("server".equals(svrName)))
-                    result.setTargetIsAnInstance(true);
-            } else if(oName.startsWith("amx:pp=/mon/server-mon[")) {
-                String svrName = oName.substring(oName.indexOf("[")+1, oName.indexOf("]"));
-                instances.add(svrName);
-                if(!("server".equals(svrName)))
-                    result.setTargetIsAnInstance(true);
-            } else if( ("amx:*".equals(oName)) || ("*.*".equals(oName)) ) {
-                instances.add("server");
-                instances.addAll(MbeanService.getInstance().getAllInstances());
-            } else if("J2EEDomain".equals(j2eeTypeProp)) {
-                // J2EEDomain is on the DAS
-                instances.add("server");
-            } else {
-                // If its a J2EEServer that we are looking at
-                String name;
-                if (j2eeTypeProp != null && j2eeTypeProp.equals("J2EEServer"))
-                    name = o.getKeyProperty("name");
-                else
-                    // if its any other MO that has a J2EEServer as a parent
-                    name = o.getKeyProperty("J2EEServer");
-                if(MbeanService.getInstance().isValidServer(name)) {
-                    instances.add(name);
-                    if(!("server".equals(name)))
-                        result.setTargetIsAnInstance(true);
-                } else
-                    instances.add("server");
-            }
-        } catch(Exception e) {
-            throw new InstanceNotFoundException(e.getLocalizedMessage());
-        }
-        return result;
-    } */
 
     private MBeanServerConnection getInstanceConnection(String instanceName) throws InstanceNotFoundException {
         // first check if this is on the same instance as the one in the argument
@@ -382,7 +307,7 @@ public class DynamicInterceptor implements MBeanServer
             throws ReflectionException, InstanceNotFoundException, MBeanException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName); 
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName); 
         Object returnValue = null;
         try {
             for(String svr : result.getInstances()) {
@@ -402,7 +327,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, AttributeNotFoundException, MBeanException, ReflectionException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         if(!result.isTargetAnInstance())
             return getDelegateMBeanServer().getAttribute( objectName, attributeName);
         try {
@@ -417,7 +342,7 @@ public class DynamicInterceptor implements MBeanServer
             ReflectionException, InvalidAttributeValueException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).setAttribute(objectName, attribute);
@@ -438,7 +363,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ReflectionException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).getAttributes(objectName, attrNames);
@@ -453,7 +378,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ReflectionException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         AttributeList ret = null;
         try {
             if(result.isTargetAnInstance())
@@ -480,7 +405,7 @@ public class DynamicInterceptor implements MBeanServer
        // System.out.println("Unregistering MBean :"+objectName.toString());
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).unregisterMBean(objectName);
@@ -529,7 +454,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, IntrospectionException, ReflectionException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).getMBeanInfo(objectName);
@@ -545,9 +470,7 @@ public class DynamicInterceptor implements MBeanServer
             return false;
         try {
             List<String> instance = getInstance(objectName).getInstances();
-            /* if(instance.size() != 1)
-                throw new InstanceNotFoundException(localStrings.getLocalString("interceptor.objectName.wrongservernames",
-                        "This mbean call does not support multiple target instances")); */
+            
             for(String instanceName : instance) {
                 if(instanceName.equals(System.getProperty("com.sun.aas.instanceName"))) {
                     return getDelegateMBeanServer().isRegistered( objectName );
@@ -570,7 +493,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).addNotificationListener(
@@ -595,7 +518,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).addNotificationListener(
@@ -619,7 +542,7 @@ public class DynamicInterceptor implements MBeanServer
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
                 MBeanException, NotCompliantMBeanException {
         try {
-            ReplicationInfo result = getInstance(objectName);
+            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
             ObjectInstance ret = null;
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName);
@@ -639,7 +562,7 @@ public class DynamicInterceptor implements MBeanServer
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
             NotCompliantMBeanException, InstanceNotFoundException {
         try {
-            ReplicationInfo result = getInstance(objectName);
+            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
             ObjectInstance ret = null;
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName, objectName2);
@@ -659,7 +582,7 @@ public class DynamicInterceptor implements MBeanServer
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
             MBeanException, NotCompliantMBeanException {
         try {
-            ReplicationInfo result = getInstance(objectName);
+            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
             ObjectInstance ret = null;
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName, obj, str3);
@@ -679,7 +602,7 @@ public class DynamicInterceptor implements MBeanServer
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
             MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
         try {
-            ReplicationInfo result = getInstance(objectName);
+            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
             ObjectInstance ret = null;
             if(result.isTargetAnInstance())
                 return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName,
@@ -809,7 +732,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ListenerNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).removeNotificationListener(objectName, objectName1);
@@ -831,7 +754,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ListenerNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).removeNotificationListener(objectName, notificationListener);
@@ -854,7 +777,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ListenerNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).removeNotificationListener(objectName,
@@ -879,7 +802,7 @@ public class DynamicInterceptor implements MBeanServer
             throws InstanceNotFoundException, ListenerNotFoundException {
         if(objectName == null)
             throw new InstanceNotFoundException();
-        ReplicationInfo result = getInstance(objectName);
+        DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
         try {
             if(result.isTargetAnInstance()) {
                 getInstanceConnection(result.getInstances().get(0)).removeNotificationListener(objectName,
@@ -952,7 +875,7 @@ public class DynamicInterceptor implements MBeanServer
         }
     }
 
-    private class ReplicationInfo {
+    private static class ReplicationInfo {
         private boolean instanceTarget = false;
         private List<String> instances = new ArrayList<String>();
 
