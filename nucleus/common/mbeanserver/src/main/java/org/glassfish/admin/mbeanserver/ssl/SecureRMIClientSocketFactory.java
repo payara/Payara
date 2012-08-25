@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
 package org.glassfish.admin.mbeanserver.ssl;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -60,16 +60,10 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
     public final class SecureRMIClientSocketFactory
             extends SslRMIClientSocketFactory  {
 
-        private transient InetAddress mAddress;
-        private  transient SSLParams sslParams;
-        // The list of cipher suite
-        private volatile String[] enabledCipherSuites = null;
-        //the list of protocols
-        private volatile String[] enabledProtocols = null;
-        private transient Object cipherSuitesSync = new Object();
-        private transient Object protocolsSync = new Object();
+        private InetAddress mAddress;
+        private transient SSLParams sslParams;
         private transient Map socketMap = new HashMap<Integer, Socket>();
-        private transient Logger  _logger = Logger.getLogger(SecureRMIClientSocketFactory.class.getName());
+        private static final Logger  _logger = Logger.getLogger(SecureRMIClientSocketFactory.class.getName());
 
         public SecureRMIClientSocketFactory(final SSLParams sslParams,
                 final InetAddress addr) {
@@ -77,15 +71,14 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
             mAddress = addr;
             this.sslParams = sslParams;
             if(sslParams != null) {
-                _logger.log(Level.INFO, "Creating a SecureRMIClientSocketFactory @ " +
-                    addr.getHostAddress() + "with ssl config = " + sslParams.toString());
+                _logger.log(Level.INFO, 
+                        "Creating a SecureRMIClientSocketFactory @ {0}with ssl config = {1}", 
+                        new Object[]{addr.getHostAddress(), sslParams.toString()});
             }
         }
 
         public SecureRMIClientSocketFactory() {
-
         }
-
 
         @Override
         public boolean equals(Object obj) {
@@ -100,44 +93,29 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
         public int hashCode() {
              return mAddress.hashCode();
         }
+        
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            throw new IOException("Serialization not supported");
+        }
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
             //debug( "MyRMIServerSocketFactory.createServerSocket(): " + mAddress + " : " + port );
-            if(socketMap.containsKey(new Integer(port))) {
-                return (Socket)socketMap.get(new Integer(port));
+            if(socketMap.containsKey(Integer.valueOf(port))) {
+                return (Socket)socketMap.get(Integer.valueOf(port));
             }
-           /* final int backlog = 5;  // plenty
-            // we use a custom class here. The reason is mentioned in the class.
-            final JMXSslConfigHolder sslConfigHolder;
-            try {
-                sslConfigHolder = new JMXSslConfigHolder(ssl);
-            } catch (SSLException ssle) {
-                throw new IllegalStateException(ssle);
-            }
-
-            sslConfigHolder.configureSSL();
-            final SSLContext context = sslConfigHolder.getSSLContext();
-
-            SSLSocket sslSocket =
-                    (SSLSocket) context.getSocketFactory().createSocket(mAddress, port);
-            configureSSLSocket(sslSocket, sslConfigHolder);
-            Util.getLogger().info("SSLSocket " +
-                    sslSocket.getLocalSocketAddress() + "and" + sslSocket.toString()+ " created"); */
+           
             final int backlog = 5;
 
             SSLClientConfigurator sslCC = SSLClientConfigurator.getInstance();
-            _logger.log(Level.INFO, "Setting SSLParams @ " +
-                     sslParams);
+            _logger.log(Level.INFO, "Setting SSLParams @ {0}", sslParams);
             sslCC.setSSLParams(sslParams);
             SSLContext sslContext = sslCC.configure(sslParams);
             SSLSocket sslSocket =
                     (SSLSocket)sslContext.getSocketFactory().createSocket(mAddress, port);
             configureSSLSocket(sslSocket, sslCC);
 
-            //sslSocket.startHandshake();
-            //debug( "MyRMIServerSocketFactory.createServerSocket(): " + mAddress + " : " + port );
-            socketMap.put(new Integer(8686), sslSocket);
+            socketMap.put(Integer.valueOf(8686), sslSocket);
             return sslSocket;
         }
 
@@ -150,41 +128,26 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
          * @param sslSocket
          * @param sslCC
          */
-
         private void configureSSLSocket(SSLSocket sslSocket,
                 SSLClientConfigurator sslCC) {
-            if (sslCC.getEnabledCipherSuites() != null) {
-                if (enabledCipherSuites == null) {
-                    synchronized (cipherSuitesSync) {
-                        if (enabledCipherSuites == null) {
-                            enabledCipherSuites = configureEnabledCiphers(sslSocket,
-                                    sslCC.getEnabledCipherSuites());
-                        }
-                    }
-                }
-                 sslSocket.setEnabledCipherSuites(enabledCipherSuites);
+            String ecs[] = sslCC.getEnabledCipherSuites();
+            if (ecs != null) {
+                sslSocket.setEnabledCipherSuites(configureEnabledCiphers(sslSocket, ecs));
             }
-
-            if (sslCC.getEnabledProtocols() != null) {
-                if (enabledProtocols == null) {
-                    synchronized (protocolsSync) {
-                        if (enabledProtocols == null) {
-                            enabledProtocols = configureEnabledProtocols(sslSocket,
-                                    sslCC.getEnabledProtocols());
-                        }
-                    }
-                }
-                sslSocket.setEnabledProtocols(enabledProtocols);
+            
+            String ep[] = sslCC.getEnabledProtocols();
+            if (ep != null) {
+                sslSocket.setEnabledProtocols(configureEnabledProtocols(sslSocket, ep));
             }
 
             sslSocket.setUseClientMode(true);
         }
 
         /**
-         * Return the list of allowed protocol.
+         * Return the list of allowed protocols.
          * @return String[] an array of supported protocols.
          */
-        private final static String[] configureEnabledProtocols(
+        private static String[] configureEnabledProtocols(
                 SSLSocket socket, String[] requestedProtocols) {
 
             String[] supportedProtocols = socket.getSupportedProtocols();
@@ -220,7 +183,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
          * @return Array of SSL cipher suites to be enabled, or null if none of the
          * requested ciphers are supported
          */
-        private final static String[] configureEnabledCiphers(SSLSocket socket,
+        private static String[] configureEnabledCiphers(SSLSocket socket,
                 String[] requestedCiphers) {
 
             String[] supportedCiphers = socket.getSupportedCipherSuites();

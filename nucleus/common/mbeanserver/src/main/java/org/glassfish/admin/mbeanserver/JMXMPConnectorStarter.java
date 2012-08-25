@@ -62,16 +62,14 @@ Start and stop JMX connectors.
 final class JMXMPConnectorStarter extends ConnectorStarter
 {
     JMXMPConnectorStarter(
-        final MBeanServer mbeanServer,
-        final String address,
-        final int port,
-        final String authRealmName,
-        final boolean securityEnabled,
-        final ServiceLocator habitat,
-        final BootAMXListener bootListener,
-        final Ssl sslConfig)
+        final MBeanServer mbeanServer, 
+        final String address, 
+        final int port, 
+        final boolean securityEnabled, 
+        final ServiceLocator habitat, 
+        final BootAMXListener bootListener)
     {
-        super(mbeanServer, address, port, authRealmName, securityEnabled, habitat, bootListener, sslConfig);
+        super(mbeanServer, address, port, securityEnabled, habitat, bootListener);
     }
 
 

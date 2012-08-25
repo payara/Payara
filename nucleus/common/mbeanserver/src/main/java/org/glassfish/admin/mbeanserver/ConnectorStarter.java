@@ -62,11 +62,9 @@ abstract class ConnectorStarter {
     protected final MBeanServer mMBeanServer;
     protected final String mHostName;
     protected final int mPort;
-    protected final String mAuthRealmName;
     protected final boolean mSecurityEnabled;
     private final ServiceLocator mHabitat;
     protected final BootAMXListener mBootListener;
-    protected final Ssl ssl;
     protected volatile JMXServiceURL mJMXServiceURL = null;
     protected volatile JMXConnectorServer mConnectorServer = null;
 
@@ -87,20 +85,15 @@ abstract class ConnectorStarter {
             final MBeanServer mbeanServer,
             final String host,
             final int port,
-            final String authRealmName,
             final boolean securityEnabled,
             final ServiceLocator habitat,
-            final BootAMXListener bootListener,
-            final Ssl sslConfig) {
+            final BootAMXListener bootListener) {
         mMBeanServer = mbeanServer;
         mHostName = host;
         mPort = port;
-        mAuthRealmName = authRealmName;
         mSecurityEnabled = securityEnabled;
         mHabitat = habitat;
         mBootListener = bootListener;
-        ssl = sslConfig;
-
     }
 
     abstract JMXConnectorServer start() throws Exception;

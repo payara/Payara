@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,42 +39,15 @@
  */
 package org.glassfish.admin.mbeanserver.ssl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.cert.CRL;
-import java.security.cert.CRLException;
-import java.security.cert.CertPathParameters;
-import java.security.cert.CertStore;
-import java.security.cert.CertStoreParameters;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.PKIXBuilderParameters;
-import java.security.cert.X509CertSelector;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.security.cert.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.CertPathTrustManagerParameters;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.ManagerFactoryParameters;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 
 /**
  * This class is a utility class that would configure a client socket factory using
@@ -88,11 +61,11 @@ import javax.net.ssl.TrustManagerFactory;
 public class SSLClientConfigurator {
 
     private SSLParams sslParams;
-    private static SSLClientConfigurator sslCC;
+    private static volatile SSLClientConfigurator sslCC;
     private SSLContext sslContext;
     private SSLSocketFactory sslSocketFactory;
 
-    private Logger _logger = Logger.getLogger(SSLClientConfigurator.class.getName());
+    private static final Logger _logger = Logger.getLogger(SSLClientConfigurator.class.getName());
     private String[] enabledProtocols;
     private String[] enabledCipherSuites;
 
@@ -216,22 +189,21 @@ public class SSLClientConfigurator {
                                           String keyAlias)
                 throws Exception {
 
-        KeyManager[] kms = null;
         // hack
         if(System.getProperty("javax.net.ssl.keyStore") == null) {
             _logger.log(Level.WARNING, " No keystores defined");
             return null;
         }
-        _logger.log(Level.FINE, "Algorithm ::" + algorithm);
-        _logger.log(Level.FINE, "Key Alias ::" + keyAlias);
-        _logger.log(Level.FINE, "KeyStore Type ::" + sslParams.getKeyStoreType());
+        _logger.log(Level.FINE, "Algorithm ::{0}", algorithm);
+        _logger.log(Level.FINE, "Key Alias ::{0}", keyAlias);
+        _logger.log(Level.FINE, "KeyStore Type ::{0}", sslParams.getKeyStoreType());
         
         String keystorePass = sslParams.getKeyStorePassword();
 
         KeyStore ks = getStore(sslParams.getKeyStoreType(),
                     sslParams.getKeyStore().getPath(), keystorePass);
         if (keyAlias != null && !ks.isKeyEntry(keyAlias)) {
-            _logger.log(Level.WARNING, "No Key store found for " + keyAlias);
+            _logger.log(Level.WARNING, "No Key store found for {0}", keyAlias);
             //throw new IOException( "jsse.alias_no_key_entry for "+keyAlias);
             return null;
         }
@@ -239,8 +211,7 @@ public class SSLClientConfigurator {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
         kmf.init(ks, keystorePass.toCharArray());
 
-        kms = kmf.getKeyManagers();
-        return kms;
+        return kmf.getKeyManagers();
     }
 
     /**
@@ -252,13 +223,13 @@ public class SSLClientConfigurator {
         String crlf = sslParams.getCrlFile();
 
         TrustManager[] tms = null;
-        _logger.log(Level.FINE, "in getTrustManagers "+
-                " TrustManager type = "+ sslParams.getTrustStoreType() +
-                " path = "+sslParams.getTrustStore().getPath() +
-                " password = "+ sslParams.getTrustStorePassword().toString());
+        _logger.log(Level.FINE, "in getTrustManagers TrustManager type = {0} path = {1} password = {2}", 
+                new Object[]{sslParams.getTrustStoreType(), 
+                    sslParams.getTrustStore().getPath(), 
+                    sslParams.getTrustStorePassword()});
 
         KeyStore trustStore = getStore(sslParams.getTrustStoreType(),
-                    sslParams.getTrustStore().getPath(), sslParams.getTrustStorePassword().toString());
+                    sslParams.getTrustStore().getPath(), sslParams.getTrustStorePassword());
         if (trustStore != null) {
             if (crlf == null) {
                 TrustManagerFactory tmf =
@@ -310,7 +281,7 @@ public class SSLClientConfigurator {
                 try {
                     xparams.setMaxPathLength(Integer.parseInt(trustLength));
                 } catch(Exception ex) {
-                    _logger.warning("Bad maxCertLength: " + trustLength);
+                    _logger.log(Level.WARNING, "Bad maxCertLength: {0}", trustLength);
                 }
             }
             params = xparams;
@@ -517,7 +488,7 @@ public class SSLClientConfigurator {
     }
 
     private String toCommaSeparatedString(String[] strArray) {
-        StringBuffer strBuf = new StringBuffer(strArray[0]);
+        StringBuilder strBuf = new StringBuilder(strArray[0]);
         for(int i=1; i<strArray.length; i++) {
             strBuf.append(",");
             strBuf.append(strArray[i]);
@@ -558,8 +529,6 @@ public class SSLClientConfigurator {
         private static final Map<String,CipherInfo> ciphers =
                 new HashMap<String,CipherInfo>();
 
-        @SuppressWarnings({"UnusedDeclaration"})
-        private final String configName;
         private final String cipherName;
         private final short protocolVersion;
 
@@ -569,19 +538,16 @@ public class SSLClientConfigurator {
                 String nonStdName = OLD_CIPHER_MAPPING[i][0];
                 String stdName = OLD_CIPHER_MAPPING[i][1];
                 ciphers.put(nonStdName,
-                        new CipherInfo(nonStdName, stdName, (short) (SSL3 | TLS)));
+                        new CipherInfo(stdName, (short) (SSL3 | TLS)));
             }
         }
 
         /**
-         * @param configName      name used in domain.xml, sun-acc.xml
          * @param cipherName      name that may depends on backend
          * @param protocolVersion
          */
-        private CipherInfo(final String configName,
-                           final String cipherName,
+        private CipherInfo(final String cipherName,
                            final short protocolVersion) {
-            this.configName = configName;
             this.cipherName = cipherName;
             this.protocolVersion = protocolVersion;
         }
@@ -591,7 +557,7 @@ public class SSLClientConfigurator {
             String[] supportedCiphers = factory.getDefaultCipherSuites();
             for (int i = 0, len = supportedCiphers.length; i < len; i++) {
                 String s = supportedCiphers[i];
-                ciphers.put(s, new CipherInfo(s, s, (short) (SSL3 | TLS)));
+                ciphers.put(s, new CipherInfo(s, (short) (SSL3 | TLS)));
             }
         }
         public static CipherInfo getCipherInfo(final String configName) {

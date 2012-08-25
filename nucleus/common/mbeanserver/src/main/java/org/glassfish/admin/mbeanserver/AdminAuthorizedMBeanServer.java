@@ -244,20 +244,6 @@ public class AdminAuthorizedMBeanServer {
             return true;
         }
     }
-        
-    private static AdminAccessController.Access getAccess() {
-        /*
-         * Temp workaround.  Still working on this.
-         */
-        
-        return AdminAccessController.Access.FULL;
-        
-//        AdminAccessController.Access result = JMXAccessInfo.getAccess();
-//        if (result == null) {
-//            result = AdminAccessController.Access.READONLY;
-//        }
-//        return result;
-    }
     
     /**
      * Returns an MBeanServer that will check security and then forward requests
@@ -269,7 +255,7 @@ public class AdminAuthorizedMBeanServer {
     public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance,
             final BootAMX bootAMX) {
         final AdminAuthorizedMBeanServer.Handler handler = new AdminAuthorizedMBeanServer.Handler(mbs, isInstance, bootAMX);
-        
+       
         return (MBeanServerForwarder) Proxy.newProxyInstance(
                 MBeanServerForwarder.class.getClassLoader(),
                 new Class[] {MBeanServerForwarder.class},

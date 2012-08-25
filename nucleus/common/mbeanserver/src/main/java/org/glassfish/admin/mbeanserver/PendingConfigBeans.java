@@ -40,27 +40,18 @@
 
 package org.glassfish.admin.mbeanserver;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import javax.inject.Inject;
 import org.glassfish.config.support.ConfigBeanListener;
 import org.glassfish.hk2.Provider;
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.config.Dom;
-import org.jvnet.hk2.config.ConfigBean;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-
-
-import org.jvnet.hk2.config.TransactionListener;
-import org.jvnet.hk2.config.Transactions;
-import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
-
-import javax.inject.Inject;
-import java.util.List;
-import java.util.ArrayList;
-import java.beans.PropertyChangeEvent;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 
 /**
 Called when ConfigBeans come into the habitat (see GlassfishConfigBean); a job queue
@@ -89,6 +80,7 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
     {
     }
 
+    @Override
     public void postConstruct()
     {
         transactions.addTransactionsListener(this);
@@ -113,6 +105,7 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
         return (o instanceof ConfigBean) ? ConfigBean.class.cast(o) : null;
     }
 
+    @Override
     public void onEntered(final Provider<ConfigBean> provider)
     {
         //debug( "PendingConfigBeansNew.onEntered(): " + inhabitant);
@@ -163,14 +156,14 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
         PendingConfigBeanJob job = null;
         
         // ignore bogus ConfigBeans that are not part of the Domain
-        if ( ancestor != null && ancestor.getProxyType().getName().endsWith( ".Domain" ))
+        if (ancestor.getProxyType().getName().endsWith(".Domain"))
         {
-            //debug( "PendingConfigBeans.onEntered: " + cb.getProxyType().getName() );
             job = addJob(new PendingConfigBeanJob(cb, latch));
         }
         else
         {
-            Util.getLogger().info("PendingConfigBeans.onEntered: ignoring ConfigBean that does not have Domain as ancestor: " + cb.getProxyType().getName());
+            Util.getLogger().log(Level.INFO, "PendingConfigBeans.onEntered: ignoring ConfigBean that does not have Domain as ancestor: {0}", 
+                    cb.getProxyType().getName());
             if ( latch != null )
             {
                 latch.countDown();
@@ -263,6 +256,7 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
     This is a workaround for the fact that the onEntered() is not being called in all cases,
     namely during deployment before AMX has loaded.  See disableTransactionListener() above.
      */
+    @Override
     public synchronized void transactionCommited(final List<PropertyChangeEvent> events)
     {
         // could there be an add/remove/add/remove of the same thing?  Maintain the order just in case
@@ -270,8 +264,6 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
         {
             final Object oldValue = event.getOldValue();
             final Object newValue = event.getNewValue();
-            final Object source = event.getSource();
-            final String propertyName = event.getPropertyName();
 
             if (oldValue == null && newValue instanceof ConfigBeanProxy)
             {
@@ -285,15 +277,10 @@ public class PendingConfigBeans implements ConfigBeanListener, PostConstruct, Tr
                 final ConfigBean cb = asConfigBean(ConfigBean.unwrap((ConfigBeanProxy) oldValue));
                 remove(cb);
             }
-            else
-            {
-                // CHANGE can occur before ADD
-                //final ConfigBean cb = asConfigBean( ConfigBean.unwrap( (ConfigBeanProxy)source) );
-                //debug( "CHANGE: " +  cb.getProxyType().getName() + ": " + oldValue + " ===> " + newValue );
-            }
         }
     }
 
+    @Override
     public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes)
     {
         // ignore

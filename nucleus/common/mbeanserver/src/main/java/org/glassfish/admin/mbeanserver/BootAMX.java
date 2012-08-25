@@ -140,11 +140,7 @@ final class BootAMX implements BootAMXMBean
     {
         if (mDomainRootObjectName == null)
         {
-            //debug( "Booter.bootAMX: getting AMXStartupServiceMBean via contract" );
-            final AMXStartupServiceMBean loader = getLoader();
-
-            //debug( "Got loader for AMXStartupServiceMBean: " + loader );
-
+            getLoader();
             final ObjectName startupON = AMXStartupServiceMBean.OBJECT_NAME;
             if (!mMBeanServer.isRegistered(startupON))
             {

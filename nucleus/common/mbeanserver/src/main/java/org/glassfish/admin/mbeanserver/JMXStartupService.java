@@ -285,43 +285,38 @@ public final class JMXStartupService implements PostConstruct {
             final String protocol = connConfig.getProtocol();
             final String address = connConfig.getAddress();
             final int port = Integer.parseInt(connConfig.getPort());
-            final String authRealmName = connConfig.getAuthRealmName();
             final boolean securityEnabled = Boolean.parseBoolean(connConfig.getSecurityEnabled());
             final Ssl ssl = connConfig.getSsl();
 
             JMXConnectorServer server = null;
-            final BootAMXListener listener = mNeedBootListeners ? new BootAMXListener(server, mAMXBooterNew) : null;
+            final BootAMXListener listener = mNeedBootListeners ? 
+                    new BootAMXListener(mAMXBooterNew) : null;
             if (protocol.equals("rmi_jrmp")) {
                 starter = new RMIConnectorStarter(mMBeanServer, address, port,
-                        protocol, authRealmName, securityEnabled, habitat,
+                        protocol, securityEnabled, habitat,
                         listener, ssl);
                 server = ((RMIConnectorStarter) starter).start();
             } else if (protocol.equals("jmxmp")) {
                 starter = new JMXMPConnectorStarter(mMBeanServer, address, port,
-                        authRealmName, securityEnabled,
-                        habitat, listener, ssl);
+                        securityEnabled,
+                        habitat, listener);
                 server = ((JMXMPConnectorStarter) starter).start();
             } else {
                 throw new IllegalArgumentException("JMXStartupService.startConnector(): Unknown protocol: " + protocol);
             }
-
+            if (listener != null) {
+                listener.setServer(server);
+            }
             final JMXServiceURL url = server.getAddress();
             JMX_LOGGER.log(Level.INFO, JMX_STARTED_SERVICE, url);
 
             try {
                 connObjectName = new ObjectName(JMX_CONNECTOR_SERVER_PREFIX + ",protocol=" + protocol + ",name=" + connConfig.getName());
-                ObjectName connObjectName1 = mMBeanServer.registerMBean(server, connObjectName).getObjectName();
+                mMBeanServer.registerMBean(server, connObjectName).getObjectName();
             } catch (final Exception e) {
                 // it's not critical to have it registered as an MBean
                 e.printStackTrace();
             }
-
-            // test that it works
-            /*
-            final JMXConnector conn = JMXConnectorFactory.connect(url);
-            final MBeanServerConnection mbsc = conn.getMBeanServerConnection();
-            mbsc.getDomains();
-             */
 
             return server;
         }

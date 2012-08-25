@@ -39,10 +39,21 @@
  */
 package org.glassfish.admin.mbeanserver;
 
-import org.glassfish.admin.mbeanserver.ssl.JMXMasterPasswordImpl;
-import org.glassfish.grizzly.config.dom.Ssl;
-import org.glassfish.hk2.api.ServiceLocator;
-
+import java.io.File;
+import java.io.IOException;
+import java.net.*;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMIClientSocketFactory;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
+import java.rmi.server.UnicastRemoteObject;
+import java.security.Security;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.management.MBeanServer;
 import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXConnectorServer;
@@ -54,41 +65,12 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.net.ssl.SSLContext;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.security.auth.Subject;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.util.logging.Level;
-import javax.management.MBeanServer;
-
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-
-
-import java.util.Map;
-import java.util.HashMap;
-
-import javax.management.remote.*;
-import javax.management.remote.rmi.RMIJRMPServerImpl;
-import javax.management.remote.rmi.RMIConnection;
-import javax.management.remote.rmi.RMIConnectorServer;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
-import java.rmi.server.RMISocketFactory;
-import java.rmi.server.UnicastRemoteObject;
-import java.security.Security;
-import javax.net.ssl.SSLContext;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
+import org.glassfish.admin.mbeanserver.ssl.JMXMasterPasswordImpl;
 import org.glassfish.admin.mbeanserver.ssl.SSLClientConfigurator;
 import org.glassfish.admin.mbeanserver.ssl.SSLParams;
 import org.glassfish.admin.mbeanserver.ssl.SecureRMIServerSocketFactory;
-import org.jvnet.hk2.component.*;
+import org.glassfish.grizzly.config.dom.Ssl;
+import org.jvnet.hk2.component.Habitat;
 
 /**
  * This class configures and starts the JMX RMI connector server using rmi_jrmp protocol.
@@ -122,13 +104,12 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final String address,
             final int port,
             final String protocol,
-            final String authRealmName,
             final boolean securityEnabled,
             final Habitat habitat,
             final BootAMXListener bootListener,
             final Ssl sslConfig) throws UnknownHostException {
 
-        super(mbeanServer, address, port, authRealmName, securityEnabled, habitat, bootListener, sslConfig);
+        super(mbeanServer, address, port, securityEnabled, habitat, bootListener);
 
         masterPassword = new String(habitat.<JMXMasterPasswordImpl>getService(JMXMasterPasswordImpl.class).getMasterPassword());
 
@@ -224,13 +205,14 @@ final class RMIConnectorStarter extends ConnectorStarter {
             //System.out.println( RMI_HOSTNAME_PROP + " before: " + System.getProperty(RMI_HOSTNAME_PROP) );
             final String saved = setupRMIHostname(addr);
             try {
-                Util.getLogger().info("Binding RMI port to single IP address = " + System.getProperty(RMI_HOSTNAME_PROP) + ", port " + port);
+                Util.getLogger().log(Level.INFO, "Binding RMI port to single IP address = {0}, port {1}", 
+                        new Object[]{System.getProperty(RMI_HOSTNAME_PROP), port});
                 registry = _startRegistry(port);
             } finally {
                 restoreRMIHostname(saved, addr);
             }
         } else {
-            Util.getLogger().fine("Binding RMI port to *:" + port);
+            Util.getLogger().log(Level.FINE, "Binding RMI port to *:{0}", port);
             registry = _startRegistry(port);
         }
         return registry;
@@ -253,7 +235,6 @@ final class RMIConnectorStarter extends ConnectorStarter {
                 return LocateRegistry.createRegistry(port, null, mServerSocketFactory);
             }
         } catch (final Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Port " + port + " is not available for the internal rmi registry. " +
                     "This means that a call was made with the same port, without closing earlier " +
                     "registry instance. This has to do with the system jmx connector configuration " +
@@ -269,6 +250,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
      * @throws MalformedURLException
      * @throws IOException
      */
+    @Override
     public JMXConnectorServer start() throws MalformedURLException, IOException, UnknownHostException {
 
         final String name = "jmxrmi";
@@ -347,12 +329,6 @@ final class RMIConnectorStarter extends ConnectorStarter {
     private SslRMIClientSocketFactory getClientSocketFactory(Ssl sslConfig) {
         // create SSLParams
         SSLParams sslParams = convertToSSLParams(sslConfig);
-        if (sslParams == null) {
-            sslParams = new SSLParams(new File(System.getProperty("javax.net.ssl.trustStore")),
-                    System.getProperty("javax.net.ssl.trustStoreType", "JKS"),
-                    masterPassword);
-
-        }
 
         // configure the context using these params
         SSLClientConfigurator sslCC = SSLClientConfigurator.getInstance();
@@ -360,8 +336,6 @@ final class RMIConnectorStarter extends ConnectorStarter {
         SSLContext sslContext = sslCC.configure(sslParams);
 
         // Now pass this context to the ClientSocketFactory
-        Object socketFactoryProvider = Security.getProperty("ssl.SocketFactory.provider");
-
         Security.setProperty("ssl.SocketFactory.provider", sslContext.getClass().getName());
 
         String enabledProtocols = sslCC.getEnabledProtocolsAsString();
@@ -450,6 +424,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
             mAddress = addr;
         }
 
+        @Override
         public ServerSocket createServerSocket(int port) throws IOException {
             //debug( "MyRMIServerSocketFactory.createServerSocket(): " + mAddress + " : " + port );
             final int backlog = 5;  // plenty
@@ -461,6 +436,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
         /**
          * shouldn't be called
          */
+        @Override
         public Socket createSocket(String host, int port) throws IOException {
             //debug( "MyRMIServerSocketFactory.createSocket(): " + host + " : " + port );
             final Socket s = new Socket(host, port);
@@ -492,7 +468,8 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final String saved = setupRMIHostname(mBindToAddr);
             try {
                 super.export();
-                Util.getLogger().info("MyRMIJRMPServerImpl: exported on address " + mBindToAddr);
+                Util.getLogger().log(Level.INFO, "MyRMIJRMPServerImpl: exported on address {0}", 
+                        mBindToAddr);
             } finally {
                 restoreRMIHostname(saved, mBindToAddr);
             }
@@ -501,10 +478,12 @@ final class RMIConnectorStarter extends ConnectorStarter {
         /**
          * must be 'synchronized': threads can't save/restore the same system property concurrently
          */
+        @Override
         protected synchronized RMIConnection makeClient(final String connectionId, final Subject subject) throws IOException {
             final String saved = setupRMIHostname(mBindToAddr);
             try {
-                Util.getLogger().info("MyRMIJRMPServerImpl: makeClient on address = " + System.getProperty(RMI_HOSTNAME_PROP));
+                Util.getLogger().log(Level.INFO, "MyRMIJRMPServerImpl: makeClient on address = {0}", 
+                        System.getProperty(RMI_HOSTNAME_PROP));
                 return super.makeClient(connectionId, subject);
             } finally {
                 restoreRMIHostname(saved, mBindToAddr);
