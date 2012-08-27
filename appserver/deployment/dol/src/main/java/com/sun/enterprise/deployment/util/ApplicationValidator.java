@@ -309,6 +309,23 @@ public class ApplicationValidator extends ComponentValidator
         final String APPCLIENT_LEVEL = "ACLevel:";
         final String WEBBUNDLE_LEVEL = "WBDLevel:";
 
+        Set<EnvironmentProperty> environmentProperties = application.getEnvironmentProperties();
+
+        for (EnvironmentProperty environmentProperty: environmentProperties) {
+            String jndiName = environmentProperty.getName() ;
+            if(environmentProperty.hasLookupName()) {
+                jndiName = environmentProperty.getLookupName();
+            } else if(environmentProperty.getMappedName().length() > 0) {
+               jndiName = environmentProperty.getMappedName();
+            }
+
+            if (jndiName.startsWith(JNDI_COMP) || jndiName.startsWith(JNDI_MODULE)) {
+                inValidJndiName = jndiName;
+                return false;
+            }
+        }
+
+
         // Reads MSD and DSD at application level
         CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
         Vector appLevel = new Vector();
