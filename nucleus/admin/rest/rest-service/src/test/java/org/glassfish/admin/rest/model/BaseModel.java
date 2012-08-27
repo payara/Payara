@@ -43,6 +43,7 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 
 public interface BaseModel {
     @NotNull
@@ -59,4 +60,8 @@ public interface BaseModel {
 
     List<RelatedModel> getRelated();
     void setRelated(List<RelatedModel> related);
+
+    @AttributeReference(configBean="com.sun.enterprise.config.serverbeans.Cluster", methodName="getConfigRef")
+    String getConfigRef();
+    void setConfigRef(String value);
 }

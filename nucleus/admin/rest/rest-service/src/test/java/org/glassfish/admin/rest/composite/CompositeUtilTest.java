@@ -40,9 +40,14 @@
 
 package org.glassfish.admin.rest.composite;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.model.BaseModel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -71,8 +76,25 @@ public class CompositeUtilTest {
         BaseModel model = cu.getModel(BaseModel.class);
         model.setName(null); // Redundant, but here for emphasis
         model.setSize(16); // Must be between 10 and 15, inclusive
+        model.setConfigRef(null); // Not null. Validation pulled in from the ConfigBean
 
         Set<ConstraintViolation<BaseModel>> violations = cu.validateRestModel(model);
-        Assert.assertEquals(violations.size(), 2);
+        Assert.assertEquals(3, violations.size());
+    }
+
+    @Test(groups="offline")
+    public void testAttributeReferenceProcessing() throws Exception {
+        final CompositeUtil cu = CompositeUtil.instance();
+        BaseModel model = cu.getModel(BaseModel.class);
+        
+        final Method clusterMethod = Cluster.class.getMethod("getConfigRef");
+        final Method modelMethod = model.getClass().getDeclaredMethod("getConfigRef");
+
+        Annotation[] fromCluster = clusterMethod.getAnnotations();
+        Annotation[] fromRestModel = modelMethod.getAnnotations();
+
+        Assert.assertEquals(fromCluster.length, fromRestModel.length);
+        Assert.assertEquals(clusterMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message(),
+                            modelMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message());
     }
 }
