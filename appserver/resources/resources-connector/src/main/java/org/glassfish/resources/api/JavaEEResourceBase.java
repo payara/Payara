@@ -114,7 +114,6 @@ public abstract class JavaEEResourceBase implements JavaEEResource, Serializable
         Set entrySet = properties_.entrySet();
         for (Iterator iter = entrySet.iterator(); iter.hasNext();) {
             Map.Entry next = (Map.Entry) iter.next();
-            ResourceProperty nextProp = (ResourceProperty) next.getValue();
             ResourceProperty propClone =
                     new ResourcePropertyImpl((String) next.getKey());
             propClone.setValue(next.getValue());

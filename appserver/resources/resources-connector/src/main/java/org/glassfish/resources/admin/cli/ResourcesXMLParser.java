@@ -40,49 +40,29 @@
 
 package org.glassfish.resources.admin.cli;
 
+import com.sun.enterprise.util.SystemPropertyConstants;
+import com.sun.enterprise.util.i18n.StringManager;
+import org.glassfish.api.I18n;
 import org.glassfish.resources.api.Resource;
+import org.w3c.dom.*;
+import org.xml.sax.*;
+import org.xml.sax.ext.LexicalHandler;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;  
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;  
-import org.xml.sax.InputSource;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.EntityResolver;
-
 import java.io.*;
 import java.net.URL;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.NamedNodeMap;
-
-import com.sun.enterprise.util.SystemPropertyConstants;
-
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 //i18n import
-import com.sun.enterprise.util.i18n.StringManager;
-
-import java.util.*;
-
-import org.xml.sax.ext.LexicalHandler;
-
-import org.glassfish.api.I18n;
-import static org.glassfish.resources.admin.cli.ResourceConstants.*;
 
 /**
  * This Class reads the Properties (resources) from the xml file supplied 
@@ -210,9 +190,13 @@ public class ResourcesXMLParser implements EntityResolver
         }
 
         HashMap<String,String> attrs = modifiedResource.getAttributes();
-        for (String key : attrs.keySet()) {
-            ((Element)resourceNode).setAttribute(key, attrs.get(key));
+        Iterator entries = attrs.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry thisEntry = (Map.Entry) entries.next();
+            ((Element)resourceNode).setAttribute((String) thisEntry.getKey(), (String)thisEntry.getValue());
         }
+
+
 
         // Put the new/modified property nodes.
         Properties props = modifiedResource.getProperties();

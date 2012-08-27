@@ -40,31 +40,28 @@
 
 package org.glassfish.resources.listener;
 
+import com.sun.enterprise.config.serverbeans.*;
+import com.sun.logging.LogDomains;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.PostStartup;
 import org.glassfish.resources.api.ResourceDeployer;
 import org.glassfish.resources.api.ResourceInfo;
 import org.glassfish.resources.api.ResourcesBinder;
 import org.glassfish.resources.util.ResourceManagerFactory;
 import org.glassfish.resources.util.ResourceUtil;
-
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.internal.api.*;
-
-import java.beans.PropertyChangeEvent;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.*;
-
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.logging.LogDomains;
-import org.jvnet.hk2.config.ObservableBean;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.beans.PropertyChangeEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Resource manager to bind various application or module scoped resources during
@@ -300,16 +297,12 @@ public class ApplicationScopedResourcesManager implements PostStartup, PostConst
      * @param events list of changes
      */
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
-        return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(events), _logger);
+        return ConfigSupport.sortAndDispatch(events, new ConfigChangeHandler(), _logger);
     }
 
     class ConfigChangeHandler implements Changed {
 
-        //TODO no need to store events ?
-        PropertyChangeEvent[] events;
-
-        private ConfigChangeHandler(PropertyChangeEvent[] events) {
-            this.events = events;
+        private ConfigChangeHandler() {
         }
 
         /**
