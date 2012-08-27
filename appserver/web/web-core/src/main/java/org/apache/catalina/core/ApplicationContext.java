@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -131,6 +131,11 @@ public class ApplicationContext implements ServletContext {
      */
     private HashMap<String, String> readOnlyAttributes =
         new HashMap<String, String>();
+
+    /**
+     * Lock for synchronizing attributes and readOnlyAttributes
+     */
+    private Object attributesLock = new Object();
 
     /**
      * The Context instance with which we are associated.
@@ -506,17 +511,13 @@ public class ApplicationContext implements ServletContext {
         boolean found = false;
 
         // Remove the specified attribute
-        synchronized (attributes) {
+        synchronized (attributesLock) {
             // Check for read only attribute
             if (readOnlyAttributes.containsKey(name))
                 return;
-            found = attributes.containsKey(name);
-            if (found) {
-                value = attributes.get(name);
-                attributes.remove(name);
-            } else {
+            value = attributes.remove(name);
+            if (value == null)
                 return;
-            }
         }
 
         // Notify interested application event listeners
@@ -580,7 +581,7 @@ public class ApplicationContext implements ServletContext {
         boolean replaced = false;
 
         // Add or replace the specified attribute
-        synchronized (attributes) {
+        synchronized (attributesLock) {
             // Check for read only attribute
             if (readOnlyAttributes.containsKey(name))
                 return;
@@ -995,7 +996,7 @@ public class ApplicationContext implements ServletContext {
 
         // Create list of attributes to be removed
         ArrayList<String> list = new ArrayList<String>();
-        synchronized (attributes) {
+        synchronized (attributesLock) {
             Iterator<String> iter = attributes.keySet().iterator();
             while (iter.hasNext()) {
                 list.add(iter.next());
@@ -1022,7 +1023,7 @@ public class ApplicationContext implements ServletContext {
      * Set an attribute as read only.
      */
     void setAttributeReadOnly(String name) {
-        synchronized (attributes) {
+        synchronized (attributesLock) {
             if (attributes.containsKey(name))
                 readOnlyAttributes.put(name, name);
         }
