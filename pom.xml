@@ -133,7 +133,7 @@
 
         <uc-pkg-client.version>1.122-54.2834</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-54.2834</uc-pkg-bootstrap.version>
-        <webservices.version>2.3-b24</webservices.version>
+        <webservices.version>2.3-b55</webservices.version>
         <woodstox.version>4.1.2</woodstox.version>
         <jaxb-api.version>2.2.7</jaxb-api.version>
         <jaxb.version>2.2.7-b41</jaxb.version>
