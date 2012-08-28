@@ -98,6 +98,11 @@ class ConfigurationParser<C extends ConfigLoader> {
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
                         Class configBeanClass = ConfigModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName(), habitat);
+                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml"));
+                        if (!writeDefaultElementsToXml)  {
+                            //Do not write default snippets to domain.xml
+                            doc.getRoot().skipFromXml();
+                        }
                         ConfigModularityUtils.setConfigBean(
                                 doc.getRoot().createProxy(configBeanClass)
                                 , configBeanDefaultValue, habitat, param);
