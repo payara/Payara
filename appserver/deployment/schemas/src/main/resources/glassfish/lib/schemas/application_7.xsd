@@ -269,6 +269,10 @@
                    type="javaee:connector-resourceType"
                    minOccurs="0"
                    maxOccurs="unbounded"/>
+      <xsd:element name="administered-object"
+                   type="javaee:administered-objectType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
     </xsd:sequence>
     <xsd:attribute name="version"
                    type="javaee:dewey-versionType"
