@@ -937,31 +937,6 @@ public abstract class RealmBase
         if (constraints == null || constraints.length == 0)
             return (true);
 
-        // Specifically allow access to the form login and form error pages
-        // and the "j_security_check" action
-        LoginConfig config = context.getLoginConfig();
-        if ((config != null) &&
-            (Constants.FORM_METHOD.equals(config.getAuthMethod()))) {
-            String requestURI = request.getRequestPathMB().toString();
-            String loginPage = config.getLoginPage();
-            if (loginPage.equals(requestURI)) {
-                if (log.isLoggable(Level.FINE))
-                    log.fine(" Allow access to login page " + loginPage);
-                return (true);
-            }
-            String errorPage = config.getErrorPage();
-            if (errorPage.equals(requestURI)) {
-                if (log.isLoggable(Level.FINE))
-                    log.fine(" Allow access to error page " + errorPage);
-                return (true);
-            }
-            if (requestURI.endsWith(Constants.FORM_ACTION)) {
-                if (log.isLoggable(Level.FINE))
-                    log.fine(" Allow access to username/password submission");
-                return (true);
-            }
-        }
-
         // Which user principal have we already authenticated?
         Principal principal = ((HttpServletRequest)request.getRequest())
                                                             .getUserPrincipal();
