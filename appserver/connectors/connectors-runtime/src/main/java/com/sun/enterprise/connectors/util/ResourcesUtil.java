@@ -96,7 +96,7 @@ public class ResourcesUtil {
 
     private Server server;
 
-    private static ResourcesUtil resourcesUtil;
+    private volatile static ResourcesUtil resourcesUtil;
 
     private ResourcesUtil(){
     }
@@ -172,7 +172,11 @@ public class ResourcesUtil {
     public static ResourcesUtil createInstance() {
         //stateless, no synchronization needed
         if(resourcesUtil == null){
-            resourcesUtil = new ResourcesUtil();
+            synchronized(ResourcesUtil.class) {
+                if(resourcesUtil == null) {
+                    resourcesUtil = new ResourcesUtil();
+                }
+            }
         }
         return resourcesUtil;
     }
@@ -645,7 +649,7 @@ public class ResourcesUtil {
             boolean poolEnabled = isEnabled(ccp);
             enabled  = poolEnabled && resourceEnabled && refEnabled ;
         } else if(br instanceof AdminObjectResource) {
-            AdminObjectResource aor = (AdminObjectResource) br;
+            //AdminObjectResource aor = (AdminObjectResource) br;
            // String raName = aor.getResAdapter();
             if(/* TODO isRarEnabled &&*/ resourceEnabled && refEnabled){
                 enabled = true;

@@ -262,10 +262,10 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
     }
 
 
-    private ConcurrentHashMap<PoolInfo, ResourcePool> getPoolTable() {
+/*    private ConcurrentHashMap<PoolInfo, ResourcePool> getPoolTable() {
         return poolTable;
     }
-
+*/
 
     private void addPool(ResourcePool pool) {
         if (_logger.isLoggable(Level.FINE)) {

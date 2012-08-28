@@ -63,7 +63,7 @@ public class ConnectorNamingUtils {
     private static Logger _logger =
     LogDomains.getLogger(ConnectorNamingUtils.class, LogDomains.RSR_LOGGER);
 
-    private static ConnectorRuntime runtime;
+    private volatile static ConnectorRuntime runtime;
 
     static {
         //making sure that connector-runtime is always initialized.
@@ -74,7 +74,11 @@ public class ConnectorNamingUtils {
     public static ConnectorRuntime getRuntime() {
         try {
             if (runtime == null) {
-                runtime = ConnectorRuntime.getRuntime();
+                synchronized(ConnectorNamingUtils.class) {
+                    if(runtime == null) {
+                        runtime = ConnectorRuntime.getRuntime();
+                    }
+                }
             }
         } catch (Exception e) {
             // Assuming that connector runtime is always available in SERVER and APPCLIENT mode and

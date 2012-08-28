@@ -909,8 +909,12 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
     private void waitForCompletion(long steps, ResourcePool oldPool, long totalWaitTime) throws InterruptedException {
         debug("waiting for in-use connections to return to pool or waiting requests to complete");
         try{
-            synchronized(oldPool.getPoolWaitQueue()){
-                oldPool.getPoolWaitQueue().wait(totalWaitTime / steps);
+            Object poolWaitQueue = oldPool.getPoolWaitQueue();
+            synchronized(poolWaitQueue){
+                long waitTime = totalWaitTime/steps;
+                if(waitTime > 0) {
+                    poolWaitQueue.wait(waitTime);
+                }
             }
         }catch(InterruptedException ie){
             //ignore

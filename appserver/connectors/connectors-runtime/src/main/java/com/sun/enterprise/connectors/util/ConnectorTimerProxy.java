@@ -81,9 +81,11 @@ public class ConnectorTimerProxy extends Timer {
     }
 
     public static final ConnectorTimerProxy getProxy() {
-        synchronized (ConnectorTimerProxy.class) {
-            if (connectorTimer == null) {
-                connectorTimer = new ConnectorTimerProxy(true);
+        if(connectorTimer == null) {
+            synchronized (ConnectorTimerProxy.class) {
+                if (connectorTimer == null) {
+                    connectorTimer = new ConnectorTimerProxy(true);
+                }
             }
         }
         return connectorTimer;

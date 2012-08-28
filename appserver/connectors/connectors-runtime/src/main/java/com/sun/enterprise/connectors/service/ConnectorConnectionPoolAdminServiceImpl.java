@@ -1536,11 +1536,11 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         try {
             //DASResourcesUtil.setAdminConfigContext();
             PoolInfo poolInfo = getPoolNameFromResourceJndiName(resourceInfo);
+            if(poolInfo == null){
+                throw new SQLException("No pool by name exists ");
+            }
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("ConnectorRuntime.getConnection :: poolName : " + poolInfo);
-            }
-            if(poolInfo == null){
-                throw new SQLException("No pool by name "+poolInfo+" exists ");
             }
             //Maintain consitency with the ConnectionManagerImpl change to be checked in later
             String passwd = (password == null) ? "" : password;
@@ -1609,12 +1609,12 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         try {
             //DASResourcesUtil.setAdminConfigContext();
             PoolInfo poolInfo = getPoolNameFromResourceJndiName(resourceInfo);
+            if(poolInfo == null){
+                throw new SQLException("No pool by name exists ");
+            }
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("ConnectorRuntime.getConnection :: poolName : "
                         + poolInfo);
-            }
-            if(poolInfo == null){
-                throw new SQLException("No pool by name "+poolInfo+" exists ");
             }
             con = (java.sql.Connection) getUnpooledConnection(poolInfo, null,
                     true);

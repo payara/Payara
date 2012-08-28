@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,8 +83,10 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
     protected PoolInfo poolInfo;
     protected ResourceInfo resourceInfo;
 
-    private static Logger logger = LogDomains.getLogger(ConnectionManagerImpl.class,LogDomains.RSR_LOGGER);
-    private static StringManager localStrings = StringManager.getManager(ConnectionManagerImpl.class);
+    private volatile static Logger logger = LogDomains.getLogger(
+            ConnectionManagerImpl.class,LogDomains.RSR_LOGGER);
+    private volatile static StringManager localStrings = StringManager.getManager(
+            ConnectionManagerImpl.class);
 
     protected String rarName;
 
@@ -448,15 +450,23 @@ public class ConnectionManagerImpl implements ConnectionManager, Serializable {
     }
 
     private static StringManager getLocalStrings() {
-        if(localStrings == null){
-            localStrings = StringManager.getManager(ConnectionManagerImpl.class);
+        if (localStrings == null) {
+            synchronized (ConnectionManagerImpl.class) {
+                if (localStrings == null) {
+                    localStrings = StringManager.getManager(ConnectionManagerImpl.class);
+                }
+            }
         }
         return localStrings;
     }
 
     protected static Logger getLogger() {
         if (logger == null){
-            logger = LogDomains.getLogger(ConnectionManagerImpl.class,LogDomains.RSR_LOGGER);
+            synchronized(ConnectionManagerImpl.class) {
+                if(logger == null) {
+                    logger = LogDomains.getLogger(ConnectionManagerImpl.class,LogDomains.RSR_LOGGER);
+                }
+            }
         }
         return logger;
     }

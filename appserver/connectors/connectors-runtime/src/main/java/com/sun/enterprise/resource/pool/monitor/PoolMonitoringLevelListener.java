@@ -104,10 +104,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
 
     class PropertyChangeHandler implements Changed {
 
-            PropertyChangeEvent[] events;
-
             private PropertyChangeHandler(PropertyChangeEvent[] events) {
-                this.events = events;
             }
 
             /**
@@ -129,6 +126,7 @@ public class PoolMonitoringLevelListener implements PostConstruct, PreDestroy, C
                             }
                             np = handleChangeEvent(changedInstance);
                             break;
+                        default:
                     }
                     return np;
             }

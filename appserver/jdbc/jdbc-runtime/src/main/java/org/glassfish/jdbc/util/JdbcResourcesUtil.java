@@ -65,7 +65,7 @@ import java.util.logging.Logger;
  */
 public class JdbcResourcesUtil {
 
-    private static JdbcResourcesUtil jdbcResourcesUtil;
+    private volatile static JdbcResourcesUtil jdbcResourcesUtil;
     static Logger _logger = LogDomains.getLogger(JdbcResourcesUtil.class,
             LogDomains.RSR_LOGGER);
     private ConnectorRuntime runtime;
@@ -76,7 +76,11 @@ public class JdbcResourcesUtil {
     public static JdbcResourcesUtil createInstance() {
         //stateless, no synchronization needed
         if(jdbcResourcesUtil == null){
-            jdbcResourcesUtil = new JdbcResourcesUtil();
+            synchronized(JdbcResourcesUtil.class) {
+                if(jdbcResourcesUtil == null) {
+                    jdbcResourcesUtil = new JdbcResourcesUtil();
+                }
+            }
         }
         return jdbcResourcesUtil;
     }

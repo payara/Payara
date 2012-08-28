@@ -83,7 +83,7 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
     private ConnectorRuntime runtime;
 
     //keep a static reference to InitialContext so as to avoid performance issues.
-    private static InitialContext ic = null;
+    private volatile static InitialContext ic = null;
 
     /**
      * Constructor
@@ -101,11 +101,15 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
         this.appStatsMap = new HashMap<PoolInfo, Map<String, ConnectionPoolAppEmitterImpl>>();
         this.resourceAppAssociationMap = new HashMap<Long, String>();
         runtime = ConnectorRuntime.getRuntime();
-        if (ic == null){
-            try{
-                ic = new InitialContext();
-            } catch (NamingException e) {
-                //ignore
+        if (ic == null) {
+            synchronized (ConnectionPoolEmitterImpl.class) {
+                if(ic == null) {
+                    try{
+                        ic = new InitialContext();
+                    } catch (NamingException e) {
+                        //ignore
+                    }
+                }
             }
         }
     }
@@ -311,7 +315,11 @@ public class ConnectionPoolEmitterImpl implements PoolLifeCycleListener {
         if(appName == null){
             try {
                 if(ic == null){
-                    ic = new InitialContext();
+                    synchronized(ConnectionPoolEmitterImpl.class) {
+                        if(ic == null) {
+                            ic = new InitialContext();
+                        }
+                    }
                 }
                 appName = (String) ic.lookup("java:app/AppName");
                 resourceAppAssociationMap.put(resourceHandleId, appName);

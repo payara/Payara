@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,7 +65,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
 
     private static final Logger _logger = LogDomains.getLogger(ConnectorClassLoader.class, LogDomains.RSR_LOGGER);
 
-    private static ConnectorClassLoader classLoader = null;
+    private volatile static ConnectorClassLoader classLoader = null;
 
     /**
      * A linked list of URL classloaders representing each deployed connector
@@ -116,11 +116,13 @@ public class ConnectorClassLoader extends ASURLClassLoader
     public static ConnectorClassLoader getInstance(final ClassLoader parent) {
         if (classLoader == null) {
             synchronized (ConnectorClassLoader.class) {
-                classLoader = AccessController.doPrivileged(new PrivilegedAction<ConnectorClassLoader>() {
+                if (classLoader == null) {
+                    classLoader = AccessController.doPrivileged(new PrivilegedAction<ConnectorClassLoader>() {
                         public ConnectorClassLoader run() {
                             return new ConnectorClassLoader(parent);
                         }
                     });
+                }
             }
         }
         return classLoader;

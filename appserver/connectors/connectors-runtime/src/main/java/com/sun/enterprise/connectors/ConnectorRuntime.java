@@ -1106,10 +1106,10 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
      *
      * @return ConnectorNamingEventNotifier
      */
-    private ConnectorNamingEventNotifier getResourceRebindEventNotifier() {
+/*    private ConnectorNamingEventNotifier getResourceRebindEventNotifier() {
         return connectorResourceAdmService.getResourceRebindEventNotifier();
     }
-
+*/
     /**
      * register the connector naming event listener
      * @param listener connector-naming-event-listener
