@@ -2627,11 +2627,11 @@ public class VirtualServer extends StandardHost
                     responsePacket.setStatus(HttpStatus.BAD_REQUEST_400);
 
                     org.glassfish.grizzly.http.server.Request request = org.glassfish.grizzly.http.server.Request.create();
-                    org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
-// Grizzly 2.3.x                   org.glassfish.grizzly.http.server.Response response = request.getResponse();
+//                    org.glassfish.grizzly.http.server.Response response = org.glassfish.grizzly.http.server.Response.create();
+                    org.glassfish.grizzly.http.server.Response response = request.getResponse();
 
-                    request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
-// Grizzly 2.3.x                   request.initialize(/*response,*/ requestPacket, FilterChainContext.create(connection), null);
+//                    request.initialize(response, requestPacket, FilterChainContext.create(connection), null);
+                    request.initialize(/*response,*/ requestPacket, FilterChainContext.create(connection), null);
                     response.initialize(request, responsePacket, FilterChainContext.create(connection), null, null);
 
                     Response res = new Response();
