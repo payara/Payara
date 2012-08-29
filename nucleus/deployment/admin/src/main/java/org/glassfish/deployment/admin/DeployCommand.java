@@ -236,7 +236,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
             if (archiveHandler==null) {
-                report.failure(logger,localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized",path.getName()));
+                report.failure(logger,localStrings.getLocalString("deploy.unknownarchivetype","Archive type of {0} was not recognized",path));
                 return false;
             }
 
