@@ -343,6 +343,9 @@ public class AdminLoginModule implements LoginModule {
 
         @Override
         public boolean identify(Subject subject) {
+            if (secureAdmin == null) {
+                return false;
+            }
             final Principal p = pcb.getPrincipal();
             if (p != null) {
                 subject.getPrincipals().add(p);
@@ -368,6 +371,9 @@ public class AdminLoginModule implements LoginModule {
 
         @Override
         public boolean identify(Subject subject) throws LoginException {
+            if (secureAdmin == null) {
+                return false;
+            }
             final String providedIndicator = textCB.getText();
             final SpecialAdminIndicatorChecker checker = new SpecialAdminIndicatorChecker(
                     providedIndicator, 
@@ -391,6 +397,9 @@ public class AdminLoginModule implements LoginModule {
 
         @Override
         public boolean identify(Subject subject) throws LoginException {
+            if (authTokenManager == null) {
+                return false;
+            }
             Subject s = null;
             final String token = textCB.getText();
             if (token != null) {
@@ -433,6 +442,9 @@ public class AdminLoginModule implements LoginModule {
                 * username/password pairs.  That's left to another one.  This module
                 * checks for the local password.
                 */
+            if (localPassword == null) {
+                return false;
+            }
             final boolean result = localPassword.isLocalPassword(new String(pwCB.getPassword()));
             if (result) {
                 final PasswordCredential pwCred = new PasswordCredential(
@@ -480,6 +492,9 @@ public class AdminLoginModule implements LoginModule {
 
         @Override
         public boolean identify(final Subject subject) throws LoginException {
+            if (restSessionManager == null) {
+                return false;
+            }
             boolean result = false;
             final String token = restTokenCB.getText();
             final String remoteAddr = remoteAddrCB.getText();
