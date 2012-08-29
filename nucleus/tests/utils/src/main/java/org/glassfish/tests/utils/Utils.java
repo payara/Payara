@@ -133,12 +133,13 @@ public class Utils {
     }
 
     public static ServiceLocator getNewHabitat(String root) {
-
+ 
         Properties p = new Properties();
         p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTALL_ROOT_PROP_NAME, root);
         p.put(com.sun.enterprise.glassfish.bootstrap.Constants.INSTANCE_ROOT_PROP_NAME, root);
         ModulesRegistry registry = new StaticModulesRegistry(Utils.class.getClassLoader(), new StartupContext(p));
-        return registry.createServiceLocator(root);
+        ServiceLocator defaultSL = registry.createServiceLocator("default");
+        return registry.createServiceLocator(defaultSL, root);
     }
 
 	public void shutdownServiceLocator(
