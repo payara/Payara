@@ -267,8 +267,8 @@ public class EjbDeployer
         }
 
 
-        EjbApplication ejbApp = new EjbApplication(ejbBundle, dc, dc.getClassLoader(), (Habitat) habitat,
-                                                   ejbSecManagerFactory);
+        EjbApplication ejbApp = new EjbApplication(ejbBundle, dc,
+                dc.getClassLoader(), (Habitat) habitat);
 
         try {
             compEnvManager.bindToComponentNamespace(ejbBundle);

@@ -445,7 +445,16 @@ public class EjbSessionDescriptor extends EjbDescriptor
         return txAttributes;
     }
 
-    public void addAfterBeginDescriptor(MethodDescriptor m) {
+  @Override
+  public String getContainerFactoryQualifier() {
+    if(isStateful)
+      return "StatefulContainerFactory";
+    if(isStateless)
+      return "StatelessContainerFactory";
+    return "SingletonContainerFactory";
+  }
+
+  public void addAfterBeginDescriptor(MethodDescriptor m) {
         afterBeginMethod = m;
     }
 

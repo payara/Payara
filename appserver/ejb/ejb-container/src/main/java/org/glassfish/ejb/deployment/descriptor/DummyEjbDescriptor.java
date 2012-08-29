@@ -60,6 +60,11 @@ public class DummyEjbDescriptor extends EjbDescriptor
     }
 
     @Override
+    public String getContainerFactoryQualifier() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getType() {
         return "Dummy";
     }

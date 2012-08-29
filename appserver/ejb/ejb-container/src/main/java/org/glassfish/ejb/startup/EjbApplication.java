@@ -40,6 +40,7 @@
 
 package org.glassfish.ejb.startup;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -61,8 +62,7 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.UndeployCommandParameters;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
-import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
+import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
@@ -93,10 +93,6 @@ public class EjbApplication
     
     private Habitat services;
 
-    private EJBSecurityManagerFactory ejbSMF;
-     
-    private ContainerFactory ejbContainerFactory;
-
     private SingletonLifeCycleManager singletonLCM;
 
     private PolicyLoader policyLoader;
@@ -110,20 +106,18 @@ public class EjbApplication
     private static final String EJB_APP_MARKED_AS_STARTED_STATUS = "org.glassfish.ejb.startup.EjbApplicationMarkedAsStarted";
 
     static final String KEEP_STATE = "org.glassfish.ejb.startup.keepstate";
+    private static final LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(EjbApplication.class);
 
-    public EjbApplication(
+  public EjbApplication(
             EjbBundleDescriptorImpl bundle, DeploymentContext dc,
-            ClassLoader cl, Habitat services,
-            EJBSecurityManagerFactory ejbSecMgrFactory) {
+            ClassLoader cl, Habitat services) {
         this.ejbBundle = bundle;
         this.ejbs = bundle.getEjbs();
         this.ejbAppClassLoader = cl;
         this.dc = dc;
         this.services = services;
-        this.ejbContainerFactory = services.getService(ContainerFactory.class);
-        this.ejbSMF = ejbSecMgrFactory;
         this.policyLoader = services.getService(PolicyLoader.class);
-
         Application app = ejbBundle.getApplication();
         initializeInOrder = (app != null) && (app.isInitializeInOrder());
     }
@@ -210,24 +204,29 @@ public class EjbApplication
 
         try {
             policyLoader.loadPolicy();
-            String moduleName = null;
-        
+
             for (EjbDescriptor desc : ejbs) {
-                EJBSecurityManager ejbSM = null;
 
                 // Initialize each ejb container (setup component environment, register JNDI objects, etc.)
                 // Any instance instantiation , timer creation/restoration, message inflow is delayed until
                 // start phase.
-                // create and register the security manager with the factory
-                ejbSM = ejbSMF.createManager(desc, true);
-                Container container = ejbContainerFactory.createContainer(desc, ejbAppClassLoader,
-                        ejbSM, dc);
-                containers.add(container);
-
-                if (container instanceof AbstractSingletonContainer) {
-                    singletonLCM.addSingletonContainer(this, (AbstractSingletonContainer) container);
+                ContainerFactory ejbContainerFactory = services.getService
+                      (ContainerFactory.class, desc.getContainerFactoryQualifier());
+                if (ejbContainerFactory == null) {
+                  String errMsg = localStrings.getLocalString("invalid.container.module",
+                          "Container module is not available", desc.getEjbTypeForDisplay());
+                  throw new RuntimeException(errMsg);
                 }
 
+                Container container = ejbContainerFactory.createContainer
+                        (desc, ejbAppClassLoader, dc);
+                containers.add(container);
+
+                if (desc instanceof EjbSessionDescriptor &&
+                      ((EjbSessionDescriptor) desc).isSingleton()) {
+                  singletonLCM.addSingletonContainer(this,
+                         (AbstractSingletonContainer) container);
+                }
             }
 
         } catch(Throwable t) {

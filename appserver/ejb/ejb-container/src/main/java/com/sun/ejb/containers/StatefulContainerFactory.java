@@ -38,10 +38,11 @@
  * holder.
  */
 
-package com.sun.ejb.containers.builder;
+package com.sun.ejb.containers;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,13 +51,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.sun.appserv.util.cache.CacheListener;
+import com.sun.ejb.Container;
+import com.sun.ejb.ContainerFactory;
 import com.sun.ejb.base.container.util.CacheProperties;
 import com.sun.ejb.base.sfsb.util.CheckpointPolicyImpl;
 import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
 import com.sun.ejb.base.sfsb.util.ScrambledKeyGenerator;
 import com.sun.ejb.base.sfsb.util.SimpleKeyGenerator;
-import com.sun.ejb.containers.BaseContainer;
-import com.sun.ejb.containers.StatefulSessionContainer;
 import com.sun.ejb.containers.util.cache.FIFOSessionCache;
 import com.sun.ejb.containers.util.cache.LruSessionCache;
 import com.sun.ejb.containers.util.cache.NRUSessionCache;
@@ -64,6 +65,8 @@ import com.sun.ejb.containers.util.cache.UnBoundedSessionCache;
 import com.sun.ejb.spi.container.SFSBContainerInitialization;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.util.Utility;
+import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -97,11 +100,16 @@ import org.glassfish.hk2.api.PostConstruct;
  *
  * @author Mahesh Kannan
  */
-@Service
+@Service(name = "StatefulContainerFactory")
 @PerLookup
-public class StatefulContainerBuilder
-        extends BaseContainerBuilder implements PostConstruct {
+public class StatefulContainerFactory extends BaseContainerFactory
+        implements PostConstruct, ContainerFactory {
+    protected static final Logger _logger =
+              LogDomains.getLogger(StatefulContainerFactory.class, LogDomains.EJB_LOGGER);
+
     private static final Level TRACE_LEVEL = Level.FINE;
+
+    private EjbDescriptor		    ejbDescriptor;
 
     private StatefulSessionContainer sfsbContainer;
 
@@ -140,26 +148,12 @@ public class StatefulContainerBuilder
 
     private SimpleKeyGenerator keyGen;
 
-    public StatefulContainerBuilder() {
-        super();
-    }
-
     public void postConstruct() {
         ejbContainerConfig = serverConfig.getExtensionByType(EjbContainer.class);
     }
 
-    public BaseContainer createContainer(
-            EjbDescriptor ejbDescriptor, ClassLoader loader)
-            throws Exception {
-        cacheProps.init(ejbDescriptor);
-        ejbConfigLookup.initWithEjbDescriptor(ejbDescriptor);
-        sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader);
-        containerInitialization = (SFSBContainerInitialization) sfsbContainer;
-
-        return sfsbContainer;
-    }
-
-    public void buildComponents()
+    public void buildComponents(byte[] ipAddress, int port,
+                                DeploymentContext dc)
             throws Exception {
         if (availabilityService != null) {
             this.HAEnabled = Boolean.valueOf(availabilityService.getAvailabilityEnabled());
@@ -172,7 +166,6 @@ public class StatefulContainerBuilder
             boolean appLevelHAEnabled = false;
             try {
                 if (HAEnabled) {
-                    DeploymentContext dc = getDynamicDeploymentContext();
                     if (dc != null) {
                         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
                         if (params != null) {
@@ -196,7 +189,7 @@ public class StatefulContainerBuilder
 
 
         buildCheckpointPolicy(this.HAEnabled);
-        buildSFSBUUIDUtil();
+        buildSFSBUUIDUtil(ipAddress, port);
 
         //First build BackingStore before Cache is built
         buildStoreManager();
@@ -215,12 +208,12 @@ public class StatefulContainerBuilder
                 new CheckpointPolicyImpl(haEnabled));
     }
 
-    private void buildSFSBUUIDUtil() {
+    private void buildSFSBUUIDUtil(byte[] ipAddress, int port) {
         //Just for debugging purpose,  we instantiate
         //  two different key generators
         keyGen = HAEnabled
-                ? new ScrambledKeyGenerator(getIPAddress(), getPort())
-                : new SimpleKeyGenerator(getIPAddress(), getPort());
+                ? new ScrambledKeyGenerator(ipAddress, port)
+                : new SimpleKeyGenerator(ipAddress, port);
         containerInitialization.setSFSBUUIDUtil(keyGen);
     }
 
@@ -266,7 +259,7 @@ public class StatefulContainerBuilder
                 .setBaseDirectory(new File(ejbContainerConfig.getSessionStore(), subDirName))
                 .setKeyClazz(Serializable.class)
                 .setValueClazz(SimpleMetadata.class)
-                .setClassLoader(StatefulContainerBuilder.class.getClassLoader());
+                .setClassLoader(StatefulContainerFactory.class.getClassLoader());
 
 
         Map<String, Object> vendorMap = conf.getVendorSpecificSettings();
@@ -398,6 +391,35 @@ public class StatefulContainerBuilder
 
     }
 
+  @Override
+  public Container createContainer(EjbDescriptor ejbDescriptor,
+                                   ClassLoader loader,
+                                   DeploymentContext deployContext)
+          throws Exception {
+    this.ejbDescriptor = ejbDescriptor;
+
+    //FIXME: Read from domain.xml iiop-service ip-addr
+    byte[] ipAddress = new byte[4];
+    try {
+      ipAddress = InetAddress.getLocalHost().getAddress();
+    } catch (Exception ex) {
+      long val = System.identityHashCode(ipAddress)
+              + System.currentTimeMillis();
+      Utility.longToBytes(val, ipAddress, 0);
+    }
+
+    //FIXME: Read from domain.xml
+    int port = 8080;
+
+    cacheProps.init(ejbDescriptor);
+    ejbConfigLookup.initWithEjbDescriptor(ejbDescriptor);
+    sfsbContainer = new StatefulSessionContainer(ejbDescriptor, loader);
+    containerInitialization = (SFSBContainerInitialization) sfsbContainer;
+    buildComponents(ipAddress, port, deployContext);
+    initContainer(sfsbContainer, ejbDescriptor);
+    return sfsbContainer;
+  }
+
 }
 
 class CachePassivatorTask
@@ -419,7 +441,8 @@ class CachePassivatorTask
         } catch (Exception ex) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        "ejb.sfsb_helper_remove_idle_beans_failed", ex);
+                        "ejb.sfsb_helper_remove_idle_beans_failed" + " for "
+                                + name, ex);
             }
         }
     }
@@ -444,7 +467,8 @@ class ExpiredSessionsRemovalTask
         } catch (Exception ex) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.log(Level.WARNING,
-                        "ejb.sfsb_helper_remove_expired_beans_failed", ex);
+                        "ejb.sfsb_helper_remove_expired_beans_failed" + " for" +
+                                " " + name, ex);
             }
         }
     }

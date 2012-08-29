@@ -640,7 +640,12 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
         return txMethods;
     }
 
-    /**
+        @Override
+        public String getContainerFactoryQualifier() {
+            return "MessageBeanContainerFactory";
+        }
+
+        /**
      *  Sets the transaction type for this bean. 
      * Must be either BEAN_TRANSACTION_TYPE or CONTAINER_TRANSACTION_TYPE.
      */

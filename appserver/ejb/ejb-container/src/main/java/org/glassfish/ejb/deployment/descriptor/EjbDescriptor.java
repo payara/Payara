@@ -2608,6 +2608,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
          return methods;
     }
 
+    abstract public String getContainerFactoryQualifier();
+
     /**
      * Return the set of method objects on my home and remote interfaces.
      */

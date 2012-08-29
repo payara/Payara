@@ -42,7 +42,6 @@ package com.sun.ejb;
 
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -56,6 +55,7 @@ import org.jvnet.hk2.annotations.Contract;
  */
 @Contract
 public interface ContainerFactory {
+
     /**
      * Create the appropriate Container instance and initialize it.
      * @param ejbDescriptor the deployment descriptor of the EJB
@@ -63,9 +63,8 @@ public interface ContainerFactory {
      */
     Container createContainer(EjbDescriptor ejbDescriptor, 
 			      ClassLoader loader, 
-			      EJBSecurityManager sm,
 			      DeploymentContext deployContext)
-	throws Exception;
+  	throws Exception;
 
 
 }

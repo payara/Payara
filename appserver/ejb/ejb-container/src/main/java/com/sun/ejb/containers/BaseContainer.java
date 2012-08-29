@@ -49,6 +49,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.rmi.AccessException;
 import java.rmi.RemoteException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1772,11 +1773,11 @@ public abstract class BaseContainer
             bc.classLoaderSwitched = true;
         }
 
-        ArrayListStack beanContextStack = 
-            (ArrayListStack) threadLocalContext.get();
+        ArrayDeque beanContextStack =
+            (ArrayDeque) threadLocalContext.get();
                 
         if ( beanContextStack == null ) {
-            beanContextStack = new ArrayListStack();
+            beanContextStack = new ArrayDeque();
             threadLocalContext.set(beanContextStack);
         } 
         beanContextStack.push(bc);
@@ -1784,8 +1785,8 @@ public abstract class BaseContainer
 
     public void externalPostInvoke() {
         try {
-            ArrayListStack beanContextStack = 
-                (ArrayListStack) threadLocalContext.get();                
+          ArrayDeque beanContextStack =
+                (ArrayDeque) threadLocalContext.get();
             
             final BeanContext bc = (BeanContext) beanContextStack.pop();
             if ( bc.classLoaderSwitched == true ) {
@@ -4962,6 +4963,10 @@ public abstract class BaseContainer
         }
     } //ContainerInfo
 
+  private static class BeanContext {
+    ClassLoader previousClassLoader;
+    boolean classLoaderSwitched;
+  }
 } //BaseContainer{}
 
 final class CallFlowInfoImpl

@@ -40,19 +40,27 @@
 
 package org.glassfish.ejb.mdb;
 
+import com.sun.ejb.containers.BaseContainerFactory;
+import javax.inject.Singleton;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.ejb.Container;
-import com.sun.ejb.ContainerProvider;
+import com.sun.ejb.ContainerFactory;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 
-@Service
-public final class MessageBeanContainerProvider implements ContainerProvider {
-    public Container getContainer(EjbDescriptor ejbDescriptor, ClassLoader loader) throws Exception {
-        if (ejbDescriptor instanceof EjbMessageBeanDescriptor) {
-            return new MessageBeanContainer(ejbDescriptor, loader);
-        }
-
-        return null;
-    }
+@Service(name = "MessageBeanContainerFactory")
+@Singleton
+public final class MessageBeanContainerFactory extends
+        BaseContainerFactory implements ContainerFactory {
+  @Override
+  public Container createContainer(EjbDescriptor ejbDescriptor,
+                                   ClassLoader loader,
+                                   DeploymentContext deployContext)
+          throws Exception {
+    MessageBeanContainer mdbContainer = new MessageBeanContainer
+            (ejbDescriptor, loader);
+    initContainer(mdbContainer, ejbDescriptor);
+    return mdbContainer;
+  }
 }

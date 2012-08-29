@@ -143,8 +143,13 @@ public class EjbEntityDescriptor extends EjbDescriptor {
 	}
 	super.transactionType = transactionType;
     }
-    
-    
+
+    @Override
+    public String getContainerFactoryQualifier() {
+        return "EntityContainerFactory";
+    }
+
+
     /**
      * Return true if this entity bean is reentrant, false else.
      */
