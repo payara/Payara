@@ -51,8 +51,6 @@ import java.util.Map;
  * @version 
  */
 public abstract class RemoveVersionUpgrade implements VersionUpgrade {
-  private static String START_MDBS_WITH_APPLICATION =
-    "weblogic-application/ejb/start-mdbs-with-application";
   protected Map<String,String> matches;
   protected String replacedElementName;
   public RemoveVersionUpgrade(String replacedName) {
