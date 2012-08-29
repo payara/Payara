@@ -60,6 +60,9 @@ package org.apache.catalina.core;
 
 
 import org.apache.catalina.*;
+import org.apache.catalina.Request;
+import org.apache.catalina.Response;
+import org.apache.catalina.connector.*;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ValveBase;
@@ -69,6 +72,7 @@ import org.glassfish.web.valve.TomcatValveAdapter;
 
 import javax.management.ObjectName;
 import javax.servlet.ServletException;
+import javax.servlet.http.ProtocolHandler;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -607,6 +611,7 @@ public class StandardPipeline
 
     private void doInvoke(Request request, Response response, boolean chaining)
             throws IOException, ServletException {
+
         if ((valves.length > 0) || (basic != null)) {
             // Set the status so that if there are no valves (other than the
             // basic one), the basic valve's request processing logic will
@@ -680,6 +685,22 @@ public class StandardPipeline
         } else {
             throw new ServletException
                 (sm.getString("standardPipeline.noValve"));
+        }
+
+        // Calls the protocol handler's init method if the request is marked to be upgraded
+        if (request instanceof org.apache.catalina.connector.Request) {
+            org.apache.catalina.connector.Request req = (org.apache.catalina.connector.Request) request;
+            if (req.isUpgrade()) {
+                ProtocolHandler handler = req.getProtocolHandler();
+                if (handler != null) {
+                    handler.init(
+                            new WebConnectionImpl(
+                            req.getInputStream(),
+                            ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream()));
+                } else {
+                    log.log(Level.SEVERE, sm.getString("standardPipeline.protocolHandler.required"));
+                }
+            }
         }
     }
 
