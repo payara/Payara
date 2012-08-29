@@ -68,7 +68,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
  * class implements {@link AdminCommandSecurity.AccessCheckProvider} it also invokes the
  * corresponding {@code getAccessChecks} method.  To succeed the overall authorization
  * all access checks - whether inferred from annotations or returned from 
- * {@code getAccessChecks} must pass.
+ * {@code getAccessChecks} - for which {@code isFailureFatal} is true must pass.
  * 
  * @author tjquinn
  */
