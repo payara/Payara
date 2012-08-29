@@ -174,7 +174,7 @@ public class CommandSecurityChecker {
          * default one requiring write access on the domain.
          */
         if (accessChecks.isEmpty()) {
-            accessChecks.add(new BlanketAccessCheckWork(command));
+            accessChecks.add(new UnguardedCommandAccessCheckWork(command));
         }
         boolean result = true;
         final StringBuilder sb = (isTaggable ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing on ").append(command.getClass().getName()).append(LINE_SEP) : null);
@@ -529,10 +529,21 @@ public class CommandSecurityChecker {
         }
     }
     
-    private static class BlanketAccessCheckWork extends AccessCheckWork {
-        private BlanketAccessCheckWork(final AdminCommand c) {
-            super(new AccessCheck("domain", "write"),"  Blanket access control on " + c.getClass().getName());
+    private static class UnguardedCommandAccessCheckWork extends AccessCheckWork {
+        private UnguardedCommandAccessCheckWork(final AdminCommand c) {
+            /*
+             * Get the name of the command from the @Service annotation.
+             */
+            super(new AccessCheck("unguarded/" + getCommandName(c), "execute"),"  Unguarded access control on " + c.getClass().getName());
         }
+    }
+    
+    private static String getCommandName(final AdminCommand c) {
+        final Service serviceAnno = c.getClass().getAnnotation(Service.class);
+        if (serviceAnno == null) {
+            return "no-name";
+        }
+        return serviceAnno.name();
     }
     
 }
