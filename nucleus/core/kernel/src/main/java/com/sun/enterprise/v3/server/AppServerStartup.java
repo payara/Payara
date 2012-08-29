@@ -623,10 +623,11 @@ public class AppServerStartup implements ModuleStartup {
 
         @Override
         public void awaitCompletion() throws ExecutionException, InterruptedException, TimeoutException {
-
-            if (!isShutdown()) {
-                printModuleStatus(systemRegistry, level);
+            if (runLevelController.getCurrentRunLevel() < PostStartupRunLevel.VAL - 1 || isShutdown()) {
+                return;
             }
+
+            printModuleStatus(systemRegistry, level);
         }
     }
 }
