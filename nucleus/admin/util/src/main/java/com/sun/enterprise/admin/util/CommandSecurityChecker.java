@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.util;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -127,8 +128,6 @@ public class CommandSecurityChecker {
             final Map<String,Object> env,
             final AdminCommand command,
             final AdminCommandContext adminCommandContext) throws SecurityException {
-        final List<AccessCheckWork> accessChecks = new ArrayList<AccessCheckWork>();
-        
         boolean result;
         try {
             if (command instanceof AdminCommandSecurity.Preauthorization) {
@@ -136,36 +135,33 @@ public class CommandSecurityChecker {
                     return false;
                 }
             }
+            final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command);
             result = checkAccessRequired(subject, env, command, accessChecks);
+            if ( ! result) {
+//                final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
+//                for (AccessCheckWork acWork : accessChecks) {
+//                    if ( ! acWork.accessCheck.isSuccessful()) {
+//                        failedAccessChecks.add(acWork.accessCheck);
+//                    }
+//                }
+                throw new SecurityException();
+            }
+            return result;
         } catch (Exception ex) {
             ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, command.getClass().getName(), ex);
             throw new SecurityException(ex);
         }
-        if ( ! result) {
-            final List<AccessCheck> failedAccessChecks = new ArrayList<AccessCheck>();
-            for (AccessCheckWork acWork : accessChecks) {
-                if ( ! acWork.accessCheck.isSuccessful()) {
-                    failedAccessChecks.add(acWork.accessCheck);
-                }
-            }
-            throw new SecurityException();
-        }
-        return result;
     }
     
-    private boolean checkAccessRequired(final Subject subject,
-            final Map<String,Object> env,
-            final AdminCommand command,
-            final List<AccessCheckWork> accessChecks) 
-                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        
+    private List<AccessCheckWork> assembleAccessCheckWork(final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
+        final List<AccessCheckWork> accessChecks = new ArrayList<AccessCheckWork>();
         /*
-         * The CRUD classes such as GenericCreateCommand implement AccessRequired.Authorizer
+         * The CRUD classes such as GenericCreateCommand implement AccessRequired.AccessCheckProvider
          * and so provide their own AccessCheck objects.  So the addChecksFromAuthorizer
          * method will cover the CRUD commands.
          */
-        addChecksFromAccessCheckProvider(subject, command, accessChecks, isTaggable);
+        addChecksFromAccessCheckProvider(command, accessChecks, isTaggable);
         addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, isTaggable);
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
@@ -176,6 +172,17 @@ public class CommandSecurityChecker {
         if (accessChecks.isEmpty()) {
             accessChecks.add(new UnguardedCommandAccessCheckWork(command));
         }
+        
+        return accessChecks;
+    }
+    
+    private boolean checkAccessRequired(final Subject subject,
+            final Map<String,Object> env,
+            final AdminCommand command,
+            final List<AccessCheckWork> accessChecks) 
+                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        
+        final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         boolean result = true;
         final StringBuilder sb = (isTaggable ? (new StringBuilder(LINE_SEP)).append("AccessCheck processing on ").append(command.getClass().getName()).append(LINE_SEP) : null);
         for (final AccessCheckWork a : accessChecks) {
@@ -192,6 +199,23 @@ public class CommandSecurityChecker {
         }
         return result;
     }
+    
+    /**
+     * Returns all AccessCheck objects which apply to the specified command.
+     * @param command the AdminCommand for which the AccessChecks are needed
+     * @return the AccessChecks resulting from analyzing the command
+     * @throws NoSuchFieldException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException 
+     */
+    public Collection<? extends AccessCheck> getAccessChecks(final AdminCommand command) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        final List<AccessCheckWork> work = assembleAccessCheckWork(command);
+        final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
+        for (AccessCheckWork w : work) {
+            accessChecks.add(w.accessCheck());
+        }
+        return accessChecks;
+    }
 
     /**
      * Adds access checks from the command's explicit getAccessChecks method.
@@ -201,7 +225,7 @@ public class CommandSecurityChecker {
      * @param isTaggable
      * @return 
      */
-    private boolean addChecksFromAccessCheckProvider(final Subject subject, 
+    private boolean addChecksFromAccessCheckProvider( 
             final AdminCommand command, final List<AccessCheckWork> accessChecks,
             final boolean isTaggable) {
         if (command instanceof AdminCommandSecurity.AccessCheckProvider) {
@@ -526,6 +550,10 @@ public class CommandSecurityChecker {
         private AccessCheckWork(final AccessCheck accessCheck, final String tag) {
             this.accessCheck = accessCheck;
             this.tag = tag;
+        }
+        
+        private AccessCheck accessCheck() {
+            return accessCheck;
         }
     }
     
