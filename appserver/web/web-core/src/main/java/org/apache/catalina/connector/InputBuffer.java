@@ -151,7 +151,8 @@ public class InputBuffer extends Reader
     public void setRequest(Request grizzlyRequest) {
 	this.grizzlyRequest = grizzlyRequest;
         this.grizzlyInputBuffer = grizzlyRequest.getInputBuffer();
-        this.grizzlyInputBuffer.setAsyncEnabled(true);
+        //XXX revert to false temporary per request
+        this.grizzlyInputBuffer.setAsyncEnabled(false);
     }
 
 
