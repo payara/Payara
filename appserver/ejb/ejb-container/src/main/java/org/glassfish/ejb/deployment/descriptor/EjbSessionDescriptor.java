@@ -424,7 +424,7 @@ public class EjbSessionDescriptor extends EjbDescriptor
                 ClassLoader classLoader = ejbBundle.getClassLoader();
                 Class ejbClass = classLoader.loadClass(getEjbClassName());
 
-                AnnotationTypesProvider provider = Globals.getDefaultHabitat().getComponent(AnnotationTypesProvider.class, "EJB");
+                AnnotationTypesProvider provider = Globals.getDefaultHabitat().getService(AnnotationTypesProvider.class, "EJB");
                 if (provider!=null) {
                     Class sessionSynchClass = provider.getType("javax.ejb.SessionSynchronization");
                     if( sessionSynchClass.isAssignableFrom(ejbClass) ) {

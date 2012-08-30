@@ -287,7 +287,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
             // Perform 2.x style TimedObject processing if the class 
             // hasn't already been identified as a timed object.  
-            AnnotationTypesProvider provider = Globals.getDefaultHabitat().getComponent(AnnotationTypesProvider.class, "EJB");
+            AnnotationTypesProvider provider = Globals.getDefaultHabitat().getService(AnnotationTypesProvider.class, "EJB");
             if (provider == null) {
                 throw new RuntimeException("Cannot find AnnotationTypesProvider named 'EJB'");
             }

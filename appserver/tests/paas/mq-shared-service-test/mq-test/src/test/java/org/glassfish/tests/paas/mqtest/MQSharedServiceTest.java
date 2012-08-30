@@ -210,8 +210,8 @@ public class MQSharedServiceTest {
 
         System.out.println("################### Trying to Create Shared Services #######################");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();
@@ -258,8 +258,8 @@ public class MQSharedServiceTest {
 
     private void deleteSharedService() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("delete-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();

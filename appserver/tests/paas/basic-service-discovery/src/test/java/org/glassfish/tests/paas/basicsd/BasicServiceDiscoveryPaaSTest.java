@@ -160,9 +160,9 @@ public class BasicServiceDiscoveryPaaSTest {
     private void testGetServiceDescription(String appName, String serviceName) {
 
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("appname", appName);
         parameterMap.add("DEFAULT", serviceName);
@@ -225,9 +225,9 @@ public class BasicServiceDiscoveryPaaSTest {
     private void testGetServiceMetadata(File archive) {
 
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("_get-service-metadata", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", System.getProperty("basedir") + "/target/basic_sd_paas_sample.war");
@@ -273,9 +273,9 @@ public class BasicServiceDiscoveryPaaSTest {
 
         //Execute the '_get-service-metadata' command and obtain the SDs. Change the configuration of one of the SD.
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("_get-service-metadata", report);
         ParameterMap parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", System.getProperty("basedir") + "/target/basic_sd_paas_sample.war");
@@ -304,13 +304,13 @@ public class BasicServiceDiscoveryPaaSTest {
         parameterMap = new ParameterMap();
         parameterMap.add("archive", System.getProperty("basedir") + "/target/basic_sd_paas_sample.war");
         parameterMap.add("modifiedServiceDesc", modifiedServiceDesc);
-        report = habitat.getComponent(ActionReport.class);
+        report = habitat.getService(ActionReport.class);
         invocation = commandRunner.getCommandInvocation("_generate-glassfish-services-deployment-plan", report);
         invocation.parameters(parameterMap).execute();
 
         String jarFilePath = (String) report.getExtraProperties().get("deployment-plan-file-path");
 
-        report = habitat.getComponent(ActionReport.class);
+        report = habitat.getService(ActionReport.class);
         invocation = commandRunner.getCommandInvocation("undeploy", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "basic_sd_paas_sample");

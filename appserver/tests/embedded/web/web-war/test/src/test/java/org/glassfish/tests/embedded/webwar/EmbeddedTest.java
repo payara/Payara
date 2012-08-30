@@ -84,7 +84,7 @@ public class EmbeddedTest {
         Server.Builder builder = new Server.Builder("build");
 
         server = builder.build();
-        NetworkConfig nc = server.getHabitat().getComponent(NetworkConfig.class,
+        NetworkConfig nc = server.getHabitat().getService(NetworkConfig.class,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME);
         List<NetworkListener> listeners = nc.getNetworkListeners().getNetworkListener();
         System.out.println("Network listener size before creation " + listeners.size());

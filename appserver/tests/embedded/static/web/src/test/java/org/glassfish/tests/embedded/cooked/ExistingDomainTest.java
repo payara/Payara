@@ -119,8 +119,8 @@ public class ExistingDomainTest {
     public void Test() {
 
         Habitat habitat = server.getHabitat();
-        System.out.println("Process type is " + habitat.getComponent(ProcessEnvironment.class).getProcessType());
-        for (Sniffer s : habitat.getAllByContract(Sniffer.class)) {
+        System.out.println("Process type is " + habitat.<ProcessEnvironment>getService(ProcessEnvironment.class).getProcessType());
+        for (Sniffer s : habitat.<Sniffer>getAllServices(Sniffer.class)) {
             System.out.println("Got sniffer " + s.getModuleType());
         }
     }

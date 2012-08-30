@@ -115,7 +115,7 @@ public class SharedAndExternalServiceTest {
             {
                 //start-database
                 Habitat habitat = Globals.getDefaultHabitat();
-                ServerContext serverContext = habitat.getComponent(ServerContext.class);
+                ServerContext serverContext = habitat.getService(ServerContext.class);
                 String[] startdbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                         File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "start-database",
                         "--dbhome" , serverContext.getInstallRoot().getAbsolutePath() + File.separator + "databases","--dbhost",ip_address};
@@ -173,7 +173,7 @@ public class SharedAndExternalServiceTest {
                 {
                     //stop-database
                     Habitat habitat = Globals.getDefaultHabitat();
-                    ServerContext serverContext = habitat.getComponent(ServerContext.class);
+                    ServerContext serverContext = habitat.getService(ServerContext.class);
                     String[] stopDbArgs = {serverContext.getInstallRoot().getAbsolutePath() +
                             File.separator + "bin" + File.separator + "asadmin" + (OS.isWindows() ? ".bat" : ""), "stop-database","--dbhost",ip_address};
                     ProcessExecutor stopDatabase = new ProcessExecutor(stopDbArgs);
@@ -268,8 +268,8 @@ public class SharedAndExternalServiceTest {
 
         System.out.println("################### Trying to Create Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         //Create external service of type Database
         // asadmin create-external-service --servicetype=Database --configuration ip-address=127.0.0.1:databasename=sun-appserv-samples:port=1527:user=APP:password=APP:host=127.0.0.1:classname=org.apache.derby.jdbc.ClientXADataSource:resourcetype=javax.sql.XADataSource my-external-db-service
@@ -338,8 +338,8 @@ public class SharedAndExternalServiceTest {
 
         System.out.println("$$$$$$$$$$$$$ TEST SHARED AND EXTERNAL SERVICES $$$$$$$$$$$$$$$");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
@@ -351,7 +351,7 @@ public class SharedAndExternalServiceTest {
         Assert.assertTrue(report.hasFailures());
 
         //Try deleting a shared service, referenced by the app. Should 'FAIL'
-        report = habitat.getComponent(ActionReport.class);
+        report = habitat.getService(ActionReport.class);
         invocation = commandRunner.getCommandInvocation("delete-shared-service", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-lb-service");
@@ -402,8 +402,8 @@ public class SharedAndExternalServiceTest {
 
     private void deleteSharedAndExternalService() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation =
                 commandRunner.getCommandInvocation("delete-shared-service", report);

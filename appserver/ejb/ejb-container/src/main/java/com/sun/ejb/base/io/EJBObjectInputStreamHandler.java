@@ -100,7 +100,7 @@ public class EJBObjectInputStreamHandler
      * this runtime.
      */
     private ProtocolManager getProtocolManager() {
-	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().getComponent(GlassFishORBHelper.class);
+	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().getService(GlassFishORBHelper.class);
 	return orbHelper.isORBInitialized() ? orbHelper.getProtocolManager() : null;
     }
 

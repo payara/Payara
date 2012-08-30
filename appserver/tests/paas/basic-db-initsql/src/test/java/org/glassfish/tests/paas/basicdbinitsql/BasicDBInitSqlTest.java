@@ -198,7 +198,7 @@ public class BasicDBInitSqlTest {
 
 private void testListServices() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
 
 
         //Testing for the '--output' option of lst-services sub-commands
@@ -207,7 +207,7 @@ private void testListServices() {
             outputOptions.add("SERVICE-NAME");
             outputOptions.add("VM-ID");
             outputOptions.add("SERVER-TYPE");
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("output", "service-name,vm-id,server-type");
@@ -224,7 +224,7 @@ private void testListServices() {
         //Testing for the '--key' option of lst-services sub-commands
         {
             String key = "VM-ID";
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("key", key);
@@ -247,7 +247,7 @@ private void testListServices() {
         //Testing for the '--type' option of lst-services sub-commands
         {
             String type = "DATABASE";
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("type", type);
@@ -282,7 +282,7 @@ private void testListServices() {
         //Here, the war deployed is 'basic_db_initsql_paas_sample.war', hence using it as the appname.
         {
             String scope = "application";
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("scope", scope);
@@ -317,7 +317,7 @@ private void testListServices() {
         //  test the option --terse=false.
         {
 
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("output", "service-name,vm-id,server-type");
@@ -350,7 +350,7 @@ private void testListServices() {
         // test --type option
         {
             String typeValue="Javaee";
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            ActionReport report = habitat.getService(ActionReport.class);
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("list-services", report);
             ParameterMap parameterMap = new ParameterMap();
             parameterMap.add("output", "server-type");

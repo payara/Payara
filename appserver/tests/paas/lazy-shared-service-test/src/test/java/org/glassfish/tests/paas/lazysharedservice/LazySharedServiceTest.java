@@ -103,8 +103,8 @@ public class LazySharedServiceTest {
             //Check to see if the DB service is not provisioned
             {
                 Habitat habitat = Globals.getDefaultHabitat();
-                org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-                ActionReport report = habitat.getComponent(ActionReport.class);
+                org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+                ActionReport report = habitat.getService(ActionReport.class);
 
                 org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("ping-connection-pool", report);
                 ParameterMap parameterMap = new ParameterMap();
@@ -229,8 +229,8 @@ public class LazySharedServiceTest {
 
         System.out.println("################### Trying to Create Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();
@@ -298,8 +298,8 @@ public class LazySharedServiceTest {
 
         System.out.println("$$$$$$$$$$$$$ Checking Status of Shared Services $$$$$$$$$$$$$$$");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation =  commandRunner.getCommandInvocation("list-services", report);
         ParameterMap parameterMap = new ParameterMap();
@@ -344,8 +344,8 @@ public class LazySharedServiceTest {
 
     private void deleteSharedService() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("delete-shared-service", report);

@@ -132,7 +132,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                         super.dispose();
                     } finally {
                         try { // WHY IS THIS NEEDED?
-                            AppServerContext appServerContext = habitat.getByContract( AppServerContext.class );
+                            AppServerContext appServerContext = habitat.getService( AppServerContext.class );
                             if ( appServerContext != null ) {
                                 appServerContext.serverStopping();
                             }

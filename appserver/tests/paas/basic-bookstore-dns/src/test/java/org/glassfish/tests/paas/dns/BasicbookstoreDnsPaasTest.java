@@ -216,8 +216,8 @@ public class BasicbookstoreDnsPaasTest {
     public void CreateLbSharedService(GlassFish glassfish) throws Exception {
 	Habitat habitat = Globals.getDefaultHabitat();
 	org.glassfish.api.admin.CommandRunner commandRunner = habitat
-		.getComponent(org.glassfish.api.admin.CommandRunner.class);
-	ActionReport report = habitat.getComponent(ActionReport.class);
+		.getService(org.glassfish.api.admin.CommandRunner.class);
+	ActionReport report = habitat.getService(ActionReport.class);
 	String template = checkMode(glassfish);
 	if(template.equalsIgnoreCase("Native")){
 	    template = "LBNative";
@@ -246,8 +246,8 @@ public class BasicbookstoreDnsPaasTest {
 	
 	Habitat habitat = Globals.getDefaultHabitat();
 	org.glassfish.api.admin.CommandRunner commandRunner = habitat
-		.getComponent(org.glassfish.api.admin.CommandRunner.class);
-	ActionReport report = habitat.getComponent(ActionReport.class);
+		.getService(org.glassfish.api.admin.CommandRunner.class);
+	ActionReport report = habitat.getService(ActionReport.class);
 	org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner
 		.getCommandInvocation("create-external-service", report);
 	ParameterMap parameterMap = new ParameterMap();
@@ -290,8 +290,8 @@ public class BasicbookstoreDnsPaasTest {
     /*Delete shared LB service*/
     private void deleteSharedLbandDNSexternalSerivce() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("delete-shared-service", report);

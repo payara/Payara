@@ -122,7 +122,7 @@ public class EJBObjectOutputStreamHandler
      * this runtime.
      */
     private ProtocolManager getProtocolManager() {
-	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().getComponent(GlassFishORBHelper.class);
+	GlassFishORBHelper orbHelper = Globals.getDefaultHabitat().getService(GlassFishORBHelper.class);
 	return orbHelper.isORBInitialized() ? orbHelper.getProtocolManager() : null;
     }
 
@@ -218,7 +218,7 @@ final class SerializableJNDIContext
             if ((name == null) || (name.length() == 0)) {
                 return new InitialContext();
             } else {
-                return Globals.getDefaultHabitat().getComponent(GlassfishNamingManager.class).restoreJavaCompEnvContext(name);
+                return Globals.getDefaultHabitat().<GlassfishNamingManager>getService(GlassfishNamingManager.class).restoreJavaCompEnvContext(name);
             }
         } catch (NamingException namEx) {
             IOException ioe = new IOException();

@@ -217,8 +217,8 @@ public class BasicSharedServiceTest {
 
         System.out.println("################### Trying to Create Shared Service #######################");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("create-shared-service", report);
         ParameterMap parameterMap = new ParameterMap();
@@ -292,8 +292,8 @@ public class BasicSharedServiceTest {
 
         System.out.println("$$$$$$$$$$$$$ TEST SHARED SERVICES $$$$$$$$$$$$$$$");
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("stop-shared-service", report);
@@ -314,7 +314,7 @@ public class BasicSharedServiceTest {
 
 
         //Try deleting a shared service, referenced by the app. Should 'FAIL'
-        report = habitat.getComponent(ActionReport.class);
+        report = habitat.getService(ActionReport.class);
         invocation = commandRunner.getCommandInvocation("delete-shared-service", report);
         parameterMap = new ParameterMap();
         parameterMap.add("DEFAULT", "my-shared-lb-service");
@@ -472,8 +472,8 @@ public class BasicSharedServiceTest {
 
     private void deleteSharedService() {
         Habitat habitat = Globals.getDefaultHabitat();
-        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-        ActionReport report = habitat.getComponent(ActionReport.class);
+        org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+        ActionReport report = habitat.getService(ActionReport.class);
         //Try stopping a shared service, referenced by the app. Should 'FAIL'
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("delete-shared-service", report);

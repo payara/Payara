@@ -78,7 +78,7 @@ public class WebAllTest {
         Server.Builder builder = new Server.Builder("WebAllTest");
         builder.embeddedFileSystem(fs);                
         server = builder.build();
-        server.getHabitat().getComponent(NetworkConfig.class,
+        server.getHabitat().getService(NetworkConfig.class,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME);
         http = server.createPort(8080);
         Assert.assertNotNull("Failed to create port 8080!", http);

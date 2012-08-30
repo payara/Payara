@@ -113,8 +113,8 @@ public class MultipleSPETest {
 
             //3. Register one of the plugins as the default S.P.E
             Habitat habitat = Globals.getDefaultHabitat();
-            org.glassfish.api.admin.CommandRunner commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
-            ActionReport report = habitat.getComponent(ActionReport.class);
+            org.glassfish.api.admin.CommandRunner commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
+            ActionReport report = habitat.getService(ActionReport.class);
 
             org.glassfish.api.admin.CommandRunner.CommandInvocation invocation = commandRunner.getCommandInvocation("register-service-provisioning-engine", report);
             ParameterMap parameterMap = new ParameterMap();
@@ -169,7 +169,7 @@ public class MultipleSPETest {
                     System.err.println("Couldn't varify whether undeploy succeeded");
                 }
             }
-            commandRunner = habitat.getComponent(org.glassfish.api.admin.CommandRunner.class);
+            commandRunner = habitat.getService(org.glassfish.api.admin.CommandRunner.class);
             invocation = commandRunner.getCommandInvocation("unregister-service-provisioning-engine", report);
             parameterMap = new ParameterMap();
             parameterMap.add("DEFAULT", "org.glassfish.paas.mydbplugin.MyDBPlugin");

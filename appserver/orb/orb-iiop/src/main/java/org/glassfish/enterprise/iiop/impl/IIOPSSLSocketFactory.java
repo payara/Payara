@@ -134,7 +134,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             //if (Switch.getSwitch().getContainerType() == Switch.EJBWEB_CONTAINER) {
             if((processType != null) && (processType.isServer())) {
                 //this is the EJB container
-                IiopService iiopBean = Globals.getDefaultHabitat().getComponent(IiopService.class,
+                IiopService iiopBean = Globals.getDefaultHabitat().getService(IiopService.class,
                         ServerEnvironment.DEFAULT_INSTANCE_NAME);
                 List<IiopListener> iiopListeners = iiopBean.getIiopListener();
                 for (IiopListener listener : iiopListeners) {
@@ -180,7 +180,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                 }
             } else {
                 if ((processType != null) && (processType == ProcessType.ACC)) {
-                    IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getComponent(IIOPSSLUtil.class);
+                    IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
                     AppClientSSL clientSsl = (AppClientSSL)sslUtil.getAppClientSSL();
                     if (clientSsl != null) {
                         clientSslInfo = init(clientSsl.getCertNickname(),
@@ -244,7 +244,7 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
 
         SSLContext ctx = SSLContext.getInstance(protocol);
         if (Globals.getDefaultHabitat() != null) {
-            IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getComponent(IIOPSSLUtil.class);
+            IIOPSSLUtil sslUtil = Globals.getDefaultHabitat().getService(IIOPSSLUtil.class);
             KeyManager[] mgrs = sslUtil.getKeyManagers(alias);
             ctx.init(mgrs, sslUtil.getTrustManagers(), sslUtil.getInitializedSecureRandom());
         } else {
