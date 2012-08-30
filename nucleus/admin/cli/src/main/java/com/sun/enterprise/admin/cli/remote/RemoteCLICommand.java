@@ -71,15 +71,11 @@ import javax.ws.rs.core.Response;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
-import org.jvnet.hk2.component.Habitat;
-import org.jvnet.hk2.component.Inhabitant;
-import org.jvnet.hk2.component.Inhabitants;
 
 /**
  * A remote command handled by the asadmin CLI.
@@ -493,7 +489,7 @@ public class RemoteCLICommand extends CLICommand {
     /**
      * A habitat just for finding man pages.
      */
-    private static Habitat manHabitat;
+    private static ServiceLocator manHabitat;
 
     /**
      * Construct a new remote command object.  The command and arguments
@@ -922,12 +918,11 @@ public class RemoteCLICommand extends CLICommand {
      * Return a Habitat used just for reading man pages from the
      * modules in the modules directory.
      */
-    private static synchronized Habitat getManHabitat() {
+    private static synchronized ServiceLocator getManHabitat() {
         if (manHabitat != null)
             return manHabitat;
         ModulesRegistry registry = new StaticModulesRegistry(getModuleClassLoader());
-        ServiceLocator serviceLocator = registry.createServiceLocator("default");
-        manHabitat = serviceLocator.getService(Habitat.class);
+        manHabitat = registry.createServiceLocator("default");
         return manHabitat;
     }
 

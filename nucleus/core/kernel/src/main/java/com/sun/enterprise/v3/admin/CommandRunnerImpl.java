@@ -276,7 +276,7 @@ public class CommandRunnerImpl implements CommandRunner {
             } else {
                 // this means either a non-existent command or
                 // an ill-formed command
-                if (habitat.getInhabitant(AdminCommand.class, commandServiceName)
+                if (habitat.getServiceHandle(AdminCommand.class, commandServiceName)
                         == null) // somehow it's in habitat
                 {
                     msg = adminStrings.getLocalString("adapter.command.notfound", "Command {0} not found", commandName);
