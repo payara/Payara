@@ -53,6 +53,7 @@ import javax.ws.rs.QueryParam;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
@@ -80,9 +81,9 @@ public class RestMethodMetadata {
      * type of the items in the collection) or not.
      */
     private boolean isCollection = false;
-    private CompositeResource context;
+    private OptionsCapable context;
 
-    public RestMethodMetadata(CompositeResource context, Method method, Annotation designator) {
+    public RestMethodMetadata(OptionsCapable context, Method method, Annotation designator) {
         this.context = context;
         this.httpMethod = designator.getClass().getInterfaces()[0].getSimpleName();
         this.returnPayload = calculateReturnPayload(method);

@@ -56,12 +56,13 @@ import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.glassfish.admin.rest.Constants;
+import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.RestResource;
 import org.glassfish.admin.rest.composite.metadata.DefaultsGenerator;
 import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
 import org.glassfish.admin.rest.utils.ResourceUtil;
+import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.grizzly.http.server.Request;
@@ -78,7 +79,7 @@ import org.jvnet.hk2.component.Habitat;
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public abstract class CompositeResource implements RestResource, DefaultsGenerator {
+public abstract class CompositeResource implements RestResource, DefaultsGenerator, OptionsCapable {
 
     @Context
     protected UriInfo uriInfo;
@@ -121,10 +122,12 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         return authenticatedUser;
     }
 
+    @Override
     public UriInfo getUriInfo() {
         return uriInfo;
     }
 
+    @Override
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
     }
@@ -154,7 +157,7 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
     @OPTIONS
     public String options() throws JSONException {
         RestResourceMetadata rrmd = new RestResourceMetadata(this);
-        return rrmd.toJson().toString(getFormattingIndentLevel());
+        return rrmd.toJson().toString(Util.getFormattingIndentLevel());
     }
 
     /**
@@ -179,20 +182,6 @@ public abstract class CompositeResource implements RestResource, DefaultsGenerat
         } catch (Exception ex) {
             throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    /**
-     * Get the current configured indenting value for the REST layer
-     * @return
-     */
-    protected int getFormattingIndentLevel() {
-        RestConfig rg = ResourceUtil.getRestConfig(habitat);
-        if (rg == null) {
-            return -1;
-        } else {
-            return Integer.parseInt(rg.getIndentLevel());
-        }
-
     }
 
     /**

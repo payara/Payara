@@ -37,43 +37,77 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.provider;
+package org.glassfish.admin.rest.utils;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestModel;
-import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
+ *
  * @author jdlee
  */
-@Provider
-@Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
-public class RestModelProvider extends BaseProvider<RestModel> {
-    public RestModelProvider() {
-        super(RestModel.class, MediaType.APPLICATION_JSON_TYPE);
-
-    }
-
-    @Override
-    public String getContent(RestModel proxy) {
-        StringBuilder sb = new StringBuilder();
-        final List<String> wrapObjectHeader = requestHeaders.get().getRequestHeader("X-Wrap-Object");
-        boolean wrapObject = ((wrapObjectHeader != null) && (wrapObjectHeader.size() > 0));
-        try {
-            JSONObject object = (JSONObject)JsonUtil.getJsonObject(proxy);
-            sb.append(object.toString(getFormattingIndentLevel()));
-        } catch (JSONException ex) {
-            Logger.getLogger(RestModelProvider.class.getName()).
-                    log(Level.SEVERE, null, ex);
+public class JsonUtil {
+    public static Object getJsonObject(Object object) throws JSONException {
+        Object result;
+        if (object instanceof Collection) {
+            result = processCollection((Collection)object);
+        } else if (object instanceof Map) {
+            result = processMap((Map)object);
+        } else if (object == null) {
+            result = JSONObject.NULL;
+        } else if (RestModel.class.isAssignableFrom(object.getClass())) {
+            result = getJsonForRestModel((RestModel)object);
+        } else {
+            result = object;
         }
 
-        return (wrapObject ? " { item : " : "") + sb.toString() + (wrapObject ? "}" : "");
+        return result;
     }
+
+    public static JSONObject getJsonForRestModel(RestModel model) {
+        JSONObject result = new JSONObject();
+        for (Method m : model.getClass().getDeclaredMethods()) {
+            if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
+                String propName = m.getName().substring(3);
+                propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
+                try {
+                    result.put(propName, getJsonObject(m.invoke(model)));
+                } catch (Exception e) {
+
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static JSONArray processCollection(Collection c) throws JSONException {
+        JSONArray result = new JSONArray();
+        Iterator i = c.iterator();
+        while (i.hasNext()) {
+            Object item = getJsonObject(i.next());
+            result.put(item);
+        }
+
+        return result;
+    }
+
+    public static JSONObject processMap(Map map) throws JSONException {
+        JSONObject result = new JSONObject();
+
+        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
+            result.put(entry.getKey().toString(), getJsonObject(entry.getValue()));
+        }
+
+        return result;
+    }
+
 }

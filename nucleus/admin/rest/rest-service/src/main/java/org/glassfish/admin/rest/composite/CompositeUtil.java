@@ -263,7 +263,9 @@ public class CompositeUtil {
                     } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
                         setter.invoke(model, unmarshallClass(param0.getClass(), (JSONObject) o));
                     } else {
-
+                        if ("null".equals(o.toString())) {
+                            o = null;
+                        }
                         setter.invoke(model, o);
                     }
                 }
@@ -324,7 +326,7 @@ public class CompositeUtil {
     }
 
     /*******************************************************************************************************************
-     * Private implement methods
+     * Private implementation methods
      ******************************************************************************************************************/
     /**
      * Find and return all <code>interface</code>s that extend <code>baseModel</code>

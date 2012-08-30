@@ -135,7 +135,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     }
 
     @GET
-    public ActionReportResult get() {
+    public Object get() {
         return options();
     }
 }

@@ -61,13 +61,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.jettison.json.JSONException;
+import org.glassfish.admin.rest.OptionsCapable;
+import org.glassfish.admin.rest.composite.CompositeUtil;
+import org.glassfish.admin.rest.composite.metadata.RestResourceMetadata;
+import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.component.Habitat;
 
 /**
  * @author ludo
  */
-public class TemplateExecCommand {
+public class TemplateExecCommand implements OptionsCapable {
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateExecCommand.class);
     @Context
     protected HttpHeaders requestHeaders;
@@ -87,7 +93,8 @@ public class TemplateExecCommand {
     protected Logger logger = Logger.getLogger(TemplateExecCommand.class.getName());
 
 
-    public TemplateExecCommand(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName,
+    public TemplateExecCommand(String resourceName, String commandName, String commandMethod, String commandAction,
+                               String commandDisplayName,
                                boolean isLinkedToParent) {
         this.resourceName = resourceName;
         this.commandName = commandName;
@@ -98,44 +105,82 @@ public class TemplateExecCommand {
 
     }
 
+    @Override
+    public UriInfo getUriInfo() {
+        return uriInfo;
+    }
+
+    @Override
+    public void setUriInfo(UriInfo uriInfo) {
+        this.uriInfo = uriInfo;
+    }
+
     @OPTIONS
     @Produces({
             MediaType.APPLICATION_JSON,
             "text/html;qs=2",
             MediaType.APPLICATION_XML})
-    public ActionReportResult options() {
-        RestActionReporter ar = new RestActionReporter();
-        ar.setExtraProperties(new Properties());
-        ar.setActionDescription(commandDisplayName);
+    public Object options() {
+        if (Util.useLegacyResponseFormat(requestHeaders)) {
+            RestActionReporter ar = new RestActionReporter();
+            ar.setExtraProperties(new Properties());
+            ar.setActionDescription(commandDisplayName);
 
-        OptionsResult optionsResult = new OptionsResult(resourceName);
-        Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
-        MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),  habitat, RestService.logger);
+            OptionsResult optionsResult = new OptionsResult(resourceName);
+            Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
+            MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(), habitat, RestService.logger);
 
-        optionsResult.putMethodMetaData(commandMethod, methodMetaData);
-        mmd.put(commandMethod, methodMetaData);
-        ResourceUtil.addMethodMetaData(ar, mmd);
+            optionsResult.putMethodMetaData(commandMethod, methodMetaData);
+            mmd.put(commandMethod, methodMetaData);
+            ResourceUtil.addMethodMetaData(ar, mmd);
 
-        ActionReportResult ret=  new ActionReportResult(ar, null, optionsResult);
-        ret.setCommandDisplayName(commandDisplayName);
-        return ret;
+            ActionReportResult ret = new ActionReportResult(ar, null, optionsResult);
+            ret.setCommandDisplayName(commandDisplayName);
+            return ret;
+        } else {
+            try {
+                return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());
+            } catch (JSONException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     protected Response executeCommand(ParameterMap data) {
         RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, habitat,
-                ResourceUtil.getResultType(requestHeaders));
+                                                                  ResourceUtil.getResultType(requestHeaders));
         ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
-        ActionReportResult option = options();
-        ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
-        results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
-        results.setCommandDisplayName(commandDisplayName);
-        int status = HttpURLConnection.HTTP_OK; /*200 - ok*/
-        if (exitCode == ActionReport.ExitCode.FAILURE) {
-            status = HttpURLConnection.HTTP_INTERNAL_ERROR;
-            results.setErrorMessage(actionReport.getCombinedMessage());
-        }
-        return Response.status(status).entity(results).build();
+        int status = (exitCode == ActionReport.ExitCode.FAILURE) ?
+                     HttpURLConnection.HTTP_INTERNAL_ERROR : HttpURLConnection.HTTP_OK;
 
+        if (Util.useLegacyResponseFormat(requestHeaders)) {
+            ActionReportResult option = (ActionReportResult) options();
+            ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
+            results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
+            results.setCommandDisplayName(commandDisplayName);
+
+            if (exitCode == ActionReport.ExitCode.FAILURE) {
+                results.setErrorMessage(actionReport.getCombinedMessage());
+            }
+            return Response.status(status).entity(results).build();
+        } else {
+            CommandResult cr = CompositeUtil.instance().getModel(CommandResult.class);
+            cr.setMessage(actionReport.getMessage());
+            cr.setProperties(actionReport.getTopMessagePart().getProps());
+            cr.setExtraProperties(getExtraProperties(actionReport));
+            return Response.status(status).entity(cr).build();
+        }
+    }
+
+    private Map<String, Object> getExtraProperties(RestActionReporter actionReport) {
+        Properties props = actionReport.getExtraProperties();
+        Map<String, Object> map = new HashMap<String, Object>();
+        
+        for (Map.Entry<Object, Object> entry : props.entrySet()) {
+            map.put(entry.getKey().toString(), entry.getValue());
+        }
+        
+        return map;
     }
 
     /*override it

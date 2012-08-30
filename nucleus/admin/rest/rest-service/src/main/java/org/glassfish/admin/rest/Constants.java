@@ -73,4 +73,6 @@ public interface Constants {
     public static final String CLIENT_PYTHON_PACKAGE_DIR = CLIENT_PYTHON_PACKAGE.replaceAll("\\.", System.getProperty("file.separator"));
 
     public static final String REQ_ATTR_SUBJECT = "SUBJECT";
+
+    public static final String HEADER_LEGACY_FORMAT = "X-GlassFish-3";
 }

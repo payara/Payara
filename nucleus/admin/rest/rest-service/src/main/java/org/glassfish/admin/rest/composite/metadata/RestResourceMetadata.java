@@ -53,6 +53,7 @@ import javax.ws.rs.Path;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.CompositeResource;
 
 /**
@@ -62,9 +63,9 @@ import org.glassfish.admin.rest.composite.CompositeResource;
 public class RestResourceMetadata {
     private Map<String, RestMethodMetadata> resourceMethods = new HashMap<String, RestMethodMetadata>();
     private List<String> subResources = new ArrayList<String>();
-    private CompositeResource context;
+    private OptionsCapable context;
 
-    public RestResourceMetadata(CompositeResource context) {
+    public RestResourceMetadata(OptionsCapable context) {
         this.context = context;
         processClass();
     }

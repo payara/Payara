@@ -53,6 +53,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.RestModelMetadata;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
 /**
  * @author: jdlee
@@ -80,7 +81,7 @@ public class RestCollectionProvider extends BaseProvider<RestCollection> {
         JSONArray metadata = new JSONArray();
         for (Map.Entry<RestModelMetadata, RestModel> entry : (Set<Map.Entry<RestModelMetadata, RestModel>>)proxy.entrySet()) {
             try {
-                models.put(getJsonObject(entry.getValue()));
+                models.put(JsonUtil.getJsonObject(entry.getValue()));
 
                 RestModelMetadata md = entry.getKey();
                 JSONObject mdo = new JSONObject();

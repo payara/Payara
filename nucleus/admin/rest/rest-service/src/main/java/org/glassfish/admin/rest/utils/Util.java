@@ -59,13 +59,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.core.HttpHeaders;
+import org.glassfish.admin.rest.Constants;
 
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
+import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.ConfigModel;
 
 /**
@@ -540,5 +544,25 @@ public class Util {
         }
 
         return null;
+    }
+
+    /**
+     * Get the current configured indenting value for the REST layer
+     * @return
+     */
+    public static int getFormattingIndentLevel() {
+        RestConfig rg = ResourceUtil.getRestConfig(Globals.getDefaultBaseServiceLocator());
+        if (rg == null) {
+            return -1;
+        } else {
+            return Integer.parseInt(rg.getIndentLevel());
+        }
+
+    }
+
+    public static boolean useLegacyResponseFormat(HttpHeaders requestHeaders) {
+        // TODO: default to legacy for now
+        return true;
+//                requestHeaders.getHeaderString(Constants.HEADER_LEGACY_FORMAT) != null;
     }
 }

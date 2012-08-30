@@ -79,6 +79,16 @@ import org.glassfish.admin.rest.composite.RestModel;
 @Consumes(MediaType.APPLICATION_JSON)
 public class RestModelReader<T extends RestModel> implements MessageBodyReader<T> {
     @Override
+    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+        String submittedType = mediaType.toString();
+        int index = submittedType.indexOf(";");
+        if (index > -1) {
+            submittedType = submittedType.substring(0, index);
+        }
+        return submittedType.equals(MediaType.APPLICATION_JSON) && RestModel.class.isAssignableFrom(type);
+    }
+
+    @Override
     public T readFrom(Class<T> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, String> mm, InputStream entityStream) throws WebApplicationException {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
@@ -102,15 +112,5 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
         } catch (Exception e) {
             throw new WebApplicationException(e);
         }
-    }
-
-    @Override
-    public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        String submittedType = mediaType.toString();
-        int index = submittedType.indexOf(";");
-        if (index > -1) {
-            submittedType = submittedType.substring(0, index);
-        }
-        return submittedType.equals(MediaType.APPLICATION_JSON) && RestModel.class.isAssignableFrom(type);
     }
 }

@@ -136,61 +136,6 @@ public abstract class BaseProvider<T> implements MessageBodyWriter<T> {
 
     public abstract String getContent(T proxy);
 
-    protected Object getJsonObject(Object object) throws JSONException {
-        Object result;
-        if (object instanceof Collection) {
-            result = processCollection((Collection)object);
-        } else if (object instanceof Map) {
-            result = processMap((Map)object);
-        } else if (object == null) {
-            result = JSONObject.NULL;
-        } else if (RestModel.class.isAssignableFrom(object.getClass())) {
-            result = getJsonForRestModel((RestModel)object);
-        } else {
-            result = object;
-        }
-
-        return result;
-    }
-
-    protected JSONObject getJsonForRestModel(RestModel model) {
-        JSONObject result = new JSONObject();
-        for (Method m : model.getClass().getDeclaredMethods()) {
-            if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
-                String propName = m.getName().substring(3);
-                propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
-                try {
-                    result.put(propName, getJsonObject(m.invoke(model)));
-                } catch (Exception e) {
-
-                }
-            }
-        }
-
-        return result;
-    }
-
-    protected JSONArray processCollection(Collection c) throws JSONException {
-        JSONArray result = new JSONArray();
-        Iterator i = c.iterator();
-        while (i.hasNext()) {
-            Object item = getJsonObject(i.next());
-            result.put(item);
-        }
-
-        return result;
-    }
-
-    protected JSONObject processMap(Map map) throws JSONException {
-        JSONObject result = new JSONObject();
-
-        for (Map.Entry entry : (Set<Map.Entry>)map.entrySet()) {
-            result.put(entry.getKey().toString(), getJsonObject(entry.getValue()));
-        }
-
-        return result;
-    }
-
     protected int getFormattingIndentLevel() {
         RestConfig rg = ResourceUtil.getRestConfig(habitat);
         if (rg == null){

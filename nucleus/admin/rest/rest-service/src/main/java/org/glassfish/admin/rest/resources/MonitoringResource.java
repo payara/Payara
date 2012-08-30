@@ -110,7 +110,7 @@ public class MonitoringResource {
         pathSegments = pathSegments.subList(1, pathSegments.size());
         if(!pathSegments.isEmpty()) {
             PathSegment lastSegment = pathSegments.get(pathSegments.size() - 1);
-            if(lastSegment.getPath().isEmpty()) { // if there is a trailing '/' (like monitroing/domain/), a spurious pathSegment is added. Discard it.
+            if(lastSegment.getPath().isEmpty()) { // if there is a trailing '/' (like monitoring/domain/), a spurious pathSegment is added. Discard it.
                 pathSegments = pathSegments.subList(0,pathSegments.size() - 1);
             }
         }

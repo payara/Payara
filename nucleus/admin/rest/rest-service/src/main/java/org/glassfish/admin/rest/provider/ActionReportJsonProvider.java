@@ -41,7 +41,6 @@
 package org.glassfish.admin.rest.provider;
 
 import com.sun.enterprise.v3.common.ActionReporter;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.security.AccessController;
@@ -53,6 +52,7 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.MessagePart;
 
@@ -158,7 +158,7 @@ public class ActionReportJsonProvider extends BaseProvider<ActionReporter> {
         JSONObject extraProperties = new JSONObject();
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
-            Object value = getJsonObject(entry.getValue());
+            Object value = JsonUtil.getJsonObject(entry.getValue());
             extraProperties.put(key, value);
         }
 

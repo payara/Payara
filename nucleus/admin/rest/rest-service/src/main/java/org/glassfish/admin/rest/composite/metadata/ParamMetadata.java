@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.OptionsCapable;
 import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.jvnet.hk2.config.Attribute;
@@ -58,12 +59,12 @@ public class ParamMetadata {
     private String help;
     private String defaultValue;
     private boolean readOnly = false;
-    private CompositeResource context;
+    private OptionsCapable context;
 
     public ParamMetadata() {
 
     }
-    public ParamMetadata(CompositeResource context, Class<?> paramType, String name, Annotation[] annotations) {
+    public ParamMetadata(OptionsCapable context, Class<?> paramType, String name, Annotation[] annotations) {
         this.name = name;
         this.context = context;
         type = paramType.getSimpleName();
