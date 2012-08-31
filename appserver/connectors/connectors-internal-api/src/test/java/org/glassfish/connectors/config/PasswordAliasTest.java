@@ -58,7 +58,7 @@ public  class PasswordAliasTest extends ConfigApiTest{
 
     @Before
     public void setup() {
-        bp1 = super.getHabitat().getComponent(BackendPrincipal.class);
+        bp1 = super.getHabitat().getService(BackendPrincipal.class);
     }
 
     @Test

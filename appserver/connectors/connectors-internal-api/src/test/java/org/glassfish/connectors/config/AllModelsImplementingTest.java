@@ -66,7 +66,7 @@ public class AllModelsImplementingTest extends ConfigApiTest {
     public void checkResources() throws ClassNotFoundException {
 
         Habitat habitat = getHabitat();
-        Resources resources = habitat.getComponent(Domain.class).getResources();
+        Resources resources = habitat.<Domain>getService(Domain.class).getResources();
         Dom dom = Dom.unwrap(resources);
         List <ConfigModel> models = dom.document.getAllModelsImplementing(Resource.class);
         for (ConfigModel model : models) {

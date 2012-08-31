@@ -519,7 +519,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         
         Scanner scanner = null;
         try {
-            scanner = habitat.getComponent(Scanner.class, getModuleType().toString());
+            scanner = habitat.getService(Scanner.class, getModuleType().toString());
             if (scanner==null || !(scanner instanceof ModuleScanner)) {
                 logger.log(Level.SEVERE, "Cannot find module scanner for " + this.getManifest());
             }
@@ -913,7 +913,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
         // archivists with matched type. This is ok as it's just for writing
         // out deployment descriptors which will not be invoked in normal 
         // code path
-        Collection<ExtensionsArchivist> extArchivists = habitat.getAllByContract(ExtensionsArchivist.class);
+        Collection<ExtensionsArchivist> extArchivists = habitat.getAllServices(ExtensionsArchivist.class);
 
         for (ExtensionsArchivist extension : extArchivists) {
             if (extension.supportsModuleType(getModuleType())) {
@@ -1504,7 +1504,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
     }
 
     protected void postValidate(BundleDescriptor bundleDesc, ReadableArchive archive) {
-        ComponentPostVisitor postVisitor = habitat.getComponent(ComponentPostVisitor.class);
+        ComponentPostVisitor postVisitor = habitat.getService(ComponentPostVisitor.class);
         postVisitor.setArchive(archive);
         bundleDesc.visit(postVisitor);
     }

@@ -350,7 +350,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public void setProtocolBinding(String value) {
-        WSDolSupport dolSupport = Globals.getDefaultHabitat().getComponent(WSDolSupport.class);
+        WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
         if (dolSupport!=null) {
             protocolBinding = dolSupport.getProtocolBinding(value);
         } else {
@@ -360,7 +360,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public String getProtocolBinding() {
-        WSDolSupport dolSupport = Globals.getDefaultHabitat().getComponent(WSDolSupport.class);
+        WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
         if (protocolBinding==null) {
             if (dolSupport!=null) {
                 protocolBinding =  dolSupport.getProtocolBinding(null);
@@ -1047,7 +1047,7 @@ public class WebServiceEndpoint extends Descriptor
     }
 
     public String getSoapAddressPrefix() {
-        WSDolSupport dolSupport = Globals.getDefaultHabitat().getComponent(WSDolSupport.class);
+        WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
         if (dolSupport!=null) {
             return dolSupport.getSoapAddressPrefix(protocolBinding);
         }

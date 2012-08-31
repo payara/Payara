@@ -86,19 +86,19 @@ public class CreateCustomResourceTest extends ConfigApiTest {
     @Before
     public void setUp() {
         parameters = new ParameterMap();
-        resources = habitat.getComponent(Domain.class).getResources();
+        resources = habitat.<Domain>getService(Domain.class).getResources();
         assertTrue(resources != null);
-        command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
+        command = habitat.getService(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         assertTrue(command != null);
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateCustomResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
-        cr = habitat.getComponent(CommandRunner.class);
+        cr = habitat.getService(CommandRunner.class);
     }
 
     @After
     public void tearDown() throws TransactionFailure {
-        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
+        org.glassfish.resources.admin.cli.DeleteCustomResource deleteCommand = habitat.getService(org.glassfish.resources.admin.cli.DeleteCustomResource.class);
         parameters = new ParameterMap();
         parameters.set("jndi_name", "sample_custom_resource");
         cr.getCommandInvocation("delete-custom-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
@@ -144,7 +144,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
         logger.fine("msg: " + context.getActionReport().getMessage());
 
         // Check resource-ref created
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefCreated = false;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -194,7 +194,7 @@ public class CreateCustomResourceTest extends ConfigApiTest {
         assertTrue(isCreated);
 
         //Try to create a duplicate resource dupRes. Get a new instance of the command.
-        org.glassfish.resources.admin.cli.CreateCustomResource command2 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateCustomResource.class);
+        org.glassfish.resources.admin.cli.CreateCustomResource command2 = habitat.getService(org.glassfish.resources.admin.cli.CreateCustomResource.class);
         cr.getCommandInvocation("create-custom-resource", context.getActionReport()).parameters(parameters).execute(command2);
 
         // Check the exit code is FAILURE

@@ -182,7 +182,7 @@ public class ModuleContentLinker extends DefaultDOLVisitor implements ComponentV
             //Incase wsdl file is missing we can obtain it from the @WebServiceClient annotation
                   ClassLoader classloader = Thread.currentThread().getContextClassLoader();
                   Class serviceInterfaceClass = classloader.loadClass(serviceRef.getServiceInterface());
-                  WSDolSupport dolSupport = Globals.getDefaultHabitat().getComponent(WSDolSupport.class);
+                  WSDolSupport dolSupport = Globals.getDefaultHabitat().getService(WSDolSupport.class);
                 if (dolSupport!=null) {
                     dolSupport.setServiceRef(serviceInterfaceClass, serviceRef);
                 }

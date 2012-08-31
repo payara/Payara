@@ -87,7 +87,7 @@ public class ConnectorNamingUtils {
                 _logger.log(Level.FINEST, "unable to get Connector Runtime due to the following exception, " +
                     "trying client mode", e);
             }
-            runtime = getHabitat().getComponent(ConnectorRuntime.class);
+            runtime = getHabitat().getService(ConnectorRuntime.class);
         }
         return runtime;
     }

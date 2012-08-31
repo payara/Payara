@@ -326,7 +326,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
     
     private Class getExtensionHandler(final XMLElement element) {
         DeploymentDescriptorNode extNode = 
-            (DeploymentDescriptorNode)habitat.getComponent(XMLNode.class,
+            (DeploymentDescriptorNode)habitat.getService(XMLNode.class,
                 element.getQName());
         if (extNode == null) {
             return null;
@@ -836,7 +836,7 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T>  {
             return;
         }
 
-        JndiEnvRefNode serviceRefNode = habitat.getComponent(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
+        JndiEnvRefNode serviceRefNode = habitat.getService(JndiEnvRefNode.class, WebServicesTagNames.SERVICE_REF);
         if (serviceRefNode != null) {
             while(refs.hasNext()) {
                 ServiceReferenceDescriptor next = (ServiceReferenceDescriptor)
