@@ -47,9 +47,7 @@ import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import java.util.List;
 import java.util.Map;
-import org.glassfish.deployment.common.Descriptor;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -58,9 +56,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
- * Root node for webservices deployment descriptor
+ * Root node for web services deployment descriptor
  *
  * @author  Kenneth Saks
  * @version 
@@ -74,11 +73,11 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     public final static String SPEC_VERSION = "1.3";
     private final static List<String> systemIDs = initSystemIDs();
 
-    private final static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>();
-        systemIDs.add(SCHEMA_ID);
-        systemIDs.add(SCHEMA_ID_12);
-        return Collections.unmodifiableList(systemIDs);
+    private static List<String> initSystemIDs() {
+        List<String> sysIDs = new ArrayList<String>();
+        sysIDs.add(SCHEMA_ID);
+        sysIDs.add(SCHEMA_ID_12);
+        return Collections.unmodifiableList(sysIDs);
 
     }
     
@@ -110,6 +109,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
             /**
      * @return the DOCTYPE of the XML file
      */
+    @Override
     public String getDocType() {
         return null;
     }
@@ -117,6 +117,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     /**
      * @return the SystemID of the XML file
      */
+    @Override
     public String getSystemID() {
         return SCHEMA_ID;
     }
@@ -124,6 +125,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     /**
      * @return the list of SystemID of the XML schema supported
      */
+    @Override
     public List<String> getSystemIDs() {
         return systemIDs;
     }
@@ -131,6 +133,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     /**
      * @return the complete URL for J2EE schemas
      */
+    @Override
     protected String getSchemaURL() {
        return WebServicesTagNames.IBM_NAMESPACE + "/" + getSystemID();
     }    
@@ -138,6 +141,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     /**
      * @return the XML tag associated with this XMLNode
      */
+    @Override
     protected XMLElement getXMLRootTag() {
         return ROOT_ELEMENT;
     }
@@ -148,6 +152,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
      * @param element the xml element
      * @param value it's associated value
      */    
+    @Override
     public void setElementValue(XMLElement element, String value) {    
         if (TagNames.VERSION.equals(element.getQName())) {    
             bundleDescriptor.getWebServices().setSpecVersion(value);
@@ -160,6 +165,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
      *
      * @param descriptor the new descriptor
      */
+    @Override
     public void addDescriptor(Object descriptor) {    
         WebServicesDescriptor webServicesDesc = 
             bundleDescriptor.getWebServices();
@@ -170,7 +176,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
             iter.hasNext();) {
             WebServiceEndpoint next = (WebServiceEndpoint) iter.next();
             if( !next.resolveComponentLink() ) {
-                DOLUtils.getDefaultLogger().info("Warning: Web service endpoint " + next.getEndpointName() + " component link " + next.getLinkName() + " is not valid");                
+                DOLUtils.getDefaultLogger().log(Level.INFO, "Warning: Web service endpoint {0} component link {1} is not valid", new Object[]{next.getEndpointName(), next.getLinkName()});                
             }
         }
         
@@ -179,6 +185,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
+    @Override
     public BundleDescriptor getDescriptor() {
         return bundleDescriptor;
     }     
@@ -190,10 +197,10 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
      * @param descriptor to write
      * @return the DOM tree top node
      */    
+    @Override
     public Node writeDescriptor(Node parent, BundleDescriptor descriptor) {
-        Node topNode = parent;
         if (parent instanceof Document) {
-            topNode = super.writeDescriptor(parent, descriptor);
+            Node topNode = super.writeDescriptor(parent, descriptor);
             WebServicesDescriptor webServicesDesc = descriptor.getWebServices();
             WebServiceNode wsNode = new WebServiceNode();
             for(WebService next : webServicesDesc.getWebServices()) {
@@ -207,6 +214,7 @@ public class WebServicesDescriptorNode extends AbstractBundleNode<BundleDescript
     /**
      * @return the default spec version level this node complies to
      */
+    @Override
     public String getSpecVersion() {
         return SPEC_VERSION;
     }
