@@ -85,19 +85,19 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
     @Before
     public void setUp() {
         habitat = getHabitat();
-        resources = habitat.getComponent(Domain.class).getResources();
+        resources = habitat.<Domain>getService(Domain.class).getResources();
         assertTrue(resources != null);
         parameters = new ParameterMap();
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateJavaMailResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
-        cr = habitat.getComponent(CommandRunner.class);
+        cr = habitat.getService(CommandRunner.class);
         assertTrue(cr != null);
     }
 
     @After
     public void tearDown() throws TransactionFailure {
-        org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource deleteCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource.class);
+        org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource deleteCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.DeleteJavaMailResource.class);
         parameters = new ParameterMap();
         parameters.set("jndi_name", "mail/MyMailSession");
 
@@ -118,7 +118,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("mailuser", "test");
         parameters.set("fromaddress", "test@sun.com");
         parameters.set("jndi_name", "mail/MyMailSession");
-        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
+        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command != null);
         cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -144,7 +144,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         }
         assertTrue(isCreated);
         logger.fine("msg: " + context.getActionReport().getMessage());
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefCreated = false;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -173,7 +173,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("mailuser", "test");
         parameters.set("fromaddress", "test@sun.com");
         parameters.set("jndi_name", "dupRes");
-        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command1 = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
+        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command1 = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command1 != null);
         cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command1);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -190,7 +190,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         }
         assertTrue(isCreated);
 
-        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command2 = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
+        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command2 = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command2);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         int numDupRes = 0;
@@ -228,7 +228,7 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("transprotocol", "lmtp");
         parameters.set("transprotocolclass", "com.sun.mail.lmtp.LMTPTransport");
         parameters.set("jndi_name", "mail/MyMailSession");
-        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
+        org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command != null);
         cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());

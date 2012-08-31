@@ -1584,7 +1584,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             // Create default web module off of virtual
             // server's docroot if necessary                   
             wmInfo = vs.createSystemDefaultWebModuleIfNecessary(
-                    habitat.getComponent(
+                    habitat.<WebArchivist>getService(
                             WebArchivist.class));
             if (wmInfo != null) {
                 defaultPath = wmInfo.getContextPath();
@@ -1626,7 +1626,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected boolean isEnabled(String moduleName) {
         // TODO dochez : optimize
         /*
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
         applications = domain.getApplications().getLifecycleModuleOrJ2EeApplicationOrEjbModuleOrWebModuleOrConnectorModuleOrAppclientModuleOrMbeanOrExtensionModule();
         com.sun.enterprise.config.serverbeans.WebModule webModule = null;
         for (Object module : applications) {
@@ -1636,7 +1636,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                 }
             }
         }    em
-        ServerContext env = habitat.getComponent(ServerContext.class);
+        ServerContext env = habitat.getService(ServerContext.class);
         List<Server> servers = domain.getServers().getServer();
         Server thisServer = null;
         for (Server server : servers) {

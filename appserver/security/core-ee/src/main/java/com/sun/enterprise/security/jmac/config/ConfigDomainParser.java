@@ -88,7 +88,7 @@ public class ConfigDomainParser implements ConfigParser {
 
     public void initialize(Object service) throws IOException {
 	if (service == null && Globals.getDefaultHabitat() != null) {
-	    service = Globals.getDefaultHabitat().getComponent(SecurityService.class,
+	    service = Globals.getDefaultHabitat().getService(SecurityService.class,
                     ServerEnvironment.DEFAULT_INSTANCE_NAME);
 	}
 

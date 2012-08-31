@@ -135,7 +135,7 @@ public class PipeHelper extends ConfigHelper {
                 ? SecurityServicesUtil.getInstance().getAuditManager()
                 : new AuditManager();//workaround for standalone clients where no habitat
         invManager = (SecurityServicesUtil.getInstance() != null)
-                ? SecurityServicesUtil.getInstance().getHabitat().getComponent(InvocationManager.class) : null;
+                ? SecurityServicesUtil.getInstance().getHabitat().<InvocationManager>getService(InvocationManager.class) : null;
 
         this.ejbDelegate = new EJBPolicyContextDelegate();
    }

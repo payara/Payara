@@ -84,9 +84,9 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
     public void setUp() {
         habitat = getHabitat();
         parameters = new ParameterMap();
-        cr = habitat.getComponent(CommandRunner.class);
+        cr = habitat.getService(CommandRunner.class);
         assertTrue(cr != null);
-        Resources resources = habitat.getComponent(Domain.class).getResources();
+        Resources resources = habitat.<Domain>getService(Domain.class).getResources();
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJavaMailResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
@@ -107,7 +107,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
      */
     @Test
     public void testExecuteSuccessListOriginal() {
-        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
+        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
         cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
         if (origNum == 0) {
@@ -130,7 +130,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         createJavaMailResource();
 
         parameters = new ParameterMap();
-        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
+        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
         assertTrue(listCommand != null);
         cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
         List<MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
@@ -150,7 +150,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         parameters.set("mailuser", "test");
         parameters.set("fromaddress", "test@sun.com");
         parameters.set("jndi_name", "mailresource");
-        CreateJavaMailResource createCommand = habitat.getComponent(CreateJavaMailResource.class);
+        CreateJavaMailResource createCommand = habitat.getService(CreateJavaMailResource.class);
         assertTrue(createCommand != null);
         cr.getCommandInvocation("create-javamail-resource", context.getActionReport()).parameters(parameters).execute(createCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -167,7 +167,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
         createJavaMailResource();
 
         parameters = new ParameterMap();
-        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
+        org.glassfish.resources.javamail.admin.cli.ListJavaMailResources listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
         cr.getCommandInvocation("list-javamail-resources", context.getActionReport()).parameters(parameters).execute(listCommand);
 
         List<ActionReport.MessagePart> list = context.getActionReport().getTopMessagePart().getChildren();
@@ -176,7 +176,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
 
         deleteJavaMailResource();
         parameters = new ParameterMap();
-        listCommand = habitat.getComponent(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
+        listCommand = habitat.getService(org.glassfish.resources.javamail.admin.cli.ListJavaMailResources.class);
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(ListJavaMailResourcesTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
@@ -198,7 +198,7 @@ public class ListJavaMailResourcesTest extends ConfigApiTest {
     private void deleteJavaMailResource() {
         parameters = new ParameterMap();
         parameters.set("jndi_name", "mailresource");
-        DeleteJavaMailResource deleteCommand = habitat.getComponent(DeleteJavaMailResource.class);
+        DeleteJavaMailResource deleteCommand = habitat.getService(DeleteJavaMailResource.class);
         assertTrue(deleteCommand != null);
         cr.getCommandInvocation("delete-javamail-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());

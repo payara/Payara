@@ -87,18 +87,18 @@ public class CreateJndiResourceTest extends ConfigApiTest {
     @Before
     public void setUp() {
         habitat = getHabitat();
-        resources = habitat.getComponent(Domain.class).getResources();
-        server = habitat.getComponent(Server.class);
+        resources = habitat.<Domain>getService(Domain.class).getResources();
+        server = habitat.getService(Server.class);
         parameters = new ParameterMap();
         context = new AdminCommandContextImpl(
                 LogDomains.getLogger(CreateJndiResourceTest.class, LogDomains.ADMIN_LOGGER),
                 new PropsFileActionReporter());
-        cr = habitat.getComponent(CommandRunner.class);
+        cr = habitat.getService(CommandRunner.class);
     }
 
     @After
     public void tearDown() throws TransactionFailure {
-        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getComponent(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
+        org.glassfish.resources.admin.cli.DeleteJndiResource deleteCommand = habitat.getService(org.glassfish.resources.admin.cli.DeleteJndiResource.class);
         parameters = new ParameterMap();
         parameters.set("jndi_name", "sample_jndi_resource");
         cr.getCommandInvocation("delete-jndi-resource", context.getActionReport()).parameters(parameters).execute(deleteCommand);
@@ -119,7 +119,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("restype", "queue");
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndi_name", "sample_jndi_resource");
-        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
 
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
@@ -140,7 +140,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         }
         assertTrue(isCreated);
         logger.fine("msg: " + context.getActionReport().getMessage());
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefCreated = false;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -169,7 +169,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("restype", "queue");
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndi_name", "dupRes");
-        org.glassfish.resources.admin.cli.CreateJndiResource command1 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command1 = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command1);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
@@ -185,7 +185,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         }
         assertTrue(isCreated);
 
-        org.glassfish.resources.admin.cli.CreateJndiResource command2 = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command2 = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command2);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
         int numDupRes = 0;
@@ -215,7 +215,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("enabled", "false");
         parameters.set("description", "External JNDI Resource");
         parameters.set("jndi_name", "sample_jndi_resource");
-        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         boolean isCreated = false;
@@ -256,7 +256,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("factoryclass", "sampleClass");
         parameters.set("jndilookupname", "sample_jndi");
         parameters.set("jndi_name", "sample_jndi_resource");
-        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
     }
@@ -271,7 +271,7 @@ public class CreateJndiResourceTest extends ConfigApiTest {
         parameters.set("factoryclass", "sampleClass");
         parameters.set("restype", "queue");
         parameters.set("jndi_name", "sample_jndi_resource");
-        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getComponent(org.glassfish.resources.admin.cli.CreateJndiResource.class);
+        org.glassfish.resources.admin.cli.CreateJndiResource command = habitat.getService(org.glassfish.resources.admin.cli.CreateJndiResource.class);
         cr.getCommandInvocation("create-jndi-resource", context.getActionReport()).parameters(parameters).execute(command);
         assertEquals(ActionReport.ExitCode.FAILURE, context.getActionReport().getActionExitCode());
     }

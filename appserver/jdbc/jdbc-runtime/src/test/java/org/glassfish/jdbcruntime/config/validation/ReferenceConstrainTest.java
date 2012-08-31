@@ -94,7 +94,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
     
     @Test // @Ignore
     public void doChangeToValidPool() throws TransactionFailure {
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
         //Find JdbcResource to chenge its values
         Iterator<JdbcResource> iterator = domain.getResources().getResources(JdbcResource.class).iterator();
         JdbcResource jdbc = null;
@@ -112,7 +112,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("pool-name", "DerbyPool");
         changes.put(poolConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
         } catch (TransactionFailure tf) {
             fail();
@@ -121,7 +121,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
    
     @Test
     public void doChangeToInValidPool() throws TransactionFailure {
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
         //Find JdbcResource to chenge its values
         Iterator<JdbcResource> iterator = domain.getResources().getResources(JdbcResource.class).iterator();
         JdbcResource jdbc = null;
@@ -139,7 +139,7 @@ public class ReferenceConstrainTest extends ConfigApiTest {
         configChanges.put("pool-name", "WrongPointer");
         changes.put(poolConfig, configChanges);
         try {
-            ConfigSupport cs = getHabitat().getComponent(ConfigSupport.class);
+            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
             cs.apply(changes);
             fail("Can not reach this point");
         } catch (TransactionFailure tf) {

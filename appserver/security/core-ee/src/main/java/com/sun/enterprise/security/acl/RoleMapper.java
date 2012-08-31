@@ -121,7 +121,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     
     RoleMapper(String appName) {
         this.appName = appName;
-        secService = Globals.getDefaultHabitat().getComponent(SecurityService.class,
+        secService = Globals.getDefaultHabitat().getService(SecurityService.class,
                 ServerEnvironment.DEFAULT_INSTANCE_NAME);
         defaultP2RMappingClassName = getDefaultP2RMappingClassName();
         postConstruct();

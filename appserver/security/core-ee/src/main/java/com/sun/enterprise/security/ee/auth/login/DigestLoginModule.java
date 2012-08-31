@@ -130,7 +130,7 @@ public abstract class DigestLoginModule implements LoginModule {
                 return false;
             }
 
-            PrincipalGroupFactory factory = Globals.getDefaultHabitat().getComponent(PrincipalGroupFactory.class);
+            PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
             _userPrincipal = factory.getPrincipalInstance(digestCredentials.getUserName(), digestCredentials.getRealmName());
             java.util.Set principalSet = this.subject.getPrincipals();
             if (!principalSet.contains(_userPrincipal)) {

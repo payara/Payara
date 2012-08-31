@@ -63,7 +63,7 @@ public class HandlerData {
     private PolicyContextDelegate ejbDelegate = null;
     
     private HandlerData(){
-        ejbDelegate = Globals.getDefaultHabitat().getComponent(PolicyContextDelegate.class, "EJB");
+        ejbDelegate = Globals.getDefaultHabitat().getService(PolicyContextDelegate.class, "EJB");
     }
 
 

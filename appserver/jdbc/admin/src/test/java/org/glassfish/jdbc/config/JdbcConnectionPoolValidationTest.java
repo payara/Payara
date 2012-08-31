@@ -73,7 +73,7 @@ public class JdbcConnectionPoolValidationTest extends ConfigApiTest {
 
     @Before
     public void setUp() {
-        pool = super.getHabitat().getComponent(JdbcConnectionPool.class, NAME);
+        pool = super.getHabitat().getService(JdbcConnectionPool.class, NAME);
     }
 
     @After

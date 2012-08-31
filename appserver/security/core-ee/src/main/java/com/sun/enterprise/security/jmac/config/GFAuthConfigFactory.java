@@ -117,7 +117,7 @@ public class GFAuthConfigFactory extends BaseAuthConfigFactory {
         WebServicesDelegate delegate = null;
         SecurityServicesUtil svcUtil = SecurityServicesUtil.getInstance();
         if ( svcUtil != null) {
-            delegate = svcUtil.getHabitat().getComponent(WebServicesDelegate.class);
+            delegate = svcUtil.getHabitat().getService(WebServicesDelegate.class);
         }
         if (delegate != null) {
             List<EntryInfo> entries = new ArrayList<EntryInfo>(2);

@@ -66,7 +66,7 @@ public class JdbcConnectionPoolDefaultsTest extends ConfigApiTest{
 
     @Before
     public void setUp() {
-        onlyOnePool = super.getHabitat().getComponent(JdbcConnectionPool.class);
+        onlyOnePool = super.getHabitat().getService(JdbcConnectionPool.class);
     }
 
     @After

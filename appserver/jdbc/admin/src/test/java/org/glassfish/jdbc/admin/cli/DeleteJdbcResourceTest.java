@@ -69,11 +69,11 @@ import org.jvnet.hk2.config.DomDocument;
 //@Ignore // temporarily disabled
 public class DeleteJdbcResourceTest extends ConfigApiTest {
     Habitat habitat = Utils.instance.getHabitat(this);
-    private Resources resources = habitat.getComponent(Domain.class).getResources();
+    private Resources resources = habitat.<Domain>getService(Domain.class).getResources();
     private DeleteJdbcResource deleteCommand = null;
     private ParameterMap parameters = new ParameterMap();
     private AdminCommandContext context = null;
-    private CommandRunner cr = habitat.getComponent(CommandRunner.class);
+    private CommandRunner cr = habitat.getService(CommandRunner.class);
     
     public DomDocument getDocument(Habitat habitat) {
 
@@ -95,7 +95,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         assertTrue(resources!=null);
         
         // Create a JDBC Resource jdbc/foo for each test
-        CreateJdbcResource createCommand = habitat.getComponent(CreateJdbcResource.class);
+        CreateJdbcResource createCommand = habitat.getService(CreateJdbcResource.class);
         assertTrue(createCommand!=null);
         
         parameters.add("connectionpoolid", "DerbyPool");
@@ -110,7 +110,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         
         // Setup for delete-jdbc-resource
         parameters = new ParameterMap();
-        deleteCommand = habitat.getComponent(DeleteJdbcResource.class);
+        deleteCommand = habitat.getService(DeleteJdbcResource.class);
         assertTrue(deleteCommand!=null);
     }
 
@@ -156,7 +156,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         
         //Check that the resource ref was deleted
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefDeleted = true;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -206,7 +206,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         assertEquals(ActionReport.ExitCode.SUCCESS, context.getActionReport().getActionExitCode());
         
         //Check that the resource ref was deleted
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefDeleted = true;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
@@ -321,7 +321,7 @@ public class DeleteJdbcResourceTest extends ConfigApiTest {
         logger.fine("msg: " + context.getActionReport().getMessage());
         
         //Check that the resource ref was NOT deleted
-        Servers servers = habitat.getComponent(Servers.class);
+        Servers servers = habitat.getService(Servers.class);
         boolean isRefDeleted = true;
         for (Server server : servers.getServer()) {
             if (server.getName().equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {

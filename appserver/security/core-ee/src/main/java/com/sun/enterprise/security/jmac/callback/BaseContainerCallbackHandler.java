@@ -138,9 +138,9 @@ abstract class BaseContainerCallbackHandler
             masterPasswordHelper = null;
             sslUtils.postConstruct();
         } else {
-            sslUtils = Globals.getDefaultHabitat().getComponent(SSLUtils.class);
-            secSup = Globals.getDefaultHabitat().getByContract(SecuritySupport.class);
-            masterPasswordHelper = Globals.getDefaultHabitat().getComponent(MasterPassword.class, "Security SSL Password Provider Service");
+            sslUtils = Globals.getDefaultHabitat().getService(SSLUtils.class);
+            secSup = Globals.getDefaultHabitat().getService(SecuritySupport.class);
+            masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPassword.class, "Security SSL Password Provider Service");
         }
     }
     

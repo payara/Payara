@@ -64,11 +64,11 @@ public class UpgradeTest extends ConfigApiTest {
 
     @Before
     public void setup() {
-        Domain domain = getHabitat().getComponent(Domain.class);
+        Domain domain = getHabitat().getService(Domain.class);
         assertTrue(domain!=null);
         
         // perform upgrade
-        for (ConfigurationUpgrade upgrade : getHabitat().getAllByContract(ConfigurationUpgrade.class)) {
+        for (ConfigurationUpgrade upgrade : getHabitat().<ConfigurationUpgrade>getAllServices(ConfigurationUpgrade.class)) {
             Logger.getAnonymousLogger().info("running upgrade " + upgrade.getClass());    
         }
     }
@@ -76,18 +76,18 @@ public class UpgradeTest extends ConfigApiTest {
     @Test
     public void threadPools() {
         List<String> names = new ArrayList<String>();
-        for (ThreadPool pool : getHabitat().getComponent(Config.class).getThreadPools().getThreadPool()) {
+        for (ThreadPool pool : getHabitat().<Config>getService(Config.class).getThreadPools().getThreadPool()) {
             names.add(pool.getName());
         }
         assertTrue(names.contains("http-thread-pool") && names.contains("thread-pool-1"));
     }
 
     private void verify(String name) {
-        assertTrue("Should find thread pool named " + name, getHabitat().getComponent(ThreadPool.class, name) != null);
+        assertTrue("Should find thread pool named " + name, getHabitat().getService(ThreadPool.class, name) != null);
     }
     @Test
     public void applicationUpgrade() {
-        Applications apps = getHabitat().getComponent(Applications.class);
+        Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
         for (Application app : apps.getApplications()) {
             assertTrue(app.getEngine().isEmpty());

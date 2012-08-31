@@ -80,13 +80,13 @@ public class BindableResourcesHelper {
 
     public boolean resourceExists(String jndiName, String target) {
         boolean exists = false;
-        Domain domain = habitat.getComponent(Domain.class);
+        Domain domain = habitat.getService(Domain.class);
        if(target.equals(DOMAIN)){
             //if target is "domain", as long as the resource is present in "resources" section,
             //it is valid.
             exists = true;
-        }else if(habitat.getComponent(ConfigBeansUtilities.class).getServerNamed(target) != null){
-            Server server = habitat.getComponent(ConfigBeansUtilities.class).getServerNamed(target);
+        }else if(habitat.<ConfigBeansUtilities>getService(ConfigBeansUtilities.class).getServerNamed(target) != null){
+            Server server = habitat.<ConfigBeansUtilities>getService(ConfigBeansUtilities.class).getServerNamed(target);
             exists = server.isResourceRefExists(jndiName);
         }else if (domain.getClusterNamed(target) != null){
             Cluster cluster = domain.getClusterNamed(target);
@@ -126,7 +126,7 @@ public class BindableResourcesHelper {
                 if(target.equals("domain")){
                     msg = localStrings.getLocalString("duplicate.resource.found",
                             "A {0} by name {1} already exists.", getResourceTypeName(duplicateResource), jndiName);
-                } else if (habitat.getComponent(org.glassfish.resources.admin.cli.ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
+                } else if (habitat.<org.glassfish.resources.admin.cli.ResourceUtil>getService(org.glassfish.resources.admin.cli.ResourceUtil.class).getTargetsReferringResourceRef(jndiName).contains(target)) {
                     msg = localStrings.getLocalString("duplicate.resource.found.in.target",
                             "A {0} by name {1} already exists with resource-ref in target {2}.",
                             getResourceTypeName(duplicateResource), jndiName, target);
@@ -254,7 +254,7 @@ public class BindableResourcesHelper {
 
     private Server getServer(){
         if(server == null){
-            server = habitat.getComponent(Domain.class).getServerNamed(environment.getInstanceName());
+            server = habitat.<Domain>getService(Domain.class).getServerNamed(environment.getInstanceName());
         }
         return server;
     }

@@ -70,7 +70,7 @@ public class ConcurrentModificationsTest extends ConfigApiTest{
     public void collectionTest() throws TransactionFailure {
 
         Habitat habitat = super.getHabitat();
-        final Resources resources = habitat.getComponent(Domain.class).getResources();
+        final Resources resources = habitat.<Domain>getService(Domain.class).getResources();
         assertTrue(resources!=null);
 
         ConfigSupport.apply(new SingleConfigCode<Resources>() {
