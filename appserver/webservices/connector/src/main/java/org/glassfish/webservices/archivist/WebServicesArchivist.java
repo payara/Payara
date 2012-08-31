@@ -101,9 +101,9 @@ public class WebServicesArchivist extends ExtensionsArchivist {
 
         if (bundleDescriptor != null) {
             return bundleDescriptor.getWebServices();
-        } else {
+        } else if (descriptor instanceof BundleDescriptor) {
             return BundleDescriptor.class.cast(descriptor).getWebServices();
-        }
+        } else throw new IllegalArgumentException("" + descriptor + " is not instance of BundleDescriptor");
     }
 
     public RootDeploymentDescriptor getDefaultDescriptor() {
