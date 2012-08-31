@@ -1693,7 +1693,8 @@ public class VirtualServer extends StandardHost
                     GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener) proxy.getUnderlyingListener();
                     List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
                     if (codecFilters == null || codecFilters.isEmpty()) {
-                        _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
+                        _logger.log(Level.SEVERE,
+                                "vs.addHttpProbes.codeFiltersNull", new Object[] {listener.getName(), codecFilters});
                     } else {
                         for (HttpCodecFilter codecFilter : codecFilters) {
                             if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
@@ -1722,11 +1723,11 @@ public class VirtualServer extends StandardHost
                     });
 
                 } else {
-                    _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
+                    _logger.log(Level.SEVERE, "vs.addHttpProbes.proxyNull", new Object[] {listener.getName(), proxy});
                 }
 
             } catch (Exception ex) {
-                _logger.log(Level.SEVERE, "vs.addHttpProbes.error");
+                _logger.log(Level.SEVERE, "vs.addHttpProbes.error", ex);
             }
         }
     }
