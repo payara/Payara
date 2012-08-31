@@ -131,13 +131,6 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     try {
                         super.dispose();
                     } finally {
-                        try { // WHY IS THIS NEEDED?
-                            AppServerContext appServerContext = habitat.getService( AppServerContext.class );
-                            if ( appServerContext != null ) {
-                                appServerContext.serverStopping();
-                            }
-                        } catch ( Throwable ignore ) {}
-
                         gfMap.remove(gfProps.getInstanceRoot());
                         if ("true".equalsIgnoreCase(gfProps.getProperties().
                                 getProperty(autoDelete)) && gfProps.getInstanceRoot() != null) {

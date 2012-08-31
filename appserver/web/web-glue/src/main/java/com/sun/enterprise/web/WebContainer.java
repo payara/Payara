@@ -40,41 +40,34 @@
 
 package com.sun.enterprise.web;
 
-import com.sun.appserv.server.util.Version;
-import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
-import com.sun.enterprise.config.serverbeans.Configs;
-import com.sun.enterprise.config.serverbeans.DasConfig;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.HttpService;
-import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
-import com.sun.enterprise.container.common.spi.JCDIService;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import com.sun.enterprise.glassfish.bootstrap.AppServer;
-import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.util.Result;
-import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.v3.services.impl.ContainerMapper;
-import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
-import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
-import com.sun.enterprise.web.logger.IASLogger;
-import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.enterprise.web.reconfig.WebConfigListener;
-import org.glassfish.grizzly.config.ContextRootInfo;
-import org.glassfish.grizzly.config.dom.NetworkConfig;
-import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.NetworkListeners;
-import com.sun.logging.LogDomains;
+import java.io.File;
+import java.io.IOException;
+import java.net.BindException;
+import java.net.MalformedURLException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.servlet.Filter;
+import javax.servlet.Servlet;
+import javax.servlet.jsp.JspFactory;
+import javax.servlet.jsp.tagext.JspTag;
 
 import org.apache.catalina.Connector;
 import org.apache.catalina.Container;
@@ -99,8 +92,19 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.embeddable.CommandRunner;
+import org.glassfish.grizzly.config.ContextRootInfo;
+import org.glassfish.grizzly.config.dom.NetworkConfig;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.NetworkListeners;
+import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.server.util.MappingData;
+import org.glassfish.grizzly.http.util.DataChunk;
+import org.glassfish.hk2.api.DynamicConfiguration;
+import org.glassfish.hk2.api.DynamicConfigurationService;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -115,54 +119,47 @@ import org.glassfish.web.admin.monitor.WebModuleProbeProvider;
 import org.glassfish.web.admin.monitor.WebStatsProviderBootstrap;
 import org.glassfish.web.config.serverbeans.SessionProperties;
 import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithoutCL;
 import org.glassfish.web.valve.GlassFishValve;
-import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Optional;
-import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.Habitat;
-import org.glassfish.hk2.api.DynamicConfiguration;
-import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Singleton;
 import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.types.Property;
 import org.xml.sax.EntityResolver;
 
-import javax.imageio.ImageIO;
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.jsp.JspFactory;
-import javax.servlet.jsp.tagext.JspTag;
-import java.io.File;
-import java.io.IOException;
-import java.lang.ClassLoader;
-import java.net.BindException;
-import java.net.MalformedURLException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.glassfish.grizzly.http.server.util.Mapper;
-import org.glassfish.grizzly.http.server.util.MappingData;
-import org.glassfish.grizzly.http.util.DataChunk;
+import com.sun.appserv.server.util.Version;
+import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
+import com.sun.enterprise.config.serverbeans.Configs;
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
+import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.security.integration.RealmInitializer;
+import com.sun.enterprise.util.Result;
+import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.v3.services.impl.ContainerMapper;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.enterprise.web.connector.coyote.PECoyoteConnector;
+import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
+import com.sun.enterprise.web.logger.IASLogger;
+import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
+import com.sun.enterprise.web.reconfig.WebConfigListener;
+import com.sun.logging.LogDomains;
 
 /**
  * Web container service
@@ -173,8 +170,7 @@ import org.glassfish.grizzly.http.util.DataChunk;
  */
 @SuppressWarnings({"StringContatenationInLoop"})
 @Service(name = "com.sun.enterprise.web.WebContainer")
-//@Singleton
-@AppServer
+@Singleton
 public class WebContainer implements org.glassfish.api.container.Container, PostConstruct, PreDestroy, EventListener {
 
     // -------------------------------------------------- Constants
