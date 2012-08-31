@@ -120,7 +120,7 @@ public class WebServiceContractImpl implements WebServicesContract{
 
     public static WebServiceContractImpl getInstance() {
         // Create the instance first to access the logger.
-        wscImpl = Globals.getDefaultHabitat().getComponent(
+        wscImpl = Globals.getDefaultHabitat().getService(
                 WebServiceContractImpl.class);
         return wscImpl;
     }

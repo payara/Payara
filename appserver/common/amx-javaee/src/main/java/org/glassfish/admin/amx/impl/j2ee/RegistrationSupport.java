@@ -156,7 +156,7 @@ final class RegistrationSupport
 
     private Domain getDomain()
     {
-    	return InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+    	return InjectedValues.getInstance().getHabitat().getService(Domain.class);
     }
     
     private ObjectName getObjectName(ConfigBeanProxy cbp)

@@ -75,7 +75,7 @@ public class LocalDeploymentFacility extends AbstractDeploymentFacility {
     public LocalDeploymentFacility() {
         super();
         final Habitat habitat = Globals.getDefaultHabitat();
-        commandRunner = habitat.getComponent(CommandRunner.class);
+        commandRunner = habitat.getService(CommandRunner.class);
     }
 
     /**

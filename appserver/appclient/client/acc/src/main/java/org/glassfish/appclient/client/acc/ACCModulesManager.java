@@ -154,8 +154,8 @@ public class ACCModulesManager /*implements ModuleStartup*/ {
         return habitat;
     }
 
-    public static <T> T getComponent(Class<T> c) {
-        return habitat.getComponent(c);
+    public static <T> T getService(Class<T> c) {
+        return habitat.getService(c);
     }
 
     /**

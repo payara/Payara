@@ -154,7 +154,7 @@ final class SerializableJNDIContext implements SerializableObjectFactory {
 				return new InitialContext();
 			} else {
 				return Globals.getDefaultHabitat()
-						.getComponent(GlassfishNamingManager.class)
+						.<GlassfishNamingManager>getService(GlassfishNamingManager.class)
 						.restoreJavaCompEnvContext(name);
 			}
 		} catch (NamingException namEx) {

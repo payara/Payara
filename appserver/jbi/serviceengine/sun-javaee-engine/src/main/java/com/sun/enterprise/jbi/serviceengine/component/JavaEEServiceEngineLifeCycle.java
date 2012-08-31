@@ -134,7 +134,7 @@ public class JavaEEServiceEngineLifeCycle implements ComponentLifeCycle {
         try {
             //Initialize RuntimeHelper Service
             Habitat habitat = Globals.getDefaultHabitat();
-            habitat.getComponent(ContractProvider.class, "ServiceEngineRuntimeHelper");
+            habitat.getService(ContractProvider.class, "ServiceEngineRuntimeHelper");
 
             if(ServiceEngineUtil.isServiceEngineEnabled()) {
                 logger.log(Level.FINE, "Service Engine starting");

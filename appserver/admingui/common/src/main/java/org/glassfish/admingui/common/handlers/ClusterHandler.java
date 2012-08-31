@@ -573,7 +573,7 @@ public class ClusterHandler {
     public static void getClusterForConfig(HandlerContext handlerCtx) {
         String configName = (String)handlerCtx.getInputValue("configName");
         String clusterName = null;
-        Domain domain = GuiUtil.getHabitat().getComponent(Domain.class);
+        Domain domain = GuiUtil.getHabitat().getService(Domain.class);
         
         for (Cluster cluster: domain.getClusters().getCluster()) {
             if (cluster.getConfigRef().equals(configName)) {

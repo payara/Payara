@@ -472,7 +472,7 @@ public class JavaEEServiceEngineSUManager implements ServiceUnitManager, JBICons
         File sourceFile = new File(sourcePath);
         File destFile = new File(destinationPath);
         FileArchive source = new FileArchive();
-        OutputJarArchive destination = runtimeHelper.getHabitat().getComponent(OutputJarArchive.class);
+        OutputJarArchive destination = runtimeHelper.getHabitat().getService(OutputJarArchive.class);
         try {
             source.open(sourceFile.toURI());
             Enumeration entries = source.entries();
@@ -499,7 +499,7 @@ public class JavaEEServiceEngineSUManager implements ServiceUnitManager, JBICons
     private void createEar(String explodedDir, String earFilePath)
             throws Exception {
         // create the application object. 
-        ApplicationArchivist archivist = runtimeHelper.getHabitat().getComponent(ApplicationArchivist.class);
+        ApplicationArchivist archivist = runtimeHelper.getHabitat().getService(ApplicationArchivist.class);
         FileArchive appArchive = new FileArchive();
         appArchive.open((new File(explodedDir)).toURI());
         archivist.setManifest(appArchive.getManifest());

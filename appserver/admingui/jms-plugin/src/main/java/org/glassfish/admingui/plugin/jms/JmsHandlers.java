@@ -442,7 +442,7 @@ public class JmsHandlers {
 
     protected static void insureJmsBrokerIsRunning() throws ConnectorRuntimeException {
         // FIXME: This @Service needs to be wrapped in an MBean so that we can have the console out of process
-        JmsProviderLifecycle jpl = GuiUtil.getHabitat().getComponent(JmsProviderLifecycle.class);
+        JmsProviderLifecycle jpl = GuiUtil.getHabitat().getService(JmsProviderLifecycle.class);
         jpl.initializeBroker();
     }
 

@@ -91,7 +91,7 @@ interface Launchable {
             /*
              * Make sure the requested URI exists and is readable.
              */
-            ArchiveFactory af = ACCModulesManager.getComponent(ArchiveFactory.class);
+            ArchiveFactory af = ACCModulesManager.getService(ArchiveFactory.class);
             ReadableArchive ra = null;
             try {
                 ra = af.openArchive(uri);

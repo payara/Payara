@@ -180,7 +180,7 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
     private AppClientContainer createContainer(final Launchable client,
             final CallbackHandler callerSuppliedCallbackHandler,
             final boolean isTextAuth) throws BootException, BootException, URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException, InjectionException, IOException, SAXParseException {
-        AppClientContainer container = ACCModulesManager.getComponent(AppClientContainer.class);
+        AppClientContainer container = ACCModulesManager.getService(AppClientContainer.class);
         container.setClient(client);
         container.setBuilder(this);
         CallbackHandler callbackHandler = 
@@ -202,7 +202,7 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
 
     private void prepareHabitat() throws URISyntaxException {
         ACCModulesManager.initialize(Thread.currentThread().getContextClassLoader());
-        orbHelper = ACCModulesManager.getComponent(GlassFishORBHelper.class);
+        orbHelper = ACCModulesManager.getService(GlassFishORBHelper.class);
     }
 
     /**

@@ -115,7 +115,7 @@ public class EjbWebServiceServlet extends HttpServlet {
         }
 
         if (dispatch) {
-            WebServiceEjbEndpointRegistry wsejbEndpointRegistry = (WebServiceEjbEndpointRegistry) org.glassfish.internal.api.Globals.getDefaultHabitat().getComponent(
+            WebServiceEjbEndpointRegistry wsejbEndpointRegistry = (WebServiceEjbEndpointRegistry) org.glassfish.internal.api.Globals.getDefaultHabitat().getService(
                     WSEjbEndpointRegistry.class);
             EjbRuntimeEndpointInfo ejbEndpoint =
                     wsejbEndpointRegistry.getEjbWebServiceEndpoint(requestUri, hreq.getMethod(), query);

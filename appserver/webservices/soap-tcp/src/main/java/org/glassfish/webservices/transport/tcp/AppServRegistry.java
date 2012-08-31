@@ -214,7 +214,7 @@ public final class AppServRegistry {
      * and the WebModule corresponding to that endpoint is stored.
      */
     static WebModule getWebModule(WebServiceEndpoint wsep) {
-        ApplicationRegistry appRegistry = org.glassfish.internal.api.Globals.getDefaultHabitat().getComponent(ApplicationRegistry.class);
+        ApplicationRegistry appRegistry = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
         String appName = wsep.getBundleDescriptor().getApplication().getAppName();
         ApplicationInfo appInfo = appRegistry.get(appName);
 

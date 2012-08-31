@@ -119,7 +119,7 @@ public class EndpointInfoCollector {
      */
     private void updateEndpoints(String appName) {
 
-        ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
+        ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
         ApplicationInfo appInfo = appRegistry.get(appName);
 
         if (appInfo != null) {
@@ -150,7 +150,7 @@ public class EndpointInfoCollector {
      * and the WebModule corresponding to that endpoint is stored.
      */
     public WebModule getWebModule(WebServiceEndpoint wsep) {
-        ApplicationRegistry appRegistry = habitat.getComponent(ApplicationRegistry.class);
+        ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
         String appName = wsep.getBundleDescriptor().getApplication().getAppName();
         ApplicationInfo appInfo = appRegistry.get(appName);
 

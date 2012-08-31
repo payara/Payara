@@ -93,7 +93,7 @@ public class FacadeLaunchable implements Launchable {
     /** name of manifest entry in facade conveying the app name */
     public static final Attributes.Name GLASSFISH_APP_NAME = new Attributes.Name("GlassFish-App-Name");
 
-    public static final ArchiveFactory archiveFactory = ACCModulesManager.getComponent(ArchiveFactory.class);
+    public static final ArchiveFactory archiveFactory = ACCModulesManager.getService(ArchiveFactory.class);
     private static final Logger logger = LogDomains.getLogger(FacadeLaunchable.class,
             LogDomains.ACC_LOGGER);
 

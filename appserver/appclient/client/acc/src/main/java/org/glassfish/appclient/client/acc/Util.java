@@ -111,11 +111,11 @@ public class Util {
     }
 
     public static ArchiveFactory getArchiveFactory() {
-        return ACCModulesManager.getComponent(ArchiveFactory.class);
+        return ACCModulesManager.getService(ArchiveFactory.class);
     }
 
     public static ArchivistFactory getArchivistFactory() {
-        return ACCModulesManager.getComponent(ArchivistFactory.class);
+        return ACCModulesManager.getService(ArchivistFactory.class);
     }
 
     public static URI getURI(final String s) throws URISyntaxException {

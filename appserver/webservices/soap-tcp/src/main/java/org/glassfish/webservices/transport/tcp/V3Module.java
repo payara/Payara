@@ -130,12 +130,12 @@ public class V3Module extends WSTCPModule {
 
 
     public static WebServiceEjbEndpointRegistry getWSEjbEndpointRegistry() {
-        return (WebServiceEjbEndpointRegistry) org.glassfish.internal.api.Globals.getDefaultHabitat().getComponent(
+        return (WebServiceEjbEndpointRegistry) org.glassfish.internal.api.Globals.getDefaultHabitat().getService(
                     WSEjbEndpointRegistry.class);
     }
 
     public static InvocationManager getInvocationManager() {
-        return (InvocationManager) org.glassfish.internal.api.Globals.getDefaultHabitat().getComponent(
+        return (InvocationManager) org.glassfish.internal.api.Globals.getDefaultHabitat().getService(
                     InvocationManager.class);
     }
 }

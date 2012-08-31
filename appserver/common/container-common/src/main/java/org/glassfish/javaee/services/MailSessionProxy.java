@@ -103,6 +103,6 @@ public class MailSessionProxy implements NamingObjectProxy.InitializationNamingO
     }
 
     private ResourceDeployer getResourceDeployer(Object resource) {
-        return habitat.getComponent(ResourceManagerFactory.class).getResourceDeployer(resource);
+        return habitat.<ResourceManagerFactory>getService(ResourceManagerFactory.class).getResourceDeployer(resource);
     }
 }

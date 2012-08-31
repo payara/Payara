@@ -128,7 +128,7 @@ public abstract class J2EEManagedObjectImplBase extends AMXImplBase {
     protected Domain
     getDomain()
     {
-        final Domain domain = InjectedValues.getInstance().getHabitat().getComponent(Domain.class);
+        final Domain domain = InjectedValues.getInstance().getHabitat().getService(Domain.class);
         return domain;
     }
     

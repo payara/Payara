@@ -82,7 +82,7 @@ public class ServiceEngineRuntimeHelper implements ContractProvider {
 
     public static ServiceEngineRuntimeHelper getRuntime() {
         if (_runtime == null) {
-            _runtime = habitat.getComponent(ServiceEngineRuntimeHelper.class);
+            _runtime = habitat.getSerivce(ServiceEngineRuntimeHelper.class);
            if (_runtime == null)
                 throw new RuntimeException("ServiceEngineRuntimeHelper not initialized");
         }
