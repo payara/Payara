@@ -118,9 +118,8 @@
             <version>${project.version}</version>
        </dependency> 
        <dependency>
-            <groupId>org.glassfish.main</groupId>
-	    <artifactId>javax.jms</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.jms</groupId>
+	    <artifactId>javax.jms-api</artifactId>
        </dependency>
        <dependency>
             <groupId>org.glassfish.main.external</groupId>

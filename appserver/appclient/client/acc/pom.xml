@@ -349,9 +349,8 @@
 
      <dependency>
          <scope>runtime</scope>
-         <groupId>org.glassfish.main</groupId>
-         <artifactId>javax.jms</artifactId>
-         <version>${project.version}</version>
+         <groupId>javax.jms</groupId>
+         <artifactId>javax.jms-api</artifactId>
      </dependency>
 
      <!-- for EclipseLink support -->

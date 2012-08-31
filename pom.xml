@@ -97,7 +97,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mail.version>1.4.5</mail.version>
         <management-api.version>1.1-rev-1</management-api.version>
-        <jms-api.version>1.1-rev-1</jms-api.version>
+        <jms-api.version>2.0-b03</jms-api.version>
         <servlet-api.version>3.1-b01</servlet-api.version>
         <jsp-api.version>2.2.1</jsp-api.version>
         <jsp-impl.version>2.2.6</jsp-impl.version>
@@ -154,7 +154,7 @@
         <!-- osgi version string must start with a number. Manually mapping above schema2beans.version to osgi.version here -->
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         <antlr.version>2.7.6</antlr.version>
-        <mq.version>5.0-002</mq.version>
+        <mq.version>5.0-003</mq.version>
         <javadb.version>10.8.1.2</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>1.1.4.Final</weld.version>
@@ -1395,7 +1395,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.jms</groupId>
-                <artifactId>jms-api</artifactId>
+                <artifactId>javax.jms-api</artifactId>
                 <version>${jms-api.version}</version>
             </dependency>
             <dependency>

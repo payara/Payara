@@ -64,8 +64,8 @@
     <dependencies>
 	<dependency>
 	    <groupId>javax.jms</groupId>
-	    <artifactId>jms-api</artifactId>
-	    <version>1.1-rev-1</version>
+	    <artifactId>javax.jms-api</artifactId>
+	    <version>2.0-b03</version>
         </dependency>
 	<dependency>
 	    <groupId>javax.servlet</groupId>

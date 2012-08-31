@@ -61,7 +61,7 @@
     <dependencies>
         <dependency>
             <groupId>javax.jms</groupId>
-            <artifactId>jms-api</artifactId>
+            <artifactId>javax.jms-api</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>

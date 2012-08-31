@@ -322,7 +322,7 @@
         javax.servlet.jsp-api.jar
         javax.servlet.jsp.jstl-api.jar
         javax.servlet.jsp.jstl.jar
-        javax.jms.jar
+        javax.jms-api.jar
         javax.faces.jar
         javax.servlet.jsp.jar
         jspcaching-connector.jar
@@ -330,7 +330,7 @@
         bean-validator.jar
         javax.ejb.jar
         javax.enterprise.deploy.jar
-        javax.jms.jar
+        javax.jms-api.jar
         javax.mail.jar
         javax.management.j2ee.jar
         javax.persistence.jar
