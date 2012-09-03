@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,10 +54,8 @@ a feature.
 final class SystemInfoIniter {
 
     private final SystemInfoImpl mSystemInfo;
-    private final MBeanServer mServer;
 
     SystemInfoIniter(final MBeanServer mbeanServer, final SystemInfoImpl systemInfo) {
-        mServer = mbeanServer;
         mSystemInfo = systemInfo;
         Issues.getAMXIssues().notDone("How to implement supportsClusters()");
         Issues.getAMXIssues().notDone("How to implement isRunningInDomainAdminServer()");
@@ -70,7 +68,7 @@ final class SystemInfoIniter {
         mSystemInfo.addFeature(RUNNING_IN_DAS_FEATURE, isRunningInDomainAdminServer());
     }
 
-    private final boolean supportsClusters() {
+    private boolean supportsClusters() {
         return false;
     }
 

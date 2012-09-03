@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,51 +41,31 @@
 package org.glassfish.admin.amx.core;
 
 import java.io.IOException;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import javax.management.ObjectName;
-import javax.management.Descriptor;
-import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanConstructorInfo;
-import javax.management.MBeanInfo;
-import javax.management.MBeanNotificationInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServerInvocationHandler;
-import javax.management.openmbean.CompositeDataSupport;
+import javax.management.*;
 import javax.management.openmbean.OpenType;
-import javax.management.remote.JMXServiceURL;
-
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
 import org.glassfish.admin.amx.base.DomainRoot;
-import org.glassfish.admin.amx.base.Pathnames;
 import org.glassfish.admin.amx.base.MBeanTrackerMBean;
-
-import static org.glassfish.admin.amx.core.PathnameConstants.*;
+import org.glassfish.admin.amx.base.Pathnames;
 import org.glassfish.admin.amx.config.AMXConfigProxy;
-import static org.glassfish.external.amx.AMX.*;
-import org.glassfish.external.amx.AMXGlassfish;
+import static org.glassfish.admin.amx.core.PathnameConstants.LEGAL_NAME_PATTERN;
+import static org.glassfish.admin.amx.core.PathnameConstants.LEGAL_TYPE_PATTERN;
 import org.glassfish.admin.amx.core.proxy.ProxyFactory;
 import org.glassfish.admin.amx.util.CollectionUtil;
 import org.glassfish.admin.amx.util.ExceptionUtil;
 import org.glassfish.admin.amx.util.SetUtil;
 import org.glassfish.admin.amx.util.StringUtil;
 import org.glassfish.admin.amx.util.jmx.JMXUtil;
+import static org.glassfish.external.amx.AMX.*;
+import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
 
 /**
 Validation of key behavioral requirements of AMX MBeans.
@@ -132,7 +112,7 @@ public final class AMXValidator
         final StringBuilder buf = new StringBuilder();
         for( final Object o : args )
         {
-            buf.append( "" + o );
+            buf.append("").append( o);
         }
         return buf.toString();
     }
@@ -219,43 +199,6 @@ public final class AMXValidator
         return filterAMX(theWorld);
     }
 
-    private boolean bypassTesting(ObjectName objectName) {
-        if(checkByType(objectName) || checkByJ2EEType(objectName)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean checkByType(ObjectName objectName) {
-        if(objectName.getKeyProperty("type") != null &&
-                 (objectName.getKeyProperty("type").equals("Mapper") ||
-                 objectName.getKeyProperty("type").equals("Connector") ||
-                 objectName.getKeyProperty("type").equals("Manager") ||
-                 
-                 objectName.getKeyProperty("type").equals("Engine") ||
-                 objectName.getKeyProperty("type").equals("ProtocolHandler") ||
-                 objectName.getKeyProperty("type").equals("Service") ||
-                 objectName.getKeyProperty("type").equals("Host") ||
-                 objectName.getKeyProperty("type").equals("Loader") ||
-                 objectName.getKeyProperty("type").equals("JspMonitor") ||
-                 objectName.getKeyProperty("type").equals("Valve"))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean checkByJ2EEType(ObjectName objectName) {
-        if(objectName.getKeyProperty("j2eeType") != null && 
-                objectName.getKeyProperty("j2eeType").equals("WebModule") ||
-                objectName.getKeyProperty("j2eeType").equals("Servlet") ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
     private static final class IllegalClassException extends Exception
     {
         private final Class<?> mClass;
@@ -271,6 +214,7 @@ public final class AMXValidator
             return mClass;
         }
 
+        @Override
         public String toString()
         {
             return super.getMessage();
@@ -298,6 +242,7 @@ public final class AMXValidator
             return mObjectName;
         }
 
+        @Override
         public String toString()
         {
             return getMessage() + ", " + mObjectName;
@@ -346,6 +291,7 @@ public final class AMXValidator
             }
         }
 
+        @Override
         public String toString()
         {
             final StringBuilder builder = new StringBuilder();
@@ -354,12 +300,12 @@ public final class AMXValidator
             {
                 final ProblemList problems = mFailures.get(badBoy);
 
-                builder.append(badBoy + NL);
+                builder.append(badBoy).append(NL);
                 builder.append(CollectionUtil.toString( problems.getProblems(), NL));
                 builder.append(NL);
                 builder.append(NL);
             }
-            builder.append(mFailures.size() + " failures.");
+            builder.append(mFailures.size()).append(" failures.");
 
             return builder.toString() + NL + mNumTested + " MBeans tested.";
         }
@@ -381,7 +327,7 @@ public final class AMXValidator
         public List<String> getProblems() { return mProblems; }
         public ObjectName getObjectName() { return mObjectName; }
         
-        public boolean hasProblems() { return mProblems.size() != 0; }
+        public boolean hasProblems() { return !mProblems.isEmpty(); }
         
         
         public boolean instanceNotFound()
@@ -427,6 +373,7 @@ public final class AMXValidator
             }
         }
         
+        @Override
         public String toString()
         {
             if ( mInstanceNotFound )
@@ -436,12 +383,6 @@ public final class AMXValidator
             
             return "MBean " + mObjectName + " problems: " + NL + CollectionUtil.toString( mProblems, NL);
         }
-    }
-
-
-    private String toString(final Throwable t)
-    {
-        return ExceptionUtil.toString(ExceptionUtil.getRootCause(t));
     }
 
     /** types that are not open types, but that we deem acceptable for a remote API */
@@ -513,10 +454,10 @@ public final class AMXValidator
         else if (Map.class.isAssignableFrom(clazz))
         {
             final Map<?, ?> items = (Map) value;
-            for (final Object key : items.keySet())
+            for (final Map.Entry me : items.entrySet())
             {
-                checkLegalForRemote(key);
-                checkLegalForRemote(items.get(key));
+                checkLegalForRemote(me.getKey());
+                checkLegalForRemote(me.getValue());
             }
         }
         else
@@ -534,7 +475,6 @@ public final class AMXValidator
     private void _validate(final AMXProxy proxy, final ProblemList problems) throws InstanceNotFoundException
     {
         progress( "Validate: ", proxy.objectName() );
-        final ObjectName objectName = proxy.objectName();
 
         try
         {
@@ -646,7 +586,6 @@ public final class AMXValidator
             }
         }
 
-        List<String> tempProblems = null;
         try
         {
             validateChildren(proxy);
@@ -668,19 +607,6 @@ public final class AMXValidator
                     ", isRegistered(self) = " + exists + ", parent = " + parentObjectName);
             }
 
-            final String nameProp = proxy.nameProp();
-            final boolean valid = proxy.valid();
-            final String path = proxy.path();
-            final Extra extra = proxy.extra();
-
-            final String interfaceName = extra.interfaceName();
-            final MBeanInfo mbeanInfo = extra.mbeanInfo();
-            final String group = extra.group();
-            final Class<? extends AMXProxy> genericInterface = extra.genericInterface();
-            final boolean invariantMBeanInfo = extra.isInvariantMBeanInfo();
-            final boolean supportsAdoption = extra.supportsAdoption();
-            final String[] subTypes = extra.subTypes();
-
             final Set<AMXProxy> childrenSet = proxy.childrenSet();
             final Map<String, Map<String, AMXProxy>> childrenMaps = proxy.childrenMaps();
             final Map<String, Object> attributesMap = proxy.attributesMap();
@@ -689,7 +615,7 @@ public final class AMXValidator
             {
                 final Set<String>  keys = new HashSet<String>(attributesMap.keySet());
                 keys.removeAll(attrNames);
-                if ( keys.size() != 0 )
+                if ( !keys.isEmpty() )
                 {
                     throw new Exception("Attributes Map contains attributes not found in the MBeanInfo: " + keys);
                 }
@@ -718,7 +644,7 @@ public final class AMXValidator
             for (final String type : childrenMaps.keySet())
             {
                 final Map<String, AMXProxy> m = proxy.childrenMap(type);
-                if (m.keySet().size() == 0)
+                if (m.keySet().isEmpty())
                 {
                     throw new Exception("Child type " + type + " has nothing in Map");
                 }
@@ -784,16 +710,16 @@ public final class AMXValidator
         {
             problems.add("Default values for AMX names differ in number from XML names: " + defaultValues.keySet().size() + " != " + defaultValuesAMX.keySet().size());
         }
-        for (final String key : defaultValues.keySet())
+        for (final Map.Entry<String,String> me : defaultValues.entrySet())
         {
-            final Object value = defaultValues.get(key);
+            final Object value = me.getValue();
             if (value == null)
             {
-                problems.add("Default value of null for: " + key);
+                problems.add("Default value of null for: " + me.getKey());
             }
             else if (!(value instanceof String))
             {
-                problems.add("Default value is not a String for: " + key);
+                problems.add("Default value is not a String for: " + me.getKey());
             }
         }
 
@@ -802,7 +728,7 @@ public final class AMXValidator
         {
             for (final String subType : subTypes)
             {
-                final Map<String, String> subTypeDefaults = config.getDefaultValues(subType, false);
+                config.getDefaultValues(subType, false);
             }
         }
     }
@@ -841,14 +767,6 @@ public final class AMXValidator
         else
         {
             // no name property, it's by definition a singleton
-            final String name = proxy.getName();
-            /*
-                A Name attribute is legal on a singleton (it might not be a key value)
-            if (!name.equals(NO_NAME))
-            {
-                fail(objectName, "getName() returned a non-empty name for a singleton: " + name);
-            }
-            */
             if (!proxy.extra().singleton())
             {
                 fail(objectName, "Metadata claims named (non-singleton), but no name property present in ObjectName");
@@ -874,7 +792,6 @@ public final class AMXValidator
             // must NOT supply Children
             try
             {
-                final ObjectName[] children = proxy.getChildren();
                 fail(proxy, "MBean has no Children attribute in its MBeanInfo, but supplies the attribute");
             }
             catch (Exception e)
@@ -923,7 +840,7 @@ public final class AMXValidator
                 for (final ObjectName o : children)
                 {
                     caseSensitiveTypes.add(Util.getTypeProp(o));
-                    caseInsensitiveTypes.add(Util.getTypeProp(o).toLowerCase());
+                    caseInsensitiveTypes.add(Util.getTypeProp(o).toLowerCase(Locale.ENGLISH));
                 }
                 if (caseSensitiveTypes.size() != caseInsensitiveTypes.size())
                 {
@@ -957,9 +874,9 @@ public final class AMXValidator
             {
                 final Map<String, Map<String, AMXProxy>> maps = proxy.childrenMaps();
 
-                for (final String type : maps.keySet())
+                for (final Map.Entry<String, Map<String,AMXProxy>> me : maps.entrySet())
                 {
-                    final Map<String, AMXProxy> siblings = maps.get(type);
+                    final Map<String, AMXProxy> siblings = me.getValue();
                     if (siblings.keySet().size() > 1)
                     {
                         final Iterator<AMXProxy> iter = siblings.values().iterator();
@@ -969,7 +886,7 @@ public final class AMXValidator
                             final AMXProxy next = iter.next();
                             if (!mbeanInfo.equals(next.extra().mbeanInfo()))
                             {
-                                fail(proxy, "Children of type=" + type + " must  have the same MBeanInfo: " + siblings.values() );
+                                fail(proxy, "Children of type=" + me.getKey() + " must  have the same MBeanInfo: " + siblings.values() );
                             }
                         }
                     }
@@ -1163,10 +1080,8 @@ public final class AMXValidator
             final ObjectName pattern = Util.newObjectNamePattern( objectName.getDomain(), Util.makeTypeProp(Util.getTypeProp(objectName)) );
             try
             {
-                final long start = System.currentTimeMillis();
                 final Set<ObjectName>  instances = mMBeanServer.queryNames( pattern, null);
-                final long elapsed = System.currentTimeMillis() - start;
-                //debug( "Query time: " + elapsed);
+                
                 if ( instances.size() > 1 )
                 {
                     problems.add( "Global singleton " + objectName +
@@ -1244,7 +1159,7 @@ public final class AMXValidator
         
         private final Map<ObjectName, ProblemList> mProblems;
 
-        public ValidationResult( final Failures failures )
+        private ValidationResult( final Failures failures )
         {
             mNumTested = failures.getNumTested();
             mNumFailures = failures.getNumFailures();
@@ -1272,6 +1187,7 @@ public final class AMXValidator
             return mNumFailures;
         }
 
+        @Override
         public String toString()
         {
             return details();
@@ -1300,17 +1216,11 @@ public final class AMXValidator
     
     public ValidationResult validate(final ObjectName[] targets)
     {
-        final long startMillis = System.currentTimeMillis();
         final Failures failures = new Failures();
-
-        final DomainRoot dr = mDomainRoot;
 
         // list them in order
         for (final ObjectName objectName : targets)
         {
-            /* if(bypassTesting(objectName)) {
-                continue;
-            } */
             progress( "AMXValidator.validate(), begin: " + objectName );
             final ProblemList problems = new ProblemList(objectName);
             AMXProxy     amx = null;
@@ -1366,8 +1276,6 @@ public final class AMXValidator
             }
             progress( "AMXValidator.validate(): validated: " + objectName );
         }
-        final long elapsedMillis = System.currentTimeMillis() - startMillis;
-
         final ValidationResult result = new ValidationResult( failures );
         return result;
     }

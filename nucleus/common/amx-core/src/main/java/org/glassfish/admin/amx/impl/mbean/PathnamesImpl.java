@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,35 +39,31 @@
  */
 package org.glassfish.admin.amx.impl.mbean;
 
-import org.glassfish.admin.amx.core.AMXProxy;
-import org.glassfish.admin.amx.core.Util;
-
-import org.glassfish.admin.amx.util.jmx.JMXUtil;
-
-import javax.management.ObjectName;
-import javax.management.InstanceNotFoundException;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import org.glassfish.admin.amx.base.DomainRoot;
 import org.glassfish.admin.amx.base.Pathnames;
-import static org.glassfish.external.amx.AMX.*;
+import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.core.PathnameParser;
+import org.glassfish.admin.amx.core.Util;
 import org.glassfish.admin.amx.core.proxy.AMXProxyHandler;
-import org.glassfish.admin.amx.util.CollectionUtil;
-import org.glassfish.admin.amx.util.ListUtil;
-import org.glassfish.admin.amx.util.ExceptionUtil;
-
-import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
-
 import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.admin.amx.util.CollectionUtil;
+import org.glassfish.admin.amx.util.ExceptionUtil;
+import org.glassfish.admin.amx.util.ListUtil;
+import org.glassfish.admin.amx.util.jmx.JMXUtil;
+import org.glassfish.admin.amx.util.stringifier.SmartStringifier;
+import static org.glassfish.external.amx.AMX.ATTR_PARENT;
+import static org.glassfish.external.amx.AMX.PARENT_PATH_KEY;
 
 /**
 GlassFish V3 dotted names implementation (MBean).
@@ -275,7 +271,7 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             ImplUtil.getLogger().log(Level.WARNING,
                     "PathnamesImpl.getAllPathnames(): unexpected Throwable",
                     ExceptionUtil.getRootCause(t));
-            t.printStackTrace();    // ****************************************
+            t.printStackTrace();    
         }
         return new String[]{DomainRoot.PATH};
     }
@@ -320,11 +316,11 @@ public final class PathnamesImpl extends AMXImplBase // implements Pathnames  (c
             buf.append(NL);
 
             final Map<String, Object> attributesMap = amx.attributesMap();
-            for (final String name : attributesMap.keySet()) {
+            for (final Map.Entry<String,Object> e : attributesMap.entrySet()) {
                 buf.append("\t");
-                buf.append(name);
+                buf.append(e.getKey());
                 buf.append(" = ");
-                buf.append("" + SmartStringifier.toString(attributesMap.get(name)));
+                buf.append("").append(SmartStringifier.toString(e.getValue()));
                 buf.append(NL);
             }
             buf.append(NL);

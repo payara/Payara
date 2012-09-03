@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,10 +40,9 @@
 package org.glassfish.admin.amx.impl.mbean;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
-
 import org.glassfish.admin.amx.core.AMXProxy;
 import org.glassfish.admin.amx.util.StringUtil;
 
@@ -60,7 +59,21 @@ final class ParentChildren implements Comparable<ParentChildren> {
     public void sortChildren() {
         Collections.sort(mChildren);
     }
+    
+    @Override
+    public boolean equals(final Object rhs) {
+        return rhs instanceof ParentChildren ? compareTo((ParentChildren)rhs) == 0 : false;
+    }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + (this.mParent != null ? this.mParent.hashCode() : 0);
+        hash = 83 * hash + (this.mChildren != null ? this.mChildren.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public int compareTo(final ParentChildren rhs) {
         int cmp = mParent.type().compareTo(rhs.mParent.type());
         if (cmp == 0) {

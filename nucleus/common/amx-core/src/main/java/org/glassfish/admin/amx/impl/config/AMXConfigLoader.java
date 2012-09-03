@@ -41,28 +41,6 @@ package org.glassfish.admin.amx.impl.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.logging.LogDomains;
-import org.glassfish.admin.amx.base.DomainRoot;
-import org.glassfish.admin.amx.config.AMXConfigConstants;
-import org.glassfish.admin.amx.core.Util;
-import org.glassfish.admin.amx.impl.mbean.MBeanImplBase;
-import org.glassfish.admin.amx.impl.util.ImplUtil;
-import org.glassfish.admin.amx.impl.util.InjectedValues;
-import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
-import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
-import org.glassfish.admin.amx.util.ExceptionUtil;
-import org.glassfish.admin.amx.util.FeatureAvailability;
-import org.glassfish.admin.amx.util.MapUtil;
-import org.glassfish.admin.amx.util.TypeCast;
-import org.glassfish.admin.amx.util.jmx.JMXUtil;
-import org.glassfish.admin.mbeanserver.PendingConfigBeanJob;
-import org.glassfish.admin.mbeanserver.PendingConfigBeans;
-import org.glassfish.external.amx.AMX;
-import org.glassfish.external.amx.AMXGlassfish;
-import org.glassfish.external.arc.Stability;
-import org.glassfish.external.arc.Taxonomy;
-import org.jvnet.hk2.config.*;
-
-import javax.management.*;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +50,24 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.management.*;
+import org.glassfish.admin.amx.config.AMXConfigConstants;
+import org.glassfish.admin.amx.core.Util;
+import org.glassfish.admin.amx.impl.util.ImplUtil;
+import org.glassfish.admin.amx.impl.util.InjectedValues;
+import org.glassfish.admin.amx.impl.util.ObjectNameBuilder;
+import org.glassfish.admin.amx.impl.util.SingletonEnforcer;
+import org.glassfish.admin.amx.util.ExceptionUtil;
+import org.glassfish.admin.amx.util.FeatureAvailability;
+import org.glassfish.admin.amx.util.MapUtil;
+import org.glassfish.admin.amx.util.TypeCast;
+import org.glassfish.admin.mbeanserver.PendingConfigBeanJob;
+import org.glassfish.admin.mbeanserver.PendingConfigBeans;
+import org.glassfish.external.amx.AMX;
+import org.glassfish.external.amx.AMXGlassfish;
+import org.glassfish.external.arc.Stability;
+import org.glassfish.external.arc.Taxonomy;
+import org.jvnet.hk2.config.*;
 
 /**
 Responsible for loading ConfigBeanProxy MBeans (com.sun.enterprise.config.serverbeans.*)
@@ -154,7 +150,7 @@ public final class AMXConfigLoader
         if (oldValue != null) {
             changed = !oldValue.equals(newValue);
         } else if (newValue != null) {
-            changed = !newValue.equals(oldValue);
+            changed = true;
         }
 
         if (changed) {
@@ -184,15 +180,11 @@ public final class AMXConfigLoader
         for (final PropertyChangeEvent event : events) {
             final Object oldValue = event.getOldValue();
             final Object newValue = event.getNewValue();
-            final Object source = event.getSource();
-            final String propertyName = event.getPropertyName();
-
+            
             if (oldValue == null && newValue instanceof ConfigBeanProxy) {
                 // ADD: a new ConfigBean was added
                 final ConfigBeanProxy cbp = (ConfigBeanProxy) newValue;
                 final ConfigBean cb = asConfigBean(ConfigBean.unwrap(cbp));
-                final Class<? extends ConfigBeanProxy> proxyClass = cb.getProxyType();
-                //debug( "AMXConfigLoader.sortAndDispatch: process new ConfigBean: " + proxyClass.getNameProp() );
                 final boolean doWait = amxIsRunning();
                 if (handleConfigBean(cb, doWait)) // wait until registered
                 {
@@ -265,23 +257,6 @@ public final class AMXConfigLoader
         SingletonEnforcer.deregister(AMXConfigLoader.class, this);
     }
 
-    private static final class Job {
-
-        final ConfigBean mConfigBean;
-        final CountDownLatch mLatch;
-
-        public Job(final ConfigBean configBean, final CountDownLatch latch) {
-            mConfigBean = configBean;
-            mLatch = latch;
-        }
-
-        public void releaseLatch() {
-            if (mLatch != null) {
-                mLatch.countDown();
-            }
-        }
-    }
-
     /**
     No items will be processd until {@link #start} is called.
      */
@@ -312,10 +287,7 @@ public final class AMXConfigLoader
      */
     private ConfigBean getActualParent(final ConfigBean configBean) {
         ConfigBean parent = asConfigBean(configBean.parent());
-        if (parent != null) {
-            //debug( "config bean  " + configBean.getProxyType().getNameProp() + " has parent " + configBean.parent().getProxyType().getNameProp() );
-            final ObjectName parentObjectName = mRegistry.getObjectName(parent);
-        } else {
+        if (parent == null) {
             if (!configBean.getProxyType().getName().endsWith("Domain")) {
                 throw new IllegalStateException("WARNING: parent is null for " + configBean.getProxyType().getName() + ",  see issue #10528");
             }
@@ -447,8 +419,7 @@ public final class AMXConfigLoader
              */
             PendingConfigBeanJob job = mPending.take();  // block until first item is ready
             while ((!mQuit) && job != null) {
-                final ObjectName objectName = registerOne(job);
-                //debug( "REGISTERED: " + objectName );
+                registerOne(job);
                 job = mPending.peek();  // don't block, loop exits when queue is first emptied
                 if (job != null) {
                     job = mPending.take();
@@ -517,9 +488,7 @@ public final class AMXConfigLoader
     private ObjectName createAndRegister(
             final ConfigBean cb,
             final ObjectName objectNameIn) {
-        ObjectName objectName = objectNameIn;
-
-        final String type = objectNameIn.getKeyProperty(AMX.TYPE_KEY);
+        ObjectName objectName;
 
         ObjectName parentObjectName = getActualParentObjectName(cb);
 

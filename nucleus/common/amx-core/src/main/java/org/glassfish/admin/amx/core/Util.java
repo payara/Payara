@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,14 +51,7 @@ import static org.glassfish.external.amx.AMX.*;
 import javax.management.Notification;
 import javax.management.ObjectName;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.management.MBeanServer;
 import org.glassfish.external.arc.Stability;
 import org.glassfish.external.arc.Taxonomy;
@@ -202,13 +195,13 @@ public final class Util {
     @param objectName
      */
     public static String getAdditionalProps(final ObjectName objectName) {
-        final java.util.Hashtable allProps = objectName.getKeyPropertyList();
+        final java.util.Hashtable<String,String> allProps = objectName.getKeyPropertyList();
         allProps.remove(TYPE_KEY);
         allProps.remove(NAME_KEY);
 
         String props = "";
-        for (final Object key : allProps.keySet()) {
-            final String prop = makeProp((String) key, (String) allProps.get(key));
+        for (final Map.Entry<String,String> e : allProps.entrySet()) {
+            final String prop = makeProp(e.getKey(), e.getValue());
             props = concatenateProps(props, prop);
         }
 
@@ -245,9 +238,9 @@ public final class Util {
     public static Map<String, ObjectName> toObjectNameMap(final Map<String, ? extends AMXProxy> amxMap) {
         final Map<String, ObjectName> m = new HashMap<String, ObjectName>();
 
-        for (final String key : amxMap.keySet()) {
-            final AMXProxy value = amxMap.get(key);
-            m.put(key, value.objectName());
+        for (final Map.Entry<String,? extends AMXProxy> e : amxMap.entrySet()) {
+            final AMXProxy value = e.getValue();
+            m.put(e.getKey(), value.objectName());
         }
         return (Collections.checkedMap(m, String.class, ObjectName.class));
     }
@@ -427,10 +420,10 @@ public final class Util {
      */
     public static <T extends AMXProxy> Map<String, T> filterAMX(final Map<String, T> candidates, final Class<?> desired) {
         final Map<String, T> result = new HashMap<String, T>();
-        for (final String key : candidates.keySet()) {
-            final T amx = candidates.get(key);
+        for (final Map.Entry<String,T> e : candidates.entrySet()) {
+            final T amx = e.getValue();
             if (desired.isAssignableFrom(amx.getClass())) {
-                result.put(key, amx);
+                result.put(e.getKey(), amx);
             }
         }
         return result;
@@ -549,7 +542,7 @@ public final class Util {
             if (buf.length() > 0) {
                 buf.append('-');
             }
-            buf.append(t.toLowerCase());
+            buf.append(t.toLowerCase(Locale.ENGLISH));
         }
         return buf.toString();
     }

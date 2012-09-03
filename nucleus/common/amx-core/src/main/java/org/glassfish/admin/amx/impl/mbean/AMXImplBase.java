@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -91,7 +91,7 @@ caching Methods for each Attribute and for operations as well.  Careful testing
 should be done before complicating the code with such optimizations.
  */
 public class AMXImplBase extends MBeanImplBase
-        implements DynamicMBean, MBeanRegistration, NotificationEmitter, AMX_SPI {
+        implements DynamicMBean, NotificationEmitter, AMX_SPI {
 
     /** console debug */
     protected static void cdebug(final String s) {
@@ -311,12 +311,6 @@ public class AMXImplBase extends MBeanImplBase
     }
 
 
-    // not supported otherwise
-    private boolean getMBeanInfoIsInvariant() {
-        return true;
-    }
-
-
     protected synchronized Map<String, MBeanAttributeInfo> getAttributeInfos() {
         return JMXUtil.attributeInfosToMap(getMBeanInfo().getAttributes());
     }
@@ -351,10 +345,9 @@ public class AMXImplBase extends MBeanImplBase
     public final Object getAttribute(final String name)
             throws AttributeNotFoundException {
         Object result = null;
-        //cdebug( "AMXImplBase.getAttribute: " + name );
 
         if (name == null) {
-            throw new AttributeNotFoundException("Illegal/unknown attribute: " + name + " for " + getObjectName());
+            throw new AttributeNotFoundException("Illegal/unknown attribute: null for " + getObjectName());
         }
 
         try {
@@ -661,27 +654,6 @@ public class AMXImplBase extends MBeanImplBase
             //System.out.println("AttributeChangeNotification: " + AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
             logger.log(Level.INFO,"amx.AttributeChangeNotification", AttributeChangeNotificationStringifier.DEFAULT.stringify(n));
             sendNotification(n);
-        }
-    }
-
-    private void sendAttributeChangeNotifications(
-            final AttributeList attrList,
-            final Map<String, Object> oldValues) {
-        // issue all of them using the same time-of-change
-        final long when = System.currentTimeMillis();
-
-        final Map<String, String> attrsMap = JMXUtil.attributeListToStringMap(attrList);
-        if (!attrsMap.keySet().equals(oldValues.keySet())) {
-            throw new IllegalArgumentException();
-        }
-
-        final String msg = "";
-        for (final String attrName : attrsMap.keySet()) {
-            final String attrType = getAttributeType(attrName);
-            final Object oldValue = oldValues.get(attrName);
-            final Object newValue = attrsMap.get(attrName);
-
-            sendAttributeChangeNotification("", attrName, attrType, when, oldValue, newValue);
         }
     }
 

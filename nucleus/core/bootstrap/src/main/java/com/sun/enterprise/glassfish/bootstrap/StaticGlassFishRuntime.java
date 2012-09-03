@@ -224,8 +224,9 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             new File(tmpDir).mkdirs();
         }
         File instanceRoot = File.createTempFile("gfembed", "tmp", new File(tmpDir));
-        instanceRoot.delete();
-        instanceRoot.mkdir(); // convert the file into a directory.
+        if (!instanceRoot.delete() || !instanceRoot.mkdir()) { // convert the file into a directory.
+            throw new Exception("cannot create directory: " + instanceRoot.getAbsolutePath());
+        }
         try {
             String configDir = "config/";
             String[] resources = new String[]{"keyfile", "server.policy",

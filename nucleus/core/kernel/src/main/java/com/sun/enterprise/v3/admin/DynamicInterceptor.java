@@ -139,7 +139,7 @@ public class DynamicInterceptor implements MBeanServer
         //If its a MBean corresponding to config
         if(isConfig(oName)) {
             String configName = getName(oName);
-            if(configName != null && configName.indexOf("-config") > 0 ) {
+            if(configName != null && configName.endsWith("-config")) {
                 String targetName = configName.substring(0, configName.indexOf("-config"));
                 if( (!"default".equals(targetName)) && (!"server".equals(targetName)) ) {
                     result.addAllInstances(MbeanService.getInstance().getInstances(configName));
@@ -868,7 +868,7 @@ public class DynamicInterceptor implements MBeanServer
     }
 
     private String getName(String oName) {
-        if(oName.indexOf("[") > 0 ) {
+        if(oName.indexOf("[") != -1 ) {
           return oName.substring(oName.indexOf("[") + 1, oName.indexOf("]"));
         } else {
             return null;

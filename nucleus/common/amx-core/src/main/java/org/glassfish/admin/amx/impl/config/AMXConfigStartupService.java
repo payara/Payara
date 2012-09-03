@@ -148,7 +148,9 @@ public final class AMXConfigStartupService
         if (domainConfigProxy != null) {
         	ImplUtil.unregisterAMXMBeans(domainConfigProxy);
         }
-        mLoader.stop();
+        if (mLoader != null) {
+            mLoader.stop();
+        }
         mLoader = null;
     }
 }
