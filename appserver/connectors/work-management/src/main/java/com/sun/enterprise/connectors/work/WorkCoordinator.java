@@ -121,7 +121,7 @@ public final class WorkCoordinator {
         this.queue = queue;
         this.listener = listener;
         synchronized (WorkCoordinator.class) {
-            this.id = ++seed;
+            this.id = increaseSeed();
         }
         this.runtime = runtime;
         this.lock = new Object();
@@ -352,7 +352,7 @@ public final class WorkCoordinator {
 
         try {
             synchronized (lock) {
-                if (checkStateBeforeLocking()) {
+                while (checkStateBeforeLocking()) {
                     if (timeout != -1) {
                         lock.wait(timeout);
                     } else {
@@ -383,7 +383,7 @@ public final class WorkCoordinator {
     private void unLock() {
         try {
             synchronized (lock) {
-                lock.notify();
+                lock.notifyAll();
             }
         } catch (Exception e) {
             setException(e);
@@ -458,4 +458,9 @@ public final class WorkCoordinator {
         }
         return ec;
     }
+    
+    public static int increaseSeed() {
+        return ++seed;
+    }
+
 }

@@ -125,7 +125,6 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         moduleName = in.readUTF();
         wm = WorkManagerFactoryImpl.retrieveWorkManager(moduleName);
-        _logger = LogDomains.getLogger(WorkManagerProxy.class, LogDomains.RSR_LOGGER);
     }
 
     public boolean equals(Object o){
