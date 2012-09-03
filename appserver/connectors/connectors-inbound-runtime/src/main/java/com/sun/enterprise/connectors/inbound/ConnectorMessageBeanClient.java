@@ -309,8 +309,8 @@ public final class ConnectorMessageBeanClient
         logger.logp(Level.FINEST,
                 "ConnectorMessageBeanClient", "start", "called...");
         started_ = true;
-        myState = UNBLOCKED;
         synchronized (this) {
+            myState = UNBLOCKED;
             notifyAll();
         }
     }
@@ -393,7 +393,7 @@ public final class ConnectorMessageBeanClient
      */
     public MessageEndpoint createEndpoint(XAResource xaResource, long timeout) throws UnavailableException {
         synchronized (this) {
-            if (myState == BLOCKED) {
+            while (myState == BLOCKED) {
                 try {
                     wait(timeout);
                 } catch (Exception e) {

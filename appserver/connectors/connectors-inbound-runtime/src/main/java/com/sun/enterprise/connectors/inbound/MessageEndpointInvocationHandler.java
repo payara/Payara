@@ -245,10 +245,10 @@ public final class MessageEndpointInvocationHandler
             case 'e':
                 Object other = Proxy.isProxyClass(args[0].getClass()) ?
                         Proxy.getInvocationHandler(args[0]) : args[0];
-                returnValue = new Boolean(handler.equals(other));
+                returnValue = Boolean.valueOf(handler.equals(other));
                 break;
             case 'h':
-                returnValue = new Integer(handler.hashCode());
+                returnValue = Integer.valueOf(handler.hashCode());
                 break;
             case 't':
                 returnValue = handler.toString();
