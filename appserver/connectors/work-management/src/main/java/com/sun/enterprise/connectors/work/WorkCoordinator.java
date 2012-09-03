@@ -120,9 +120,7 @@ public final class WorkCoordinator {
         this.ec = ec;
         this.queue = queue;
         this.listener = listener;
-        synchronized (WorkCoordinator.class) {
-            this.id = increaseSeed();
-        }
+        this.id = increaseSeed();
         this.runtime = runtime;
         this.lock = new Object();
         this.probeProvider = probeProvider;
@@ -459,7 +457,7 @@ public final class WorkCoordinator {
         return ec;
     }
     
-    public static int increaseSeed() {
+    public static synchronized int increaseSeed() {
         return ++seed;
     }
 

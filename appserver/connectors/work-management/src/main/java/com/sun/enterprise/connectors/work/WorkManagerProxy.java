@@ -57,8 +57,6 @@ public class WorkManagerProxy implements WorkManager, Externalizable {
 
     private transient WorkManager wm;
     private String moduleName;
-    private static Logger _logger = LogDomains.getLogger(WorkManagerProxy.class, LogDomains.RSR_LOGGER);
-
 
     public WorkManagerProxy(WorkManager wm, String moduleName){
         this.wm = wm;
