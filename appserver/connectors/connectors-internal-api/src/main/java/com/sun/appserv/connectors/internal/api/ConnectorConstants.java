@@ -318,6 +318,14 @@ public interface ConnectorConstants extends ResourceConstants {
      */
     public static String JNDI_SUFFIX_PROPERTY = "com.sun.enterprise.connectors.jndisuffix";
    
+    /**
+     * Valid values that can be provided to the JNDI property.
+     */
+    public static final List<String> JNDI_SUFFIX_VALUES = Collections.unmodifiableList(
+            Arrays.asList(
+                    PM_JNDI_SUFFIX,
+                    NON_TX_JNDI_SUFFIX
+            ));
 
     public static final String CCP = "ConnectorConnectionPool";
     public static final String CR  =  "ConnectorResource";

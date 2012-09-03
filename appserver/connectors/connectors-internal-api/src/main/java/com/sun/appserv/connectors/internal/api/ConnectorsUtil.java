@@ -109,10 +109,6 @@ public class ConnectorsUtil {
 
     private static Collection<String> validSystemRARs = new HashSet<String>();
     private static Collection<String> validNonJdbcSystemRARs = new HashSet<String>();
-    /**
-     * Valid values that can be provided to the JNDI property.
-     */
-    private final static String[] JNDI_SUFFIX_VALUES = { ConnectorConstants.PM_JNDI_SUFFIX , ConnectorConstants.NON_TX_JNDI_SUFFIX };
 
     static{
         initializeSystemRars();
@@ -241,7 +237,7 @@ public class ConnectorsUtil {
      */
     public static String getValidSuffix(String name) {
         if (name != null) {
-            for (String validSuffix : JNDI_SUFFIX_VALUES) {
+            for (String validSuffix : ConnectorConstants.JNDI_SUFFIX_VALUES) {
                 if (name.endsWith(validSuffix)) {
                     return validSuffix;
                 }
@@ -259,7 +255,7 @@ public class ConnectorsUtil {
      */
     public static boolean isValidJndiSuffix(String suffix) {
         if (suffix != null) {
-            for (String validSuffix : JNDI_SUFFIX_VALUES) {
+            for (String validSuffix : ConnectorConstants.JNDI_SUFFIX_VALUES) {
                 if (validSuffix.equals(suffix)) {
                     return true;
                 }
