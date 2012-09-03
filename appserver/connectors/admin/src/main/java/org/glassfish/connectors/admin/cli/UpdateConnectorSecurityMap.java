@@ -232,16 +232,12 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
         if (removePrincipals != null) {
             boolean principalExists = true;
             String principal = null;
-            if (existingPrincipals != null) {
-                for (String p : removePrincipals) {
-                    if (!existingPrincipals.contains(p)) {
-                        principalExists = false;
-                        principal = p;
-                        break;
-                    }
+            for (String p : removePrincipals) {
+                if (!existingPrincipals.contains(p)) {
+                    principalExists = false;
+                    principal = p;
+                    break;
                 }
-            } else {
-                principalExists = false;
             }
             if (!principalExists) {
                 report.setMessage(localStrings.getLocalString("update.connector.security.map.principal_does_not_exists",
@@ -256,16 +252,12 @@ public class UpdateConnectorSecurityMap extends ConnectorSecurityMap implements 
         if (removeUserGroups != null) {
             boolean userGroupExists = true;
             String userGroup = null;
-            if (existingUserGroups != null) {
-                for (String ug : removeUserGroups) {
-                    if (!existingUserGroups.contains(ug)) {
-                        userGroupExists = false;
-                        userGroup = ug;
-                        break;
-                    }
+            for (String ug : removeUserGroups) {
+                if (!existingUserGroups.contains(ug)) {
+                    userGroupExists = false;
+                    userGroup = ug;
+                    break;
                 }
-            } else {
-                userGroupExists = false;
             }
             if (!userGroupExists) {
                 report.setMessage(localStrings.getLocalString("update.connector.security.map.usergroup_does_not_exists",
